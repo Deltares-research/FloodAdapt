@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<root>
+  <measure>
+    <name>buyout</name>
+    <long_name>buyout</long_name>
+    <type>buyout_property</type>
+    <polygon_file>buyout.txt</polygon_file>
+    <selection_type>polygon</selection_type>
+    <property_type>RES</property_type>
+    <datum_text>NAVD 88</datum_text>
+  </measure>
+</root>

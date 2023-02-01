@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<root>
+  <measure>
+    <name>seawall</name>
+    <long_name>seawall</long_name>
+    <type>floodwall</type>
+    <polygon_file>seawall.txt</polygon_file>
+    <elevation vertical_units="feet">12</elevation>
+    <elevation_type>floodmap</elevation_type>
+    <datum_text>NAVD 88</datum_text>
+  </measure>
+</root>

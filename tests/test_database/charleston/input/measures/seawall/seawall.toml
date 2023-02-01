@@ -1,0 +1,7 @@
+name = "seawall"
+long_name = "seawall"
+type = "floodwall"
+polygon_file = "seawall.txt"
+elevation.value = 12
+elevation.units = "feet"
+elevation.type = "floodmap"

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<root>
+  <measure>
+    <name>levee</name>
+    <long_name>levee</long_name>
+    <type>levee</type>
+    <polygon_file>levee.txt</polygon_file>
+    <elevation vertical_units="feet">12</elevation>
+    <elevation_type>floodmap</elevation_type>
+    <datum_text>NAVD 88</datum_text>
+  </measure>
+</root>

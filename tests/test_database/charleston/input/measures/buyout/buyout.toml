@@ -1,0 +1,7 @@
+name = "buyout"
+long_name = "buyout"
+type = "buyout_property"
+polygon_file = "buyout.txt"
+selection_type = "polygon"
+property_type = "RES"
+datum_text = "NAVD 88"

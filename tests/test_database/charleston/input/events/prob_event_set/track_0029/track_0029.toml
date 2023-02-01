@@ -1,0 +1,17 @@
+name = "track_0029"
+long_name = "track_0029"
+template = "Hurricane (historical)"
+timing = "historical"
+start_time = "20000711 090000"
+stop_time = "20000715 120000"
+tide_source = "model"
+surge_source = "none"
+water_level_offset = 0.6
+water_level_offset_vertical_units = "feet"
+wind_source = "track"
+wind_parametric_file = "track_0029.spw"
+rainfall_source = "track"
+rainfall_parametric_file = "track_0029.spw"
+rivers_source = "constant"
+rivers_constant_discharge = 5000
+wind_track_file = "track_0029.spw"

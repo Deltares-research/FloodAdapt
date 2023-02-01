@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<root>
+  <scenario>
+    <name>current_Sept_2020_no_measures</name>
+    <long_name>current - Sept-2020 - no_measures</long_name>
+    <projection>current</projection>
+    <event>Sept_2020</event>
+    <strategy>no_measures</strategy>
+  </scenario>
+</root>

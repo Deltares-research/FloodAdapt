@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<root>
+  <projection>
+    <name>all_projections</name>
+    <long_name>all_projections</long_name>
+    <sea_level_rise vertical_units="feet">2</sea_level_rise>
+    <subsidence vertical_units="feet">0</subsidence>
+    <rainfall_increase>20</rainfall_increase>
+    <storm_frequency_increase>20</storm_frequency_increase>
+    <economic_growth>20</economic_growth>
+    <population_growth>0</population_growth>
+    <population_growth_new>20</population_growth_new>
+    <population_growth_existing>20</population_growth_existing>
+    <new_development_elevation vertical_units="feet">1</new_development_elevation>
+    <new_development_elevation_reference>floodmap</new_development_elevation_reference>
+    <new_development_shape_file>pop_growth_new_20.shp</new_development_shape_file>
+  </projection>
+</root>

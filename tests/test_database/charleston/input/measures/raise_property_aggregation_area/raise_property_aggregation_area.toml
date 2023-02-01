@@ -1,0 +1,9 @@
+name = "raise_property_aggregation_area"
+long_name = "raise_property_aggregation_area"
+type = "elevate_properties"
+elevation.value = 1
+elevation.units = "feet"
+elevation.type = "floodmap"
+selection_type = "aggregation_area"
+aggregation_area = "test_area_1"
+property_type = "RES"

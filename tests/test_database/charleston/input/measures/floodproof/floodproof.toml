@@ -1,0 +1,9 @@
+name = "floodproof"
+long_name = "floodproof"
+type = "floodproof_property"
+polygon_file = "floodproof.txt"
+elevation = 3
+elevation_vertical_units = "feet"
+selection_type = "polygon"
+property_type = "RES"
+datum_text = "NAVD 88"
