@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flood_adapt"
+description = "A software package support ystem which can be used to assess the benefits and costs of flood resilience measures"
+readme = "README.md"
+authors = [
+    # TODO: add other authors
+    {name = "Julian Hofer", email = "Julian.Hofer@deltares.nl"},
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+    "Topic :: Scientific/Engineering :: Hydrology",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "bmipy",
+    "numpy",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = {attr = "flood_adapt.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["flood_adapt", "flood_adapt.*"]
+
+[tool.setuptools.package-data]
+"flood_adapt" = ["py.typed"]
+
+[project.urls]
+Source = "https://github.com/Deltares/FloodAdapt"
