@@ -19,7 +19,7 @@ In order to develop on `flood_adapt` locally, please follow the following steps:
 conda init
 ```
 
-- Depending on your company settings, you might also have to run the following in a Powershell terminal run as administrator:
+- Depending on your company settings, you might also have to run the following in a Powershell terminal as administrator:
 
 ```
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
