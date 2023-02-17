@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+  <measure>
+    <name>floodproof</name>
+    <long_name>floodproof</long_name>
+    <type>floodproof_property</type>
+    <polygon_file>floodproof.txt</polygon_file>
+    <elevation vertical_units="feet">3</elevation>
+    <selection_type>polygon</selection_type>
+    <property_type>RES</property_type>
+    <datum_text>NAVD 88</datum_text>
+  </measure>
+</root>

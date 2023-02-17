@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<root>
+  <event>
+    <name>Sept_2020</name>
+    <long_name>Sept-2020</long_name>
+    <template>Historical - forced by offshore wind and tide</template>
+    <timing>historical</timing>
+    <start_time>20200920 000000</start_time>
+    <stop_time>20200922 000000</stop_time>
+    <tide_source>model</tide_source>
+    <surge_source>model</surge_source>
+    <water_level_offset vertical_units="feet">0.6</water_level_offset>
+    <wind_source>map</wind_source>
+    <rainfall_source>map</rainfall_source>
+    <rivers_source>constant</rivers_source>
+    <rivers_constant_discharge>5000</rivers_constant_discharge>
+    <surge_panel_text>none</surge_panel_text>
+  </event>
+</root>

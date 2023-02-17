@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+  <strategy>
+    <name>measures</name>
+    <long_name>measures</long_name>
+    <measure>seawall</measure>
+    <measure>levee</measure>
+    <measure>pump</measure>
+    <measure>floodproof</measure>
+    <measure>raise_property</measure>
+    <measure>buyout</measure>
+  </strategy>
+</root>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<root>
+  <event>
+    <name>kingTideNov2021</name>
+    <long_name>King Tide - Nov 2021</long_name>
+    <template>Historical - forced by observed nearshore water levels</template>
+    <timing>historical</timing>
+    <start_time>20211104 000000</start_time>
+    <stop_time>20211109 000000</stop_time>
+    <tide_source>timeseries</tide_source>
+    <tide_timeseries_file>tide.csv</tide_timeseries_file>
+    <surge_source>none</surge_source>
+    <water_level_offset vertical_units="feet">0</water_level_offset>
+    <wind_source>constant</wind_source>
+    <wind_constant_speed>0</wind_constant_speed>
+    <wind_constant_direction>0</wind_constant_direction>
+    <rainfall_source>none</rainfall_source>
+    <rivers_source>constant</rivers_source>
+    <rivers_constant_discharge>5000</rivers_constant_discharge>
+    <surge_panel_text>none</surge_panel_text>
+  </event>
+</root>

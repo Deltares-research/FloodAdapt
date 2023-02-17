@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<root>
+  <projection>
+    <name>current</name>
+    <long_name>current</long_name>
+    <sea_level_rise vertical_units="feet">0</sea_level_rise>
+    <subsidence vertical_units="feet">0</subsidence>
+    <rainfall_increase>0</rainfall_increase>
+    <storm_frequency_increase>0</storm_frequency_increase>
+    <economic_growth>0</economic_growth>
+    <population_growth>0</population_growth>
+    <population_growth_new>0</population_growth_new>
+    <population_growth_existing>0</population_growth_existing>
+    <new_development_elevation vertical_units="feet">0</new_development_elevation>
+    <new_development_elevation_reference>floodmap</new_development_elevation_reference>
+  </projection>
+</root>

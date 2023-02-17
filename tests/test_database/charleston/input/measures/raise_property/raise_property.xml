@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root>
+  <measure>
+    <name>raise_property</name>
+    <long_name>raise_property</long_name>
+    <type>raise_property</type>
+    <elevation vertical_units="feet">2</elevation>
+    <elevation_type>floodmap</elevation_type>
+    <selection_type>aggregation_area</selection_type>
+    <aggregation_area>Rosemont</aggregation_area>
+    <property_type>RES</property_type>
+    <datum_text>NAVD 88</datum_text>
+  </measure>
+</root>

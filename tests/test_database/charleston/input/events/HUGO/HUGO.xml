@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<root>
+  <event>
+    <name>HUGO</name>
+    <long_name>HUGO</long_name>
+    <template>Historical - hurricane</template>
+    <timing>historical</timing>
+    <start_time>19890910 120000</start_time>
+    <stop_time>19890925 120000</stop_time>
+    <tide_source>model</tide_source>
+    <surge_source>model</surge_source>
+    <water_level_offset vertical_units="feet">0.6</water_level_offset>
+    <wind_source>track</wind_source>
+    <wind_parametric_file>HUGO.spw</wind_parametric_file>
+    <track_shift_north_south>0</track_shift_north_south>
+    <track_shift_east_west>0</track_shift_east_west>
+    <rainfall_source>track</rainfall_source>
+    <rivers_source>constant</rivers_source>
+    <rivers_constant_discharge>5000</rivers_constant_discharge>
+    <surge_panel_text>none</surge_panel_text>
+  </event>
+</root>
