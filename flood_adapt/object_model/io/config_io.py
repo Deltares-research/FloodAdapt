@@ -17,6 +17,12 @@ def read_config(file_path: Union[str, Path]) -> dict:
     return config
     
 
-def write_config(config, file_path: Union[str, Path]) -> None:
+def write_config(config: dict, file_path: Union[str, Path]) -> None:
+    """Generic function to write a config file to .toml.
+
+    Args:
+        config (dict): A configuration dictionary.
+        file_path (Union[str, Path]): The path to write the configuration file to, with .toml extension.
+    """
     with open(file_path, mode="wb") as fp:
         tomli_w.dump(config, fp)
