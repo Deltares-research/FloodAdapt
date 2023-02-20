@@ -26,3 +26,17 @@ def write_config(config: dict, file_path: Union[str, Path]) -> None:
     """
     with open(file_path, mode="wb") as fp:
         tomli_w.dump(config, fp)
+
+
+def validate_config(config: dict) -> bool:
+    """Validates the configuration file. TODO: explain further what exactly is validated.
+
+    Args:
+        config (dict): A configuration dictionary.
+
+    Returns:
+        bool: True if the configuraton if valid and False if the configuration is invalid.
+    """
+    if config:
+        # TODO: add the validation steps here.
+        return True
