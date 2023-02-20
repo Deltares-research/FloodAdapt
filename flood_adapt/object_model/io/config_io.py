@@ -1,4 +1,4 @@
-import tomli
+import tomli, tomli_w
 from typing import Union
 from pathlib import Path
 
@@ -17,5 +17,6 @@ def read_config(file_path: Union[str, Path]) -> dict:
     return config
     
 
-# def write_config(file_path: Union[str, Path]):
-#     #LABLA
+def write_config(config, file_path: Union[str, Path]) -> None:
+    with open(file_path, mode="wb") as fp:
+        tomli_w.dump(config, fp)
