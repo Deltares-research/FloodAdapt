@@ -1,6 +1,0 @@
-name = "SLR_2ft"
-long_name = "sea level rise 2ft"
-sea_level_rise = 2
-sea_level_rise_vertical_units = "feet"
-subsidence = 0
-subsidence_vertical_units = "feet"

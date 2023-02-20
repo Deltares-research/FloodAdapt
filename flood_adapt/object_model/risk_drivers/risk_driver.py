@@ -6,7 +6,7 @@ from typing import Union
 class RiskDriver:
     def __init__(self, input_data: Union[str, Path, dict, None] = None) -> None:
         self.name = None
-        self.toml_file = None
+        self.config_file = None
         self.type = None
         self.input_data = input_data
     
