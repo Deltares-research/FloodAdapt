@@ -4,27 +4,17 @@ from flood_adapt.object_model.risk_drivers.risk_driver import RiskDriver
 class SLR(RiskDriver):
     def __init__(self) -> None:
         super().__init__()
-
-        self.value = 0
-        self.type = "hazard"
-
-                sea_level_rise = 2
-        sea_level_rise_vertical_units = "feet"
-        subsidence = 0
-        subsidence_vertical_units = "feet"
-        rainfall_increase = 20
-        storm_frequency_increase = 20
-        economic_growth = 20
-        population_growth = 0
-        population_growth_new = 20
-        population_growth_existing = 20
-        new_development_elevation = 1
-        new_development_elevation_vertical_units = "feet"
-        new_development_elevation_reference = "floodmap"
-        new_development_shape_file = "pop_growth_new_20.shp"
+        self.set_default()
     
-    def set_default(self, config_path):
-        if config_path.exists():
-            read_config(self.config_path)
-        self.value = self.config["value"]
-        
+    def set_default(self) -> None:
+        self.slr_value = 0
+        self.slr_unit = "m"
+        self.subsidence_value = 0
+        self.subsidence_unit = "m"
+        self.type = "hazard"
+    
+    def load(self, config: dict) -> None:
+        self.slr_value = config["sea_level_rise"]
+        self.slr_unit = config["sea_level_rise_vertical_units"]
+        self.subsidence_value = config["subsidence"]
+        self.subsidence_unit = config["subsidence_vertical_units"]

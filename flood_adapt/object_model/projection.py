@@ -1,5 +1,8 @@
-from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.risk_drivers.risk_driver import RiskDriver
+from flood_adapt.object_model.io.config_io import read_config
+from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
+from flood_adapt.object_model.risk_drivers.slr import SLR
+# from flood_adapt.object_model.risk_drivers.slr import SLR
+
 from pathlib import Path
 
 
@@ -12,26 +15,8 @@ class Projection:
     def set_default(self):
         self.name = ""
         self.config_file = None
-        self.risk_drivers = []
+        self.risk_driver = None
         self.mandatory_keys = ["name", "long_name"]
-
-    def validate_existence_config_file(self):
-        if self.config_file:
-            if Path(self.config_file).is_file():
-                return True
-        
-        raise FileNotFoundError("Cannot find projection configuration file {}.".format(self.config_file))
-
-    def validate_content_config_file(self, config):
-        not_found_in_config = []
-        for mandatory_key in self.mandatory_keys:
-            if mandatory_key not in config.keys():
-                not_found_in_config.append(mandatory_key)
-        
-        if not_found_in_config:
-            raise ValueError("Cannot find mandatory key(s) '{}' in configuration file {}.".format(', '.join(not_found_in_config), self.config_file))
-        else:
-            return True
 
     def set_name(self, value):
         self.name = value
@@ -40,13 +25,14 @@ class Projection:
         self.long_name = value
     
     def set_risk_drivers(self, config):
-        self.risk_drivers = RiskDriver()
+        self.slr = SLR()
+        self.slr.load(config)
     
     def load(self):
-        if self.validate_existence_config_file():
-            config = read_config(self.inputfile)
+        if validate_existence_config_file(self.config_file):
+            config = read_config(self.config_file)
 
-        if self.validate_content_config_file(config):
+        if validate_content_config_file(config, self.config_file, self.mandatory_keys):
             self.set_name(config["name"])
             self.set_name(config["long_name"])
             self.set_risk_drivers(config)
