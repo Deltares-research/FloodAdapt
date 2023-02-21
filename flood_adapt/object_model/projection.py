@@ -1,9 +1,11 @@
-from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.risk_drivers.risk_driver import RiskDriver
-from pathlib import Path
+from flood_adapt.object_model.io.config_io import read_config
+from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
+
+from flood_adapt.object_model.risk_drivers.risk_driver_factory import RiskDriverFactory
 
 
 class Projection:
+    """The Projection class containing various risk drivers."""
     def __init__(self, config_file: str = None) -> None:
         self.set_default()
         if config_file:
@@ -12,26 +14,16 @@ class Projection:
     def set_default(self):
         self.name = ""
         self.config_file = None
-        self.risk_drivers = []
+        self.risk_drivers = None
         self.mandatory_keys = ["name", "long_name"]
 
-    def validate_existence_config_file(self):
-        if self.config_file:
-            if Path(self.config_file).is_file():
-                return True
-        
-        raise FileNotFoundError("Cannot find projection configuration file {}.".format(self.config_file))
-
-    def validate_content_config_file(self, config):
-        not_found_in_config = []
-        for mandatory_key in self.mandatory_keys:
-            if mandatory_key not in config.keys():
-                not_found_in_config.append(mandatory_key)
-        
-        if not_found_in_config:
-            raise ValueError("Cannot find mandatory key(s) '{}' in configuration file {}.".format(', '.join(not_found_in_config), self.config_file))
-        else:
-            return True
+        # Set the default values for all risk drivers
+        self.slr = RiskDriverFactory.get_risk_drivers('slr')
+        self.population_growth_existing = RiskDriverFactory.get_risk_drivers('population_growth_existing')
+        self.population_growth_new = RiskDriverFactory.get_risk_drivers('population_growth_new')
+        self.economic_growth = RiskDriverFactory.get_risk_drivers('economic_growth')
+        self.precipitation_intensity = RiskDriverFactory.get_risk_drivers('precipitation_intensity')
+        self.storminess = RiskDriverFactory.get_risk_drivers('storminess')
 
     def set_name(self, value):
         self.name = value
@@ -40,15 +32,34 @@ class Projection:
         self.long_name = value
     
     def set_risk_drivers(self, config):
-        self.risk_drivers = RiskDriver()
-    
-    def load(self):
-        if self.validate_existence_config_file():
-            config = read_config(self.inputfile)
+        # Load all risk drivers
+        if "sea_level_rise" in config.keys():
+            self.slr.load(config)
 
-        if self.validate_content_config_file(config):
+        if "population_growth_existing" in config.keys():
+            self.population_growth_existing.load(config)
+        
+        if "population_growth_new" in config.keys():
+            self.population_growth_new.load(config)
+
+        if "economic_growth" in config.keys():
+            self.economic_growth.load(config)
+
+        if "rainfall_increase" in config.keys():
+            self.precipitation_intensity.load(config)
+
+        if "storm_frequency_increase" in config.keys():
+            self.storminess.load(config)
+
+    def load(self):
+        # Validate the existence of the configuration file
+        if validate_existence_config_file(self.config_file):
+            config = read_config(self.config_file)
+
+        # Validate that the mandatory keys are in the configuration file
+        if validate_content_config_file(config, self.config_file, self.mandatory_keys):
             self.set_name(config["name"])
-            self.set_name(config["long_name"])
+            self.set_long_name(config["long_name"])
             self.set_risk_drivers(config)
     
     # def write(self):
