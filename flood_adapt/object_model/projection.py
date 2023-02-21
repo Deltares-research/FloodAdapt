@@ -1,7 +1,7 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
-from flood_adapt.object_model.risk_drivers.slr import SLR
-# from flood_adapt.object_model.risk_drivers.slr import SLR
+
+from flood_adapt.object_model.risk_drivers.risk_driver_factory import RiskDriverFactory
 
 from pathlib import Path
 
@@ -25,13 +25,19 @@ class Projection:
         self.long_name = value
     
     def set_risk_drivers(self, config):
+        # Load all risk drivers
         self.slr = SLR()
         self.slr.load(config)
+
+        self.
+        
     
     def load(self):
+        # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)
 
+        # Validate that the mandatory keys are in the configuration file
         if validate_content_config_file(config, self.config_file, self.mandatory_keys):
             self.set_name(config["name"])
             self.set_name(config["long_name"])

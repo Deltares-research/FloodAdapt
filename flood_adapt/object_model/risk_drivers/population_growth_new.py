@@ -1,9 +1,6 @@
-from flood_adapt.object_model.risk_drivers.risk_driver import RiskDriver
 
-
-class PopulationGrowthNew(RiskDriver):
+class PopulationGrowthNew:
     def __init__(self) -> None:
-        super().__init__()
         self.set_default()
 
         # sea_level_rise = 2
