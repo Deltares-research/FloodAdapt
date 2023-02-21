@@ -34,22 +34,22 @@ class Projection:
     def set_risk_drivers(self, config):
         # Load all risk drivers
         if "sea_level_rise" in config.keys():
-            self.slr.load(config)
+            self.slr.load(config, self.config_file)
 
         if "population_growth_existing" in config.keys():
-            self.population_growth_existing.load(config)
+            self.population_growth_existing.load(config, self.config_file)
         
         if "population_growth_new" in config.keys():
-            self.population_growth_new.load(config)
+            self.population_growth_new.load(config, self.config_file)
 
         if "economic_growth" in config.keys():
-            self.economic_growth.load(config)
+            self.economic_growth.load(config, self.config_file)
 
         if "rainfall_increase" in config.keys():
-            self.precipitation_intensity.load(config)
+            self.precipitation_intensity.load(config, self.config_file)
 
         if "storm_frequency_increase" in config.keys():
-            self.storminess.load(config)
+            self.storminess.load(config, self.config_file)
 
     def load(self):
         # Validate the existence of the configuration file
