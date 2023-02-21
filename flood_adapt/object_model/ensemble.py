@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from object_model.event import Event
 from flood_adapt.object_model.io.config_io import read_config
 
