@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "raise_property_import_polygon_UTM",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::32617" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 599017.81552457716316, 3626624.16681637102738 ], [ 599675.056324172415771, 3626747.201111368369311 ], [ 599562.77232776558958, 3626277.56893195817247 ], [ 599017.81552457716316, 3626624.16681637102738 ] ] ] ] } }
+]
+}

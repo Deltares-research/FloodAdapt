@@ -1,0 +1,10 @@
+name = "raise_property_aggregation_area"
+long_name = "raise_property_aggregation_area"
+type = "impact"
+elevation.value = 1
+elevation.units = "feet"
+elevation.type = "floodmap"
+selection_type = "aggregation_area"
+aggregation_area = "Rosemont"
+property_type = "RES"
+datum = "NAVD 88"

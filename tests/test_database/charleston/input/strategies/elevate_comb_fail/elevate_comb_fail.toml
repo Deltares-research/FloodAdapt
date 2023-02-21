@@ -1,0 +1,3 @@
+name = "elevate_comb_fail"
+long_name = "elevate_comb_fail"
+measures = ["raise_property_aggregation_area", "raise_property_all_properties"]
