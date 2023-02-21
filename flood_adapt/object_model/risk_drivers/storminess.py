@@ -4,8 +4,8 @@ class Storminess:
         self.set_default()
 
     def set_default(self) -> None:
-        self.storm_frequency_increase = 0
+        self.value = 0
         self.type = "hazard"
     
     def load(self, config: dict) -> None:
-        self.storm_frequency_increase = config["storm_frequency_increase"]
+        self.value = config["storm_frequency_increase"]
