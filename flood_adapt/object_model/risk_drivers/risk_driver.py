@@ -1,15 +1,19 @@
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from pathlib import Path
-from typing import Union
 
 
 class RiskDriver:
-    def __init__(self, input_data: Union[str, Path, dict, None] = None) -> None:
+    def __init__(self, config: dict) -> None:
         self.name = None
-        self.config_file = None
+        self.config = None
         self.type = None
-        self.input_data = input_data
     
+    def set_default(self):
+        
+
+    def set_drivers(self):
+        
+
     def read(self):
         if self.input_data:
             if isinstance(self.input_data, Path | str):
