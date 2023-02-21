@@ -1,7 +1,7 @@
 from flood_adapt.object_model.risk_drivers.risk_driver import RiskDriver
 
 
-class GrowthNew(RiskDriver):
+class PopulationGrowthNew(RiskDriver):
     def __init__(self) -> None:
         super().__init__()
         self.set_default()
@@ -21,6 +21,9 @@ class GrowthNew(RiskDriver):
         # new_development_elevation_reference = "floodmap"
         # new_development_shape_file = "pop_growth_new_20.shp"
     
-    def set_default(self):
-        self.value = 0
-        self.type = "hazard"
+    def set_default(self) -> None:
+        self.population_growth_existing = 0
+        self.type = "impact"
+    
+    def load(self, config: dict) -> None:
+        self.population_growth_existing = config["population_growth_existing"]
