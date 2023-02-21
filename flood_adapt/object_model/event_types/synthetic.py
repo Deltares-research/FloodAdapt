@@ -9,6 +9,8 @@ class Synthetic(Event):
         self.timing = 'Idealized'
         self.time_before_T0 = 0.
         self.time_after_T0 = 0.
+        self.water_level_offset.value = 0.
+        self.water_level_offset.units = "meter"
         self.mandatory_keys = ["name", "long_name"]
 
     def validate_existence_config_file(self):
@@ -35,45 +37,60 @@ class Synthetic(Event):
     def set_long_name(self, value: str) -> None:
         self.long_name = value
 
-    def set_tide(self, values: dict) -> None:
-        self.tide_source = values.tide_source
-        self.tide_amplitude = values.tide_amplitude
+    def set_water_level_offset(self, value: dict) -> None:
+        self.water_level_offset.value = value.value
+        self.water_level_offset.units = value.units
 
-    def set_surge(self, values: dict) -> None:
-        self.surge_source = values.surge_source
-        if self.surge_source == 'shape':
-            self.surge_peak = values.surge_peak
-            self.surge_peak_time = values.surge_peak_time
-            self.surge_duration = values.surge_duration
+    def set_tide(self, tide: dict) -> None:
+        self.tide.source = tide.source
+        self.tide.harmonic_amplitude.value = tide.harmonic_amplitude.value
+        self.tide.harmonic_amplitude.units = tide.harmonic_amplitude.units
 
-    def set_wind(self, values: dict) -> None:
-        self.wind_source = values.wind_source
+    def set_surge(self, surge: dict) -> None:
+        self.surge.source = surge.source
+        self.surge.panel_text = surge.panel_text
+        if self.surge.source == 'shape':
+            self.surge.shape_type = surge.shape_type
+            if self.surge.shape_type == 'gaussian':
+                self.surge.shape_peak.value = surge.shape_peak.value
+                self.surge.shape_peak.units = surge.shape_peak.units
+                self.surge.shape_duration = surge.shape_duration
+                self.surge.shape_peak_time = surge.surge.shape_peak_time
+
+    def set_wind(self, wind: dict) -> None:
+        self.wind.source = wind.source
         if self.wind_source == 'constant':
-            self.wind_speed = values.wind_speed
-            self.wind_dir = values.wind_dir
+            self.wind.constant_speed.value = wind.constant_speed.value
+            self.wind.constant_speed.units = wind.constant_speed.units
+            self.wind.constant_direction.value = wind.constant_direction.value
+            self.wind.constant_direction.units = wind.constant_direction.units
 
-    def set_rainfall(self, values: dict) -> None:
-        self.rainfall_source = values.rainfall_source
+    def set_rainfall(self, rainfall: dict) -> None:
+        self.rainfall_source = rainfall.rainfall_source
         if self.rainfall_source == 'constant':
-            self.rainfall_intensity = values.rainfall_intensity
+            self.rainfall_intensity.value = rainfall.rainfall_intensity.value
+            self.rainfall_intensity.units = rainfall.rainfall_intensity.units
         if self.rainfall_source == 'shape':
-            self.rainfall_shape = values.rainfall_shape
+            self.rainfall_shape = rainfall.rainfall_shape
             if self.rainfall_shape == 'gaussian':
-                self.rainfall_cumulative = values.rainfall_cumulative
-                self.rainfall_peak_time = values.rainfall_peak_time
-                self.rainfall_duration = values.rainfall_duration
+                self.rainfall_cumulative.value = rainfall.rainfall_cumulative.value
+                self.rainfall_cumulative.units = rainfall.rainfall_cumulative.units
+                self.rainfall_peak_time = rainfall.rainfall_peak_time
+                self.rainfall_duration = rainfall.rainfall_duration
 
-    def set_river(self, values: dict) -> None: # // TODO Deal with Multiple rivers or no rivers
-        self.river_source = values.river_source
-        self.river_name = None
-        if self.river_source == 'constant':
-            self.river_discharge = values.river_discharge
+    def set_river(self, river: dict) -> None: # // TODO Deal with Multiple rivers or no rivers
+        self.river.source = river.source
+        if self.river.source == 'constant':
+            self.river.constant_discharge.value = river.constant_discharge.value
+            self.river.constant_discharge.units = river.constant_discharge.units
         if self.river_source == 'shape':
-            self.river_source_shape = values.river_source_shape
+            self.river.source_shape = river.source_shape
             if self.river_source_shape == 'gaussian':
-                self.river_base_discharge = values.river_base_discharge
-                self.river_peak_discharge = values.river_peak_discharge
-                self.river_discharge_duration = values.river_discharge_duration
+                self.river.base_discharge.value = river.base_discharge.value
+                self.river.base_discharge.units = river.base_discharge.units
+                self.river.peak_discharge.value = river.peak_discharge.value
+                self.river.peak_discharge.units = river.peak_discharge.units
+                self.river.discharge_duration = river.discharge_duration
     
     def load(self):
         if self.validate_existence_config_file():
@@ -82,6 +99,7 @@ class Synthetic(Event):
         if self.validate_content_config_file(config):
             self.set_name(config["name"])
             self.set_name(config["long_name"])
+            self.set_water_level_offset(config["water_level_offset"])
             self.set_tide(config["tide"])
             self.set_surge(config["surge"])
             self.set_wind(config["wind"])

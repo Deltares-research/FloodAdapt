@@ -11,6 +11,7 @@ class Event:
     def set_default(self):
         self.name = ""
         self.long_name = ""
+        self.template = ""
         self.timing = None
         self.tide_source = None
         self.surge_source = None
