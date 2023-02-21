@@ -13,7 +13,7 @@ class SiteConfig():
 
         #Keys of dictionaries
         mandatory_attributes = ["name","long_name","lat","lon","sfincs","slr","risk","gui","dem","fiat"]
-        non_mandatory_attributes = ["river","obs_station","tim"]
+        non_mandatory_attributes = ["river","obs_station"]
         mandatory_sfincs = ["csname","cstype","version","offshore_model","overland_model","datum_offshore_model","datum_overland_model","diff_datum_offshore_overland","tidal_components","ambient_air_pressure","floodmap_no_data_value","floodmap_units"]
         mandatory_slr = ["vertical_offset","relative_to_year"]
         mandatory_risk = ["return_periods","flooding_threshold"]
@@ -42,10 +42,3 @@ class SiteConfig():
                 for key in config:
                     if attr == key:
                         setattr(self,attr,config[attr])
-
-
-#Test if class works
-path = r'c:\Github\flood_adapt\tests\test_database\charleston\static\site\charleston_vs2.toml'
-data = SiteConfig(config_path=path)
-
-print('finished')
