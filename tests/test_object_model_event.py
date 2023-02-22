@@ -2,6 +2,25 @@ from pathlib import Path
 
 test_database = Path().absolute() / 'tests' / 'test_database'
 
+def test_create_new_event():
+    from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+    from flood_adapt.object_model.hazard.event.event import Event
+
+    test_event = Event()
+
+    # assert that attributes have been set to correct default value data types
+    assert test_event
+    assert isinstance(test_event.name, str)
+    assert isinstance(test_event.long_name, str)
+    assert isinstance(test_event.template, str)
+    assert isinstance(test_event.timing, str)
+    assert isinstance(test_event.water_level_offset, dict)
+    assert isinstance(test_event.tide, dict)
+    assert isinstance(test_event.surge, dict)
+    assert isinstance(test_event.wind, dict)
+    assert isinstance(test_event.rainfall, dict)
+    assert isinstance(test_event.river, dict)
+
 def test_read_config_synthetic():
     from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
@@ -59,9 +78,6 @@ def test_read_config_synthetic():
 
 def test_create_new_synthetic():
     from flood_adapt.object_model.hazard.event.synthetic import Synthetic
-
-    test_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
-    assert test_toml.is_file()
 
     test_synthetic = Synthetic()
 
