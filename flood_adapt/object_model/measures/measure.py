@@ -56,8 +56,6 @@ class Measure:
         elif self.selection_type == "polygon":
             polygon = gpd.read_file(Path(self.config_file).parent / self.polygon_file)
             ids = gpd.sjoin(buildings, polygon)['Object ID'].values
-            buildings.to_file('buildings.shp')
-            polygon.to_file('polygon.shp')
 
         return list(ids)
 
