@@ -5,7 +5,7 @@ from flood_adapt.object_model.site import SiteConfig
 from flood_adapt.object_model.io.config_io import read_config, write_config
 
 
-class DirectImpact:
+class DirectImpacts:
     """The Direct Impact class containing all information on a single direct impact scenario."""
     def __init__(self, config_file_path: str):
         self.name = ""

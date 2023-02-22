@@ -2,10 +2,10 @@ from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.io.fiat_data import FiatModel
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
 from pathlib import Path
-import pandas as pd
 import geopandas as gpd
-class Measure:
-    """ Measure class that holds all the information for a specific measure type
+
+class ImpactMeasure:
+    """ ImpactMeasure class that holds all the information for a specific measure type that affects the impact model
     """
     def __init__(self, config_file: str = None, database_path: str = None) -> None:
         self.set_default()
@@ -16,7 +16,7 @@ class Measure:
                 self.database_path = str(Path(self.config_file).parents[3])
 
     def set_default(self):
-        """ Sets the default values of the Measure class attributes
+        """ Sets the default values of the ImpactMeasure class attributes
         """
         self.name = ""  # Name of the measure
         self.long_name = ""  # Long name of the measure

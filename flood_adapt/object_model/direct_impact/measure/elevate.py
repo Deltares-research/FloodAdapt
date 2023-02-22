@@ -1,8 +1,8 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
-from flood_adapt.object_model.measures.measure import Measure
+from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 
-class Elevate(Measure):
+class Elevate(ImpactMeasure):
     """ Subclass of Measure describing the measure of elevating buildings by a specific height
     """
     def __init__(self, config_file: str = None) -> None:
