@@ -1,4 +1,5 @@
 from flood_adapt.object_model.validate.config import validate_content_config_file
+from typing import Union
 
 
 class PopulationGrowthExisting:
@@ -7,8 +8,11 @@ class PopulationGrowthExisting:
 
     def set_default(self) -> None:
         self.effect_on = "impact"
-        self.value = 0
+        self.population_growth_existing = 0
+    
+    def set_population_growth_existing(self, value: Union[int, float]) -> None:
+        self.population_growth_existing = value
     
     def load(self, config: dict, config_path: str) -> None:
         validate_content_config_file(config, config_path, ["population_growth_existing"])
-        self.value = config["population_growth_existing"]
+        self.set_population_growth_existing(config["population_growth_existing"])

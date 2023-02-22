@@ -18,11 +18,11 @@ def test_all_projections():
     assert test_projections.slr.slr["units"] == "feet"
     assert test_projections.slr.subsidence["value"] == 0
     assert test_projections.slr.subsidence["units"] == "feet"
-    assert test_projections.population_growth_existing.value == 20
-    assert test_projections.population_growth_new.value == 20
-    assert test_projections.economic_growth.value == 20
-    assert test_projections.storminess.value == 20
-    assert test_projections.precipitation_intensity.value == 20
+    assert test_projections.population_growth_existing.population_growth_existing == 20
+    assert test_projections.population_growth_new.population_growth_new == 20
+    assert test_projections.economic_growth.economic_growth == 20
+    assert test_projections.storminess.storm_frequency_increase == 20
+    assert test_projections.precipitation_intensity.rainfall_increase == 20
 
 
 def test_projection_only_slr():
@@ -35,16 +35,16 @@ def test_projection_only_slr():
     test_projections.load()
 
     # Assert that all unconfigured risk drivers are set to the default values
-    assert test_projections.population_growth_existing.value == 0
-    assert test_projections.population_growth_new.value == 0
-    assert test_projections.economic_growth.value == 0
-    assert test_projections.storminess.value == 0
-    assert test_projections.precipitation_intensity.value == 0
+    assert test_projections.population_growth_existing.population_growth_existing == 0
+    assert test_projections.population_growth_new.population_growth_new == 0
+    assert test_projections.economic_growth.economic_growth == 0
+    assert test_projections.storminess.storm_frequency_increase == 0
+    assert test_projections.precipitation_intensity.rainfall_increase == 0
 
     # Assert that the configured risk drivers are set to the values from the toml file
     assert test_projections.slr.slr["value"] == 2
     assert test_projections.slr.slr["units"] == "feet"
-    assert test_projections.slr.subsidence["value"] == 0
+    assert test_projections.slr.subsidence["value"] == 1
     assert test_projections.slr.subsidence["units"] == "feet"
 
 
@@ -62,13 +62,13 @@ def test_projection_only_population_growth_new():
     assert test_projections.slr.slr["units"] == "m"
     assert test_projections.slr.subsidence["value"] == 0
     assert test_projections.slr.subsidence["units"] == "m"
-    assert test_projections.population_growth_existing.value == 0
-    assert test_projections.economic_growth.value == 0
-    assert test_projections.storminess.value == 0
-    assert test_projections.precipitation_intensity.value == 0
+    assert test_projections.population_growth_existing.population_growth_existing == 0
+    assert test_projections.economic_growth.economic_growth == 0
+    assert test_projections.storminess.storm_frequency_increase == 0
+    assert test_projections.precipitation_intensity.rainfall_increase == 0
 
     # Assert that the configured risk drivers are set to the values from the toml file
-    assert test_projections.population_growth_new.value == 20
+    assert test_projections.population_growth_new.population_growth_new == 20
     assert test_projections.population_growth_new.new_development_elevation["value"] == 1
     assert test_projections.population_growth_new.new_development_elevation["units"] == "feet"
     assert test_projections.population_growth_new.new_development_elevation["reference"] == "floodmap"
