@@ -14,7 +14,7 @@ class Projection:
     def set_default(self) -> None:
         self.name = ""
         self.long_name = ""
-        self.config_file = None
+        self.config_file = ""
         self.mandatory_keys = ["name", "long_name"]
 
         # Set the default values for all risk drivers
