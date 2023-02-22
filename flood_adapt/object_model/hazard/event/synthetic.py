@@ -53,9 +53,8 @@ class Synthetic(Event):
         self.duration_after_t0 = value
 
     def set_water_level_offset(self, water_level_offset: dict) -> None:
-        self.water_level_offset["value"] = water_level_offset["value"]
-        self.water_level_offset["units"] = water_level_offset["units"]
-
+        self.water_level_offset = water_level_offset
+        
     def set_tide(self, tide: dict) -> None:
         self.tide["source"] = tide["source"]
         self.tide["harmonic_amplitude"] = tide["harmonic_amplitude"]
