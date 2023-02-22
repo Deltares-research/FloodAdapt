@@ -52,57 +52,51 @@ class Synthetic(Event):
     def set_duration_after_t0(self, value: str) -> None:
         self.duration_after_t0 = value
 
-    def set_water_level_offset(self, value: dict) -> None:
-        self.water_level_offset = {'value': value["value"], 'units': value["units"]}
+    def set_water_level_offset(self, water_level_offset: dict) -> None:
+        self.water_level_offset["value"] = water_level_offset["value"]
+        self.water_level_offset["units"] = water_level_offset["units"]
 
     def set_tide(self, tide: dict) -> None:
-        self.tide = {"source": tide["source"]}
-        self.tide["harmonic_amplitude"] = {"value": tide["harmonic_amplitude"]["value"], "units": tide["harmonic_amplitude"]["units"]}
+        self.tide["source"] = tide["source"]
+        self.tide["harmonic_amplitude"] = tide["harmonic_amplitude"]
 
     def set_surge(self, surge: dict) -> None:
-        self.surge = {'source': surge["source"], 'panel_text': surge["panel_text"]}
-        if self.surge['source'] == 'shape':
-            self.surge['shape'] = surge["shape"]
-            if self.surge.shape == 'gaussian':
-                self.surge.shape_peak.value = surge.shape_peak.value
-                self.surge.shape_peak.units = surge.shape_peak.units
-                self.surge.shape_duration = surge.shape_duration
-                self.surge.shape_peak_time = surge.surge.shape_peak_time
+        self.surge["source"] = surge["source"]
+        self.surge["panel_text"] = surge["panel_text"]
+        if self.surge["source"] == "shape":
+            self.surge["shape_type"] = surge["shape_type"]
+            if self.surge["shape_type"] == "gaussian":
+                self.surge["shape_peak"] = surge["shape_peak"]
+                self.surge["shape_duration"] = surge["shape_duration"]
+                self.surge["shape_peak_time"] = surge["shape_peak_time"]
 
     def set_wind(self, wind: dict) -> None:
-        self.wind.source = wind.source
-        if self.wind.source == 'constant':
-            self.wind.constant_speed.value = wind.constant_speed.value
-            self.wind.constant_speed.units = wind.constant_speed.units
-            self.wind.constant_direction.value = wind.constant_direction.value
-            self.wind.constant_direction.units = wind.constant_direction.units
+        self.wind["source"] = wind["source"]
+        if self.wind["source"] == "constant":
+            self.wind["constant_speed"] = wind["constant_speed"]
+            self.wind["constant_direction"] = wind["constant_direction"]
 
     def set_rainfall(self, rainfall: dict) -> None:
-        self.rainfall.source = rainfall.rainfall_source
-        if self.rainfall.source == 'constant':
-            self.rainfall.intensity.value = rainfall.intensity.value
-            self.rainfall.intensity.units = rainfall.intensity.units
-        if self.rainfall.source == 'shape':
-            self.rainfall.shape = rainfall.rainfall.shape
-            if self.rainfall.shape == 'gaussian':
-                self.rainfall.cumulative.value = rainfall.cumulative.value
-                self.rainfall.cumulative.units = rainfall.cumulative.units
-                self.rainfall.peak_time = rainfall.peak_time
-                self.rainfall.duration = rainfall.duration
+        self.rainfall["source"] = rainfall["source"]
+        if self.rainfall["source"] == "constant":
+            self.rainfall["intensity"] = rainfall["intensity"]
+        if self.rainfall["source"] == "shape":
+            self.rainfall["shape_type"] = rainfall["shape_type"]
+            if self.rainfall["shape_type"] == "gaussian":
+                self.rainfall["cumulative"] = rainfall["cumulative"]
+                self.rainfall["peak_time"] = rainfall["peak_time"]
+                self.rainfall["duration"] = rainfall["duration"]
 
     def set_river(self, river: dict) -> None: # // TODO Deal with Multiple rivers or no rivers
-        self.river.source = river.source
-        if self.river.source == 'constant':
-            self.river.constant_discharge.value = river.constant_discharge.value
-            self.river.constant_discharge.units = river.constant_discharge.units
-        if self.river_source == 'shape':
-            self.river.source_shape = river.source_shape
-            if self.river_source_shape == 'gaussian':
-                self.river.base_discharge.value = river.base_discharge.value
-                self.river.base_discharge.units = river.base_discharge.units
-                self.river.peak_discharge.value = river.peak_discharge.value
-                self.river.peak_discharge.units = river.peak_discharge.units
-                self.river.discharge_duration = river.discharge_duration
+        self.river["source"] = river["source"]
+        if self.river["source"] == "constant":
+            self.river["constant_discharge"] = river["constant_discharge"]
+        if self.river["source"] == "shape":
+            self.river["shape_type"] = river["shape_type"]
+            if self.river["shape_type"] == "gaussian":
+                self.river["base_discharge"] = river["base_discharge"]
+                self.river["peak_discharge"] = river["peak_discharge"]
+                self.river["discharge_duration"] = river["discharge_duration"]
     
     def load(self):
         if self.validate_existence_config_file():
