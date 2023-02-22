@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 # from flood_adapt.object_model.hazard.hazard_strategy.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
 
-class Event:
+class Hazard:
     def __init__(self, database_path: str = None) -> None:
         self.set_default()
         if not self.database_path:
@@ -37,23 +37,6 @@ class Event:
         projection_path = str(Path(self.database_path, "input", "projections", projection, "{}.toml".format(projection)))
         self.physical_projection = PhysicalProjection.load(projection_path)
 
-    def event_parser(template: str) -> Event:
-        """ Simple parser to get the respective measure subclass from a measure type string given in the config file
-        Args:
-            type (str): name of measure type
-        Returns:
-            Measure: Measure subclass
-        """
-        if template == "synthetic":
-            return Synthetic  
-        # elif template == "Historical - hurricane":
-        #     return Hurricane  
-        # elif template == "Historical - forced by offshore wind and tide":
-        #     return HistoricalOffshore  
-        # elif template == "Historical - forced by observed nearshore water levels":
-        #     return HistoricalNearshore  
-
-
     def set_event(self, event):
         """ Sets the actual Measure class list using the list of measure names
         Args:
@@ -61,9 +44,9 @@ class Event:
         """
         event_path = str(Path(self.database_path, "input", "events", event, "{}.toml".format(event)))
         # parse event config file to get type of event
-        type = read_config(event_path)["template"]
+        template = read_config(event_path)["template"]
         # use type of measure to get the associated measure subclass
-        self.event = event_parser(type).load(event_path)
+        self.event = event_parser(template).load(event_path)
 
     # def set_hazard_strategy(self, strategy):
     #     strategy_path = str(Path(self.database_path, "input", "strategies", strategy, "{}.toml".format(strategy)))
@@ -85,3 +68,20 @@ class Event:
     
     # def write(self):
     #     write_config(self.config_file)
+
+
+def event_parser(template: str) -> Event:
+    """ Simple parser to get the respective measure subclass from a measure type string given in the config file
+    Args:
+        type (str): name of measure type
+    Returns:
+        Measure: Measure subclass
+    """
+    if template == "synthetic":
+        return Synthetic  
+    # elif template == "Historical - hurricane":
+    #     return Hurricane  
+    # elif template == "Historical - forced by offshore wind and tide":
+    #     return HistoricalOffshore  
+    # elif template == "Historical - forced by observed nearshore water levels":
+    #     return HistoricalNearshore  
