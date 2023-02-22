@@ -7,7 +7,6 @@ class PrecipitationIntensity:
         self.set_default()
 
     def set_default(self) -> None:
-        self.effect_on = "hazard"
         self.rainfall_increase = 0
     
     def set_rainfall_increase(self, value: Union[int, float]) -> None:

@@ -7,7 +7,6 @@ class PopulationGrowthNew:
         self.set_default()
 
     def set_default(self) -> None:
-        self.effect_on = "impact"
         self.population_growth_new = 0
         self.new_development_elevation = {"value": 0, "units": "m", "reference": "datum"}
         self.new_development_shapefile = ""
