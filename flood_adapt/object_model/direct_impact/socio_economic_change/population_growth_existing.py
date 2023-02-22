@@ -7,7 +7,6 @@ class PopulationGrowthExisting:
         self.set_default()
 
     def set_default(self) -> None:
-        self.effect_on = "impact"
         self.population_growth_existing = 0
     
     def set_population_growth_existing(self, value: Union[int, float]) -> None:

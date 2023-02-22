@@ -7,7 +7,6 @@ class Storminess:
         self.set_default()
 
     def set_default(self) -> None:
-        self.effect_on = "hazard"
         self.storm_frequency_increase = 0
     
     def set_storm_frequency_increase(self, value: Union[float, int]):

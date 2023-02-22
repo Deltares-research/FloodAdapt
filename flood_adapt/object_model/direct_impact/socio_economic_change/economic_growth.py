@@ -7,7 +7,6 @@ class EconomicGrowth:
         self.set_default()
 
     def set_default(self) -> None:
-        self.effect_on = "impact"
         self.economic_growth = 0
     
     def set_economic_growth(self, value: Union[int, float]) -> None:

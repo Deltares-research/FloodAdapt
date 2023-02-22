@@ -7,7 +7,6 @@ class SLR:
         self.set_default()
     
     def set_default(self) -> None:
-        self.effect_on = "hazard"
         self.slr = {"value": 0, "units": "m"}
         self.subsidence =  {"value": 0, "units": "m"}
 
