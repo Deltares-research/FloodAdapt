@@ -3,21 +3,29 @@ from pathlib import Path
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.hazard.physical_projection.physical_projection import PhysicalProjection
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.hazard_strategy.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+# from flood_adapt.object_model.hazard.event.hurricane import Hurricane
+# from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
+# from flood_adapt.object_model.hazard.event.historical_nearshore import HistoricalNearshore
+# from flood_adapt.object_model.hazard.hazard_strategy.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
 
 class Event:
-    def __init__(self) -> None:
+    def __init__(self, database_path: str = None) -> None:
         self.set_default()
+        if not self.database_path:
+            self.database_path = str(Path(self.config_file).parents[3])
 
     def set_default(self):
+        """ Sets the default values of the Hazard class attributes
+        """
         self.name = ""
         self.long_name = ""
         self.mode = ""
         self.event = [Event()]
         self.physical_projection = PhysicalProjection()
         # self.hazard_strategy = HazardStrategy()
-        self.mandatory_keys = ["name", "long_name", "mode", "event", "physical_projection"]
+        self.mandatory_keys = ["name", "long_name", "mode", "event", "physical_projection"] #, "hazard_strategy"]
 
     def set_name(self, value):
         self.name = value
@@ -25,14 +33,41 @@ class Event:
     def set_long_name(self, value):
         self.long_name = value
 
-    def set_physical_projection(self, value):
-        self.physical_projection = PhysicalProjection.load("{}.toml".format(value))
+    def set_physical_projection(self, projection):
+        projection_path = str(Path(self.database_path, "input", "projections", projection, "{}.toml".format(projection)))
+        self.physical_projection = PhysicalProjection.load(projection_path)
 
-    def set_event(self, value):
-        self.event = Event.load("{}.toml".format(value))
+    def event_parser(template: str) -> Event:
+        """ Simple parser to get the respective measure subclass from a measure type string given in the config file
+        Args:
+            type (str): name of measure type
+        Returns:
+            Measure: Measure subclass
+        """
+        if template == "synthetic":
+            return Synthetic  
+        # elif template == "Historical - hurricane":
+        #     return Hurricane  
+        # elif template == "Historical - forced by offshore wind and tide":
+        #     return HistoricalOffshore  
+        # elif template == "Historical - forced by observed nearshore water levels":
+        #     return HistoricalNearshore  
 
-    def set_hazard_strategy(self, value):
-        self.hazard_strategy = HazardStrategy.load("{}.toml".format(value))
+
+    def set_event(self, event):
+        """ Sets the actual Measure class list using the list of measure names
+        Args:
+            measures (list): list of measures names
+        """
+        event_path = str(Path(self.database_path, "input", "events", event, "{}.toml".format(event)))
+        # parse event config file to get type of event
+        type = read_config(event_path)["template"]
+        # use type of measure to get the associated measure subclass
+        self.event = event_parser(type).load(event_path)
+
+    # def set_hazard_strategy(self, strategy):
+    #     strategy_path = str(Path(self.database_path, "input", "strategies", strategy, "{}.toml".format(strategy)))
+    #     self.hazard_strategy = HazardStrategy.load(strategy_path)
     
     def set_values(self, config_file: str = None):
         self.config_file = config_file
@@ -44,7 +79,9 @@ class Event:
             self.set_long_name(config["long_name"])
             self.set_physical_projection(config["projection"])
             self.set_event(config["event"])
-            self.set_hazard_strategy(config["strategy"])
+            # self.set_hazard_strategy(config["strategy"])
+
+    
     
     # def write(self):
     #     write_config(self.config_file)
