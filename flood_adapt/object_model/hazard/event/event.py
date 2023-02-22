@@ -21,24 +21,6 @@ class Event:
         self.config_file = None
         self.mandatory_keys = ["name", "long_name", "template", "timing", "water_level_offset", "tide", "surge", "wind", "rainfall", "river"]
 
-    def validate_existence_config_file(self):
-        if self.config_file:
-            if Path(self.config_file).is_file():
-                return True
-        
-        raise FileNotFoundError("Cannot find event configuration file {}.".format(self.config_file))
-
-    def validate_content_config_file(self, config):
-        not_found_in_config = []
-        for mandatory_key in self.mandatory_keys:
-            if mandatory_key not in config.keys():
-                not_found_in_config.append(mandatory_key)
-        
-        if not_found_in_config:
-            raise ValueError("Cannot find mandatory key(s) '{}' in configuration file {}.".format(', '.join(not_found_in_config), self.config_file))
-        else:
-            return True
-
     def set_name(self, value):
         self.name = value
     

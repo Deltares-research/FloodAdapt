@@ -15,24 +15,6 @@ class Synthetic(Event):
         self.duration_after_t0 = 0
         self.mandatory_keys = ["template", "timing","duration_before_t0","duration_after_t0"]
 
-    def validate_existence_config_file(self):
-        if self.config_file:
-            if Path(self.config_file).is_file():
-                return True
-            else:
-                raise FileNotFoundError("Cannot find synthetic event configuration file {}.".format(self.config_file))
-
-    def validate_content_config_file(self, config):
-        not_found_in_config = []
-        for mandatory_key in self.mandatory_keys:
-            if mandatory_key not in config.keys():
-                not_found_in_config.append(mandatory_key)
-        
-        if not_found_in_config:
-            raise ValueError("Cannot find mandatory key(s) '{}' in configuration file {}.".format(', '.join(not_found_in_config), self.config_file))
-        else:
-            return True
-
     def set_name(self, value: str) -> None:
         self.name = value
     
