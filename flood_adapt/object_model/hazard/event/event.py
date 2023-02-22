@@ -11,7 +11,7 @@ class Event:
         self.name = ""
         self.long_name = ""
         self.template = ""
-        self.timing = None
+        self.timing = ""
         self.water_level_offset = dict()
         self.tide = dict()
         self.surge = dict()
