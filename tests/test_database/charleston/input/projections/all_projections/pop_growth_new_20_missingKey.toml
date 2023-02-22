@@ -1,0 +1,6 @@
+name = "pop_growth_new_20"
+long_name = "pop_growth_new_20"
+population_growth_new = 20
+new_development_elevation.value = 1
+new_development_elevation.units = "feet"
+new_development_elevation.reference = "floodmap"
