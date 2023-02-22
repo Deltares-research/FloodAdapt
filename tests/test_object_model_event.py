@@ -3,7 +3,7 @@ from pathlib import Path
 test_database = Path().absolute() / 'tests' / 'test_database'
 
 def test_read_config_synthetic():
-    from flood_adapt.object_model.event_types.synthetic import Synthetic
+    from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
     test_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flood_adapt.object_model.event import Event
+from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
 
 class Synthetic(Event):
