@@ -5,4 +5,3 @@ polygon_file = "seawall.txt"
 elevation = 12
 elevation_vertical_units = "feet"
 elevation_type = "floodmap"
-datum = "NAVD 88"
