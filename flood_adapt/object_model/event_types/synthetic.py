@@ -1,27 +1,27 @@
 from pathlib import Path
 
-from object_model.event import Event
+from flood_adapt.object_model.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
 
 class Synthetic(Event):
     def __init__(self, config_file: str = None) -> None:
         super().__init__(config_file = config_file)
         self.set_default()
+        if config_file:
+            self.config_file = config_file
 
     def set_default(self):
-        self.timing = 'Idealized'
-        self.time_before_T0 = 0.
-        self.time_after_T0 = 0.
-        self.water_level_offset.value = 0.
-        self.water_level_offset.units = "meter"
-        self.mandatory_keys = ["name", "long_name"]
+        super().set_default()
+        self.duration_before_t0 = 0
+        self.duration_after_t0 = 0
+        self.mandatory_keys = ["template", "timing","duration_before_t0","duration_after_t0"]
 
     def validate_existence_config_file(self):
         if self.config_file:
             if Path(self.config_file).is_file():
                 return True
-        
-        raise FileNotFoundError("Cannot find projection configuration file {}.".format(self.config_file))
+            else:
+                raise FileNotFoundError("Cannot find synthetic event configuration file {}.".format(self.config_file))
 
     def validate_content_config_file(self, config):
         not_found_in_config = []
@@ -40,21 +40,30 @@ class Synthetic(Event):
     def set_long_name(self, value: str) -> None:
         self.long_name = value
 
+    def set_template(self, value: str) -> None:
+        self.template = value
+
+    def set_timing(self, value: str) -> None:
+        self.timing = value
+
+    def set_duration_before_t0(self, value: str) -> None:
+        self.duration_before_t0 = value
+
+    def set_duration_after_t0(self, value: str) -> None:
+        self.duration_after_t0 = value
+
     def set_water_level_offset(self, value: dict) -> None:
-        self.water_level_offset.value = value.value
-        self.water_level_offset.units = value.units
+        self.water_level_offset = {'value': value["value"], 'units': value["units"]}
 
     def set_tide(self, tide: dict) -> None:
-        self.tide.source = tide.source
-        self.tide.harmonic_amplitude.value = tide.harmonic_amplitude.value
-        self.tide.harmonic_amplitude.units = tide.harmonic_amplitude.units
+        self.tide = {"source": tide["source"]}
+        self.tide["harmonic_amplitude"] = {"value": tide["harmonic_amplitude"]["value"], "units": tide["harmonic_amplitude"]["units"]}
 
     def set_surge(self, surge: dict) -> None:
-        self.surge.source = surge.source
-        self.surge.panel_text = surge.panel_text
-        if self.surge.source == 'shape':
-            self.surge.shape_type = surge.shape_type
-            if self.surge.shape_type == 'gaussian':
+        self.surge = {'source': surge["source"], 'panel_text': surge["panel_text"]}
+        if self.surge['source'] == 'shape':
+            self.surge['shape'] = surge["shape"]
+            if self.surge.shape == 'gaussian':
                 self.surge.shape_peak.value = surge.shape_peak.value
                 self.surge.shape_peak.units = surge.shape_peak.units
                 self.surge.shape_duration = surge.shape_duration
@@ -62,24 +71,24 @@ class Synthetic(Event):
 
     def set_wind(self, wind: dict) -> None:
         self.wind.source = wind.source
-        if self.wind_source == 'constant':
+        if self.wind.source == 'constant':
             self.wind.constant_speed.value = wind.constant_speed.value
             self.wind.constant_speed.units = wind.constant_speed.units
             self.wind.constant_direction.value = wind.constant_direction.value
             self.wind.constant_direction.units = wind.constant_direction.units
 
     def set_rainfall(self, rainfall: dict) -> None:
-        self.rainfall_source = rainfall.rainfall_source
-        if self.rainfall_source == 'constant':
-            self.rainfall_intensity.value = rainfall.rainfall_intensity.value
-            self.rainfall_intensity.units = rainfall.rainfall_intensity.units
-        if self.rainfall_source == 'shape':
-            self.rainfall_shape = rainfall.rainfall_shape
-            if self.rainfall_shape == 'gaussian':
-                self.rainfall_cumulative.value = rainfall.rainfall_cumulative.value
-                self.rainfall_cumulative.units = rainfall.rainfall_cumulative.units
-                self.rainfall_peak_time = rainfall.rainfall_peak_time
-                self.rainfall_duration = rainfall.rainfall_duration
+        self.rainfall.source = rainfall.rainfall_source
+        if self.rainfall.source == 'constant':
+            self.rainfall.intensity.value = rainfall.intensity.value
+            self.rainfall.intensity.units = rainfall.intensity.units
+        if self.rainfall.source == 'shape':
+            self.rainfall.shape = rainfall.rainfall.shape
+            if self.rainfall.shape == 'gaussian':
+                self.rainfall.cumulative.value = rainfall.cumulative.value
+                self.rainfall.cumulative.units = rainfall.cumulative.units
+                self.rainfall.peak_time = rainfall.peak_time
+                self.rainfall.duration = rainfall.duration
 
     def set_river(self, river: dict) -> None: # // TODO Deal with Multiple rivers or no rivers
         self.river.source = river.source
@@ -97,11 +106,15 @@ class Synthetic(Event):
     
     def load(self):
         if self.validate_existence_config_file():
-            config = read_config(self.inputfile)
+            config = read_config(self.config_file)
 
         if self.validate_content_config_file(config):
             self.set_name(config["name"])
-            self.set_name(config["long_name"])
+            self.set_long_name(config["long_name"])
+            self.set_template(config["template"])
+            self.set_timing(config["timing"])
+            self.set_duration_before_t0(config["duration_before_t0"])
+            self.set_duration_after_t0(config["duration_after_t0"])
             self.set_water_level_offset(config["water_level_offset"])
             self.set_tide(config["tide"])
             self.set_surge(config["surge"])
