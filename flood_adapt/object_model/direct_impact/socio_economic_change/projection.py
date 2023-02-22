@@ -1,7 +1,7 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
 
-from flood_adapt.object_model.risk_drivers.risk_driver_factory import RiskDriverFactory
+from flood_adapt.object_model.direct_impact.socio_economic_change.risk_driver_factory import RiskDriverFactory
 
 
 class Projection:
