@@ -1,5 +1,4 @@
 from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.event_types.synthetic import Synthetic
 from pathlib import Path
 
 class Event:
@@ -13,19 +12,21 @@ class Event:
         self.long_name = ""
         self.template = ""
         self.timing = None
-        self.tide_source = None
-        self.surge_source = None
-        self.wind_source = None
-        self.rainfall_source = None
+        self.water_level_offset = dict()
+        self.tide = dict()
+        self.surge = dict()
+        self.wind = dict()
+        self.rainfall = dict()
+        self.river = dict()
         self.config_file = None
-        self.mandatory_keys = ["name", "long_name"]
+        self.mandatory_keys = ["name", "long_name", "template", "timing", "water_level_offset", "tide", "surge", "wind", "rainfall", "river"]
 
     def validate_existence_config_file(self):
         if self.config_file:
             if Path(self.config_file).is_file():
                 return True
         
-        raise FileNotFoundError("Cannot find projection configuration file {}.".format(self.config_file))
+        raise FileNotFoundError("Cannot find event configuration file {}.".format(self.config_file))
 
     def validate_content_config_file(self, config):
         not_found_in_config = []
