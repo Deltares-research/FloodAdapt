@@ -7,7 +7,7 @@ class SiteConfig():
         self.build()
 
     def build(self):
-        #Reading is done by read_config()
+        #Reading of toml file is done by read_config()
         if val.validate_existence_config_file(self.config_path):
             config = read_config(self.config_path)
 
@@ -22,7 +22,7 @@ class SiteConfig():
         mandatory_fiat = ["exposure_crs","aggregation_shapefiles","aggregation_field_names","floodmap_type"]
         if val.validate_content_config_file(config,self.config_path,mandatory_attributes):
             for attr in mandatory_attributes:
-                #Check if attributes have correct dictionary keys
+                #Check if attributes have correct dictionary keys (if applicable)
                 if attr == "sfincs":
                     val.validate_content_config_file(config[attr],self.config_path,mandatory_sfincs)
                 elif attr == "slr":
