@@ -1,6 +1,6 @@
 name = "raise_property_all_properties"
 long_name = "raise_property_all_properties"
-type = "impact"
+type = "elevate_properties"
 elevation.value = 1
 elevation.units = "feet"
 elevation.type = "datum"
