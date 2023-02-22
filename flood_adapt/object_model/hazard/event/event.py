@@ -1,11 +1,11 @@
-from flood_adapt.object_model.io.config_io import read_config, write_config
 from pathlib import Path
 
+from flood_adapt.object_model.io.config_io import read_config, write_config
+from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
+
 class Event:
-    def __init__(self, config_file: str = None) -> None:
+    def __init__(self) -> None:
         self.set_default()
-        if config_file:
-            self.config_file = config_file
 
     def set_default(self):
         self.name = ""
@@ -45,11 +45,12 @@ class Event:
     def set_long_name(self, value):
         self.long_name = value
     
-    def load(self):
-        if self.validate_existence_config_file():
+    def load(self, config_file: str = None):
+        self.config_file = config_file
+        if validate_existence_config_file(config_file):
             config = read_config(self.inputfile)
 
-        if self.validate_content_config_file(config):
+        if validate_content_config_file(config, config_file, self.mandatory_keys):
             self.set_name(config["name"])
             self.set_long_name(config["long_name"])
     

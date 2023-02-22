@@ -2,13 +2,12 @@ from pathlib import Path
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
+from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
 
 class Synthetic(Event):
-    def __init__(self, config_file: str = None) -> None:
-        super().__init__(config_file = config_file)
+    def __init__(self) -> None:
+        super().__init__()
         self.set_default()
-        if config_file:
-            self.config_file = config_file
 
     def set_default(self):
         super().set_default()
@@ -97,11 +96,12 @@ class Synthetic(Event):
                 self.river["peak_discharge"] = river["peak_discharge"]
                 self.river["discharge_duration"] = river["discharge_duration"]
     
-    def load(self):
-        if self.validate_existence_config_file():
-            config = read_config(self.config_file)
+    def load(self, config_file: str = None) -> None:
+        self.config_file = config_file
+        if validate_existence_config_file(config_file):
+            config = read_config(self.inputfile)
 
-        if self.validate_content_config_file(config):
+        if validate_content_config_file(config, config_file, self.mandatory_keys):
             self.set_name(config["name"])
             self.set_long_name(config["long_name"])
             self.set_template(config["template"])
