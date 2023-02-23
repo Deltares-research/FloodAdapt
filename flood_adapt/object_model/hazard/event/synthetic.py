@@ -21,12 +21,6 @@ class Synthetic(Event):
     def set_long_name(self, value: str) -> None:
         self.long_name = value
 
-    def set_template(self, value: str) -> None:
-        self.template = value
-
-    def set_timing(self, value: str) -> None:
-        self.timing = value
-
     def set_duration_before_t0(self, value: str) -> None:
         self.duration_before_t0 = value
 
@@ -79,23 +73,19 @@ class Synthetic(Event):
                 self.river["discharge_duration"] = river["discharge_duration"]
     
     def load(self, config_file: str = None) -> None:
-        self.config_file = config_file
         if validate_existence_config_file(config_file):
+            super().load(config_file)
             config = read_config(self.inputfile)
 
-        if validate_content_config_file(config, config_file, self.mandatory_keys):
-            self.set_name(config["name"])
-            self.set_long_name(config["long_name"])
-            self.set_template(config["template"])
-            self.set_timing(config["timing"])
-            self.set_duration_before_t0(config["duration_before_t0"])
-            self.set_duration_after_t0(config["duration_after_t0"])
-            self.set_water_level_offset(config["water_level_offset"])
-            self.set_tide(config["tide"])
-            self.set_surge(config["surge"])
-            self.set_wind(config["wind"])
-            self.set_rainfall(config["rainfall"])
-            self.set_river(config["river"])
+            if validate_content_config_file(config, config_file, self.mandatory_keys):
+                self.set_duration_before_t0(config["duration_before_t0"])
+                self.set_duration_after_t0(config["duration_after_t0"])
+                self.set_water_level_offset(config["water_level_offset"])
+                self.set_tide(config["tide"])
+                self.set_surge(config["surge"])
+                self.set_wind(config["wind"])
+                self.set_rainfall(config["rainfall"])
+                self.set_river(config["river"])
       
     
     # def write(self):

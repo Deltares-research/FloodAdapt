@@ -26,15 +26,23 @@ class Event:
     
     def set_long_name(self, value):
         self.long_name = value
+
+    def set_template(self, value: str) -> None:
+        self.template = value
+
+    def set_timing(self, value: str) -> None:
+        self.timing = value
     
     def load(self, config_file: str = None):
         self.config_file = config_file
         if validate_existence_config_file(config_file):
             config = read_config(self.inputfile)
 
-        if validate_content_config_file(config, config_file, self.mandatory_keys):
-            self.set_name(config["name"])
-            self.set_long_name(config["long_name"])
+            if validate_content_config_file(config, config_file, self.mandatory_keys):
+                self.set_name(config["name"])
+                self.set_long_name(config["long_name"])
+                self.set_template(config["template"])
+                self.set_timing(config["timing"])
     
     # def write(self):
     #     write_config(self.config_file)
