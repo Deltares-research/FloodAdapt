@@ -5,7 +5,7 @@ test_database = Path().absolute() / 'tests' / 'test_database'
 def test_read_site_toml():
     from flood_adapt.object_model.site import SiteConfig
 
-    test_toml = test_database / "charleston" / "static" / "site" / "charleston_vs2.toml"
+    test_toml = test_database / "charleston" / "static" / "site" / "charleston.toml"
     assert test_toml.is_file()
 
     test_data = SiteConfig(config_path=test_toml)
