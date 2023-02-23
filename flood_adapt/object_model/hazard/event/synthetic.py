@@ -13,7 +13,7 @@ class Synthetic(Event):
         super().set_default()
         self.duration_before_t0 = 0
         self.duration_after_t0 = 0
-        self.mandatory_keys = ["template", "timing","duration_before_t0","duration_after_t0"]
+        self.mandatory_keys.extend(["duration_before_t0","duration_after_t0"])
 
     def set_name(self, value: str) -> None:
         self.name = value
