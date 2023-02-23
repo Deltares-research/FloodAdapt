@@ -7,13 +7,8 @@ import geopandas as gpd
 class ImpactMeasure:
     """ ImpactMeasure class that holds all the information for a specific measure type that affects the impact model
     """
-    def __init__(self, config_file: str = None, database_path: str = None) -> None:
+    def __init__(self) -> None:
         self.set_default()
-        self.database_path = database_path
-        if config_file:
-            self.config_file = config_file
-            if not self.database_path:
-                self.database_path = str(Path(self.config_file).parents[3])
 
     def set_default(self):
         """ Sets the default values of the ImpactMeasure class attributes
@@ -30,9 +25,10 @@ class ImpactMeasure:
     def set_long_name(self, long_name: str):
         self.long_name = long_name
 
-    def load(self):
+    def load(self, config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
+        self.config_file = config_file
         # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)
@@ -45,7 +41,6 @@ class ImpactMeasure:
     def get_object_ids(self):
         """ Get ids of objects that are affected by the measure
         """
-        
         buildings = FiatModel(self.database_path).get_buildings(self.property_type)
 
         if (self.selection_type == "aggregation_area") | (self.selection_type == "all"):

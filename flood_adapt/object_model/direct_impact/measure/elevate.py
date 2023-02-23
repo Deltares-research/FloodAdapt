@@ -5,8 +5,8 @@ from flood_adapt.object_model.direct_impact.measure.impact_measure import Impact
 class Elevate(ImpactMeasure):
     """ Subclass of Measure describing the measure of elevating buildings by a specific height
     """
-    def __init__(self, config_file: str = None) -> None:
-        super().__init__(config_file)
+    def __init__(self) -> None:
+        super().__init__()
 
     def set_default(self):
         """ Sets the default values of the Elevate class attributes
@@ -44,10 +44,10 @@ class Elevate(ImpactMeasure):
     def set_datum(self, datum):
         self.datum = datum
 
-    def load(self):
+    def load(self,  config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
-        super().load()
+        super().load(config_file)
         # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)

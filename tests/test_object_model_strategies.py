@@ -11,7 +11,7 @@ def test_elevate_comb_correct():
     test_toml = test_database / "charleston" / "input" / "strategies" / "elevate_comb_correct" / "elevate_comb_correct.toml"
     assert test_toml.is_file()
 
-    test_strategies = ImpactStrategy(test_toml)
+    test_strategies = ImpactStrategy().load(test_toml)
     test_strategies.load()
     
 
