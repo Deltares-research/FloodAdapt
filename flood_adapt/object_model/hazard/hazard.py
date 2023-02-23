@@ -22,10 +22,11 @@ class Hazard:
         self.name = ""
         self.long_name = ""
         self.mode = ""
-        self.event = [Event()]
+        self.event = None
+        self.ensemble = None
         self.physical_projection = PhysicalProjection()
         # self.hazard_strategy = HazardStrategy()
-        self.mandatory_keys = ["name", "long_name", "mode", "event", "physical_projection"] #, "hazard_strategy"]
+        self.mandatory_keys = ["name", "long_name", "mode", "event", "ensemble", "physical_projection"] #, "hazard_strategy"]
 
     def set_name(self, value):
         self.name = value
@@ -43,7 +44,7 @@ class Hazard:
             measures (list): list of measures names
         """
         event_path = str(Path(self.database_path, "input", "events", event, "{}.toml".format(event)))
-        # parse event config file to get type of event
+        #         # parse event config file to get type of event
         template = read_config(event_path)["template"]
         # use type of measure to get the associated measure subclass
         self.event = event_parser(template).load(event_path)
@@ -64,18 +65,19 @@ class Hazard:
             self.set_event(config["event"])
             # self.set_hazard_strategy(config["strategy"])
 
-    
-    
-    # def write(self):
-    #     write_config(self.config_file)
+    # no write function is needed since this is only used internally
+
+    def calculate_rp_floodmaps(self, rp: list(int)) -> str:
+        path_to_floodmaps = None
+        return path_to_floodmaps
 
 
 def event_parser(template: str) -> Event:
-    """ Simple parser to get the respective measure subclass from a measure type string given in the config file
+    """ Simple parser to get the respective Event subclass from the template variable in the config file
     Args:
-        type (str): name of measure type
+        type (str): name of Event type
     Returns:
-        Measure: Measure subclass
+        Event: Event child class
     """
     if template == "synthetic":
         return Synthetic  
@@ -84,4 +86,4 @@ def event_parser(template: str) -> Event:
     # elif template == "Historical - forced by offshore wind and tide":
     #     return HistoricalOffshore  
     # elif template == "Historical - forced by observed nearshore water levels":
-    #     return HistoricalNearshore  
+    #     return HistoricalNearshore 

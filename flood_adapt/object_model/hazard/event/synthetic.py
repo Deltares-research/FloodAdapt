@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
+from flood_adapt.object_model.validate.config import validate_content_config_file
 
 class Synthetic(Event):
     def __init__(self) -> None:
@@ -73,20 +73,20 @@ class Synthetic(Event):
                 self.river["discharge_duration"] = river["discharge_duration"]
     
     def load(self, config_file: str = None) -> None:
-        if validate_existence_config_file(config_file):
-            super().load(config_file)
-            config = read_config(self.inputfile)
+        super().load(config_file)
+        config = read_config(self.inputfile)
 
-            if validate_content_config_file(config, config_file, self.mandatory_keys):
-                self.set_duration_before_t0(config["duration_before_t0"])
-                self.set_duration_after_t0(config["duration_after_t0"])
-                self.set_water_level_offset(config["water_level_offset"])
-                self.set_tide(config["tide"])
-                self.set_surge(config["surge"])
-                self.set_wind(config["wind"])
-                self.set_rainfall(config["rainfall"])
-                self.set_river(config["river"])
+        if validate_content_config_file(config, config_file, self.mandatory_keys):
+            self.set_duration_before_t0(config["duration_before_t0"])
+            self.set_duration_after_t0(config["duration_after_t0"])
+            self.set_water_level_offset(config["water_level_offset"])
+            self.set_tide(config["tide"])
+            self.set_surge(config["surge"])
+            self.set_wind(config["wind"])
+            self.set_rainfall(config["rainfall"])
+            self.set_river(config["river"])
       
     
-    # def write(self):
+    def write(self):
+        pass
     #     write_config(self.config_file)

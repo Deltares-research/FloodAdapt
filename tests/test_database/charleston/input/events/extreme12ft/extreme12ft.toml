@@ -1,5 +1,6 @@
 name = "extreme12ft"
 long_name = "extreme 12 foot event"
+type = "single_scenario"
 template = "Synthetic"
 timing = "idealized"
 duration_before_t0 = 24
