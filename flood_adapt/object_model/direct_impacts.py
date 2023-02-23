@@ -8,19 +8,19 @@ from flood_adapt.object_model.io.database_io import DatabaseIO
 
 class DirectImpacts:
     """The Direct Impact class containing all information on a single direct impact scenario."""
-    def __init__(self, database_path: str, site_name: str):
+    def __init__(self):
+        self.database = DatabaseIO()
+
         self.name = ""
         self.long_name = ""
-        self.site_name = site_name
+        self.site_name = self.database.site_name
         self.run_type = "event"  # event for a single event and "risk" for a probabilistic event set and risk calculation
         self.has_run_hazard = False
         self.has_run_direct_impact = False
-        self.database_path = database_path
+        self.database_path = self.database.database_path
         self.flood_map_path = ""  # To be determined what type this object is, depending on how it will get it from the Events class.
         self.result_path = ""
         self.mandatory_keys = ["name", "long_name", "projection", "event", "strategy"]
-
-        self.database = DatabaseIO()
 
     def write(self):
         write_config(self.config, "path to write to")  # this is a placeholder for the function to be filled

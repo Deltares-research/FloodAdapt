@@ -1,7 +1,7 @@
 from pathlib import Path
 
 site_name_ = "charleston"  # This should be retrieved from somewhere else
-database_path_ = str(Path().absolute() / 'tests' / 'test_database' / site_name_)  # This should be retrieved from somewhere else
+database_path_ = str(Path().absolute() / 'tests' / 'test_database')  # This should be retrieved from somewhere else
 
 
 class DatabaseIO:
