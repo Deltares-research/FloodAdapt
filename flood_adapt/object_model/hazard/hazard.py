@@ -1,15 +1,13 @@
 from pathlib import Path
-
+from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.hazard.physical_projection.physical_projection import PhysicalProjection
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 # from flood_adapt.object_model.hazard.event.hurricane import Hurricane
 # from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 # from flood_adapt.object_model.hazard.event.historical_nearshore import HistoricalNearshore
-# from flood_adapt.object_model.hazard.hazard_strategy.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
-
 class Hazard:
     def __init__(self, database_path: str = None) -> None:
         self.set_default()
@@ -22,11 +20,11 @@ class Hazard:
         self.name = ""
         self.long_name = ""
         self.mode = ""
-        self.event = None
+        self.event = Event()
         self.ensemble = None
         self.physical_projection = PhysicalProjection()
-        # self.hazard_strategy = HazardStrategy()
-        self.mandatory_keys = ["name", "long_name", "mode", "event", "ensemble", "physical_projection"] #, "hazard_strategy"]
+        self.hazard_strategy = HazardStrategy()
+        # self.mandatory_keys = ["name", "long_name", "mode", "event", "ensemble", "physical_projection"] #, "hazard_strategy"]
 
     def set_name(self, value):
         self.name = value
@@ -67,7 +65,7 @@ class Hazard:
 
     # no write function is needed since this is only used internally
 
-    def calculate_rp_floodmaps(self, rp: list(int)) -> str:
+    def calculate_rp_floodmaps(self, rp: list) -> str:
         path_to_floodmaps = None
         return path_to_floodmaps
 

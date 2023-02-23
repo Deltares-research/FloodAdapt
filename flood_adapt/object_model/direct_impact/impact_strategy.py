@@ -1,5 +1,6 @@
 from flood_adapt.object_model.strategy import Strategy
-from flood_adapt.object_model.direct_impact.impact_measure_factory import ImpactMeasureFactory
+from flood_adapt.object_model.measure_factory import ImpactMeasureFactory
+from flood_adapt.object_model.measure_factory import MeasureFactory
 from itertools import combinations
 
 
@@ -21,6 +22,9 @@ class ImpactStrategy(Strategy):
             measures (list): list of measures names
         """
         super().set_measures(measures)
+        # Keep only impact measure
+        self.measure_paths = [path for type, path in zip(self.measure_types, self.measure_paths) if MeasureFactory.get_measure_type(type) == "impact" ]
+        self.measure_types = [type for type in self.measure_types if MeasureFactory.get_measure_type(type) == "impact" ]
         # use type of measure to get the associated measure subclass
         self.measures = [ImpactMeasureFactory.get_impact_measure(type).load(config) for type, config in zip(self.measure_types, self.measure_paths)]
     

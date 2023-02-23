@@ -48,7 +48,8 @@ class SocioEconomicChange:
             self.set_name(config["name"])
             self.set_long_name(config["long_name"])
             self.set_risk_drivers(config)
-    
+            
+        return self
     # def write(self):
     #     write_config(self.config_file)
     

@@ -5,6 +5,18 @@ import geopandas as gpd
 test_database = Path().absolute() / 'tests' / 'test_database'
 
 
+def test_strategy_comb():
+    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+    from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+
+    test_toml = test_database / "charleston" / "input" / "strategies" / "strategy_comb" / "strategy_comb.toml"
+    assert test_toml.is_file()
+
+    test_strategies_impact = ImpactStrategy().load(test_toml)
+    test_strategies_hazard = HazardStrategy().load(test_toml)
+    assert len(test_strategies_impact.measures) == 2
+    assert len(test_strategies_hazard.measures) == 1
+
 def test_elevate_comb_correct():
     from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
     from flood_adapt.object_model.direct_impact.measure.elevate import Elevate

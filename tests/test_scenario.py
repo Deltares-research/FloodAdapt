@@ -6,13 +6,10 @@ test_database = Path().absolute() / 'tests' / 'test_database'
 def test_scenario_class():
     from flood_adapt.object_model.scenario import Scenario
 
-    test_scenario_toml = test_database / "charleston" / "input" / "scenarios" / "current_HUGO_no_measures" / "current_HUGO_no_measures.toml"
+    test_scenario_toml = test_database / "charleston" / "input" / "scenarios" / "all_projections_extreme12ft_elevate_comb_correct" / "all_projections_extreme12ft_elevate_comb_correct.toml"
     assert test_scenario_toml.is_file()
 
-    test_site_toml = test_database / "charleston" / "input" / "scenarios" / "current_HUGO_no_measures" / "current_HUGO_no_measures.toml"
-    assert test_site_toml.is_file()
-
-    test_scenario = Scenario()
+    test_scenario = Scenario().load("all_projections_extreme12ft_elevate_comb_correct")
     assert test_scenario.direct_impacts
 
     test_scenario.direct_impacts.load(test_scenario_toml)
