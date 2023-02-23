@@ -7,7 +7,7 @@ import geopandas as gpd
 class ImpactMeasure:
     """ ImpactMeasure class that holds all the information for a specific measure type that affects the impact model
     """
-    def __init__(self, config_file: str = None, database_path: str = None) -> None:
+    def __init__(self) -> None:
         self.set_default()
 
     def set_default(self):
