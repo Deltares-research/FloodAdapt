@@ -13,21 +13,21 @@ def test_scenario_class():
     assert test_site_toml.is_file()
 
     test_scenario = Scenario()
-    assert test_scenario.direct_impacts
+    assert test_scenario.scenario
 
-    test_scenario.direct_impacts.configure(test_scenario_toml)
+    test_scenario.scenario.configure(test_scenario_toml)
 
     # Check if all variables are read correctly from the site config file.
-    assert test_scenario.direct_impacts.site_info.name == "charleston"
-    assert test_scenario.direct_impacts.site_info.long_name == "Charleston, SC"
-    assert test_scenario.direct_impacts.site_info.lat == 32.77
-    assert test_scenario.direct_impacts.site_info.lon == -79.95
-    assert test_scenario.direct_impacts.site_info.sfincs["cstype"] == "projected"
-    assert test_scenario.direct_impacts.site_info.gui["tide_harmonic_amplitude"]["value"] == 3.0
-    assert test_scenario.direct_impacts.site_info.dem["filename"] == "charleston_14m.tif"
-    assert test_scenario.direct_impacts.site_info.fiat["aggregation_shapefiles"] == "subdivision.shp"
-    assert test_scenario.direct_impacts.site_info.river["mean_discharge"]["units"] == "cfs"
-    assert test_scenario.direct_impacts.site_info.obs_station["ID"] == 8665530
-    assert test_scenario.direct_impacts.site_info.obs_station["mllw"]["value"] == 0.0
+    assert test_scenario.scenario.site_info.name == "charleston"
+    assert test_scenario.scenario.site_info.long_name == "Charleston, SC"
+    assert test_scenario.scenario.site_info.lat == 32.77
+    assert test_scenario.scenario.site_info.lon == -79.95
+    assert test_scenario.scenario.site_info.sfincs["cstype"] == "projected"
+    assert test_scenario.scenario.site_info.gui["tide_harmonic_amplitude"]["value"] == 3.0
+    assert test_scenario.scenario.site_info.dem["filename"] == "charleston_14m.tif"
+    assert test_scenario.scenario.site_info.fiat["aggregation_shapefiles"] == "subdivision.shp"
+    assert test_scenario.scenario.site_info.river["mean_discharge"]["units"] == "cfs"
+    assert test_scenario.scenario.site_info.obs_station["ID"] == 8665530
+    assert test_scenario.scenario.site_info.obs_station["mllw"]["value"] == 0.0
 
     
