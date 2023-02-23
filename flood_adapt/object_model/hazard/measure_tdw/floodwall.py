@@ -1,12 +1,12 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
+from flood_adapt.object_model.hazard.measure_tdw.hazard_measure import HazardMeasure
 
 class FloodWall(HazardMeasure):
     """ Subclass of Measure describing the measure of elevating buildings by a specific height
     """
-    def __init__(self, config_file: str = None) -> None:
-        super().__init__(config_file)
+    def __init__(self) -> None:
+        super().__init__()
 
     def set_default(self):
         """ Sets the default values of the floodwall class attributes
@@ -35,10 +35,10 @@ class FloodWall(HazardMeasure):
     def set_datum(self, datum):
         self.datum = datum
 
-    def load(self):
+    def load(self, config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
-        super().load()
+        super().load(config_file)
         # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)

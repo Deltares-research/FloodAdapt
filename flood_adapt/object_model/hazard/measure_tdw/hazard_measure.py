@@ -5,10 +5,8 @@ from pathlib import Path
 class HazardMeasure:
     """ Measure class that holds all the information for a specific measure type
     """
-    def __init__(self, config_file: str = None) -> None:
-        self.set_default()
-        if config_file:
-            self.config_file = config_file
+    def __init__(self) -> None:
+        self.set_default()            
 
     def set_default(self):
         """ Sets the default values of the Measure class attributes
@@ -25,9 +23,11 @@ class HazardMeasure:
     def set_long_name(self, long_name: str):
         self.long_name = long_name
 
-    def load(self):
+    def load(self, config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
+        self.config_file = config_file
+
         # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)
