@@ -18,36 +18,27 @@ class FloodWall(HazardMeasure):
         self.elevation["units"] = "m"  # the units that the height is given
         self.elevation["type"] = "floodmap"  # type of height reference (can be "floodmap" or "datum")
         self.polygon_file = None  # polygon file to use 
-        self.datum = None  # what is this for?
         self.mandatory_keys.extend(["type","elevation", "polygon_file"])
 
     def set_type(self, type: str):
         self.type = type
 
-    def set_elevation(self, elevation, elevation_vert_units, elevation_type):
-        self.elevation["value"] = elevation
-        self.elevation["units"] = elevation_vert_units
-        self.elevation["type"] = elevation_type
+    def set_elevation(self, elevation: dict):
+        self.elevation = elevation
 
-    def set_polygon_file(self, polygon_file):
+    def set_polygon_file(self, polygon_file: str):
         self.polygon_file = polygon_file
-
-    def set_datum(self, datum):
-        self.datum = datum
 
     def load(self, config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
         super().load(config_file)
-        # Validate the existence of the configuration file
-        if validate_existence_config_file(self.config_file):
-            config = read_config(self.config_file)
-            config_keys = config.keys()
 
+        config = read_config(config_file)
         # Validate that the mandatory keys are in the configuration file
         if validate_content_config_file(config, self.config_file, self.mandatory_keys):
             self.set_type(config["type"])
-            self.set_elevation(config["elevation"], config["elevation_vertical_units"], config["elevation_type"])
-            if "datum" in config_keys:
-                self.set_datum(config["datum"])
+            self.set_elevation(config["elevation"])
+            self.set_polygon_file(config["polygon_file"])
+
         return self

@@ -1,7 +1,0 @@
-name = "seawall"
-long_name = "seawall"
-type = "floodwall"
-polygon_file = "seawall.txt"
-elevation = 12
-elevation_vertical_units = "feet"
-elevation_type = "floodmap"

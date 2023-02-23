@@ -11,25 +11,9 @@ def test_floodwall_measure_from_toml():
     measure = FloodWall()
     measure.load(test_toml)
     
+    assert measure.name == "seawall"
+    assert measure.long_name == "seawall"
     assert measure.type == "floodwall"
     assert measure.elevation["value"] == 12
     assert measure.elevation["units"] == "feet"
     assert measure.elevation["type"] == "floodmap"
-    assert measure.datum == "NAVD 88"
-
-def test_floodwall_measure_without_datum_from_toml():
-    from flood_adapt.object_model.hazard.measure_tdw.floodwall import FloodWall
-
-    test_toml = test_database / "charleston" / "input" / "measures" / "seawall" / "seawall_without_datum.toml"
-    assert test_toml.is_file()
-
-    measure = FloodWall()
-    measure.load(test_toml)
-    
-    assert measure.type == "floodwall"
-    assert measure.elevation["value"] == 12
-    assert measure.elevation["units"] == "feet"
-    assert measure.elevation["type"] == "floodmap"
-    assert measure.datum == None
-
-    

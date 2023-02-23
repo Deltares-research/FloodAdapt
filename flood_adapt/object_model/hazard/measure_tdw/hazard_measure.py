@@ -26,14 +26,14 @@ class HazardMeasure:
     def load(self, config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
-        self.config_file = config_file
-
         # Validate the existence of the configuration file
-        if validate_existence_config_file(self.config_file):
-            config = read_config(self.config_file)
+        if validate_existence_config_file(config_file):
+            config = read_config(config_file)
+        
+            self.config_file = config_file
 
-        # Validate that the mandatory keys are in the configuration file
-        if validate_content_config_file(config, self.config_file, self.mandatory_keys):
-            self.set_name(config["name"])
-            self.set_long_name(config["long_name"])
+            # Validate that the mandatory keys are in the configuration file
+            if validate_content_config_file(config, self.config_file, self.mandatory_keys):
+                self.set_name(config["name"])
+                self.set_long_name(config["long_name"])
 
