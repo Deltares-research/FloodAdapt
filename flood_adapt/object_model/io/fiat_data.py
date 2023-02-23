@@ -18,7 +18,7 @@ class FiatModel():
             self.load_exposure()
         buildings = self.exposure.loc[self.exposure["Primary Object Type"] != "road", :]
         if type:
-            if type != 'ALL':
+            if str(type).upper() != 'ALL':
                 buildings = buildings.loc[buildings["Primary Object Type"] == type, :]
             
         return buildings

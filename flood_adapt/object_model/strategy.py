@@ -5,13 +5,8 @@ from pathlib import Path
 class Strategy:
     """ Strategy class that holds all the information for a specific strategy
     """
-    def __init__(self, config_file: str = None, database_path: str = None) -> None:
+    def __init__(self) -> None:
         self.set_default()
-        self.database_path = database_path
-        if config_file:
-            self.config_file = config_file
-            if not self.database_path:
-                self.database_path = str(Path(self.config_file).parents[3])
 
     def set_default(self):
         """ Sets the default values of the Strategy class attributes
@@ -40,9 +35,10 @@ class Strategy:
         self.measure_types = [read_config(measure_path)["type"] for measure_path in self.measure_paths]
 
 
-    def load(self):
+    def load(self,  config_file: str = None):
         """ loads and updates the class attributes from a configuration file
         """
+        self.config_file = config_file
         # Validate the existence of the configuration file
         if validate_existence_config_file(self.config_file):
             config = read_config(self.config_file)
