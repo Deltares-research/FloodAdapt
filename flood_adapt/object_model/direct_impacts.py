@@ -25,6 +25,14 @@ class DirectImpacts:
     def write(self):
         write_config(self.config, "path to write to")  # this is a placeholder for the function to be filled
 
+    def configure(self):
+        self.get_configuration()
+
+        self.socio_economic_change = SocioEconomicChange()
+        self.direct_impact_strategy = DirectImpactStrategies()
+        self.hazard = Hazard()
+        self.site_info = SiteConfig()
+
     def set_name(self, value: str):
         self.name = value
     
