@@ -15,7 +15,6 @@ class Strategy:
         self.name = ""  # Name of the measure
         self.long_name = ""  # Long name of the measure
         self.config_file = None  # path to the configuration file connected with the measure
-        self.type = None  # type of strategy (can be "impact" or "hazard")
         self.measures = []  # list of measures names that are used in a strategy
         self.mandatory_keys = ["name", "long_name"]  # mandatory keys in the config file
 
@@ -26,7 +25,7 @@ class Strategy:
         self.long_name = long_name
     
     def set_measures(self, measures: list):
-        """ Sets the actual Measure class list using the list of measure names
+        """ Gets the measures paths and types
 
         Args:
             measures (list): list of measures names

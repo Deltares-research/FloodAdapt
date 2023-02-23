@@ -13,4 +13,4 @@ class Scenario:
 
     def load(self, scenario: str):
         self.direct_impacts.load(str(Path(DatabaseIO().scenarios_path, scenario, "{}.toml".format(scenario))))
-    
+        return self

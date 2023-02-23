@@ -15,3 +15,4 @@ class PrecipitationIntensity:
     def load(self, config: dict, config_path: str) -> None:
         validate_content_config_file(config, config_path, ["rainfall_increase"])
         self.set_rainfall_increase(config["rainfall_increase"])
+        return self

@@ -25,3 +25,5 @@ class PopulationGrowthNew:
         self.set_population_growth_new(config["population_growth_new"])
         self.set_new_development_elevation(config["new_development_elevation"])
         self.set_new_development_shapefile(config["new_development_shapefile"])
+        
+        return self

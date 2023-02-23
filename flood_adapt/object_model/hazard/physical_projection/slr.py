@@ -20,3 +20,4 @@ class SLR:
         validate_content_config_file(config, config_path, ["sea_level_rise", "subsidence"])
         self.set_slr(config["sea_level_rise"])
         self.set_subsidence(config["subsidence"])
+        return self

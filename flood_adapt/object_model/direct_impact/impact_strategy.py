@@ -16,7 +16,7 @@ class ImpactStrategy(Strategy):
         super().set_default()
 
     def set_measures(self, measures: list):
-        """ Sets the actual Measure class list using the list of measure names
+        """ Sets the actual ImpactMeasure class list using the list of measure names
 
         Args:
             measures (list): list of measures names

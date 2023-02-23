@@ -15,3 +15,5 @@ class PopulationGrowthExisting:
     def load(self, config: dict, config_path: str) -> None:
         validate_content_config_file(config, config_path, ["population_growth_existing"])
         self.set_population_growth_existing(config["population_growth_existing"])
+
+        return self

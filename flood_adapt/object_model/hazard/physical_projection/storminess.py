@@ -15,3 +15,4 @@ class Storminess:
     def load(self, config: dict, config_path: str) -> None:
         validate_content_config_file(config, config_path, ["storm_frequency_increase"])
         self.storm_frequency_increase = config["storm_frequency_increase"]
+        return self

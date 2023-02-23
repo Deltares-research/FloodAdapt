@@ -3,7 +3,7 @@ from flood_adapt.object_model.measure_factory import HazardMeasureFactory
 from flood_adapt.object_model.measure_factory import MeasureFactory
 
 class HazardStrategy(Strategy):
-    """ Subclass of Strategy describing a strategy with only impact measures
+    """ Subclass of Strategy describing a strategy with only hazard measures
     """
     def __init__(self) -> None:
         super().__init__()

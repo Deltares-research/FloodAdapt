@@ -43,6 +43,6 @@ class Event:
                 self.set_long_name(config["long_name"])
                 self.set_template(config["template"])
                 self.set_timing(config["timing"])
-    
+        return self
     # def write(self):
     #     write_config(self.config_file)

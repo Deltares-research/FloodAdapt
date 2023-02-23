@@ -72,7 +72,7 @@ class Synthetic(Event):
                 self.river["peak_discharge"] = river["peak_discharge"]
                 self.river["discharge_duration"] = river["discharge_duration"]
     
-    def load(self, config_file: str = None) -> None:
+    def load(self, config_file: str = None):
         super().load(config_file)
         config = read_config(self.config_file)
 
@@ -85,7 +85,7 @@ class Synthetic(Event):
             self.set_wind(config["wind"])
             self.set_rainfall(config["rainfall"])
             self.set_river(config["river"])
-      
+        return self
     
     def write(self):
         pass

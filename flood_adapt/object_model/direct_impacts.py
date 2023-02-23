@@ -49,9 +49,8 @@ class DirectImpacts:
     def set_impact_strategy(self, strategy: str):
         self.impact_strategy = ImpactStrategy().load(str(Path(DatabaseIO().strategies_path, strategy, "{}.toml".format(strategy))))
     
-    def set_hazard(self, impact_strategy: str):
-        self.impact_strategy = ImpactStrategy().load(str(Path(DatabaseIO().strategies_path, impact_strategy, "{}.toml".format(impact_strategy))))
-
+    def set_hazard(self, scenario_config: str):
+        self.hazard = Hazard().set_values(scenario_config)
 
     def load(self, config_file_path: str):
         self.config_file = config_file_path
