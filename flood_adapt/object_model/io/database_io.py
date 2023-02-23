@@ -30,3 +30,4 @@ class DatabaseIO:
         # The static folders
         self.static_path = str(Path(self.database_path) / "static")
         self.site_path = str(Path(self.database_path) / "static" / "site")
+        self.site_config_path = str(Path(self.database_path) / "static" / "site" / (self.site_name + ".toml"))

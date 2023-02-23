@@ -3,8 +3,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic
 # from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
-
-from pathlib import Path
+from flood_adapt.object_model.io.database_io import DatabaseIO
 
 
 class DirectImpacts:
@@ -20,6 +19,8 @@ class DirectImpacts:
         self.flood_map_path = ""  # To be determined what type this object is, depending on how it will get it from the Events class.
         self.result_path = ""
         self.mandatory_keys = ["name", "long_name", "projection", "event", "strategy"]
+
+        self.database = DatabaseIO()
 
     def write(self):
         write_config(self.config, "path to write to")  # this is a placeholder for the function to be filled
