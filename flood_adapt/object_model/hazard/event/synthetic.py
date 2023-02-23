@@ -99,7 +99,7 @@ class Synthetic(Event):
     def load(self, config_file: str = None) -> None:
         self.config_file = config_file
         if validate_existence_config_file(config_file):
-            config = read_config(self.inputfile)
+            config = read_config(self.config_file)
 
         if validate_content_config_file(config, config_file, self.mandatory_keys):
             self.set_name(config["name"])

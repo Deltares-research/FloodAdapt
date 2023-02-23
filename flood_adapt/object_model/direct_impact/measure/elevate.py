@@ -3,7 +3,7 @@ from flood_adapt.object_model.validate.config import validate_existence_config_f
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 
 class Elevate(ImpactMeasure):
-    """ Subclass of Measure describing the measure of elevating buildings by a specific height
+    """ Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height
     """
     def __init__(self) -> None:
         super().__init__()
@@ -21,7 +21,6 @@ class Elevate(ImpactMeasure):
         self.aggregation_area = None  # name of area to use (this is needed if selection type is "aggregation_area")
         self.polygon_file = None  # polygon file to use (this is needed if selection type is "polygon")
         self.property_type = "RES"  # this is the object type to be used to apply the measure on 
-        self.datum = None  # what is this for?
         self.mandatory_keys.extend(["elevation", "selection_type"])
 
     def set_elevation(self, elevation: dict):
@@ -40,9 +39,6 @@ class Elevate(ImpactMeasure):
 
     def set_property_type(self, property_type):
         self.property_type = property_type
-
-    def set_datum(self, datum):
-        self.datum = datum
 
     def load(self,  config_file: str = None):
         """ loads and updates the class attributes from a configuration file
@@ -63,5 +59,5 @@ class Elevate(ImpactMeasure):
                 self.set_polygon_file(config["polygon_file"])
 
             self.set_property_type(config["property_type"])
-            self.set_datum(config["datum"])
+            
         return self

@@ -1,6 +1,7 @@
 from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic_change import SocioEconomicChange
-# from flood_adapt.object_model.direct_impact.direct_impact_strategies import DirectImpactStrategies
-# from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
 from flood_adapt.object_model.io.database_io import DatabaseIO
@@ -9,8 +10,6 @@ from flood_adapt.object_model.io.database_io import DatabaseIO
 class DirectImpacts:
     """The Direct Impact class containing all information on a single direct impact scenario."""
     def __init__(self):
-        self.database = DatabaseIO()
-
         self.name = ""
         self.long_name = ""
         self.site_name = self.database.site_name

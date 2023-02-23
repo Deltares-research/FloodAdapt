@@ -3,7 +3,6 @@ from pathlib import Path
 test_database = Path().absolute() / 'tests' / 'test_database'
 
 def test_create_new_event():
-    from flood_adapt.object_model.hazard.event.synthetic import Synthetic
     from flood_adapt.object_model.hazard.event.event import Event
 
     test_event = Event()
@@ -27,8 +26,8 @@ def test_read_config_synthetic():
     test_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
 
-    test_synthetic = Synthetic(test_toml)
-    test_synthetic.load()
+    test_synthetic = Synthetic()
+    test_synthetic.load(test_toml)
 
     # assert that attributes have been set to correct data types
     assert test_synthetic

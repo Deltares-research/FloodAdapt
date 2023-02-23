@@ -3,7 +3,7 @@ from flood_adapt.object_model.validate.config import validate_existence_config_f
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 
 class FloodWall(HazardMeasure):
-    """ Subclass of Measure describing the measure of elevating buildings by a specific height
+    """ Subclass of HazardMeasure describing the measure of elevating buildings by a specific height
     """
     def __init__(self) -> None:
         super().__init__()

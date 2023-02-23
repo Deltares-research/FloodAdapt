@@ -1,5 +1,4 @@
 from flood_adapt.object_model.strategy import Strategy
-from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.direct_impact.impact_measure_factory import ImpactMeasureFactory
 from itertools import combinations
 
@@ -28,6 +27,8 @@ class ImpactStrategy(Strategy):
     def load(self,  config_file: str = None):
         super().load(config_file)
         self.validate()
+        
+        return self
 
     def validate(self):
             """ Validates if the combination of ImpactMeasure can happen, since impact measures cannot affect the same properties

@@ -1,6 +1,7 @@
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
 from pathlib import Path
+from flood_adapt.object_model.io.database_io import DatabaseIO
 
 class Strategy:
     """ Strategy class that holds all the information for a specific strategy
@@ -30,7 +31,7 @@ class Strategy:
         Args:
             measures (list): list of measures names
         """
-        self.measure_paths = [str(Path(self.database_path, "input", "measures", measure, "{}.toml".format(measure))) for measure in measures]
+        self.measure_paths = [str(Path(DatabaseIO().measures_path, measure, "{}.toml".format(measure))) for measure in measures]
         # parse measures config files to get type of measure
         self.measure_types = [read_config(measure_path)["type"] for measure_path in self.measure_paths]
 

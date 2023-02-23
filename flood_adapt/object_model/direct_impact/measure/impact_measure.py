@@ -1,6 +1,7 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.io.fiat_data import FiatModel
 from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
+from flood_adapt.object_model.io.database_io import DatabaseIO
 from pathlib import Path
 import geopandas as gpd
 
@@ -41,7 +42,8 @@ class ImpactMeasure:
     def get_object_ids(self):
         """ Get ids of objects that are affected by the measure
         """
-        buildings = FiatModel(self.database_path).get_buildings(self.property_type)
+        database = DatabaseIO()  # this is needed to get to the FIAT model path
+        buildings = FiatModel(database.database_path).get_buildings(self.property_type)
 
         if (self.selection_type == "aggregation_area") | (self.selection_type == "all"):
             if self.selection_type == "all":
