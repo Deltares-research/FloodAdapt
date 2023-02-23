@@ -1,4 +1,6 @@
 from pathlib import Path
+import pandas as pd
+import numpy as np
 
 test_database = Path().absolute() / 'tests' / 'test_database'
 
@@ -73,6 +75,23 @@ def test_read_config_synthetic():
     assert test_synthetic.river["source"] == "constant"
     assert test_synthetic.river["constant_discharge"]["value"] == 5000
     assert test_synthetic.river["constant_discharge"]["units"] == "cfs"
+
+def test_generate_tide_synthetic():
+    from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+
+    test_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
+    assert test_toml.is_file()
+
+    test_synthetic = Synthetic()
+    test_synthetic.load(test_toml)
+    test_synthetic.generate_tide_ts()
+
+    # assert that attributes have been set to correct data types
+    assert test_synthetic
+    assert isinstance(test_synthetic.name, str)
+    assert isinstance(test_synthetic.tide['timeseries'],pd.DataFrame)
+    assert test_synthetic.tide['timeseries'].size == 578
+    assert test_synthetic.tide['timeseries'].ndim == 2
 
 
 def test_create_new_synthetic():

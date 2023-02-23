@@ -1,7 +1,11 @@
 from pathlib import Path
+import math
+import numpy as np
+import pandas as pd
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
+from flood_adapt.object_model.io.unit_conversion import convert_unit
 from flood_adapt.object_model.validate.config import validate_content_config_file
 
 class Synthetic(Event):
@@ -85,6 +89,19 @@ class Synthetic(Event):
             self.set_wind(config["wind"])
             self.set_rainfall(config["rainfall"])
             self.set_river(config["river"])
+
+    def generate_tide_ts(self) -> None:
+        if isinstance(self.tide, dict):
+            amp = float(self.tide["harmonic_amplitude"]["value"])
+            conversion = convert_unit(self.tide["harmonic_amplitude"]["value"])
+            if conversion is not None:
+                amp = conversion * amp
+            omega = 2 * math.pi / (12.4 / 24)
+            time_shift = float(self.duration_before_t0) * 3600
+            duration = (self.duration_before_t0 + self.duration_after_t0) * 3600
+            tt = np.arange(0, duration + 1, 600)
+            wl = amp * np.cos(omega * (tt - time_shift) / 86400)  
+            self.tide["timeseries"] = pd.DataFrame.from_dict({'time': tt, 'wl': wl})
       
     
     def write(self):
