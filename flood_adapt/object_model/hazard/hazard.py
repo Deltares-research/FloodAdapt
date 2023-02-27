@@ -16,8 +16,7 @@ class Hazard:
         self.name = ""
         self.long_name = ""
         self.mode = ""
-        self.event = None
-        self.ensemble = None
+        self.type= ""
         self.physical_projection = PhysicalProjection()
         self.hazard_strategy = HazardStrategy()
 
