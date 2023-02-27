@@ -26,6 +26,9 @@ class Hazard:
     def set_long_name(self, value):
         self.long_name = value
 
+    def set_type(self, value):
+        self.type = value
+
     def set_physical_projection(self, projection):
         self.physical_projection.load(str(Path(DatabaseIO().projections_path, projection, "{}.toml".format(projection))))
 
