@@ -66,7 +66,3 @@ class DirectImpacts:
         self.set_hazard(config_file_path)
 
 
-    def run(self):
-        """This function runs the scenario? Shouldn't this be done from the Integrator?
-        """
-        pass

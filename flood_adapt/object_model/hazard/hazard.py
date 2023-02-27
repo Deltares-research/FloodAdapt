@@ -41,11 +41,16 @@ class Hazard:
             measures (list): list of measures names
         """
         event_path = str(Path(DatabaseIO().events_path, event, "{}.toml".format(event)))
-        #         # parse event config file to get type of event
-        template = read_config(event_path)["template"]
-        # use type of measure to get the associated measure subclass
-        self.event = EventFactory.get_event(template).load(event_path)
-    
+        # set type of event (probabilistic_set or single_scenario)
+        self.set_type(read_config(event_path)["type"])
+        if self.type =="single_scenario":
+            # parse event config file to get event template
+            template = read_config(event_path)["template"]
+            # use type of measure to get the associated measure subclass
+            self.event = EventFactory.get_event(template).load(event_path)
+        elif self.type =="probabilistic_set":
+            self.ensemble = None # TODO: add Ensemble.load()    
+            
     def set_values(self, config_file_path: str = None):
         self.config_file = config_file_path
         if validate_existence_config_file(self.config_file):
