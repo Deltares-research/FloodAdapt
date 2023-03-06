@@ -1,6 +1,7 @@
 from pathlib import Path
 
-test_database = Path().absolute() / 'tests' / 'test_database'
+test_database = Path().absolute() / "tests" / "test_database"
+
 
 def test_create_new_event():
     from flood_adapt.object_model.hazard.event.event import Event
@@ -20,10 +21,18 @@ def test_create_new_event():
     assert isinstance(test_event.rainfall, dict)
     assert isinstance(test_event.river, dict)
 
+
 def test_read_config_synthetic():
     from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
-    test_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
     assert test_toml.is_file()
 
     test_synthetic = Synthetic()

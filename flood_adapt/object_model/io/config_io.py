@@ -15,7 +15,7 @@ def read_config(file_path: Union[str, Path]) -> dict:
     with open(file_path, mode="rb") as fp:
         config = tomli.load(fp)
     return config
-    
+
 
 def write_config(config: dict, file_path: Union[str, Path]) -> None:
     """Generic function to write a config file to .toml.

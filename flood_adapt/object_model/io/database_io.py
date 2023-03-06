@@ -1,11 +1,15 @@
 from pathlib import Path
 
 site_name_ = "charleston"  # This should be retrieved from somewhere else
-database_path_ = str(Path().absolute() / 'tests' / 'test_database')  # This should be retrieved from somewhere else
+database_path_ = str(
+    Path().absolute() / "tests" / "test_database"
+)  # This should be retrieved from somewhere else
 
 
 class DatabaseIO:
-    def __init__(self, database_path: str = database_path_, site_name: str = site_name_):
+    def __init__(
+        self, database_path: str = database_path_, site_name: str = site_name_
+    ):
         self.site_name = site_name
         self.database_path = str(Path(database_path).joinpath(self.site_name))
         self.validate_path()
@@ -13,7 +17,9 @@ class DatabaseIO:
 
     def validate_path(self):
         if not Path(self.database_path).is_dir():
-            raise FileNotFoundError("Database not found at {}".format(self.database_path))
+            raise FileNotFoundError(
+                "Database not found at {}".format(self.database_path)
+            )
 
     def set_paths(self):
         # The input folders
@@ -30,4 +36,6 @@ class DatabaseIO:
         # The static folders
         self.static_path = str(Path(self.database_path) / "static")
         self.site_path = str(Path(self.database_path) / "static" / "site")
-        self.site_config_path = str(Path(self.database_path) / "static" / "site" / (self.site_name + ".toml"))
+        self.site_config_path = str(
+            Path(self.database_path) / "static" / "site" / (self.site_name + ".toml")
+        )

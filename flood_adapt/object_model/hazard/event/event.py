@@ -1,7 +1,11 @@
 from pathlib import Path
 
 from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.validate.config import validate_content_config_file, validate_existence_config_file
+from flood_adapt.object_model.validate.config import (
+    validate_content_config_file,
+    validate_existence_config_file,
+)
+
 
 class Event:
     def __init__(self) -> None:
@@ -19,11 +23,22 @@ class Event:
         self.rainfall = dict()
         self.river = dict()
         self.config_file = None
-        self.mandatory_keys = ["name", "long_name", "template", "timing", "water_level_offset", "tide", "surge", "wind", "rainfall", "river"]
+        self.mandatory_keys = [
+            "name",
+            "long_name",
+            "template",
+            "timing",
+            "water_level_offset",
+            "tide",
+            "surge",
+            "wind",
+            "rainfall",
+            "river",
+        ]
 
     def set_name(self, value):
         self.name = value
-    
+
     def set_long_name(self, value):
         self.long_name = value
 
@@ -32,7 +47,7 @@ class Event:
 
     def set_timing(self, value: str) -> None:
         self.timing = value
-    
+
     def load(self, config_file: str = None):
         self.config_file = config_file
         if validate_existence_config_file(config_file):
@@ -44,5 +59,6 @@ class Event:
                 self.set_template(config["template"])
                 self.set_timing(config["timing"])
         return self
+
     # def write(self):
     #     write_config(self.config_file)
