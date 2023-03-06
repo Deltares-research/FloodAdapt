@@ -28,7 +28,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 - Create the environment by executing the following in your terminal:
 
 ```
-conda create -n flood_adapt python=3.11
+conda create -n flood_adapt python=3.10
 ```
 
 - Activate the environment
