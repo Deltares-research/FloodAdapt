@@ -40,7 +40,7 @@ conda activate flood_adapt
 In order to develop on `flood_adapt` locally, execute the following line inside your virtual environment
 
 ```bash
-pip install -e ".[tests]"
+pip install -e ".[tests,lint]"
 ```
 
 To run the tests execute:

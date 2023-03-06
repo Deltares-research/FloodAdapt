@@ -1,11 +1,17 @@
 from flood_adapt.object_model.io.config_io import read_config
-from flood_adapt.object_model.validate.config import validate_existence_config_file, validate_content_config_file
+from flood_adapt.object_model.validate.config import (
+    validate_existence_config_file,
+    validate_content_config_file,
+)
 
-from flood_adapt.object_model.hazard.physical_projection.risk_driver_factory import RiskDriverFactory
+from flood_adapt.object_model.hazard.physical_projection.risk_driver_factory import (
+    RiskDriverFactory,
+)
 
 
 class PhysicalProjection:
     """The Projection class containing various risk drivers."""
+
     def __init__(self) -> None:
         self.set_default()
 
@@ -16,16 +22,18 @@ class PhysicalProjection:
         self.mandatory_keys = ["name", "long_name"]
 
         # Set the default values for all risk drivers
-        self.slr = RiskDriverFactory.get_risk_drivers('slr')
-        self.precipitation_intensity = RiskDriverFactory.get_risk_drivers('precipitation_intensity')
-        self.storminess = RiskDriverFactory.get_risk_drivers('storminess')
+        self.slr = RiskDriverFactory.get_risk_drivers("slr")
+        self.precipitation_intensity = RiskDriverFactory.get_risk_drivers(
+            "precipitation_intensity"
+        )
+        self.storminess = RiskDriverFactory.get_risk_drivers("storminess")
 
     def set_name(self, value: str) -> None:
         self.name = value
-    
+
     def set_long_name(self, value: str) -> None:
         self.long_name = value
-    
+
     def set_risk_drivers(self, config: dict) -> None:
         # Load all risk drivers
         if "sea_level_rise" in config.keys():
@@ -49,7 +57,6 @@ class PhysicalProjection:
             self.set_long_name(config["long_name"])
             self.set_risk_drivers(config)
         return self
+
     # def write(self):
     #     write_config(self.config_file)
-    
-

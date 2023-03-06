@@ -1,6 +1,7 @@
 from pathlib import Path
 
-test_database = Path().absolute() / 'tests' / 'test_database'
+test_database = Path().absolute() / "tests" / "test_database"
+
 
 def test_read_site_toml():
     from flood_adapt.object_model.site import SiteConfig

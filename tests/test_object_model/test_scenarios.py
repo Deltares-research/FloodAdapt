@@ -1,6 +1,7 @@
 from pathlib import Path
 
-test_database = Path().absolute() / 'tests' / 'test_database'
+test_database = Path().absolute() / "tests" / "test_database"
+
 
 def test_scenario_class():
     from flood_adapt.object_model.scenario import Scenario
@@ -8,12 +9,23 @@ def test_scenario_class():
     from flood_adapt.object_model.site import SiteConfig
     from flood_adapt.object_model.hazard.hazard import Hazard
     from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-    from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic_change import SocioEconomicChange
+    from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic_change import (
+        SocioEconomicChange,
+    )
     from flood_adapt.object_model.hazard.event.event import Event
     from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-    from flood_adapt.object_model.hazard.physical_projection.physical_projection import PhysicalProjection
+    from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
+        PhysicalProjection,
+    )
 
-    test_scenario_toml = test_database / "charleston" / "input" / "scenarios" / "all_projections_extreme12ft_strategy_comb" / "all_projections_extreme12ft_strategy_comb.toml"
+    test_scenario_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "all_projections_extreme12ft_strategy_comb"
+        / "all_projections_extreme12ft_strategy_comb.toml"
+    )
     assert test_scenario_toml.is_file()
 
     test_scenario = Scenario().load("all_projections_extreme12ft_strategy_comb")
@@ -21,10 +33,16 @@ def test_scenario_class():
     assert isinstance(test_scenario.site_info, SiteConfig)
     assert isinstance(test_scenario.direct_impacts.hazard, Hazard)
     assert isinstance(test_scenario.direct_impacts.impact_strategy, ImpactStrategy)
-    assert isinstance(test_scenario.direct_impacts.socio_economic_change, SocioEconomicChange)
+    assert isinstance(
+        test_scenario.direct_impacts.socio_economic_change, SocioEconomicChange
+    )
     assert isinstance(test_scenario.direct_impacts.hazard.event, Event)
-    assert isinstance(test_scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy)
-    assert isinstance(test_scenario.direct_impacts.hazard.physical_projection, PhysicalProjection)
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy
+    )
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
+    )
 
     # Check if all variables are read correctly from the site config file.
     assert test_scenario.site_info.name == "charleston"
@@ -40,7 +58,11 @@ def test_scenario_class():
     assert test_scenario.site_info.obs_station["mllw"]["value"] == 0.0
 
     # Check if all variables are read correctly from the scenario file.
-    assert test_scenario.direct_impacts.name == "all_projections_extreme12ft_strategy_comb"
-    assert test_scenario.direct_impacts.long_name == "all_projections - extreme12ft - strategy_comb"
+    assert (
+        test_scenario.direct_impacts.name == "all_projections_extreme12ft_strategy_comb"
+    )
+    assert (
+        test_scenario.direct_impacts.long_name
+        == "all_projections - extreme12ft - strategy_comb"
+    )
     assert test_scenario.direct_impacts.socio_economic_change
-    

@@ -18,6 +18,9 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "numpy",
+    "geopandas",
+    "pandas",
+    "tomli-w"
 ]
 dynamic = ["version"]
 
@@ -25,6 +28,11 @@ dynamic = ["version"]
 tests = [
     "pytest",
     "pytest-cov",
+]
+lint = [
+    "black",
+    "mypy",
+    "ruff",
 ]
 
 [tool.setuptools]

@@ -4,6 +4,7 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config, write_config
 from flood_adapt.object_model.validate.config import validate_content_config_file
 
+
 class Synthetic(Event):
     def __init__(self) -> None:
         super().__init__()
@@ -13,11 +14,11 @@ class Synthetic(Event):
         super().set_default()
         self.duration_before_t0 = 0
         self.duration_after_t0 = 0
-        self.mandatory_keys.extend(["duration_before_t0","duration_after_t0"])
+        self.mandatory_keys.extend(["duration_before_t0", "duration_after_t0"])
 
     def set_name(self, value: str) -> None:
         self.name = value
-    
+
     def set_long_name(self, value: str) -> None:
         self.long_name = value
 
@@ -29,7 +30,7 @@ class Synthetic(Event):
 
     def set_water_level_offset(self, water_level_offset: dict) -> None:
         self.water_level_offset = water_level_offset
-        
+
     def set_tide(self, tide: dict) -> None:
         self.tide["source"] = tide["source"]
         self.tide["harmonic_amplitude"] = tide["harmonic_amplitude"]
@@ -61,7 +62,9 @@ class Synthetic(Event):
                 self.rainfall["peak_time"] = rainfall["peak_time"]
                 self.rainfall["duration"] = rainfall["duration"]
 
-    def set_river(self, river: dict) -> None: # // TODO Deal with Multiple rivers or no rivers
+    def set_river(
+        self, river: dict
+    ) -> None:  # // TODO Deal with Multiple rivers or no rivers
         self.river["source"] = river["source"]
         if self.river["source"] == "constant":
             self.river["constant_discharge"] = river["constant_discharge"]
@@ -71,7 +74,7 @@ class Synthetic(Event):
                 self.river["base_discharge"] = river["base_discharge"]
                 self.river["peak_discharge"] = river["peak_discharge"]
                 self.river["discharge_duration"] = river["discharge_duration"]
-    
+
     def load(self, config_file: str = None):
         super().load(config_file)
         config = read_config(self.config_file)
@@ -86,7 +89,8 @@ class Synthetic(Event):
             self.set_rainfall(config["rainfall"])
             self.set_river(config["river"])
         return self
-    
+
     def write(self):
         pass
+
     #     write_config(self.config_file)
