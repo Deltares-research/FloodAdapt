@@ -39,9 +39,9 @@ def test_elevate_aggr_area():
     assert measure.name == "raise_property_aggregation_area"
     assert measure.long_name == "raise_property_aggregation_area"
     assert measure.type == "elevate_properties"
-    assert measure.elevation["value"] == 1
-    assert measure.elevation["units"] == "feet"
-    assert measure.elevation["type"] == "floodmap"
+    assert measure.elevation.value == 1
+    assert measure.elevation.units == "feet"
+    assert measure.elevation.type == "floodmap"
     assert measure.selection_type == "aggregation_area"
     assert measure.aggregation_area == "test_area_1"
 
@@ -64,9 +64,9 @@ def test_elevate_polygon():
     assert measure.name == "raise_property_polygon"
     assert measure.long_name == "raise_property_polygon"
     assert measure.type == "elevate_properties"
-    assert measure.elevation["value"] == 1
-    assert measure.elevation["units"] == "feet"
-    assert measure.elevation["type"] == "floodmap"
+    assert measure.elevation.value == 1
+    assert measure.elevation.units == "feet"
+    assert measure.elevation.type == "floodmap"
     assert measure.selection_type == "polygon"
     assert measure.polygon_file == "raise_property_polygon.geojson"
 
