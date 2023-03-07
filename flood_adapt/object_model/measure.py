@@ -10,7 +10,7 @@ class Measure(ABC):
     
     def set_default(self) -> None:
         """Sets the default values of the ImpactMeasure class attributes"""
-        self.name = "Test2"  # Name of the measure
+        self.name = ""  # Name of the measure
         self.long_name = ""  # Long name of the measure
         self.config_file = None  # path to the configuration file connected with the measure
         self.mandatory_keys = ["name", "long_name", "type"] # mandatory keys in the config file
