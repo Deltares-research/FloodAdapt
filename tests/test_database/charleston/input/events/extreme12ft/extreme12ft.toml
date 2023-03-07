@@ -4,12 +4,13 @@ mode = "single_scenario"
 template = "Synthetic"
 timing = "idealized"
 
-duration_before_t0 = 24
-duration_after_t0 = 24
-
 [water_level_offset]
 value = 0
 units = "feet"
+
+[time]
+duration_before_t0 = 24
+duration_after_t0 = 24
 
 [tide]
 source = "harmonic"
