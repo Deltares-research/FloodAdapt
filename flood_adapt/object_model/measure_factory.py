@@ -1,5 +1,4 @@
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 
 

@@ -1,5 +1,6 @@
-from flood_adapt.object_model.validate.config import validate_content_config_file
 from typing import Union
+
+from flood_adapt.object_model.validate.config import validate_content_config_file
 
 
 class SLR:

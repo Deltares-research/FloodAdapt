@@ -1,12 +1,14 @@
+from pathlib import Path
+
+import geopandas as gpd
+
 from flood_adapt.object_model.io.config_io import read_config
+from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.io.fiat_data import FiatModel
 from flood_adapt.object_model.validate.config import (
-    validate_existence_config_file,
     validate_content_config_file,
+    validate_existence_config_file,
 )
-from flood_adapt.object_model.io.database_io import DatabaseIO
-from pathlib import Path
-import geopandas as gpd
 
 
 class ImpactMeasure:
@@ -50,15 +52,15 @@ class ImpactMeasure:
 
         if (self.selection_type == "aggregation_area") | (self.selection_type == "all"):
             if self.selection_type == "all":
-                ids = buildings["Object ID"].values
+                ids = buildings["Object ID"].to_numpy()
             elif self.selection_type == "aggregation_area":
                 ids = buildings.loc[
                     buildings["Aggregation Label: subdivision"]
                     == self.aggregation_area,
                     "Object ID",
-                ].values  # TODO: aggregation label should be read from site config
+                ].to_numpy()  # TODO: aggregation label should be read from site config
         elif self.selection_type == "polygon":
             polygon = gpd.read_file(Path(self.config_file).parent / self.polygon_file)
-            ids = gpd.sjoin(buildings, polygon)["Object ID"].values
+            ids = gpd.sjoin(buildings, polygon)["Object ID"].to_numpy()
 
         return list(ids)

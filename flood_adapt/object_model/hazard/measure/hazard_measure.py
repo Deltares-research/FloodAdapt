@@ -1,9 +1,8 @@
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import (
-    validate_existence_config_file,
     validate_content_config_file,
+    validate_existence_config_file,
 )
-from pathlib import Path
 
 
 class HazardMeasure:

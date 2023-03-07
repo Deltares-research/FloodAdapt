@@ -1,7 +1,10 @@
-from flood_adapt.object_model.strategy import Strategy
-from flood_adapt.object_model.measure_factory import ImpactMeasureFactory
-from flood_adapt.object_model.measure_factory import MeasureFactory
 from itertools import combinations
+
+from flood_adapt.object_model.measure_factory import (
+    ImpactMeasureFactory,
+    MeasureFactory,
+)
+from flood_adapt.object_model.strategy import Strategy
 
 
 class ImpactStrategy(Strategy):
