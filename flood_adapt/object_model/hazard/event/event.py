@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from flood_adapt.object_model.io.config_io import read_config, write_config
+from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import (
     validate_content_config_file,
     validate_existence_config_file,
@@ -16,12 +14,12 @@ class Event:
         self.long_name = ""
         self.template = ""
         self.timing = ""
-        self.water_level_offset = dict()
-        self.tide = dict()
-        self.surge = dict()
-        self.wind = dict()
-        self.rainfall = dict()
-        self.river = dict()
+        self.water_level_offset = {}
+        self.tide = {}
+        self.surge = {}
+        self.wind = {}
+        self.rainfall = {}
+        self.river = {}
         self.config_file = None
         self.mandatory_keys = [
             "name",

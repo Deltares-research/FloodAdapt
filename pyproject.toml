@@ -49,3 +49,7 @@ include = ["flood_adapt", "flood_adapt.*"]
 
 [project.urls]
 Source = "https://github.com/Deltares/FloodAdapt"
+
+[tool.ruff]
+select = ["E", "F", "NPY", "PD", "C4", "I"]
+ignore = ["E501", "PD901"]

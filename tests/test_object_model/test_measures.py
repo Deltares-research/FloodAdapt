@@ -47,8 +47,9 @@ def test_elevate_aggr_area():
 
 
 def test_elevate_polygon():
-    from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
     import geopandas as gpd
+
+    from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 
     test_toml = (
         test_database

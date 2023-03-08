@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pytest
 
 test_database = Path().absolute() / "tests" / "test_database"
