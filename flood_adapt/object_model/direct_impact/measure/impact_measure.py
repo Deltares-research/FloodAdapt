@@ -1,84 +1,66 @@
+from abc import ABC
+from enum import Enum
 from pathlib import Path
+from typing import Any, Optional
 
 import geopandas as gpd
+from pydantic import validator
 
-from flood_adapt.object_model.measure import Measure
-from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.io.fiat_data import FiatModel
-from flood_adapt.object_model.validate.config import (
-    validate_content_config_file,
-    validate_existence_config_file,
-)
+from flood_adapt.object_model.measure import MeasureModel
 
-class ImpactMeasure(Measure):
+
+class Type(str, Enum):
+    """class describing the accepted input for the variable 'type' in ImpactMeasure"""
+
+    elevate_properties = "elevate_properties"
+    buyout = "buyout"
+    floodproofing = "floodproofing"
+
+
+class SelectionType(str, Enum):
+    """class describing the accepted input for the variable 'selection_type' in ImpactMeasure"""
+
+    aggregation_area = "aggregation_area"
+    polygon = "polygon"
+    all = "all"
+
+
+class ImpactMeasureModel(MeasureModel):
+    """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
+
+    type: Type
+    selection_type: SelectionType
+    aggregation_area_name: Optional[str]
+    polygon_file: Optional[str]
+    property_type: str
+
+    @validator("aggregation_area")
+    def validate_aggregation_area_name(cls, aggregation_area_name: Optional[str], values: Any) -> Optional[str]:
+        if values.get("selection_type") == SelectionType.aggregation_area and aggregation_area_name is None:
+            raise ValueError(
+                "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
+            )
+        return aggregation_area_name
+    
+    @validator("polygon_file")
+    def validate_polygon_file(cls, polygon_file: Optional[str], values: Any) -> Optional[str]:
+        if values.get("selection_type") == SelectionType.polygon and polygon_file is None:
+            raise ValueError(
+                "If `selection_type` is 'polygon', then `polygon_file` needs to be set."
+            )
+        return polygon_file
+
+class ImpactMeasure(ABC):
     """ImpactMeasure class that holds all the information for a specific measure type that affects the impact model"""
 
-    def set_default(self) -> None:
-        """Sets the default values"""
-        super().set_default()
-        self.selection_type = None  # selection type (can be "aggregation area", "all" or "polygon")
-        self.aggregation_area = None  # name of area to use (this is needed if selection type is "aggregation_area")
-        self.polygon_file = None  # polygon file to use (this is needed if selection type is "polygon")
-        self.property_type = "RES"  # this is the object type to be used to apply the measure on
-        self.mandatory_keys.extend(["selection_type"])
-
-    @property
-    def selection_type(self):
-        return self._selection_type
-
-    @selection_type.setter
-    def selection_type(self, value: str):
-        self._selection_type = value
-
-    @property
-    def aggregation_area(self):
-        return self._aggregation_area
-
-    @aggregation_area.setter
-    def aggregation_area(self, value: str):
-        self._aggregation_area = value
-  
-    @property
-    def polygon_file(self):
-        return self._polygon_file
-
-    @polygon_file.setter
-    def polygon_file(self, value: str):
-        self._polygon_file = value
- 
-    @property
-    def property_type(self):
-        return self._property_type
-
-    @property_type.setter
-    def property_type(self, value: str):
-        self._property_type = value
-
-    def load(self, config_file: str = None):
-        """loads and updates the class attributes from a configuration file"""
-        super().load(config_file)
-        self.selection_type = self._config["selection_type"]
-        if (
-            self.selection_type == "aggregation_area"
-            and validate_content_config_file(
-                self._config, self.config_file, ["aggregation_area"]
-            )
-        ):
-            self.aggregation_area = self._config["aggregation_area"]
-        elif self.selection_type == "polygon" and validate_content_config_file(
-            self._config, self.config_file, ["polygon_file"]
-        ):
-            self.polygon_file = self._config["polygon_file"]
-
-        self.property_type = self._config["property_type"]
-
-    def get_object_ids(self):
+    def get_object_ids(self) -> list[Any]:
         """Get ids of objects that are affected by the measure"""
         database = DatabaseIO()  # this is needed to get to the FIAT model path
         buildings = FiatModel(database.database_path).get_buildings(self.property_type)
 
-        if (self.selection_type == "aggregation_area") | (self.selection_type == "all"):
+        if (self.selection_type == SelectionType.aggregation_area) or (self.selection_type == "all"):
             if self.selection_type == "all":
                 ids = buildings["Object ID"].to_numpy()
             elif self.selection_type == "aggregation_area":
