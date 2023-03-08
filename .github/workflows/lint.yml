@@ -29,4 +29,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[lint]"
       - name: Run black
-        run: black check .
+        run: black --check .
