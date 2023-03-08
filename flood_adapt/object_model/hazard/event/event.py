@@ -1,5 +1,6 @@
-from enum import Enum
 from abc import ABC
+from enum import Enum
+
 import tomli
 from pydantic import BaseModel
 
@@ -26,7 +27,7 @@ class Timing(str, Enum):
     idealized = "idealized"
 
 
-class EventModel(BaseModel): # add WindModel etc as this is shared among all? templates
+class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     name: str
     long_name: str
     mode: Mode

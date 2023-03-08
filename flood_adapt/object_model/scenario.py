@@ -1,7 +1,8 @@
-from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.site import SiteConfig
-from flood_adapt.object_model.io.database_io import DatabaseIO
 from pathlib import Path
+
+from flood_adapt.object_model.direct_impacts import DirectImpacts
+from flood_adapt.object_model.io.database_io import DatabaseIO
+from flood_adapt.object_model.site import SiteConfig
 
 
 class Scenario:

@@ -30,8 +30,10 @@ class Synthetic(Event):
         super().set_default()
         self.synthetic = SyntheticModel(
             time=TimeModel(duration_before_t0=24.0, duration_after_t0=24.0),
-            tide=TideModel(source="harmonic",
-            harmonic_amplitude=UnitfulValue(value=1.0, units="meters"))
+            tide=TideModel(
+                source="harmonic",
+                harmonic_amplitude=UnitfulValue(value=1.0, units="meters"),
+            ),
         )
 
     def load(self, filepath: str):
