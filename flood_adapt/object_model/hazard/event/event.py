@@ -1,62 +1,46 @@
-from flood_adapt.object_model.io.config_io import read_config
-from flood_adapt.object_model.validate.config import (
-    validate_content_config_file,
-    validate_existence_config_file,
-)
+from abc import ABC
+from enum import Enum
+
+from pydantic import BaseModel
+
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 
 
-class Event:
-    def __init__(self) -> None:
-        self.set_default()
+class Mode(str, Enum):
+    """class describing the accepted input for the variable mode in Event"""
 
-    def set_default(self):
-        self.name = ""
-        self.long_name = ""
-        self.template = ""
-        self.timing = ""
-        self.water_level_offset = {}
-        self.tide = {}
-        self.surge = {}
-        self.wind = {}
-        self.rainfall = {}
-        self.river = {}
-        self.config_file = None
-        self.mandatory_keys = [
-            "name",
-            "long_name",
-            "template",
-            "timing",
-            "water_level_offset",
-            "tide",
-            "surge",
-            "wind",
-            "rainfall",
-            "river",
-        ]
+    single_scenario = "single_scenario"
+    risk = "risk"
 
-    def set_name(self, value):
-        self.name = value
 
-    def set_long_name(self, value):
-        self.long_name = value
+class Template(str, Enum):
+    """class describing the accepted input for the variable template in Event"""
 
-    def set_template(self, value: str) -> None:
-        self.template = value
+    Synthetic = "Synthetic"
+    Hurricane = "Hurricane"
 
-    def set_timing(self, value: str) -> None:
-        self.timing = value
 
-    def load(self, config_file: str = None):
-        self.config_file = config_file
-        if validate_existence_config_file(config_file):
-            config = read_config(self.config_file)
+class Timing(str, Enum):
+    """class describing the accepted input for the variable timng in Event"""
 
-            if validate_content_config_file(config, config_file, self.mandatory_keys):
-                self.set_name(config["name"])
-                self.set_long_name(config["long_name"])
-                self.set_template(config["template"])
-                self.set_timing(config["timing"])
-        return self
+    historical = "historical"
+    idealized = "idealized"
 
-    # def write(self):
-    #     write_config(self.config_file)
+
+class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
+    """BaseModel describing the expected variables and data types of attributes common to all event types"""
+
+    name: str
+    long_name: str
+    mode: Mode
+    template: Template
+    timing: Timing
+    water_level_offset: UnitfulLength
+
+
+class Event(ABC):
+    """abstract parent class for all event types"""
+
+    @staticmethod
+    def generate_timeseries():
+        ...
