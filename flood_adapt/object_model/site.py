@@ -1,5 +1,5 @@
-from flood_adapt.object_model.io.config_io import read_config
 import flood_adapt.object_model.validate.config as val
+from flood_adapt.object_model.io.config_io import read_config
 
 
 class SiteConfig:

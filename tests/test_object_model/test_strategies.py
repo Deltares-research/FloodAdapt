@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pytest
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -6,8 +7,8 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 def test_strategy_comb():
     from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-    from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
     from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+    from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
     from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 
     test_toml = (

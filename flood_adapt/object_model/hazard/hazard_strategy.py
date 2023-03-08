@@ -1,6 +1,8 @@
+from flood_adapt.object_model.measure_factory import (
+    HazardMeasureFactory,
+    MeasureFactory,
+)
 from flood_adapt.object_model.strategy import Strategy
-from flood_adapt.object_model.measure_factory import HazardMeasureFactory
-from flood_adapt.object_model.measure_factory import MeasureFactory
 
 
 class HazardStrategy(Strategy):

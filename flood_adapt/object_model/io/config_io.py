@@ -1,6 +1,8 @@
-import tomli, tomli_w
-from typing import Union
 from pathlib import Path
+from typing import Union
+
+import tomli
+import tomli_w
 
 
 def read_config(file_path: Union[str, Path]) -> dict:

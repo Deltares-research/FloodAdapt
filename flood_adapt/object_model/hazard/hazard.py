@@ -1,15 +1,16 @@
 from pathlib import Path
+
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
+    PhysicalProjection,
+)
+from flood_adapt.object_model.io.config_io import read_config
+from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.validate.config import (
     validate_content_config_file,
     validate_existence_config_file,
 )
-from flood_adapt.object_model.io.database_io import DatabaseIO
-from flood_adapt.object_model.io.config_io import read_config, write_config
-from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
-    PhysicalProjection,
-)
-from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
 
 class Hazard:
