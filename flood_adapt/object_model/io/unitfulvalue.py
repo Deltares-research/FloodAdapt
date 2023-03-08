@@ -68,8 +68,7 @@ class UnitfulValue(BaseModel):
             conversion = 0.02832  # m3/s
         else:
             conversion = 1
-        self.value = self.value * conversion
-        return self
+        return self.value * conversion
 
 
 # def convert_unit(self) ->  float:
