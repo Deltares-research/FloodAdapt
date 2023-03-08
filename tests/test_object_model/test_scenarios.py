@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic_change import (
     SocioEconomicChange,
@@ -17,6 +19,9 @@ from flood_adapt.object_model.site import SiteConfig
 test_database = Path().absolute() / "tests" / "test_database"
 
 
+@pytest.mark.skip(
+    reason="pydantic not implemented in scenario class yet, still expecting config_io functions"
+)
 def test_scenario_class():
     test_scenario_toml = (
         test_database

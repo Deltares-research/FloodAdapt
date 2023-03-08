@@ -1,46 +1,93 @@
-from pydantic import BaseModel
 from enum import Enum
+
+from pydantic import BaseModel
+
 
 class UnitTypes(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
-    cms = "cms" # cubic meter /second
-    mps = "m/s" # meter/second
     feet = "feet"
     inch = "inch"
     cfs = "cfs"
     knots = "knots"
     degN = "degN"
-        
-    def convert_unit(unit) ->  float:
-        if unit == 'centimeters':
-            conversion = 1./100 # meters
-        elif unit == 'meters':
-            conversion = 1. # meters
-        elif unit == 'feet':
-            conversion = 1./3.28084 # meters
-        elif unit == 'inch':
-            conversion = 25.4 # millimeters
-        elif unit == 'knots':
-            conversion = 1. / 1.943844  # m/s
-        elif unit == 'cfs': # cubic feet per second
-            conversion = 0.02832 # m3/s
-        elif unit == 'cms':
-            conversion = 1.  # m3/s
-        else:
-            conversion = None
-        return conversion
+
+
+class UnitTypesLength(str, Enum):
+    meters = "meters"
+    centimeters = "centimeters"
+    feet = "feet"
+    inch = "inch"
 
 
 class VerticalReference(str, Enum):
     floodmap = "floodmap"
     datum = "datum"
 
-class UnitfulValue(BaseModel):
+
+class UnitfulLength(BaseModel):
     value: float
-    units: UnitTypes
+    units: UnitTypesLength
+
+    def convert_unit(self) -> float:
+        if self.units == "centimeters":
+            conversion = 1.0 / 100  # meters
+        elif self.units == "meters":
+            conversion = 1.0  # meters
+        elif self.units == "feet":
+            conversion = 1.0 / 3.28084  # meters
+        elif self.units == "inch":
+            conversion = 25.4  # millimeters
+        else:
+            conversion = 1
+        self.value = self.value * conversion
+        return self
+
 
 class UnitfulRefValue(BaseModel):
     value: float
     units: str
     type: VerticalReference
+
+
+class UnitfulValue(BaseModel):
+    value: float
+    units: UnitTypes
+
+    def convert_unit(self) -> float:
+        if self.units == "centimeters":
+            conversion = 1.0 / 100  # meters
+        elif self.units == "meters":
+            conversion = 1.0  # meters
+        elif self.units == "feet":
+            conversion = 1.0 / 3.28084  # meters
+        elif self.units == "inch":
+            conversion = 25.4  # millimeters
+        elif self.units == "knots":
+            conversion = 1.0 / 1.943844  # m/s
+        elif self.units == "cfs":  # cubic feet per second
+            conversion = 0.02832  # m3/s
+        else:
+            conversion = 1
+        self.value = self.value * conversion
+        return self
+
+
+# def convert_unit(self) ->  float:
+#     if self.units == 'centimeters':
+#         conversion = 1./100 # meters
+#     elif self.units == 'meters':
+#         conversion = 1. # meters
+#     elif self.units == 'feet':
+#         conversion = 1./3.28084 # meters
+#     elif self.units == 'inch':
+#         conversion = 25.4 # millimeters
+#     elif self.units == 'knots':
+#         conversion = 1. / 1.943844  # m/s
+#     elif self.units == 'cfs': # cubic feet per second
+#         conversion = 0.02832 # m3/s
+#     elif self.units == 'cms':
+#         conversion = 1.  # m3/s
+#     else:
+#         conversion = None
+#     return conversion

@@ -51,7 +51,7 @@ pytest tests
 
 ## Setup Visual Studio Code (optional)
 
-1. Install the [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff) extensions.
+1. Install the [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python), [ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff) and [autoDocstring](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring) extensions.
 
 2. Add the following to your `.vscode/settings.json` file in your workspace
 
@@ -63,6 +63,7 @@ pytest tests
             "source.fixAll": true
         }
     },
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "autoDocstring.docstringFormat": "numpy"
 }
 ```

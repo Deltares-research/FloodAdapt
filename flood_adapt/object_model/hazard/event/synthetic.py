@@ -1,45 +1,59 @@
+from pathlib import Path
+
 import tomli
+import tomli_w
 from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.io.unitfulvalue import UnitfulValue
+from flood_adapt.object_model.hazard.event.event import Event, EventModel
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 
 
 class TimeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
+
     duration_before_t0: float
     duration_after_t0: float
 
 
 class TideModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
     source: str
-    harmonic_amplitude: UnitfulValue
+    harmonic_amplitude: UnitfulLength
 
 
-class SyntheticModel(BaseModel):  # add SurgeModel etc. that fit Synthetic event
+class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
+    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
+
     time: TimeModel
     tide: TideModel
 
 
 class Synthetic(Event):
-    synthetic: SyntheticModel
+    """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
-    def __init__(self) -> None:
-        self.set_default()
+    model: SyntheticModel
 
-    def set_default(self):
-        super().set_default()
-        self.synthetic = SyntheticModel(
-            time=TimeModel(duration_before_t0=24.0, duration_after_t0=24.0),
-            tide=TideModel(
-                source="harmonic",
-                harmonic_amplitude=UnitfulValue(value=1.0, units="meters"),
-            ),
-        )
+    @staticmethod
+    def load_file(filepath: Path):
+        """create Synthetic from toml file"""
 
-    def load(self, filepath: str):
-        super().load(filepath)
-
+        obj = Synthetic()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        self.synthetic = SyntheticModel.parse_obj(toml)
-        return self
+        obj.model = SyntheticModel.parse_obj(toml)
+        return obj
+
+    @staticmethod
+    def load_dict(data: dict):
+        """create Synthetic from object, e.g. when initialized from GUI"""
+
+        obj = Synthetic()
+        obj.model = SyntheticModel.parse_obj(data)
+        for key, value in obj.model.dict().items():
+            setattr(obj, key, value)
+        return obj
+
+    def save(self, file: Path):
+        with open(file, "wb") as f:
+            tomli_w.dump(self.model.dict(), f)
