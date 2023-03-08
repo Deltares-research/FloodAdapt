@@ -1,0 +1,20 @@
+name = "extreme12ft"
+long_name = "extreme 12 foot event"
+mode = "single_scenario"
+template = "Synthetic"
+timing = "idealized"
+
+[water_level_offset]
+value = 0.0
+units = "feet"
+
+[time]
+duration_before_t0 = 24.0
+duration_after_t0 = 24.0
+
+[tide]
+source = "harmonic"
+
+[tide.harmonic_amplitude]
+value = 3.0
+units = "feet"
