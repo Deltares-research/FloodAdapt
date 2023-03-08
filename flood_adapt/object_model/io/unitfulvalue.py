@@ -40,7 +40,7 @@ class UnitfulLength(BaseModel):
             conversion = 25.4  # millimeters
         else:
             conversion = 1
-        return conversion
+        return conversion * self.value
 
 
 class UnitfulRefValue(BaseModel):
