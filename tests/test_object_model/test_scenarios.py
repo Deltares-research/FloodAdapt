@@ -18,7 +18,6 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 
 def test_scenario_class():
-
     test_scenario_toml = (
         test_database
         / "charleston"

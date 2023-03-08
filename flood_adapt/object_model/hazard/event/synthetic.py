@@ -1,4 +1,3 @@
-
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.io.config_io import read_config
 from flood_adapt.object_model.validate.config import validate_content_config_file
