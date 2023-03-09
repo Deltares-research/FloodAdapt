@@ -1,5 +1,6 @@
+from pathlib import Path
+
 import tomli
-from click import Path
 from pydantic import BaseModel
 
 

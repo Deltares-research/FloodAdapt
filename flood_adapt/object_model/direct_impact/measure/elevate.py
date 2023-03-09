@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import tomli
 import tomli_w
-from click import Path
 
 from flood_adapt.object_model.direct_impact.measure.impact_measure import (
     ImpactMeasure,
