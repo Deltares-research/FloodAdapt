@@ -45,3 +45,4 @@ def test_hazard_wl():
 
     assert isinstance(test_hazard.wl_ts, pd.DataFrame)
     assert len(test_hazard.wl_ts) > 1
+    assert isinstance(test_hazard.wl_ts.index, pd.DatetimeIndex)

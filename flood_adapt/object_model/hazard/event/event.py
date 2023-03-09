@@ -120,6 +120,8 @@ class Event:
 
     attrs: EventModel
 
+    attrs: EventModel
+
     @staticmethod
     def generate_timeseries():
         ...
@@ -143,7 +145,7 @@ class Event:
             toml = tomli.load(fp)
         obj.attrs = EventModel.parse_obj(toml)
         return obj.attrs.mode
-    
+
     # def add_wind_ts(self):
     #     # generating time series of constant wind or from file, for historic cases, function is overwritten in Synthetic class
     #     if self.attrs.wind.source == "constant":
@@ -175,4 +177,3 @@ class Event:
     #             "timeseries"
     #             "."
     #         )
-

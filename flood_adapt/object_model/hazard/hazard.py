@@ -99,8 +99,8 @@ class Hazard:
         if template == "Synthetic" or template == "Historical_nearshore":
             self.event_obj.add_tide_ts()
             self.wl_ts = self.event_obj.tide_ts
-            self.wl_ts["wl"] = (
-                self.wl_ts["wl"]
+            self.wl_ts["0:wl"] = (
+                self.wl_ts["0:wl"]
                 + self.event_obj.attrs.water_level_offset.convert_unit()
             )
             return self

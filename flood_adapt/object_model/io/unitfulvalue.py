@@ -24,50 +24,6 @@ class VerticalReference(str, Enum):
     datum = "datum"
 
 
-class UnitfulVelocity(BaseModel):
-    value: float
-    units: UnitTypesLength
-
-    def convert_to_mps(self) -> float:
-        """converts given velocity to meters per second
-
-        Returns
-        -------
-        float
-            converted parameter in meters per second
-        """
-        if self.units == "knots":
-            conversion = 1.0 / 1.943844  # m/s
-        else:
-            conversion = 1
-        return conversion * self.value
-
-
-class UnitfulDirection(BaseModel):
-    value: float
-    units: str = "deg N"
-
-
-class UnitfulDischarge(BaseModel):
-    value: float
-    units: UnitTypesDischarge
-
-    def convert_to_cms(self) -> float:
-        """converts given length value to cubic meters per second
-
-        Returns
-        -------
-        float
-            converted parameter in cubic meters per second
-        """
-
-        if self.units == "cfs":  # cubic feet per second
-            conversion = 0.02832  # m3/s
-        else:
-            conversion = 1
-        return self.value * conversion
-
-
 class UnitfulLength(BaseModel):
     value: float
     units: UnitTypesLength
@@ -113,7 +69,49 @@ class UnitfulLength(BaseModel):
         return conversion * self.value
 
 
-class UnitfulRefValue(BaseModel):
+class UnitfulVelocity(BaseModel):
     value: float
-    units: str
+    units: UnitTypesLength
+
+    def convert_to_mps(self) -> float:
+        """converts given velocity to meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in meters per second
+        """
+        if self.units == "knots":
+            conversion = 1.0 / 1.943844  # m/s
+        else:
+            conversion = 1
+        return conversion * self.value
+
+
+class UnitfulDirection(BaseModel):
+    value: float
+    units: str = "deg N"
+
+
+class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
+
+
+class UnitfulDischarge(BaseModel):
+    value: float
+    units: UnitTypesDischarge
+
+    def convert_to_cms(self) -> float:
+        """converts given length value to cubic meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in cubic meters per second
+        """
+
+        if self.units == "cfs":  # cubic feet per second
+            conversion = 0.02832  # m3/s
+        else:
+            conversion = 1
+        return self.value * conversion
