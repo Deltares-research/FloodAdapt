@@ -19,6 +19,3 @@ class SocioEconomicChange:
 
     def __init__(self, data: dict):
         self.attrs = SocioEconomicChangeModel.parse_obj(data)
-
-    def __init__(self, data: dict):
-        self.attrs = SocioEconomicChangeModel.parse_obj(data)
