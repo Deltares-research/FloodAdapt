@@ -37,7 +37,7 @@ def validate_config(config: dict) -> bool:
         config (dict): A configuration dictionary.
 
     Returns:
-        bool: True if the configuraton if valid and False if the configuration is invalid.
+        bool: True if the configuration if valid and False if the configuration is invalid.
     """
     if config:
         # TODO: add the validation steps here.

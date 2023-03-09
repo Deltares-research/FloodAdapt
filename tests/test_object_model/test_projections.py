@@ -55,7 +55,7 @@ def test_all_physical_projections():
     assert test_projections.precipitation_intensity.rainfall_increase == 20
 
 
-def test_phsyical_projection_only_slr():
+def test_physical_projection_only_slr():
     from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
         PhysicalProjection,
     )
