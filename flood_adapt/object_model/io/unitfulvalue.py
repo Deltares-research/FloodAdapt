@@ -37,7 +37,7 @@ class UnitfulLength(BaseModel):
         elif self.units == "feet":
             conversion = 1.0 / 3.28084  # meters
         elif self.units == "inch":
-            conversion = 25.4  # millimeters
+            conversion = 0.025  # meters
         else:
             conversion = 1
         return conversion * self.value

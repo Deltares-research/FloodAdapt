@@ -1,5 +1,9 @@
+import math
 from pathlib import Path
+from typing import Optional
 
+import numpy as np
+import pandas as pd
 import tomli
 import tomli_w
 from pydantic import BaseModel
@@ -13,6 +17,8 @@ class TimeModel(BaseModel):
 
     duration_before_t0: float
     duration_after_t0: float
+    start_time: Optional[str] = "20200101 000000"
+    end_time: Optional[str]
 
 
 class TideModel(BaseModel):
@@ -32,7 +38,8 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
 class Synthetic(Event):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
-    model: SyntheticModel
+    attrs: SyntheticModel
+    tide_ts: pd.DataFrame
 
     @staticmethod
     def load_file(filepath: Path):
@@ -41,7 +48,7 @@ class Synthetic(Event):
         obj = Synthetic()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.model = SyntheticModel.parse_obj(toml)
+        obj.attrs = SyntheticModel.parse_obj(toml)
         return obj
 
     @staticmethod
@@ -49,11 +56,35 @@ class Synthetic(Event):
         """create Synthetic from object, e.g. when initialized from GUI"""
 
         obj = Synthetic()
-        obj.model = SyntheticModel.parse_obj(data)
-        for key, value in obj.model.dict().items():
-            setattr(obj, key, value)
+        obj.attrs = SyntheticModel.parse_obj(data)
         return obj
 
     def save(self, file: Path):
+        """saving event toml
+
+        Parameters
+        ----------
+        file : Path
+            path to the location where file will be saved
+        """
         with open(file, "wb") as f:
-            tomli_w.dump(self.model.dict(), f)
+            tomli_w.dump(self.attrs.dict(), f)
+
+    def add_tide_ts(self):
+        # generating time series of harmoneous tide (cosine)
+
+        amp = self.attrs.tide.harmonic_amplitude.convert_unit()
+        omega = 2 * math.pi / (12.4 / 24)
+        time_shift = float(self.attrs.time.duration_before_t0) * 3600
+        duration = (
+            self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+        ) * 3600
+        tt = np.arange(0, duration + 1, 600)
+        wl = amp * np.cos(omega * (tt - time_shift) / 86400)
+        time = pd.date_range(
+            self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+        )
+        df = pd.DataFrame.from_dict({"time": time, "0:wl": wl})
+        df = df.set_index("time")
+        self.tide_ts = df
+        return self
