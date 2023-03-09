@@ -20,12 +20,13 @@ class Cstype(str, Enum):
     spherical = "spherical"
 
 class Floodmap_type(str, Enum):
-    """class describing the accepted input for the variable Floodmap in SiteConfig"""
+    """class describing the accepted input for the variable floodmap in SiteConfig"""
 
     water_level = "water_level"
     water_depth = "water_depth"
 
 class SfincsModel(BaseModel):
+    """class describing the accepted input for the variable sfincs in SiteConfig"""
     csname: str
     cstype: Cstype
     version: str
@@ -40,28 +41,34 @@ class SfincsModel(BaseModel):
     floodmap_units: UnitTypesLength
 
 class SlrModel(BaseModel):
+    """class describing the accepted input for the variable slr in SiteConfig"""
     vertical_offset: UnitfulLength
     relative_to_year: int
 
 class GuiModel(BaseModel):
+    """class describing the accepted input for the variable gui in SiteConfig"""
     tide_harmonic_amplitude: UnitfulLength
 
 class RiskModel(BaseModel):
+    """class describing the accepted input for the variable risk in SiteConfig"""
     flooding_threshold: UnitfulLength
     return_periods: list
 
 class DemModel(BaseModel):
+    """class describing the accepted input for the variable dem in SiteConfig"""
     filename: str
     units: UnitTypesLength
     indexfilename: str
 
 class FiatModel(BaseModel):
+    """class describing the accepted input for the variable fiat in SiteConfig"""
     exposure_crs: str
     aggregation_shapefiles: str
     aggregation_field_names: str
     floodmap_type: Floodmap_type
 
 class RiverModel(BaseModel):
+    """class describing the accepted input for the variable river in SiteConfig"""
     name: str
     long_name: str
     mean_discharge: UnitfulDischarge
@@ -69,6 +76,7 @@ class RiverModel(BaseModel):
     y_coordinate: float
 
 class Obs_stationModel(BaseModel):
+    """class describing the accepted input for the variable obs_station in SiteConfig"""
     name: Union[int,str]
     long_name: str
     ID: int
@@ -121,5 +129,6 @@ class SiteConfig:
         return obj
 
     def save(self, file: Path):
+        """write toml file from model object"""
         with open(file, "wb") as f:
             tomli_w.dump(self.model.dict(), f)

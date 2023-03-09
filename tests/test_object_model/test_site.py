@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from flood_adapt.object_model.site import SiteConfig, SfincsModel, DemModel, Obs_stationModel
+from flood_adapt.object_model.site import (
+    DemModel,
+    Obs_stationModel,
+    SfincsModel,
+    SiteConfig,
+)
 
 test_database = Path().absolute() / "tests" / "test_database"
 
