@@ -1,5 +1,6 @@
 import math
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -16,6 +17,8 @@ class TimeModel(BaseModel):
 
     duration_before_t0: float
     duration_after_t0: float
+    start_time: Optional[str] = "20200101 000000"
+    end_time: Optional[str]
 
 
 class TideModel(BaseModel):
@@ -78,5 +81,10 @@ class Synthetic(Event):
         ) * 3600
         tt = np.arange(0, duration + 1, 600)
         wl = amp * np.cos(omega * (tt - time_shift) / 86400)
-        self.tide_ts = pd.DataFrame.from_dict({"time": tt, "wl": wl})
+        time = pd.date_range(
+            self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+        )
+        df = pd.DataFrame.from_dict({"time": time, "0:wl": wl})
+        df = df.set_index("time")
+        self.tide_ts = df
         return self
