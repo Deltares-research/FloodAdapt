@@ -73,7 +73,7 @@ class Synthetic(Event):
     def add_tide_ts(self):
         # generating time series of harmoneous tide (cosine)
 
-        amp = self.attrs.tide.harmonic_amplitude.convert_unit()
+        amp = self.attrs.tide.harmonic_amplitude.convert_to_meters()
         omega = 2 * math.pi / (12.4 / 24)
         time_shift = float(self.attrs.time.duration_before_t0) * 3600
         duration = (
@@ -92,18 +92,19 @@ class Synthetic(Event):
     def add_wind_ts(self):
         # generating time series of constant wind
         if self.attrs.wind.source == "constant":
-            float(self.attrs.time.duration_before_t0) * 3600
             duration = (
                 self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
             ) * 3600
-            tt = np.arange(0, duration + 1, 600)
-            vmag = self.attrs.wind.constant_speed.convert_to_mps * np.ones_like(
-                tt[0, -1]
+            vmag = self.attrs.wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vdir = self.attrs.wind.constant_direction.value * np.array([1, 1])
+            time = pd.date_range(
+                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
             )
-            vdir = self.attrs.wind.constant_direction * np.ones_like(tt[0, -1])
-            self.wind_ts = pd.DataFrame.from_dict(
-                {"time": tt[0, -1], "vmag": vmag, "vdir": vdir}
+            df = pd.DataFrame.from_dict(
+                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
             )
+            df = df.set_index("time")
+            self.wind_ts = df
             return self
         else:
             raise ValueError(

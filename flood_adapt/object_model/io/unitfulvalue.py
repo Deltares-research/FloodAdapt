@@ -71,7 +71,7 @@ class UnitfulLength(BaseModel):
 
 class UnitfulVelocity(BaseModel):
     value: float
-    units: UnitTypesLength
+    units: UnitTypesVelocity
 
     def convert_to_mps(self) -> float:
         """converts given velocity to meters per second
