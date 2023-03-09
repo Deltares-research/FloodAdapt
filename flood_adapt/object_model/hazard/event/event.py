@@ -143,3 +143,36 @@ class Event:
             toml = tomli.load(fp)
         obj.attrs = EventModel.parse_obj(toml)
         return obj.attrs.mode
+    
+    # def add_wind_ts(self):
+    #     # generating time series of constant wind or from file, for historic cases, function is overwritten in Synthetic class
+    #     if self.attrs.wind.source == "constant":
+    #         float(self.attrs.time.duration_before_t0) * 3600
+    #         duration = (
+    #             self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+    #         ) * 3600
+    #         tt = np.arange(0, duration + 1, 600)
+    #         vmag = self.attrs.wind.constant_speed.convert_to_mps * np.ones_like(
+    #             tt[0, -1]
+    #         )
+    #         vdir = self.attrs.wind.constant_direction * np.ones_like(tt[0, -1])
+    #         self.wind_ts = pd.DataFrame.from_dict(
+    #             {"time": tt[0, -1], "vmag": vmag, "vdir": vdir}
+    #         )
+    #         return self
+    #     elif self.attrs.wind.source == "timeseries":
+    #         filepath = Path(
+    #             DatabaseIO().events_path,
+    #             self.attrs.name,
+    #             self.attrs.rainfall.rainfall_timeseries_file,
+    #         )
+    #         assert filepath.is_file()
+    #     else:
+    #         raise ValueError(
+    #             "A time series can only be generated for wind sources "
+    #             "constant"
+    #             " or "
+    #             "timeseries"
+    #             "."
+    #         )
+

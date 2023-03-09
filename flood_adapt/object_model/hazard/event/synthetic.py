@@ -80,9 +80,9 @@ class Synthetic(Event):
         wl = amp * np.cos(omega * (tt - time_shift) / 86400)
         self.tide_ts = pd.DataFrame.from_dict({"time": tt, "wl": wl})
         return self
-
+    
     def add_wind_ts(self):
-        # generating time series of constant wind or from file
+        # generating time series of constant wind
         if self.attrs.wind.source == "constant":
             float(self.attrs.time.duration_before_t0) * 3600
             duration = (
@@ -97,14 +97,6 @@ class Synthetic(Event):
                 {"time": tt[0, -1], "vmag": vmag, "vdir": vdir}
             )
             return self
-        # elif self.attrs.wind.source == "timeseries":
-        #     filepath = Path(
-        #         DatabaseIO().events_path,
-        #         self.attrs.name,
-        #         self.attrs.rainfall.rainfall_timeseries_file,
-        #     )
-        #     assert filepath.is_file()
-
         else:
             raise ValueError(
                 "A time series can only be generated for wind sources "
@@ -113,9 +105,3 @@ class Synthetic(Event):
                 "timeseries"
                 "."
             )
-
-    def add_rainfall_ts(self):
-        ...
-
-    def add_river_ts(self):
-        ...
