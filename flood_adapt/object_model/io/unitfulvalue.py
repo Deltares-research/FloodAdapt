@@ -30,13 +30,13 @@ class UnitfulLength(BaseModel):
     units: UnitTypesLength
 
     def convert_unit(self) -> float:
-        """ converts given length value to meters
+        """converts given length value to meters
 
         Returns
         -------
         float
             converted parameter in meters
-        """        
+        """
         if self.units == "centimeters":
             conversion = 1.0 / 100  # meters
         elif self.units == "meters":
@@ -44,7 +44,7 @@ class UnitfulLength(BaseModel):
         elif self.units == "feet":
             conversion = 1.0 / 3.28084  # meters
         elif self.units == "inch":
-            conversion = .025  # meters
+            conversion = 0.025  # meters
         else:
             conversion = 1
         return conversion * self.value
