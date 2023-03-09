@@ -1,6 +1,5 @@
 from typing import Dict, Union
 
-import geopandas as gpd
 import pandas as pd
 import xarray as xr
 from hydromt_sfincs import SfincsModel
