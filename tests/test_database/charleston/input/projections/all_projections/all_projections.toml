@@ -11,5 +11,5 @@ population_growth_new = 20
 population_growth_existing = 20
 new_development_elevation.value = 1
 new_development_elevation.units = "feet"
-new_development_elevation_reference = "floodmap"
+new_development_elevation.type = "floodmap"
 new_development_shapefile = "pop_growth_new_20.shp"
