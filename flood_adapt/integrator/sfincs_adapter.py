@@ -10,6 +10,8 @@ class SfincsAdapter():
     def __init__(self):
         ...
 
+    def run_sfincs_models(self, )
+
     def load_sfincs_model(self, model_root: str = None):
             #Check if model root exists
             if validate_existence_root_folder(model_root):
@@ -27,7 +29,7 @@ class SfincsAdapter():
         
         #HydroMT function: creates structure from dataframe
         #Needs to be completed in hydromt_sfincs
-        #self.sf_model.create_structures(structures_fn=polygon_file, stype='weir', overwrite=False) 
+        self.sf_model.create_structures(structures_fn=polygon_file, stype='weir', overwrite=False) 
 
     def add_wl_bc(self,
                   wl_ts: Union[xr.DataArray, pd.DataFrame, Dict[str, pd.DataFrame]] = None
