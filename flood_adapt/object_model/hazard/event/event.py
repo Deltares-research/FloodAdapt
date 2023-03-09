@@ -1,6 +1,7 @@
-from abc import ABC
 from enum import Enum
+from pathlib import Path
 
+import tomli
 from pydantic import BaseModel
 
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
@@ -38,9 +39,31 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     water_level_offset: UnitfulLength
 
 
-class Event(ABC):
+class Event:
     """abstract parent class for all event types"""
+
+    attrs: EventModel
 
     @staticmethod
     def generate_timeseries():
         ...
+
+    @staticmethod
+    def get_template(filepath: Path):
+        """create Synthetic from toml file"""
+
+        obj = Event()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = EventModel.parse_obj(toml)
+        return obj.attrs.template
+
+    @staticmethod
+    def get_mode(filepath: Path):
+        """create Synthetic from toml file"""
+
+        obj = Event()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = EventModel.parse_obj(toml)
+        return obj.attrs.mode
