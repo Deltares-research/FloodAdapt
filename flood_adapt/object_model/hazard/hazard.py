@@ -6,8 +6,6 @@ from pydantic import BaseModel
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-#from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-#from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.io.database_io import DatabaseIO
 
