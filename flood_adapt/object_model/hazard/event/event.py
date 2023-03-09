@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
+    UnitfulDischarge,
     UnitfulLength,
     UnitfulVelocity,
 )
@@ -41,9 +42,9 @@ class WindSource(str, Enum):
     timeseries: "timeseries"
 
 
-class RainSource(str, Enum):
+class RainfallSource(str, Enum):
     track: "track"
-    hindcast_map: "hindcast_map"
+    map: "map"
     constant: "constant"
     none: "none"
     timeseries: "timeseries"
@@ -51,12 +52,15 @@ class RainSource(str, Enum):
 
 
 class RiverSource(str, Enum):
-    track: "track"
-    hindcast_map: "hindcast_map"
     constant: "constant"
-    none: "none"
     timeseries: "timeseries"
     shape: "shape"
+
+
+class ShapeType(str, Enum):
+    gaussian: "gaussian"
+    block: "block"
+    triangle: "triangle"
 
 
 class WindModel(BaseModel):
@@ -64,19 +68,37 @@ class WindModel(BaseModel):
     # constant
     constant_speed: Optional[UnitfulVelocity]
     constant_direction: Optional[UnitfulDirection]
+    # timeseries
+    wind_timeseries_file: Optional[str]
 
 
-class RainModel(BaseModel):
-    source: RainSource
+class RainfallModel(BaseModel):
+    source: RainfallSource
     # constant
-    constant_speed: Optional[UnitfulVelocity]
-    constant_direction: Optional[UnitfulDirection]
+    constant_intensity: Optional[UnitfulLength]
+    # timeseries
+    rainfall_timeseries_file: Optional[str]
+    # shape
+    shape_type: Optional[ShapeType]
+    cumulative: Optional[UnitfulLength]
+    shape_duration = Optional[float]
+    shape_peak_time = Optional[float]
+    shape_start_time = Optional[float]
+    shape_end_time = Optional[float]
 
 
 class RiverModel(BaseModel):
-    source: RainSource
+    source: RiverSource
     # constant
     constant_discharge: Optional[UnitfulDischarge]
+    # shape
+    shape_type: Optional[ShapeType]
+    base_discharge: Optional[UnitfulDischarge]
+    shape_peak = Optional[UnitfulDischarge]
+    shape_duration = Optional[float]
+    shape_peak_time = Optional[float]
+    shape_start_time = Optional[float]
+    shape_end_time = Optional[float]
 
 
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
@@ -88,6 +110,9 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     template: Template
     timing: Timing
     water_level_offset: UnitfulLength
+    wind: WindModel
+    rainfall: RainfallModel
+    river: RiverModel
 
 
 class Event:
