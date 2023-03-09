@@ -29,7 +29,7 @@ class Strategy(IStrategy):
 
     attrs: StrategyModel
 
-    def get_measures(self):
+    def get_measures(self) -> None:
         """Gets the measures paths and types"""
         # Get measure paths using a database structure
         measure_paths = [

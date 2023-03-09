@@ -3,14 +3,14 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.socio_economic_change.socio_economic_change import (
+from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
+from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.scenario import Scenario
