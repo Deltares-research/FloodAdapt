@@ -1,89 +1,109 @@
 from pathlib import Path
+from typing import Optional
 
+import tomli
+from pydantic import BaseModel
+
+from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection.physical_projection import (
-    PhysicalProjection,
-)
-from flood_adapt.object_model.io.config_io import read_config
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.io.database_io import DatabaseIO
-from flood_adapt.object_model.validate.config import (
-    validate_content_config_file,
-    validate_existence_config_file,
-)
+
+
+class AttrModel(BaseModel):  # TODO replace with ScenarioModel
+    """BaseModel describing the expected variables and data types of the scenario"""
+
+    name: str
+    long_name: str
+    event: str
+    projection: str
+    strategy: str
+
+
+class EventTemplateModel:
+    Synthetic: Synthetic
 
 
 class Hazard:
-    def __init__(self) -> None:
-        self.set_default()
+    """class holding all information related to the hazard of the scenario
+    includes functions to generate generic timeseries for the hazard models
+    and to run the hazard models
+    """
 
-    def set_default(self):
-        """Sets the default values of the Hazard class attributes"""
-        self.name = ""
-        self.long_name = ""
-        self.mode = ""
-        self.type = ""
-        self.physical_projection = PhysicalProjection()
-        self.hazard_strategy = HazardStrategy()
+    attrs: AttrModel
+    event_obj: Optional[EventTemplateModel]
+    ensemble: Optional[EventTemplateModel]
+    # physical_projection: PhysicalProjection
+    # hazard_strategy: HazardStrategy
 
-    def set_name(self, value):
-        self.name = value
+    @staticmethod
+    def load_file(filepath: Path):
+        """create Hazard from toml file"""
 
-    def set_long_name(self, value):
-        self.long_name = value
+        obj = Hazard()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = AttrModel.parse_obj(toml)
+        obj.set_event(obj.attrs.event)
+        # obj.set_physical_projection(obj)
+        # obj.set_hazard_strategy(obj)
+        return obj
 
-    def set_type(self, value):
-        self.type = value
-
-    def set_physical_projection(self, projection):
-        self.physical_projection.load(
-            str(
-                Path(
-                    DatabaseIO().projections_path,
-                    projection,
-                    "{}.toml".format(projection),
-                )
-            )
-        )
-
-    def set_hazard_strategy(self, strategy: str):
-        self.hazard_strategy.load(
-            str(
-                Path(DatabaseIO().strategies_path, strategy, "{}.toml".format(strategy))
-            )
-        )
-
-    def set_event(self, event):
-        """Sets the actual Measure class list using the list of measure names
+    def set_event(self, event_name: str):
+        """Sets the actual Event template class list using the list of measure names
         Args:
-            measures (list): list of measures names
+            event_name (str): name of event used in scenario
         """
-        event_path = str(Path(DatabaseIO().events_path, event, "{}.toml".format(event)))
-        # set type of event (probabilistic_set or single_scenario)
-        self.set_type(read_config(event_path)["type"])
-        if self.type == "single_scenario":
+        event_path = Path(
+            DatabaseIO().events_path, event_name, "{}.toml".format(event_name)
+        )
+        # set mode (probabilistic_set or single_scenario)
+        mode = Event.get_mode(event_path)
+        if mode == "single_scenario":
             # parse event config file to get event template
-            template = read_config(event_path)["template"]
-            # use type of measure to get the associated measure subclass
-            self.event = EventFactory.get_event(template).load(event_path)
-        elif self.type == "probabilistic_set":
+            template = Event.get_template(event_path)
+            # use event template to get the associated event child class
+            self.event_obj = EventFactory.get_event(template).load_file(event_path)
+        elif mode == "probabilistic_set":
             self.ensemble = None  # TODO: add Ensemble.load()
 
-    def set_values(self, config_file_path: str = None):
-        self.config_file = config_file_path
-        if validate_existence_config_file(self.config_file):
-            self.config = read_config(self.config_file)
+        # def set_physical_projection(self, projection):
 
-        if validate_content_config_file(self.config, self.config_file, []):
-            self.set_name(self.config["name"])
-            self.set_long_name(self.config["long_name"])
-            self.set_physical_projection(self.config["projection"])
-            self.set_hazard_strategy(self.config["strategy"])
-            self.set_event(self.config["event"])
-        return self
+    #     self.physical_projection.load(
+    #         str(
+    #             Path(
+    #                 DatabaseIO().projections_path,
+    #                 projection,
+    #                 "{}.toml".format(projection),
+    #             )
+    #         )
+    #     )
+
+    # def set_hazard_strategy(self, strategy: str):
+    #     self.hazard_strategy.load(
+    #         str(
+    #             Path(DatabaseIO().strategies_path, strategy, "{}.toml".format(strategy))
+    #         )
+    #     )
 
     # no write function is needed since this is only used internally
 
-    def calculate_rp_floodmaps(self, rp: list) -> str:
+    def calculate_rp_floodmaps(self, rp: list) -> Path:
         path_to_floodmaps = None
         return path_to_floodmaps
+
+    def add_wl_ts(self):
+        """adds total water level timeseries"""
+        # generating total time series made of tide, slr and water level offset
+        template = self.event_obj.attrs.template
+        if template == "Synthetic" or template == "Historical_nearshore":
+            self.event_obj.add_tide_ts()
+            self.wl_ts = self.event_obj.tide_ts
+            self.wl_ts["0:wl"] = (
+                self.wl_ts["0:wl"]
+                + self.event_obj.attrs.water_level_offset.convert_unit()
+            )
+            return self
+
+    def run(self):
+        ...
