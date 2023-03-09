@@ -1,0 +1,8 @@
+name = "raise_property_aggregation_area_wrong"
+long_name = "raise_property_aggregation_area_wrong"
+type = "elevate_properties"
+elevation.value = 1
+elevation.units = "feet"
+elevation.type = "MSL"
+selection_type = "aggregation_area"
+property_type = "RES"
