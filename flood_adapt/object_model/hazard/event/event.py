@@ -1,10 +1,15 @@
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 import tomli
 from pydantic import BaseModel
 
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDirection,
+    UnitfulLength,
+    UnitfulVelocity,
+)
 
 
 class Mode(str, Enum):
@@ -26,6 +31,52 @@ class Timing(str, Enum):
 
     historical = "historical"
     idealized = "idealized"
+
+
+class WindSource(str, Enum):
+    track: "track"
+    hindcast_map: "hindcast_map"
+    constant: "constant"
+    none: "none"
+    timeseries: "timeseries"
+
+
+class RainSource(str, Enum):
+    track: "track"
+    hindcast_map: "hindcast_map"
+    constant: "constant"
+    none: "none"
+    timeseries: "timeseries"
+    shape: "shape"
+
+
+class RiverSource(str, Enum):
+    track: "track"
+    hindcast_map: "hindcast_map"
+    constant: "constant"
+    none: "none"
+    timeseries: "timeseries"
+    shape: "shape"
+
+
+class WindModel(BaseModel):
+    source: WindSource
+    # constant
+    constant_speed: Optional[UnitfulVelocity]
+    constant_direction: Optional[UnitfulDirection]
+
+
+class RainModel(BaseModel):
+    source: RainSource
+    # constant
+    constant_speed: Optional[UnitfulVelocity]
+    constant_direction: Optional[UnitfulDirection]
+
+
+class RiverModel(BaseModel):
+    source: RainSource
+    # constant
+    constant_discharge: Optional[UnitfulDischarge]
 
 
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates

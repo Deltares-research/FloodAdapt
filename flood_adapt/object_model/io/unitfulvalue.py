@@ -3,16 +3,6 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class UnitTypes(str, Enum):
-    meters = "meters"
-    centimeters = "centimeters"
-    feet = "feet"
-    inch = "inch"
-    cfs = "cfs"
-    knots = "knots"
-    degN = "degN"
-
-
 class UnitTypesLength(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
@@ -20,9 +10,62 @@ class UnitTypesLength(str, Enum):
     inch = "inch"
 
 
+class UnitTypesVelocity(str, Enum):
+    meters = "m/s"
+    centimeters = "knots"
+
+
+class UnitTypesDischarge(str, Enum):
+    cfs = "cfs"
+
+
 class VerticalReference(str, Enum):
     floodmap = "floodmap"
     datum = "datum"
+
+
+class UnitfulVelocity(BaseModel):
+    value: float
+    units: UnitTypesLength
+
+    def convert_unit(self) -> float:
+        """converts given velocity to meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in meters per second
+        """
+        if self.units == "knots":
+            conversion = 1.0 / 1.943844  # m/s
+        else:
+            conversion = 1
+        return conversion * self.value
+
+
+class UnitfulDirection(BaseModel):
+    value: float
+    units: str = "deg N"
+
+
+class UnitfulDischarge(BaseModel):
+    value: float
+    units: UnitTypesDischarge
+
+    def convert_unit(self) -> float:
+        """converts given length value to cubic meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in cubic meters per second
+        """
+
+        if self.units == "cfs":  # cubic feet per second
+            conversion = 0.02832  # m3/s
+        else:
+            conversion = 1
+        return self.value * conversion
 
 
 class UnitfulLength(BaseModel):
