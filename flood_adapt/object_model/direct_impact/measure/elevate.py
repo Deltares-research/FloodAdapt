@@ -1,32 +1,43 @@
+import tomli
+import tomli_w
+from click import Path
+
 from flood_adapt.object_model.direct_impact.measure.impact_measure import (
     ImpactMeasure,
     ImpactMeasureModel,
 )
 from flood_adapt.object_model.interface.measures import IElevate
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
 
 
 class ElevateModel(ImpactMeasureModel):
-    pass
+    elevation: UnitfulLengthRefValue
 
 
 class Elevate(ImpactMeasure, IElevate):
     """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height"""
 
-    @property
-    def elevation(self):
-        return self._elevation
+    attrs: ElevateModel
 
-    @elevation.setter
-    def elevation(self, value: Elevation):
-        self._elevation = Elevation(**value)
+    @staticmethod
+    def load_file(filepath: Path):
+        """create Elevate from toml file"""
 
-    def load(self, config_file: str = None):
-        """loads and updates the class attributes from a configuration file"""
-        super().load(config_file)
-        # Validate that the mandatory keys are in the configuration file
-        if validate_content_config_file(
-            self._config, self.config_file, self.mandatory_keys
-        ):
-            self.elevation = self._config["elevation"]
+        obj = Elevate()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = ElevateModel.parse_obj(toml)
+        return obj
 
-        return self
+    @staticmethod
+    def load_dict(data: dict):
+        """create Elevate from object, e.g. when initialized from GUI"""
+
+        obj = Elevate()
+        obj.attrs = ElevateModel.parse_obj(data)
+        return obj
+
+    def save(self, filepath: Path):
+        """save Elevate to a toml file"""
+        with open(filepath, "wb") as f:
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)

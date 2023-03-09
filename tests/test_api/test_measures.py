@@ -1,8 +1,4 @@
-from flood_adapt.api import measures as api_measures
-
-
 def test_add_elevate():
-
     measure = api_measures.add_elevate_measure()
     measure.selection_type = "aggregation_area"
 

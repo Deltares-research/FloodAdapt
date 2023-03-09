@@ -29,7 +29,7 @@ class UnitfulLength(BaseModel):
     value: float
     units: UnitTypesLength
 
-    def convert_unit(self) -> float:
+    def convert_to_meters(self) -> float:
         if self.units == "centimeters":
             conversion = 1.0 / 100  # meters
         elif self.units == "meters":
@@ -43,9 +43,7 @@ class UnitfulLength(BaseModel):
         return conversion * self.value
 
 
-class UnitfulRefValue(BaseModel):
-    value: float
-    units: str
+class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
 

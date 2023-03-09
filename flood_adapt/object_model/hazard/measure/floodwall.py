@@ -1,47 +1,43 @@
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
-from flood_adapt.object_model.io.config_io import read_config
-from flood_adapt.object_model.validate.config import (
-    validate_content_config_file,
+import tomli
+import tomli_w
+from click import Path
+
+from flood_adapt.object_model.hazard.measure.hazard_measure import (
+    HazardMeasure,
+    HazardMeasureModel,
 )
+from flood_adapt.object_model.interface.measures import IFloodwall
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
 
 
-class FloodWall(HazardMeasure):
-    """Subclass of HazardMeasure describing the measure of elevating buildings by a specific height"""
+class FloodwallModel(HazardMeasureModel):
+    elevation: UnitfulLengthRefValue
 
-    def __init__(self) -> None:
-        super().__init__()
 
-    def set_default(self):
-        """Sets the default values of the floodwall class attributes"""
-        super().set_default()
-        self.type = "floodwall"  # name reference that is used to know which class to use when the config file is read
-        self.elevation = {}
-        self.elevation["value"] = None  # elevation of flood wall
-        self.elevation["units"] = "m"  # the units that the height is given
-        self.elevation[
-            "type"
-        ] = "floodmap"  # type of height reference (can be "floodmap" or "datum")
-        self.polygon_file = None  # polygon file to use
-        self.mandatory_keys.extend(["type", "elevation", "polygon_file"])
+class FloodWall(HazardMeasure, IFloodwall):
+    """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
 
-    def set_type(self, type: str):
-        self.type = type
+    attrs: FloodwallModel
 
-    def set_elevation(self, elevation: dict):
-        self.elevation = elevation
+    @staticmethod
+    def load_file(filepath: Path):
+        """create Floodwall from toml file"""
 
-    def set_polygon_file(self, polygon_file: str):
-        self.polygon_file = polygon_file
+        obj = FloodWall()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = FloodwallModel.parse_obj(toml)
+        return obj
 
-    def load(self, config_file: str = None):
-        """loads and updates the class attributes from a configuration file"""
-        super().load(config_file)
+    @staticmethod
+    def load_dict(data: dict):
+        """create Floodwall from object, e.g. when initialized from GUI"""
 
-        config = read_config(config_file)
-        # Validate that the mandatory keys are in the configuration file
-        if validate_content_config_file(config, self.config_file, self.mandatory_keys):
-            self.set_type(config["type"])
-            self.set_elevation(config["elevation"])
-            self.set_polygon_file(config["polygon_file"])
+        obj = FloodWall()
+        obj.attrs = FloodwallModel.parse_obj(data)
+        return obj
 
-        return self
+    def save(self, filepath: Path):
+        """save Floodwall to a toml file"""
+        with open(filepath, "wb") as f:
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)

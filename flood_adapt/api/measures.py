@@ -12,6 +12,3 @@ def synthetic_load(model: SyntheticModel) -> ISynthetic:
     for key, value in obj.model.dict().items():
         setattr(obj, key, value)
     return obj
-
-
-

@@ -2,15 +2,18 @@ from pathlib import Path
 
 import pytest
 
+from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
+from flood_adapt.object_model.strategy import Strategy
+
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_strategy_comb():
-    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-    from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-    from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-    from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-
+def test_strategy_comb_read():
     test_toml = (
         test_database
         / "charleston"
@@ -21,19 +24,31 @@ def test_strategy_comb():
     )
     assert test_toml.is_file()
 
-    test_strategies_impact = ImpactStrategy().load(test_toml)
-    test_strategies_hazard = HazardStrategy().load(test_toml)
-    assert len(test_strategies_impact.measures) == 2
-    assert len(test_strategies_hazard.measures) == 1
-    assert isinstance(test_strategies_impact.measures[0], Elevate)
-    assert isinstance(test_strategies_impact.measures[1], Elevate)
-    assert isinstance(test_strategies_hazard.measures[0], FloodWall)
+    strategy = Strategy.load_file(test_toml)
+
+    assert strategy.attrs.name == "strategy_comb"
+    assert strategy.attrs.long_name == "strategy_comb"
+    assert len(strategy.attrs.measures) == 3
+    assert isinstance(strategy.HazardStrategy, HazardStrategy)
+    assert isinstance(strategy.ImpactStrategy, ImpactStrategy)
+    assert all(
+        [
+            isinstance(measure, ImpactMeasure)
+            for measure in strategy.ImpactStrategy.measures
+        ]
+    )
+    assert all(
+        [
+            isinstance(measure, HazardMeasure)
+            for measure in strategy.HazardStrategy.measures
+        ]
+    )
+    assert isinstance(strategy.ImpactStrategy.measures[0], Elevate)
+    assert isinstance(strategy.ImpactStrategy.measures[1], Elevate)
+    assert isinstance(strategy.HazardStrategy.measures[0], FloodWall)
 
 
 def test_strategy_no_measures():
-    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-    from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-
     test_toml = (
         test_database
         / "charleston"
@@ -44,16 +59,15 @@ def test_strategy_no_measures():
     )
     assert test_toml.is_file()
 
-    test_strategies_impact = ImpactStrategy().load(test_toml)
-    test_strategies_hazard = HazardStrategy().load(test_toml)
-    assert len(test_strategies_impact.measures) == 0
-    assert len(test_strategies_hazard.measures) == 0
+    strategy = Strategy.load_file(test_toml)
+    assert len(strategy.attrs.measures) == 0
+    assert isinstance(strategy.HazardStrategy, HazardStrategy)
+    assert isinstance(strategy.ImpactStrategy, ImpactStrategy)
+    assert len(strategy.HazardStrategy.measures) == 0
+    assert len(strategy.ImpactStrategy.measures) == 0
 
 
 def test_elevate_comb_correct():
-    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-    from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-
     test_toml = (
         test_database
         / "charleston"
@@ -64,18 +78,16 @@ def test_elevate_comb_correct():
     )
     assert test_toml.is_file()
 
-    test_strategies = ImpactStrategy().load(test_toml)
+    strategy = Strategy.load_file(test_toml)
 
-    assert test_strategies.name == "elevate_comb_correct"
-    assert test_strategies.long_name == "elevate_comb_correct"
-    assert isinstance(test_strategies.measures, list)
-    assert isinstance(test_strategies.measures[0], Elevate)
-    assert isinstance(test_strategies.measures[1], Elevate)
+    assert strategy.attrs.name == "elevate_comb_correct"
+    assert strategy.attrs.long_name == "elevate_comb_correct"
+    assert isinstance(strategy.attrs.measures, list)
+    assert isinstance(strategy.ImpactStrategy.measures[0], Elevate)
+    assert isinstance(strategy.ImpactStrategy.measures[1], Elevate)
 
 
 def test_elevate_comb_fail_1():
-    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-
     test_toml = (
         test_database
         / "charleston"
@@ -86,14 +98,11 @@ def test_elevate_comb_fail_1():
     )
     assert test_toml.is_file()
 
-    test_strategies = ImpactStrategy()
     with pytest.raises(ValueError):
-        test_strategies.load(test_toml)
+        Strategy.load_file(test_toml)
 
 
 def test_elevate_comb_fail_2():
-    from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-
     test_toml = (
         test_database
         / "charleston"
@@ -104,6 +113,5 @@ def test_elevate_comb_fail_2():
     )
     assert test_toml.is_file()
 
-    test_strategies = ImpactStrategy()
     with pytest.raises(ValueError):
-        test_strategies.load(test_toml)
+        Strategy.load_file(test_toml)
