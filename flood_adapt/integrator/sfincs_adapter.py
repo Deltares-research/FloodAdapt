@@ -1,16 +1,17 @@
-from hydromt_sfincs import SfincsModel
-from pathlib import Path
-from typing import Dict, Tuple, List, Union
+from typing import Dict, Union
+
+import geopandas as gpd
 import pandas as pd
 import xarray as xr
-import geopandas as gpd
+from hydromt_sfincs import SfincsModel
+
 from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
-class SfincsAdapter():
-    def __init__(self):
-        ...
 
-    def run_sfincs_models(self, )
+class SfincsAdapter():
+
+    def run_sfincs_models(self):
+         pass
 
     def load_sfincs_model(self, model_root: str = None):
             #Check if model root exists

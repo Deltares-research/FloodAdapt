@@ -71,18 +71,20 @@ class UnitfulValue(BaseModel):
             conversion = 1
         return self.value * conversion
 
+
 class UnitfulDischarge(BaseModel):
     value: float
     units: UnitTypes
 
     def convert_units(self) -> float:
-        if self.units == 'm3s':
-            conversion = 1. #meters
-        elif self.units == 'cfs': #cubic feet per second
-            conversion = 0.02832 # m3/s
+        if self.units == "m3s":
+            conversion = 1.0  # meters
+        elif self.units == "cfs":  # cubic feet per second
+            conversion = 0.02832  # m3/s
         else:
             conversion = None
         return self.value * conversion
+
 
 # def convert_unit(self) ->  float:
 #     if self.units == 'centimeters':
