@@ -70,7 +70,7 @@ class ImpactMeasure(ABC):
         """Get ids of objects that are affected by the measure"""
         database = (
             DatabaseIO()
-        )  # TODO this should should be updated by the new dbs_controler class
+        )  # TODO this should should be updated by the new dbs_controller class
         buildings = FiatModel(database.database_path).get_buildings(
             self.attrs.property_type
         )
