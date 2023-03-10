@@ -83,7 +83,8 @@ class FiatModel(BaseModel):
 
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in SiteConfig"""
-    #TODO: add functionality to use multiple rivers
+
+    # TODO: add functionality to use multiple rivers
 
     name: str
     long_name: str
@@ -135,7 +136,7 @@ class SiteConfig:
         obj = SiteConfig()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs= SiteConfigModel.parse_obj(toml)
+        obj.attrs = SiteConfigModel.parse_obj(toml)
         return obj
 
     @staticmethod
