@@ -13,7 +13,7 @@ It uses SFINCS (Super-Fast INundation of CoastS) and FIAT-Objects in the backgro
 
 In order to develop on `flood_adapt` locally, please follow the following steps:
 
-- Download and install [miniconda](https://docs.conda.io/en/latest/miniconda.html).
+- Download and install [mambaforge](https://mamba.readthedocs.io/en/latest/installation.html#fresh-install).
 
 - Initialize `conda` by running the following in the `Miniconda prompt`:
 
@@ -32,7 +32,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 - Create (or update) the environment by executing the following in your terminal:
 
 ```
-conda env create --file=environment.yml --force
+mamba env create --file=environment.yml --force
 ```
 
 - Installing hydromt
