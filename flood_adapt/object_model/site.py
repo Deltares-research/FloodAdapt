@@ -142,7 +142,7 @@ class SiteConfig:
         """create Synthetic from object, e.g. when initialized from GUI"""
 
         obj = SiteConfig()
-        obj.model = SiteConfig.parse_obj(data)
+        obj.attrs = SiteConfig.parse_obj(data)
         for key, value in obj.model.dict().items():
             setattr(obj, key, value)
         return obj
