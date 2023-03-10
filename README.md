@@ -9,9 +9,11 @@ It uses SFINCS (Super-Fast INundation of CoastS) and FIAT-Objects in the backgro
 # Contributing
 
 
+## Setting up conda
+
 In order to develop on `flood_adapt` locally, please follow the following steps:
 
-- Download and install [miniconda](https://docs.conda.io/en/latest/miniconda.html).
+- Download and install [mambaforge](https://mamba.readthedocs.io/en/latest/installation.html#fresh-install).
 
 - Initialize `conda` by running the following in the `Miniconda prompt`:
 
@@ -25,11 +27,15 @@ conda init
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ```
 
-- Create the environment by executing the following in your terminal:
+## Creating (or updating) the environment
+
+- Create (or update) the environment by executing the following in your terminal:
 
 ```
-conda create -n flood_adapt python=3.10
+mamba env create --file=environment.yml --force
 ```
+
+## Installing FloodAdapt
 
 - Activate the environment
 
@@ -40,8 +46,18 @@ conda activate flood_adapt
 In order to develop on `flood_adapt` locally, execute the following line inside your virtual environment
 
 ```bash
-pip install -e ".[tests,lint]"
+pip install -e .
 ```
+
+## Running the tests
+
+
+If no already done, activate the environment
+
+```
+conda activate flood_adapt
+```
+
 
 To run the tests execute:
 
