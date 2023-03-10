@@ -3,8 +3,17 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.event.synthetic import TideModel
+from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.direct_impact.socio_economic_change import (
+    SocioEconomicChange,
+)
+from flood_adapt.object_model.direct_impacts import DirectImpacts
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic, TideModel
+from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.site import Site
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -22,6 +31,19 @@ def test_scenario_class():
 
     scenario = Scenario.load_file(scenario_toml)
     scenario.init_object_model()
+
+    assert isinstance(scenario.site_info, Site)
+    assert isinstance(scenario.direct_impacts, DirectImpacts)
+    assert isinstance(
+        scenario.direct_impacts.socio_economic_change, SocioEconomicChange
+    )
+    assert isinstance(scenario.direct_impacts.impact_strategy, ImpactStrategy)
+    assert isinstance(scenario.direct_impacts.hazard, Hazard)
+    assert isinstance(scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy)
+    assert isinstance(
+        scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
+    )
+    assert isinstance(scenario.direct_impacts.hazard.event, Synthetic)
 
 
 def test_hazard_load():

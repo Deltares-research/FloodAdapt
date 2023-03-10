@@ -1,10 +1,12 @@
+from typing import Optional
+
 from hydromt_sfincs import SfincsModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
 
 class SfincsAdapter:
-    def load_overland_sfincs_model(self, model_root: str = None):
+    def load_overland_sfincs_model(self, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
         Args:
