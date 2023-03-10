@@ -1,15 +1,17 @@
 name = "current"
 long_name = "current"
-sea_level_rise = 0
-sea_level_rise_vertical_units = "feet"
-subsidence = 0
-subsidence_vertical_units = "feet"
+[physical_projection]
+sea_level_rise.value = 0
+sea_level_rise.units = "feet"
+subsidence.value = 0
+subsidence.units = "feet"
 rainfall_increase = 0
 storm_frequency_increase = 0
+[socio_economic_change]
 economic_growth = 0
 population_growth = 0
 population_growth_new = 0
 population_growth_existing = 0
-new_development_elevation = 0
-new_development_elevation_vertical_units = "feet"
-new_development_elevation_reference = "floodmap"
+new_development_elevation.value = 0
+new_development_elevation.units = "feet"
+new_development_elevation.type = "floodmap"
