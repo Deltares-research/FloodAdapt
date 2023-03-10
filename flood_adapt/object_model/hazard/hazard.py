@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import tomli
+import sys
+import subprocess
 from pydantic import BaseModel
 
 from flood_adapt.object_model.hazard.event.event import Event
@@ -13,6 +15,7 @@ from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.io.database_io import DatabaseIO
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
 
 class AttrModel(BaseModel):  # TODO replace with ScenarioModel
@@ -114,6 +117,39 @@ class Hazard:
             )  # TODO add slr
             return self
 
-    # def run(self):
-    #     self.__setattr__("has_run", True)
-    #     ...
+    def run(self):
+
+        #TODO: make path variable
+        path_in = Path('n:\Projects\11207500\11207949\F. Other information\Test_data\database\charleston\static\templates\overland')
+        run_folder_overland = Path('n:\Projects\11207500\11207949\F. Other information\Test_data\database\charleston\output\simulations\test')
+               
+        self.add_wl_ts()
+
+        #Load overland sfincs model
+        sf_model = SfincsAdapter.load_overland_sfincs_model(model_root=path_in)
+
+        #Change water level bounary condition
+        sf_model.add_wl_bc(self.wl_ts)
+
+        #write sfincs model in output destination
+        sf_model.write_sfincs_model(path_out=run_folder_overland)
+
+        #Run new model (create batch file and run it)
+        if self.event_obj.attrs.mode:  # adjust relative path to SFINCS executable for ensemble run (additional folder depth)
+            with open(run_folder_overland.join("run.bat"), "w") as f_out:
+                bat_file: str = "cd ""%~dp0""\n""..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format("sfincs20_AlpeDHuez_release")
+                f_out.write(bat_file)
+        else:
+            with open(run_folder_overland.join("run.bat"), 'w') as f_out:
+                bat_file: str = "cd ""%~dp0""\n""..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format("sfincs20_AlpeDHuez_release")
+                f_out.write(bat_file)
+
+        with subprocess.Popen(run_folder_overland.join("run.bat"), stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) as result:
+            for line in result.stdout:
+                print('SFINCS overland model >>> {}\n'.format(line[:-1]), end='', file=sys.stdout, flush=True)  # process line here
+        
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(result.returncode, result.args)
+
+        #Indicator that sfincs model has run
+        self.__setattr__("has_run", True)
