@@ -150,4 +150,4 @@ class SiteConfig:
     def save(self, file: Path):
         """write toml file from model object"""
         with open(file, "wb") as f:
-            tomli_w.dump(self.model.dict(), f)
+            tomli_w.dump(self.attrs.dict(), f)
