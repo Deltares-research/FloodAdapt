@@ -107,7 +107,7 @@ class Synthetic(Event):
         elif self.attrs.surge.source == "none":
             surge = np.zeros_like(tt)
 
-        # save to object iwth pandas daterange
+        # save to object with pandas daterange
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
@@ -160,16 +160,18 @@ class Synthetic(Event):
         duration = (
             self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
         ) * 3600
-        peak = self.attrs.surge.shape_peak.convert_to_meters()
         if self.attrs.surge.shape_type == "gaussian":
+            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
         elif self.attrs.surge.shape_type == "block":
+            peak = self.attrs.surge.shape_peak.convert_to_meters()
             ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
             ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
         elif self.attrs.surge.shape_type == "triangle":
+            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600

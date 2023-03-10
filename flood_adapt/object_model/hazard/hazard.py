@@ -89,14 +89,14 @@ class Hazard:
         # generating total time series made of tide, slr and water level offset
         template = self.event.attrs.template
         if template == "Synthetic" or template == "Historical_nearshore":
-            self.event.add_tide_and_surge_ts()
-            self.wl_ts = self.event.tide_surge_ts
+            self.event_obj.add_tide_and_surge_ts()
+            self.wl_ts = self.event_obj.tide_surge_ts
             self.wl_ts["0:wl"] = (
                 self.wl_ts["0:wl"]
-                + self.event.attrs.water_level_offset.convert_to_meters()
-            )  # add slr
+                + self.event_obj.attrs.water_level_offset.convert_to_meters()
+            )  # TODO add slr
             return self
 
-    def run(self):
-        self.__setattr__("has_run", True)
-        ...
+    # def run(self):
+    #     self.__setattr__("has_run", True)
+    #     ...

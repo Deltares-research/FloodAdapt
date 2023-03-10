@@ -1,88 +1,153 @@
-import flood_adapt.object_model.validate.config as val
-from flood_adapt.object_model.io.config_io import read_config
+from enum import Enum
+from pathlib import Path
+from typing import Optional, Union
+
+import tomli
+import tomli_w
+from pydantic import BaseModel
+
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulLength,
+    UnitTypesLength,
+)
+
+
+class Cstype(str, Enum):
+    """class describing the accepted input for the variable cstype in SiteConfig"""
+
+    projected = "projected"
+    spherical = "spherical"
+
+
+class Floodmap_type(str, Enum):
+    """class describing the accepted input for the variable floodmap in SiteConfig"""
+
+    water_level = "water_level"
+    water_depth = "water_depth"
+
+
+class SfincsModel(BaseModel):
+    """class describing the accepted input for the variable sfincs in SiteConfig"""
+
+    csname: str
+    cstype: Cstype
+    version: str
+    offshore_model: str
+    overland_model: str
+    datum_offshore_model: str
+    datum_overland_model: str
+    diff_datum_offshore_overland: UnitfulLength
+    tidal_components: str
+    ambient_air_pressure: float
+    floodmap_no_data_value: float
+    floodmap_units: UnitTypesLength
+
+
+class SlrModel(BaseModel):
+    """class describing the accepted input for the variable slr in SiteConfig"""
+
+    vertical_offset: UnitfulLength
+    relative_to_year: int
+
+
+class GuiModel(BaseModel):
+    """class describing the accepted input for the variable gui in SiteConfig"""
+
+    tide_harmonic_amplitude: UnitfulLength
+
+
+class RiskModel(BaseModel):
+    """class describing the accepted input for the variable risk in SiteConfig"""
+
+    flooding_threshold: UnitfulLength
+    return_periods: list
+
+
+class DemModel(BaseModel):
+    """class describing the accepted input for the variable dem in SiteConfig"""
+
+    filename: str
+    units: UnitTypesLength
+    indexfilename: str
+
+
+class FiatModel(BaseModel):
+    """class describing the accepted input for the variable fiat in SiteConfig"""
+
+    exposure_crs: str
+    aggregation_shapefiles: str
+    aggregation_field_names: str
+    floodmap_type: Floodmap_type
+
+
+class RiverModel(BaseModel):
+    """class describing the accepted input for the variable river in SiteConfig"""
+
+    # TODO: add functionality to use multiple rivers
+
+    name: str
+    long_name: str
+    mean_discharge: UnitfulDischarge
+    x_coordinate: float
+    y_coordinate: float
+
+
+class Obs_stationModel(BaseModel):
+    """class describing the accepted input for the variable obs_station in SiteConfig"""
+
+    name: Union[int, str]
+    long_name: str
+    ID: int
+    lat: float
+    lon: float
+    mllw: UnitfulLength
+    mhhw: UnitfulLength
+    localdatum: UnitfulLength
+    msl: UnitfulLength
+
+
+class SiteConfigModel(BaseModel):
+    """BaseModel describing the expected variables and data types of attributes of the siteConfig class"""
+
+    name: str
+    long_name: str
+    lat: float
+    lon: float
+    sfincs: SfincsModel
+    slr: SlrModel
+    gui: GuiModel
+    risk: RiskModel
+    dem: DemModel
+    fiat: FiatModel
+    river: Optional[RiverModel]
+    obs_station: Optional[Obs_stationModel]
 
 
 class SiteConfig:
-    def __init__(self, config_path):
-        self.config_path = config_path
-        self.build()
+    """Class for general variables of the object_model"""
 
-    def build(self):
-        # Reading of toml file is done by read_config()
-        if val.validate_existence_config_file(self.config_path):
-            config = read_config(self.config_path)
+    attrs: SiteConfigModel
 
-        # Keys of dictionaries
-        mandatory_attributes = [
-            "name",
-            "long_name",
-            "lat",
-            "lon",
-            "sfincs",
-            "slr",
-            "risk",
-            "gui",
-            "dem",
-            "fiat",
-        ]
-        non_mandatory_attributes = ["river", "obs_station"]
-        mandatory_sfincs = [
-            "csname",
-            "cstype",
-            "version",
-            "offshore_model",
-            "overland_model",
-            "datum_offshore_model",
-            "datum_overland_model",
-            "diff_datum_offshore_overland",
-            "tidal_components",
-            "ambient_air_pressure",
-            "floodmap_no_data_value",
-            "floodmap_units",
-        ]
-        mandatory_slr = ["vertical_offset", "relative_to_year"]
-        mandatory_risk = ["return_periods", "flooding_threshold"]
-        mandatory_gui = ["tide_harmonic_amplitude"]
-        mandatory_dem = ["filename", "units", "indexfilename"]
-        mandatory_fiat = [
-            "exposure_crs",
-            "aggregation_shapefiles",
-            "aggregation_field_names",
-            "floodmap_type",
-        ]
-        if val.validate_content_config_file(
-            config, self.config_path, mandatory_attributes
-        ):
-            for attr in mandatory_attributes:
-                # Check if attributes have correct dictionary keys (if applicable)
-                if attr == "sfincs":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_sfincs
-                    )
-                elif attr == "slr":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_slr
-                    )
-                elif attr == "risk":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_risk
-                    )
-                elif attr == "gui":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_gui
-                    )
-                elif attr == "dem":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_dem
-                    )
-                elif attr == "fiat":
-                    val.validate_content_config_file(
-                        config[attr], self.config_path, mandatory_fiat
-                    )
-                # Add the attributes
-                setattr(self, attr, config[attr])
+    @staticmethod
+    def load_file(filepath: Path):
+        """create SiteConfig from toml file"""
 
-            for attr in non_mandatory_attributes:
-                for key in config:
-                    if attr == key:
-                        setattr(self, attr, config[attr])
+        obj = SiteConfig()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = SiteConfigModel.parse_obj(toml)
+        return obj
+
+    @staticmethod
+    def load_dict(data: dict):
+        """create Synthetic from object, e.g. when initialized from GUI"""
+
+        obj = SiteConfig()
+        obj.attrs = SiteConfig.parse_obj(data)
+        return obj
+
+    def save(self, file: Path):
+        """write toml file from model object"""
+        with open(file, "wb") as f:
+            tomli_w.dump(self.attrs.dict(), f)
