@@ -83,6 +83,7 @@ class FiatModel(BaseModel):
 
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in SiteConfig"""
+    #TODO: add functionality to use multiple rivers
 
     name: str
     long_name: str
@@ -143,8 +144,6 @@ class SiteConfig:
 
         obj = SiteConfig()
         obj.model = SiteConfig.parse_obj(data)
-        for key, value in obj.model.dict().items():
-            setattr(obj, key, value)
         return obj
 
     def save(self, file: Path):
