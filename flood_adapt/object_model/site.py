@@ -6,11 +6,9 @@ import tomli
 import tomli_w
 from pydantic import BaseModel
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitTypesLength,
-)
+from flood_adapt.object_model.io.unitfulvalue import (UnitfulDischarge,
+                                                      UnitfulLength,
+                                                      UnitTypesLength)
 
 
 class Cstype(str, Enum):
