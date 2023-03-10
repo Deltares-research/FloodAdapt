@@ -1,11 +1,13 @@
 name = "all_projections"
 long_name = "all_projections"
+[physical_projection]
 sea_level_rise.value = 2
 sea_level_rise.units = "feet"
 subsidence.value = 0
 subsidence.units = "feet"
 rainfall_increase = 20
 storm_frequency_increase = 20
+[socio_economic_change]
 economic_growth = 20
 population_growth_new = 20
 population_growth_existing = 20
