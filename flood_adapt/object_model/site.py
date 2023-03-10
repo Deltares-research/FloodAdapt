@@ -134,7 +134,7 @@ class SiteConfig:
         obj = SiteConfig()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.model = SiteConfigModel.parse_obj(toml)
+        obj.attrs= SiteConfigModel.parse_obj(toml)
         return obj
 
     @staticmethod
