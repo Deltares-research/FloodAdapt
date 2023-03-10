@@ -1,0 +1,22 @@
+name: flood_adapt
+
+channels:
+  - conda-forge
+
+dependencies:
+  - black
+  - build
+  - hydromt
+  - geopandas
+  - mypy
+  - numpy
+  - pandas
+  - pip
+  - pip:
+      - coastalhazardstoolkit
+  - pydantic
+  - pytest
+  - python=3.10
+  - tomli
+  - tomli-w
+  - twine

@@ -9,6 +9,8 @@ It uses SFINCS (Super-Fast INundation of CoastS) and FIAT-Objects in the backgro
 # Contributing
 
 
+## Setting up conda
+
 In order to develop on `flood_adapt` locally, please follow the following steps:
 
 - Download and install [miniconda](https://docs.conda.io/en/latest/miniconda.html).
@@ -25,11 +27,21 @@ conda init
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ```
 
-- Create the environment by executing the following in your terminal:
+## Creating (or updating) the environment
+
+- Create (or update) the environment by executing the following in your terminal:
 
 ```
-conda create -n flood_adapt python=3.10
+conda env create --file=environment.yml --force
 ```
+
+- Installing hydromt
+
+```
+pip install git+https://github.com/Deltares/hydromt.git@85e7795a9f1972fe4e2a8bf7dd2d941193008574
+```
+
+## Installing FloodAdapt
 
 - Activate the environment
 
@@ -40,8 +52,18 @@ conda activate flood_adapt
 In order to develop on `flood_adapt` locally, execute the following line inside your virtual environment
 
 ```bash
-pip install -e ".[tests,lint]"
+pip install -e .
 ```
+
+## Running the tests
+
+
+If no already done, activate the environment
+
+```
+conda activate flood_adapt
+```
+
 
 To run the tests execute:
 
