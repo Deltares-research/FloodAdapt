@@ -8,6 +8,10 @@ from pydantic import BaseModel
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.physical_projection import (
+    PhysicalProjection,
+)
 from flood_adapt.object_model.io.database_io import DatabaseIO
 
 
@@ -34,8 +38,12 @@ class Hazard:
     attrs: AttrModel
     event_obj: Optional[EventTemplateModel]
     ensemble: Optional[EventTemplateModel]
-    # physical_projection: PhysicalProjection
-    # hazard_strategy: HazardStrategy
+    physical_projection: Optional[PhysicalProjection]
+    hazard_strategy: Optional[HazardStrategy]
+    has_run_hazard: bool = False
+
+    def __init__(self, scenario_path: Path) -> None:
+        pass
 
     @staticmethod
     def load_file(filepath: Path):
@@ -68,9 +76,8 @@ class Hazard:
         elif mode == "probabilistic_set":
             self.ensemble = None  # TODO: add Ensemble.load()
 
-        # def set_physical_projection(self, projection):
-
-    #     self.physical_projection.load(
+    # def set_physical_projection(self, projection):
+    #     self.physical_projection.load_file(
     #         str(
     #             Path(
     #                 DatabaseIO().projections_path,
@@ -81,7 +88,7 @@ class Hazard:
     #     )
 
     # def set_hazard_strategy(self, strategy: str):
-    #     self.hazard_strategy.load(
+    #     self.hazard_strategy.load_file(
     #         str(
     #             Path(DatabaseIO().strategies_path, strategy, "{}.toml".format(strategy))
     #         )
@@ -90,21 +97,23 @@ class Hazard:
     # no write function is needed since this is only used internally
 
     def calculate_rp_floodmaps(self, rp: list) -> Path:
-        path_to_floodmaps = None
-        return path_to_floodmaps
+        ...
+        # path_to_floodmaps = None
+        # return path_to_floodmaps
 
     def add_wl_ts(self):
         """adds total water level timeseries"""
         # generating total time series made of tide, slr and water level offset
         template = self.event_obj.attrs.template
         if template == "Synthetic" or template == "Historical_nearshore":
-            self.event_obj.add_tide_ts()
-            self.wl_ts = self.event_obj.tide_ts
+            self.event_obj.add_tide_and_surge_ts()
+            self.wl_ts = self.event_obj.tide_surge_ts
             self.wl_ts["0:wl"] = (
                 self.wl_ts["0:wl"]
                 + self.event_obj.attrs.water_level_offset.convert_to_meters()
-            )
+            )  # add slr
             return self
 
     def run(self):
+        self.__setattr__("has_run", True)
         ...
