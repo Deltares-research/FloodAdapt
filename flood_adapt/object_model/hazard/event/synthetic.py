@@ -111,7 +111,7 @@ class Synthetic(Event):
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
-        df = pd.DataFrame.from_dict({"time": time, "0:wl": tide + surge})
+        df = pd.DataFrame.from_dict({"time": time, 1: tide + surge})
         df = df.set_index("time")
         self.tide_surge_ts = df
         return self

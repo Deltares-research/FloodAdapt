@@ -8,13 +8,5 @@ timing = "idealized"
 value = 0.0
 units = "feet"
 
-[time]
-duration_before_t0 = 24.0
-duration_after_t0 = 24.0
-
-[tide]
-source = "harmonic"
-
-[tide.harmonic_amplitude]
-value = 3.0
-units = "feet"
+[wind]
+source = "constant"

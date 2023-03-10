@@ -1,13 +1,13 @@
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 from hydromt_sfincs import SfincsModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
 
 class SfincsAdapter:
-    def load_overland_sfincs_model(self, model_root: str = None):
+    def __init__(self, model_root: str):
         """Loads overland sfincs model based on a root directory.
 
         Args:
@@ -28,10 +28,9 @@ class SfincsAdapter:
         gdf_locs.crs = self.sf_model.crs
 
         # Go from 1 timeseries to timeseries for all boundary points
-        wl = df_ts[0]
-        for i in range(len(gdf_locs) - 1):
-            col_name = i + 1
-            df_ts[col_name] = wl
+        for i in range(1, len(gdf_locs)):
+            # col_name = f"{i+1}"
+            df_ts[i + 1] = df_ts[1]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
@@ -62,10 +61,10 @@ class SfincsAdapter:
         Args:
             path_out (Path): new root of sfincs model
         """
-        #Change model root to new folder
-        self.sf_model.root = path_out
+        # Change model root to new folder
+        self.sf_model.set_root(path_out, mode="w+")
 
-        #Write sfincs files in output folder
+        # Write sfincs files in output folder
         self.sf_model.write()
 
     # def run_sfincs_models(self):
