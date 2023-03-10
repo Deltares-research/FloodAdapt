@@ -3,7 +3,6 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-<<<<<<< HEAD
 class UnitTypes(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
@@ -15,8 +14,6 @@ class UnitTypes(str, Enum):
     degN = "degN"
 
 
-=======
->>>>>>> c301a946c49955316a6e393da3ca08e2887b592a
 class UnitTypesLength(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
@@ -129,21 +126,6 @@ class UnitfulDischarge(BaseModel):
         else:
             conversion = 1
         return self.value * conversion
-<<<<<<< HEAD
-
-
-class UnitfulDischarge(BaseModel):
-    value: float
-    units: UnitTypes
-
-    def convert_units(self) -> float:
-        if self.units == "m3s":
-            conversion = 1.0  # meters
-        elif self.units == "cfs":  # cubic feet per second
-            conversion = 0.02832  # m3/s
-        else:
-            conversion = None
-        return self.value * conversion
 
 
 # def convert_unit(self) ->  float:
@@ -164,5 +146,3 @@ class UnitfulDischarge(BaseModel):
 #     else:
 #         conversion = None
 #     return conversion
-=======
->>>>>>> c301a946c49955316a6e393da3ca08e2887b592a
