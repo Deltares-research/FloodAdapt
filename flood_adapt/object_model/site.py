@@ -126,7 +126,7 @@ class SiteConfigModel(BaseModel):
 class SiteConfig:
     """Class for general variables of the object_model"""
 
-    model: SiteConfigModel
+    attrs: SiteConfigModel
 
     @staticmethod
     def load_file(filepath: Path):
