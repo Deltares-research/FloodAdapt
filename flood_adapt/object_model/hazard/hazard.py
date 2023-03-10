@@ -41,8 +41,8 @@ class Hazard:
     hazard_strategy: Optional[HazardStrategy]
     has_run_hazard: bool = False
 
-    def __init__(self, scenario_path: Path) -> None:
-        pass
+    # def __init__(self, scenario_path: Path) -> None:
+    #     pass
 
     @staticmethod
     def load_file(filepath: Path):
@@ -113,6 +113,6 @@ class Hazard:
             )  # add slr
             return self
 
-    def run(self):
-        self.__setattr__("has_run", True)
-        ...
+    # def run(self):
+    #     self.__setattr__("has_run", True)
+    #     ...
