@@ -7,8 +7,11 @@ name = "flood_adapt"
 description = "A software package support ystem which can be used to assess the benefits and costs of flood resilience measures"
 readme = "README.md"
 authors = [
-    # TODO: add other authors
-    {name = "Julian Hofer", email = "Julian.Hofer@deltares.nl"},
+    { name = "Gundula Winter", email = "Gundula.Winter@deltares.nl" },
+    { name = "Panos Athanasiou", email = "Panos.Athanasiou@deltares.nl" },
+    { name = "Frederique de Groen", email = "Frederique.deGroen@deltares.nl" },
+    { name = "Tim de Wilde", email = "Tim.deWilde@deltares.nl" },
+    { name = "Julian Hofer", email = "Julian.Hofer@deltares.nl" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -20,26 +23,18 @@ dependencies = [
     "numpy",
     "geopandas",
     "pandas",
-    "tomli-w"
+    "tomli",
+    "tomli-w",
+    "pydantic",
+    "hydromt",
 ]
 dynamic = ["version"]
-
-[project.optional-dependencies]
-tests = [
-    "pytest",
-    "pytest-cov",
-]
-lint = [
-    "black",
-    "mypy",
-    "ruff",
-]
 
 [tool.setuptools]
 zip-safe = false
 
 [tool.setuptools.dynamic]
-version = {attr = "flood_adapt.__version__"}
+version = { attr = "flood_adapt.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["flood_adapt", "flood_adapt.*"]
