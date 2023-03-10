@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
@@ -20,7 +21,7 @@ class AttrModel(BaseModel):  # TODO replace with ScenarioModel
     strategy: str
 
 
-class EventTemplateModel:
+class EventTemplateModel(Enum):
     Synthetic: Synthetic
 
 
@@ -101,7 +102,7 @@ class Hazard:
             self.wl_ts = self.event_obj.tide_ts
             self.wl_ts["0:wl"] = (
                 self.wl_ts["0:wl"]
-                + self.event_obj.attrs.water_level_offset.convert_unit()
+                + self.event_obj.attrs.water_level_offset.convert_to_meters()
             )
             return self
 
