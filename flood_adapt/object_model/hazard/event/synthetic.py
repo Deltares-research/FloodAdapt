@@ -28,18 +28,29 @@ class TideModel(BaseModel):
     harmonic_amplitude: UnitfulLength
 
 
+class SurgeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
+    source: str
+    shape_type: Optional[str] = "gaussian"
+    shape_duration: Optional[float]
+    shape_peak_time: Optional[float]
+    shape_peak: Optional[UnitfulLength]
+
+
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
     time: TimeModel
     tide: TideModel
+    surge: SurgeModel
 
 
 class Synthetic(Event):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
     attrs: SyntheticModel
-    tide_ts: pd.DataFrame
+    tide_surge_ts: pd.DataFrame
 
     @staticmethod
     def load_file(filepath: Path):
@@ -70,21 +81,78 @@ class Synthetic(Event):
         with open(file, "wb") as f:
             tomli_w.dump(self.attrs.dict(), f)
 
-    def add_tide_ts(self):
-        # generating time series of harmoneous tide (cosine)
+    def add_tide_and_surge_ts(self):
+        """generating time series of harmoneous tide (cosine) and gaussian surge shape
 
-        amp = self.attrs.tide.harmonic_amplitude.convert_unit()
-        omega = 2 * math.pi / (12.4 / 24)
-        time_shift = float(self.attrs.time.duration_before_t0) * 3600
+        Returns
+        -------
+        self
+            updated object with additional attribute of combined tide and surge timeseries as pandas Dataframe
+        """
+        # time vector
         duration = (
             self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
         ) * 3600
         tt = np.arange(0, duration + 1, 600)
-        wl = amp * np.cos(omega * (tt - time_shift) / 86400)
+
+        # tide
+        amp = self.attrs.tide.harmonic_amplitude.convert_to_meters()
+        omega = 2 * math.pi / (12.4 / 24)
+        time_shift = float(self.attrs.time.duration_before_t0) * 3600
+        tide = amp * np.cos(omega * (tt - time_shift) / 86400)
+
+        # surge
+        if self.attrs.surge.source == "shape":
+            surge = self.timeseries_shape(self, tt)
+        elif self.attrs.surge.source == "none":
+            surge = np.zeros_like(tt)
+
+        # save to object iwth pandas daterange
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
-        df = pd.DataFrame.from_dict({"time": time, "0:wl": wl})
+        df = pd.DataFrame.from_dict({"time": time, "0:wl": tide + surge})
         df = df.set_index("time")
-        self.tide_ts = df
+        self.tide_surge_ts = df
         return self
+
+    @staticmethod
+    def timeseries_shape(self, tt: np.array) -> np.array:
+        """generates 1d vector of shape to generate time series of surge, wind, rain or discharge
+
+        Parameters
+        ----------
+        tt : np.array
+            time vector of floats (starting at zero)
+
+        Returns
+        -------
+        np.array
+            1d array of the shape with the same dimensions as time vector tt
+        """
+
+        duration = (
+            self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+        ) * 3600
+        if self.attrs.surge.shape_type == "gaussian":
+            peak = self.attrs.surge.shape_peak.convert_to_meters()
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
+            ) * 3600
+            ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
+        elif self.attrs.surge.shape_type == "block":
+            ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
+            ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
+        elif self.attrs.surge.shape_type == "triangle":
+            peak = self.attrs.surge.shape_peak.convert_to_meters()
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
+            ) * 3600
+            tt_interp = [
+                self.attrs.surge.start_shape,
+                time_shift,
+                self.attrs.surge.end_shape,
+            ]
+            value_interp = [0, peak, 0]
+            ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
+        return ts
