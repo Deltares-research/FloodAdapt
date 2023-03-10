@@ -29,23 +29,23 @@ def test_strategy_comb_read():
     assert strategy.attrs.name == "strategy_comb"
     assert strategy.attrs.long_name == "strategy_comb"
     assert len(strategy.attrs.measures) == 3
-    assert isinstance(strategy.HazardStrategy, HazardStrategy)
-    assert isinstance(strategy.ImpactStrategy, ImpactStrategy)
+    assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
+    assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
     assert all(
         [
             isinstance(measure, ImpactMeasure)
-            for measure in strategy.ImpactStrategy.measures
+            for measure in strategy.get_impact_strategy().measures
         ]
     )
     assert all(
         [
             isinstance(measure, HazardMeasure)
-            for measure in strategy.HazardStrategy.measures
+            for measure in strategy.get_hazard_strategy().measures
         ]
     )
-    assert isinstance(strategy.ImpactStrategy.measures[0], Elevate)
-    assert isinstance(strategy.ImpactStrategy.measures[1], Elevate)
-    assert isinstance(strategy.HazardStrategy.measures[0], FloodWall)
+    assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
+    assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
+    assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
 
 
 def test_strategy_no_measures():
@@ -61,10 +61,10 @@ def test_strategy_no_measures():
 
     strategy = Strategy.load_file(test_toml)
     assert len(strategy.attrs.measures) == 0
-    assert isinstance(strategy.HazardStrategy, HazardStrategy)
-    assert isinstance(strategy.ImpactStrategy, ImpactStrategy)
-    assert len(strategy.HazardStrategy.measures) == 0
-    assert len(strategy.ImpactStrategy.measures) == 0
+    assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
+    assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
+    assert len(strategy.get_hazard_strategy().measures) == 0
+    assert len(strategy.get_impact_strategy().measures) == 0
 
 
 def test_elevate_comb_correct():
@@ -83,8 +83,8 @@ def test_elevate_comb_correct():
     assert strategy.attrs.name == "elevate_comb_correct"
     assert strategy.attrs.long_name == "elevate_comb_correct"
     assert isinstance(strategy.attrs.measures, list)
-    assert isinstance(strategy.ImpactStrategy.measures[0], Elevate)
-    assert isinstance(strategy.ImpactStrategy.measures[1], Elevate)
+    assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
+    assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
 
 
 def test_elevate_comb_fail_1():

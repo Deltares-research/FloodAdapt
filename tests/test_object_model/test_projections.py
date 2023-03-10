@@ -27,16 +27,16 @@ def test_projection_read():
     projection = Projection.load_file(test_toml)
 
     # Assert that the configured risk drivers are set to the values from the toml file
-    assert isinstance(projection.PhysicalProjection, PhysicalProjection)
-    assert isinstance(projection.SocioEconomicChange, SocioEconomicChange)
+    assert isinstance(projection.get_physical_projection(), PhysicalProjection)
+    assert isinstance(projection.get_socio_economic_change(), SocioEconomicChange)
     assert projection.attrs.name == "all_projections"
     assert projection.attrs.long_name == "all_projections"
-    assert projection.PhysicalProjection.attrs.sea_level_rise.value == 2
-    assert projection.SocioEconomicChange.attrs.economic_growth == 20
+    assert projection.get_physical_projection().attrs.sea_level_rise.value == 2
+    assert projection.get_socio_economic_change().attrs.economic_growth == 20
     with pytest.raises(AttributeError):
-        projection.SocioEconomicChange.attrs.sea_level_rise.value
+        projection.get_socio_economic_change().attrs.sea_level_rise.value
     with pytest.raises(AttributeError):
-        projection.PhysicalProjection.attrs.economic_growth
+        projection.get_physical_projection().attrs.economic_growth
 
 
 def test_projection_only_slr():
@@ -54,10 +54,10 @@ def test_projection_only_slr():
     projection = Projection.load_file(test_toml)
 
     # Assert that all unconfigured risk drivers are set to the default values
-    assert projection.PhysicalProjection.attrs.storm_frequency_increase == 0
+    assert projection.get_physical_projection().attrs.storm_frequency_increase == 0
 
     # Assert that the configured risk drivers are set to the values from the toml file
     assert projection.attrs.name == "SLR_2ft"
     assert projection.attrs.long_name == "SLR_2ft"
-    assert projection.PhysicalProjection.attrs.sea_level_rise.value == 2
-    assert projection.PhysicalProjection.attrs.sea_level_rise.units == "feet"
+    assert projection.get_physical_projection().attrs.sea_level_rise.value == 2
+    assert projection.get_physical_projection().attrs.sea_level_rise.units == "feet"
