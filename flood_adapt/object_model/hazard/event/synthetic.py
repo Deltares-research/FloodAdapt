@@ -9,6 +9,7 @@ import tomli_w
 from pydantic import BaseModel
 
 from flood_adapt.object_model.hazard.event.event import Event, EventModel
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 
 
@@ -46,7 +47,7 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
     surge: SurgeModel
 
 
-class Synthetic(Event):
+class Synthetic(Event, IEvent):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
     attrs: SyntheticModel
@@ -160,18 +161,16 @@ class Synthetic(Event):
         duration = (
             self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
         ) * 3600
+        peak = self.attrs.surge.shape_peak.convert_to_meters()
         if self.attrs.surge.shape_type == "gaussian":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
         elif self.attrs.surge.shape_type == "block":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
             ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
         elif self.attrs.surge.shape_type == "triangle":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600

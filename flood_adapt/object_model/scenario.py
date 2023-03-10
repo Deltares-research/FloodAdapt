@@ -8,7 +8,7 @@ from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.database_io import DatabaseIO
-from flood_adapt.object_model.site import SiteConfig
+from flood_adapt.object_model.site import Site
 
 
 class Scenario(IScenario):  # TODO: add IScenario
@@ -19,7 +19,7 @@ class Scenario(IScenario):  # TODO: add IScenario
 
     def init_object_model(self):
         """Create a Direct Impact object"""
-        self.site_info = SiteConfig(DatabaseIO().site_config_path)
+        self.site_info = Site.load_file(DatabaseIO().site_config_path)
         self.direct_impacts = DirectImpacts(self.attrs)
 
     @staticmethod

@@ -1,11 +1,12 @@
+import os
 from enum import Enum
-from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import tomli
 import tomli_w
 from pydantic import BaseModel
 
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
@@ -14,21 +15,21 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class Cstype(str, Enum):
-    """class describing the accepted input for the variable cstype in SiteConfig"""
+    """class describing the accepted input for the variable cstype in Site"""
 
     projected = "projected"
     spherical = "spherical"
 
 
 class Floodmap_type(str, Enum):
-    """class describing the accepted input for the variable floodmap in SiteConfig"""
+    """class describing the accepted input for the variable floodmap in Site"""
 
     water_level = "water_level"
     water_depth = "water_depth"
 
 
 class SfincsModel(BaseModel):
-    """class describing the accepted input for the variable sfincs in SiteConfig"""
+    """class describing the accepted input for the variable sfincs in Site"""
 
     csname: str
     cstype: Cstype
@@ -45,27 +46,27 @@ class SfincsModel(BaseModel):
 
 
 class SlrModel(BaseModel):
-    """class describing the accepted input for the variable slr in SiteConfig"""
+    """class describing the accepted input for the variable slr in Site"""
 
     vertical_offset: UnitfulLength
     relative_to_year: int
 
 
 class GuiModel(BaseModel):
-    """class describing the accepted input for the variable gui in SiteConfig"""
+    """class describing the accepted input for the variable gui in Site"""
 
     tide_harmonic_amplitude: UnitfulLength
 
 
 class RiskModel(BaseModel):
-    """class describing the accepted input for the variable risk in SiteConfig"""
+    """class describing the accepted input for the variable risk in Site"""
 
     flooding_threshold: UnitfulLength
     return_periods: list
 
 
 class DemModel(BaseModel):
-    """class describing the accepted input for the variable dem in SiteConfig"""
+    """class describing the accepted input for the variable dem in Site"""
 
     filename: str
     units: UnitTypesLength
@@ -73,7 +74,7 @@ class DemModel(BaseModel):
 
 
 class FiatModel(BaseModel):
-    """class describing the accepted input for the variable fiat in SiteConfig"""
+    """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
     aggregation_shapefiles: str
@@ -82,7 +83,7 @@ class FiatModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    """class describing the accepted input for the variable river in SiteConfig"""
+    """class describing the accepted input for the variable river in Site"""
 
     # TODO: add functionality to use multiple rivers
 
@@ -94,7 +95,7 @@ class RiverModel(BaseModel):
 
 
 class Obs_stationModel(BaseModel):
-    """class describing the accepted input for the variable obs_station in SiteConfig"""
+    """class describing the accepted input for the variable obs_station in Site"""
 
     name: Union[int, str]
     long_name: str
@@ -107,8 +108,8 @@ class Obs_stationModel(BaseModel):
     msl: UnitfulLength
 
 
-class SiteConfigModel(BaseModel):
-    """BaseModel describing the expected variables and data types of attributes of the siteConfig class"""
+class SiteModel(BaseModel):
+    """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
     name: str
     long_name: str
@@ -124,30 +125,30 @@ class SiteConfigModel(BaseModel):
     obs_station: Optional[Obs_stationModel]
 
 
-class SiteConfig:
+class Site(ISite):
     """Class for general variables of the object_model"""
 
-    attrs: SiteConfigModel
+    attrs: SiteModel
 
     @staticmethod
-    def load_file(filepath: Path):
-        """create SiteConfig from toml file"""
+    def load_file(filepath: Union[str, os.PathLike]):
+        """create Site from toml file"""
 
-        obj = SiteConfig()
+        obj = Site()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = SiteConfigModel.parse_obj(toml)
+        obj.attrs = SiteModel.parse_obj(toml)
         return obj
 
     @staticmethod
-    def load_dict(data: dict):
+    def load_dict(data: dict[str, Any]):
         """create Synthetic from object, e.g. when initialized from GUI"""
 
-        obj = SiteConfig()
-        obj.attrs = SiteConfig.parse_obj(data)
+        obj = Site()
+        obj.attrs = SiteModel.parse_obj(data)
         return obj
 
-    def save(self, file: Path):
+    def save(self, filepath: Union[str, os.PathLike]):
         """write toml file from model object"""
-        with open(file, "wb") as f:
+        with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(), f)
