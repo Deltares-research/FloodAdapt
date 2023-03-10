@@ -66,6 +66,8 @@ class ImpactMeasureModel(MeasureModel):
 class ImpactMeasure(ABC):
     """ImpactMeasure class that holds all the information for a specific measure type that affects the impact model"""
 
+    attrs: ImpactMeasureModel
+
     def get_object_ids(self) -> list[Any]:
         """Get ids of objects that are affected by the measure"""
         database = (
@@ -87,8 +89,9 @@ class ImpactMeasure(ABC):
                     "Object ID",
                 ].to_numpy()  # TODO: aggregation label should be read from site config
         elif self.attrs.selection_type == "polygon":
+            assert self.attrs.polygon_file is not None
             polygon = gpd.read_file(
-                Path(database.measures_path, self.attrs.name, self.attrs.polygon_file)
+                Path(database.measures_path) / self.attrs.name / self.attrs.polygon_file
             )
             ids = gpd.sjoin(buildings, polygon)["Object ID"].to_numpy()
 
