@@ -24,11 +24,11 @@ class Projection(IProjection):
 
     attrs: ProjectionModel
 
-    def get_drivers(self):
-        self.PhysicalProjection = PhysicalProjection(self.attrs.dict(exclude_none=True))
-        self.SocioEconomicChange = SocioEconomicChange(
-            self.attrs.dict(exclude_none=True)
-        )
+    def get_physical_projection(self) -> PhysicalProjection:
+        return PhysicalProjection(self.attrs.dict(exclude_none=True))
+
+    def get_socio_economic_change(self) -> SocioEconomicChange:
+        return SocioEconomicChange(self.attrs.dict(exclude_none=True))
 
     @staticmethod
     def load_file(filepath: Path):
@@ -38,7 +38,6 @@ class Projection(IProjection):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = ProjectionModel.parse_obj(toml)
-        obj.get_drivers()
         return obj
 
     @staticmethod
@@ -47,7 +46,6 @@ class Projection(IProjection):
 
         obj = Projection()
         obj.attrs = ProjectionModel.parse_obj(data)
-        obj.get_drivers()
         return obj
 
     def save(self, filepath: Path):

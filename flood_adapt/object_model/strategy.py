@@ -54,9 +54,13 @@ class Strategy(IStrategy):
                 hazard_measures.append(
                     HazardMeasureFactory.get_hazard_measure(type).load_file(config)
                 )
+        return impact_measures, hazard_measures
 
-        self.ImpactStrategy = ImpactStrategy(impact_measures)
-        self.HazardStrategy = HazardStrategy(hazard_measures)
+    def get_impact_strategy(self):
+        return ImpactStrategy(self.get_measures()[0])
+
+    def get_hazard_strategy(self):
+        return HazardStrategy(self.get_measures()[1])
 
     @staticmethod
     def load_file(filepath: Path):
@@ -66,7 +70,7 @@ class Strategy(IStrategy):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = StrategyModel.parse_obj(toml)
-        obj.get_measures()
+        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
         return obj
 
     @staticmethod
@@ -75,7 +79,7 @@ class Strategy(IStrategy):
 
         obj = Strategy()
         obj.attrs = StrategyModel.parse_obj(data)
-        obj.get_measures()
+        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
         return obj
 
     def save(self, filepath: Path):
