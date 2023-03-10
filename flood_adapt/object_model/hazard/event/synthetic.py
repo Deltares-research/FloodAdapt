@@ -107,7 +107,7 @@ class Synthetic(Event):
         elif self.attrs.surge.source == "none":
             surge = np.zeros_like(tt)
 
-        # save to object iwth pandas daterange
+        # save to object with pandas daterange
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
