@@ -135,7 +135,7 @@ class SiteConfig:
         obj = SiteConfig()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.model = SiteConfigModel.parse_obj(toml)
+        obj.attrs= SiteConfigModel.parse_obj(toml)
         return obj
 
     @staticmethod
@@ -143,10 +143,10 @@ class SiteConfig:
         """create Synthetic from object, e.g. when initialized from GUI"""
 
         obj = SiteConfig()
-        obj.model = SiteConfig.parse_obj(data)
+        obj.attrs = SiteConfig.parse_obj(data)
         return obj
 
     def save(self, file: Path):
         """write toml file from model object"""
         with open(file, "wb") as f:
-            tomli_w.dump(self.model.dict(), f)
+            tomli_w.dump(self.attrs.dict(), f)
