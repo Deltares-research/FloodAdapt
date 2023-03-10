@@ -116,6 +116,32 @@ class Synthetic(Event):
         self.tide_surge_ts = df
         return self
 
+    def add_wind_ts(self):
+        # generating time series of constant wind
+        if self.attrs.wind.source == "constant":
+            duration = (
+                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+            ) * 3600
+            vmag = self.attrs.wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vdir = self.attrs.wind.constant_direction.value * np.array([1, 1])
+            time = pd.date_range(
+                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict(
+                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
+            )
+            df = df.set_index("time")
+            self.wind_ts = df
+            return self
+        else:
+            raise ValueError(
+                "A time series can only be generated for wind sources "
+                "constant"
+                " or "
+                "timeseries"
+                "."
+            )
+
     @staticmethod
     def timeseries_shape(self, tt: np.array) -> np.array:
         """generates 1d vector of shape to generate time series of surge, wind, rain or discharge

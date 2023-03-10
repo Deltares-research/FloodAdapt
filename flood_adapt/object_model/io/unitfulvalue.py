@@ -3,21 +3,20 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class UnitTypes(str, Enum):
-    meters = "meters"
-    centimeters = "centimeters"
-    feet = "feet"
-    inch = "inch"
-    cfs = "cfs"
-    knots = "knots"
-    degN = "degN"
-
-
 class UnitTypesLength(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
     feet = "feet"
     inch = "inch"
+
+
+class UnitTypesVelocity(str, Enum):
+    meters = "m/s"
+    centimeters = "knots"
+
+
+class UnitTypesDischarge(str, Enum):
+    cfs = "cfs"
 
 
 class VerticalReference(str, Enum):
@@ -30,6 +29,13 @@ class UnitfulLength(BaseModel):
     units: UnitTypesLength
 
     def convert_to_meters(self) -> float:
+        """converts given length value to meters
+
+        Returns
+        -------
+        float
+            converted parameter in meters
+        """
         if self.units == "centimeters":
             conversion = 1.0 / 100  # meters
         elif self.units == "meters":
@@ -42,48 +48,70 @@ class UnitfulLength(BaseModel):
             conversion = 1
         return conversion * self.value
 
+    def convert_to_millimeters(self) -> float:
+        """converts given length value to meters
+
+        Returns
+        -------
+        float
+            converted parameter in meters
+        """
+        if self.units == "centimeters":
+            conversion = 10.0
+        elif self.units == "meters":
+            conversion = 1000.0
+        elif self.units == "feet":
+            conversion = 1000.0 / 3.28084
+        elif self.units == "inch":
+            conversion = 25.4
+        else:
+            conversion = 1
+        return conversion * self.value
+
+
+class UnitfulVelocity(BaseModel):
+    value: float
+    units: UnitTypesVelocity
+
+    def convert_to_mps(self) -> float:
+        """converts given velocity to meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in meters per second
+        """
+        if self.units == "knots":
+            conversion = 1.0 / 1.943844  # m/s
+        else:
+            conversion = 1
+        return conversion * self.value
+
+
+class UnitfulDirection(BaseModel):
+    value: float
+    units: str = "deg N"
+
 
 class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
 
-class UnitfulValue(BaseModel):
+class UnitfulDischarge(BaseModel):
     value: float
-    units: UnitTypes
+    units: UnitTypesDischarge
 
-    def convert_unit(self) -> float:
-        if self.units == "centimeters":
-            conversion = 1.0 / 100  # meters
-        elif self.units == "meters":
-            conversion = 1.0  # meters
-        elif self.units == "feet":
-            conversion = 1.0 / 3.28084  # meters
-        elif self.units == "inch":
-            conversion = 25.4  # millimeters
-        elif self.units == "knots":
-            conversion = 1.0 / 1.943844  # m/s
-        elif self.units == "cfs":  # cubic feet per second
+    def convert_to_cms(self) -> float:
+        """converts given length value to cubic meters per second
+
+        Returns
+        -------
+        float
+            converted parameter in cubic meters per second
+        """
+
+        if self.units == "cfs":  # cubic feet per second
             conversion = 0.02832  # m3/s
         else:
             conversion = 1
         return self.value * conversion
-
-
-# def convert_unit(self) ->  float:
-#     if self.units == 'centimeters':
-#         conversion = 1./100 # meters
-#     elif self.units == 'meters':
-#         conversion = 1. # meters
-#     elif self.units == 'feet':
-#         conversion = 1./3.28084 # meters
-#     elif self.units == 'inch':
-#         conversion = 25.4 # millimeters
-#     elif self.units == 'knots':
-#         conversion = 1. / 1.943844  # m/s
-#     elif self.units == 'cfs': # cubic feet per second
-#         conversion = 0.02832 # m3/s
-#     elif self.units == 'cms':
-#         conversion = 1.  # m3/s
-#     else:
-#         conversion = None
-#     return conversion
