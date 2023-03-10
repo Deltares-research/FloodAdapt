@@ -25,15 +25,11 @@ dependencies = [
     "pandas",
     "tomli",
     "tomli-w",
-    "pydanctic",
+    "pydantic",
     "hydromt",
     "coastalhazardstoolkit",
 ]
 dynamic = ["version"]
-
-[project.optional-dependencies]
-tests = ["pytest"]
-lint = ["black", "mypy", "ruff"]
 
 [tool.setuptools]
 zip-safe = false
