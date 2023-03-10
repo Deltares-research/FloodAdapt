@@ -35,12 +35,6 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 mamba env create --file=environment.yml --force
 ```
 
-- Installing hydromt
-
-```
-pip install git+https://github.com/Deltares/hydromt.git@85e7795a9f1972fe4e2a8bf7dd2d941193008574
-```
-
 ## Installing FloodAdapt
 
 - Activate the environment

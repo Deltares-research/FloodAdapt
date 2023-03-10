@@ -13,7 +13,7 @@ dependencies:
   - pandas
   - pip
   - pip:
-      - coastalhazardstoolkit
+      - git+https://github.com/Deltares/hydromt.git@85e7795a9f1972fe4e2a8bf7dd2d941193008574
   - pydantic
   - pytest
   - python=3.10

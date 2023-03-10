@@ -27,7 +27,6 @@ dependencies = [
     "tomli-w",
     "pydantic",
     "hydromt",
-    "coastalhazardstoolkit",
 ]
 dynamic = ["version"]
 
