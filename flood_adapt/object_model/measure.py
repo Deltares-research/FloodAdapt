@@ -1,4 +1,5 @@
-from pathlib import Path
+import os
+from typing import Union
 
 import tomli
 from pydantic import BaseModel
@@ -16,7 +17,7 @@ class Measure:
     attrs: MeasureModel
 
     @staticmethod
-    def load_measure_type(filepath: Path):
+    def get_measure_type(filepath: Union[str, os.PathLike]):
         """get a measure type from toml file"""
 
         obj = Measure()

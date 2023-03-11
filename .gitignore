@@ -162,3 +162,4 @@ cython_debug/
 /.idea
 /.pytest_cache
 tests/test_database/test_output_toml.toml
+tests/test_database2/

@@ -1,5 +1,27 @@
+import os
+from typing import Union
+
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactType
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.hazard_measure import HazardType
+from flood_adapt.object_model.measure import Measure
+
+
+class MeasureFactory:
+    @staticmethod
+    def get_measure_object(filepath: Union[str, os.PathLike]):
+        measure_type = Measure.get_measure_type(filepath)
+
+        if measure_type in iter(ImpactType):
+            return ImpactMeasureFactory.get_impact_measure(measure_type).load_file(
+                filepath
+            )
+
+        elif measure_type in iter(HazardType):
+            return HazardMeasureFactory.get_hazard_measure(measure_type).load_file(
+                filepath
+            )
 
 
 class ImpactMeasureFactory:

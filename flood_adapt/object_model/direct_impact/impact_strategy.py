@@ -4,17 +4,26 @@ from flood_adapt.object_model.direct_impact.measure.impact_measure import Impact
 
 
 class ImpactStrategy:
-    """Subclass of Strategy describing a strategy with only impact measures"""
+    """Class containing only the impact measures of a strategy"""
 
     def __init__(self, measures: list[ImpactMeasure]) -> None:
+        """Sets measures and validates the combination
+
+        Parameters
+        ----------
+        measures : list[ImpactMeasure]
+        """
         self.measures = measures
         self.validate()
 
     def validate(self):
-        """Validates if the combination of ImpactMeasure can happen, since impact measures cannot affect the same properties
+        """Validates if the combination of impact measures can happen,
+        since impact measures cannot affect the same properties.
 
-        Raises:
-            ValueError: information on which combinations of measures have condlicting properties
+        Raises
+        ------
+        ValueError
+            information on which combinations of measures have condlicting properties
         """
         # Get ids of objects affected for each measure
         ids = [measure.get_object_ids() for measure in self.measures]

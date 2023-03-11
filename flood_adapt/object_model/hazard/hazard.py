@@ -11,7 +11,6 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
-from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
@@ -38,13 +37,15 @@ class Hazard:
     and to run the hazard models
     """
 
+    database_input_path: Path
     event: Optional[EventTemplateModel]
     ensemble: Optional[EventTemplateModel]
     physical_projection: Optional[PhysicalProjection]
     hazard_strategy: Optional[HazardStrategy]
     has_run_hazard: bool = False
 
-    def __init__(self, scenario) -> None:
+    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        self.database_input_path = database_input_path
         self.set_event(scenario.event)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
@@ -54,7 +55,9 @@ class Hazard:
         Args:
             event_name (str): name of event used in scenario
         """
-        event_path = Path(DatabaseIO().events_path, event, "{}.toml".format(event))
+        event_path = (
+            self.database_input_path / "events" / event / "{}.toml".format(event)
+        )
         # set mode (probabilistic_set or single_scenario)
         mode = Event.get_mode(event_path)
         if mode == "single_scenario":
@@ -66,15 +69,17 @@ class Hazard:
             self.ensemble = None  # TODO: add Ensemble.load()
 
     def set_physical_projection(self, projection: str) -> None:
-        projection_path = Path(
-            DatabaseIO().projections_path, projection, f"{projection}.toml"
+        projection_path = (
+            self.database_input_path / "Projections" / projection / f"{projection}.toml"
         )
         self.physical_projection = Projection.load_file(
             projection_path
         ).get_physical_projection()
 
     def set_hazard_strategy(self, strategy: str) -> None:
-        strategy_path = Path(DatabaseIO().strategies_path, strategy, f"{strategy}.toml")
+        strategy_path = (
+            self.database_input_path / "Strategies" / strategy / f"{strategy}.toml"
+        )
         self.hazard_strategy = Strategy.load_file(strategy_path).get_hazard_strategy()
 
     # no write function is needed since this is only used internally
@@ -96,6 +101,17 @@ class Hazard:
                 + self.event.attrs.water_level_offset.convert_to_meters()
             )  # TODO add slr
             return self
+
+    @staticmethod
+    def get_event_object(event_path):  # TODO This could be used above as well?
+        mode = Event.get_mode(event_path)
+        if mode == "single_scenario":
+            # parse event config file to get event template
+            template = Event.get_template(event_path)
+            # use event template to get the associated event child class
+            return EventFactory.get_event(template).load_file(event_path)
+        elif mode == "probabilistic_set":
+            return None  # TODO: add Ensemble.load()
 
     # def run(self):
     #     self.__setattr__("has_run", True)

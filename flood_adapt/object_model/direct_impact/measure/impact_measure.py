@@ -1,18 +1,19 @@
+import os
 from abc import ABC
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 from pydantic import validator
 
-from flood_adapt.object_model.io.database_io import DatabaseIO
-from flood_adapt.object_model.io.fiat_data import FiatModel
+from flood_adapt.object_model.io.fiat import FiatModel
 from flood_adapt.object_model.measure import MeasureModel
+from flood_adapt.object_model.site import Site
 
 
 class ImpactType(str, Enum):
-    """class describing the accepted input for the variable 'type' in ImpactMeasure"""
+    """Class describing the accepted input for the variable 'type' in ImpactMeasure"""
 
     elevate_properties = "elevate_properties"
     buyout = "buyout"
@@ -20,7 +21,7 @@ class ImpactType(str, Enum):
 
 
 class SelectionType(str, Enum):
-    """class describing the accepted input for the variable 'selection_type' in ImpactMeasure"""
+    """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure"""
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
@@ -64,17 +65,28 @@ class ImpactMeasureModel(MeasureModel):
 
 
 class ImpactMeasure(ABC):
-    """ImpactMeasure class that holds all the information for a specific measure type that affects the impact model"""
+    """ImpactMeasure class that holds all the information for a
+    specific measure type that affects the impact model."""
 
     attrs: ImpactMeasureModel
+    database_input_path: Union[str, os.PathLike]
 
     def get_object_ids(self) -> list[Any]:
-        """Get ids of objects that are affected by the measure"""
-        database = (
-            DatabaseIO()
-        )  # TODO this should should be updated by the new dbs_controller class
-        buildings = FiatModel(database.database_path).get_buildings(
-            self.attrs.property_type
+        """Get ids of objects that are affected by the measure.
+
+        Returns
+        -------
+        list[Any]
+            list of ids
+        """
+        site = Site.load_file(
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        buildings = FiatModel(
+            Path(self.database_input_path).parent / "static" / "templates" / "fiat"
+        ).get_buildings(
+            self.attrs.property_type,
+            non_buildng_names=site.attrs.fiat.non_building_names,
         )
 
         if (self.attrs.selection_type == SelectionType.aggregation_area) or (
@@ -83,15 +95,19 @@ class ImpactMeasure(ABC):
             if self.attrs.selection_type == "all":
                 ids = buildings["Object ID"].to_numpy()
             elif self.attrs.selection_type == "aggregation_area":
+                label = site.attrs.fiat.aggregation_shapefiles.split(".")[0]
                 ids = buildings.loc[
-                    buildings["Aggregation Label: subdivision"]
+                    buildings[f"Aggregation Label: {label}"]
                     == self.attrs.aggregation_area_name,
                     "Object ID",
-                ].to_numpy()  # TODO: aggregation label should be read from site config
+                ].to_numpy()
         elif self.attrs.selection_type == "polygon":
             assert self.attrs.polygon_file is not None
             polygon = gpd.read_file(
-                Path(database.measures_path) / self.attrs.name / self.attrs.polygon_file
+                Path(self.database_input_path)
+                / "measures"
+                / self.attrs.name
+                / self.attrs.polygon_file
             )
             ids = gpd.sjoin(buildings, polygon)["Object ID"].to_numpy()
 

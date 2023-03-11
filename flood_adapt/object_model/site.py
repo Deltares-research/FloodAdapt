@@ -80,6 +80,7 @@ class FiatModel(BaseModel):
     aggregation_shapefiles: str
     aggregation_field_names: str
     floodmap_type: Floodmap_type
+    non_building_names: Optional[list[str]]
 
 
 class RiverModel(BaseModel):
@@ -148,7 +149,7 @@ class Site(ISite):
         obj.attrs = SiteModel.parse_obj(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike]) -> None:
         """write toml file from model object"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(), f)

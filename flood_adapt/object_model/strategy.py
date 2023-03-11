@@ -7,17 +7,12 @@ import tomli_w
 from pydantic import BaseModel
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.measure.impact_measure import (
-    ImpactType,
-)
+from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardType
+from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.database_io import DatabaseIO
-from flood_adapt.object_model.measure import Measure
 from flood_adapt.object_model.measure_factory import (
-    HazardMeasureFactory,
-    ImpactMeasureFactory,
+    MeasureFactory,
 )
 
 
@@ -31,62 +26,96 @@ class Strategy(IStrategy):
     """Strategy class that holds all the information for a specific strategy"""
 
     attrs: StrategyModel
+    database_input_path: Union[str, os.PathLike]
 
-    def get_measures(self):
+    def get_measures(self) -> list[Union[ImpactMeasure, HazardMeasure]]:
         """Gets the measures paths and types"""
         assert self.attrs.measures is not None
         # Get measure paths using a database structure
         measure_paths = [
-            str(Path(DatabaseIO().measures_path, measure, "{}.toml".format(measure)))
+            Path(self.database_input_path)
+            / "measures"
+            / measure
+            / "{}.toml".format(measure)
             for measure in self.attrs.measures
         ]
-        # parse measures config files to get type of measure
-        measure_types = [
-            Measure.load_measure_type(measure_path) for measure_path in measure_paths
-        ]
-        # Get type of measure
-        impact_measures, hazard_measures = [], []
 
-        for i, type in enumerate(measure_types):
-            if type in iter(ImpactType):
-                config = measure_paths[i]
-                impact_measures.append(
-                    ImpactMeasureFactory.get_impact_measure(type).load_file(config)
-                )
-            elif type in iter(HazardType):
-                config = measure_paths[i]
-                hazard_measures.append(
-                    HazardMeasureFactory.get_hazard_measure(type).load_file(config)
-                )
-        return impact_measures, hazard_measures
+        measures = [MeasureFactory.get_measure_object(path) for path in measure_paths]
 
-    def get_impact_strategy(self):
-        return ImpactStrategy(self.get_measures()[0])
+        return measures
 
-    def get_hazard_strategy(self):
-        return HazardStrategy(self.get_measures()[1])
+    def get_impact_strategy(self) -> ImpactStrategy:
+        return ImpactStrategy(
+            [
+                measure
+                for measure in self.get_measures()
+                if issubclass(measure.__class__, ImpactMeasure)
+            ]
+        )
+
+    def get_hazard_strategy(self) -> HazardStrategy:
+        return HazardStrategy(
+            [
+                measure
+                for measure in self.get_measures()
+                if issubclass(measure.__class__, HazardMeasure)
+            ]
+        )
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Strategy from toml file"""
+        """Create Strategy object from toml file
 
+        Parameters
+        ----------
+        filepath : Union[str, os.PathLike]
+            path to the Strategy's toml file
+
+        Returns
+        -------
+        IStrategy
+            Strategy object
+        """
         obj = Strategy()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = StrategyModel.parse_obj(toml)
+        # if strategy is created by path use that to get to the database path
+        obj.database_input_path = Path(filepath).parents[2]
         obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
-        """create Strategy from object, e.g. when initialized from GUI"""
+    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+        """_summary_
 
+        Parameters
+        ----------
+        data : dict[str, Any]
+            _description_
+        database_input_path : Union[str, os.PathLike]
+            _description_
+
+        Returns
+        -------
+        IStrategy
+            _description_
+        """
         obj = Strategy()
         obj.attrs = StrategyModel.parse_obj(data)
+        obj.database_input_path = database_input_path
         obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Elavate to a toml file"""
+        """Save Strategy to a toml file.
+
+        Parameters
+        ----------
+        filepath : Union[str, os.PathLike]
+            path of the toml file to be saved
+        """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
