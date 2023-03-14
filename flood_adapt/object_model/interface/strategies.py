@@ -1,19 +1,21 @@
 import os
-import typing
 from abc import ABC, abstractmethod
+from typing import Any, Union
 
 
 class IStrategy(ABC):
+    @staticmethod
     @abstractmethod
-    def load_file(filepath: typing.Union[str, os.PathLike]):
-        """create Strategy from toml file"""
+    def load_file(filepath: Union[str, os.PathLike]):
+        """get Strategy attributes from toml file"""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def load_dict(data: dict[str, Any]):
+        """get Strategy attributes from an object, e.g. when initialized from GUI"""
         ...
 
     @abstractmethod
-    def load_dict(data: dict):
-        """create Strategy from object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: typing.Union[str, os.PathLike]):
-        """save Strategy.model to a toml file"""
+    def save(self, filepath: Union[str, os.PathLike]):
+        """save Strategy attributes to a toml file"""

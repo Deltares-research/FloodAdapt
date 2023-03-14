@@ -8,13 +8,35 @@ timing = "idealized"
 value = 0.0
 units = "feet"
 
+[wind]
+source = "constant"
+
+[wind.constant_speed]
+value = 0.0
+units = "m/s"
+
+[wind.constant_direction]
+value = 0.0
+units = "deg N"
+
 [time]
 duration_before_t0 = 24.0
 duration_after_t0 = 24.0
+start_time = "20200101 000000"
 
 [tide]
 source = "harmonic"
 
 [tide.harmonic_amplitude]
 value = 3.0
+units = "feet"
+
+[surge]
+source = "shape"
+shape_type = "gaussian"
+shape_duration = 24.0
+shape_peak_time = 0.0
+
+[surge.shape_peak]
+value = 9.22
 units = "feet"
