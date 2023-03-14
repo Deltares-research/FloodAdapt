@@ -2,15 +2,8 @@ import os
 from typing import Union
 
 import tomli
-from pydantic import BaseModel
 
-
-class MeasureModel(BaseModel):
-    """"""
-
-    name: str
-    long_name: str
-    type: str
+from flood_adapt.object_model.interface.measures import MeasureModel
 
 
 class Measure:

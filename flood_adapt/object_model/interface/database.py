@@ -1,0 +1,67 @@
+import os
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, Union
+
+from geopandas import GeoDataFrame
+
+from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.site import ISite
+
+
+class IDatabase(ABC):
+    input_path : Path
+    site: ISite
+
+    @abstractmethod
+    def __init__(self, database_path: Union[str, os.PathLike], site_name: str) -> None:
+        ...
+
+    @abstractmethod
+    def get_aggregation_areas(self) -> list[GeoDataFrame]:
+        ...
+
+    @abstractmethod
+    def get_buildings(self) -> GeoDataFrame:
+        ...
+
+    @abstractmethod
+    def get_measure(self, name: str) -> IMeasure:
+        ...
+    
+    @abstractmethod
+    def save_measure(self, measure: IMeasure) -> None:
+        ...
+
+    @abstractmethod
+    def edit_measure(self, measure: IMeasure):
+        ...
+
+    @abstractmethod
+    def delete_measure(self, name: str):
+        ...  
+
+    @abstractmethod
+    def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+        ...  
+
+    @abstractmethod
+    def get_projections(self) -> dict[str, Any]:
+        ...
+                
+    @abstractmethod
+    def get_events(self) -> dict[str, Any]:
+        ...
+                
+    @abstractmethod
+    def get_measures(self) -> dict[str, Any]:
+        ...
+                
+    @abstractmethod
+    def get_strategies(self) -> dict[str, Any]:
+        ...
+                
+    @abstractmethod
+    def get_scenarios(self) -> dict[str, Any]:
+        ...
+                

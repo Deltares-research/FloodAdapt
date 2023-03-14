@@ -2,9 +2,8 @@ import os
 from typing import Union
 
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactType
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardType
+from flood_adapt.object_model.interface.measures import HazardType, ImpactType
 from flood_adapt.object_model.measure import Measure
 
 

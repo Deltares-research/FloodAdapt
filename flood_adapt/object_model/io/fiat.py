@@ -6,9 +6,11 @@ import geopandas as gpd
 import pandas as pd
 
 
-class FiatModel:
+class Fiat:
     # TODO this could be replace by new FIAT?
-    def __init__(self, fiat_path: Union[str, os.PathLike], crs: int = 4326) -> None:
+    def __init__(
+        self, fiat_path: Union[str, os.PathLike], crs: Union[int, str] = 4326
+    ) -> None:
         """_summary_
 
         Parameters
@@ -37,7 +39,7 @@ class FiatModel:
         return self.exposure
 
     def get_buildings(
-        self, type=Optional[str], non_buildng_names=Optional[list[str]]
+        self, type=Optional[str], non_building_names=Optional[list[str]]
     ) -> gpd.GeoDataFrame:
         """_summary_
 
@@ -55,7 +57,7 @@ class FiatModel:
         if not hasattr(self, "exposure"):
             self.load_exposure()
         buildings = self.exposure.loc[
-            ~self.exposure["Primary Object Type"].isin(non_buildng_names), :
+            ~self.exposure["Primary Object Type"].isin(non_building_names), :
         ]
         if type:
             if str(type).upper() != "ALL":
