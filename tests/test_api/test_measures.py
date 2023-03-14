@@ -9,10 +9,6 @@ test_database_path = Path().absolute() / "tests" / "test_database2"
 test_site_name = "Charleston"
 
 
-def test_startup():
-    api_startup.read_database(test_database_path, test_site_name)
-
-
 def test_elevate_measure():
     test_dict = {
         "name": "raise_property_aggregation_area",
@@ -28,7 +24,7 @@ def test_elevate_measure():
 
     # When user presses add measure and fills in the Elevate object attributes
     # the dictionary is returned and an Elevate object is created
-    elevate = api_measures.create_elevate_measure(test_dict, test_database_path)
+    elevate = api_measures.create_elevate_measure(test_dict, database)
 
     with pytest.raises(ValueError):
         # Assert error if name already exists
@@ -36,10 +32,10 @@ def test_elevate_measure():
 
     # Change name to something new
     test_dict["name"] = "test1"
-    elevate = api_measures.create_elevate_measure(test_dict, test_database_path)
+    elevate = api_measures.create_elevate_measure(test_dict, database)
     # If the name is not used before the measure is save in the database
     api_measures.save_measure(elevate, database)
-    database.update_measures()
+    database.get_measures()
 
     # When user presses edit measure the dictionary is returned
     elevate_old = api_measures.get_measure("test1", database)
@@ -49,11 +45,9 @@ def test_elevate_measure():
     elevate_edit_dict["elevation"]["value"] = 2
 
     # If user presses ok the object is updated and the measure is overwritten
-    elevate_edit = api_measures.create_elevate_measure(
-        elevate_edit_dict, test_database_path
-    )
+    elevate_edit = api_measures.create_elevate_measure(elevate_edit_dict, database)
     api_measures.edit_measure(elevate_edit, database)
-    database.update_measures()
+    database.get_measures()
 
     # Try to delete a measure which is already used in a strategy
     with pytest.raises(ValueError):
@@ -61,4 +55,4 @@ def test_elevate_measure():
 
     # If user presses delete measure the measure is deleted
     api_measures.delete_measure("test1", database)
-    database.update_measures()
+    database.get_measures()

@@ -1,7 +1,6 @@
 import os
 import shutil
 from datetime import datetime
-from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Union
 
@@ -100,29 +99,38 @@ class Database(IDatabase):
 
     def delete_measure(self, name: str):
         # TODO check strategies that use a measure
-        # used_strategy = [
-        #     name in measures
-        #     for measures in [strategy.attrs.measures for strategy in self.strategies]
-        # ]
-        # if any(used_strategy):
-        #     strategies = [
-        #         strategy.attrs.name
-        #         for i, strategy in enumerate(self.strategies)
-        #         if used_strategy[i]
-        #     ]
-        #     text = "strategy" if len(strategies) == 1 else "strategies"
-        #     raise ValueError(
-        #         f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
-        #     )
-        # else:
-        measure_path = self.input_path / "measures" / name
-        shutil.rmtree(measure_path, ignore_errors=True)
+        strategies = [Strategy.load_file(path) for path in self.get_strategies()["path"]]
+        used_strategy = [
+            name in measures
+            for measures in [strategy.attrs.measures for strategy in strategies]
+        ]
+        if any(used_strategy):
+            strategies = [
+                strategy.attrs.name
+                for i, strategy in enumerate(strategies)
+                if used_strategy[i]
+            ]
+            text = "strategy" if len(strategies) == 1 else "strategies"
+            raise ValueError(
+                f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
+            )
+        else:
+            measure_path = self.input_path / "measures" / name
+            shutil.rmtree(measure_path, ignore_errors=True)
 
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
-        old_measure_path = self.input_path / "measures" / old_name
-        new_measure_path = self.input_path / "measures" / new_name
-        copy_tree(str(old_measure_path), str(new_measure_path))
-        # TODO change names of files and toml attributes
+        # First do a get
+        measure = self.get_measure(old_name)
+        measure.attrs.name = new_name
+        measure.attrs.long_name = new_long_name
+        # Then a save
+        self.save_measure(measure)
+        # Then save all the accompanyed files
+        src = self.input_path / "measures" / old_name
+        dest = self.input_path / "measures" / new_name
+        for file in src.glob("*"):  
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
 
     def update(self) -> None:
         self.projections = self.get_projections()
