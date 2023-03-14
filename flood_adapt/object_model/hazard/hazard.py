@@ -2,8 +2,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel
-
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
@@ -11,20 +9,11 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
-
-
-class ScenarioModel(BaseModel):
-    """BaseModel describing the expected variables and data types of a scenario"""
-
-    name: str
-    long_name: str
-    event: str
-    projection: str
-    strategy: str
 
 
 class EventTemplateModel(Enum):

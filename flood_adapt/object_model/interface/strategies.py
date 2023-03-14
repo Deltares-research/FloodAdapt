@@ -1,9 +1,18 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
+
+from pydantic import BaseModel
 
 
+class StrategyModel(BaseModel):
+    name: str
+    long_name: str
+    measures: Optional[list[str]] = []
+    
 class IStrategy(ABC):
+    attrs: StrategyModel
+
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):

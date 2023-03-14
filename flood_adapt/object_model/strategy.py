@@ -1,25 +1,18 @@
 import os
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import tomli
 import tomli_w
-from pydantic import BaseModel
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
-from flood_adapt.object_model.interface.strategies import IStrategy
+from flood_adapt.object_model.interface.strategies import IStrategy, StrategyModel
 from flood_adapt.object_model.measure_factory import (
     MeasureFactory,
 )
-
-
-class StrategyModel(BaseModel):
-    name: str
-    long_name: str
-    measures: Optional[list[str]] = []
 
 
 class Strategy(IStrategy):
