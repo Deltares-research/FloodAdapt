@@ -3,24 +3,14 @@ from typing import Any, Union
 
 import tomli
 import tomli_w
-from pydantic import BaseModel
 
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
-    SocioEconomicChangeModel,
 )
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
-    PhysicalProjectionModel,
 )
-from flood_adapt.object_model.interface.projections import IProjection
-
-
-class ProjectionModel(BaseModel):
-    name: str
-    long_name: str
-    physical_projection: PhysicalProjectionModel
-    socio_economic_change: SocioEconomicChangeModel
+from flood_adapt.object_model.interface.projections import IProjection, ProjectionModel
 
 
 class Projection(IProjection):
@@ -53,6 +43,6 @@ class Projection(IProjection):
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Projection to a toml file"""
+        """save Elavate to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
