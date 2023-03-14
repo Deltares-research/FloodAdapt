@@ -168,5 +168,6 @@ class IEvent(ABC):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Event attributes to a toml file"""
 
+
 class ISynthetic(IEvent):
     attrs: SyntheticModel

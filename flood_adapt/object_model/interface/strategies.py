@@ -9,7 +9,8 @@ class StrategyModel(BaseModel):
     name: str
     long_name: str
     measures: Optional[list[str]] = []
-    
+
+
 class IStrategy(ABC):
     attrs: StrategyModel
 

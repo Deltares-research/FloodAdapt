@@ -1,34 +1,71 @@
-# # from floodapat.object_model import ...
-# import pandas as pd
+import os
+from typing import Union
+
+from geopandas import GeoDataFrame
+
+from flood_adapt.dbs_controller import Database
+from flood_adapt.object_model.interface.database import IDatabase
+
+# upon start up of FloodAdapt
 
 
-# # upon start up of FloodAdapt
-# def read_database() -> (
-#     None
-# ):  # read all toml files incl site config and populate Database class
-#     pass
+def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDatabase:
+    """_summary_
+
+    Parameters
+    ----------
+    database_path : Union[str, os.PathLike]
+        path to database
+    site_name : str
+        name of the site
+
+    Returns
+    -------
+    IDatabase
+    """
+    return Database(database_path, site_name)
 
 
-# def get_buildings():  # including all exposure data from the FIAT base model
-#     pass
+def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
+    # TODO should this return a list of geojson? if yes what form?
+    """Gets the aggregations areas that are used for the site and fiat
+
+    Parameters
+    ----------
+    database : IDatabase
+
+    Returns
+    -------
+    list[GeoDataFrame]
+        list of GeoDataFrames with the aggregation areas
+    """
+    return database.get_aggregation_areas()
 
 
-# def get_SFINCS_model():  # model grid, location of existing pumps, floodwalls etc
-#     pass
+def get_buildings(database: IDatabase) -> GeoDataFrame:
+    # TODO should this return a geojson? if yes what form?
+    """Gets the buildings exposure that are used in Fiat
+
+    Parameters
+    ----------
+    database : IDatabase
+
+    Returns
+    -------
+    GeoDataFrame
+        GeoDataFrames with the buildings from FIAT exposure
+    """
+    return database.get_buildings()
 
 
-# def get_aggregation_areas():
-#     pass
+def get_hazard_measure_types():
+    pass
 
 
-# def get_event_templates() -> list():
-#     # get a list ideally automatically from the child classes of the parent class Event
-#     pass
+def get_impact_measure_types():
+    pass
 
 
-# def get_hazard_measure_types() -> list():
-#     pass
-
-
-# def get_impact_measure_types() -> list():
-#     pass
+def get_event_templates():
+    # get a list ideally automatically from the child classes of the parent class Event
+    pass

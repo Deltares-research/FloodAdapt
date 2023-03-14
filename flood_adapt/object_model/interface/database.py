@@ -10,7 +10,7 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 class IDatabase(ABC):
-    input_path : Path
+    input_path: Path
     site: ISite
 
     @abstractmethod
@@ -28,7 +28,7 @@ class IDatabase(ABC):
     @abstractmethod
     def get_measure(self, name: str) -> IMeasure:
         ...
-    
+
     @abstractmethod
     def save_measure(self, measure: IMeasure) -> None:
         ...
@@ -39,29 +39,28 @@ class IDatabase(ABC):
 
     @abstractmethod
     def delete_measure(self, name: str):
-        ...  
+        ...
 
     @abstractmethod
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
-        ...  
+        ...
 
     @abstractmethod
     def get_projections(self) -> dict[str, Any]:
         ...
-                
+
     @abstractmethod
     def get_events(self) -> dict[str, Any]:
         ...
-                
+
     @abstractmethod
     def get_measures(self) -> dict[str, Any]:
         ...
-                
+
     @abstractmethod
     def get_strategies(self) -> dict[str, Any]:
         ...
-                
+
     @abstractmethod
     def get_scenarios(self) -> dict[str, Any]:
         ...
-                
