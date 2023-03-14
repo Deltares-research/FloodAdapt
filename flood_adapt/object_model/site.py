@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Any, Optional, Union
 
 import tomli
-import tomli_w
 from pydantic import BaseModel
 
 from flood_adapt.object_model.interface.site import ISite
@@ -147,8 +146,3 @@ class Site(ISite):
         obj = Site()
         obj.attrs = SiteModel.parse_obj(data)
         return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """write toml file from model object"""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(), f)

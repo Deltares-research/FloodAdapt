@@ -39,7 +39,7 @@ class Hazard:
     """
 
     event: Optional[EventTemplateModel]
-    ensemble: Optional[EventTemplateModel]
+    # ensemble: Optional[EnsembleTemplateModel]
     physical_projection: Optional[PhysicalProjection]
     hazard_strategy: Optional[HazardStrategy]
     has_run_hazard: bool = False
@@ -63,7 +63,7 @@ class Hazard:
             # use event template to get the associated event child class
             self.event = EventFactory.get_event(template).load_file(event_path)
         elif mode == "probabilistic_set":
-            self.ensemble = None  # TODO: add Ensemble.load()
+            raise NotImplementedError
 
     def set_physical_projection(self, projection: str) -> None:
         projection_path = Path(
@@ -80,9 +80,7 @@ class Hazard:
     # no write function is needed since this is only used internally
 
     def calculate_rp_floodmaps(self, rp: list):
-        pass
-        # path_to_floodmaps = None
-        # return path_to_floodmaps
+        raise NotImplementedError
 
     def add_wl_ts(self):
         """adds total water level timeseries"""

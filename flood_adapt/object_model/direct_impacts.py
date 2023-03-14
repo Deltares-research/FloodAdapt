@@ -48,5 +48,4 @@ class DirectImpacts:
         self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
 
     def set_hazard(self, scenario: ScenarioModel) -> None:
-        # scenario_path = Path(DatabaseIO().scenarios_path, scenario, f"{scenario}.toml")
         self.hazard = Hazard(scenario)

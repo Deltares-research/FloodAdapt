@@ -15,7 +15,3 @@ class ISite(ABC):
     def load_dict(data: dict[str, Any]):
         """get Site attributes from an object, e.g. when initialized from GUI"""
         ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """save Site attributes to a toml file"""
