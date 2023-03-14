@@ -4,12 +4,12 @@ import geopandas as gpd
 import tomli
 
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.impact_measure import (
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.interface.measures import (
+    HazardType,
     ImpactType,
     SelectionType,
 )
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardType
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -67,6 +67,7 @@ def test_elevate_aggr_area_read():
 
 
 def test_elevate_aggr_area_read_fail():
+    # TODO validators do not work?
     test_dict = {
         "name": "test1",
         "long_name": "test1",
@@ -77,7 +78,7 @@ def test_elevate_aggr_area_read_fail():
         "property_type": "RES",
     }
 
-    Elevate.load_dict(test_dict)
+    Elevate.load_dict(test_dict, test_database / "charleston" / "input")
 
 
 def test_elevate_aggr_area_save():

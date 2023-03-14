@@ -127,7 +127,7 @@ class Database(IDatabase):
         measure.attrs.long_name = new_long_name
         # Then a save
         self.save_measure(measure)
-        # Then save all the accompanyed files
+        # Then save all the accompanied files
         src = self.input_path / "measures" / old_name
         dest = self.input_path / "measures" / new_name
         for file in src.glob("*"):

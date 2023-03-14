@@ -8,10 +8,11 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic, TideModel
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.events import TideModel
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 
