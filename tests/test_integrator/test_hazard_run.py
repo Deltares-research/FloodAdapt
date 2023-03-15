@@ -18,8 +18,5 @@ def test_hazard_run():
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class
-    test_hazard = Hazard.load_file(test_toml)
+    test_hazard = Hazard()
     test_hazard.run_sfincs()
-
-
-

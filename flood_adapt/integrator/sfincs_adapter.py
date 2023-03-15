@@ -20,8 +20,21 @@ class SfincsAdapter:
         self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
 
-    def add_wl_bc(self, df_ts: pd.DataFrame):
+    def set_timing(self):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series."""
+
+        # Update timinfg of the model
+        # self.sf_model.set_config('tref',,'tstart',,'tstop', )
+        print("pause")
+
+    def add_wl_bc(self, df_ts: pd.DataFrame):
+        """Changes waterlevel of overland sfincs model based on new waterlevel time series.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            time series of water level, index should be Pnadas DateRange
+        """
 
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()

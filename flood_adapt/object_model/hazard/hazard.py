@@ -118,9 +118,10 @@ class Hazard:
 
     def run_sfincs(self):
         # TODO: make path variable
-        path_on_n = Path(
-            "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
-        )
+        # path_on_n = Path(
+        #     "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
+        # )
+        path_on_n = Path("c:/Users/winter_ga/Offline_Data/project_data/FloodAdapt/Test_data/database/charleston")
         path_in = path_on_n.joinpath("static/templates/overland")
         run_folder_overland = path_on_n.joinpath(
             "output/simulations", self.attrs.name, "overland"
@@ -131,8 +132,11 @@ class Hazard:
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
 
+        # adjust timing of model
+        model.set_timing()
+
         # Change water level boundary condition
-        # model.add_wl_bc(self.wl_ts) #TODO not working
+        model.add_wl_bc(self.wl_ts) #TODO not working
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
