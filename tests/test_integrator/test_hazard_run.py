@@ -20,4 +20,4 @@ def test_hazard_run():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
-    test_hazard.run_sfincs()
+    test_scenario.direct_impacts.hazard.run_sfincs(test_scenario.site_info)

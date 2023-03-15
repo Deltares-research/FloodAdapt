@@ -1,8 +1,11 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 from hydromt_sfincs import SfincsModel
+
+from flood_adapt.object_model.hazard.event.event import EventModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -21,11 +24,16 @@ class SfincsAdapter:
         self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
 
-    def set_timing(self):
+    def set_timing(self, event: EventModel):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series."""
 
-        # Update timinfg of the model
-        # self.sf_model.set_config('tref',,'tstart',,'tstop', )
+        # Update timing of the model
+        # stop_time =
+        tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
+        tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
+        self.sf_model.set_config("tref", tstart)
+        self.sf_model.set_config("tstart", tstart)
+        self.sf_model.set_config("tstop", tstop)
         print("pause")
 
     def add_wl_bc(self, df_ts: pd.DataFrame):

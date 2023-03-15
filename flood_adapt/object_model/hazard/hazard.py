@@ -16,6 +16,7 @@ from flood_adapt.object_model.hazard.physical_projection import (
 )
 from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.site import SiteModel
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
@@ -41,6 +42,7 @@ class Hazard:
     and to run the hazard models
     """
 
+    name: str
     event: Optional[EventTemplateModel]
     # ensemble: Optional[EnsembleTemplateModel]
     physical_projection: Optional[PhysicalProjection]
@@ -48,19 +50,20 @@ class Hazard:
     has_run_hazard: bool = False
 
     def __init__(self, scenario) -> None:
-        self.set_event(scenario.direct_impacts.hazard.event)
+        self.name = scenario.name
+        self.set_event(scenario.event)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
 
-    def set_event(self, event: EventTemplateModel) -> None:
+    def set_event(self, event: str) -> None:
         """Sets the actual Event template class list using the list of measure names
         Args:
             event_name (str): name of event used in scenario
         """
         event_path = Path(
             DatabaseIO().events_path,
-            event.attrs.name,
-            "{}.toml".format(event.attrs.name),
+            event,
+            "{}.toml".format(event),
         )
         # set mode (probabilistic_set or single_scenario)
         mode = Event.get_mode(event_path)
@@ -101,7 +104,7 @@ class Hazard:
             )  # TODO add slr
             return self
 
-    def run_sfincs(self):
+    def run_sfincs(self, site=SiteModel):
         # TODO: make path variable
         # path_on_n = Path(
         #     "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
@@ -109,9 +112,11 @@ class Hazard:
         path_on_n = Path(
             "c:/Users/winter_ga/Offline_Data/project_data/FloodAdapt/Test_data/database/charleston"
         )
-        path_in = path_on_n.joinpath("static/templates/overland")
+        path_in = path_on_n.joinpath(
+            "static/templates", site.attrs.sfincs.overland_model
+        )
         run_folder_overland = path_on_n.joinpath(
-            "output/simulations", self.attrs.name, "overland"
+            "output/simulations", self.name, site.attrs.sfincs.overland_model
         )  # TODO: replace "overland" with overland_model  from Site object
 
         self.add_wl_ts()
@@ -120,10 +125,10 @@ class Hazard:
         model = SfincsAdapter(model_root=path_in)
 
         # adjust timing of model
-        model.set_timing()
+        model.set_timing(self.event.attrs)
 
         # Change water level boundary condition
-        model.add_wl_bc(self.wl_ts)  # TODO not working
+        model.add_wl_bc(self.wl_ts)
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
@@ -136,9 +141,7 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe>sfincs_log.txt".format(
-                        "sfincs20_AlpeDHuez_release"
-                    )  # TODO read SFINCS version from Site object
+                    f"..\..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe>sfincs_log.txt"
                 )
                 f_out.write(bat_file)
         elif self.event.attrs.mode == "single_scenario":
@@ -147,31 +150,9 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe>sfincs_log.txt".format(
-                        "sfincs20_AlpeDHuez_release"
-                    )
+                    f"..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe>sfincs_log.txt"
                 )
                 f_out.write(bat_file)
-
-        ##TODO: fix this, it is neater and allows to writing to a log file
-        # with subprocess.Popen(
-        #     str(run_folder_overland.joinpath("run.bat")),
-        #     shell=True,
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.PIPE,
-        #     bufsize=1,
-        #     universal_newlines=True,
-        # ) as result:
-        #     for line in result.stdout:
-        #         print(
-        #             "SFINCS overland model >>> {}\n".format(line[:-1]),
-        #             end="",
-        #             file=sys.stdout,
-        #             flush=True,
-        #         )  # process line here
-
-        # if result.returncode != 0:
-        #     raise subprocess.CalledProcessError(result.returncode, result.args)
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)

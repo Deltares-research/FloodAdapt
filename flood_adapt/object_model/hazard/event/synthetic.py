@@ -1,5 +1,6 @@
 import math
 import os
+from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 
 import numpy as np
@@ -61,6 +62,15 @@ class Synthetic(Event, IEvent):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = SyntheticModel.parse_obj(toml)
+
+        # synthtic event is the only one wthout start and stop time, so set this here.
+        # Default start time is defined in TimeModel, setting end_time here
+        # based on duration before and after T0
+        tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
+        end_time = tstart + timedelta(
+            hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
+        )
+        obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
         return obj
 
     @staticmethod
@@ -69,6 +79,14 @@ class Synthetic(Event, IEvent):
 
         obj = Synthetic()
         obj.attrs = SyntheticModel.parse_obj(data)
+        # synthtic event is the only one wthout start and stop time, so set this here.
+        # Default start time is defined in TimeModel, setting end_time here
+        # based on duration before and after T0
+        tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
+        end_time = tstart + timedelta(
+            hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
+        )
+        obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
