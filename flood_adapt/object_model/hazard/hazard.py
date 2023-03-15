@@ -48,16 +48,20 @@ class Hazard:
     has_run_hazard: bool = False
 
     def __init__(self, scenario) -> None:
-        self.set_event(scenario.event)
+        self.set_event(scenario.direct_impacts.hazard.event)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
 
-    def set_event(self, event: str) -> None:
+    def set_event(self, event: EventTemplateModel) -> None:
         """Sets the actual Event template class list using the list of measure names
         Args:
             event_name (str): name of event used in scenario
         """
-        event_path = Path(DatabaseIO().events_path, event, "{}.toml".format(event))
+        event_path = Path(
+            DatabaseIO().events_path,
+            event.attrs.name,
+            "{}.toml".format(event.attrs.name),
+        )
         # set mode (probabilistic_set or single_scenario)
         mode = Event.get_mode(event_path)
         if mode == "single_scenario":
@@ -102,7 +106,9 @@ class Hazard:
         # path_on_n = Path(
         #     "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
         # )
-        path_on_n = Path("c:/Users/winter_ga/Offline_Data/project_data/FloodAdapt/Test_data/database/charleston")
+        path_on_n = Path(
+            "c:/Users/winter_ga/Offline_Data/project_data/FloodAdapt/Test_data/database/charleston"
+        )
         path_in = path_on_n.joinpath("static/templates/overland")
         run_folder_overland = path_on_n.joinpath(
             "output/simulations", self.attrs.name, "overland"
@@ -117,7 +123,7 @@ class Hazard:
         model.set_timing()
 
         # Change water level boundary condition
-        model.add_wl_bc(self.wl_ts) #TODO not working
+        model.add_wl_bc(self.wl_ts)  # TODO not working
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)

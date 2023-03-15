@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -18,5 +18,6 @@ def test_hazard_run():
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class
-    test_hazard = Hazard()
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
     test_hazard.run_sfincs()

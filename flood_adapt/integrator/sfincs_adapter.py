@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from hydromt_sfincs import SfincsModel
@@ -7,7 +8,7 @@ from hydromt_sfincs import SfincsModel
 
 
 class SfincsAdapter:
-    def load_overland_sfincs_model(self, model_root: Optional[str] = None):
+    def __init__(self, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
         Args:
