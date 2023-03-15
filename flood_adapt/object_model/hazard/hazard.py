@@ -4,7 +4,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import tomli
 from pydantic import BaseModel
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
@@ -16,10 +15,14 @@ from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.io.database_io import DatabaseIO
+from flood_adapt.object_model.projection import Projection
+
+# from flood_adapt.object_model.scenario import ScenarioModel
+from flood_adapt.object_model.strategy import Strategy
 
 
-class AttrModel(BaseModel):  # TODO replace with ScenarioModel
-    """BaseModel describing the expected variables and data types of the scenario"""
+class ScenarioModel(BaseModel):
+    """BaseModel describing the expected variables and data types of a scenario"""
 
     name: str
     long_name: str
@@ -38,37 +41,23 @@ class Hazard:
     and to run the hazard models
     """
 
-    attrs: AttrModel
     event: Optional[EventTemplateModel]
-    ensemble: Optional[EventTemplateModel]
+    # ensemble: Optional[EnsembleTemplateModel]
     physical_projection: Optional[PhysicalProjection]
     hazard_strategy: Optional[HazardStrategy]
     has_run_hazard: bool = False
 
-    # def __init__(self, scenario_path: Path) -> None:
-    #     pass
+    def __init__(self, scenario) -> None:
+        self.set_event(scenario.event)
+        self.set_hazard_strategy(scenario.strategy)
+        self.set_physical_projection(scenario.projection)
 
-    @staticmethod
-    def load_file(filepath: Path):
-        """create Hazard from toml file"""
-
-        obj = Hazard()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = AttrModel.parse_obj(toml)
-        obj.set_event(obj.attrs.event)
-        # obj.set_physical_projection(obj)
-        # obj.set_hazard_strategy(obj)
-        return obj
-
-    def set_event(self, event_name: str):
+    def set_event(self, event: str) -> None:
         """Sets the actual Event template class list using the list of measure names
         Args:
             event_name (str): name of event used in scenario
         """
-        event_path = Path(
-            DatabaseIO().events_path, event_name, "{}.toml".format(event_name)
-        )
+        event_path = Path(DatabaseIO().events_path, event, "{}.toml".format(event))
         # set mode (probabilistic_set or single_scenario)
         mode = Event.get_mode(event_path)
         if mode == "single_scenario":
@@ -77,32 +66,24 @@ class Hazard:
             # use event template to get the associated event child class
             self.event = EventFactory.get_event(template).load_file(event_path)
         elif mode == "probabilistic_set":
-            self.ensemble = None  # TODO: add Ensemble.load()
+            raise NotImplementedError
 
-    # def set_physical_projection(self, projection):
-    #     self.physical_projection.load_file(
-    #         str(
-    #             Path(
-    #                 DatabaseIO().projections_path,
-    #                 projection,
-    #                 "{}.toml".format(projection),
-    #             )
-    #         )
-    #     )
+    def set_physical_projection(self, projection: str) -> None:
+        projection_path = Path(
+            DatabaseIO().projections_path, projection, f"{projection}.toml"
+        )
+        self.physical_projection = Projection.load_file(
+            projection_path
+        ).get_physical_projection()
 
-    # def set_hazard_strategy(self, strategy: str):
-    #     self.hazard_strategy.load_file(
-    #         str(
-    #             Path(DatabaseIO().strategies_path, strategy, "{}.toml".format(strategy))
-    #         )
-    #     )
+    def set_hazard_strategy(self, strategy: str) -> None:
+        strategy_path = Path(DatabaseIO().strategies_path, strategy, f"{strategy}.toml")
+        self.hazard_strategy = Strategy.load_file(strategy_path).get_hazard_strategy()
 
     # no write function is needed since this is only used internally
 
-    def calculate_rp_floodmaps(self, rp: list) -> Path:
-        ...
-        # path_to_floodmaps = None
-        # return path_to_floodmaps
+    def calculate_rp_floodmaps(self, rp: list):
+        raise NotImplementedError
 
     def add_wl_ts(self):
         """adds total water level timeseries"""

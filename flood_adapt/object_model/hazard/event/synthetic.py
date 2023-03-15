@@ -1,6 +1,6 @@
 import math
-from pathlib import Path
-from typing import Optional
+import os
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -9,6 +9,7 @@ import tomli_w
 from pydantic import BaseModel
 
 from flood_adapt.object_model.hazard.event.event import Event, EventModel
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 
 
@@ -46,14 +47,14 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
     surge: SurgeModel
 
 
-class Synthetic(Event):
+class Synthetic(Event, IEvent):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
     attrs: SyntheticModel
     tide_surge_ts: pd.DataFrame
 
     @staticmethod
-    def load_file(filepath: Path):
+    def load_file(filepath: Union[str, os.PathLike]):
         """create Synthetic from toml file"""
 
         obj = Synthetic()
@@ -63,14 +64,14 @@ class Synthetic(Event):
         return obj
 
     @staticmethod
-    def load_dict(data: dict):
+    def load_dict(data: dict[str, Any]):
         """create Synthetic from object, e.g. when initialized from GUI"""
 
         obj = Synthetic()
         obj.attrs = SyntheticModel.parse_obj(data)
         return obj
 
-    def save(self, file: Path):
+    def save(self, filepath: Union[str, os.PathLike]):
         """saving event toml
 
         Parameters
@@ -78,8 +79,8 @@ class Synthetic(Event):
         file : Path
             path to the location where file will be saved
         """
-        with open(file, "wb") as f:
-            tomli_w.dump(self.attrs.dict(), f)
+        with open(filepath, "wb") as f:
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     def add_tide_and_surge_ts(self):
         """generating time series of harmoneous tide (cosine) and gaussian surge shape
@@ -160,18 +161,16 @@ class Synthetic(Event):
         duration = (
             self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
         ) * 3600
+        peak = self.attrs.surge.shape_peak.convert_to_meters()
         if self.attrs.surge.shape_type == "gaussian":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
         elif self.attrs.surge.shape_type == "block":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
             ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
         elif self.attrs.surge.shape_type == "triangle":
-            peak = self.attrs.surge.shape_peak.convert_to_meters()
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600

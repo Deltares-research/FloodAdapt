@@ -1,19 +1,21 @@
 import os
-import typing
 from abc import ABC, abstractmethod
+from typing import Any, Union
 
 
 class IProjection(ABC):
+    @staticmethod
     @abstractmethod
-    def load_file(filepath: typing.Union[str, os.PathLike]):
-        """create Projection from toml file"""
+    def load_file(filepath: Union[str, os.PathLike]):
+        """get Projection attributes from toml file"""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def load_dict(data: dict[str, Any]):
+        """get Projection attributes from an object, e.g. when initialized from GUI"""
         ...
 
     @abstractmethod
-    def load_dict(data: dict):
-        """create Projection from object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: typing.Union[str, os.PathLike]):
-        """save Projection.model to a toml file"""
+    def save(self, filepath: Union[str, os.PathLike]):
+        """save Projection attributes to a toml file"""

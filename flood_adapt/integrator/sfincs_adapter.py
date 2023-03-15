@@ -7,7 +7,7 @@ from hydromt_sfincs import SfincsModel
 
 
 class SfincsAdapter:
-    def __init__(self, model_root: str):
+    def load_overland_sfincs_model(self, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
         Args:

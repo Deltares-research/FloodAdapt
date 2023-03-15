@@ -1,6 +1,8 @@
 name = "SLR_2ft"
 long_name = "SLR_2ft"
+[physical_projection]
 sea_level_rise.value = 2
 sea_level_rise.units = "feet"
 subsidence.value = 1
 subsidence.units = "feet"
+[socio_economic_change]

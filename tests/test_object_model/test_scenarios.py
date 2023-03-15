@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -7,23 +8,18 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic, TideModel
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection import (
-    PhysicalProjection,
-)
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import SiteConfig
+from flood_adapt.object_model.site import Site
 
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-@pytest.mark.skip(
-    reason="pydantic not implemented in scenario class yet, still expecting config_io functions"
-)
 def test_scenario_class():
-    test_scenario_toml = (
+    scenario_toml = (
         test_database
         / "charleston"
         / "input"
@@ -31,43 +27,89 @@ def test_scenario_class():
         / "all_projections_extreme12ft_strategy_comb"
         / "all_projections_extreme12ft_strategy_comb.toml"
     )
-    assert test_scenario_toml.is_file()
+    assert scenario_toml.is_file()
 
-    test_scenario = Scenario().load("all_projections_extreme12ft_strategy_comb")
-    assert isinstance(test_scenario.direct_impacts, DirectImpacts)
-    assert isinstance(test_scenario.site_info, SiteConfig)
-    assert isinstance(test_scenario.direct_impacts.hazard, Hazard)
-    assert isinstance(test_scenario.direct_impacts.impact_strategy, ImpactStrategy)
+    scenario = Scenario.load_file(scenario_toml)
+    scenario.init_object_model()
+
+    assert isinstance(scenario.site_info, Site)
+    assert isinstance(scenario.direct_impacts, DirectImpacts)
     assert isinstance(
-        test_scenario.direct_impacts.socio_economic_change, SocioEconomicChange
+        scenario.direct_impacts.socio_economic_change, SocioEconomicChange
     )
-    assert isinstance(test_scenario.direct_impacts.hazard.event, Event)
+    assert isinstance(scenario.direct_impacts.impact_strategy, ImpactStrategy)
+    assert isinstance(scenario.direct_impacts.hazard, Hazard)
+    assert isinstance(scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy)
     assert isinstance(
-        test_scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy
+        scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
     )
-    assert isinstance(
-        test_scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
+    assert isinstance(scenario.direct_impacts.hazard.event, Synthetic)
+
+
+def test_hazard_load():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
     )
 
-    # Check if all variables are read correctly from the site config file.
-    assert test_scenario.site_info.name == "charleston"
-    assert test_scenario.site_info.long_name == "Charleston, SC"
-    assert test_scenario.site_info.lat == 32.77
-    assert test_scenario.site_info.lon == -79.95
-    assert test_scenario.site_info.sfincs["cstype"] == "projected"
-    assert test_scenario.site_info.gui["tide_harmonic_amplitude"]["value"] == 3.0
-    assert test_scenario.site_info.dem["filename"] == "charleston_14m.tif"
-    assert test_scenario.site_info.fiat["aggregation_shapefiles"] == "subdivision.shp"
-    assert test_scenario.site_info.river["mean_discharge"]["units"] == "cfs"
-    assert test_scenario.site_info.obs_station["ID"] == 8665530
-    assert test_scenario.site_info.obs_station["mllw"]["value"] == 0.0
+    assert test_toml.is_file()
+    scenario = Scenario.load_file(test_toml)
+    scenario.init_object_model()
 
-    # Check if all variables are read correctly from the scenario file.
-    assert (
-        test_scenario.direct_impacts.name == "all_projections_extreme12ft_strategy_comb"
+    hazard = scenario.direct_impacts.hazard
+
+    assert hazard.event.attrs.timing == "idealized"
+    assert isinstance(hazard.event.attrs.tide, TideModel)
+
+
+def test_hazard_wl():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
     )
-    assert (
-        test_scenario.direct_impacts.long_name
-        == "all_projections - extreme12ft - strategy_comb"
+
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+
+    hazard.add_wl_ts()
+
+    assert isinstance(hazard.wl_ts, pd.DataFrame)
+    assert len(hazard.wl_ts) > 1
+    assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
+
+
+@pytest.mark.skip(reason="wind not implemented yet")
+def test_wind_constant():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
     )
-    assert test_scenario.direct_impacts.socio_economic_change
+
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+
+    hazard.add_wind_ts()
+
+    assert isinstance(hazard.event_obj.wind_ts, pd.DataFrame)
+    assert len(hazard.event_obj.wind_ts) > 1
+    assert isinstance(hazard.event_obj.wind_ts.index, pd.DatetimeIndex)
