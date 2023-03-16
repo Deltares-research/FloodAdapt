@@ -2,19 +2,15 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 import geopandas as gpd
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
-from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -24,16 +20,24 @@ from flood_adapt.object_model.strategy import Strategy
 
 
 class Database(IDatabase):
+    """Implementation of IDatabase class that holds the site information and has methods
+    to get static data info, and all the input informations.
+    Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input
+    """
+
     input_path: Path
     site: ISite
-    events: list[IEvent]
-    projections: list[IProjection]
-    measures: list[IMeasure]
-    strategies: list[IStrategy]
-    scenarios: list[IScenario]
-    fiat_model: Fiat
 
     def __init__(self, database_path: Union[str, os.PathLike], site_name: str) -> None:
+        """Database is initialized with a path and a site name
+
+        Parameters
+        ----------
+        database_path : Union[str, os.PathLike]
+            database path
+        site_name : str
+            site name (same as in the folder structure)
+        """
         self.input_path = Path(database_path) / site_name / "input"
         self.site = Site.load_file(
             Path(database_path) / site_name / "static" / "site" / "site.toml"
@@ -42,6 +46,14 @@ class Database(IDatabase):
 
     # General methods
     def get_aggregation_areas(self) -> list[GeoDataFrame]:
+        """Get a list of the aggregation areas that are provided in the site configuration.
+        These are expected to much the ones in the FIAT model
+
+        Returns
+        -------
+        list[GeoDataFrame]
+            list of geodataframes with the polygons defining the aggregation areas
+        """
         aggregation_areas = [
             gpd.read_file(
                 self.input_path.parent / "static" / "site" / aggr_dict.file
@@ -58,6 +70,15 @@ class Database(IDatabase):
         return aggregation_areas
 
     def get_buildings(self) -> GeoDataFrame:
+        """Get the building footprints from the FIAT model.
+        This should only be hte buildings excluding any other types (e.g., roads)
+        The parameters non_building_names in the site confif is used for that
+
+        Returns
+        -------
+        GeoDataFrame
+            building footprints with all the FIAT columns
+        """
         fiat_model = Fiat(
             fiat_path=self.input_path.parent / "static" / "templates" / "fiat",
             crs=self.site.attrs.fiat.exposure_crs,
@@ -69,17 +90,42 @@ class Database(IDatabase):
 
     # Measure methods
     def get_measure(self, name: str) -> IMeasure:
+        """Get the respective measure object using the name of the measure.
+
+        Parameters
+        ----------
+        name : str
+            name of the measure
+
+        Returns
+        -------
+        IMeasure
+            object of one of the measure types (e.g., IElevate)
+        """
         measure_path = self.input_path / "measures" / name / f"{name}.toml"
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
 
     def save_measure(self, measure: IMeasure) -> None:
+        """Saves a measure object in the database.
+
+        Parameters
+        ----------
+        measure : IMeasure
+            object of one of the measure types (e.g., IElevate)
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
         names = self.get_measures()["name"]
         if measure.attrs.name in names:
             raise ValueError(
                 f"'{measure.attrs.name}' name is already used by another measure. Choose a different name"
             )
         else:
+            # TODO: how to save the extra files? e.g., polygons
             (self.input_path / "measures" / measure.attrs.name).mkdir()
             measure.save(
                 self.input_path
@@ -89,6 +135,13 @@ class Database(IDatabase):
             )
 
     def edit_measure(self, measure: IMeasure):
+        """Edits an already existing measure in the database.
+
+        Parameters
+        ----------
+        measure : IMeasure
+            object of one of the measure types (e.g., IElevate)
+        """
         # TODO should you be able to edit a measure that is already used in a strategy?
         measure.save(
             self.input_path
@@ -98,6 +151,18 @@ class Database(IDatabase):
         )
 
     def delete_measure(self, name: str):
+        """Deletes an already existing measure in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the measure
+
+        Raises
+        ------
+        ValueError
+            Raise error if measure to be deleted is already used in a strategy.
+        """
         # TODO check strategies that use a measure
         strategies = [
             Strategy.load_file(path) for path in self.get_strategies()["path"]
@@ -121,6 +186,17 @@ class Database(IDatabase):
             shutil.rmtree(measure_path, ignore_errors=True)
 
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing measures, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing measure
+        new_name : str
+            name of the new measure
+        new_long_name : str
+            long_name of the new measure
+        """
         # First do a get
         measure = self.get_measure(old_name)
         measure.attrs.name = new_name
@@ -141,21 +217,45 @@ class Database(IDatabase):
         self.strategies = self.get_strategies()
         self.scenarios = self.get_scenarios()
 
-    def get_projections(self):
+    def get_projections(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the projections that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         projections = self.get_object_list(object_type="Projections")
         objects = [Projection.load_file(path) for path in projections["path"]]
         projections["name"] = [obj.attrs.name for obj in objects]
         projections["long_name"] = [obj.attrs.long_name for obj in objects]
         return projections
 
-    def get_events(self):
+    def get_events(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the events that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         events = self.get_object_list(object_type="Events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
         events["long_name"] = [obj.attrs.long_name for obj in objects]
         return events
 
-    def get_measures(self):
+    def get_measures(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the measures that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         measures = self.get_object_list(object_type="Measures")
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
@@ -168,21 +268,50 @@ class Database(IDatabase):
         ]
         return measures
 
-    def get_strategies(self):
+    def get_strategies(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the strategies that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         strategies = self.get_object_list(object_type="Strategies")
         objects = [Strategy.load_file(path) for path in strategies["path"]]
         strategies["name"] = [obj.attrs.name for obj in objects]
         strategies["long_name"] = [obj.attrs.long_name for obj in objects]
         return strategies
 
-    def get_scenarios(self):
+    def get_scenarios(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the events that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         scenarios = self.get_object_list(object_type="Scenarios")
         objects = [Scenario.load_file(path) for path in scenarios["path"]]
         scenarios["name"] = [obj.attrs.name for obj in objects]
         scenarios["long_name"] = [obj.attrs.long_name for obj in objects]
         return scenarios
 
-    def get_object_list(self, object_type: str):
+    def get_object_list(self, object_type: str) -> dict[str, Any]:
+        """Given an object type (e.g., measures) get a dictionary with all the toml paths
+        and last modification dates that exist in the database.
+
+        Parameters
+        ----------
+        object_type : str
+            Can be 'projections', 'events', 'measures', 'strategies' or 'scenarios'
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'path' and 'last_modification_date' info
+        """
         paths = [
             path / f"{path.name}.toml"
             for path in list((self.input_path / object_type).iterdir())

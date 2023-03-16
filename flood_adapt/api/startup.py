@@ -10,7 +10,7 @@ from flood_adapt.object_model.interface.database import IDatabase
 
 
 def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDatabase:
-    """_summary_
+    """Given a path and a site name returns a IDatabase object.
 
     Parameters
     ----------
