@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, Union
 
 import tomli
@@ -6,37 +7,40 @@ import tomli_w
 
 from flood_adapt.object_model.hazard.measure.hazard_measure import (
     HazardMeasure,
-    HazardMeasureModel,
 )
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
+from flood_adapt.object_model.interface.measures import (
+    FloodWallModel,
+    IFloodWall,
+)
 
 
-class FloodwallModel(HazardMeasureModel):
-    elevation: UnitfulLengthRefValue
-
-
-class FloodWall(HazardMeasure, IMeasure):
+class FloodWall(HazardMeasure, IFloodWall):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
 
-    attrs: FloodwallModel
+    attrs: FloodWallModel
+    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
+    def load_file(filepath: Union[str, os.PathLike]) -> IFloodWall:
         """create Floodwall from toml file"""
 
         obj = FloodWall()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = FloodwallModel.parse_obj(toml)
+        obj.attrs = FloodWallModel.parse_obj(toml)
+        # if measure is created by path use that to get to the database path
+        obj.database_input_path = Path(filepath).parents[2]
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+    ) -> IFloodWall:
         """create Floodwall from object, e.g. when initialized from GUI"""
 
         obj = FloodWall()
-        obj.attrs = FloodwallModel.parse_obj(data)
+        obj.attrs = FloodWallModel.parse_obj(data)
+        obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

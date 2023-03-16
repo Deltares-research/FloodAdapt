@@ -1,53 +1,17 @@
 import math
 import os
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
 import tomli
 import tomli_w
-from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.event.event import Event, EventModel
-from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.interface.events import ISynthetic, SyntheticModel
 
 
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
-
-    duration_before_t0: float
-    duration_after_t0: float
-    start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
-
-
-class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    harmonic_amplitude: UnitfulLength
-
-
-class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_peak: Optional[UnitfulLength]
-
-
-class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
-
-    time: TimeModel
-    tide: TideModel
-    surge: SurgeModel
-
-
-class Synthetic(Event, IEvent):
+class Synthetic(Event, ISynthetic):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
     attrs: SyntheticModel
@@ -144,7 +108,7 @@ class Synthetic(Event, IEvent):
             )
 
     @staticmethod
-    def timeseries_shape(self, tt: np.array) -> np.array:
+    def timeseries_shape(self, tt: np.ndarray) -> np.ndarray:
         """generates 1d vector of shape to generate time series of surge, wind, rain or discharge
 
         Parameters

@@ -1,10 +1,11 @@
-# # from floodapat.object_model import ...
+from typing import Any
+
+from flood_adapt.object_model.interface.database import IDatabase
 
 
-# # Projections tab
-# def get_projections() -> dict():  # use PyQt table
-#     # sorting and filtering either with PyQt table or in the API
-#     pass
+def get_projections(database: IDatabase) -> dict[str, Any]:
+    # sorting and filtering either with PyQt table or in the API
+    return database.get_projections()
 
 
 # # on click add projection
