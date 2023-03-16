@@ -21,7 +21,7 @@ from flood_adapt.object_model.strategy import Strategy
 
 class Database(IDatabase):
     """Implementation of IDatabase class that holds the site information and has methods
-    to get static data info, and all the input informations.
+    to get static data info, and all the input information.
     Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input
     """
 
@@ -72,7 +72,7 @@ class Database(IDatabase):
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
         This should only be hte buildings excluding any other types (e.g., roads)
-        The parameters non_building_names in the site confif is used for that
+        The parameters non_building_names in the site config is used for that
 
         Returns
         -------
