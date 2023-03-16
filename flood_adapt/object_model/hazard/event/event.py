@@ -2,6 +2,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import tomli
 from pydantic import BaseModel
 
@@ -143,3 +144,59 @@ class Event:
             toml = tomli.load(fp)
         obj.attrs = EventModel.parse_obj(toml)
         return obj.attrs.mode
+
+    @staticmethod
+    def add_wind_ts(event: EventModel):
+        # generating time series of constant wind
+        if event.attrs.wind.source == "constant":
+            duration = (
+                event.attrs.time.duration_before_t0 + event.attrs.time.duration_after_t0
+            ) * 3600
+            vmag = event.attrs.wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vdir = event.attrs.wind.constant_direction.value * np.array([1, 1])
+            time = pd.date_range(
+                event.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict(
+                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
+            )
+            df = df.set_index("time")
+            event.wind_ts = df
+            return event
+        elif event.attrs.wind.source == "timeseries":
+            raise NotImplementedError
+        else:
+            raise ValueError(
+                "A time series can only be generated for wind sources "
+                "constant"
+                " or "
+                "timeseries"
+                "."
+            )
+
+    @staticmethod
+    def add_rainfall_ts(event: EventModel):
+        # generating time series of constant wind
+        if event.attrs.wind.source == "constant":
+            duration = (
+                event.attrs.time.duration_before_t0 + event.attrs.time.duration_after_t0
+            ) * 3600
+            vmag = event.attrs.wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vdir = event.attrs.wind.constant_direction.value * np.array([1, 1])
+            time = pd.date_range(
+                event.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict(
+                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
+            )
+            df = df.set_index("time")
+            event.wind_ts = df
+            return event
+        else:
+            raise ValueError(
+                "A time series can only be generated for wind sources "
+                "constant"
+                " or "
+                "timeseries"
+                "."
+            )

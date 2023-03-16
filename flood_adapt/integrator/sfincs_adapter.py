@@ -51,7 +51,6 @@ class SfincsAdapter:
 
         # Go from 1 timeseries to timeseries for all boundary points
         for i in range(1, len(gdf_locs)):
-            # col_name = f"{i+1}"
             df_ts[i + 1] = df_ts[1]
 
         # HydroMT function: set waterlevel forcing from time series
@@ -67,10 +66,8 @@ class SfincsAdapter:
         gdf_locs.crs = self.sf_model.crs
 
         # Go from 1 timeseries to timeseries for all boundary points
-        wl = df_ts[0]
-        for i in range(len(gdf_locs) - 1):
-            col_name = i + 1
-            df_ts[col_name] = wl
+        for i in range(1, len(gdf_locs)):
+            df_ts[i + 1] = df_ts[1]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
@@ -91,11 +88,6 @@ class SfincsAdapter:
 
     # def run_sfincs_models(self):
     #      pass
-
-    # def add_time(self, input_times: dict):
-    #      self.sf_model.config['tref'] = input_times['tref']
-    #      self.sf_model.config['tstart'] = input_times['tstart']
-    #      self.sf_model.config['tstop'] = input_times['tstop']
 
     # def add_floodwall(self, polygon_file: str = None):
 
