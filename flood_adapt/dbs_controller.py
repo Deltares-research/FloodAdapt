@@ -71,7 +71,7 @@ class Database(IDatabase):
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
-        This should only be hte buildings excluding any other types (e.g., roads)
+        This should only be the buildings excluding any other types (e.g., roads)
         The parameters non_building_names in the site config is used for that
 
         Returns
