@@ -5,8 +5,8 @@ import pytest
 import flood_adapt.api.measures as api_measures
 import flood_adapt.api.startup as api_startup
 
-test_database_path = Path().absolute() / "tests" / "test_database2"
-test_site_name = "Charleston"
+test_database_path = Path().absolute() / "tests" / "test_database_GUI"
+test_site_name = "charleston"
 
 
 def test_elevate_measure():

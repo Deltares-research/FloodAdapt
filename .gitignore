@@ -161,4 +161,5 @@ cython_debug/
 .vscode/settings.json
 /.idea
 /.pytest_cache
-tests/test_database2/
+tests/test_database_GUI/
+tests/test_database_integrator/

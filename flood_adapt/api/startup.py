@@ -59,13 +59,13 @@ def get_buildings(database: IDatabase) -> GeoDataFrame:
 
 
 def get_hazard_measure_types():
-    pass
+    raise NotImplementedError
 
 
 def get_impact_measure_types():
-    pass
+    raise NotImplementedError
 
 
 def get_event_templates():
     # get a list ideally automatically from the child classes of the parent class Event
-    pass
+    raise NotImplementedError

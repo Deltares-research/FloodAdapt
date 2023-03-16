@@ -55,7 +55,7 @@ class Hazard:
             # use event template to get the associated event child class
             self.event = EventFactory.get_event(template).load_file(event_path)
         elif mode == "probabilistic_set":
-            self.ensemble = None  # TODO: add Ensemble.load()
+            raise NotImplementedError
 
     def set_physical_projection(self, projection: str) -> None:
         projection_path = (
@@ -74,7 +74,7 @@ class Hazard:
     # no write function is needed since this is only used internally
 
     def calculate_rp_floodmaps(self, rp: list):
-        pass
+        raise NotImplementedError
         # path_to_floodmaps = None
         # return path_to_floodmaps
 
