@@ -1,54 +1,26 @@
 import math
 import os
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
 import tomli
 import tomli_w
-from pydantic import BaseModel
 
-from flood_adapt.object_model.hazard.event.event import Event, EventModel
-from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
-
-
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
-
-    duration_before_t0: float
-    duration_after_t0: float
-    start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.interface.events import (
+    ISynthetic,
+    RainfallModel,
+    RiverModel,
+    SurgeModel,
+    SyntheticModel,
+    TimeModel,
+    WindModel,
+)
 
 
-class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    harmonic_amplitude: UnitfulLength
-
-
-class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_peak: Optional[UnitfulLength]
-
-
-class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
-
-    time: TimeModel
-    tide: TideModel
-    surge: SurgeModel
-
-
-class Synthetic(Event, IEvent):
+class Synthetic(Event, ISynthetic):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
 
     attrs: SyntheticModel
@@ -122,7 +94,7 @@ class Synthetic(Event, IEvent):
 
         # surge
         if self.attrs.surge.source == "shape":
-            surge = self.timeseries_shape(self, tt)
+            surge = self.timeseries_shape(self.attrs.time, self.attrs.surge)
         elif self.attrs.surge.source == "none":
             surge = np.zeros_like(tt)
 
@@ -135,7 +107,24 @@ class Synthetic(Event, IEvent):
         self.tide_surge_ts = df
         return self
 
-    def timeseries_shape(self, tt: np.ndarray) -> np.ndarray:
+    def add_wind_ts(self):
+        """adds wind it timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant wind
+        if self.attrs.wind.source == "constant":
+            df = super().generate_wind_ts(self.attrs.time, self.attrs.wind)
+            self.wind_ts = df
+            return self
+
+    @staticmethod
+    def timeseries_shape(
+        time: TimeModel, shape: Union[SurgeModel, WindModel, RainfallModel, RiverModel]
+    ) -> np.ndarray:
         """generates 1d vector of shape to generate time series of surge, wind, rain or discharge
 
         Parameters
@@ -149,26 +138,20 @@ class Synthetic(Event, IEvent):
             1d array of the shape with the same dimensions as time vector tt
         """
 
-        duration = (
-            self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
-        ) * 3600
-        peak = self.attrs.surge.shape_peak.convert_to_meters()
-        if self.attrs.surge.shape_type == "gaussian":
-            time_shift = (
-                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
-            ) * 3600
+        duration = (time.duration_before_t0 + time.duration_after_t0) * 3600
+        peak = shape.shape_peak.convert_to_meters()
+        if shape.shape_type == "gaussian":
+            time_shift = (time.duration_before_t0 + shape.shape_peak_time) * 3600
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
-        elif self.attrs.surge.shape_type == "block":
-            ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
-            ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
-        elif self.attrs.surge.shape_type == "triangle":
-            time_shift = (
-                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
-            ) * 3600
+        elif shape.shape_type == "block":
+            ts = np.where((tt > shape.start_shape), peak, 0)
+            ts = np.where((tt > shape.end_shape), 0, ts)
+        elif shape.shape_type == "triangle":
+            time_shift = (time.duration_before_t0 + shape.shape_peak_time) * 3600
             tt_interp = [
-                self.attrs.surge.start_shape,
+                shape.start_shape,
                 time_shift,
-                self.attrs.surge.end_shape,
+                shape.end_shape,
             ]
             value_interp = [0, peak, 0]
             ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)

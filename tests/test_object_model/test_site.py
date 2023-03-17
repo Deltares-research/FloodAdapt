@@ -1,9 +1,11 @@
 from pathlib import Path
 
-from flood_adapt.object_model.site import (
+from flood_adapt.object_model.interface.site import (
     DemModel,
     Obs_stationModel,
     SfincsModel,
+)
+from flood_adapt.object_model.site import (
     Site,
 )
 
@@ -11,7 +13,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 
 def test_read_site_toml():
-    test_toml = test_database / "charleston" / "static" / "site" / "charleston.toml"
+    test_toml = test_database / "charleston" / "static" / "site" / "site.toml"
 
     assert test_toml.is_file()
 
@@ -29,11 +31,7 @@ def test_read_site_toml():
 
 def test_read_site_toml_without_river():
     test_toml = (
-        test_database
-        / "charleston"
-        / "static"
-        / "site"
-        / "charleston_without_river.toml"
+        test_database / "charleston" / "static" / "site" / "site_without_river.toml"
     )
 
     assert test_toml.is_file()

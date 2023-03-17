@@ -1,9 +1,19 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
+
+from pydantic import BaseModel
+
+
+class StrategyModel(BaseModel):
+    name: str
+    long_name: str
+    measures: Optional[list[str]] = []
 
 
 class IStrategy(ABC):
+    attrs: StrategyModel
+
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -12,7 +22,7 @@ class IStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
         """get Strategy attributes from an object, e.g. when initialized from GUI"""
         ...
 

@@ -2,11 +2,14 @@ from pathlib import Path
 
 import tomli
 
-from flood_adapt.object_model.hazard.event.event import Event, Mode, Template, Timing
+from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import (
+from flood_adapt.object_model.interface.events import (
+    Mode,
+    Template,
     TideModel,
     TimeModel,
+    Timing,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 

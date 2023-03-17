@@ -1,7 +1,13 @@
 # Event tab
-# def get_events() -> dict():  # use PyQt table
-#     # sorting and filtering either with PyQt table or in the API
-#     pass
+
+from typing import Any
+
+from flood_adapt.dbs_controller import IDatabase
+
+
+def get_events(database: IDatabase) -> dict[str, Any]:
+    # use PyQt table / sorting and filtering either with PyQt table or in the API
+    return database.get_events()
 
 
 # def get_event(name: str) -> dict():  # get attributes

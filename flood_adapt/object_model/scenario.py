@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, Union
 
 import tomli
@@ -7,20 +8,22 @@ import tomli_w
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.io.database_io import DatabaseIO
 from flood_adapt.object_model.site import Site
 
 
-class Scenario(IScenario):  # TODO: add IScenario
+class Scenario(IScenario):
     """class holding all information related to a scenario"""
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
+    database_input_path: Union[str, os.PathLike]
 
     def init_object_model(self):
         """Create a Direct Impact object"""
-        self.site_info = Site.load_file(DatabaseIO().site_config_path)
-        self.direct_impacts = DirectImpacts(self.attrs)
+        self.site_info = Site.load_file(
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        self.direct_impacts = DirectImpacts(self.attrs, Path(self.database_input_path))
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -30,14 +33,17 @@ class Scenario(IScenario):  # TODO: add IScenario
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = ScenarioModel.parse_obj(toml)
+        # if strategy is created by path use that to get to the database path
+        obj.database_input_path = Path(filepath).parents[2]
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
         """create Scenario from object, e.g. when initialized from GUI"""
 
         obj = Scenario()
         obj.attrs = ScenarioModel.parse_obj(data)
+        obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

@@ -1,121 +1,15 @@
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
 import tomli
-from pydantic import BaseModel
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitfulVelocity,
+from flood_adapt.object_model.interface.events import (
+    EventModel,
+    TimeModel,
+    WindModel,
 )
-
-
-class Mode(str, Enum):
-    """class describing the accepted input for the variable mode in Event"""
-
-    single_scenario = "single_scenario"
-    risk = "risk"
-
-
-class Template(str, Enum):
-    """class describing the accepted input for the variable template in Event"""
-
-    Synthetic = "Synthetic"
-    Hurricane = "Hurricane"
-
-
-class Timing(str, Enum):
-    """class describing the accepted input for the variable timng in Event"""
-
-    historical = "historical"
-    idealized = "idealized"
-
-
-class WindSource(str, Enum):
-    track = "track"
-    map = "map"
-    constant = "constant"
-    none = "none"
-    timeseries = "timeseries"
-
-
-class RainfallSource(str, Enum):
-    track = "track"
-    map = "map"
-    constant = "constant"
-    none = "none"
-    timeseries = "timeseries"
-    shape = "shape"
-
-
-class RiverSource(str, Enum):
-    constant = "constant"
-    timeseries = "timeseries"
-    shape = "shape"
-
-
-class ShapeType(str, Enum):
-    gaussian = "gaussian"
-    block = "block"
-    triangle = "triangle"
-
-
-class WindModel(BaseModel):
-    source: WindSource
-    # constant
-    constant_speed: Optional[UnitfulVelocity]
-    constant_direction: Optional[UnitfulDirection]
-    # timeseries
-    wind_timeseries_file: Optional[str]
-
-
-class RainfallModel(BaseModel):
-    source: RainfallSource
-    # constant
-    constant_intensity: Optional[UnitfulLength]
-    # timeseries
-    rainfall_timeseries_file: Optional[str]
-    # shape
-    shape_type: Optional[ShapeType]
-    cumulative: Optional[UnitfulLength]
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_start_time: Optional[float]
-    shape_end_time: Optional[float]
-
-
-class RiverModel(BaseModel):
-    source: RiverSource
-    # constant
-    constant_discharge: Optional[UnitfulDischarge]
-    # shape
-    shape_type: Optional[ShapeType]
-    base_discharge: Optional[UnitfulDischarge]
-    shape_peak: Optional[UnitfulDischarge]
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_start_time: Optional[float]
-    shape_end_time: Optional[float]
-
-
-class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
-    """BaseModel describing the expected variables and data types of attributes common to all event types"""
-
-    name: str
-    long_name: str
-    mode: Mode
-    template: Template
-    timing: Timing
-    water_level_offset: UnitfulLength
-    wind: WindModel
-    # rainfall: RainfallModel
-    # river: RiverModel
 
 
 class Event:
@@ -156,9 +50,9 @@ class Event:
         if wind.source == "constant":
             vmag = wind.constant_speed.convert_to_mps() * np.array([1, 1])
             vdir = wind.constant_direction.value * np.array([1, 1])
-            time = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
+            time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict(
-                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
+                {"time": time_vec[[0, -1]], "vmag": vmag, "vdir": vdir}
             )
             df = df.set_index("time")
             return df
