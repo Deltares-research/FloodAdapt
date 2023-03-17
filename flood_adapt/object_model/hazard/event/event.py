@@ -42,7 +42,7 @@ class Event:
         return obj.attrs.mode
 
     @staticmethod
-    def add_wind_ts(time: TimeModel, wind: WindModel) -> pd.DataFrame:
+    def generate_wind_ts(time: TimeModel, wind: WindModel) -> pd.DataFrame:
         # generating time series of constant wind
         tstart = datetime.strptime(time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
