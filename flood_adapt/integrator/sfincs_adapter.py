@@ -34,7 +34,6 @@ class SfincsAdapter:
         self.sf_model.set_config("tref", tstart)
         self.sf_model.set_config("tstart", tstart)
         self.sf_model.set_config("tstop", tstop)
-        print("pause")
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series.

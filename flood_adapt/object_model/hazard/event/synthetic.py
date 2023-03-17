@@ -11,12 +11,7 @@ import tomli_w
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     ISynthetic,
-    RainfallModel,
-    RiverModel,
-    SurgeModel,
     SyntheticModel,
-    TimeModel,
-    WindModel,
 )
 
 
@@ -94,7 +89,16 @@ class Synthetic(Event, ISynthetic):
 
         # surge
         if self.attrs.surge.source == "shape":
-            surge = self.timeseries_shape(self.attrs.time, self.attrs.surge)
+            # surge = self.timeseries_shape(self.attrs.time, self.attrs.surge)
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
+            ) * 3600
+            surge = self.timeseries_shape(
+                "gaussian",
+                duration,
+                self.attrs.surge.shape_peak.convert_to_meters(),
+                time_shift=time_shift,
+            )
         elif self.attrs.surge.source == "none":
             surge = np.zeros_like(tt)
 
@@ -122,36 +126,21 @@ class Synthetic(Event, ISynthetic):
             return self
 
     @staticmethod
-    def timeseries_shape(
-        time: TimeModel, shape: Union[SurgeModel, WindModel, RainfallModel, RiverModel]
-    ) -> np.ndarray:
-        """generates 1d vector of shape to generate time series of surge, wind, rain or discharge
-
-        Parameters
-        ----------
-        tt : np.array
-            time vector of floats (starting at zero)
-
-        Returns
-        -------
-        np.array
-            1d array of the shape with the same dimensions as time vector tt
-        """
-
-        duration = (time.duration_before_t0 + time.duration_after_t0) * 3600
-        peak = shape.shape_peak.convert_to_meters()
-        if shape.shape_type == "gaussian":
-            time_shift = (time.duration_before_t0 + shape.shape_peak_time) * 3600
+    def timeseries_shape(shape_type: str, duration: float, peak: float, **kwargs) -> np.ndarray:
+        time_shift = kwargs.get('time_shift', None)
+        start_shape = kwargs.get('start_shape', None)
+        end_shape = kwargs.get('end_shape', None)
+        tt = np.arange(0, duration + 1, 600)
+        if shape_type == "gaussian":
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
-        elif shape.shape_type == "block":
-            ts = np.where((tt > shape.start_shape), peak, 0)
-            ts = np.where((tt > shape.end_shape), 0, ts)
-        elif shape.shape_type == "triangle":
-            time_shift = (time.duration_before_t0 + shape.shape_peak_time) * 3600
+        elif shape_type == "block":
+            ts = np.where((tt > start_shape), peak, 0)
+            ts = np.where((tt > end_shape), 0, ts)
+        elif shape_type == "triangle":
             tt_interp = [
-                shape.start_shape,
+                start_shape,
                 time_shift,
-                shape.end_shape,
+                end_shape,
             ]
             value_interp = [0, peak, 0]
             ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
