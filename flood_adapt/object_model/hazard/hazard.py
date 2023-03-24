@@ -107,7 +107,7 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_sfincs(self, site=SiteModel):
+    def run_sfincs(self, site: SiteModel):
         # TODO: make path variable
         # path_on_n = Path(
         #     "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
