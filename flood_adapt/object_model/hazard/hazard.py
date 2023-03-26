@@ -108,14 +108,12 @@ class Hazard:
             return None  # TODO: add Ensemble.load()
 
     def run_sfincs(self, site: SiteModel):
-        # TODO: make path variable
-        # path_on_n = Path(
-        #     "n:/Projects/11207500/11207949/F. Other information/Test_data/database/charleston"
-        # )
-        path_on_n = Path(
-            "c:/Users/winter_ga/Offline_Data/project_data/FloodAdapt/Test_data/database/charleston"
+        # TODO: make path variable, now using test data on p-drive
+
+        path_on_p = Path(
+            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
         )
-        path_in = path_on_n.joinpath(
+        path_in = path_on_p.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
         run_folder_overland = path_on_n.joinpath(
