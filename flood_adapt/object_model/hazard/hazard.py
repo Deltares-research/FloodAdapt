@@ -85,16 +85,24 @@ class Hazard:
         # return path_to_floodmaps
 
     def add_wl_ts(self):
-        """adds total water level timeseries"""
-        # generating total time series made of tide, slr and water level offset
-        template = self.event.attrs.template
-        if template == "Synthetic" or template == "Historical_nearshore":
-            self.event.add_tide_and_surge_ts()
-            self.wl_ts = self.event.tide_surge_ts
-            self.wl_ts[1] = (
-                self.wl_ts[1] + self.event.attrs.water_level_offset.convert_to_meters()
-            )  # TODO add slr
-            return self
+        """adds total water level timeseries to hazard object"""
+        # generating total time series made of tide, slr and water level offset,
+        # only for Synthteic and historical from nearshore
+        self.event.add_tide_and_surge_ts()
+        self.wl_ts = self.event.tide_surge_ts
+        self.wl_ts[1] = (
+            self.wl_ts[1]
+            + self.event.attrs.water_level_offset.convert_to_meters()
+            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+        )
+        return self
+
+    def add_discharge(self):
+        """adds discharge timeseries to hazard object"""
+        # constant for all event templates, additional: shape for Synthetic or timeseries for all historic
+        self.event.add_dis_ts()
+        self.dis_ts = self.event.dis_ts
+        return self
 
     @staticmethod
     def get_event_object(event_path):  # TODO This could be used above as well?
@@ -116,11 +124,9 @@ class Hazard:
         path_in = path_on_p.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
-        run_folder_overland = path_on_n.joinpath(
+        run_folder_overland = path_on_p.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
-        )  # TODO: replace "overland" with overland_model  from Site object
-
-        self.add_wl_ts()
+        )
 
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
@@ -128,8 +134,23 @@ class Hazard:
         # adjust timing of model
         model.set_timing(self.event.attrs)
 
-        # Change water level boundary condition
+        # Generate and change water level boundary condition
+        template = self.event.attrs.template
+        if template == "Synthetic" or template == "Historical_nearshore":
+            self.add_wl_ts()
+        elif template == "Hurricane" or template == "Historical_offshore":
+            raise NotImplementedError
         model.add_wl_bc(self.wl_ts)
+
+        # Generate and change discharge boundary condition
+        self.add_discharge()
+        model.add_dis_bc(self.dis_ts)
+
+        # Generate and add rainfall boundary condition
+        # TODO
+
+        # Generate and add wind boundary condition
+        # TODO, made already a start generating a constant timeseries in Event class
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
@@ -142,8 +163,8 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    f"..\..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe>sfincs_log.txt"
-                )
+                    f"..\..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe"
+                )  # >sfincs_log.txt
                 f_out.write(bat_file)
         elif self.event.attrs.mode == "single_scenario":
             with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
@@ -151,8 +172,8 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    f"..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe>sfincs_log.txt"
-                )
+                    f"..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe"
+                )  # >sfincs_log.txt
                 f_out.write(bat_file)
 
         # Indicator that sfincs model has run

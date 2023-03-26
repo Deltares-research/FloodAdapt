@@ -58,7 +58,7 @@ class SfincsAdapter:
         )
 
     def add_dis_bc(self, df_ts: pd.DataFrame):
-        """Changes discharge of overland sfincs model based on new waterlevel time series."""
+        """Changes discharge of overland sfincs model based on new discharge time series."""
 
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
@@ -66,7 +66,7 @@ class SfincsAdapter:
 
         # Go from 1 timeseries to timeseries for all boundary points
         for i in range(1, len(gdf_locs)):
-            df_ts[i + 1] = df_ts[1]
+            df_ts[i] = df_ts[i]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
