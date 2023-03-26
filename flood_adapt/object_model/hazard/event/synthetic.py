@@ -30,7 +30,7 @@ class Synthetic(Event, ISynthetic):
             toml = tomli.load(fp)
         obj.attrs = SyntheticModel.parse_obj(toml)
 
-        # synthtic event is the only one wthout start and stop time, so set this here.
+        # synthetic event is the only one wthout start and stop time, so set this here.
         # Default start time is defined in TimeModel, setting end_time here
         # based on duration before and after T0
         tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
@@ -147,7 +147,8 @@ class Synthetic(Event, ISynthetic):
             river = self.timeseries_shape(
                 self.attrs.river.shape_type,
                 duration,
-                self.attrs.river.shape_peak.convert_to_cms()-self.attrs.river.base_discharge.convert_to_cms(),
+                self.attrs.river.shape_peak.convert_to_cms()
+                - self.attrs.river.base_discharge.convert_to_cms(),
                 time_shift=time_shift,
                 start_shape=start_shape,
                 end_shape=end_shape,

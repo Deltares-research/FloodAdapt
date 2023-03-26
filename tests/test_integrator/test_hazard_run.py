@@ -22,6 +22,7 @@ def test_hazard_run_synthetic_wl():
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.run_sfincs(test_scenario.site_info)
 
+
 def test_hazard_run_synthetic_discharge():
     test_toml = (
         test_database
