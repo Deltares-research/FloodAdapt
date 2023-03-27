@@ -1,11 +1,42 @@
 from typing import Any
 
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.projection import Projection
 
 
 def get_projections(database: IDatabase) -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
     return database.get_projections()
+
+
+def get_projection(name: str, database: IDatabase) -> IProjection:
+    return database.get_projection(name)
+
+
+def create_projection(attrs: dict[str, Any], database: IDatabase) -> IProjection:
+    return Projection.load_dict(attrs)
+
+
+def save_projection(projection: IProjection, database: IDatabase) -> None:
+    database.save_projection(projection)
+
+
+def edit_projection(projection: IProjection, database: IDatabase) -> None:
+    database.edit_projection(projection)
+
+
+def delete_projection(name: str, database: IDatabase) -> None:
+    database.delete_projection(name)
+
+
+def copy_projection(
+    old_name: str, database: IDatabase, new_name: str, new_long_name: str
+) -> None:
+    database.copy_projection(old_name, new_name, new_long_name)
+
+
+
 
 
 # # on click add projection
