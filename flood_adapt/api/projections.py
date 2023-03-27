@@ -14,7 +14,7 @@ def get_projection(name: str, database: IDatabase) -> IProjection:
     return database.get_projection(name)
 
 
-def create_projection(attrs: dict[str, Any], database: IDatabase) -> IProjection:
+def create_projection(attrs: dict[str, Any]) -> IProjection:
     return Projection.load_dict(attrs)
 
 
