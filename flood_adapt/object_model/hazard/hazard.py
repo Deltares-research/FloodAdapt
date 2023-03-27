@@ -152,6 +152,10 @@ class Hazard:
         # Generate and add wind boundary condition
         # TODO, made already a start generating a constant timeseries in Event class
 
+        # Add floodwall if included
+        if self.measure.floodwall is not None: #TODO Gundula: fix met add_floodwall
+            pass
+
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
 
