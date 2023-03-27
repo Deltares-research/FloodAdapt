@@ -163,8 +163,8 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    f"..\..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe"
-                )  # >sfincs_log.txt
+                    "..\..\..\..\..\..\..\system\sfincs\%s\sfincs.exe".format(site.attrs.sfincs.version)
+                )  
                 f_out.write(bat_file)
         elif self.event.attrs.mode == "single_scenario":
             with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
@@ -172,8 +172,8 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    f"..\..\..\..\..\..\system\sfincs\{site.attrs.sfincs.version}\sfincs.exe"
-                )  # >sfincs_log.txt
+                    f"..\..\..\..\..\..\system\sfincs\%s\sfincs.exe".format(site.attrs.sfincs.version)
+                )  
                 f_out.write(bat_file)
 
         # Indicator that sfincs model has run
