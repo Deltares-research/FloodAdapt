@@ -6,17 +6,21 @@ from typing import Any, Union
 
 import geopandas as gpd
 from geopandas import GeoDataFrame
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
+
+from flood_adapt.object_model.hazard.event.event import Event
 
 
 class Database(IDatabase):
@@ -105,6 +109,24 @@ class Database(IDatabase):
         measure_path = self.input_path / "measures" / name / f"{name}.toml"
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
+    
+    def get_event(self, name: str) -> IEvent:
+        """Get the respective event object using the name of the event.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+
+        Returns
+        -------
+        IMeasure
+            object of one of the events
+        """
+        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
+        event_template = Event.get_template(event_path)
+        event = EventFactory.get_event(event_template).load_file(event_path)
+        return event    
 
     def save_measure(self, measure: IMeasure) -> None:
         """Saves a measure object in the database.

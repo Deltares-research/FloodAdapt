@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from hydromt_sfincs import SfincsModel
+# from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 
