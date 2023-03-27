@@ -1,0 +1,5 @@
+name = "current_extreme12ft_rivershape_windconst_no_measures"
+long_name = "current - extreme 12 foot event river block shape and constant wind- no_measures"
+projection = "current"
+event = "extreme12ft_rivershape_windconst"
+strategy = "no_measures"

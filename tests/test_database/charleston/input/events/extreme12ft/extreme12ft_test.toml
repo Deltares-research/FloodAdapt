@@ -23,6 +23,7 @@ units = "deg N"
 duration_before_t0 = 24.0
 duration_after_t0 = 24.0
 start_time = "20200101 000000"
+end_time = "20200103 000000"
 
 [tide]
 source = "harmonic"
