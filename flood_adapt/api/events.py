@@ -9,6 +9,7 @@ def get_events(database: IDatabase) -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
     return database.get_events()
 
+#BLALALDSLIFASFOISDFGn;ogjw;oeir
 
 # def get_event(name: str) -> dict():  # get attributes
 #     pass
