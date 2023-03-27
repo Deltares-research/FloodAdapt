@@ -41,7 +41,7 @@ class SfincsAdapter:
         Parameters
         ----------
         df_ts : pd.DataFrame
-            time series of water level, index should be Pnadas DateRange
+            time series of water level, index should be Pandas DateRange
         """
 
         # Determine bnd points from reference overland model
