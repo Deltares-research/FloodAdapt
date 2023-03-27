@@ -30,7 +30,7 @@ class Synthetic(Event, ISynthetic):
             toml = tomli.load(fp)
         obj.attrs = SyntheticModel.parse_obj(toml)
 
-        # synthetic event is the only one wthout start and stop time, so set this here.
+        # synthetic event is the only one without start and stop time, so set this here.
         # Default start time is defined in TimeModel, setting end_time here
         # based on duration before and after T0
         tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
