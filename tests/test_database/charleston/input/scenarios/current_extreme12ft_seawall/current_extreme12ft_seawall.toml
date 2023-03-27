@@ -1,0 +1,5 @@
+name = "current_extreme12ft_seawall"
+long_name = "current - extreme 12 foot event - seawall"
+projection = "current"
+event = "extreme12ft"
+strategy = "seawall"

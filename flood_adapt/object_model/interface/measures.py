@@ -5,7 +5,10 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, validator
 
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulLengthRefValue,
+)
 
 
 class ImpactType(str, Enum):
@@ -89,6 +92,10 @@ class ElevateModel(ImpactMeasureModel):
 
 class FloodWallModel(HazardMeasureModel):
     elevation: UnitfulLengthRefValue
+
+
+class PumpModel(HazardMeasureModel):
+    elevation: UnitfulDischarge
 
 
 class IMeasure(ABC):

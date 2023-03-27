@@ -5,8 +5,11 @@ from typing import Optional
 import pandas as pd
 from hydromt_sfincs import SfincsModel
 
-from flood_adapt.object_model.hazard.event.event import EventModel
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
+from flood_adapt.object_model.interface.events import EventModel
+from flood_adapt.object_model.interface.measures import (
+    FloodWallModel,
+    PumpModel,
+)
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -18,9 +21,6 @@ class SfincsAdapter:
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        # Check if model root exists
-        # if validate_existence_root_folder(model_root):
-        #    self.model_root = model_root
 
         self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
@@ -29,7 +29,6 @@ class SfincsAdapter:
         """Changes model reference times based on event time series."""
 
         # Update timing of the model
-        # stop_time =
         tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
         self.sf_model.set_config("tref", tstart)
@@ -86,20 +85,38 @@ class SfincsAdapter:
         Parameters
         ----------
         floodwall : FloodWallModel
-            floodwall information
+            floodwall object
         """
 
-        #HydroMT function: get geodataframe from filename
-        #TODO polygon file should be txt file with extension xy (!)
-        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs)
+        # HydroMT function: get geodataframe from filename
+        # TODO polygon file should be txt file with extension xy (!)
+        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
+            floodwall.database_input_path.joinpath(
+                "measures", floodwall.attrs.name, f"{floodwall.attrs.name}.txt"
+            ),
+            geom=self.sf_model.region,
+            crs=self.sf_model.crs,
+        )
 
-        #Add floodwall attributes to geodataframe
-        gdf_floodwall['name'] = floodwall.name
-        gdf_floodwall['z'] = floodwall.elevation
-        gdf_floodwall['par1'] = 0.6
+        # Add floodwall attributes to geodataframe
+        gdf_floodwall["name"] = floodwall.attrs.name
+        gdf_floodwall["z"] = floodwall.attrs.elevation.convert_to_meters()
+        gdf_floodwall["par1"] = 0.6
 
-        #HydroMT function: create floodwall
-        self.sf_model.create_structures(gdf_structures=gdf_floodwall, stype="weir", overwrite=False)
+        # HydroMT function: create floodwall
+        self.sf_model.create_structures(
+            gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        )
+
+    def add_pump(self, pump: PumpModel):
+        """Adds pump to sfincs model.
+
+        Parameters
+        ----------
+        pump : PumpModel
+            pump object
+        """
+        raise NotImplementedError  # TODO
 
     def write_sfincs_model(self, path_out: Path):
         """Write all the files for the sfincs model

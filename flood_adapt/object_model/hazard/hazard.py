@@ -100,6 +100,7 @@ class Hazard:
     def add_discharge(self):
         """adds discharge timeseries to hazard object"""
         # constant for all event templates, additional: shape for Synthetic or timeseries for all historic
+        # keep as separate method so it can be called from the GUI for plotting
         self.event.add_dis_ts()
         self.dis_ts = self.event.dis_ts
         return self
@@ -143,8 +144,8 @@ class Hazard:
         model.add_wl_bc(self.wl_ts)
 
         # Generate and change discharge boundary condition
-        self.add_discharge()
-        model.add_dis_bc(self.dis_ts)
+        self.event.add_dis_ts()
+        model.add_dis_bc(self.event.dis_ts)
 
         # Generate and add rainfall boundary condition
         # TODO
@@ -153,8 +154,11 @@ class Hazard:
         # TODO, made already a start generating a constant timeseries in Event class
 
         # Add floodwall if included
-        if self.measure.floodwall is not None: #TODO Gundula: fix met add_floodwall
-            pass
+        for measure in self.hazard_strategy.measures:
+            if measure.attrs.type == "floodwall" or measure.attrs.type == "levee":
+                model.add_floodwall(measure)
+            elif measure.attrs.type == "pump":
+                model.add_pump(measure)  # not yet implemented in sfincs_adapter
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
