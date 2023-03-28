@@ -92,7 +92,7 @@ class SfincsAdapter:
         # TODO polygon file should be txt file with extension xy (!)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             floodwall.database_input_path.joinpath(
-                "measures", floodwall.attrs.name, f"{floodwall.attrs.name}.txt"
+                "measures", floodwall.attrs.name, f"{floodwall.attrs.name}.xy"
             ),
             geom=self.sf_model.region,
             crs=self.sf_model.crs,
