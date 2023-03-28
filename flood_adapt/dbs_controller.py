@@ -10,6 +10,7 @@ from geopandas import GeoDataFrame
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
@@ -209,6 +210,48 @@ class Database(IDatabase):
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
+
+    # scenario methods
+    def get_scenario(self, name: str) -> IScenario:
+        """Get the respective scenario object using the name of the measure.
+
+        Parameters
+        ----------
+        name : str
+            name of the measure
+
+        Returns
+        -------
+        IScenario
+            Scenario object
+        """
+        scenario_path = self.input_path / "scenarios" / name / f"{name}.toml"
+        scenario = Scenario.load_file(scenario_path)
+        scenario.init_object_model()
+        return scenario
+
+    def delete_scenario(self, name: str):
+        """Deletes an already existing scenario in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario
+
+        Raises
+        ------
+        ValueError
+            Raise error if scenario has already model output
+        """
+        scenario_path = self.input_path / "scenarios" / name
+        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+        scenario.init_object_model()
+        if scenario.direct_impacts.hazard.has_run_hazard:
+            raise ValueError(
+                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+            )
+        else:
+            shutil.rmtree(scenario_path, ignore_errors=True)
 
     def update(self) -> None:
         self.projections = self.get_projections()
