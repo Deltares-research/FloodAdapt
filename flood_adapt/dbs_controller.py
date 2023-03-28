@@ -12,7 +12,7 @@ from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.site import ISite
-from flood_adapt.object_model.interface.events import IEvent
+from flood_adapt.object_model.interface.events import IEvent, ISynthetic
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -156,6 +156,33 @@ class Database(IDatabase):
                 / f"{measure.attrs.name}.toml"
             )
 
+    def save_synthetic_event(self, event: ISynthetic) -> None:
+        """Saves a synthetic event object in the database.
+
+        Parameters
+        ----------
+        measure : ISynthetic
+            object of one of the synthetic event types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
+        names = self.get_events()["name"]
+        if event.attrs.name in names:
+            raise ValueError(
+                f"'{event.attrs.name}' name is already used by another measure. Choose a different name"
+            )
+        else:
+            (self.input_path / "events" / event.attrs.name).mkdir()
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
+
     def edit_measure(self, measure: IMeasure):
         """Edits an already existing measure in the database.
 
@@ -170,6 +197,22 @@ class Database(IDatabase):
             / "measures"
             / measure.attrs.name
             / f"{measure.attrs.name}.toml"
+        )
+
+    def edit_synthetic_event(self, event: ISynthetic):
+        """Edits an already existing event in the database.
+
+        Parameters
+        ----------
+        measure : ISynthetic
+            object of the synthetic event
+        """
+        # TODO should you be able to edit a measure that is already used in a hazard?
+        event.save(
+            self.input_path
+            / "events"
+            / event.attrs.name
+            / f"{event.attrs.name}.toml"
         )
 
     def delete_measure(self, name: str):
@@ -207,6 +250,20 @@ class Database(IDatabase):
             measure_path = self.input_path / "measures" / name
             shutil.rmtree(measure_path, ignore_errors=True)
 
+    def delete_event(self, name: str):
+        """Deletes an already existing event in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+        """
+
+        #TODO: check if event is used in a hazard
+
+        event_path = self.input_path / "events" / name
+        shutil.rmtree(event_path, ignore_errors=True)
+
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing measures, and gives it a new name.
 
@@ -228,6 +285,31 @@ class Database(IDatabase):
         # Then save all the accompanied files
         src = self.input_path / "measures" / old_name
         dest = self.input_path / "measures" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
+    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing event, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing event
+        new_name : str
+            name of the new event
+        new_long_name : str
+            long_name of the new event
+        """
+        # First do a get
+        event = self.get_event(old_name)
+        event.attrs.name = new_name
+        event.attrs.long_name = new_long_name
+        # Then a save
+        self.save_synthetic_event(event)
+        # Then save all the accompanied files
+        src = self.input_path / "events" / old_name
+        dest = self.input_path / "events" / new_name
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)

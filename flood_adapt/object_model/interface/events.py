@@ -75,7 +75,7 @@ class WindModel(BaseModel):
 class RainfallModel(BaseModel):
     source: RainfallSource
     # constant
-    constant_intensity: Optional[UnitfulLength]
+    constant_intensity: Optional[float] #TODO: add units; intensity is in mm/hr or in/hr
     # timeseries
     rainfall_timeseries_file: Optional[str]
     # shape
