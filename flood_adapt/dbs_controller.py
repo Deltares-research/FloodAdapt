@@ -229,7 +229,7 @@ class Database(IDatabase):
         strategy_path = self.input_path / "strategies" / name / f"{name}.toml"
         strategy = Strategy.load_file(strategy_path)
         return strategy
-    
+
     def save_strategy(self, strategy: IStrategy) -> None:
         """Saves a strategy object in the database.
 
@@ -256,6 +256,7 @@ class Database(IDatabase):
                 / strategy.attrs.name
                 / f"{strategy.attrs.name}.toml"
             )
+
     def delete_strategy(self, name: str):
         """Deletes an already existing strategy in the database.
 
@@ -269,9 +270,7 @@ class Database(IDatabase):
         ValueError
             Raise error if strategy to be deleted is already used in a scenario.
         """
-        scenarios = [
-            Scenario.load_file(path) for path in self.get_scenarios()["path"]
-        ]
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
         used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
 
         if any(used_scenario):
