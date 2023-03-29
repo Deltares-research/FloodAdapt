@@ -7,6 +7,7 @@ dependencies:
   - black
   - build
   - hydromt
+  - hydromt_sfincs
   - geopandas
   - mypy
   - numpy
@@ -14,6 +15,7 @@ dependencies:
   - pip
   - pip:
       - git+https://github.com/Deltares/hydromt.git@85e7795a9f1972fe4e2a8bf7dd2d941193008574
+      - git+https://github.com/Deltares/hydromt_sfincs.git@main/v1
   - pydantic
   - pytest
   - python=3.10

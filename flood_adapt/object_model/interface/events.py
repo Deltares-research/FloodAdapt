@@ -95,7 +95,6 @@ class RiverModel(BaseModel):
     shape_type: Optional[ShapeType]
     base_discharge: Optional[UnitfulDischarge]
     shape_peak: Optional[UnitfulDischarge]
-    shape_duration: Optional[float]
     shape_peak_time: Optional[float]
     shape_start_time: Optional[float]
     shape_end_time: Optional[float]
@@ -111,8 +110,8 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     timing: Timing
     water_level_offset: UnitfulLength
     wind: WindModel
-    # rainfall: RainfallModel
-    # river: RiverModel
+    rainfall: RainfallModel
+    river: RiverModel
 
 
 class TimeModel(BaseModel):

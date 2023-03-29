@@ -20,13 +20,14 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "numpy",
     "geopandas",
-    "pandas",
-    "tomli",
-    "tomli-w",
-    "pydantic",
+    "hydromt_sfincs",
     "hydromt",
+    "numpy",
+    "pandas",
+    "pydantic",
+    "tomli-w",
+    "tomli",
 ]
 dynamic = ["version"]
 

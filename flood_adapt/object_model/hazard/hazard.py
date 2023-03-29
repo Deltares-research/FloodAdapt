@@ -1,7 +1,10 @@
+# import subprocess
+# import sys
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
@@ -11,6 +14,7 @@ from flood_adapt.object_model.hazard.physical_projection import (
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.site import SiteModel
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
@@ -26,6 +30,7 @@ class Hazard:
     and to run the hazard models
     """
 
+    name: str
     database_input_path: Path
     event: Optional[EventTemplateModel]
     ensemble: Optional[EventTemplateModel]
@@ -34,6 +39,7 @@ class Hazard:
     has_run_hazard: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        self.name = scenario.name
         self.database_input_path = database_input_path
         self.set_event(scenario.event)
         self.set_hazard_strategy(scenario.strategy)
@@ -79,17 +85,24 @@ class Hazard:
         # return path_to_floodmaps
 
     def add_wl_ts(self):
-        """adds total water level timeseries"""
-        # generating total time series made of tide, slr and water level offset
-        template = self.event.attrs.template
-        if template == "Synthetic" or template == "Historical_nearshore":
-            self.event.add_tide_and_surge_ts()
-            self.wl_ts = self.event.tide_surge_ts
-            self.wl_ts["0:wl"] = (
-                self.wl_ts["0:wl"]
-                + self.event.attrs.water_level_offset.convert_to_meters()
-            )  # TODO add slr
-            return self
+        """adds total water level timeseries to hazard object"""
+        # generating total time series made of tide, slr and water level offset,
+        # only for Synthteic and historical from nearshore
+        self.event.add_tide_and_surge_ts()
+        self.wl_ts = self.event.tide_surge_ts
+        self.wl_ts[1] = (
+            self.wl_ts[1]
+            + self.event.attrs.water_level_offset.convert_to_meters()
+            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+        )
+        return self
+
+    def add_discharge(self):
+        """adds discharge timeseries to hazard object"""
+        # constant for all event templates, additional: shape for Synthetic or timeseries for all historic
+        self.event.add_dis_ts()
+        self.dis_ts = self.event.dis_ts
+        return self
 
     @staticmethod
     def get_event_object(event_path):  # TODO This could be used above as well?
@@ -102,6 +115,70 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    # def run(self):
-    #     self.__setattr__("has_run", True)
-    #     ...
+    def run_sfincs(self, site: SiteModel):
+        # TODO: make path variable, now using test data on p-drive
+
+        path_on_p = Path(
+            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
+        )
+        path_in = path_on_p.joinpath(
+            "static/templates", site.attrs.sfincs.overland_model
+        )
+        run_folder_overland = path_on_p.joinpath(
+            "output/simulations", self.name, site.attrs.sfincs.overland_model
+        )
+
+        # Load overland sfincs model
+        model = SfincsAdapter(model_root=path_in)
+
+        # adjust timing of model
+        model.set_timing(self.event.attrs)
+
+        # Generate and change water level boundary condition
+        template = self.event.attrs.template
+        if template == "Synthetic" or template == "Historical_nearshore":
+            self.add_wl_ts()
+        elif template == "Hurricane" or template == "Historical_offshore":
+            raise NotImplementedError
+        model.add_wl_bc(self.wl_ts)
+
+        # Generate and change discharge boundary condition
+        self.add_discharge()
+        model.add_dis_bc(self.dis_ts)
+
+        # Generate and add rainfall boundary condition
+        # TODO
+
+        # Generate and add wind boundary condition
+        # TODO, made already a start generating a constant timeseries in Event class
+
+        # write sfincs model in output destination
+        model.write_sfincs_model(path_out=run_folder_overland)
+
+        # Run new model (create batch file and run it)
+        # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
+        if self.event.attrs.mode == "risk":
+            with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
+                bat_file: str = (
+                    "cd "
+                    "%~dp0"
+                    "\n"
+                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                        site.attrs.sfincs.version
+                    )
+                )
+                f_out.write(bat_file)
+        elif self.event.attrs.mode == "single_scenario":
+            with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
+                bat_file: str = (
+                    "cd "
+                    "%~dp0"
+                    "\n"
+                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                        site.attrs.sfincs.version
+                    )
+                )
+                f_out.write(bat_file)
+
+        # Indicator that sfincs model has run
+        self.__setattr__("has_run", True)

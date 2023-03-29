@@ -12,6 +12,7 @@ from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -178,6 +179,7 @@ class Database(IDatabase):
                 for i, strategy in enumerate(strategies)
                 if used_strategy[i]
             ]
+            # TODO split this
             text = "strategy" if len(strategies) == 1 else "strategies"
             raise ValueError(
                 f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
@@ -309,6 +311,82 @@ class Database(IDatabase):
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
+
+    # Strategy methods
+    def get_strategy(self, name: str) -> IStrategy:
+        """Get the respective strategy object using the name of the strategy.
+
+        Parameters
+        ----------
+        name : str
+            name of the strategy
+
+        Returns
+        -------
+        IStrategy
+            strategy object
+        """
+        strategy_path = self.input_path / "strategies" / name / f"{name}.toml"
+        strategy = Strategy.load_file(strategy_path)
+        return strategy
+
+    def save_strategy(self, strategy: IStrategy) -> None:
+        """Saves a strategy object in the database.
+
+        Parameters
+        ----------
+        measure : IStrategy
+            object of strategy type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of strategies should be unique.
+        """
+        names = self.get_strategies()["name"]
+        if strategy.attrs.name in names:
+            raise ValueError(
+                f"'{strategy.attrs.name}' name is already used by another strategy. Choose a different name"
+            )
+        else:
+            (self.input_path / "strategies" / strategy.attrs.name).mkdir()
+            strategy.save(
+                self.input_path
+                / "strategies"
+                / strategy.attrs.name
+                / f"{strategy.attrs.name}.toml"
+            )
+
+    def delete_strategy(self, name: str):
+        """Deletes an already existing strategy in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the strategy
+
+        Raises
+        ------
+        ValueError
+            Raise error if strategy to be deleted is already used in a scenario.
+        """
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+        used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
+
+        if any(used_scenario):
+            scenarios = [
+                scenario.attrs.name
+                for i, scenario in enumerate(scenarios)
+                if used_scenario[i]
+            ]
+            # TODO split this
+            text = "scenario" if len(scenarios) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' measure cannot be deleted since it is already used in {text} {scenarios}"
+            )
+        else:
+            strategy_path = self.input_path / "strategies" / name
+            shutil.rmtree(strategy_path, ignore_errors=True)
 
     def update(self) -> None:
         self.projections = self.get_projections()

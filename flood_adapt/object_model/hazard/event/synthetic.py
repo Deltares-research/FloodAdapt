@@ -1,5 +1,6 @@
 import math
 import os
+from datetime import datetime, timedelta
 from typing import Any, Union
 
 import numpy as np
@@ -8,7 +9,10 @@ import tomli
 import tomli_w
 
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.interface.events import ISynthetic, SyntheticModel
+from flood_adapt.object_model.interface.events import (
+    ISynthetic,
+    SyntheticModel,
+)
 
 
 class Synthetic(Event, ISynthetic):
@@ -25,6 +29,15 @@ class Synthetic(Event, ISynthetic):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = SyntheticModel.parse_obj(toml)
+
+        # synthetic event is the only one without start and stop time, so set this here.
+        # Default start time is defined in TimeModel, setting end_time here
+        # based on duration before and after T0
+        tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
+        end_time = tstart + timedelta(
+            hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
+        )
+        obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
         return obj
 
     @staticmethod
@@ -33,6 +46,14 @@ class Synthetic(Event, ISynthetic):
 
         obj = Synthetic()
         obj.attrs = SyntheticModel.parse_obj(data)
+        # synthetic event is the only one without start and stop time, so set this here.
+        # Default start time is defined in TimeModel, setting end_time here
+        # based on duration before and after T0
+        tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
+        end_time = tstart + timedelta(
+            hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
+        )
+        obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
@@ -68,7 +89,17 @@ class Synthetic(Event, ISynthetic):
 
         # surge
         if self.attrs.surge.source == "shape":
-            surge = self.timeseries_shape(self, tt)
+            # surge = self.timeseries_shape(self.attrs.time, self.attrs.surge)
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
+            ) * 3600
+            surge = self.timeseries_shape(
+                "gaussian",
+                duration,
+                self.attrs.surge.shape_peak.convert_to_meters(),
+                shape_duration=duration,
+                time_shift=time_shift,
+            )
         elif self.attrs.surge.source == "none":
             surge = np.zeros_like(tt)
 
@@ -76,72 +107,96 @@ class Synthetic(Event, ISynthetic):
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
-        df = pd.DataFrame.from_dict({"time": time, "0:wl": tide + surge})
+        df = pd.DataFrame.from_dict({"time": time, 1: tide + surge})
         df = df.set_index("time")
         self.tide_surge_ts = df
         return self
 
-    def add_wind_ts(self):
-        # generating time series of constant wind
-        if self.attrs.wind.source == "constant":
-            duration = (
-                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
-            ) * 3600
-            vmag = self.attrs.wind.constant_speed.convert_to_mps() * np.array([1, 1])
-            vdir = self.attrs.wind.constant_direction.value * np.array([1, 1])
-            time = pd.date_range(
-                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
-            )
-            df = pd.DataFrame.from_dict(
-                {"time": time[[0, -1]], "vmag": vmag, "vdir": vdir}
-            )
-            df = df.set_index("time")
-            self.wind_ts = df
-            return self
-        else:
-            raise ValueError(
-                "A time series can only be generated for wind sources "
-                "constant"
-                " or "
-                "timeseries"
-                "."
-            )
-
-    @staticmethod
-    def timeseries_shape(self, tt: np.ndarray) -> np.ndarray:
-        """generates 1d vector of shape to generate time series of surge, wind, rain or discharge
-
-        Parameters
-        ----------
-        tt : np.array
-            time vector of floats (starting at zero)
+    def add_dis_ts(self):
+        """adds discharge timeseries to event object
 
         Returns
         -------
-        np.array
-            1d array of the shape with the same dimensions as time vector tt
+        self
+            updated object with wind timeseries added in pf.DataFrame format
         """
+        # generating time series of constant discahrge
+        # TODO: add for loop to handle multiple rivers
+        if self.attrs.river.source == "constant":
+            df = super().generate_dis_ts(self.attrs.time, self.attrs.river)
+            self.dis_ts = df
+            return self
+        elif self.attrs.river.source == "shape":
+            duration = (
+                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+            ) * 3600
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.river.shape_peak_time
+            ) * 3600
+            start_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_start_time
+            ) * 3600
+            end_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_end_time
+            ) * 3600
+            # subtract base discharge from peak
+            river = self.timeseries_shape(
+                self.attrs.river.shape_type,
+                duration,
+                self.attrs.river.shape_peak.convert_to_cms()
+                - self.attrs.river.base_discharge.convert_to_cms(),
+                time_shift=time_shift,
+                start_shape=start_shape,
+                end_shape=end_shape,
+            )
+            # add base discharge to timeseries
+            river += self.attrs.river.base_discharge.convert_to_cms()
+            # save to object with pandas daterange
+            time = pd.date_range(
+                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict({"time": time, 1: river})
+            df = df.set_index("time")
+            self.dis_ts = df
+            return self
 
-        duration = (
-            self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
-        ) * 3600
-        peak = self.attrs.surge.shape_peak.convert_to_meters()
-        if self.attrs.surge.shape_type == "gaussian":
-            time_shift = (
-                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
-            ) * 3600
-            ts = peak * np.exp(-(((tt - time_shift) / (0.25 * duration)) ** 2))
-        elif self.attrs.surge.shape_type == "block":
-            ts = np.where((tt > self.attrs.surge.start_shape), peak, 0)
-            ts = np.where((tt > self.attrs.surge.end_shape), 0, ts)
-        elif self.attrs.surge.shape_type == "triangle":
-            time_shift = (
-                self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
-            ) * 3600
+    def add_wind_ts(self):
+        """adds wind it timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant wind
+        if self.attrs.wind.source == "constant":
+            df = super().generate_wind_ts(self.attrs.time, self.attrs.wind)
+            self.wind_ts = df
+            return self
+
+    @staticmethod
+    def timeseries_shape(
+        shape_type: str, duration: float, peak: float, **kwargs
+    ) -> np.ndarray:
+        time_shift = kwargs.get("time_shift", None)
+        start_shape = kwargs.get("start_shape", None)
+        end_shape = kwargs.get("end_shape", None)
+        shape_duration = kwargs.get("shape_duration", None)
+        tt = np.arange(0, duration + 1, 600)
+        if shape_type == "gaussian":
+            ts = peak * np.exp(-(((tt - time_shift) / (0.25 * shape_duration)) ** 2))
+        elif shape_type == "block":
+            ts = np.where((tt > start_shape), peak, 0)
+            ts = np.where((tt > end_shape), 0, ts)
+        elif shape_type == "triangle":
             tt_interp = [
-                self.attrs.surge.start_shape,
+                start_shape,
                 time_shift,
-                self.attrs.surge.end_shape,
+                end_shape,
             ]
             value_interp = [0, peak, 0]
             ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
