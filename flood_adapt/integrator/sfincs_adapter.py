@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import geopandas as gpd
 import pandas as pd
 from hydromt_sfincs import SfincsModel
 
@@ -18,7 +19,8 @@ class SfincsAdapter:
     def __init__(self, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
-        Args:
+        Parameters
+        ----------
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
 
@@ -26,7 +28,12 @@ class SfincsAdapter:
         self.sf_model.read()
 
     def set_timing(self, event: EventModel):
-        """Changes model reference times based on event time series."""
+        """Changes model reference times based on event time series.
+        
+        Parameters
+        ----------
+            event (EventModel): Event object with start and end time
+        """
 
         # Update timing of the model
         tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
@@ -90,14 +97,8 @@ class SfincsAdapter:
 
         # HydroMT function: get geodataframe from filename
         # TODO polygon file should be txt file with extension xy (!)
-        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
-            floodwall.database_input_path.joinpath(
-                "measures", floodwall.attrs.name, f"{floodwall.attrs.name}.xy"
-            ),
-            geom=self.sf_model.region,
-            crs=self.sf_model.crs,
-        )
-
+        gdf_floodwall = gpd.read_file(floodwall.database_input_path.joinpath("measures", floodwall.attrs.name, f"{floodwall.attrs.name}.geojson"))
+        
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.attrs.name
         gdf_floodwall["z"] = floodwall.attrs.elevation.convert_to_meters()
@@ -121,7 +122,8 @@ class SfincsAdapter:
     def write_sfincs_model(self, path_out: Path):
         """Write all the files for the sfincs model
 
-        Args:
+        Parameters
+        ----------
             path_out (Path): new root of sfincs model
         """
         # Change model root to new folder
