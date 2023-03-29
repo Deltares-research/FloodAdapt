@@ -1,5 +1,9 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+import plotly.express as px
+
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
@@ -50,3 +54,61 @@ class DirectImpacts:
 
     def set_hazard(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.hazard = Hazard(scenario, database_input_path)
+
+    @staticmethod
+    def infographic(
+        database_path, name: str
+    ):  # should use scenario and scenario.input_path in the future
+        csv_file = database_path.joinpath(
+            "output", "results", name, f"{name}_results.csv"
+        )
+        df = pd.read_csv(csv_file)
+        df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
+            df[
+                [
+                    "Max Potential Damage: Structure",
+                    "Max Potential Damage: Content",
+                    "Max Potential Damage: Other",
+                ]
+            ],
+            axis=1,
+        )
+        df["Damage Level"] = np.where(
+            df["Relative Damage"] > 0.05, "Minor (<5%)", "None"
+        )
+        df["Damage Level"] = np.where(
+            df["Relative Damage"] > 0.1, "Moderate  (<10%)", df["Damage Level"]
+        )
+        df["Damage Level"] = np.where(
+            df["Relative Damage"] > 0.5, "Major  (>50%)", df["Damage Level"]
+        )
+        fig = px.pie(
+            df,
+            values="Relative Damage",
+            names="Damage Level",
+            color_discrete_sequence=px.colors.sequential.RdBu,
+            hole=0.6,
+        )
+        # add house icon does not work yet
+        fig.add_layout_image(
+            {
+                # "source": "https://game-icons.net/icons/000000/ffffff/1x1/delapouite/house.png",
+                "source": "https://openclipart.org/image/800px/217511",
+                "sizex": 0.2,
+                "sizey": 0.2,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "visible": True,
+            }
+        )
+
+        fig.update_layout(
+            autosize=True,
+            height=800,
+            width=700,
+            margin={"r": 20, "l": 50, "b": 20, "t": 20},
+            title=("Severity of damages to buildings"),
+        )
+
+        # TODO write somewhere else
+        fig.write_html("infographic.html")
