@@ -29,7 +29,7 @@ class SfincsAdapter:
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series.
-        
+
         Parameters
         ----------
             event (EventModel): Event object with start and end time
@@ -97,8 +97,14 @@ class SfincsAdapter:
 
         # HydroMT function: get geodataframe from filename
         # TODO polygon file should be txt file with extension xy (!)
-        gdf_floodwall = gpd.read_file(floodwall.database_input_path.joinpath("measures", floodwall.attrs.name, f"{floodwall.attrs.name}.geojson"))
-        
+        gdf_floodwall = gpd.read_file(
+            floodwall.database_input_path.joinpath(
+                "measures", floodwall.attrs.name, f"{floodwall.attrs.name}.geojson"
+            )
+        )
+        # Convert coordinates to sfincs model crs
+        gdf_floodwall = gdf_floodwall.to_crs(self.sf_model.crs)
+
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.attrs.name
         gdf_floodwall["z"] = floodwall.attrs.elevation.convert_to_meters()
