@@ -59,9 +59,8 @@ class DirectImpacts:
     def infographic(
         database_path, name: str
     ):  # should use scenario and scenario.input_path in the future
-        csv_file = database_path.joinpath(
-            "output", "results", name, f"{name}_results.csv"
-        )
+        output_path = database_path.joinpath("output", "results", name)
+        csv_file = output_path.joinpath(f"{name}_results.csv")
         df = pd.read_csv(csv_file)
         df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
             df[
@@ -74,28 +73,47 @@ class DirectImpacts:
             axis=1,
         )
         df["Damage Level"] = np.where(
-            df["Relative Damage"] > 0.05, "Minor (<5%)", "None"
+            df["Relative Damage"] > 0.3, "Severe  (>30%)", "Moderate (<30%)"
         )
         df["Damage Level"] = np.where(
-            df["Relative Damage"] > 0.1, "Moderate  (<10%)", df["Damage Level"]
+            df["Relative Damage"] < 0.05, "Minor (<5%)", df["Damage Level"]
         )
         df["Damage Level"] = np.where(
-            df["Relative Damage"] > 0.5, "Major  (>50%)", df["Damage Level"]
+            np.isnan(df["Relative Damage"]), "NaN", df["Damage Level"]
         )
+        df_sorted = df.sort_values("Relative Damage", ascending=False)
         fig = px.pie(
-            df,
+            df_sorted,
             values="Relative Damage",
             names="Damage Level",
+            # color_discrete_map={
+            #     "None (0%)": "rgb(255,255,255)",
+            #     "Minor (<5%)": "rgb(248,203,173)",
+            #     "Moderate  (<30%)": "rgb(242,155,96)",
+            #     "Severe  (>30%)": "rgb(155,72,55)"
+            # },
             color_discrete_sequence=px.colors.sequential.RdBu,
+            category_orders={
+                "Damage Level": ["Severe  (>30%)", "Minor (<5%)", "Moderate  (<30%)"]
+            },
             hole=0.6,
         )
-        # add house icon does not work yet
+
+        # "None (0%)": "rgb(255,255,255)",
+        # "Minor (<5%)": "rgb(248,203,173)",
+        # "Moderate  (<30%)": "rgb(242,155,96)",
+        # "Severe  (>30%)": "rgb(155,72,55)"
+
+        fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
         fig.add_layout_image(
             {
                 # "source": "https://game-icons.net/icons/000000/ffffff/1x1/delapouite/house.png",
                 "source": "https://openclipart.org/image/800px/217511",
-                "sizex": 0.2,
-                "sizey": 0.2,
+                "sizex": 0.3,
+                "sizey": 0.3,
+                "x": 0.5,
+                "y": 0.5,
                 "xanchor": "center",
                 "yanchor": "middle",
                 "visible": True,
@@ -104,11 +122,11 @@ class DirectImpacts:
 
         fig.update_layout(
             autosize=True,
-            height=800,
+            height=700,
             width=700,
             margin={"r": 20, "l": 50, "b": 20, "t": 20},
             title=("Severity of damages to buildings"),
         )
 
         # TODO write somewhere else
-        fig.write_html("infographic.html")
+        fig.write_html(output_path.joinpath("infographic.html"))
