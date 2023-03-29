@@ -87,14 +87,19 @@ class Hazard:
     def add_wl_ts(self):
         """adds total water level timeseries to hazard object"""
         # generating total time series made of tide, slr and water level offset,
-        # only for Synthteic and historical from nearshore
-        self.event.add_tide_and_surge_ts()
-        self.wl_ts = self.event.tide_surge_ts
+        # only for Synthetic and historical from nearshore
+        if self.event.template == "Synthetic":
+            self.event.add_tide_and_surge_ts()
+            self.wl_ts = self.event.tide_surge_ts
+        elif self.event.template == "Historical_nearshore":
+            self.event.add_wl_from_csv()
+            self.wl_ts = self.event.tide_surge_ts
+        #In both cases add the slr and offset
         self.wl_ts[1] = (
-            self.wl_ts[1]
-            + self.event.attrs.water_level_offset.convert_to_meters()
-            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
-        )
+                self.wl_ts[1]
+                + self.event.attrs.water_level_offset.convert_to_meters()
+                + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+            )
         return self
 
     def add_discharge(self):

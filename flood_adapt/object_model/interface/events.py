@@ -147,6 +147,22 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
     tide: TideModel
     surge: SurgeModel
 
+class WaterLevelSource(BaseModel):
+    """BaseModel describing the expected variables and data types for water level parameters of the historical nearshore model"""
+
+    file = "file"
+    NOAA_download = "NOAA_download"
+
+class WaterLevelModel(BaseModel):
+    """BaseModel describing the expected variables and data types for water level parameters of the historical nearshore model"""
+
+    source: WaterLevelSource
+    csv_path: Optional[str]
+
+class HistoricalNearshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
+
+    water_level: WaterLevelModel
 
 class IEvent(ABC):
     attrs: EventModel
@@ -170,3 +186,6 @@ class IEvent(ABC):
 
 class ISynthetic(IEvent):
     attrs: SyntheticModel
+
+class IHistoricalNearshore(IEvent):
+    attrs: WaterLevelModel

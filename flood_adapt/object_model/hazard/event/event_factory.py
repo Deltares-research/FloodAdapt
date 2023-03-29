@@ -1,8 +1,9 @@
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
-
 # from flood_adapt.object_model.hazard.event.hurricane import Hurricane
 # from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
-# from flood_adapt.object_model.hazard.event.historical_nearshore import HistoricalNearshore
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
 
 class EventFactory:
@@ -14,5 +15,5 @@ class EventFactory:
         #     return Hurricane
         # elif template.lower() == "historical - forced by offshore wind and tide":
         #     return HistoricalOffshore
-        # elif template.lower() == "historical - forced by observed nearshore water levels":
-        #     return HistoricalNearshore
+        elif template.lower() == "historical_nearshore":
+            return HistoricalNearshore
