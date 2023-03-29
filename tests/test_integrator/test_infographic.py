@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -20,10 +19,6 @@ def test_infographic():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
 
-    DirectImpacts.infographic(
-        test_scenario,
-        Path(
-            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output/results"
-        )
-    )
+    test_scenario.direct_impacts.infographic(test_scenario)

@@ -56,11 +56,19 @@ class DirectImpacts:
         self.hazard = Hazard(scenario, database_input_path)
 
     def infographic(
-        self, scenario: ScenarioModel, database_output_path: Path
+        self,
+        scenario: ScenarioModel,
     ) -> None:  # should use scenario and scenario.input_path in the future
         self.has_run_impact = (
             True  # TODO remove when this has been added through the Fiat adapter
         )
+        # database_output_path = scenario.database_input_path.parent.joinpath(
+        #     "output", "results"
+        # )
+        database_output_path = Path(
+            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output/results"
+        )  # replace with above outside of pytest
+
         name = scenario.attrs.name
         if self.has_run_impact:
             csv_file = database_output_path.joinpath(name, f"{name}_results.csv")
@@ -110,8 +118,7 @@ class DirectImpacts:
 
             fig.add_layout_image(
                 {
-                    "source": "https://game-icons.net/icons/000000/ffffff/1x1/delapouite/house.png",
-                    # "source": "https://openclipart.org/image/800px/217511",
+                    "source": "https://openclipart.org/image/800px/217511",
                     "sizex": 0.3,
                     "sizey": 0.3,
                     "x": 0.5,
@@ -130,7 +137,7 @@ class DirectImpacts:
                 title=("Severity of damages to buildings"),
             )
 
-            # TODO write somewhere else
+            # write html to results folder
             fig.write_html(database_output_path.joinpath(name, "infographic.html"))
         else:
             raise ValueError(
