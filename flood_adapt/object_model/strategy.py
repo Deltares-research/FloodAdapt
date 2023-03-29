@@ -75,6 +75,8 @@ class Strategy(IStrategy):
         obj.attrs = StrategyModel.parse_obj(toml)
         # if strategy is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
+        # TODO does this check need to be here when this is created from a file?
+        # We can assume that the file has already passed the test? Much faster!
         obj.get_impact_strategy()  # Need to ensure that the strategy can be created
 
         return obj
