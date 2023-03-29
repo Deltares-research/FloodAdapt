@@ -3,7 +3,6 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
-from flood_adapt.object_model.interface.projections import IProjection
 
 import geopandas as gpd
 from geopandas import GeoDataFrame
@@ -11,6 +10,7 @@ from geopandas import GeoDataFrame
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
@@ -279,31 +279,11 @@ class Database(IDatabase):
         name : str
             name of the projection
 
-        Raises
-        ------
-        ValueError
-            Raise error if projection to be deleted is already used in a strategy.
         """
-        strategies = [
-            Strategy.load_file(path) for path in self.get_strategies()["path"]
-        ]
-        used_strategy = [
-            name in projections
-            for projections in [strategy.attrs.projections for strategy in strategies]
-        ]
-        if any(used_strategy):
-            strategies = [
-                strategy.attrs.name
-                for i, strategy in enumerate(strategies)
-                if used_strategy[i]
-            ]
-            text = "strategy" if len(strategies) == 1 else "strategies"
-            raise ValueError(
-                f"'{name}' projection cannot be deleted since it is already used in {text} {strategies}"
-            )
-        else:
-            projection_path = self.input_path / "projections" / name
-            shutil.rmtree(projection_path, ignore_errors=True)
+        # TODO: make check if projection is used in strategies
+
+        projection_path = self.input_path / "projections" / name
+        shutil.rmtree(projection_path, ignore_errors=True)
 
     def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing projection, and gives it a new name.

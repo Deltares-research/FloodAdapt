@@ -36,9 +36,6 @@ def copy_projection(
     database.copy_projection(old_name, new_name, new_long_name)
 
 
-
-
-
 # # on click add projection
 # def create_new_projection(template: str) -> dict():  # get attributes
 #     pass
