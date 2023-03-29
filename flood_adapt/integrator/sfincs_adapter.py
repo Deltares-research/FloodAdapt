@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-
 from hydromt_sfincs import SfincsModel
+
 from flood_adapt.object_model.hazard.event.event import EventModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
