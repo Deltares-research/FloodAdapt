@@ -112,24 +112,6 @@ class Database(IDatabase):
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
 
-    def get_event(self, name: str) -> IEvent:
-        """Get the respective event object using the name of the event.
-
-        Parameters
-        ----------
-        name : str
-            name of the event
-
-        Returns
-        -------
-        IMeasure
-            object of one of the events
-        """
-        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
-        event_template = Event.get_template(event_path)
-        event = EventFactory.get_event(event_template).load_file(event_path)
-        return event
-
     def save_measure(self, measure: IMeasure) -> None:
         """Saves a measure object in the database.
 
@@ -158,33 +140,6 @@ class Database(IDatabase):
                 / f"{measure.attrs.name}.toml"
             )
 
-    def save_synthetic_event(self, event: ISynthetic) -> None:
-        """Saves a synthetic event object in the database.
-
-        Parameters
-        ----------
-        measure : ISynthetic
-            object of one of the synthetic event types
-
-        Raises
-        ------
-        ValueError
-            Raise error if name is already in use. Names of measures should be unique.
-        """
-        names = self.get_events()["name"]
-        if event.attrs.name in names:
-            raise ValueError(
-                f"'{event.attrs.name}' name is already used by another measure. Choose a different name"
-            )
-        else:
-            (self.input_path / "events" / event.attrs.name).mkdir()
-            event.save(
-                self.input_path
-                / "events"
-                / event.attrs.name
-                / f"{event.attrs.name}.toml"
-            )
-
     def edit_measure(self, measure: IMeasure):
         """Edits an already existing measure in the database.
 
@@ -199,19 +154,6 @@ class Database(IDatabase):
             / "measures"
             / measure.attrs.name
             / f"{measure.attrs.name}.toml"
-        )
-
-    def edit_synthetic_event(self, event: ISynthetic):
-        """Edits an already existing event in the database.
-
-        Parameters
-        ----------
-        measure : ISynthetic
-            object of the synthetic event
-        """
-        # TODO should you be able to edit a measure that is already used in a hazard?
-        event.save(
-            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
         )
 
     def delete_measure(self, name: str):
@@ -250,20 +192,6 @@ class Database(IDatabase):
             measure_path = self.input_path / "measures" / name
             shutil.rmtree(measure_path, ignore_errors=True)
 
-    def delete_event(self, name: str):
-        """Deletes an already existing event in the database.
-
-        Parameters
-        ----------
-        name : str
-            name of the event
-        """
-
-        # TODO: check if event is used in a hazard
-
-        event_path = self.input_path / "events" / name
-        shutil.rmtree(event_path, ignore_errors=True)
-
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing measures, and gives it a new name.
 
@@ -288,6 +216,79 @@ class Database(IDatabase):
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
+
+    # Event methods
+    def get_event(self, name: str) -> IEvent:
+        """Get the respective event object using the name of the event.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+
+        Returns
+        -------
+        IMeasure
+            object of one of the events
+        """
+        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
+        event_template = Event.get_template(event_path)
+        event = EventFactory.get_event(event_template).load_file(event_path)
+        return event
+
+    def save_synthetic_event(self, event: ISynthetic) -> None:
+        """Saves a synthetic event object in the database.
+
+        Parameters
+        ----------
+        measure : ISynthetic
+            object of one of the synthetic event types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
+        names = self.get_events()["name"]
+        if event.attrs.name in names:
+            raise ValueError(
+                f"'{event.attrs.name}' name is already used by another measure. Choose a different name"
+            )
+        else:
+            (self.input_path / "events" / event.attrs.name).mkdir()
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
+
+    def edit_synthetic_event(self, event: ISynthetic):
+        """Edits an already existing event in the database.
+
+        Parameters
+        ----------
+        measure : ISynthetic
+            object of the synthetic event
+        """
+        # TODO should you be able to edit a measure that is already used in a hazard?
+        event.save(
+            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
+        )
+
+    def delete_event(self, name: str):
+        """Deletes an already existing event in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+        """
+
+        # TODO: check if event is used in a hazard
+
+        event_path = self.input_path / "events" / name
+        shutil.rmtree(event_path, ignore_errors=True)
 
     def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing event, and gives it a new name.
