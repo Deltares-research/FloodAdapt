@@ -3,11 +3,39 @@
 from typing import Any
 
 from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+from flood_adapt.object_model.interface.events import IEvent, ISynthetic
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
     return database.get_events()
+
+
+def get_event(name: str, database: IDatabase) -> IEvent:
+    return database.get_event(name)
+
+
+def create_synthetic_event(attrs: dict[str, Any], database: IDatabase) -> ISynthetic:
+    return Synthetic.load_dict(attrs)
+
+
+def save_synthetic_event(event: ISynthetic, database: IDatabase) -> None:
+    database.save_synthetic_event(event)
+
+
+def edit_synthetic_event(event: ISynthetic, database: IDatabase) -> None:
+    database.edit_synthetic_event(event)
+
+
+def delete_event(name: str, database: IDatabase) -> None:
+    database.delete_event(name)
+
+
+def copy_event(
+    old_name: str, database: IDatabase, new_name: str, new_long_name: str
+) -> None:
+    database.copy_event(old_name, new_name, new_long_name)
 
 
 # def get_event(name: str) -> dict():  # get attributes
