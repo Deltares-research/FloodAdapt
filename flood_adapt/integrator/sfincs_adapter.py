@@ -6,6 +6,7 @@ import pandas as pd
 from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -25,7 +26,7 @@ class SfincsAdapter:
         self.sf_model.read()
 
     def set_timing(self, event: EventModel):
-        """Changes waterlevel of overland sfincs model based on new waterlevel time series."""
+        """Changes model reference times based on event time series."""
 
         # Update timing of the model
         # stop_time =
@@ -58,7 +59,13 @@ class SfincsAdapter:
         )
 
     def add_dis_bc(self, df_ts: pd.DataFrame):
-        """Changes discharge of overland sfincs model based on new discharge time series."""
+        """Changes discharge of overland sfincs model based on new discharge time series.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            time series of discharge, index should be Pandas DateRange
+        """
 
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
@@ -72,6 +79,27 @@ class SfincsAdapter:
         self.sf_model.set_forcing_1d(
             name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
+
+    def add_floodwall(self, floodwall: FloodWallModel):
+        """Adds floodwall to sfincs model.
+
+        Parameters
+        ----------
+        floodwall : FloodWallModel
+            floodwall information
+        """
+
+        #HydroMT function: get geodataframe from filename
+        #TODO polygon file should be txt file with extension xy (!)
+        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs)
+
+        #Add floodwall attributes to geodataframe
+        gdf_floodwall['name'] = floodwall.name
+        gdf_floodwall['z'] = floodwall.elevation
+        gdf_floodwall['par1'] = 0.6
+
+        #HydroMT function: create floodwall
+        self.sf_model.create_structures(gdf_structures=gdf_floodwall, stype="weir", overwrite=False)
 
     def write_sfincs_model(self, path_out: Path):
         """Write all the files for the sfincs model
