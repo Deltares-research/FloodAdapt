@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from hydromt_sfincs import SfincsModel
 
+# from hydromt_sfincs import SfincsModel
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 
@@ -89,17 +89,21 @@ class SfincsAdapter:
             floodwall information
         """
 
-        #HydroMT function: get geodataframe from filename
-        #TODO polygon file should be txt file with extension xy (!)
-        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs)
+        # HydroMT function: get geodataframe from filename
+        # TODO polygon file should be txt file with extension xy (!)
+        gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
+            floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+        )
 
-        #Add floodwall attributes to geodataframe
-        gdf_floodwall['name'] = floodwall.name
-        gdf_floodwall['z'] = floodwall.elevation
-        gdf_floodwall['par1'] = 0.6
+        # Add floodwall attributes to geodataframe
+        gdf_floodwall["name"] = floodwall.name
+        gdf_floodwall["z"] = floodwall.elevation
+        gdf_floodwall["par1"] = 0.6
 
-        #HydroMT function: create floodwall
-        self.sf_model.create_structures(gdf_structures=gdf_floodwall, stype="weir", overwrite=False)
+        # HydroMT function: create floodwall
+        self.sf_model.create_structures(
+            gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        )
 
     def write_sfincs_model(self, path_out: Path):
         """Write all the files for the sfincs model
