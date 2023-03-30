@@ -10,6 +10,7 @@ from geopandas import GeoDataFrame
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
@@ -209,6 +210,105 @@ class Database(IDatabase):
         # Then save all the accompanied files
         src = self.input_path / "measures" / old_name
         dest = self.input_path / "measures" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
+    # Projection methods
+    def get_projection(self, name: str) -> IProjection:
+        """Get the respective projection object using the name of the projection.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        Returns
+        -------
+        IProjection
+            object of one of the projection types
+        """
+        projection_path = self.input_path / "projections" / name / f"{name}.toml"
+        projection = Projection.load_file(projection_path)
+        return projection
+
+    def save_projection(self, projection: IProjection) -> None:
+        """Saves a projection object in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of projections should be unique.
+        """
+        names = self.get_projections()["name"]
+        if projection.attrs.name in names:
+            raise ValueError(
+                f"'{projection.attrs.name}' name is already used by another projection. Choose a different name"
+            )
+        else:
+            (self.input_path / "projections" / projection.attrs.name).mkdir()
+            projection.save(
+                self.input_path
+                / "projections"
+                / projection.attrs.name
+                / f"{projection.attrs.name}.toml"
+            )
+
+    def edit_projection(self, projection: IProjection):
+        """Edits an already existing projection in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types (e.g., IElevate)
+        """
+        projection.save(
+            self.input_path
+            / "projections"
+            / projection.attrs.name
+            / f"{projection.attrs.name}.toml"
+        )
+
+    def delete_projection(self, name: str):
+        """Deletes an already existing projection in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        """
+        # TODO: make check if projection is used in strategies
+
+        projection_path = self.input_path / "projections" / name
+        shutil.rmtree(projection_path, ignore_errors=True)
+
+    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing projection, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing projection
+        new_name : str
+            name of the new projection
+        new_long_name : str
+            long_name of the new projection
+        """
+        # First do a get
+        projection = self.get_projection(old_name)
+        projection.attrs.name = new_name
+        projection.attrs.long_name = new_long_name
+        # Then a save
+        self.save_projection(projection)
+        # Then save all the accompanied files
+        src = self.input_path / "projections" / old_name
+        dest = self.input_path / "projections" / new_name
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
