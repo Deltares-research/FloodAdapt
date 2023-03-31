@@ -11,7 +11,7 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent, ISynthetic
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
