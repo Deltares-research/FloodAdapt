@@ -37,13 +37,14 @@ class Strategy(IStrategy):
 
         return measures
 
-    def get_impact_strategy(self) -> ImpactStrategy:
+    def get_impact_strategy(self, validate=False) -> ImpactStrategy:
         return ImpactStrategy(
             [
                 measure
                 for measure in self.get_measures()
                 if issubclass(measure.__class__, ImpactMeasure)
-            ]
+            ],
+            validate=validate,
         )
 
     def get_hazard_strategy(self) -> HazardStrategy:
@@ -77,7 +78,7 @@ class Strategy(IStrategy):
         obj.database_input_path = Path(filepath).parents[2]
         # TODO does this check need to be here when this is created from a file?
         # We can assume that the file has already passed the test? Much faster!
-        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+        # obj.get_impact_strategy()  # Need to ensure that the strategy can be created
 
         return obj
 
@@ -100,7 +101,9 @@ class Strategy(IStrategy):
         obj = Strategy()
         obj.attrs = StrategyModel.parse_obj(data)
         obj.database_input_path = database_input_path
-        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+        obj.get_impact_strategy(
+            validate=True
+        )  # Need to ensure that the strategy can be created
 
         return obj
 
