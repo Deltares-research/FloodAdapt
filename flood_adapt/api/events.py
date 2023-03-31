@@ -3,7 +3,9 @@
 from typing import Any
 
 from flood_adapt.dbs_controller import IDatabase
-from flood_adapt.object_model.hazard.event.synthetic import HistoricalNearshore
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.interface.events import IHistoricalNearshore
 
 
