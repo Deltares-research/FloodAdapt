@@ -27,7 +27,7 @@ class SfincsAdapter:
     def set_timing(self, event: EventModel):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series."""
 
-        #Get start and end time of event based on different templates
+        # Get start and end time of event based on different templates
         if event.template == "Synthetic":
             tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
             tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")

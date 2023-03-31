@@ -14,7 +14,6 @@ from flood_adapt.object_model.interface.events import (
 
 
 class HistoricalNearshore(Event, IEvent):
-
     attrs = HistoricalNearshoreModel
     tide_surge_ts: pd.DataFrame
     start_time: datetime
@@ -30,7 +29,7 @@ class HistoricalNearshore(Event, IEvent):
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
         return obj
-    
+
     @staticmethod
     def load_dict(data: dict[str, Any]):
         """create Synthetic from object, e.g. when initialized from GUI"""
@@ -52,11 +51,16 @@ class HistoricalNearshore(Event, IEvent):
 
     def add_wl_from_csv(self):
         """Create dataframe from csv file"""
-        df = pd.read_csv(self.attrs.water_level.csv_path,names=[0,1]) #TODO: make general; now tailored for specific csv 
-        df[0] = [datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]] #Make datetime object
+        df = pd.read_csv(
+            self.attrs.water_level.csv_path, names=[0, 1]
+        )  # TODO: make general; now tailored for specific csv
+        df[0] = [
+            datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
+        ]  # Make datetime object
         self.start_time = df[0][0]
-        self.end_time = df[0][len(df[0])-1]
-        df[0] = [(time - df[0][0]).total_seconds() for time in df[0]] #Make time relative to start time in seconds
+        self.end_time = df[0][len(df[0]) - 1]
+        df[0] = [
+            (time - df[0][0]).total_seconds() for time in df[0]
+        ]  # Make time relative to start time in seconds
         self.tide_surge_ts = df
         return self
-    
