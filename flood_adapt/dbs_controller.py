@@ -492,12 +492,12 @@ class Database(IDatabase):
 
     # scenario methods
     def get_scenario(self, name: str) -> IScenario:
-        """Get the respective scenario object using the name of the measure.
+        """Get the respective scenario object using the name of the scenario.
 
         Parameters
         ----------
         name : str
-            name of the measure
+            name of the scenario
 
         Returns
         -------
@@ -508,6 +508,48 @@ class Database(IDatabase):
         scenario = Scenario.load_file(scenario_path)
         scenario.init_object_model()
         return scenario
+
+    def save_scenario(self, scenario: IScenario) -> None:
+        """Saves a scenario object in the database.
+
+        Parameters
+        ----------
+        measure : IScenario
+            object of scenario type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of scenarios should be unique.
+        """
+        names = self.get_scenarios()["name"]
+        if scenario.attrs.name in names:
+            raise ValueError(
+                f"'{scenario.attrs.name}' name is already used by another scenario. Choose a different name"
+            )
+        else:
+            (self.input_path / "scenarios" / scenario.attrs.name).mkdir()
+            scenario.save(
+                self.input_path
+                / "scenarios"
+                / scenario.attrs.name
+                / f"{scenario.attrs.name}.toml"
+            )
+
+    def edit_scenario(self, scenario: IScenario):
+        """Edits an already existing scenario in the database.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            object of one of the scenario types (e.g., IScenario)
+        """
+        scenario.save(
+            self.input_path
+            / "scenarios"
+            / scenario.attrs.name
+            / f"{scenario.attrs.name}.toml"
+        )
 
     def delete_scenario(self, name: str):
         """Deletes an already existing scenario in the database.

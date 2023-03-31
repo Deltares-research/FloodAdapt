@@ -6,6 +6,7 @@ from typing import Any, Union
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
 
@@ -56,6 +57,22 @@ class IDatabase(ABC):
 
     @abstractmethod
     def delete_strategy(self, name: str):
+        ...
+
+    @abstractmethod
+    def get_scenario(self, name: str) -> IScenario:
+        ...
+
+    @abstractmethod
+    def save_scenario(self, measure: IScenario) -> None:
+        ...
+
+    @abstractmethod
+    def edit_scenario(self, measure: IScenario) -> None:
+        ...
+
+    @abstractmethod
+    def delete_scenario(self, name: str):
         ...
 
     @abstractmethod
