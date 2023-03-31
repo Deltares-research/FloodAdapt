@@ -22,7 +22,7 @@ class SfincsAdapter:
         # if validate_existence_root_folder(model_root):
         #    self.model_root = model_root
 
-        self.sf_model = SfincsModel(root=model_root, mode="r+")
+        # self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
 
     def set_timing(self, event: EventModel):

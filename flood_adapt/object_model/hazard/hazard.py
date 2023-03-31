@@ -153,7 +153,7 @@ class Hazard:
         # TODO, made already a start generating a constant timeseries in Event class
 
         # Add floodwall if included
-        if self.measure.floodwall is not None: #TODO Gundula: fix met add_floodwall
+        if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
             pass
 
         # write sfincs model in output destination
