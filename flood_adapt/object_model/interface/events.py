@@ -25,7 +25,9 @@ class Template(str, Enum):
 
     Synthetic = "Synthetic"
     Hurricane = "Hurricane"
-
+    Historical_nearshore = "Historical_nearshore"
+    Historical_offshore = "Historical_offshore"
+    
 
 class Timing(str, Enum):
     """class describing the accepted input for the variable timng in Event"""
@@ -107,7 +109,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     long_name: str
     mode: Mode
     template: Template
-    timing: Timing
+    timing: Timing #TODO: do we need this? We can infer this from template
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel

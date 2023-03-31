@@ -3,12 +3,16 @@
 from typing import Any
 
 from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.object_model.hazard.event.synthetic import HistoricalNearshore
+from flood_adapt.object_model.interface.events import IHistoricalNearshore
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
     return database.get_events()
 
+def create_historical_nearshore_event(attrs: dict[str, Any], database: IDatabase) -> IHistoricalNearshore:
+    return HistoricalNearshore.load_dict(attrs)
 
 # def get_event(name: str) -> dict():  # get attributes
 #     pass

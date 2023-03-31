@@ -27,10 +27,14 @@ class SfincsAdapter:
     def set_timing(self, event: EventModel):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series."""
 
+        #Get start and end time of event based on different templates
+        if event.template == "Synthetic":
+            tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
+            tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
+        elif event.template == "Historical_nearshore":
+            tstart = event.start_time
+            tstop = event.end_time
         # Update timing of the model
-        # stop_time =
-        tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
-        tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
         self.sf_model.set_config("tref", tstart)
         self.sf_model.set_config("tstart", tstart)
         self.sf_model.set_config("tstop", tstop)

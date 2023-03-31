@@ -9,11 +9,11 @@ from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 class EventFactory:
     @staticmethod
     def get_event(template: str):
-        if template.lower() == "synthetic":
+        if template == "Synthetic":
             return Synthetic()
-        # elif template.lower() == "historical - hurricane":
+        # elif template.lower() == "Hurricane":
         #     return Hurricane
-        # elif template.lower() == "historical - forced by offshore wind and tide":
+        # elif template.lower() == "Historical_offshore":
         #     return HistoricalOffshore
-        elif template.lower() == "historical_nearshore":
+        elif template == "Historical_nearshore":
             return HistoricalNearshore
