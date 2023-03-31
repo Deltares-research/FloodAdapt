@@ -156,12 +156,12 @@ class Database(IDatabase):
                 / f"{measure.attrs.name}.toml"
             )
 
-    def save_synthetic_event(self, event: ISynthetic) -> None:
+    def save_event(self, event: IEvent) -> None:
         """Saves a synthetic event object in the database.
 
         Parameters
         ----------
-        measure : ISynthetic
+        event : IEvent
             object of one of the synthetic event types
 
         Raises
@@ -199,13 +199,13 @@ class Database(IDatabase):
             / f"{measure.attrs.name}.toml"
         )
 
-    def edit_synthetic_event(self, event: ISynthetic):
+    def edit_event(self, event: IEvent):
         """Edits an already existing event in the database.
 
         Parameters
         ----------
-        measure : ISynthetic
-            object of the synthetic event
+        event : IEvent
+            object of the event
         """
         # TODO should you be able to edit a measure that is already used in a hazard?
         event.save(
@@ -304,7 +304,7 @@ class Database(IDatabase):
         event.attrs.name = new_name
         event.attrs.long_name = new_long_name
         # Then a save
-        self.save_synthetic_event(event)
+        self.save_event(event)
         # Then save all the accompanied files
         src = self.input_path / "events" / old_name
         dest = self.input_path / "events" / new_name

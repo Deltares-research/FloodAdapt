@@ -20,12 +20,12 @@ def create_synthetic_event(attrs: dict[str, Any], database: IDatabase) -> ISynth
     return Synthetic.load_dict(attrs)
 
 
-def save_synthetic_event(event: ISynthetic, database: IDatabase) -> None:
-    database.save_synthetic_event(event)
+def save_event(event: IEvent, database: IDatabase) -> None:
+    database.save_event(event)
 
 
-def edit_synthetic_event(event: ISynthetic, database: IDatabase) -> None:
-    database.edit_synthetic_event(event)
+def edit_event(event: IEvent, database: IDatabase) -> None:
+    database.edit_event(event)
 
 
 def delete_event(name: str, database: IDatabase) -> None:
