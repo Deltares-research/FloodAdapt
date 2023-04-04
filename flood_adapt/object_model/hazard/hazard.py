@@ -14,7 +14,7 @@ from flood_adapt.object_model.hazard.physical_projection import (
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import SiteModel
+from flood_adapt.object_model.site import ISite
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
@@ -115,7 +115,7 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_sfincs(self, site: SiteModel):
+    def run_sfincs(self, site: ISite):
         # TODO: make path variable, now using test data on p-drive
 
         path_on_p = Path(
@@ -153,8 +153,8 @@ class Hazard:
         # TODO, made already a start generating a constant timeseries in Event class
 
         # Add floodwall if included
-        if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
-            pass
+        # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
+        #     pass
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)
