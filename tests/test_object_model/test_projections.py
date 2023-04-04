@@ -61,3 +61,25 @@ def test_projection_only_slr():
     assert projection.attrs.long_name == "SLR_2ft"
     assert projection.get_physical_projection().attrs.sea_level_rise.value == 2
     assert projection.get_physical_projection().attrs.sea_level_rise.units == "feet"
+
+
+def test_projection_interp_slr():
+    slr = PhysicalProjection.interp_slr(
+        Path(
+            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/input"
+        ),
+        "ssp245",
+        2075,
+    )
+
+    assert slr.value > 0.33
+    assert slr.value < 0.4
+    assert slr.units == "meters"
+
+
+def test_projection_plot_slr():
+    PhysicalProjection.plot_slr(
+        Path(
+            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/input"
+        )
+    )
