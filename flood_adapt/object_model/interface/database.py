@@ -5,7 +5,9 @@ from typing import Any, Union
 
 from geopandas import GeoDataFrame
 
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
@@ -25,6 +27,38 @@ class IDatabase(ABC):
 
     @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
+        ...
+
+    @abstractmethod
+    def get_projection(self, name: str) -> IProjection:
+        ...
+
+    @abstractmethod
+    def save_projection(self, measure: IProjection) -> None:
+        ...
+
+    @abstractmethod
+    def edit_projection(self, measure: IProjection) -> None:
+        ...
+
+    @abstractmethod
+    def delete_projection(self, name: str):
+        ...
+
+    @abstractmethod
+    def get_event(self, name: str) -> IEvent:
+        ...
+
+    @abstractmethod
+    def save_event(self, measure: IEvent) -> None:
+        ...
+
+    @abstractmethod
+    def edit_event(self, measure: IEvent) -> None:
+        ...
+
+    @abstractmethod
+    def delete_event(self, name: str):
         ...
 
     @abstractmethod
