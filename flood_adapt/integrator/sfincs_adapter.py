@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+from hydromt_sfincs import SfincsModel
 
-# from hydromt_sfincs import SfincsModel
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 
@@ -22,7 +22,7 @@ class SfincsAdapter:
         # if validate_existence_root_folder(model_root):
         #    self.model_root = model_root
 
-        # self.sf_model = SfincsModel(root=model_root, mode="r+")
+        self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
 
     def set_timing(self, event: EventModel):

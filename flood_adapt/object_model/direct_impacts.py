@@ -24,6 +24,7 @@ class DirectImpacts:
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
     hazard: Hazard
+    has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.database_input_path = database_input_path
