@@ -7,9 +7,14 @@ from typing import Any, Union
 import geopandas as gpd
 from geopandas import GeoDataFrame
 
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
@@ -212,6 +217,203 @@ class Database(IDatabase):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
+    # Event methods
+    def get_event(self, name: str) -> IEvent:
+        """Get the respective event object using the name of the event.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+
+        Returns
+        -------
+        IMeasure
+            object of one of the events
+        """
+        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
+        event_template = Event.get_template(event_path)
+        event = EventFactory.get_event(event_template).load_file(event_path)
+        return event
+
+    def save_event(self, event: IEvent) -> None:
+        """Saves a synthetic event object in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of one of the synthetic event types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
+        names = self.get_events()["name"]
+        if event.attrs.name in names:
+            raise ValueError(
+                f"'{event.attrs.name}' name is already used by another event. Choose a different name"
+            )
+        else:
+            (self.input_path / "events" / event.attrs.name).mkdir()
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
+
+    def edit_event(self, event: IEvent):
+        """Edits an already existing event in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of the event
+        """
+        # TODO should you be able to edit a measure that is already used in a hazard?
+        event.save(
+            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
+        )
+
+    def delete_event(self, name: str):
+        """Deletes an already existing event in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+        """
+
+        # TODO: check if event is used in a hazard
+
+        event_path = self.input_path / "events" / name
+        shutil.rmtree(event_path, ignore_errors=True)
+
+    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing event, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing event
+        new_name : str
+            name of the new event
+        new_long_name : str
+            long_name of the new event
+        """
+        # First do a get
+        event = self.get_event(old_name)
+        event.attrs.name = new_name
+        event.attrs.long_name = new_long_name
+        # Then a save
+        self.save_event(event)
+        # Then save all the accompanied files
+        src = self.input_path / "events" / old_name
+        dest = self.input_path / "events" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
+    # Projection methods
+    def get_projection(self, name: str) -> IProjection:
+        """Get the respective projection object using the name of the projection.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        Returns
+        -------
+        IProjection
+            object of one of the projection types
+        """
+        projection_path = self.input_path / "projections" / name / f"{name}.toml"
+        projection = Projection.load_file(projection_path)
+        return projection
+
+    def save_projection(self, projection: IProjection) -> None:
+        """Saves a projection object in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of projections should be unique.
+        """
+        names = self.get_projections()["name"]
+        if projection.attrs.name in names:
+            raise ValueError(
+                f"'{projection.attrs.name}' name is already used by another projection. Choose a different name"
+            )
+        else:
+            (self.input_path / "projections" / projection.attrs.name).mkdir()
+            projection.save(
+                self.input_path
+                / "projections"
+                / projection.attrs.name
+                / f"{projection.attrs.name}.toml"
+            )
+
+    def edit_projection(self, projection: IProjection):
+        """Edits an already existing projection in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types (e.g., IElevate)
+        """
+        projection.save(
+            self.input_path
+            / "projections"
+            / projection.attrs.name
+            / f"{projection.attrs.name}.toml"
+        )
+
+    def delete_projection(self, name: str):
+        """Deletes an already existing projection in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        """
+        # TODO: make check if projection is used in strategies
+
+        projection_path = self.input_path / "projections" / name
+        shutil.rmtree(projection_path, ignore_errors=True)
+
+    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing projection, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing projection
+        new_name : str
+            name of the new projection
+        new_long_name : str
+            long_name of the new projection
+        """
+        # First do a get
+        projection = self.get_projection(old_name)
+        projection.attrs.name = new_name
+        projection.attrs.long_name = new_long_name
+        # Then a save
+        self.save_projection(projection)
+        # Then save all the accompanied files
+        src = self.input_path / "projections" / old_name
+        dest = self.input_path / "projections" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
     # Strategy methods
     def get_strategy(self, name: str) -> IStrategy:
         """Get the respective strategy object using the name of the strategy.
@@ -287,6 +489,90 @@ class Database(IDatabase):
         else:
             strategy_path = self.input_path / "strategies" / name
             shutil.rmtree(strategy_path, ignore_errors=True)
+
+    # scenario methods
+    def get_scenario(self, name: str) -> IScenario:
+        """Get the respective scenario object using the name of the scenario.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario
+
+        Returns
+        -------
+        IScenario
+            Scenario object
+        """
+        scenario_path = self.input_path / "scenarios" / name / f"{name}.toml"
+        scenario = Scenario.load_file(scenario_path)
+        scenario.init_object_model()
+        return scenario
+
+    def save_scenario(self, scenario: IScenario) -> None:
+        """Saves a scenario object in the database.
+
+        Parameters
+        ----------
+        measure : IScenario
+            object of scenario type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of scenarios should be unique.
+        """
+        names = self.get_scenarios()["name"]
+        if scenario.attrs.name in names:
+            raise ValueError(
+                f"'{scenario.attrs.name}' name is already used by another scenario. Choose a different name"
+            )
+        else:
+            (self.input_path / "scenarios" / scenario.attrs.name).mkdir()
+            scenario.save(
+                self.input_path
+                / "scenarios"
+                / scenario.attrs.name
+                / f"{scenario.attrs.name}.toml"
+            )
+
+    def edit_scenario(self, scenario: IScenario):
+        """Edits an already existing scenario in the database.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            object of one of the scenario types (e.g., IScenario)
+        """
+        scenario.save(
+            self.input_path
+            / "scenarios"
+            / scenario.attrs.name
+            / f"{scenario.attrs.name}.toml"
+        )
+
+    def delete_scenario(self, name: str):
+        """Deletes an already existing scenario in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario
+
+        Raises
+        ------
+        ValueError
+            Raise error if scenario has already model output
+        """
+        scenario_path = self.input_path / "scenarios" / name
+        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+        scenario.init_object_model()
+        if scenario.direct_impacts.hazard.has_run:
+            raise ValueError(
+                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+            )
+        else:
+            shutil.rmtree(scenario_path, ignore_errors=True)
 
     def update(self) -> None:
         self.projections = self.get_projections()

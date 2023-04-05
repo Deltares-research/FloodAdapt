@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 
@@ -10,6 +10,7 @@ class ScenarioModel(BaseModel):
 
     name: str
     long_name: str
+    description: Optional[str] = ""
     event: str
     projection: str
     strategy: str

@@ -37,13 +37,14 @@ class Strategy(IStrategy):
 
         return measures
 
-    def get_impact_strategy(self) -> ImpactStrategy:
+    def get_impact_strategy(self, validate=False) -> ImpactStrategy:
         return ImpactStrategy(
             [
                 measure
                 for measure in self.get_measures()
                 if issubclass(measure.__class__, ImpactMeasure)
-            ]
+            ],
+            validate=validate,
         )
 
     def get_hazard_strategy(self) -> HazardStrategy:
@@ -56,13 +57,16 @@ class Strategy(IStrategy):
         )
 
     @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
+    def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
         """Create Strategy object from toml file
 
         Parameters
         ----------
         filepath : Union[str, os.PathLike]
             path to the Strategy's toml file
+        validate : bool, optional
+            if this is true the affected buildings from the impact-measures
+            will be checked to ensure they do not overlap, by default False
 
         Returns
         -------
@@ -75,22 +79,29 @@ class Strategy(IStrategy):
         obj.attrs = StrategyModel.parse_obj(toml)
         # if strategy is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
-        # TODO does this check need to be here when this is created from a file?
-        # We can assume that the file has already passed the test? Much faster!
-        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+        # Need to ensure that the strategy can be created
+        if validate:
+            obj.get_impact_strategy(validate=True)
 
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(
+        data: dict[str, Any],
+        database_input_path: Union[str, os.PathLike],
+        validate: bool = True,
+    ):
         """_summary_
 
         Parameters
         ----------
         data : dict[str, Any]
-            _description_
+            dictionary with the data
         database_input_path : Union[str, os.PathLike]
-            _description_
+            path like object pointing to the location of the input files
+        validate : bool, optional
+            if this is true the affected buildings from the impact-measures
+            will be checked to ensure they do not overlap, by default True
 
         Returns
         -------
@@ -100,7 +111,9 @@ class Strategy(IStrategy):
         obj = Strategy()
         obj.attrs = StrategyModel.parse_obj(data)
         obj.database_input_path = database_input_path
-        obj.get_impact_strategy()  # Need to ensure that the strategy can be created
+        # Need to ensure that the strategy can be created
+        if validate:
+            obj.get_impact_strategy(validate=True)
 
         return obj
 
