@@ -103,7 +103,7 @@ class Database(IDatabase):
             else:
                 ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
                 new_slr = UnitfulLength(
-                    value=slr - ref_slr,
+                    value=np.round(slr - ref_slr, decimals=2),
                     units=df["units"][0],
                 )
                 return new_slr
