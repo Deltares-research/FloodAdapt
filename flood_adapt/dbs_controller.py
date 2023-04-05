@@ -567,7 +567,7 @@ class Database(IDatabase):
         scenario_path = self.input_path / "scenarios" / name
         scenario = Scenario.load_file(scenario_path / f"{name}.toml")
         scenario.init_object_model()
-        if scenario.direct_impacts.hazard.has_run_hazard:
+        if scenario.direct_impacts.hazard.has_run:
             raise ValueError(
                 f"'{name}' scenario cannot be deleted since the hazard model has already run."
             )

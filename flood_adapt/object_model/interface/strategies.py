@@ -13,16 +13,21 @@ class StrategyModel(BaseModel):
 
 class IStrategy(ABC):
     attrs: StrategyModel
+    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
     @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
+    def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
         """get Strategy attributes from toml file"""
         ...
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(
+        data: dict[str, Any],
+        database_input_path: Union[str, os.PathLike],
+        validate: bool = True,
+    ):
         """get Strategy attributes from an object, e.g. when initialized from GUI"""
         ...
 

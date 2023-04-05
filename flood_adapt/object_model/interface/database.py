@@ -46,6 +46,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+        ...
+
+    @abstractmethod
     def get_event(self, name: str) -> IEvent:
         ...
 
@@ -59,6 +63,10 @@ class IDatabase(ABC):
 
     @abstractmethod
     def delete_event(self, name: str):
+        ...
+
+    @abstractmethod
+    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         ...
 
     @abstractmethod

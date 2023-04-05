@@ -16,7 +16,7 @@ def get_event(name: str, database: IDatabase) -> IEvent:
     return database.get_event(name)
 
 
-def create_synthetic_event(attrs: dict[str, Any], database: IDatabase) -> ISynthetic:
+def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     return Synthetic.load_dict(attrs)
 
 

@@ -24,7 +24,7 @@ class ImpactStrategy:
         Raises
         ------
         ValueError
-            information on which combinations of measures have condlicting properties
+            information on which combinations of measures have overlapping properties
         """
         # Get ids of objects affected for each measure
         ids = [measure.get_object_ids() for measure in self.measures]
