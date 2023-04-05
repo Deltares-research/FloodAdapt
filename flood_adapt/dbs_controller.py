@@ -7,10 +7,14 @@ from typing import Any, Union
 import geopandas as gpd
 from geopandas import GeoDataFrame
 
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -106,6 +110,24 @@ class Database(IDatabase):
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
 
+    def get_event(self, name: str) -> IEvent:
+        """Get the respective event object using the name of the event.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+
+        Returns
+        -------
+        IMeasure
+            object of one of the events
+        """
+        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
+        event_template = Event.get_template(event_path)
+        event = EventFactory.get_event(event_template).load_file(event_path)
+        return event
+
     def save_measure(self, measure: IMeasure) -> None:
         """Saves a measure object in the database.
 
@@ -134,6 +156,33 @@ class Database(IDatabase):
                 / f"{measure.attrs.name}.toml"
             )
 
+    def save_event(self, event: IEvent) -> None:
+        """Saves a synthetic event object in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of one of the synthetic event types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
+        names = self.get_events()["name"]
+        if event.attrs.name in names:
+            raise ValueError(
+                f"'{event.attrs.name}' name is already used by another measure. Choose a different name"
+            )
+        else:
+            (self.input_path / "events" / event.attrs.name).mkdir()
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
+
     def edit_measure(self, measure: IMeasure):
         """Edits an already existing measure in the database.
 
@@ -148,6 +197,19 @@ class Database(IDatabase):
             / "measures"
             / measure.attrs.name
             / f"{measure.attrs.name}.toml"
+        )
+
+    def edit_event(self, event: IEvent):
+        """Edits an already existing event in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of the event
+        """
+        # TODO should you be able to edit a measure that is already used in a hazard?
+        event.save(
+            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
         )
 
     def delete_measure(self, name: str):
@@ -177,6 +239,7 @@ class Database(IDatabase):
                 for i, strategy in enumerate(strategies)
                 if used_strategy[i]
             ]
+            # TODO split this
             text = "strategy" if len(strategies) == 1 else "strategies"
             raise ValueError(
                 f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
@@ -184,6 +247,20 @@ class Database(IDatabase):
         else:
             measure_path = self.input_path / "measures" / name
             shutil.rmtree(measure_path, ignore_errors=True)
+
+    def delete_event(self, name: str):
+        """Deletes an already existing event in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+        """
+
+        # TODO: check if event is used in a hazard
+
+        event_path = self.input_path / "events" / name
+        shutil.rmtree(event_path, ignore_errors=True)
 
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing measures, and gives it a new name.
@@ -209,6 +286,107 @@ class Database(IDatabase):
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
+
+    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing event, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing event
+        new_name : str
+            name of the new event
+        new_long_name : str
+            long_name of the new event
+        """
+        # First do a get
+        event = self.get_event(old_name)
+        event.attrs.name = new_name
+        event.attrs.long_name = new_long_name
+        # Then a save
+        self.save_event(event)
+        # Then save all the accompanied files
+        src = self.input_path / "events" / old_name
+        dest = self.input_path / "events" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
+    # Strategy methods
+    def get_strategy(self, name: str) -> IStrategy:
+        """Get the respective strategy object using the name of the strategy.
+
+        Parameters
+        ----------
+        name : str
+            name of the strategy
+
+        Returns
+        -------
+        IStrategy
+            strategy object
+        """
+        strategy_path = self.input_path / "strategies" / name / f"{name}.toml"
+        strategy = Strategy.load_file(strategy_path)
+        return strategy
+
+    def save_strategy(self, strategy: IStrategy) -> None:
+        """Saves a strategy object in the database.
+
+        Parameters
+        ----------
+        measure : IStrategy
+            object of strategy type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of strategies should be unique.
+        """
+        names = self.get_strategies()["name"]
+        if strategy.attrs.name in names:
+            raise ValueError(
+                f"'{strategy.attrs.name}' name is already used by another strategy. Choose a different name"
+            )
+        else:
+            (self.input_path / "strategies" / strategy.attrs.name).mkdir()
+            strategy.save(
+                self.input_path
+                / "strategies"
+                / strategy.attrs.name
+                / f"{strategy.attrs.name}.toml"
+            )
+
+    def delete_strategy(self, name: str):
+        """Deletes an already existing strategy in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the strategy
+
+        Raises
+        ------
+        ValueError
+            Raise error if strategy to be deleted is already used in a scenario.
+        """
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+        used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
+
+        if any(used_scenario):
+            scenarios = [
+                scenario.attrs.name
+                for i, scenario in enumerate(scenarios)
+                if used_scenario[i]
+            ]
+            # TODO split this
+            text = "scenario" if len(scenarios) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' measure cannot be deleted since it is already used in {text} {scenarios}"
+            )
+        else:
+            strategy_path = self.input_path / "strategies" / name
+            shutil.rmtree(strategy_path, ignore_errors=True)
 
     def update(self) -> None:
         self.projections = self.get_projections()

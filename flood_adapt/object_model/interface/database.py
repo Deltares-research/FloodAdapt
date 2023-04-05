@@ -7,6 +7,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.strategies import IStrategy
 
 
 class IDatabase(ABC):
@@ -43,6 +44,18 @@ class IDatabase(ABC):
 
     @abstractmethod
     def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+        ...
+
+    @abstractmethod
+    def get_strategy(self, name: str) -> IStrategy:
+        ...
+
+    @abstractmethod
+    def save_strategy(self, measure: IStrategy) -> None:
+        ...
+
+    @abstractmethod
+    def delete_strategy(self, name: str):
         ...
 
     @abstractmethod
