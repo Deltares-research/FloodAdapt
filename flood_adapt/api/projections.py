@@ -36,6 +36,18 @@ def copy_projection(
     database.copy_projection(old_name, new_name, new_long_name)
 
 
+def get_slr_scn_names(database: IDatabase) -> list:
+    return database.get_slr_scn_names()
+
+
+def interp_slr(database: IDatabase, slr_scenario: str, year: float) -> float:
+    return database.interp_slr(slr_scenario, year).value
+
+
+def plot_slr_scenarios(database: IDatabase) -> None:
+    database.plot_slr_scenarios()
+
+
 # # on click add projection
 # def create_new_projection(template: str) -> dict():  # get attributes
 #     pass
