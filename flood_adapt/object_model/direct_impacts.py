@@ -59,8 +59,8 @@ class DirectImpacts:
 
     def infographic(
         self,
-    ) -> Path:  # should use scenario and scenario.input_path in the future
-        self.has_run = (
+    ) -> None:  # should use scenario and scenario.input_path in the future
+        self.has_run_impact = (
             True  # TODO remove when this has been added through the Fiat adapter
         )
         # database_output_path = scenario.database_input_path.parent.joinpath(
@@ -70,8 +70,9 @@ class DirectImpacts:
             r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output/results"
         )  # replace with above outside of pytest
 
-        name = self.scenario.name
-        if self.has_run:
+        # name = self.scenario.name
+        name = "current_kingtide2021_no_measures"  # TODO: remove when using with API
+        if self.has_run_impact:
             csv_file = database_output_path.joinpath(name, f"{name}_results.csv")
             df = pd.read_csv(csv_file)
             df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
@@ -84,6 +85,9 @@ class DirectImpacts:
                 ],
                 axis=1,
             )
+            df["Relative Structure Damage"] = (
+                df["Structure Damage Event"] / df["Max Potential Damage: Structure"]
+            )
             df["Damage Level"] = np.where(
                 df["Relative Damage"] > 0.3, "Severe  (>30%)", "Moderate (<30%)"
             )
@@ -93,29 +97,40 @@ class DirectImpacts:
             df["Damage Level"] = np.where(
                 np.isnan(df["Relative Damage"]), "NaN", df["Damage Level"]
             )
-            df_sorted = df.sort_values("Relative Damage", ascending=False)
-            fig = px.pie(
-                df_sorted,
-                values="Relative Damage",
-                names="Damage Level",
-                # color_discrete_map={
-                #     "None (0%)": "rgb(255,255,255)",
-                #     "Minor (<5%)": "rgb(248,203,173)",
-                #     "Moderate  (<30%)": "rgb(242,155,96)",
-                #     "Severe  (>30%)": "rgb(155,72,55)"
-                # },
-                color_discrete_sequence=px.colors.sequential.RdBu,
-                category_orders={
-                    "Damage Level": [
-                        "Severe  (>30%)",
-                        "Minor (<5%)",
-                        "Moderate  (<30%)",
-                    ]
-                },
-                hole=0.6,
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] != 0, "Affected", np.nan
+            )
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] > 0.25, "Minor", df["FEMA"]
+            )
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] > 1.5, "Major", df["FEMA"]
+            )
+            df["FEMA"] = np.where(
+                df["Relative Structure Damage"] > 0.9, "Destroyed", df["FEMA"]
             )
 
-            fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+            categories = ["Affected", "Minor", "Major", "Destroyed"]
+            FEMA_count = {cat: len(df[df["FEMA"] == cat]) for cat in categories}
+            df_affected = pd.DataFrame(FEMA_count.items()).rename(
+                columns={0: "Category", 1: "Count"}
+            )
+
+            fig = px.pie(
+                df_affected,
+                values="Count",
+                names="Category",
+                hole=0.6,
+                title=("FEMA Flood Damage Categories"),
+            )
+
+            fig.update_traces(
+                sort=False,
+                marker={
+                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                    "line": {"color": "#000000", "width": 2},
+                },
+            )
 
             fig.add_layout_image(
                 {
@@ -123,11 +138,19 @@ class DirectImpacts:
                     "sizex": 0.3,
                     "sizey": 0.3,
                     "x": 0.5,
-                    "y": 0.5,
+                    "y": 0.55,
                     "xanchor": "center",
                     "yanchor": "middle",
                     "visible": True,
                 }
+            )
+
+            fig.add_annotation(
+                x=0.5,
+                y=0.3,
+                text="{}".format(df_affected["Count"].sum()),
+                font={"size": 60, "family": "Verdana", "color": "black"},
+                showarrow=False,
             )
 
             fig.update_layout(
@@ -135,14 +158,12 @@ class DirectImpacts:
                 height=700,
                 width=700,
                 margin={"r": 20, "l": 50, "b": 20, "t": 20},
-                title=("Severity of damages to buildings"),
+                # title=("FEMA Flood Damage Categories"),
             )
 
             # write html to results folder
-            path = database_output_path.joinpath(name, "infographic.html")
-            fig.write_html(path)
-            return path
+            fig.write_html(database_output_path.joinpath(name, "infographic.html"))
         else:
             raise ValueError(
-                "The Direct Impact Model has not run yet. No infographic can be produced."
+                "The Direct Impact Model has not run yet. No inforgraphic can be produced."
             )
