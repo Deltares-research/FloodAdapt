@@ -28,6 +28,7 @@ class DirectImpacts:
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.database_input_path = database_input_path
+        self.scenario = scenario
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(scenario, database_input_path)
@@ -58,9 +59,8 @@ class DirectImpacts:
 
     def infographic(
         self,
-        scenario: ScenarioModel,
-    ) -> None:  # should use scenario and scenario.input_path in the future
-        self.has_run_impact = (
+    ) -> Path:  # should use scenario and scenario.input_path in the future
+        self.has_run = (
             True  # TODO remove when this has been added through the Fiat adapter
         )
         # database_output_path = scenario.database_input_path.parent.joinpath(
@@ -70,8 +70,8 @@ class DirectImpacts:
             r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output/results"
         )  # replace with above outside of pytest
 
-        name = scenario.attrs.name
-        if self.has_run_impact:
+        name = self.scenario.name
+        if self.has_run:
             csv_file = database_output_path.joinpath(name, f"{name}_results.csv")
             df = pd.read_csv(csv_file)
             df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
@@ -139,8 +139,10 @@ class DirectImpacts:
             )
 
             # write html to results folder
-            fig.write_html(database_output_path.joinpath(name, "infographic.html"))
+            path = database_output_path.joinpath(name, "infographic.html")
+            fig.write_html(path)
+            return path
         else:
             raise ValueError(
-                "The Direct Impact Model has not run yet. No inforgraphic can be produced."
+                "The Direct Impact Model has not run yet. No infographic can be produced."
             )

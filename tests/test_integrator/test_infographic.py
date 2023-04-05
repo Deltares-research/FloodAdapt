@@ -21,4 +21,4 @@ def test_infographic():
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
 
-    test_scenario.direct_impacts.infographic(test_scenario)
+    test_scenario.direct_impacts.infographic()
