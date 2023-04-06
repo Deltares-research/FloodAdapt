@@ -44,8 +44,8 @@ def interp_slr(database: IDatabase, slr_scenario: str, year: float) -> float:
     return database.interp_slr(slr_scenario, year).value
 
 
-def plot_slr_scenarios(database: IDatabase) -> None:
-    database.plot_slr_scenarios()
+def plot_slr_scenarios(database: IDatabase) -> str:
+    return database.plot_slr_scenarios()
 
 
 # # on click add projection

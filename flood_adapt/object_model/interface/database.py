@@ -34,7 +34,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def plot_slr_scenarios(self) -> None:
+    def plot_slr_scenarios(self) -> str:
         ...
 
     @abstractmethod

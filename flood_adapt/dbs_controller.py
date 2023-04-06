@@ -108,7 +108,7 @@ class Database(IDatabase):
                 )
                 return new_slr
 
-    def plot_slr_scenarios(self) -> None:
+    def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
@@ -156,13 +156,18 @@ class Database(IDatabase):
             title_font={"size": 10, "color": "black", "family": "Arial"},
             legend_font={"size": 10, "color": "black", "family": "Arial"},
             legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
-            legend_entrywidth=0,
+            legend={"entrywidthmode":"fraction","entrywidth":0.2},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title=None,
+            legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
         )
 
         # write html to results folder
-        fig.write_html(self.input_path.parent.joinpath("static", "slr", "slr.html"))
+        output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.

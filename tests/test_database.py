@@ -25,4 +25,7 @@ def test_projection_interp_slr():
 
 def test_projection_plot_slr():
     dbs = Database(test_database_path, test_site_name)
-    dbs.plot_slr_scenarios()
+    html_file_loc = dbs.plot_slr_scenarios()
+
+    print(html_file_loc)
+    assert Path(html_file_loc).is_file()
