@@ -104,7 +104,8 @@ class Database(IDatabase):
                     value=np.round(slr - ref_slr, decimals=2),
                     units=df["units"][0],
                 )
-                return new_slr
+                gui_units = self.site.attrs.gui.default_length_units
+                return new_slr.convert(gui_units)
 
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
@@ -128,8 +129,16 @@ class Database(IDatabase):
             print(e)
 
         df = df.set_index("Year").drop(columns="units").stack().reset_index()
+        # convert to units used in GUI
+        slr_current_units = UnitfulLength(value=df[0][0], units=units)
+        gui_units = self.site.attrs.gui.default_length_units
+        slr_gui_units = slr_current_units.convert(gui_units)
+        conversion_factor = slr_gui_units / slr_current_units.value
+        df[0] = conversion_factor * df[0]
+
+        # rename colum names that will be shown in html
         df = df.rename(
-            columns={"level_1": "Scenario", 0: "Sea level rise [{}]".format(units)}
+            columns={"level_1": "Scenario", 0: "Sea level rise [{}]".format(gui_units)}
         )
 
         colors = px.colors.sample_colorscale(
@@ -138,7 +147,7 @@ class Database(IDatabase):
         fig = px.line(
             df,
             x="Year",
-            y=f"Sea level rise [{units}]",
+            y=f"Sea level rise [{gui_units}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
@@ -154,7 +163,7 @@ class Database(IDatabase):
             title_font={"size": 10, "color": "black", "family": "Arial"},
             legend_font={"size": 10, "color": "black", "family": "Arial"},
             legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
-            legend={"entrywidthmode":"fraction","entrywidth":0.2},
+            legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
             legend_title=None,
