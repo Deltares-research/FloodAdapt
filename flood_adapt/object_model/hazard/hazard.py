@@ -13,6 +13,7 @@ from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import ISite
 
@@ -32,11 +33,11 @@ class Hazard:
 
     name: str
     database_input_path: Path
-    event: Optional[EventTemplateModel]
-    ensemble: Optional[EventTemplateModel]
-    physical_projection: Optional[PhysicalProjection]
-    hazard_strategy: Optional[HazardStrategy]
-    has_run_hazard: bool = False
+    event: Optional[Event]
+    ensemble: Optional[Event]
+    physical_projection: PhysicalProjection
+    hazard_strategy: HazardStrategy
+    has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.name = scenario.name
@@ -153,8 +154,8 @@ class Hazard:
         # TODO, made already a start generating a constant timeseries in Event class
 
         # Add floodwall if included
-        if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
-            pass
+        # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
+        #     pass
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)

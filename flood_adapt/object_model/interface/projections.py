@@ -7,12 +7,17 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
+    UnitTypesLength,
 )
 
 
 class PhysicalProjectionModel(BaseModel):
-    sea_level_rise: Optional[UnitfulLength] = UnitfulLength(value=0.0, units="meters")
-    subsidence: Optional[UnitfulLength] = UnitfulLength(value=0.0, units="meters")
+    sea_level_rise: Optional[UnitfulLength] = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+    subsidence: Optional[UnitfulLength] = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
     rainfall_increase: Optional[float] = 0.0
     storm_frequency_increase: Optional[float] = 0.0
 
