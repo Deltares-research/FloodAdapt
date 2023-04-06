@@ -93,8 +93,8 @@ class Hazard:
         self.wl_ts = self.event.tide_surge_ts
         self.wl_ts[1] = (
             self.wl_ts[1]
-            + self.event.attrs.water_level_offset.convert_to_meters()
-            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+            + self.event.attrs.water_level_offset.convert("meters")
+            + self.physical_projection.attrs.sea_level_rise.convert("meters")
         )
         return self
 

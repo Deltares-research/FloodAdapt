@@ -82,7 +82,7 @@ class Synthetic(Event, ISynthetic):
         tt = np.arange(0, duration + 1, 600)
 
         # tide
-        amp = self.attrs.tide.harmonic_amplitude.convert_to_meters()
+        amp = self.attrs.tide.harmonic_amplitude.convert("meters")
         omega = 2 * math.pi / (12.4 / 24)
         time_shift = float(self.attrs.time.duration_before_t0) * 3600
         tide = amp * np.cos(omega * (tt - time_shift) / 86400)
@@ -96,7 +96,7 @@ class Synthetic(Event, ISynthetic):
             surge = self.timeseries_shape(
                 "gaussian",
                 duration,
-                self.attrs.surge.shape_peak.convert_to_meters(),
+                self.attrs.surge.shape_peak.convert("meters"),
                 shape_duration=duration,
                 time_shift=time_shift,
             )
@@ -147,14 +147,14 @@ class Synthetic(Event, ISynthetic):
             river = self.timeseries_shape(
                 self.attrs.river.shape_type,
                 duration,
-                self.attrs.river.shape_peak.convert_to_cms()
-                - self.attrs.river.base_discharge.convert_to_cms(),
+                self.attrs.river.shape_peak.convert("m3/s")
+                - self.attrs.river.base_discharge.convert("m3/s"),
                 time_shift=time_shift,
                 start_shape=start_shape,
                 end_shape=end_shape,
             )
             # add base discharge to timeseries
-            river += self.attrs.river.base_discharge.convert_to_cms()
+            river += self.attrs.river.base_discharge.convert("m3/s")
             # save to object with pandas daterange
             time = pd.date_range(
                 self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"

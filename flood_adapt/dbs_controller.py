@@ -84,9 +84,7 @@ class Database(IDatabase):
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
-    def interp_slr(
-        self, slr_scenario: str, year: float
-    ) -> UnitfulLength:  # TODO add unit conversion for units from GUI
+    def interp_slr(self, slr_scenario: str, year: float) -> UnitfulLength:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
