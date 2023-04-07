@@ -146,7 +146,7 @@ class UnitfulDischarge(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulIntenisty(BaseModel):
+class UnitfulIntensity(BaseModel):
     value: float
     units: UnitTypesIntensity
 

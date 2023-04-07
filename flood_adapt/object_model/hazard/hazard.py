@@ -15,9 +15,6 @@ from flood_adapt.object_model.hazard.physical_projection import (
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import ISite
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
 
 

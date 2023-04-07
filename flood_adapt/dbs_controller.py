@@ -128,7 +128,7 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
-        df = df.set_index("Year").drop(columns="units").stack().reset_index()
+        df = df.set_index("Year").drop(columns="units").melt().reset_index()
         # convert to units used in GUI
         slr_current_units = UnitfulLength(value=df[0][0], units=units)
         gui_units = self.site.attrs.gui.default_length_units
@@ -136,7 +136,7 @@ class Database(IDatabase):
         conversion_factor = slr_gui_units / slr_current_units.value
         df[0] = conversion_factor * df[0]
 
-        # rename colum names that will be shown in html
+        # rename column names that will be shown in html
         df = df.rename(
             columns={"level_1": "Scenario", 0: "Sea level rise [{}]".format(gui_units)}
         )
