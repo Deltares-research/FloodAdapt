@@ -41,7 +41,7 @@ def get_slr_scn_names(database: IDatabase) -> list:
 
 
 def interp_slr(database: IDatabase, slr_scenario: str, year: float) -> float:
-    return database.interp_slr(slr_scenario, year).value
+    return database.interp_slr(slr_scenario, year)
 
 
 def plot_slr_scenarios(database: IDatabase) -> str:

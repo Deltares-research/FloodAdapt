@@ -84,7 +84,7 @@ class Database(IDatabase):
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
-    def interp_slr(self, slr_scenario: str, year: float) -> UnitfulLength:
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -101,11 +101,11 @@ class Database(IDatabase):
             else:
                 ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
                 new_slr = UnitfulLength(
-                    value=np.round(slr - ref_slr, decimals=2),
+                    value=slr - ref_slr,
                     units=df["units"][0],
                 )
                 gui_units = self.site.attrs.gui.default_length_units
-                return new_slr.convert(gui_units)
+                return np.round(new_slr.convert(gui_units), decimals=2)
 
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
@@ -128,17 +128,20 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
-        df = df.set_index("Year").drop(columns="units").stack().reset_index()
+        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=df[0][0], units=units)
+        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
         gui_units = self.site.attrs.gui.default_length_units
         slr_gui_units = slr_current_units.convert(gui_units)
         conversion_factor = slr_gui_units / slr_current_units.value
-        df[0] = conversion_factor * df[0]
+        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
 
         # rename column names that will be shown in html
         df = df.rename(
-            columns={"level_1": "Scenario", 0: "Sea level rise [{}]".format(gui_units)}
+            columns={
+                "variable": "Scenario",
+                "value": "Sea level rise [{}]".format(gui_units),
+            }
         )
 
         colors = px.colors.sample_colorscale(
@@ -173,6 +176,7 @@ class Database(IDatabase):
 
         # write html to results folder
         output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
         return str(output_loc)
 

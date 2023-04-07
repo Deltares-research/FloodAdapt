@@ -30,7 +30,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def interp_slr(self, slr_scenario: str, year: float) -> dict:
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
         ...
 
     @abstractmethod
