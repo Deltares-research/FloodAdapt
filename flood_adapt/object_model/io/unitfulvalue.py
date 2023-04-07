@@ -7,7 +7,6 @@ class UnitTypesLength(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
     millimeters = "millimeters"
-    millimeters = "millimeters"
     feet = "feet"
     inch = "inch"
 
