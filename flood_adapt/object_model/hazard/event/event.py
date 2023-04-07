@@ -50,7 +50,7 @@ class Event:
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
         if river.source == "constant":
-            dis = river.constant_discharge.convert_to_cms() * np.array([1, 1])
+            dis = river.constant_discharge.convert("m3/s") * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], 1: dis})
             df = df.set_index("time")
@@ -72,7 +72,7 @@ class Event:
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
         if wind.source == "constant":
-            vmag = wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vmag = wind.constant_speed.convert("m/s") * np.array([1, 1])
             vdir = wind.constant_direction.value * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict(
