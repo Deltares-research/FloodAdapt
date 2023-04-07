@@ -101,8 +101,8 @@ class Database(IDatabase):
             else:
                 ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
                 new_slr = UnitfulLength(
-                    value= slr - ref_slr,
-                    units= df["units"][0],
+                    value=slr - ref_slr,
+                    units=df["units"][0],
                 )
                 gui_units = self.site.attrs.gui.default_length_units
                 return np.round(new_slr.convert(gui_units), decimals=2)
