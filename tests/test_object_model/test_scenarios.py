@@ -91,6 +91,35 @@ def test_hazard_wl():
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
+def test_run_hazard_model():
+    test_toml = (
+        Path(
+            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/input"
+        )
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+
+    scenario.run_hazard_models()
+
+    df = pd.read_csv(
+        Path(
+            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output"
+        )
+        / "simulations"
+        / "current_extreme12ft_no_measures"
+        / "overland"
+        / "sfincs.bzs",
+    )
+
+    assert df.iloc[0, 0][-4:] == "0.86"
+
+
 @pytest.mark.skip(reason="wind not implemented yet")
 def test_wind_constant():
     test_toml = (

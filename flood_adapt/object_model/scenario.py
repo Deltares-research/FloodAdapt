@@ -52,3 +52,8 @@ class Scenario(IScenario):
         """save Scenario to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+
+    def run_hazard_models(self):
+        """run hazard models for the scenario"""
+        self.init_object_model()
+        self.direct_impacts.hazard.run_models(self.site_info)

@@ -1,5 +1,6 @@
 # import subprocess
 # import sys
+import subprocess
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -113,6 +114,9 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
+    def run_models(self, site: ISite):
+        self.run_sfincs(site)
+
     def run_sfincs(self, site: ISite):
         # TODO: make path variable, now using test data on p-drive
 
@@ -165,7 +169,7 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
                         site.attrs.sfincs.version
                     )
                 )
@@ -176,11 +180,13 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
                         site.attrs.sfincs.version
                     )
                 )
                 f_out.write(bat_file)
+
+        subprocess.run(run_folder_overland.joinpath("run.bat"))
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)

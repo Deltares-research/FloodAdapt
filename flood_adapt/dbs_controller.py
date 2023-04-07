@@ -128,7 +128,7 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
-        df = df.set_index("Year").drop(columns="units").melt().reset_index()
+        df = df.set_index("Year").drop(columns="units").stack().reset_index()
         # convert to units used in GUI
         slr_current_units = UnitfulLength(value=df[0][0], units=units)
         gui_units = self.site.attrs.gui.default_length_units

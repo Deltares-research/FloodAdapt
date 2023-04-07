@@ -34,3 +34,8 @@ class IScenario(ABC):
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
         """save Scenario attributes to a toml file"""
+        ...
+
+    @abstractmethod
+    def run_hazard_models(self) -> None:
+        ...
