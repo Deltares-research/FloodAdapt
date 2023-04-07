@@ -26,6 +26,18 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_slr_scn_names(self) -> list:
+        ...
+
+    @abstractmethod
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
+        ...
+
+    @abstractmethod
+    def plot_slr_scenarios(self) -> str:
+        ...
+
+    @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
         ...
 

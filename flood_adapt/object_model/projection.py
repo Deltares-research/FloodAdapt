@@ -10,7 +10,10 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
-from flood_adapt.object_model.interface.projections import IProjection, ProjectionModel
+from flood_adapt.object_model.interface.projections import (
+    IProjection,
+    ProjectionModel,
+)
 
 
 class Projection(IProjection):

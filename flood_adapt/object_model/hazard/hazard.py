@@ -15,8 +15,6 @@ from flood_adapt.object_model.hazard.physical_projection import (
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
 
 
@@ -92,8 +90,8 @@ class Hazard:
         self.wl_ts = self.event.tide_surge_ts
         self.wl_ts[1] = (
             self.wl_ts[1]
-            + self.event.attrs.water_level_offset.convert_to_meters()
-            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+            + self.event.attrs.water_level_offset.convert("meters")
+            + self.physical_projection.attrs.sea_level_rise.convert("meters")
         )
         return self
 

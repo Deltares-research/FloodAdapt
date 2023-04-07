@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import geopandas as gpd
+import numpy as np
+import pandas as pd
+import plotly.express as px
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.hazard.event.event import Event
@@ -18,6 +21,7 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -74,6 +78,107 @@ class Database(IDatabase):
             for i, aggregation_areas in enumerate(aggregation_areas)
         ]
         return aggregation_areas
+
+    def get_slr_scn_names(self) -> list:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        return df.columns[2:].to_list()
+
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        if year > df["year"].max() or year < df["year"].min():
+            raise ValueError(
+                "The selected year is outside the range of the available SLR scenarios"
+            )
+        else:
+            slr = np.interp(year, df["year"], df[slr_scenario])
+            ref_year = self.site.attrs.slr.relative_to_year
+            if ref_year > df["year"].max() or ref_year < df["year"].min():
+                raise ValueError(
+                    f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+                )
+            else:
+                ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
+                new_slr = UnitfulLength(
+                    value=slr - ref_slr,
+                    units=df["units"][0],
+                )
+                gui_units = self.site.attrs.gui.default_length_units
+                return np.round(new_slr.convert(gui_units), decimals=2)
+
+    def plot_slr_scenarios(self) -> str:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        ncolors = len(df.columns) - 2
+        try:
+            units = df["units"].iloc[0]
+        except ValueError(
+            "Column " "units" " in input/static/slr/slr.csv file missing."
+        ) as e:
+            print(e)
+
+        try:
+            if "year" in df.columns:
+                df = df.rename(columns={"year": "Year"})
+            elif "Year" in df.columns:
+                pass
+        except ValueError(
+            "Column " "year" " in input/static/slr/slr.csv file missing."
+        ) as e:
+            print(e)
+
+        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
+        # convert to units used in GUI
+        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        gui_units = self.site.attrs.gui.default_length_units
+        slr_gui_units = slr_current_units.convert(gui_units)
+        conversion_factor = slr_gui_units / slr_current_units.value
+        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+
+        # rename column names that will be shown in html
+        df = df.rename(
+            columns={
+                "variable": "Scenario",
+                "value": "Sea level rise [{}]".format(gui_units),
+            }
+        )
+
+        colors = px.colors.sample_colorscale(
+            "rainbow", [n / (ncolors - 1) for n in range(ncolors)]
+        )
+        fig = px.line(
+            df,
+            x="Year",
+            y=f"Sea level rise [{gui_units}]",
+            color="Scenario",
+            color_discrete_sequence=colors,
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 1.2,
+            width=280 * 1.3,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
+            legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title=None,
+            legend_title=None,
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.

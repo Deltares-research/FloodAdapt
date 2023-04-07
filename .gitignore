@@ -159,8 +159,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .vscode/settings.json
+.vscode/launch.json
 /.idea
 /.pytest_cache
 tests/test_database_GUI/
 tests/test_database_integrator/
 .vscode/launch.json
+tests/test_database/charleston/static/slr/slr.html
+tests/test_database/charleston/temp/slr.html
