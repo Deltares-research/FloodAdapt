@@ -18,7 +18,7 @@ def test_projection_interp_slr():
 
     slr = dbs.interp_slr("ssp245", 2075)
 
-    assert slr > 1.
+    assert slr > 1.0
     assert slr < 1.1
 
 
