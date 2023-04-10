@@ -120,13 +120,20 @@ class Hazard:
     def run_sfincs(self, site: ISite):
         # TODO: make path variable, now using test data on p-drive
 
-        path_on_p = Path(
-            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
-        )
-        path_in = path_on_p.joinpath(
+        # path_on_p = Path(
+        #     "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
+        # )
+        # path_in = path_on_p.joinpath(
+        #     "static/templates", site.attrs.sfincs.overland_model
+        # )
+        # run_folder_overland = path_on_p.joinpath(
+        #     "output/simulations", self.name, site.attrs.sfincs.overland_model
+        # )
+        input_path = self.database_input_path.parent
+        path_in = input_path.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
-        run_folder_overland = path_on_p.joinpath(
+        run_folder_overland = input_path.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
         )
 
