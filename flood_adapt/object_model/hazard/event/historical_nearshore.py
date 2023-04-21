@@ -5,8 +5,10 @@ from typing import Any, Union
 import pandas as pd
 import tomli
 import tomli_w
+from noaa_coops import Station
 
 from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.station_source import StationSource
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
     IEvent,
@@ -64,3 +66,16 @@ class HistoricalNearshore(Event, IEvent):
         ]  # Make time relative to start time in seconds
         self.tide_surge_ts = df
         return self
+    
+    def add_wl_from_download(self):
+
+        if self.attrs.water_level.source == "NOAA_download":
+            source = StationSource("noaa_coops")
+            station_id = self.attrs.site.obs_station.ID # TODO: link to site config file (not correct at the moment)
+            tstart = self.attrs.time.start_time
+            tstop = self.attrs.time.end_time
+            source.get_data(station_id, tstart, tstop)
+
+        # TODO:
+        # 1) Check what kind of data comes out of get_data
+        # 2) Convert that to a df that has the correct lay-out

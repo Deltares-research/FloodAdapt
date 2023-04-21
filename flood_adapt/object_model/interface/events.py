@@ -121,8 +121,8 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
 class TimeModel(BaseModel):
     """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
 
-    duration_before_t0: float
-    duration_after_t0: float
+    duration_before_t0: Optional[float]
+    duration_after_t0: Optional[float]
     start_time: Optional[str] = "20200101 000000"
     end_time: Optional[str]
 
@@ -163,6 +163,7 @@ class WaterLevelModel(BaseModel):
     """BaseModel describing the expected variables and data types for water level parameters of the historical nearshore model"""
 
     source: WaterLevelSource
+    time: TimeModel
     csv_path: Optional[str]
 
 
