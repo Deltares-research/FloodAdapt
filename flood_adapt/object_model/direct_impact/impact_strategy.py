@@ -6,7 +6,7 @@ from flood_adapt.object_model.direct_impact.measure.impact_measure import Impact
 class ImpactStrategy:
     """Class containing only the impact measures of a strategy"""
 
-    def __init__(self, measures: list[ImpactMeasure]) -> None:
+    def __init__(self, measures: list[ImpactMeasure], validate=False) -> None:
         """Sets measures and validates the combination
 
         Parameters
@@ -14,7 +14,8 @@ class ImpactStrategy:
         measures : list[ImpactMeasure]
         """
         self.measures = measures
-        self.validate()
+        if validate:
+            self.validate()
 
     def validate(self):
         """Validates if the combination of impact measures can happen,
@@ -23,7 +24,7 @@ class ImpactStrategy:
         Raises
         ------
         ValueError
-            information on which combinations of measures have condlicting properties
+            information on which combinations of measures have overlapping properties
         """
         # Get ids of objects affected for each measure
         ids = [measure.get_object_ids() for measure in self.measures]

@@ -9,7 +9,7 @@ test_database_path = Path().absolute() / "tests" / "test_database_GUI"
 test_site_name = "charleston"
 
 
-def test_strategy_correct():
+def test_strategy():
     test_dict = {
         "name": "strategy_comb",
         "long_name": "strategy_comb",

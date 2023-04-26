@@ -2,7 +2,6 @@ name = "charleston"
 long_name = "Charleston, SC"
 lat = 32.77
 lon = -79.95
-default_length_units = "feet"
 
 [sfincs]
 csname = "WGS 84 / UTM zone 17N"
@@ -26,6 +25,11 @@ relative_to_year = 2020
 value = 0.6
 units = "feet"
 
+[gui]
+default_length_units = "feet"
+default_velocity_units = "knots"
+default_discharge_units = "cfs"
+default_intensity_units = "inch/hour"
 [gui.tide_harmonic_amplitude]
 value = 3.0
 units = "meters"

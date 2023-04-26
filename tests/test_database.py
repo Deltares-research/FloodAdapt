@@ -11,3 +11,21 @@ def test_database_controller():
     dbs = Database(test_database_path, test_site_name)
 
     assert isinstance(dbs.site, Site)
+
+
+def test_projection_interp_slr():
+    dbs = Database(test_database_path, test_site_name)
+
+    slr = dbs.interp_slr("ssp245", 2075)
+
+    assert slr.value > 0.3
+    assert slr.value < 0.4
+    assert slr.units == "meters"
+
+
+def test_projection_plot_slr():
+    dbs = Database(test_database_path, test_site_name)
+    html_file_loc = dbs.plot_slr_scenarios()
+
+    print(html_file_loc)
+    assert Path(html_file_loc).is_file()

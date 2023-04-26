@@ -56,6 +56,8 @@ class ImpactMeasureModel(MeasureModel):
     polygon_file: Optional[str]
     property_type: str
 
+    # TODO #94 pydantic validators do not currently work
+
     @validator("aggregation_area_name")
     def validate_aggregation_area_name(
         cls, aggregation_area_name: Optional[str], values: Any

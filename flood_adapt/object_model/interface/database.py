@@ -5,7 +5,10 @@ from typing import Any, Union
 
 from geopandas import GeoDataFrame
 
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
 
@@ -23,7 +26,59 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_slr_scn_names(self) -> list:
+        ...
+
+    @abstractmethod
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
+        ...
+
+    @abstractmethod
+    def plot_slr_scenarios(self) -> str:
+        ...
+
+    @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
+        ...
+
+    @abstractmethod
+    def get_projection(self, name: str) -> IProjection:
+        ...
+
+    @abstractmethod
+    def save_projection(self, measure: IProjection) -> None:
+        ...
+
+    @abstractmethod
+    def edit_projection(self, measure: IProjection) -> None:
+        ...
+
+    @abstractmethod
+    def delete_projection(self, name: str):
+        ...
+
+    @abstractmethod
+    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+        ...
+
+    @abstractmethod
+    def get_event(self, name: str) -> IEvent:
+        ...
+
+    @abstractmethod
+    def save_event(self, measure: IEvent) -> None:
+        ...
+
+    @abstractmethod
+    def edit_event(self, measure: IEvent) -> None:
+        ...
+
+    @abstractmethod
+    def delete_event(self, name: str):
+        ...
+
+    @abstractmethod
+    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         ...
 
     @abstractmethod
@@ -56,6 +111,22 @@ class IDatabase(ABC):
 
     @abstractmethod
     def delete_strategy(self, name: str):
+        ...
+
+    @abstractmethod
+    def get_scenario(self, name: str) -> IScenario:
+        ...
+
+    @abstractmethod
+    def save_scenario(self, measure: IScenario) -> None:
+        ...
+
+    @abstractmethod
+    def edit_scenario(self, measure: IScenario) -> None:
+        ...
+
+    @abstractmethod
+    def delete_scenario(self, name: str):
         ...
 
     @abstractmethod

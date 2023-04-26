@@ -13,10 +13,8 @@ from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import SiteModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
 
 
@@ -32,11 +30,11 @@ class Hazard:
 
     name: str
     database_input_path: Path
-    event: Optional[EventTemplateModel]
-    ensemble: Optional[EventTemplateModel]
-    physical_projection: Optional[PhysicalProjection]
-    hazard_strategy: Optional[HazardStrategy]
-    has_run_hazard: bool = False
+    event: Optional[Event]
+    ensemble: Optional[Event]
+    physical_projection: PhysicalProjection
+    hazard_strategy: HazardStrategy
+    has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.name = scenario.name
@@ -97,8 +95,8 @@ class Hazard:
         # In both cases add the slr and offset
         self.wl_ts[1] = (
             self.wl_ts[1]
-            + self.event.attrs.water_level_offset.convert_to_meters()
-            + self.physical_projection.attrs.sea_level_rise.convert_to_meters()
+            + self.event.attrs.water_level_offset.convert("meters")
+            + self.physical_projection.attrs.sea_level_rise.convert("meters")
         )
         return self
 
@@ -120,7 +118,7 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_sfincs(self, site: SiteModel):
+    def run_sfincs(self, site: ISite):
         # TODO: make path variable, now using test data on p-drive
 
         path_on_p = Path(
@@ -156,6 +154,10 @@ class Hazard:
 
         # Generate and add wind boundary condition
         # TODO, made already a start generating a constant timeseries in Event class
+
+        # Add floodwall if included
+        # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
+        #     pass
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=run_folder_overland)

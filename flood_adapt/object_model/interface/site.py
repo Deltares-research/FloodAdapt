@@ -8,7 +8,10 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
     UnitTypesLength,
+    UnitTypesVelocity,
 )
 
 
@@ -54,6 +57,10 @@ class GuiModel(BaseModel):
     """class describing the accepted input for the variable gui in Site"""
 
     tide_harmonic_amplitude: UnitfulLength
+    default_length_units: UnitTypesLength
+    default_velocity_units = UnitTypesVelocity
+    default_discharge_units = UnitTypesDischarge
+    default_intensity_units = UnitTypesIntensity
 
 
 class RiskModel(BaseModel):
@@ -119,7 +126,6 @@ class SiteModel(BaseModel):
     long_name: str
     lat: float
     lon: float
-    default_length_units: UnitTypesLength
     sfincs: SfincsModel
     slr: SlrModel
     gui: GuiModel

@@ -99,7 +99,7 @@ def test_elevate_comb_fail_1():
     assert test_toml.is_file()
 
     with pytest.raises(ValueError):
-        Strategy.load_file(test_toml)
+        Strategy.load_file(test_toml, validate=True)
 
 
 def test_elevate_comb_fail_2():
@@ -114,4 +114,4 @@ def test_elevate_comb_fail_2():
     assert test_toml.is_file()
 
     with pytest.raises(ValueError):
-        Strategy.load_file(test_toml)
+        Strategy.load_file(test_toml, validate=True)

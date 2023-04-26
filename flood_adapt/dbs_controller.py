@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import geopandas as gpd
+import numpy as np
+import pandas as pd
+import plotly.express as px
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.hazard.event.event import Event
@@ -13,9 +16,12 @@ from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.io.fiat import Fiat
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -72,6 +78,107 @@ class Database(IDatabase):
             for i, aggregation_areas in enumerate(aggregation_areas)
         ]
         return aggregation_areas
+
+    def get_slr_scn_names(self) -> list:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        return df.columns[2:].to_list()
+
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        if year > df["year"].max() or year < df["year"].min():
+            raise ValueError(
+                "The selected year is outside the range of the available SLR scenarios"
+            )
+        else:
+            slr = np.interp(year, df["year"], df[slr_scenario])
+            ref_year = self.site.attrs.slr.relative_to_year
+            if ref_year > df["year"].max() or ref_year < df["year"].min():
+                raise ValueError(
+                    f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+                )
+            else:
+                ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
+                new_slr = UnitfulLength(
+                    value=slr - ref_slr,
+                    units=df["units"][0],
+                )
+                gui_units = self.site.attrs.gui.default_length_units
+                return np.round(new_slr.convert(gui_units), decimals=2)
+
+    def plot_slr_scenarios(self) -> str:
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        ncolors = len(df.columns) - 2
+        try:
+            units = df["units"].iloc[0]
+        except ValueError(
+            "Column " "units" " in input/static/slr/slr.csv file missing."
+        ) as e:
+            print(e)
+
+        try:
+            if "year" in df.columns:
+                df = df.rename(columns={"year": "Year"})
+            elif "Year" in df.columns:
+                pass
+        except ValueError(
+            "Column " "year" " in input/static/slr/slr.csv file missing."
+        ) as e:
+            print(e)
+
+        df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
+        # convert to units used in GUI
+        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        gui_units = self.site.attrs.gui.default_length_units
+        slr_gui_units = slr_current_units.convert(gui_units)
+        conversion_factor = slr_gui_units / slr_current_units.value
+        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+
+        # rename column names that will be shown in html
+        df = df.rename(
+            columns={
+                "variable": "Scenario",
+                "value": "Sea level rise [{}]".format(gui_units),
+            }
+        )
+
+        colors = px.colors.sample_colorscale(
+            "rainbow", [n / (ncolors - 1) for n in range(ncolors)]
+        )
+        fig = px.line(
+            df,
+            x="Year",
+            y=f"Sea level rise [{gui_units}]",
+            color="Scenario",
+            color_discrete_sequence=colors,
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 1.2,
+            width=280 * 1.3,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_font={"size": 10, "color": "black", "family": "Arial"},
+            legend_grouptitlefont={"size": 10, "color": "black", "family": "Arial"},
+            legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title=None,
+            legend_title=None,
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
@@ -287,6 +394,79 @@ class Database(IDatabase):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
+    # Event methods
+    def get_event(self, name: str) -> IEvent:
+        """Get the respective event object using the name of the event.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+
+        Returns
+        -------
+        IMeasure
+            object of one of the events
+        """
+        event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
+        event_template = Event.get_template(event_path)
+        event = EventFactory.get_event(event_template).load_file(event_path)
+        return event
+
+    def save_event(self, event: IEvent) -> None:
+        """Saves a synthetic event object in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of one of the synthetic event types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of measures should be unique.
+        """
+        names = self.get_events()["name"]
+        if event.attrs.name in names:
+            raise ValueError(
+                f"'{event.attrs.name}' name is already used by another event. Choose a different name"
+            )
+        else:
+            (self.input_path / "events" / event.attrs.name).mkdir()
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
+
+    def edit_event(self, event: IEvent):
+        """Edits an already existing event in the database.
+
+        Parameters
+        ----------
+        event : IEvent
+            object of the event
+        """
+        # TODO should you be able to edit a measure that is already used in a hazard?
+        event.save(
+            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
+        )
+
+    def delete_event(self, name: str):
+        """Deletes an already existing event in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the event
+        """
+
+        # TODO: check if event is used in a hazard
+
+        event_path = self.input_path / "events" / name
+        shutil.rmtree(event_path, ignore_errors=True)
+
     def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing event, and gives it a new name.
 
@@ -308,6 +488,105 @@ class Database(IDatabase):
         # Then save all the accompanied files
         src = self.input_path / "events" / old_name
         dest = self.input_path / "events" / new_name
+        for file in src.glob("*"):
+            if "toml" not in file.name:
+                shutil.copy(file, dest / file.name)
+
+    # Projection methods
+    def get_projection(self, name: str) -> IProjection:
+        """Get the respective projection object using the name of the projection.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        Returns
+        -------
+        IProjection
+            object of one of the projection types
+        """
+        projection_path = self.input_path / "projections" / name / f"{name}.toml"
+        projection = Projection.load_file(projection_path)
+        return projection
+
+    def save_projection(self, projection: IProjection) -> None:
+        """Saves a projection object in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of projections should be unique.
+        """
+        names = self.get_projections()["name"]
+        if projection.attrs.name in names:
+            raise ValueError(
+                f"'{projection.attrs.name}' name is already used by another projection. Choose a different name"
+            )
+        else:
+            (self.input_path / "projections" / projection.attrs.name).mkdir()
+            projection.save(
+                self.input_path
+                / "projections"
+                / projection.attrs.name
+                / f"{projection.attrs.name}.toml"
+            )
+
+    def edit_projection(self, projection: IProjection):
+        """Edits an already existing projection in the database.
+
+        Parameters
+        ----------
+        projection : IProjection
+            object of one of the projection types (e.g., IElevate)
+        """
+        projection.save(
+            self.input_path
+            / "projections"
+            / projection.attrs.name
+            / f"{projection.attrs.name}.toml"
+        )
+
+    def delete_projection(self, name: str):
+        """Deletes an already existing projection in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the projection
+
+        """
+        # TODO: make check if projection is used in strategies
+
+        projection_path = self.input_path / "projections" / name
+        shutil.rmtree(projection_path, ignore_errors=True)
+
+    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+        """Copies (duplicates) an existing projection, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing projection
+        new_name : str
+            name of the new projection
+        new_long_name : str
+            long_name of the new projection
+        """
+        # First do a get
+        projection = self.get_projection(old_name)
+        projection.attrs.name = new_name
+        projection.attrs.long_name = new_long_name
+        # Then a save
+        self.save_projection(projection)
+        # Then save all the accompanied files
+        src = self.input_path / "projections" / old_name
+        dest = self.input_path / "projections" / new_name
         for file in src.glob("*"):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
@@ -387,6 +666,90 @@ class Database(IDatabase):
         else:
             strategy_path = self.input_path / "strategies" / name
             shutil.rmtree(strategy_path, ignore_errors=True)
+
+    # scenario methods
+    def get_scenario(self, name: str) -> IScenario:
+        """Get the respective scenario object using the name of the scenario.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario
+
+        Returns
+        -------
+        IScenario
+            Scenario object
+        """
+        scenario_path = self.input_path / "scenarios" / name / f"{name}.toml"
+        scenario = Scenario.load_file(scenario_path)
+        scenario.init_object_model()
+        return scenario
+
+    def save_scenario(self, scenario: IScenario) -> None:
+        """Saves a scenario object in the database.
+
+        Parameters
+        ----------
+        measure : IScenario
+            object of scenario type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of scenarios should be unique.
+        """
+        names = self.get_scenarios()["name"]
+        if scenario.attrs.name in names:
+            raise ValueError(
+                f"'{scenario.attrs.name}' name is already used by another scenario. Choose a different name"
+            )
+        else:
+            (self.input_path / "scenarios" / scenario.attrs.name).mkdir()
+            scenario.save(
+                self.input_path
+                / "scenarios"
+                / scenario.attrs.name
+                / f"{scenario.attrs.name}.toml"
+            )
+
+    def edit_scenario(self, scenario: IScenario):
+        """Edits an already existing scenario in the database.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            object of one of the scenario types (e.g., IScenario)
+        """
+        scenario.save(
+            self.input_path
+            / "scenarios"
+            / scenario.attrs.name
+            / f"{scenario.attrs.name}.toml"
+        )
+
+    def delete_scenario(self, name: str):
+        """Deletes an already existing scenario in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the scenario
+
+        Raises
+        ------
+        ValueError
+            Raise error if scenario has already model output
+        """
+        scenario_path = self.input_path / "scenarios" / name
+        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+        scenario.init_object_model()
+        if scenario.direct_impacts.hazard.has_run:
+            raise ValueError(
+                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+            )
+        else:
+            shutil.rmtree(scenario_path, ignore_errors=True)
 
     def update(self) -> None:
         self.projections = self.get_projections()

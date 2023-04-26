@@ -23,7 +23,9 @@ class Scenario(IScenario):
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
-        self.direct_impacts = DirectImpacts(self.attrs, Path(self.database_input_path))
+        self.direct_impacts = DirectImpacts(
+            scenario=self.attrs, database_input_path=Path(self.database_input_path)
+        )
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
