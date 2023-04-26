@@ -97,12 +97,12 @@ class UnitfulVelocity(BaseModel):
         # first, convert to meters/second
         if self.units == "knots":
             conversion = 1.0 / 1.943844  # m/s
-        elif self.units == "mps":
+        elif self.units == "m/s":
             conversion = 1
         # second, convert to new units
         if new_units == "knots":
             new_conversion = 1.0
-        elif new_units == "mps":
+        elif new_units == "m/s":
             new_conversion = 1.943844
         return conversion * new_conversion * self.value
 
