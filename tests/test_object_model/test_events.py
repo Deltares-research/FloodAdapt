@@ -112,3 +112,4 @@ def test_load_and_save_fromtoml_synthetic():
 
     # ensure it's saving a file
     test_synthetic.save(test_save_toml)
+    test_save_toml.unlink()  # added this to delete the file afterwards
