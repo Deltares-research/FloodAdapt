@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<root>
+  <scenario>
+    <name>current_extreme12ft_no_measures</name>
+    <long_name>current - extreme 12 foot event - no_measures</long_name>
+    <projection>current</projection>
+    <event>extreme12ft</event>
+    <strategy>no_measures</strategy>
+  </scenario>
+</root>
