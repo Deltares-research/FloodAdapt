@@ -11,10 +11,10 @@ class StationSource:
     def get_data(self):
         pass
 
-def source(name):
-    if name == "ndbc":
-        from _ndbc import Source
-        return Source()
-    elif name == "noaa_coops":
-        from _noaa_coops import Source
-        return Source()
+    def source(name):
+        if name == "ndbc":
+            from flood_adapt.object_model.hazard.event._ndbc import Source
+            return Source()
+        elif name == "noaa_coops":
+            from flood_adapt.object_model.hazard.event._noaa_coops import Source
+            return Source()

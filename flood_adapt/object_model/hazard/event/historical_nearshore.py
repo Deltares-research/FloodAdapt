@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Union
 
 import pandas as pd
 import tomli
 import tomli_w
-from noaa_coops import Station
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.station_source import StationSource
@@ -18,8 +18,6 @@ from flood_adapt.object_model.interface.events import (
 class HistoricalNearshore(Event, IEvent):
     attrs = HistoricalNearshoreModel
     tide_surge_ts: pd.DataFrame
-    start_time: datetime
-    end_time: datetime
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -30,6 +28,9 @@ class HistoricalNearshore(Event, IEvent):
             toml = tomli.load(fp)
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
+        csv_path = Path(Path(filepath).parents[0],'tide.csv')
+        obj.tide_surge_ts = pd.read_csv(csv_path)
+
         return obj
 
     @staticmethod
@@ -39,6 +40,7 @@ class HistoricalNearshore(Event, IEvent):
         obj = HistoricalNearshore()
         obj.attrs = HistoricalNearshoreModel.parse_obj(data)
         return obj
+    
 
     def save(self, filepath: Union[str, os.PathLike]):
         """Saving event toml
@@ -50,32 +52,30 @@ class HistoricalNearshore(Event, IEvent):
         """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
-    def add_wl_from_csv(self):
-        """Create dataframe from csv file"""
-        df = pd.read_csv(
-            self.attrs.water_level.csv_path, names=[0, 1]
-        )  # TODO: make general; now tailored for specific csv
-        df[0] = [
-            datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
-        ]  # Make datetime object
-        self.start_time = df[0][0]
-        self.end_time = df[0][len(df[0]) - 1]
-        df[0] = [
-            (time - df[0][0]).total_seconds() for time in df[0]
-        ]  # Make time relative to start time in seconds
-        self.tide_surge_ts = df
-        return self
     
-    def add_wl_from_download(self):
 
-        if self.attrs.water_level.source == "NOAA_download":
-            source = StationSource("noaa_coops")
-            station_id = self.attrs.site.obs_station.ID # TODO: link to site config file (not correct at the moment)
-            tstart = self.attrs.time.start_time
-            tstop = self.attrs.time.end_time
-            source.get_data(station_id, tstart, tstop)
+    @staticmethod
+    def read_wl_csv(csvpath: Union[str, os.PathLike]):
+        df = pd.read_csv(csvpath, names=[0, 1])
+        #Save as attribute of HistoricalNearshore class
+        return df
 
-        # TODO:
-        # 1) Check what kind of data comes out of get_data
-        # 2) Convert that to a df that has the correct lay-out
+    @staticmethod    
+    def download_wl_data(station_id, start_time_str, stop_time_str):
+        start_time = datetime.strptime(start_time_str,"%Y%m%d %H%M%S")
+        stop_time = datetime.strptime(stop_time_str,"%Y%m%d %H%M%S")
+        #Get NOAA data
+        source = StationSource.source("noaa_coops")
+        df = source.get_data(station_id, start_time, stop_time)
+        return df
+    
+    @staticmethod
+    def wl_ts_rel_to_tstart(df):
+        df[0] = [
+        datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
+        ] # Make datetime object
+        df[0] = [
+        (time - df[0][0]).total_seconds() for time in df[0]
+        ]  # Make time relative to start time in seconds
+        return df
+        

@@ -7,6 +7,9 @@ from typing import Optional
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import (
@@ -20,6 +23,7 @@ from flood_adapt.object_model.strategy import Strategy
 
 class EventTemplateModel(Enum):
     Synthetic: Synthetic
+    HistoricalNearshore: HistoricalNearshore
 
 
 class Hazard:
@@ -90,8 +94,9 @@ class Hazard:
             self.event.add_tide_and_surge_ts()
             self.wl_ts = self.event.tide_surge_ts
         elif self.event.template == "Historical_nearshore":
-            self.event.add_wl_from_csv()
-            self.wl_ts = self.event.tide_surge_ts
+            wl_df = self.event.tide_surge_ts
+            wl_df = wl_ts_rel_to_tstart(wl_df)
+            self.wl_ts = wl_df
         # In both cases add the slr and offset
         self.wl_ts[1] = (
             self.wl_ts[1]

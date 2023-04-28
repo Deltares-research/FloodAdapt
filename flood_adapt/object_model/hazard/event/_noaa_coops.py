@@ -23,6 +23,7 @@ class Source(StationSource):
 
                 if varname == "water_level":
                     product = varname
+                    output_product = "v"
                 if units == "SI":
                     units = "metric"
 
@@ -33,4 +34,4 @@ class Source(StationSource):
                                       datum=datum,
                                       units=units,
                                       time_zone="gmt")
-                return df[product]
+                return df[output_product]
