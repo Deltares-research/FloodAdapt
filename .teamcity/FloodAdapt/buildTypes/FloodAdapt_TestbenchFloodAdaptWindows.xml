@@ -44,7 +44,6 @@ call pytest tests --junitxml="report.xml"]]></param>
       </vcs-entry-ref>
     </vcs-settings>
     <requirements>
-      <does-not-equal id="RQ_96" name="system.agent.name" value="c-teamcity0358" />
       <contains id="RQ_436" name="teamcity.agent.jvm.os.name" value="Windows" />
     </requirements>
     <build-triggers>
