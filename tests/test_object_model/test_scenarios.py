@@ -91,6 +91,7 @@ def test_hazard_wl():
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
+@pytest.mark.skip(reason="We cannot depend on the P drive")
 def test_run_hazard_model():
     test_toml = (
         Path(
