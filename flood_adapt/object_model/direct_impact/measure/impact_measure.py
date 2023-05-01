@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Union
 
 import geopandas as gpd
+from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.interface.measures import ImpactMeasureModel
 from flood_adapt.object_model.io.fiat import Fiat
@@ -28,6 +29,15 @@ class ImpactMeasure(ABC):
         site = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
+
+        FiatModel(
+            root=Path(self.database_input_path).parent
+            / "static"
+            / "templates"
+            / "fiat",
+            mode="r",
+        )
+
         buildings = Fiat(
             Path(self.database_input_path).parent / "static" / "templates" / "fiat"
         ).get_buildings(

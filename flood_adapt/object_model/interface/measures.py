@@ -5,7 +5,10 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, validator
 
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitfulLengthRefValue,
+)
 
 
 class ImpactType(str, Enum):
@@ -17,7 +20,7 @@ class ImpactType(str, Enum):
 
 
 class HazardType(str, Enum):
-    """class describing the accepted input for the variable 'type' in HazardMeasure"""
+    """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
     pump = "pump"
@@ -32,7 +35,7 @@ class SelectionType(str, Enum):
 
 
 class MeasureModel(BaseModel):
-    """"""
+    """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     name: str
     long_name: str
@@ -86,14 +89,32 @@ class ImpactMeasureModel(MeasureModel):
 
 
 class ElevateModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "elevate" impact measure"""
+
     elevation: UnitfulLengthRefValue
 
 
+class BuyoutModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "buyout" impact measure"""
+
+    # TODO: Do we need a pass statement here?
+
+
+class FloodProofModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "floodproof" impact measure"""
+
+    elevation: UnitfulLength
+
+
 class FloodWallModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
+
     elevation: UnitfulLengthRefValue
 
 
 class IMeasure(ABC):
+    """This is a class for a FloodAdapt measure"""
+
     attrs: MeasureModel
 
     @staticmethod
@@ -114,8 +135,24 @@ class IMeasure(ABC):
 
 
 class IElevate(IMeasure):
+    """This is a class for a FloodAdapt "elevate" measure"""
+
     attrs: ElevateModel
 
 
+class IBuyout(IMeasure):
+    """This is a class for a FloodAdapt "buyout" measure"""
+
+    attrs: BuyoutModel
+
+
+class IFloodProof(IMeasure):
+    """This is a class for a FloodAdapt "floodproof" measure"""
+
+    attrs: BuyoutModel
+
+
 class IFloodWall(IMeasure):
+    """This is a class for a FloodAdapt "floodwall" measure"""
+
     attrs: FloodWallModel
