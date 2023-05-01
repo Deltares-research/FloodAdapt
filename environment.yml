@@ -7,17 +7,16 @@ dependencies:
   - black
   - build
   - geopandas
+  - hydromt
+  - hydromt_sfincs
   - mypy
   - numpy
   - pandas
   - pip
-  - pip:
-      - hydromt
-      - hydromt_sfincs
+  - plotly
   - pydantic
   - pytest
   - python=3.10
   - tomli
   - tomli-w
   - twine
-  - plotly
