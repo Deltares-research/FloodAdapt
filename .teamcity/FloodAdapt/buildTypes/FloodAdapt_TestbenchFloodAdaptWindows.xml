@@ -53,7 +53,6 @@ call pytest tests --junitxml="report.xml"]]></param>
           <param name="branchFilter" value="+:*" />
           <param name="enableQueueOptimization" value="true" />
           <param name="quietPeriodMode" value="DO_NOT_USE" />
-          <param name="triggerRules" value="+:root=FloodAdapt_FloodAdapt:**" />
         </parameters>
       </build-trigger>
     </build-triggers>
