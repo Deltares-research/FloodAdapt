@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
