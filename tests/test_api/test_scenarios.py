@@ -12,6 +12,7 @@ test_database_path = Path(
 test_site_name = "charleston"
 
 
+@pytest.mark.skip(reason="We cannot depend on the P drive")
 def test_scenario():
     test_dict = {
         "name": "current_extreme12ft_no_measures",
