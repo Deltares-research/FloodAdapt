@@ -32,16 +32,12 @@ def test_strategy_comb_read():
     assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
     assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
     assert all(
-        [
-            isinstance(measure, ImpactMeasure)
+        isinstance(measure, ImpactMeasure)
             for measure in strategy.get_impact_strategy().measures
-        ]
     )
     assert all(
-        [
-            isinstance(measure, HazardMeasure)
+        isinstance(measure, HazardMeasure)
             for measure in strategy.get_hazard_strategy().measures
-        ]
     )
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)

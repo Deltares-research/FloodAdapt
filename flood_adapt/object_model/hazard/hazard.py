@@ -95,7 +95,7 @@ class Hazard:
             self.wl_ts = self.event.tide_surge_ts
         elif self.event.template == "Historical_nearshore":
             wl_df = self.event.tide_surge_ts
-            wl_df = wl_ts_rel_to_tstart(wl_df)
+            wl_df = HistoricalNearshore.wl_ts_rel_to_tstart(wl_df)
             self.wl_ts = wl_df
         # In both cases add the slr and offset
         self.wl_ts[1] = (
