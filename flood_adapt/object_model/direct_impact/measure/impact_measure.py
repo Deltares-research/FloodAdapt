@@ -39,14 +39,27 @@ class ImpactMeasure(ABC):
         )
         fm.read()
 
+        # check if polygon file is used, then get the absolute path
+        if self.attrs.polygon_file:
+            polygon_file = (
+                Path(self.database_input_path)
+                / "measures"
+                / self.attrs.name
+                / self.attrs.polygon_file
+            )
+        else:
+            polygon_file = None
+
         # use the hydromt-fiat method to the ids
         ids = fm.exposure.get_object_ids(
             selection_type=self.attrs.selection_type,
             property_type=self.attrs.property_type,
             non_building_names=site.attrs.fiat.non_building_names,
-            aggregation=site.attrs.fiat.aggregation,
+            aggregation=site.attrs.fiat.aggregation[
+                0
+            ].name,  # TODO  # now uses first aggregation area type
             aggregation_area_name=self.attrs.aggregation_area_name,
-            polygon_file=self.attrs.polygon_file,
+            polygon_file=polygon_file,
         )
 
         return ids.to_list()
