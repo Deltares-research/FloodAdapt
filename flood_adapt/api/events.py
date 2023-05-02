@@ -6,10 +6,12 @@ from typing import Any, Union
 import pandas as pd
 
 from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
     HistoricalNearshore,
 )
-from flood_adapt.object_model.hazard.event.station_source import StationSource
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.events import (
     IEvent,

@@ -1,6 +1,8 @@
 from noaa_coops import Station
 
-from flood_adapt.object_model.hazard.event.station_source import StationSource
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 
 
 class Source(StationSource):
@@ -23,7 +25,7 @@ class Source(StationSource):
 
                 if varname == "water_level":
                     product = varname
-                    output_product = "v"
+                    output_product = "v" #Changed by Tim de Wilde
                 if units == "SI":
                     units = "metric"
 
@@ -34,4 +36,4 @@ class Source(StationSource):
                                       datum=datum,
                                       units=units,
                                       time_zone="gmt")
-                return df[output_product]
+                return df[output_product] #Changed by Tim de Wilde

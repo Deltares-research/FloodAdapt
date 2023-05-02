@@ -7,8 +7,10 @@ import pandas as pd
 import tomli
 import tomli_w
 
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.station_source import StationSource
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
     IEvent,
@@ -29,7 +31,7 @@ class HistoricalNearshore(Event, IEvent):
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
         csv_path = Path(Path(filepath).parents[0],'tide.csv')
-        obj.tide_surge_ts = pd.read_csv(csv_path)
+        obj.tide_surge_ts = HistoricalNearshore.read_wl_csv(csv_path)
 
         return obj
 
@@ -57,7 +59,6 @@ class HistoricalNearshore(Event, IEvent):
     @staticmethod
     def read_wl_csv(csvpath: Union[str, os.PathLike]):
         df = pd.read_csv(csvpath, names=[0, 1])
-        #Save as attribute of HistoricalNearshore class
         return df
 
     @staticmethod    

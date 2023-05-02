@@ -4,6 +4,7 @@ import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 from flood_adapt.object_model.interface.events import (
     Mode,
     Template,
@@ -12,6 +13,9 @@ from flood_adapt.object_model.interface.events import (
     Timing,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.site import (
+    Site,
+)
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -112,3 +116,35 @@ def test_load_and_save_fromtoml_synthetic():
 
     # ensure it's saving a file
     test_synthetic.save(test_save_toml)
+
+def test_download_meteo():
+
+    event_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "kingTideNov2021"
+        / "kingTideNov2021.toml"
+    )
+    kingTide = HistoricalOffshore.load_file(event_toml)
+
+    site_toml = (
+        test_database
+        / "charleston"
+        / "static"
+        / "site"
+        / "site.toml"
+    )
+
+    site = Site.load_file(site_toml)
+    path =  (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "kingTideNov2021"
+    )
+    gfs_conus = kingTide.download_meteo(site=site,path=path)
+
+    assert gfs_conus

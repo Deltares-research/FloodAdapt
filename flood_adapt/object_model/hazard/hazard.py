@@ -95,7 +95,7 @@ class Hazard:
             self.wl_ts = self.event.tide_surge_ts
         elif self.event.template == "Historical_nearshore":
             wl_df = self.event.tide_surge_ts
-            wl_df = wl_ts_rel_to_tstart(wl_df)
+            wl_df = HistoricalNearshore.wl_ts_rel_to_tstart(wl_df)
             self.wl_ts = wl_df
         # In both cases add the slr and offset
         self.wl_ts[1] = (
@@ -132,9 +132,12 @@ class Hazard:
         path_in = path_on_p.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
+        path_in_offshore = path_on_p.joinpath("static/templates", site.attrs.sfincs.offshore_model)
+
         run_folder_overland = path_on_p.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
         )
+        run_folder_offshore = path_on_p.joinpath("output/simulations", self.name, site.attrs.sfincs.offshore_model)
 
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
@@ -146,8 +149,25 @@ class Hazard:
         template = self.event.attrs.template
         if template == "Synthetic" or template == "Historical_nearshore":
             self.add_wl_ts()
-        elif template == "Hurricane" or template == "Historical_offshore":
+        elif template == "Historical_offshore":
+            # Use offshore model to derive water level boundary conditions for overland model
+            
+            # Initiate offshore model
+            offshore_model = SfincsAdapter(model_root=path_in_offshore)
+
+            # Set timing of offshore model (same as overland model)
+            offshore_model.set_timing(self.event.attrs)
+
+            # set wl of offshore model
+            
+            # run offshore model
+
+            #take his results from offshore model as input for wl bnd
+
+        elif template == "Hurricane":
             raise NotImplementedError
+        
+        # Add waterlevel boundary conditions to overland model
         model.add_wl_bc(self.wl_ts)
 
         # Generate and change discharge boundary condition

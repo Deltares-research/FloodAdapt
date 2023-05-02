@@ -104,6 +104,15 @@ class RiverModel(BaseModel):
     shape_end_time: Optional[float]
 
 
+class TimeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
+
+    duration_before_t0: Optional[float]
+    duration_after_t0: Optional[float]
+    start_time: Optional[str] = "20200101 000000"
+    end_time: Optional[str]
+
+
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
@@ -116,15 +125,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     wind: WindModel
     rainfall: RainfallModel
     river: RiverModel
-
-
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
-
-    duration_before_t0: Optional[float]
-    duration_after_t0: Optional[float]
-    start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
+    time: TimeModel
 
 
 class TideModel(BaseModel):
@@ -147,7 +148,6 @@ class SurgeModel(BaseModel):
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
-    time: TimeModel
     tide: TideModel
     surge: SurgeModel
 
@@ -155,8 +155,8 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
 class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
 
-    time: TimeModel
-
+class HistoricalOffshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
 
 class IEvent(ABC):
     attrs: EventModel
@@ -184,3 +184,6 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+class IHistoricalOffshore(IEvent):
+    attrs: HistoricalOffshoreModel
