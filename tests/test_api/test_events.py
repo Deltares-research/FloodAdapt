@@ -55,13 +55,13 @@ def test_synthetic_event():
 
     with pytest.raises(ValueError):
         # Assert error if name already exists
-        api_events.save_event(event, database)
+        api_events.save_synthetic_event(event, database)
 
     # Change name to something new
     test_dict["name"] = "test1"
     event = api_events.create_synthetic_event(test_dict)
     # If the name is not used before the measure is save in the database
-    api_events.save_event(event, database)
+    api_events.save_synthetic_event(event, database)
     database.get_events()
 
     # Try to delete a measure which is already used in a scenario
