@@ -3,11 +3,9 @@ from abc import ABC
 from pathlib import Path
 from typing import Any, Union
 
-import geopandas as gpd
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.interface.measures import ImpactMeasureModel
-from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.site import Site
 
 
@@ -26,47 +24,29 @@ class ImpactMeasure(ABC):
         list[Any]
             list of ids
         """
+        # get the site information
         site = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
 
-        FiatModel(
+        # use hydromt-fiat to load the fiat model
+        fm = FiatModel(
             root=Path(self.database_input_path).parent
             / "static"
             / "templates"
             / "fiat",
             mode="r",
         )
+        fm.read()
 
-        buildings = Fiat(
-            Path(self.database_input_path).parent / "static" / "templates" / "fiat"
-        ).get_buildings(
-            self.attrs.property_type,
+        # use the hydromt-fiat method to the ids
+        ids = fm.exposure.get_object_ids(
+            selection_type=self.attrs.selection_type,
+            property_type=self.attrs.property_type,
             non_building_names=site.attrs.fiat.non_building_names,
+            aggregation=site.attrs.fiat.aggregation,
+            aggregation_area_name=self.attrs.aggregation_area_name,
+            polygon_file=self.attrs.polygon_file,
         )
 
-        if (self.attrs.selection_type == "aggregation_area") or (
-            self.attrs.selection_type == "all"
-        ):
-            if self.attrs.selection_type == "all":
-                ids = buildings["Object ID"].to_numpy()
-            elif self.attrs.selection_type == "aggregation_area":
-                label = site.attrs.fiat.aggregation[
-                    0
-                ].name  # Alwats use first aggregation area type
-                ids = buildings.loc[
-                    buildings[f"Aggregation Label: {label}"]
-                    == self.attrs.aggregation_area_name,
-                    "Object ID",
-                ].to_numpy()
-        elif self.attrs.selection_type == "polygon":
-            assert self.attrs.polygon_file is not None
-            polygon = gpd.read_file(
-                Path(self.database_input_path)
-                / "measures"
-                / self.attrs.name
-                / self.attrs.polygon_file
-            )
-            ids = gpd.sjoin(buildings, polygon)["Object ID"].to_numpy()
-
-        return list(ids)
+        return ids.to_list()
