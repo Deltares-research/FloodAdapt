@@ -40,8 +40,11 @@ def create_historical_nearshore_event(
 def save_synthetic_event(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
-def save_historical_nearshore_event(event: IEvent, wl_df: pd.DataFrame, database: IDatabase) -> None:
-    database.save_event(event)    
+
+def save_historical_nearshore_event(
+    event: IEvent, wl_df: pd.DataFrame, database: IDatabase
+) -> None:
+    database.save_event(event)
     database.write_wl_csv(event, wl_df)
 
 
@@ -58,8 +61,10 @@ def copy_event(
 ) -> None:
     database.copy_event(old_name, new_name, new_long_name)
 
-def download_wl_data(station_id,start_time, end_time) -> pd.DataFrame:
+
+def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
     return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+
 
 def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return HistoricalNearshore.read_wl_csv(csvpath)

@@ -13,25 +13,25 @@ class Source(StationSource):
     def get_meta_data(self, id):
         pass
 
-    def get_data(self, station_id, tstart, tstop,
-                 varname="water_level",
-                 units = "SI",
-                 datum = "MSL"):
+    def get_data(
+        self, station_id, tstart, tstop, varname="water_level", units="SI", datum="MSL"
+    ):
+        t0_string = tstart.strftime("%Y%m%d")
+        t1_string = tstop.strftime("%Y%m%d")
 
-                t0_string = tstart.strftime("%Y%m%d")
-                t1_string = tstop.strftime("%Y%m%d")
+        if varname == "water_level":
+            product = varname
+            output_product = "v"
+        if units == "SI":
+            units = "metric"
 
-                if varname == "water_level":
-                    product = varname
-                    output_product = "v"
-                if units == "SI":
-                    units = "metric"
-
-                station = Station(id=station_id)
-                df = station.get_data(begin_date=t0_string,
-                                      end_date=t1_string,
-                                      product=product,
-                                      datum=datum,
-                                      units=units,
-                                      time_zone="gmt")
-                return df[output_product]
+        station = Station(id=station_id)
+        df = station.get_data(
+            begin_date=t0_string,
+            end_date=t1_string,
+            product=product,
+            datum=datum,
+            units=units,
+            time_zone="gmt",
+        )
+        return df[output_product]

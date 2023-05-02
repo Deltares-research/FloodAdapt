@@ -291,7 +291,9 @@ class Database(IDatabase):
             )
 
     def write_wl_csv(self, event: IEvent, wl_df: pd.DataFrame):
-        wl_df.to_csv(Path(self.input_path,"events",event.attrs.name,"tide.csv"), header=False)
+        wl_df.to_csv(
+            Path(self.input_path, "events", event.attrs.name, "tide.csv"), header=False
+        )
 
     def edit_measure(self, measure: IMeasure):
         """Edits an already existing measure in the database.

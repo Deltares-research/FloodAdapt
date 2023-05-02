@@ -28,7 +28,7 @@ class HistoricalNearshore(Event, IEvent):
             toml = tomli.load(fp)
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
-        csv_path = Path(Path(filepath).parents[0],'tide.csv')
+        csv_path = Path(Path(filepath).parents[0], "tide.csv")
         obj.tide_surge_ts = pd.read_csv(csv_path)
 
         return obj
@@ -40,7 +40,6 @@ class HistoricalNearshore(Event, IEvent):
         obj = HistoricalNearshore()
         obj.attrs = HistoricalNearshoreModel.parse_obj(data)
         return obj
-    
 
     def save(self, filepath: Union[str, os.PathLike]):
         """Saving event toml
@@ -52,30 +51,28 @@ class HistoricalNearshore(Event, IEvent):
         """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-    
 
     @staticmethod
     def read_wl_csv(csvpath: Union[str, os.PathLike]):
         df = pd.read_csv(csvpath, names=[0, 1])
-        #Save as attribute of HistoricalNearshore class
+        # Save as attribute of HistoricalNearshore class
         return df
 
-    @staticmethod    
+    @staticmethod
     def download_wl_data(station_id, start_time_str, stop_time_str):
-        start_time = datetime.strptime(start_time_str,"%Y%m%d %H%M%S")
-        stop_time = datetime.strptime(stop_time_str,"%Y%m%d %H%M%S")
-        #Get NOAA data
+        start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
+        stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
+        # Get NOAA data
         source = StationSource.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
         return df
-    
+
     @staticmethod
     def wl_ts_rel_to_tstart(df):
         df[0] = [
-        datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
-        ] # Make datetime object
+            datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
+        ]  # Make datetime object
         df[0] = [
-        (time - df[0][0]).total_seconds() for time in df[0]
+            (time - df[0][0]).total_seconds() for time in df[0]
         ]  # Make time relative to start time in seconds
         return df
-        
