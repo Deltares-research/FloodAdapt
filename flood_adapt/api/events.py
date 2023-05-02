@@ -30,21 +30,18 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     return Synthetic.load_dict(attrs)
 
 
-def create_historical_nearshore_event(
-    attrs: dict[str, Any], database: IDatabase
-) -> IHistoricalNearshore:
+def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
     return HistoricalNearshore.load_dict(attrs)
 
 
-def save_synthetic_event(event: IEvent, database: IDatabase) -> None:
+def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
 
-def save_historical_nearshore_event(
-    event: IEvent, wl_df: pd.DataFrame, database: IDatabase
+def save_timeseries_csv(
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
 ) -> None:
-    database.save_event(event)
-    database.write_wl_csv(event, wl_df)
+    database.write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
