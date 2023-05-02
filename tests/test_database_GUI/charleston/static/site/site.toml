@@ -52,12 +52,12 @@ non_building_names = ["roads"]
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
-file = "aggr_lvl_1"
+file = "aggr_lvl_1.geojson"
 field_name = "name"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
-file = "aggr_lvl_2"
+file = "aggr_lvl_2.geojson"
 field_name = "name"
 
 [river]

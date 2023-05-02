@@ -1,0 +1,10 @@
+[output]
+output_dir = 'output'
+crs = 'EPSG:4326'
+
+[exposure]
+dbase_file = 'exposure/exposure.csv'
+crs = 'EPSG:4326'
+
+[vulnerability]
+dbase_file = 'vulnerability/vulnerability_curves.csv'
