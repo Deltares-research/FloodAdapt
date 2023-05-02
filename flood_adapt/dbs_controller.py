@@ -274,7 +274,8 @@ class Database(IDatabase):
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
-            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"), header=False
+            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            header=False,
         )
 
     def edit_measure(self, measure: IMeasure):
