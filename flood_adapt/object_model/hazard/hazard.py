@@ -1,5 +1,6 @@
 # import subprocess
 # import sys
+import subprocess
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -123,16 +124,26 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
+    def run_models(self, site: ISite):
+        self.run_sfincs(site)
+
     def run_sfincs(self, site: ISite):
         # TODO: make path variable, now using test data on p-drive
 
-        path_on_p = Path(
-            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
-        )
-        path_in = path_on_p.joinpath(
+        # path_on_p = Path(
+        #     "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
+        # )
+        # path_in = path_on_p.joinpath(
+        #     "static/templates", site.attrs.sfincs.overland_model
+        # )
+        # run_folder_overland = path_on_p.joinpath(
+        #     "output/simulations", self.name, site.attrs.sfincs.overland_model
+        # )
+        input_path = self.database_input_path.parent
+        path_in = input_path.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
-        run_folder_overland = path_on_p.joinpath(
+        run_folder_overland = input_path.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
         )
 
@@ -175,7 +186,7 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
                         site.attrs.sfincs.version
                     )
                 )
@@ -186,11 +197,13 @@ class Hazard:
                     "cd "
                     "%~dp0"
                     "\n"
-                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe".format(
+                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
                         site.attrs.sfincs.version
                     )
                 )
                 f_out.write(bat_file)
+
+        subprocess.run(run_folder_overland.joinpath("run.bat"))
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)

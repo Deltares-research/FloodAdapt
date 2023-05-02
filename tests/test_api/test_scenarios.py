@@ -5,10 +5,14 @@ import pytest
 import flood_adapt.api.scenarios as api_scenarios
 import flood_adapt.api.startup as api_startup
 
-test_database_path = Path().absolute() / "tests" / "test_database_GUI"
+# test_database_path = Path().absolute() / "tests" / "test_database"
+test_database_path = Path(
+    r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database"
+)
 test_site_name = "charleston"
 
 
+@pytest.mark.skip(reason="We cannot depend on the P drive")
 def test_scenario():
     test_dict = {
         "name": "current_extreme12ft_no_measures",
@@ -28,6 +32,9 @@ def test_scenario():
     # correct event
     test_dict["event"] = "extreme12ft"
     scenario = api_scenarios.create_scenario(test_dict, database)
+
+    # run SFINCS
+    api_scenarios.run_hazard_models(scenario)
 
     with pytest.raises(ValueError):
         # Assert error if name already exists

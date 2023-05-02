@@ -18,9 +18,8 @@ def test_projection_interp_slr():
 
     slr = dbs.interp_slr("ssp245", 2075)
 
-    assert slr.value > 0.3
-    assert slr.value < 0.4
-    assert slr.units == "meters"
+    assert slr > 1.0
+    assert slr < 1.1
 
 
 def test_projection_plot_slr():

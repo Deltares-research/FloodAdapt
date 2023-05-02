@@ -28,3 +28,7 @@ def edit_scenario(scenario: IScenario, database: IDatabase) -> None:
 
 def delete_scenario(name: str, database: IDatabase) -> None:
     database.delete_scenario(name)
+
+
+def run_hazard_models(scenario: IScenario) -> None:
+    scenario.run_hazard_models()
