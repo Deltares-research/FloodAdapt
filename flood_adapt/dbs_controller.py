@@ -357,7 +357,7 @@ class Database(IDatabase):
         names = self.get_events()["name"]
         if event.attrs.name in names:
             raise ValueError(
-                f"'{event.attrs.name}' name is already used by another measure. Choose a different name"
+                f"'{event.attrs.name}' name is already used by another event. Choose a different name"
             )
         else:
             (self.input_path / "events" / event.attrs.name).mkdir()
