@@ -30,11 +30,12 @@ class SfincsAdapter:
 
         # Get start and end time of event based on different templates
         if event.template == "Synthetic":
-            tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
-            tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
-        else:
             tstart = event.start_time
             tstop = event.end_time
+        else:
+            tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
+            tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
+
         # Update timing of the model
         self.sf_model.set_config("tref", tstart)
         self.sf_model.set_config("tstart", tstart)
