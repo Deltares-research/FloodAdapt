@@ -340,7 +340,7 @@ class Database(IDatabase):
         event_template = Event.get_template(event_path)
         event = EventFactory.get_event(event_template).load_file(event_path)
         return event
-    
+
     def save_event(self, event: IEvent) -> None:
         """Saves a synthetic event object in the database.
 
