@@ -1,6 +1,8 @@
 from NDBC.NDBC import DataBuoy
 
-from flood_adapt.object_model.hazard.event.station_source import StationSource
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 
 
 class Source(StationSource):

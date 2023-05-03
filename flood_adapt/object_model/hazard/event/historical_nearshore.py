@@ -7,8 +7,10 @@ import pandas as pd
 import tomli
 import tomli_w
 
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.station_source import StationSource
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
     IEvent,

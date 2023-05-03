@@ -1,6 +1,8 @@
 from noaa_coops import Station
 
-from flood_adapt.object_model.hazard.event.station_source import StationSource
+from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
+    StationSource,
+)
 
 
 class Source(StationSource):
@@ -34,4 +36,4 @@ class Source(StationSource):
             units=units,
             time_zone="gmt",
         )
-        return df[output_product]
+        return df[output_product] #Changed output product from 'water_level' to 'v'
