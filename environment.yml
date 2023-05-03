@@ -13,6 +13,9 @@ dependencies:
   - numpy
   - pandas
   - pip
+  - pip:
+    - noaa-coops
+    - NDBC
   - plotly
   - pydantic
   - pytest
@@ -20,5 +23,3 @@ dependencies:
   - tomli
   - tomli-w
   - twine
-  - noaa_coops
-  - NDBC
