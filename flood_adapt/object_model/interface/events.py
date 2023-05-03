@@ -110,7 +110,7 @@ class TimeModel(BaseModel):
     duration_before_t0: Optional[float]
     duration_after_t0: Optional[float]
     start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
+    end_time: Optional[str] = "20200103 000000"
 
 
 class TideSource(str, Enum):
