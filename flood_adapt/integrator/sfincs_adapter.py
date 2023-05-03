@@ -32,7 +32,7 @@ class SfincsAdapter:
         if event.template == "Synthetic":
             tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
             tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
-        elif event.template == "Historical_nearshore":
+        else:
             tstart = event.start_time
             tstop = event.end_time
         # Update timing of the model
