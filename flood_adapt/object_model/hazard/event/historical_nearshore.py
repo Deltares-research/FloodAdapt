@@ -37,7 +37,7 @@ class HistoricalNearshore(Event, IEvent):
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Synthetic from object, e.g. when initialized from GUI"""
+        """create Historical Nearshore from object, e.g. when initialized from GUI"""
 
         obj = HistoricalNearshore()
         obj.attrs = HistoricalNearshoreModel.parse_obj(data)
