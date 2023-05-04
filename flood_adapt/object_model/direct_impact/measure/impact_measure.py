@@ -62,4 +62,4 @@ class ImpactMeasure(ABC):
             polygon_file=polygon_file,
         )
 
-        return ids.to_list()
+        return ids

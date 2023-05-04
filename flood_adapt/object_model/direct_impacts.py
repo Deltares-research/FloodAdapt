@@ -1,9 +1,11 @@
+import shutil
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 
+from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
@@ -16,10 +18,11 @@ from flood_adapt.object_model.strategy import Strategy
 
 
 class DirectImpacts:
-    """class holding all information related to the direct impacts of the scenario.
-    Includes functions to run the impact model or check if it has already been run.
+    """Class holding all information related to the direct impacts of the scenario.
+    Includes methods to run the impact model or check if it has already been run.
     """
 
+    name: str
     database_input_path: Path
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
@@ -27,6 +30,7 @@ class DirectImpacts:
     has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        self.name = scenario.name
         self.database_input_path = database_input_path
         self.scenario = scenario
         self.set_socio_economic_change(scenario.projection)
@@ -34,7 +38,7 @@ class DirectImpacts:
         self.set_hazard(scenario, database_input_path)
 
     def set_socio_economic_change(self, projection: str) -> None:
-        """Sets the SocioEconomicChange object of the actual scenario
+        """Sets the SocioEconomicChange object of the scenario.
 
         Parameters
         ----------
@@ -49,13 +53,89 @@ class DirectImpacts:
         ).get_socio_economic_change()
 
     def set_impact_strategy(self, strategy: str) -> None:
+        """Sets the ImpactStrategy object of the scenario.
+
+        Parameters
+        ----------
+        strategy : str
+            Name of the strategy used in the scenario
+        """
         strategy_path = (
             self.database_input_path / "Strategies" / strategy / f"{strategy}.toml"
         )
         self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
 
     def set_hazard(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        """Sets the Hazard object of the scenario.
+
+        Parameters
+        ----------
+        scenario : str
+            Name of the scenario
+        """
         self.hazard = Hazard(scenario, database_input_path)
+
+    def run_models(self):
+        self.run_fiat()
+
+    def run_fiat(self):
+        """Updates FIAT model based on scenario information and then runs the FIAT model"""
+        if not self.hazard.has_run:
+            raise ValueError(
+                "Hazard for this scenario has not been run yet! FIAT cannot be initiated."
+            )
+        # Get the location of the FIAT template model
+        template_path = (
+            self.database_input_path.parent / "static" / "templates" / "fiat"
+        )
+        # Read FIAT template with FIAT adapter
+        fa = FiatAdapter(
+            model_root=template_path, database_path=self.database_input_path.parent
+        )
+
+        # Define results path
+        results_path = (
+            self.database_input_path.parent
+            / "output"
+            / "results"
+            / self.scenario.name
+            / "fiat_model"
+        )
+        # If path for results does not yet exist, make it
+        if not results_path.is_dir():
+            results_path.mkdir(parents=True)
+        else:
+            shutil.rmtree(results_path)
+
+        # First implement socioeconomic changes if needed
+        if self.socio_economic_change.attrs.economic_growth != 0:
+            fa.apply_economic_growth(self.socio_economic_change)
+
+        if self.socio_economic_change.attrs.population_growth_existing != 0:
+            fa.apply_population_growth_existing(self.socio_economic_change)
+
+        if self.socio_economic_change.attrs.population_growth_new != 0:
+            proj_path = (
+                self.database_input_path / "projections" / self.scenario.projection
+            )
+            fa.apply_population_growth_new(
+                self.socio_economic_change, proj_path,
+            )
+
+        # Then apply Impact Strategy by iterating trough the impact measures
+        for measure in self.impact_strategy.measures:
+            if measure.attrs.type == "elevate_properties":
+                fa.apply_elevate_properties(measure)
+
+        # Save the updated FIAT model
+        fa.fiat_model.set_root(results_path)
+        fa.fiat_model.write()
+
+        # Then run FIAT
+        print("FIAT not working yet")
+
+        # Indicator that fiat model has run
+        self.__setattr__("has_run", True)
 
     def infographic(
         self,
