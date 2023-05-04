@@ -54,7 +54,7 @@ class ImpactMeasureModel(MeasureModel):
 
     type: ImpactType
     selection_type: SelectionType
-    # TODO with aggregation area could have an option on type?
+    aggregation_area_type: Optional[str]
     aggregation_area_name: Optional[str]
     polygon_file: Optional[str]
     property_type: str

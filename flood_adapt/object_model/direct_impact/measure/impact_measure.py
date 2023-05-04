@@ -55,9 +55,7 @@ class ImpactMeasure(ABC):
             selection_type=self.attrs.selection_type,
             property_type=self.attrs.property_type,
             non_building_names=site.attrs.fiat.non_building_names,
-            aggregation=site.attrs.fiat.aggregation[
-                0
-            ].name,  # TODO  # now uses first aggregation area type
+            aggregation=self.attrs.aggregation_area_type,
             aggregation_area_name=self.attrs.aggregation_area_name,
             polygon_file=polygon_file,
         )
