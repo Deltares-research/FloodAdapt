@@ -17,7 +17,7 @@ from flood_adapt.object_model.interface.events import (
 )
 
 
-class HistoricalNearshore(Event, IEvent):
+class HistoricalNearshore(Event, IHistoricalNearshore):
     attrs = HistoricalNearshoreModel
     tide_surge_ts: pd.DataFrame
 
