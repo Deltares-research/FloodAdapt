@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -45,7 +44,7 @@ class SfincsAdapter:
         df_ts : pd.DataFrame
             time series of water level, index should be Pandas DateRange
         """
-        
+
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
         gdf_locs.crs = self.sf_model.crs

@@ -90,8 +90,7 @@ class Event:
                 "timeseries"
                 "."
             )
-        
-    
+
     def add_dis_ts(self):
         """adds discharge timeseries to event object
 
