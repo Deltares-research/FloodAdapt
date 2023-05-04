@@ -22,9 +22,6 @@ from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
 
 
-class EventTemplateModel(Enum):
-    Synthetic: Synthetic
-    HistoricalNearshore: HistoricalNearshore
 
 
 class Hazard:
