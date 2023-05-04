@@ -1,3 +1,3 @@
 name = "strategy_comb"
 long_name = "strategy_comb"
-measures = [ "seawall", "raise_property_aggregation_area", "raise_property_polygon"]
+measures = [ "seawall", "raise_property_aggregation_area", "buyout", "floodproof"]

@@ -3,7 +3,9 @@ from pathlib import Path
 import geopandas as gpd
 import tomli
 
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.interface.measures import (
     HazardType,
@@ -145,3 +147,38 @@ def test_elevate_polygon_read():
 
     polygon = gpd.read_file(Path(test_toml).parent / elevate.attrs.polygon_file)
     assert isinstance(polygon, gpd.GeoDataFrame)
+
+
+def test_buyout_read():
+    test_toml = (
+        test_database / "charleston" / "input" / "measures" / "buyout" / "buyout.toml"
+    )
+    assert test_toml.is_file()
+
+    buyout = Buyout.load_file(test_toml)
+
+    assert isinstance(buyout.attrs.name, str)
+    assert isinstance(buyout.attrs.long_name, str)
+    assert isinstance(buyout.attrs.type, ImpactType)
+    assert isinstance(buyout.attrs.selection_type, SelectionType)
+    assert isinstance(buyout.attrs.aggregation_area_name, str)
+
+
+def test_floodproof_read():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "measures"
+        / "floodproof"
+        / "floodproof.toml"
+    )
+    assert test_toml.is_file()
+
+    floodproof = FloodProof.load_file(test_toml)
+
+    assert isinstance(floodproof.attrs.name, str)
+    assert isinstance(floodproof.attrs.long_name, str)
+    assert isinstance(floodproof.attrs.type, ImpactType)
+    assert isinstance(floodproof.attrs.selection_type, SelectionType)
+    assert isinstance(floodproof.attrs.aggregation_area_name, str)
