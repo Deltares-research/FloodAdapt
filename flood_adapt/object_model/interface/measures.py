@@ -97,7 +97,7 @@ class ElevateModel(ImpactMeasureModel):
 class BuyoutModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "buyout" impact measure"""
 
-    # TODO: Do we need a pass statement here?
+    ...  # Buyout has only the basic impact measure attributes
 
 
 class FloodProofModel(ImpactMeasureModel):
@@ -149,7 +149,7 @@ class IBuyout(IMeasure):
 class IFloodProof(IMeasure):
     """This is a class for a FloodAdapt "floodproof" measure"""
 
-    attrs: BuyoutModel
+    attrs: FloodProofModel
 
 
 class IFloodWall(IMeasure):
