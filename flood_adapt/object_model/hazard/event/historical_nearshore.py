@@ -13,7 +13,7 @@ from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
-    IEvent,
+    IHistoricalNearshore,
 )
 
 
