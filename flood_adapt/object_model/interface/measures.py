@@ -15,8 +15,8 @@ class ImpactType(str, Enum):
     """Class describing the accepted input for the variable 'type' in ImpactMeasure"""
 
     elevate_properties = "elevate_properties"
-    buyout = "buyout"
-    floodproofing = "floodproofing"
+    buyout_properties = "buyout_properties"
+    floodproof_properties = "floodproof_properties"
 
 
 class HazardType(str, Enum):
