@@ -96,10 +96,9 @@ class Event:
                 "timeseries"
                 "."
             )
-        
+
     def download_meteo(self, site: ISite, path: Path):
-        
-        #Determine to dowload wind and/or rainfall data
+        # Determine to dowload wind and/or rainfall data
         # if self.attrs.template == "Historical_offshore":
         #     if self.attrs.wind.source == "map" and self.attrs.rainfall.source == "map":
         #         params = ["wind","barometric_pressure","precipitation"]
@@ -113,27 +112,28 @@ class Event:
         #     elif self.attrs.wind.source == "map" and self.attrs.rainfall.source != "map":
         #         params = ["wind"]
         #     elif self.attrs.wind.source != "map" and self.attrs.rainfall.source == "map":
-        #         params = ["precipitation"]         
-        
-        params = ["wind","barometric_pressure","precipitation"]
-        lon = site.attrs.lon
-        lat = site.attrs.lat  
+        #         params = ["precipitation"]
 
-        #Download the actual datasets
-        gfs_source = MeteoSource("gfs_anl_0p50",
-                                 "gfs_anl_0p50",
-                                 "hindcast",
-                                 delay=None)
+        params = ["wind", "barometric_pressure", "precipitation"]
+        lon = site.attrs.lon
+        lat = site.attrs.lat
+
+        # Download the actual datasets
+        gfs_source = MeteoSource(
+            "gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None
+        )
 
         # Create subset
         name = "gfs_anl_0p50_us_southeast"
-        gfs_conus = MeteoGrid(name=name,
-                              source=gfs_source,
-                              parameters=params,
-                              path=path,
-                              x_range=[lon - 10, lon + 10],
-                              y_range=[lat - 10, lat + 10],
-                              crs=CRS.from_epsg(4326))
+        gfs_conus = MeteoGrid(
+            name=name,
+            source=gfs_source,
+            parameters=params,
+            path=path,
+            x_range=[lon - 10, lon + 10],
+            y_range=[lat - 10, lat + 10],
+            crs=CRS.from_epsg(4326),
+        )
 
         # Download and collect data
         t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
