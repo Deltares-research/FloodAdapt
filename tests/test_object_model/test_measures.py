@@ -63,7 +63,8 @@ def test_elevate_aggr_area_read():
     assert elevate.attrs.elevation.units == "feet"
     assert elevate.attrs.elevation.type == "floodmap"
     assert elevate.attrs.selection_type == "aggregation_area"
-    assert elevate.attrs.aggregation_area_name == "test_area_1"
+    assert elevate.attrs.aggregation_area_type == "aggr_lvl_2"
+    assert elevate.attrs.aggregation_area_name == "name5"
 
 
 def test_elevate_aggr_area_read_fail():
