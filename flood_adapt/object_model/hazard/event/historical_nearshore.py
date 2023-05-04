@@ -31,7 +31,7 @@ class HistoricalNearshore(Event, IEvent):
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
         csv_path = Path(Path(filepath).parents[0], "tide.csv")
-        obj.tide_surge_ts = pd.read_csv(csv_path)
+        obj.tide_surge_ts = HistoricalNearshore.read_wl_csv(csv_path)
 
         return obj
 
@@ -56,7 +56,9 @@ class HistoricalNearshore(Event, IEvent):
 
     @staticmethod
     def read_wl_csv(csvpath: Union[str, os.PathLike]):
-        df = pd.read_csv(csvpath, names=[0, 1])
+        df = pd.read_csv(csvpath, index_col=0, names=[1])
+        df.index.names = ["time"]
+        df.index = pd.to_datetime(df.index)
         # Save as attribute of HistoricalNearshore class
         return df
 
@@ -67,14 +69,4 @@ class HistoricalNearshore(Event, IEvent):
         # Get NOAA data
         source = StationSource.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
-        return df
-
-    @staticmethod
-    def wl_ts_rel_to_tstart(df):
-        df[0] = [
-            datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in df[0]
-        ]  # Make datetime object
-        df[0] = [
-            (time - df[0][0]).total_seconds() for time in df[0]
-        ]  # Make time relative to start time in seconds
         return df

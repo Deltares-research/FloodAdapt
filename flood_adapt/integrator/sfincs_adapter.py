@@ -29,12 +29,8 @@ class SfincsAdapter:
         """Changes model reference times based on event time series."""
 
         # Get start and end time of event based on different templates
-        if event.template == "Synthetic":
-            tstart = event.start_time
-            tstop = event.end_time
-        else:
-            tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
-            tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
+        tstart = event.time.start_time
+        tstop = event.time.end_time
 
         # Update timing of the model
         self.sf_model.set_config("tref", tstart)
@@ -49,7 +45,7 @@ class SfincsAdapter:
         df_ts : pd.DataFrame
             time series of water level, index should be Pandas DateRange
         """
-
+        
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
         gdf_locs.crs = self.sf_model.crs
@@ -78,7 +74,7 @@ class SfincsAdapter:
 
         # Go from 1 timeseries to timeseries for all boundary points
         for i in range(1, len(gdf_locs)):
-            df_ts[i] = df_ts[i]
+            df_ts[i + 1] = df_ts[i]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
