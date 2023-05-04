@@ -107,19 +107,41 @@ class DirectImpacts:
         else:
             shutil.rmtree(results_path)
 
-        # First implement socioeconomic changes if needed
+        # Get ids of existing objects
+        ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
+
+        # Implement socioeconomic changes if needed
+
+        # First apply economic growth to existing objects
         if self.socio_economic_change.attrs.economic_growth != 0:
-            fa.apply_economic_growth(self.socio_economic_change)
-
-        if self.socio_economic_change.attrs.population_growth_existing != 0:
-            fa.apply_population_growth_existing(self.socio_economic_change)
-
-        if self.socio_economic_change.attrs.population_growth_new != 0:
-            proj_path = (
-                self.database_input_path / "projections" / self.scenario.projection
+            fa.apply_economic_growth(
+                economic_growth=self.socio_economic_change.attrs.economic_growth,
+                ids=ids_existing,
             )
+
+        # Then we create the new population growth area if provided
+        # In that area only the economic growth is taken into account
+        # Order matters since for the pop growth new we only want the economic growth!
+        if self.socio_economic_change.attrs.population_growth_new != 0:
+            area_path = (
+                self.database_input_path
+                / "projections"
+                / self.scenario.projection
+                / self.socio_economic_change.attrs.new_development_shapefile
+            )
+
             fa.apply_population_growth_new(
-                self.socio_economic_change, proj_path,
+                population_growth=self.socio_economic_change.attrs.population_growth_new,
+                ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
+                elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
+                area_path=area_path,
+            )
+
+        # Last apply population growth to existing objects
+        if self.socio_economic_change.attrs.population_growth_existing != 0:
+            fa.apply_population_growth_existing(
+                population_growth=self.socio_economic_change.attrs.population_growth_existing,
+                ids=ids_existing,
             )
 
         # Then apply Impact Strategy by iterating trough the impact measures

@@ -1,11 +1,9 @@
 from pathlib import Path
+from typing import Optional
 
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
-    SocioEconomicChange,
-)
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.site import Site
 
@@ -30,19 +28,18 @@ class FiatAdapter:
         raise NotImplementedError
 
     def apply_economic_growth(
-        self,
-        socio_economic_change: SocioEconomicChange,
+        self, economic_growth: float, ids: Optional[list[str]] = None
     ):
         """Implement economic growth in the exposure of FIAT.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
 
         Parameters
         ----------
-        socio_economic_change : SocioEconomicChange
-            Object containing all the attributes describing the changes
+        economic_growth : float
+            Percentage value of economic growth.
         """
         # Get columns that include max damage
-        damage_cols = [  # use hydromt function
+        damage_cols = [
             c
             for c in self.fiat_model.exposure.exposure_db.columns
             if "Max Potential Damage:" in c
@@ -53,10 +50,16 @@ class FiatAdapter:
             "Primary Object Type"
         ].isin(self.site.attrs.fiat.non_building_names)
 
+        # If ids are given use that as an additional filter
+        if ids:
+            buildings_rows = buildings_rows & self.fiat_model.exposure.exposure_db[
+                "Object ID"
+            ].isin(ids)
+
         # Update columns using economic growth value
         updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
-            1.0 + socio_economic_change.attrs.economic_growth / 100.0
+            1.0 + economic_growth / 100.0
         )
 
         # update fiat model
@@ -65,7 +68,7 @@ class FiatAdapter:
         )
 
     def apply_population_growth_existing(
-        self, socio_economic_change: SocioEconomicChange
+        self, population_growth: float, ids: Optional[list[str]] = None
     ):
         """Implement population growth in the exposure of FIAT.
         THis population growth describes the population increase in the same area as before.
@@ -88,10 +91,16 @@ class FiatAdapter:
             "Primary Object Type"
         ].isin(self.site.attrs.fiat.non_building_names)
 
+        # If ids are given use that as an additional filter
+        if ids:
+            buildings_rows = buildings_rows & self.fiat_model.exposure.exposure_db[
+                "Object ID"
+            ].isin(ids)
+
         # Update columns using economic growth value
         updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
-            1.0 + socio_economic_change.attrs.population_growth_existing / 100.0
+            1.0 + population_growth / 100.0
         )
 
         # update fiat model
@@ -100,7 +109,11 @@ class FiatAdapter:
         )
 
     def apply_population_growth_new(
-        self, socio_economic_change: SocioEconomicChange, proj_path: str
+        self,
+        population_growth: float,
+        ground_floor_height: float,
+        elevation_type: str,
+        area_path: str,
     ):
         """Implement population growth in a new area.
 
@@ -112,18 +125,16 @@ class FiatAdapter:
             path to where projection is saved
         """
         # Get reference type to align with hydromt
-        if socio_economic_change.attrs.new_development_elevation.type == "floodmap":
+        if elevation_type == "floodmap":
             elev_ref = "geom"
-        elif socio_economic_change.attrs.new_development_elevation.type == "datum":
+        elif elevation_type == "datum":
             elev_ref = "datum"
 
         # Use hydromt function
         self.fiat_model.exposure.setup_new_composite_areas(
-            percent_growth=socio_economic_change.attrs.population_growth_new,
-            geom_file=Path(proj_path).joinpath(
-                socio_economic_change.attrs.new_development_shapefile
-            ),
-            ground_floor_height=socio_economic_change.attrs.new_development_elevation.value,
+            percent_growth=population_growth,
+            geom_file=Path(area_path),
+            ground_floor_height=ground_floor_height,
             damage_types=["Structure", "Content"],
             vulnerability=self.fiat_model.vulnerability,
             elevation_reference=elev_ref,
