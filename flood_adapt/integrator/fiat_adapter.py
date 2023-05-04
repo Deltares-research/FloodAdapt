@@ -1,96 +1,155 @@
 from pathlib import Path
 
+from hydromt_fiat.fiat import FiatModel
+
+from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.socio_economic_change import (
+    SocioEconomicChange,
+)
 from flood_adapt.object_model.hazard.hazard import Hazard
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.site import Site
 
 
 class FiatAdapter:
-    def __init__(self, database_path: Path, scenario: ScenarioModel) -> None:
-        self.scenario = scenario
-        self.fiat_template_path = database_path / "static" / "templates" / "fiat"
-        self.bfe_path = list((database_path / "static" / "bfe").glob("*.shp"))[0]
-        self.results_path = database_path / "output" / "results" / scenario.name
-        self.site = Site.load_file(database_path / "static" / "site" / "site.toml")
+    def __init__(self, model_root: str, database_path: str) -> None:
+        """Loads FIAT model based on a root directory."""
+        # Load FIAT template
+        self.fiat_model = FiatModel(root=model_root, mode="r")
+        self.fiat_model.read()
 
-        # # If path for results does not yet exist, make it
-        # if not self.results_path.is_dir():
-        #     self.results_path.mkdir()
+        # Get site information
+        self.site = Site.load_file(
+            Path(database_path) / "static" / "site" / "site.toml"
+        )
 
-        # Create a temp folder for all temporary files.
-        temp_folder = self.results_path / "temp"
-        if not temp_folder.is_dir():
-            temp_folder.mkdir(parents=True, exist_ok=True)
+        # Get base flood elevation path and variable name
+        self.bfe_path = Path(database_path) / "static" / "bfe" / "bfe.geojson"
+        self.bfe_name = "bfe"
 
-        # Make a copy of the base configuration file.
-        self.config_path = self.results_path / "configuration_file.xlsx"
-        base_config_path = self.fiat_template_path / "base_configuration_file.xlsx"
-        copyfile(base_config_path, self.config_path)
+    def set_hazard(self, hazard: Hazard):
+        raise NotImplementedError
 
-        config_file = load_workbook(self.config_path)
-        # Change Site Name and Scenario Name in configuration.xlsx.
-        # This does nothing for the FIAT calculation but you can
-        # check it later.
-        sheet = config_file["Settings"]
-        sheet["A2"] = self.site.attrs.long_name
-        sheet["B2"] = self.scenario.name
+    def apply_economic_growth(
+        self,
+        socio_economic_change: SocioEconomicChange,
+    ):
+        """Implement economic growth in the exposure of FIAT.
+        This is done by multiplying maximum potential damages of objects with the percentage increase.
 
-        # Copy the coordinate reference system to the output CRS cell.
-        sheet["C2"] = self.site.attrs.fiat.exposure_crs
+        Parameters
+        ----------
+        socio_economic_change : SocioEconomicChange
+            Object containing all the attributes describing the changes
+        """
+        # Get columns that include max damage
+        damage_cols = [  # use hydromt function
+            c
+            for c in self.fiat_model.exposure.exposure_db.columns
+            if "Max Potential Damage:" in c
+        ]
 
-        # Copy the unit to the vertical unit field in the configuration file.
-        sheet["D2"] = self.site.attrs.sfincs.floodmap_units._value_
+        # Get objects that are buildings (using site info)
+        buildings_rows = ~self.fiat_model.exposure.exposure_db[
+            "Primary Object Type"
+        ].isin(self.site.attrs.fiat.non_building_names)
 
-        # Change the relative paths to full paths for the exposure data
-        sheet = config_file["Exposure"]
-        sheet["A2"] = str(self.fiat_template_path / sheet["A2"].value)
-        sheet["B2"] = self.site.attrs.fiat.exposure_crs
+        # Update columns using economic growth value
+        updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
+        updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
+            1.0 + socio_economic_change.attrs.economic_growth / 100.0
+        )
 
-        # Change the relative paths to full paths for the damage function data
-        sheet = config_file["Damage Functions"]
-        for i in range(1, sheet.max_row):
-            sheet["B" + str(i + 1)] = str(
-                self.fiat_template_path / sheet["B" + str(i + 1)].value
-            )
+        # update fiat model
+        self.fiat_model.exposure.update_max_potential_damage(
+            updated_max_potential_damages=updated_max_pot_damage
+        )
 
-        config_file.save(self.config_path)
+    def apply_population_growth_existing(
+        self, socio_economic_change: SocioEconomicChange
+    ):
+        """Implement population growth in the exposure of FIAT.
+        THis population growth describes the population increase in the same area as before.
+        This is done by multiplying maximum potential damages of objects with the percentage increase.
 
-        # Read the updated config file
-        read_config_file(self.config_path, check=False)
+        Parameters
+        ----------
+        socio_economic_change : SocioEconomicChange
+            Object containing all the attributes describing the changes
+        """
+        # Get columns that include max damage
+        damage_cols = [
+            c
+            for c in self.fiat_model.exposure.exposure_db.columns
+            if "Max Potential Damage:" in c
+        ]
 
-    def set_hazard(self, hazard: Hazard) -> None:
-        # TODO add option for probabilistic event
-        pass
-        # Check type of event
-        if hasattr(hazard, "ensemble"):
-            raise NotImplementedError
-        elif hasattr(hazard, "event"):
-            event_or_RP = ["event"] * len(hazard.hazard_map_paths)
+        # Get objects that are buildings (using site info)
+        buildings_rows = ~self.fiat_model.exposure.exposure_db[
+            "Primary Object Type"
+        ].isin(self.site.attrs.fiat.non_building_names)
 
-        # Check what type of hazard maps are given
-        if self.site.attrs.fiat.floodmap_type == "water_level":
-            wd_swe = "Datum"
-        elif self.site.attrs.fiat.floodmap_type == "water_depth":
-            wd_swe = "DEM"
+        # Update columns using economic growth value
+        updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
+        updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
+            1.0 + socio_economic_change.attrs.population_growth_existing / 100.0
+        )
 
-        # Get the crs of the hazard map.
-        if str(hazard.hazard_map_paths[0]).endswith(".tif"):
-            # TODO do we need this since this is created based on the site config?
-            raise NotImplementedError
-            src = gdal.Open(str(hazard.hazard_map_paths[0]))
-            proj = osr.SpatialReference(wkt=src.GetProjection())
-            epsg = proj.GetAttrValue("AUTHORITY", 1)
-        else:
-            epsg = CRS.from_user_input(self.site.attrs.sfincs.csname).to_authority()[-1]
+        # update fiat model
+        self.fiat_model.exposure.update_max_potential_damage(
+            updated_max_potential_damages=updated_max_pot_damage
+        )
 
-        # Fill the Hazard sheet in the configuration file.
-        config_file = load_workbook(self.config_path)
-        sheet = config_file["Hazard"]
-        for i, flood_map in enumerate(hazard.hazard_map_paths):
-            sheet["A" + str(i + 2)] = str(flood_map)
-            # If this is defined as 'event', only damage is calculated.
-            sheet["B" + str(i + 2)] = event_or_RP[i]
-            sheet["C" + str(i + 2)] = "EPSG:" + epsg
-            sheet["D" + str(i + 2)] = wd_swe
+    def apply_population_growth_new(
+        self, socio_economic_change: SocioEconomicChange, proj_path: str
+    ):
+        """Implement population growth in a new area.
 
-        config_file.save(self.config_path)
+        Parameters
+        ----------
+        socio_economic_change : SocioEconomicChange
+            Object containing all the attributes describing the changes
+        proj_path : str
+            path to where projection is saved
+        """
+        # Get reference type to align with hydromt
+        if socio_economic_change.attrs.new_development_elevation.type == "floodmap":
+            elev_ref = "geom"
+        elif socio_economic_change.attrs.new_development_elevation.type == "datum":
+            elev_ref = "datum"
+
+        # Use hydromt function
+        self.fiat_model.exposure.setup_new_composite_areas(
+            percent_growth=socio_economic_change.attrs.population_growth_new,
+            geom_file=Path(proj_path).joinpath(
+                socio_economic_change.attrs.new_development_shapefile
+            ),
+            ground_floor_height=socio_economic_change.attrs.new_development_elevation.value,
+            damage_types=["Structure", "Content"],
+            vulnerability=self.fiat_model.vulnerability,
+            elevation_reference=elev_ref,
+            path_ref=self.bfe_path,
+            attr_ref=self.bfe_name,
+        )
+
+    def apply_elevate_properties(self, elevate: Elevate):
+        """Elevate properties
+
+        Parameters
+        ----------
+        elevate : Elevate
+            _description_
+        """
+        # Get reference type to align with hydromt
+        if elevate.attrs.elevation.type == "floodmap":
+            elev_ref = "geom"
+        elif elevate.attrs.elevation.type == "datum":
+            elev_ref = "datum"
+
+        # Use hydromt function
+        self.fiat_model.exposure.raise_ground_floor_height(
+            raise_by=elevate.attrs.elevation.value,
+            objectids=elevate.get_object_ids(),
+            height_reference=elev_ref,
+            path_ref=self.bfe_path,
+            attr_ref=self.bfe_name,
+        )
