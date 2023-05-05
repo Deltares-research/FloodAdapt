@@ -97,10 +97,8 @@ def test_fiat_adapter_measures():
         test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
     )
     assert all(
-        [
-            val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
-            for val0, val1 in zip(exp0, exp1)
-        ]
+        val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
+        for val0, val1 in zip(exp0, exp1)
     )
 
     # check if new area max damage is implemented correctly
