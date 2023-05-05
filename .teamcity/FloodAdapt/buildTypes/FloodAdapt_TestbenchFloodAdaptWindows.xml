@@ -3,6 +3,9 @@
   <name>Testbench FloodAdapt Windows</name>
   <description />
   <settings>
+    <options>
+      <option name="cleanBuild" value="true" />
+    </options>
     <parameters>
       <param name="conda_env_path" value="%system.teamcity.build.checkoutDir%/flood_adapt_testbench_env" />
     </parameters>
