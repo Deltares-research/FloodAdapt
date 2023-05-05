@@ -13,6 +13,9 @@ dependencies:
   - numpy
   - pandas
   - pip
+  - pip:
+    - noaa-coops
+    - NDBC
   - plotly
   - pydantic
   - pytest

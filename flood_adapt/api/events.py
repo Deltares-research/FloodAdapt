@@ -1,10 +1,20 @@
 # Event tab
 
-from typing import Any
+import os
+from typing import Any, Union
+
+import pandas as pd
 
 from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
-from flood_adapt.object_model.interface.events import IEvent, ISynthetic
+from flood_adapt.object_model.interface.events import (
+    IEvent,
+    IHistoricalNearshore,
+    ISynthetic,
+)
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
@@ -20,8 +30,18 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     return Synthetic.load_dict(attrs)
 
 
-def save_event(event: IEvent, database: IDatabase) -> None:
+def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
+    return HistoricalNearshore.load_dict(attrs)
+
+
+def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
+
+
+def save_timeseries_csv(
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
+) -> None:
+    database.write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
@@ -36,6 +56,14 @@ def copy_event(
     old_name: str, database: IDatabase, new_name: str, new_long_name: str
 ) -> None:
     database.copy_event(old_name, new_name, new_long_name)
+
+
+def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
+    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+
+
+def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+    return HistoricalNearshore.read_wl_csv(csvpath)
 
 
 # def get_event(name: str) -> dict():  # get attributes

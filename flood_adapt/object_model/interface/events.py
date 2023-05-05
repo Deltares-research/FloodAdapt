@@ -25,6 +25,8 @@ class Template(str, Enum):
 
     Synthetic = "Synthetic"
     Hurricane = "Hurricane"
+    Historical_nearshore = "Historical_nearshore"
+    Historical_offshore = "Historical_offshore"
 
 
 class Timing(str, Enum):
@@ -102,6 +104,43 @@ class RiverModel(BaseModel):
     shape_end_time: Optional[float]
 
 
+class TimeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
+
+    duration_before_t0: Optional[float]
+    duration_after_t0: Optional[float]
+    start_time: Optional[str] = "20200101 000000"
+    end_time: Optional[str] = "20200103 000000"
+
+
+class TideSource(str, Enum):
+    harmonic = "harmonic"
+    timeseries = "timeseries"
+    model = "model"
+
+
+class TideModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
+    source: TideSource
+    harmonic_amplitude: Optional[UnitfulLength]
+
+
+class SurgeSource(str, Enum):
+    none = "none"
+    shape = "shape"
+
+
+class SurgeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
+    source: SurgeSource
+    shape_type: Optional[str] = "gaussian"
+    shape_duration: Optional[float]
+    shape_peak_time: Optional[float]
+    shape_peak: Optional[UnitfulLength]
+
+
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
@@ -109,45 +148,22 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     long_name: str
     mode: Mode
     template: Template
-    timing: Timing
+    timing: Timing  # TODO: do we need this? We can infer this from template
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
     river: RiverModel
-
-
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
-
-    duration_before_t0: float
-    duration_after_t0: float
-    start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
-
-
-class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    harmonic_amplitude: UnitfulLength
-
-
-class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_peak: Optional[UnitfulLength]
+    time: TimeModel
+    tide: TideModel
+    surge: SurgeModel
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
-    time: TimeModel
-    tide: TideModel
-    surge: SurgeModel
+
+class HistoricalNearshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
 
 
 class IEvent(ABC):
@@ -172,3 +188,7 @@ class IEvent(ABC):
 
 class ISynthetic(IEvent):
     attrs: SyntheticModel
+
+
+class IHistoricalNearshore(IEvent):
+    attrs: HistoricalNearshoreModel

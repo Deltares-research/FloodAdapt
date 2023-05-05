@@ -90,3 +90,69 @@ class Event:
                 "timeseries"
                 "."
             )
+
+    def add_dis_ts(self):
+        """adds discharge timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant discahrge
+        # TODO: add for loop to handle multiple rivers
+        if self.attrs.river.source == "constant":
+            df = Event.generate_dis_ts(self.attrs.time, self.attrs.river)
+            self.dis_ts = df
+            return self
+        elif self.attrs.river.source == "shape":
+            duration = (
+                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+            ) * 3600
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.river.shape_peak_time
+            ) * 3600
+            start_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_start_time
+            ) * 3600
+            end_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_end_time
+            ) * 3600
+            # subtract base discharge from peak
+            river = self.timeseries_shape(
+                self.attrs.river.shape_type,
+                duration,
+                self.attrs.river.shape_peak.convert("m3/s")
+                - self.attrs.river.base_discharge.convert("m3/s"),
+                time_shift=time_shift,
+                start_shape=start_shape,
+                end_shape=end_shape,
+            )
+            # add base discharge to timeseries
+            river += self.attrs.river.base_discharge.convert("m3/s")
+            # save to object with pandas daterange
+            time = pd.date_range(
+                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict({"time": time, 1: river})
+            df = df.set_index("time")
+            self.dis_ts = df
+            return self
+
+    def add_wind_ts(self):
+        """adds wind it timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant wind
+        if self.attrs.wind.source == "constant":
+            df = Event.generate_wind_ts(self.attrs.time, self.attrs.wind)
+            self.wind_ts = df
+            return self
