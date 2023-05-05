@@ -172,7 +172,10 @@ class Hazard:
 
         c_dir: str = os.getcwd()
         file_dir: str = os.path.dirname(__file__)
+
         file_path = Path(file_dir)
+
+        os.chdir(run_folder_overland)
 
         levels_up: int = 3
 
@@ -184,10 +187,12 @@ class Hazard:
             / "sfincs.exe"
         )
 
-        sfincs_log: Path = Path(c_dir) / "sfincs.log"
+        sfincs_log: str = "sfincs.log"
 
         with open(sfincs_log, "w") as log_handler:
             subprocess.run(sfincs_exec, stdout=log_handler)
+
+        os.chdir(c_dir)
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)
