@@ -80,14 +80,18 @@ class DirectImpacts:
 
     def run_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
+
+        # Check if hazard is already run
         if not self.hazard.has_run:
             raise ValueError(
                 "Hazard for this scenario has not been run yet! FIAT cannot be initiated."
             )
+
         # Get the location of the FIAT template model
         template_path = (
             self.database_input_path.parent / "static" / "templates" / "fiat"
         )
+
         # Read FIAT template with FIAT adapter
         fa = FiatAdapter(
             model_root=template_path, database_path=self.database_input_path.parent
@@ -101,6 +105,7 @@ class DirectImpacts:
             / self.scenario.name
             / "fiat_model"
         )
+
         # If path for results does not yet exist, make it
         if not results_path.is_dir():
             results_path.mkdir(parents=True)
@@ -111,7 +116,6 @@ class DirectImpacts:
         ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
 
         # Implement socioeconomic changes if needed
-
         # First apply economic growth to existing objects
         if self.socio_economic_change.attrs.economic_growth != 0:
             fa.apply_economic_growth(
@@ -121,8 +125,9 @@ class DirectImpacts:
 
         # Then we create the new population growth area if provided
         # In that area only the economic growth is taken into account
-        # Order matters since for the pop growth new we only want the economic growth!
+        # Order matters since for the pop growth new, we only want the economic growth!
         if self.socio_economic_change.attrs.population_growth_new != 0:
+            # Get path of new development area geometry
             area_path = (
                 self.database_input_path
                 / "projections"
@@ -147,7 +152,22 @@ class DirectImpacts:
         # Then apply Impact Strategy by iterating trough the impact measures
         for measure in self.impact_strategy.measures:
             if measure.attrs.type == "elevate_properties":
-                fa.apply_elevate_properties(measure)
+                fa.elevate_properties(
+                    elevate=measure,
+                    ids=ids_existing,
+                )
+            elif measure.attrs.type == "buyout_properties":
+                fa.buyout_properties(
+                    buyout=measure,
+                    ids=ids_existing,
+                )
+            elif measure.attrs.type == "floodproof_properties":
+                fa.floodproof_properties(
+                    floodproof=measure,
+                    ids=ids_existing,
+                )
+            else:
+                print("Impact measure type not recognized!")
 
         # Save the updated FIAT model
         fa.fiat_model.set_root(results_path)
