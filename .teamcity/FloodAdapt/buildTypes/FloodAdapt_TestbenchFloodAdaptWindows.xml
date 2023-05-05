@@ -79,7 +79,7 @@ call pytest tests --junitxml="report.xml"]]></param>
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_570" sourceBuildTypeId="Sfincs_BuildSfincsWindowsNetCDFX64" cleanDestination="true">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="sfincs.zip!** =&gt; sfincs" />
+        <artifact sourcePath="sfincs.zip!** =&gt; FloodAdapt/tests/system/sfincs/" />
       </dependency>
     </artifact-dependencies>
     <dependencies>
