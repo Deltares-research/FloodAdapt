@@ -1,14 +1,12 @@
 # import subprocess
 # import sys
 import subprocess
-from enum import Enum
 from pathlib import Path
 from typing import Optional
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
@@ -17,10 +15,6 @@ from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
-
-
-class EventTemplateModel(Enum):
-    Synthetic: Synthetic
 
 
 class Hazard:
@@ -86,9 +80,14 @@ class Hazard:
     def add_wl_ts(self):
         """adds total water level timeseries to hazard object"""
         # generating total time series made of tide, slr and water level offset,
-        # only for Synthteic and historical from nearshore
-        self.event.add_tide_and_surge_ts()
-        self.wl_ts = self.event.tide_surge_ts
+        # only for Synthetic and historical from nearshore
+        if self.event.attrs.template == "Synthetic":
+            self.event.add_tide_and_surge_ts()
+            self.wl_ts = self.event.tide_surge_ts
+        elif self.event.attrs.template == "Historical_nearshore":
+            wl_df = self.event.tide_surge_ts
+            self.wl_ts = wl_df
+        # In both cases add the slr and offset
         self.wl_ts[1] = (
             self.wl_ts[1]
             + self.event.attrs.water_level_offset.convert("meters")

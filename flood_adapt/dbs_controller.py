@@ -368,6 +368,12 @@ class Database(IDatabase):
                 / f"{event.attrs.name}.toml"
             )
 
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+        df.to_csv(
+            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            header=False,
+        )
+
     def edit_event(self, event: IEvent):
         """Edits an already existing event in the database.
 
