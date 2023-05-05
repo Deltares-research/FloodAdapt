@@ -1,9 +1,8 @@
 # import subprocess
 # import sys
-import os
-import pathlib
 import subprocess
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
@@ -30,16 +29,14 @@ class Hazard:
     """
 
     name: str
-    database_input_path: pathlib.Path
+    database_input_path: Path
     event: Optional[Event]
     ensemble: Optional[Event]
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
-    def __init__(
-        self, scenario: ScenarioModel, database_input_path: pathlib.Path
-    ) -> None:
+    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.set_event(scenario.event)
@@ -173,12 +170,10 @@ class Hazard:
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
-        file_dir = os.path.dirname(__file__)
-
-        file_path = pathlib.Path(file_dir)
+        file_path = Path(__file__).resolve()
 
         sfincs_exec = (
-            file_path.parents[2] / "tests" / "system" / "sfincs" / "sfincs.exe"
+            file_path.parents[3] / "tests" / "system" / "sfincs" / "sfincs.exe"
         )
 
         with cd(run_folder_overland):
