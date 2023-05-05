@@ -6,4 +6,4 @@ elevation.value = 1
 elevation.units = "feet"
 elevation.type = "floodmap"
 selection_type = "polygon"
-property_type = "ALL"
+property_type = "RES"

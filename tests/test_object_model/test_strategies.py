@@ -3,7 +3,9 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
@@ -28,7 +30,7 @@ def test_strategy_comb_read():
 
     assert strategy.attrs.name == "strategy_comb"
     assert strategy.attrs.long_name == "strategy_comb"
-    assert len(strategy.attrs.measures) == 3
+    assert len(strategy.attrs.measures) == 4
     assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
     assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
     assert all(
@@ -40,7 +42,8 @@ def test_strategy_comb_read():
         for measure in strategy.get_hazard_strategy().measures
     )
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
-    assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
+    assert isinstance(strategy.get_impact_strategy().measures[1], Buyout)
+    assert isinstance(strategy.get_impact_strategy().measures[2], FloodProof)
     assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
 
 

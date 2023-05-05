@@ -48,16 +48,16 @@ indexfilename = "charleston_14m_indices.dat"
 [fiat]
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
-non_building_names = ["roads"]
+non_building_names = ["road"]
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
-file = "aggr_lvl_1"
+file = "aggr_lvl_1.geojson"
 field_name = "name"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
-file = "aggr_lvl_2"
+file = "aggr_lvl_2.geojson"
 field_name = "name"
 
 [river]
