@@ -84,26 +84,32 @@ def test_fiat_adapter_measures():
 
     # check if new development area was added
     assert len(exposure_scenario) > len(exposure_template)
+
     # check if growth has been applied correctly
-    common_inds = exposure_scenario["Object ID"].isin(exposure_template["Object ID"])
-    assert (
-        exposure_scenario.loc[common_inds, "Max Potential Damage: Structure"].sum()
-        == (
-            test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
-            / 100
-            + 1
-        )
-        * (
-            test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
-            / 100
-            + 1
-        )
-        * exposure_template.loc[:, "Max Potential Damage: Structure"].sum()
+    inds1 = exposure_scenario["Object ID"].isin(exposure_template["Object ID"]) & (
+        exposure_scenario["Primary Object Type"] != "road"
     )
+    exp1 = exposure_scenario.loc[inds1, "Max Potential Damage: Structure"]
+    inds0 = exposure_template["Primary Object Type"] != "road"
+    exp0 = exposure_template.loc[inds0, "Max Potential Damage: Structure"]
+    eg = test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
+    pg = (
+        test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
+    )
+    assert all(
+        [
+            val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
+            for val0, val1 in zip(exp0, exp1)
+        ]
+    )
+
     # check if new area max damage is implemented correctly
+    inds_new_area = ~exposure_scenario["Object ID"].isin(exposure_template["Object ID"])
     assert (
         pytest.approx(
-            exposure_scenario.loc[~common_inds, "Max Potential Damage: Structure"].sum()
+            exposure_scenario.loc[
+                inds_new_area, "Max Potential Damage: Structure"
+            ].sum()
         )
         == (
             test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
@@ -118,22 +124,21 @@ def test_fiat_adapter_measures():
     )
 
     # check if buildings are elevated
-    inds1 = exposure_template.loc[
-        :,
-        f"Aggregation Label: {test_scenario.direct_impacts.impact_strategy.measures[0].attrs.aggregation_area_type}",
-    ] == (
-        test_scenario.direct_impacts.impact_strategy.measures[
-            0
-        ].attrs.aggregation_area_name
-    )
-    inds2 = exposure_scenario.loc[
-        :,
-        f"Aggregation Label: {test_scenario.direct_impacts.impact_strategy.measures[0].attrs.aggregation_area_type}",
-    ] == (
-        test_scenario.direct_impacts.impact_strategy.measures[
-            0
-        ].attrs.aggregation_area_name
-    )
+    aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.aggregation_area_type
+    aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.aggregation_area_name
+    build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.property_type
+    inds1 = (
+        exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
+    inds2 = (
+        exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
 
     assert all(
         elev1 <= elev2
@@ -141,4 +146,42 @@ def test_fiat_adapter_measures():
             exposure_template.loc[inds1, "Ground Floor Height"],
             exposure_scenario.loc[inds2, "Ground Floor Height"],
         )
+    )
+
+    # check if buildings are bought-out
+    aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        1
+    ].attrs.aggregation_area_type
+    aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        1
+    ].attrs.aggregation_area_name
+    build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        1
+    ].attrs.property_type
+    inds = (
+        exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
+
+    assert all(exposure_scenario.loc[inds, "Max Potential Damage: Structure"] == 0)
+
+    # check if buildings are flood-proofed
+    aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        2
+    ].attrs.aggregation_area_type
+    aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        2
+    ].attrs.aggregation_area_name
+    build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        2
+    ].attrs.property_type
+    inds1 = (
+        exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
+    inds2 = (
+        exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
+
+    assert all(
+        exposure_scenario.loc[inds2, "Damage Function: Structure"]
+        != exposure_template.loc[inds1, "Damage Function: Structure"]
     )
