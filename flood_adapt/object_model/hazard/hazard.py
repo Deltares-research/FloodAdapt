@@ -1,17 +1,12 @@
 # import subprocess
 # import sys
 import subprocess
-from enum import Enum
 from pathlib import Path
 from typing import Optional
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
-)
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
@@ -20,8 +15,6 @@ from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
-
-
 
 
 class Hazard:
