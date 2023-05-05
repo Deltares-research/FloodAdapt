@@ -1,9 +1,9 @@
 # import subprocess
 # import sys
 import os
+import pathlib
 import subprocess
 from enum import Enum
-from pathlib import Path
 from typing import Optional
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
@@ -12,6 +12,7 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.hazard.utils import cd
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
@@ -29,14 +30,16 @@ class Hazard:
     """
 
     name: str
-    database_input_path: Path
+    database_input_path: pathlib.Path
     event: Optional[Event]
     ensemble: Optional[Event]
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def __init__(
+        self, scenario: ScenarioModel, database_input_path: pathlib.Path
+    ) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.set_event(scenario.event)
@@ -170,29 +173,18 @@ class Hazard:
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
-        c_dir: str = os.getcwd()
-        file_dir: str = os.path.dirname(__file__)
+        file_dir = os.path.dirname(__file__)
 
-        file_path = Path(file_dir)
+        file_path = pathlib.Path(file_dir)
 
-        os.chdir(run_folder_overland)
-
-        levels_up: int = 3
-
-        sfincs_exec: Path = (
-            file_path.parents[levels_up - 1]
-            / "tests"
-            / "system"
-            / "sfincs"
-            / "sfincs.exe"
+        sfincs_exec = (
+            file_path.parents[2] / "tests" / "system" / "sfincs" / "sfincs.exe"
         )
 
-        sfincs_log: str = "sfincs.log"
-
-        with open(sfincs_log, "w") as log_handler:
-            subprocess.run(sfincs_exec, stdout=log_handler)
-
-        os.chdir(c_dir)
+        with cd(run_folder_overland):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)
