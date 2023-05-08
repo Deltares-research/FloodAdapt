@@ -43,7 +43,7 @@ call pytest tests --junitxml="report.xml"]]></param>
         <checkout-rule rule=". =&gt; FloodAdapt" />
       </vcs-entry-ref>
       <vcs-entry-ref root-id="FloodAdapt_SfincTestData">
-        <checkout-rule rule=". =&gt; lookup_table" />
+        <checkout-rule rule="+:overland =&gt; FloodAdapt/tests/test_database/charleston/static/templates/overland" />
       </vcs-entry-ref>
     </vcs-settings>
     <requirements>
