@@ -51,11 +51,14 @@ class Hazard:
 
         sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
 
-        with open(sfincs_log) as myfile:
-            if "Simulation finished" in myfile.read():
-                test2 = True
-            else:
-                test2 = False
+        if sfincs_log.exists():
+            with open(sfincs_log) as myfile:
+                if "Simulation finished" in myfile.read():
+                    test2 = True
+                else:
+                    test2 = False
+        else:
+            test2 = False
 
         return (test1) & (test2)
 
