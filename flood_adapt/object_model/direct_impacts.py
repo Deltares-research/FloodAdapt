@@ -169,6 +169,9 @@ class DirectImpacts:
             else:
                 print("Impact measure type not recognized!")
 
+        # Set FIAT hazard
+        # fa.set_hazard(self.hazard)
+
         # Save the updated FIAT model
         fa.fiat_model.set_root(results_path)
         fa.fiat_model.write()

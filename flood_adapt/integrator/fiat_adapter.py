@@ -38,6 +38,16 @@ class FiatAdapter:
 
     def set_hazard(self, hazard: Hazard):
         raise NotImplementedError
+        self.fiat_model.setup_hazard(
+            map_fn=hazard.simulation_path.joinpath("RP=100_max_flood_depth.tif"),
+            map_type="water_depth",
+            rp=None,  # change this in new version
+            crs=None,  # change this in new version
+            nodata=None,  # change this in new version
+            var="zsmax",
+            chunks="auto",
+            risk_output=False,
+        )
 
     def apply_economic_growth(
         self, economic_growth: float, ids: Optional[list[str]] = None

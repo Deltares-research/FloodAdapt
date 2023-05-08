@@ -12,8 +12,8 @@ from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
 
 
@@ -37,6 +37,30 @@ class Hazard:
         self.set_event(scenario.event)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
+        self.site = Site.load_file(
+            database_input_path.parent / "static" / "site" / "site.toml"
+        )
+        self.simulation_path = database_input_path.parent.joinpath(
+            "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
+        )
+        self.has_run = self.sfincs_has_run_check(self.simulation_path)
+
+    @staticmethod
+    def sfincs_has_run_check(sfincs_path: str):
+        test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
+
+        sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
+
+        if sfincs_log.exists():
+            with open(sfincs_log) as myfile:
+                if "Simulation finished" in myfile.read():
+                    test2 = True
+                else:
+                    test2 = False
+        else:
+            test2 = False
+
+        return (test1) & (test2)
 
     def set_event(self, event: str) -> None:
         """Sets the actual Event template class list using the list of measure names
@@ -113,27 +137,13 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_models(self, site: ISite):
-        self.run_sfincs(site)
+    def run_models(self):
+        self.run_sfincs()
 
-    def run_sfincs(self, site: ISite):
-        # TODO: make path variable, now using test data on p-drive
-
-        # path_on_p = Path(
-        #     "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
-        # )
-        # path_in = path_on_p.joinpath(
-        #     "static/templates", site.attrs.sfincs.overland_model
-        # )
-        # run_folder_overland = path_on_p.joinpath(
-        #     "output/simulations", self.name, site.attrs.sfincs.overland_model
-        # )
+    def run_sfincs(self):
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
-            "static/templates", site.attrs.sfincs.overland_model
-        )
-        run_folder_overland = input_path.joinpath(
-            "output/simulations", self.name, site.attrs.sfincs.overland_model
+            "static", "templates", self.site.attrs.sfincs.overland_model
         )
 
         # Load overland sfincs model
@@ -165,34 +175,34 @@ class Hazard:
         #     pass
 
         # write sfincs model in output destination
-        model.write_sfincs_model(path_out=run_folder_overland)
+        model.write_sfincs_model(path_out=self.simulation_path)
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
         if self.event.attrs.mode == "risk":
-            with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
+            with open(self.simulation_path.joinpath("run.bat"), "w") as f_out:
                 bat_file: str = (
                     "cd "
                     "%~dp0"
                     "\n"
                     "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
-                        site.attrs.sfincs.version
+                        self.site.attrs.sfincs.version
                     )
                 )
                 f_out.write(bat_file)
         elif self.event.attrs.mode == "single_scenario":
-            with open(run_folder_overland.joinpath("run.bat"), "w") as f_out:
+            with open(self.simulation_path.joinpath("run.bat"), "w") as f_out:
                 bat_file: str = (
                     "cd "
                     "%~dp0"
                     "\n"
                     "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
-                        site.attrs.sfincs.version
+                        self.site.attrs.sfincs.version
                     )
                 )
                 f_out.write(bat_file)
 
-        subprocess.run(run_folder_overland.joinpath("run.bat"))
+        subprocess.run(self.simulation_path.joinpath("run.bat"))
 
         # Indicator that sfincs model has run
         self.__setattr__("has_run", True)
