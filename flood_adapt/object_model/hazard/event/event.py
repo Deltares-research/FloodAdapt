@@ -156,3 +156,16 @@ class Event:
             df = Event.generate_wind_ts(self.attrs.time, self.attrs.wind)
             self.wind_ts = df
             return self
+
+    def __eq__(self, other):
+        if not isinstance(other, Event):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
+        attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
+        try:
+            attrs_1.__delattr__("long_name"), attrs_2.__delattr__("long_name")
+        except:
+            pass
+
+        return attrs_1 == attrs_2

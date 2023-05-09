@@ -37,5 +37,5 @@ class IScenario(ABC):
         ...
 
     @abstractmethod
-    def run_hazard_models(self) -> None:
+    def run(self) -> None:
         ...

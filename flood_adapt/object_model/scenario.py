@@ -26,6 +26,7 @@ class Scenario(IScenario):
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs, database_input_path=Path(self.database_input_path)
         )
+        return self
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -53,12 +54,16 @@ class Scenario(IScenario):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def run_hazard_models(self):
-        """run hazard models for the scenario"""
-        self.init_object_model()
-        self.direct_impacts.hazard.run_models(self.site_info)
-
-    def run_direct_impacts_models(self):
+    def run(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
-        self.direct_impacts.run_models(self.site_info)
+        if not self.direct_impacts.hazard.has_run:
+            self.direct_impacts.hazard.run_models()
+        else:
+            print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+        if not self.direct_impacts.has_run:
+            self.direct_impacts.run_models()
+        else:
+            print(
+                f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+            )

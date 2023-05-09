@@ -43,10 +43,10 @@ class Hazard:
         self.simulation_path = database_input_path.parent.joinpath(
             "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
         )
-        self.has_run = self.sfincs_has_run_check(self.simulation_path)
+        self.has_run = self.sfincs_has_run_check()
 
-    @staticmethod
-    def sfincs_has_run_check(sfincs_path: str):
+    def sfincs_has_run_check(self):
+        sfincs_path = self.simulation_path
         test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
 
         sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
@@ -140,6 +140,9 @@ class Hazard:
     def run_models(self):
         self.run_sfincs()
 
+        # Indicator that hazard has run
+        self.__setattr__("has_run", True)
+
     def run_sfincs(self):
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
@@ -204,5 +207,11 @@ class Hazard:
 
         subprocess.run(self.simulation_path.joinpath("run.bat"))
 
-        # Indicator that sfincs model has run
-        self.__setattr__("has_run", True)
+    def __eq__(self, other):
+        if not isinstance(other, Hazard):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+        test_event = self.event == other.event
+        test_phys_proj = self.physical_projection == other.physical_projection
+        test_haz_strat = self.hazard_strategy == other.hazard_strategy
+        return test_event & test_phys_proj & test_haz_strat
