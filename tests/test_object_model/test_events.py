@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
+import pytest
 import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
@@ -119,6 +120,7 @@ def test_load_and_save_fromtoml_synthetic():
     test_save_toml.unlink()  # added this to delete the file afterwards
 
 
+@pytest.mark.skip(reason="There uses newer version of noaa-coops which is not on pipy")
 def test_download_wl_timeseries():
     station_id = 8665530
     start_time_str = "20230101 000000"

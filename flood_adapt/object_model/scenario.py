@@ -56,9 +56,9 @@ class Scenario(IScenario):
     def run_hazard_models(self):
         """run hazard models for the scenario"""
         self.init_object_model()
-        self.direct_impacts.hazard.run_models(self.site_info)
+        self.direct_impacts.hazard.run_models()
 
     def run_direct_impacts_models(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
-        self.direct_impacts.run_models(self.site_info)
+        self.direct_impacts.run_models()
