@@ -16,6 +16,7 @@ dependencies:
   - pip:
     - noaa-coops
     - NDBC
+    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
   - plotly
   - pydantic
   - pytest
