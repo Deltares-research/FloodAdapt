@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+from cht_tide.read_bca import SfincsBoundary
+from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
@@ -32,13 +34,30 @@ class SfincsAdapter:
         if event.template == "Synthetic":
             tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
             tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
-        elif event.template == "Historical_nearshore":
-            tstart = event.start_time
-            tstop = event.end_time
+        else:
+            tstart = event.time.start_time
+            tstop = event.time.end_time
         # Update timing of the model
         self.sf_model.set_config("tref", tstart)
         self.sf_model.set_config("tstart", tstart)
         self.sf_model.set_config("tstop", tstop)
+
+    def add_wind_forcing(self, timeseries=None, const_mag=None, const_dir=None):
+        self.sf_model.setup_wind_forcing(
+            timeseries=timeseries, const_mag=const_mag, const_dir=const_dir
+        )
+
+    def add_wind_forcing_from_grid(self, wind_u, wind_v):
+        self.sf_model.setup_wind_forcing_from_grid(wind_u=wind_u, wind_v=wind_v)
+
+    def add_pressure_forcing_from_grid(self, press):
+        self.sf_model.setup_pressure_forcing_from_grid(press=press)
+
+    def add_precip_forcing_from_grid(self, precip):
+        self.sf_model.setup_precip_forcing_from_grid(precip=precip, aggregate=False)
+
+    def add_precip_forcing(self, precip=None, const_precip=None):
+        self.sf_model.setup_precip_forcing(precip=precip, const_precip=const_precip)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series.
@@ -60,6 +79,37 @@ class SfincsAdapter:
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
+        )
+
+    def add_bzs_from_bca(self, event: EventModel):
+        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs"""
+
+        sb = SfincsBoundary()
+        sb.read_flow_boundary_points(Path(self.sf_model.root).joinpath("sfincs.bnd"))
+        sb.read_astro_boundary_conditions(
+            Path(self.sf_model.root).joinpath("sfincs.bca")
+        )
+
+        times = pd.date_range(
+            start=event.time.start_time,
+            end=event.time.end_time,
+            freq="10T",
+        )
+
+        for bnd_ii in range(len(sb.flow_boundary_points)):
+            tide_ii = predict(sb.flow_boundary_points[bnd_ii].astro, times)
+            if bnd_ii == 0:
+                wl_df = pd.DataFrame(data={1: tide_ii}, index=times)
+            else:
+                wl_df[bnd_ii + 1] = tide_ii
+
+        # Determine bnd points from reference overland model
+        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
+        gdf_locs.crs = self.sf_model.crs
+
+        # HydroMT function: set waterlevel forcing from time series
+        self.sf_model.set_forcing_1d(
+            name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
     def add_dis_bc(self, df_ts: pd.DataFrame):

@@ -132,12 +132,15 @@ class Hazard:
         path_in = path_on_p.joinpath(
             "static/templates", site.attrs.sfincs.overland_model
         )
-        path_in_offshore = path_on_p.joinpath("static/templates", site.attrs.sfincs.offshore_model)
-
+        path_in_offshore = path_on_p.joinpath(
+            "static/templates", site.attrs.sfincs.offshore_model
+        )
         run_folder_overland = path_on_p.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
         )
-        run_folder_offshore = path_on_p.joinpath("output/simulations", self.name, site.attrs.sfincs.offshore_model)
+        path_on_p.joinpath(
+            "output/simulations", self.name, site.attrs.sfincs.offshore_model
+        )
 
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
@@ -151,7 +154,7 @@ class Hazard:
             self.add_wl_ts()
         elif template == "Historical_offshore":
             # Use offshore model to derive water level boundary conditions for overland model
-            
+
             # Initiate offshore model
             offshore_model = SfincsAdapter(model_root=path_in_offshore)
 
@@ -159,14 +162,18 @@ class Hazard:
             offshore_model.set_timing(self.event.attrs)
 
             # set wl of offshore model
+            offshore_model.add_bzs_from_bca(self.event.attrs)
+
+            # Add wind pressure forcing from files.
             
+
             # run offshore model
 
-            #take his results from offshore model as input for wl bnd
+            # take his results from offshore model as input for wl bnd
 
         elif template == "Hurricane":
             raise NotImplementedError
-        
+
         # Add waterlevel boundary conditions to overland model
         model.add_wl_bc(self.wl_ts)
 
