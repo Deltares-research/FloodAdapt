@@ -163,9 +163,5 @@ class Event:
             return NotImplemented
         attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
-        try:
-            attrs_1.__delattr__("long_name"), attrs_2.__delattr__("long_name")
-        except:
-            pass
-
+        attrs_1.__delattr__("long_name"), attrs_2.__delattr__("long_name")
         return attrs_1 == attrs_2
