@@ -5,6 +5,7 @@ channels:
 
 dependencies:
   - black
+  - ruff
   - build
   - geopandas
   - hydromt
