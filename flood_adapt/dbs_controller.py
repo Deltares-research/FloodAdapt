@@ -822,7 +822,7 @@ class Database(IDatabase):
         )
         mod = SfincsModel(model_path, mode="r")
 
-        zsmax = mod.results["zsmax"][0, :, :].values.T
+        zsmax = mod.results["zsmax"][0, :, :].values
 
         return zsmax
 
