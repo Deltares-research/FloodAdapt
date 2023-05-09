@@ -2,7 +2,6 @@ name = "charleston"
 long_name = "Charleston, SC"
 lat = 32.77
 lon = -79.95
-default_length_units = "feet"
 
 [sfincs]
 csname = "WGS 84 / UTM zone 17N"
@@ -49,12 +48,17 @@ indexfilename = "charleston_14m_indices.dat"
 [fiat]
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
-non_building_names = ["roads"]
+non_building_names = ["road"]
 
 [[fiat.aggregation]]
-name = "subdivision"
-file = "subdivision.geojson"
-field_name = "AGG_ID"
+name = "aggr_lvl_1"
+file = "aggr_lvl_1.geojson"
+field_name = "name"
+
+[[fiat.aggregation]]
+name = "aggr_lvl_2"
+file = "aggr_lvl_2.geojson"
+field_name = "name"
 
 [obs_station]
 name = 8665530

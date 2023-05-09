@@ -1,9 +1,9 @@
 name = "floodproof"
 long_name = "floodproof"
-type = "floodproof_property"
-polygon_file = "floodproof.txt"
-elevation = 3
-elevation_vertical_units = "feet"
-selection_type = "polygon"
+type = "floodproof_properties"
+selection_type = "aggregation_area"
+aggregation_area_type = "aggr_lvl_2"
+aggregation_area_name = "name3"
+elevation.value = 3
+elevation.units = "feet"
 property_type = "RES"
-datum_text = "NAVD 88"

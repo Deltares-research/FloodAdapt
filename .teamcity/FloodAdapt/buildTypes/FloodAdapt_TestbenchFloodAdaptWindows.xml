@@ -3,6 +3,9 @@
   <name>Testbench FloodAdapt Windows</name>
   <description />
   <settings>
+    <options>
+      <option name="cleanBuild" value="true" />
+    </options>
     <parameters>
       <param name="conda_env_path" value="%system.teamcity.build.checkoutDir%/flood_adapt_testbench_env" />
     </parameters>
@@ -39,8 +42,8 @@ call pytest tests --junitxml="report.xml"]]></param>
       <vcs-entry-ref root-id="FloodAdapt_FloodAdapt">
         <checkout-rule rule=". =&gt; FloodAdapt" />
       </vcs-entry-ref>
-      <vcs-entry-ref root-id="FloodAdapt_MetaSwapLookupTable">
-        <checkout-rule rule=". =&gt; lookup_table" />
+      <vcs-entry-ref root-id="FloodAdapt_SfincTestData">
+        <checkout-rule rule="+:overland =&gt; FloodAdapt/tests/test_database/charleston/static/templates/overland" />
       </vcs-entry-ref>
     </vcs-settings>
     <requirements>
@@ -76,7 +79,7 @@ call pytest tests --junitxml="report.xml"]]></param>
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_570" sourceBuildTypeId="Sfincs_BuildSfincsWindowsNetCDFX64" cleanDestination="true">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="sfincs.zip!** =&gt; sfincs" />
+        <artifact sourcePath="sfincs.zip!** =&gt; FloodAdapt/tests/system/sfincs/" />
       </dependency>
     </artifact-dependencies>
     <dependencies>

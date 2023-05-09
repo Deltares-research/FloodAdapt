@@ -1,12 +1,18 @@
 from typing import Any
 
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.measures import IElevate, IMeasure
+from flood_adapt.object_model.interface.measures import (
+    IBuyout,
+    IElevate,
+    IFloodProof,
+    IMeasure,
+)
 
 
 def get_measures(database: IDatabase) -> dict[str, Any]:
-    # sorting and filtering either with PyQt table or in the API
     return database.get_measures()
 
 
@@ -16,6 +22,16 @@ def get_measure(name: str, database: IDatabase) -> IMeasure:
 
 def create_elevate_measure(attrs: dict[str, Any], database: IDatabase) -> IElevate:
     return Elevate.load_dict(attrs, database.input_path)
+
+
+def create_buyout_measure(attrs: dict[str, Any], database: IDatabase) -> IBuyout:
+    return Buyout.load_dict(attrs, database.input_path)
+
+
+def create_floodproof_measure(
+    attrs: dict[str, Any], database: IDatabase
+) -> IFloodProof:
+    return FloodProof.load_dict(attrs, database.input_path)
 
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:

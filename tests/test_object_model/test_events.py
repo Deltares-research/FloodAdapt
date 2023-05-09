@@ -1,9 +1,13 @@
+from datetime import datetime
 from pathlib import Path
 
 import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.interface.events import (
     Mode,
     Template,
@@ -113,3 +117,16 @@ def test_load_and_save_fromtoml_synthetic():
     # ensure it's saving a file
     test_synthetic.save(test_save_toml)
     test_save_toml.unlink()  # added this to delete the file afterwards
+
+
+def test_download_wl_timeseries():
+    station_id = 8665530
+    start_time_str = "20230101 000000"
+    stop_time_str = "20230102 000000"
+
+    wl_df = HistoricalNearshore.download_wl_data(
+        station_id, start_time_str, stop_time_str
+    )
+
+    assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
+    assert wl_df.dtype == "float64"

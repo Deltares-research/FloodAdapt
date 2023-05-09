@@ -5,5 +5,6 @@ elevation.value = 1
 elevation.units = "feet"
 elevation.type = "floodmap"
 selection_type = "aggregation_area"
-aggregation_area_name = "test_area_1"
+aggregation_area_type = "aggr_lvl_2"
+aggregation_area_name = "name5"
 property_type = "RES"

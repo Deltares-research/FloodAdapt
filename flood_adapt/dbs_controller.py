@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from geopandas import GeoDataFrame
+from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -20,7 +21,6 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.fiat import Fiat
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -190,13 +190,18 @@ class Database(IDatabase):
         GeoDataFrame
             building footprints with all the FIAT columns
         """
-        fiat_model = Fiat(
-            fiat_path=self.input_path.parent / "static" / "templates" / "fiat",
-            crs=self.site.attrs.fiat.exposure_crs,
+        # use hydromt-fiat to load the fiat model
+        fm = FiatModel(
+            root=self.input_path.parent / "static" / "templates" / "fiat",
+            mode="r",
         )
-        buildings = fiat_model.get_buildings(
-            type="ALL", non_building_names=self.site.attrs.fiat.non_building_names
+        fm.read()
+        buildings = fm.exposure.select_objects(
+            type="ALL",
+            non_building_names=self.site.attrs.fiat.non_building_names,
+            return_gdf=True,
         )
+
         return buildings
 
     # Measure methods
@@ -367,6 +372,12 @@ class Database(IDatabase):
                 / event.attrs.name
                 / f"{event.attrs.name}.toml"
             )
+
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+        df.to_csv(
+            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            header=False,
+        )
 
     def edit_event(self, event: IEvent):
         """Edits an already existing event in the database.

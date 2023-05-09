@@ -1,7 +1,9 @@
 import os
 from typing import Union
 
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.interface.measures import HazardType, ImpactType
 from flood_adapt.object_model.measure import Measure
@@ -38,9 +40,9 @@ class ImpactMeasureFactory:
         if impact_measure == "elevate_properties":
             return Elevate
         elif impact_measure == "buyout_properties":
-            pass
+            return Buyout
         elif impact_measure == "floodproof_properties":
-            pass
+            return FloodProof
 
 
 class HazardMeasureFactory:
