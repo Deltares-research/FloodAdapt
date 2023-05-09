@@ -707,7 +707,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        projections = self.get_object_list(object_type="Projections")
+        projections = self.get_object_list(object_type="projections")
         objects = [Projection.load_file(path) for path in projections["path"]]
         projections["name"] = [obj.attrs.name for obj in objects]
         projections["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -722,7 +722,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        events = self.get_object_list(object_type="Events")
+        events = self.get_object_list(object_type="events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
         events["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -737,7 +737,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        measures = self.get_object_list(object_type="Measures")
+        measures = self.get_object_list(object_type="measures")
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -758,7 +758,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        strategies = self.get_object_list(object_type="Strategies")
+        strategies = self.get_object_list(object_type="strategies")
         objects = [Strategy.load_file(path) for path in strategies["path"]]
         strategies["name"] = [obj.attrs.name for obj in objects]
         strategies["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -773,7 +773,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        scenarios = self.get_object_list(object_type="Scenarios")
+        scenarios = self.get_object_list(object_type="scenarios")
         objects = [Scenario.load_file(path) for path in scenarios["path"]]
         scenarios["name"] = [obj.attrs.name for obj in objects]
         scenarios["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -788,11 +788,11 @@ class Database(IDatabase):
 
     def get_outputs(self) -> dict[str, Any]:
         all_scenarios = pd.DataFrame(self.get_scenarios())
-        finished = (
-            all_scenarios[all_scenarios["finished"]]
-            .drop(columns="finished")
-            .reset_index(drop=True)
-        )
+        if len(all_scenarios) > 0:
+            df = all_scenarios[all_scenarios["finished"]]
+        else:
+            df = all_scenarios
+        finished = df.drop(columns="finished").reset_index(drop=True)
         return finished.to_dict()
 
     def get_topobathy_path(self) -> str:
