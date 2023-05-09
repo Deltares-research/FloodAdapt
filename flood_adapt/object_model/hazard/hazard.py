@@ -211,7 +211,7 @@ class Hazard:
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
             return NotImplemented
-        test_event = self.event == other.event
-        test_phys_proj = self.physical_projection == other.physical_projection
-        test_haz_strat = self.hazard_strategy == other.hazard_strategy
-        return test_event & test_phys_proj & test_haz_strat
+        test1 = self.event == other.event
+        test2 = self.physical_projection == other.physical_projection
+        test3 = self.hazard_strategy == other.hazard_strategy
+        return test1 & test2 & test3
