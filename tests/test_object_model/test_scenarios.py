@@ -97,6 +97,23 @@ def test_has_hazard_run():
         / "charleston"
         / "input"
         / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+
+
+def test_infographic():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
         / "current_extreme12ft_strategy_impact_comb"
         / "current_extreme12ft_strategy_impact_comb.toml"
     )
