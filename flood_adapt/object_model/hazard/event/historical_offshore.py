@@ -1,9 +1,6 @@
 import os
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Union
 
-import pandas as pd
 import tomli
 import tomli_w
 
@@ -35,7 +32,6 @@ class HistoricalOffshore(Event, IEvent):
         obj = HistoricalOffshore()
         obj.attrs = HistoricalOffshoreModel.parse_obj(data)
         return obj
-    
 
     def save(self, filepath: Union[str, os.PathLike]):
         """Saving event toml

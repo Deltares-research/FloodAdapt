@@ -1,9 +1,12 @@
+# import glob
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import tomli
+
+# import xarray as xr
 from pyproj import CRS
 
 from flood_adapt.object_model.hazard.event.cht_scripts.meteo import (
@@ -98,21 +101,6 @@ class Event:
             )
 
     def download_meteo(self, site: ISite, path: Path):
-        # Determine to dowload wind and/or rainfall data
-        # if self.attrs.template == "Historical_offshore":
-        #     if self.attrs.wind.source == "map" and self.attrs.rainfall.source == "map":
-        #         params = ["wind","barometric_pressure","precipitation"]
-        #     elif self.attrs.wind.source == "map" and self.attrs.rainfall.source != "map":
-        #         params = ["wind", "barometric_pressure"]
-        #     elif self.attrs.wind.source != "map" and self.attrs.rainfall.source == "map":
-        #         params = ["precipitation"]
-        # elif self.attrs.template == "Historical_nearshore":
-        #     if self.attrs.wind.source == "map" and self.attrs.rainfall.source == "map":
-        #         params = ["wind","precipitation"]
-        #     elif self.attrs.wind.source == "map" and self.attrs.rainfall.source != "map":
-        #         params = ["wind"]
-        #     elif self.attrs.wind.source != "map" and self.attrs.rainfall.source == "map":
-        #         params = ["precipitation"]
 
         params = ["wind", "barometric_pressure", "precipitation"]
         lon = site.attrs.lon
@@ -143,4 +131,26 @@ class Event:
         gfs_conus.download(time_range)
         gfs_conus.collect(time_range)
 
-        return gfs_conus
+        # # Create an empty list to hold the datasets
+        # datasets = []
+
+        # # Loop over each file and create a new dataset with a time coordinate
+        # for filename in sorted(glob.glob(path)):
+        #     # Open the file as an xarray dataset
+        #     ds = xr.open_dataset(filename)
+            
+        #     # Extract the timestring from the filename and convert to pandas datetime format
+        #     time_str = filename.split('.')[-2]
+        #     time = pd.to_datetime(time_str, format='%Y%m%d_%H%M')
+            
+        #     # Add the time coordinate to the dataset
+        #     ds['time'] = time
+            
+        #     # Append the dataset to the list
+        #     datasets.append(ds)
+
+        # # Concatenate the datasets along the new time coordinate
+        # ds = xr.concat(datasets, dim='time')
+        # ds.raster.set_crs(4326)
+
+        return gfs_conus # ds

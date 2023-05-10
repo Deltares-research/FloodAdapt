@@ -1,5 +1,4 @@
-# import subprocess
-# import sys
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -95,7 +94,6 @@ class Hazard:
             self.wl_ts = self.event.tide_surge_ts
         elif self.event.template == "Historical_nearshore":
             wl_df = self.event.tide_surge_ts
-            wl_df = HistoricalNearshore.wl_ts_rel_to_tstart(wl_df)
             self.wl_ts = wl_df
         # In both cases add the slr and offset
         self.wl_ts[1] = (
@@ -138,6 +136,7 @@ class Hazard:
         run_folder_overland = path_on_p.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.overland_model
         )
+        os.mkdir(run_folder_overland)
         path_on_p.joinpath(
             "output/simulations", self.name, site.attrs.sfincs.offshore_model
         )
@@ -147,6 +146,13 @@ class Hazard:
 
         # adjust timing of model
         model.set_timing(self.event.attrs)
+
+        # Download meteo files if necessary
+        if (
+            self.event.attrs.wind.source == "map"
+            or self.event.attrs.rainfall.source == "map"
+        ):
+            gfs_conus = self.event.download_meteo(site=site, path=run_folder_overland)
 
         # Generate and change water level boundary condition
         template = self.event.attrs.template
@@ -165,7 +171,15 @@ class Hazard:
             offshore_model.add_bzs_from_bca(self.event.attrs)
 
             # Add wind pressure forcing from files.
-            
+            if self.event.attrs.wind.source == "map":
+                offshore_model.add_wind_forcing_from_grid(
+                    wind_u=gfs_conus["wind_u"], wind_v=gfs_conus["wind_v"]
+                )
+                offshore_model.add_pressure_forcing_from_grid(
+                    press=gfs_conus["pressure"]
+                )
+            elif self.event.attrs.wind.source == "timeseries":
+                offshore_model.add_wind_forcing()
 
             # run offshore model
 
