@@ -13,6 +13,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
@@ -176,6 +177,57 @@ class Database(IDatabase):
 
         # write html to results folder
         output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
+
+    def plot_wl(self, event: IEvent) -> str:
+        if event['template'] == "Synthetic":
+            temp_event = Synthetic.load_dict(event)
+            temp_event.add_tide_and_surge_ts()
+            wl_df = temp_event.tide_surge_ts
+            wl_df.index = np.arange(
+                -temp_event.attrs.time.duration_before_t0,
+                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                1 / 6,
+            )
+            wl_df["Time"] = wl_df.index
+        else:
+            NotImplementedError("Plotting only available for Synthetic event.")
+
+        # convert to units used in GUI
+        wl_current_units = UnitfulLength(value=float(wl_df.iloc[0, 0]), units="meters")
+        gui_units = self.site.attrs.gui.default_length_units
+        wl_gui_units = wl_current_units.convert(gui_units)
+        conversion_factor = wl_gui_units / wl_current_units.value
+        wl_df[1] = conversion_factor * wl_df[1]
+        wl_df = wl_df.rename(columns={1:f"Water level (tide + surge) [{gui_units}]"})
+
+        # Plot actual thing
+        fig = px.line(
+            wl_df,
+            x="Time",
+            y=f"Water level (tide + surge) [{gui_units}]",
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 1.2,
+            width=280 * 1.3,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "wl.html")
         output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
         return str(output_loc)
