@@ -4,6 +4,10 @@ channels:
   - conda-forge
 
 dependencies:
+  - pip
+  - pip:
+    - NDBC
+    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
   - black
   - build
   - geopandas
@@ -12,11 +16,6 @@ dependencies:
   - mypy
   - numpy
   - pandas
-  - pip
-  - pip:
-    - noaa-coops
-    - NDBC
-    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
   - plotly
   - pydantic
   - pytest
@@ -24,3 +23,5 @@ dependencies:
   - tomli
   - tomli-w
   - twine
+  - noaa-coops
+  - census
