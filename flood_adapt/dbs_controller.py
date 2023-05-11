@@ -10,9 +10,11 @@ import pandas as pd
 import plotly.express as px
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
@@ -176,6 +178,60 @@ class Database(IDatabase):
 
         # write html to results folder
         output_loc = self.input_path.parent.joinpath("temp", "slr.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
+
+    def plot_wl(self, event: IEvent) -> str:
+        if event["template"] == "Synthetic":
+            temp_event = Synthetic.load_dict(event)
+            temp_event.add_tide_and_surge_ts()
+            wl_df = temp_event.tide_surge_ts
+            wl_df.index = np.arange(
+                -temp_event.attrs.time.duration_before_t0,
+                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                1 / 6,
+            )
+            wl_df["Time"] = wl_df.index
+        else:
+            NotImplementedError("Plotting only available for Synthetic event.")
+
+        # convert to units used in GUI
+        wl_current_units = UnitfulLength(value=float(wl_df.iloc[0, 0]), units="meters")
+        gui_units = self.site.attrs.gui.default_length_units
+        wl_gui_units = wl_current_units.convert(gui_units)
+        if wl_current_units.value == 0:
+            conversion_factor = 1
+        else:
+            conversion_factor = wl_gui_units / wl_current_units.value
+        wl_df[1] = conversion_factor * wl_df[1]
+        wl_df = wl_df.rename(columns={1: f"Water level (tide + surge) [{gui_units}]"})
+
+        # Plot actual thing
+        fig = px.line(
+            wl_df,
+            x="Time",
+            y=f"Water level (tide + surge) [{gui_units}]",
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "wl.html")
         output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
         return str(output_loc)
@@ -706,7 +762,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        projections = self.get_object_list(object_type="Projections")
+        projections = self.get_object_list(object_type="projections")
         objects = [Projection.load_file(path) for path in projections["path"]]
         projections["name"] = [obj.attrs.name for obj in objects]
         projections["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -721,7 +777,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        events = self.get_object_list(object_type="Events")
+        events = self.get_object_list(object_type="events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
         events["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -736,7 +792,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        measures = self.get_object_list(object_type="Measures")
+        measures = self.get_object_list(object_type="measures")
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -757,7 +813,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        strategies = self.get_object_list(object_type="Strategies")
+        strategies = self.get_object_list(object_type="strategies")
         objects = [Strategy.load_file(path) for path in strategies["path"]]
         strategies["name"] = [obj.attrs.name for obj in objects]
         strategies["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -772,11 +828,58 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        scenarios = self.get_object_list(object_type="Scenarios")
+        scenarios = self.get_object_list(object_type="scenarios")
         objects = [Scenario.load_file(path) for path in scenarios["path"]]
         scenarios["name"] = [obj.attrs.name for obj in objects]
         scenarios["long_name"] = [obj.attrs.long_name for obj in objects]
+        scenarios["Projection"] = [obj.attrs.projection for obj in objects]
+        scenarios["Event"] = [obj.attrs.event for obj in objects]
+        scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
+        scenarios["finished"] = [
+            obj.init_object_model().direct_impacts.has_run for obj in objects
+        ]
+
         return scenarios
+
+    def get_outputs(self) -> dict[str, Any]:
+        all_scenarios = pd.DataFrame(self.get_scenarios())
+        if len(all_scenarios) > 0:
+            df = all_scenarios[all_scenarios["finished"]]
+        else:
+            df = all_scenarios
+        finished = df.drop(columns="finished").reset_index(drop=True)
+        return finished.to_dict()
+
+    def get_topobathy_path(self) -> str:
+        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        return str(path)
+
+    def get_index_path(self) -> str:
+        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
+        return str(path)
+
+    def get_max_water_level(self, scenario_name: str):
+        """returns an array with the maximum water levels of the SFINCS simulation
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        # raise NotImplementedError
+        model_path = self.input_path.parent.joinpath(
+            "output", "simulations", scenario_name, "overland"
+        )
+        mod = SfincsModel(model_path, mode="r")
+
+        zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+
+        return zsmax
 
     def get_object_list(self, object_type: str) -> dict[str, Any]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
@@ -806,3 +909,47 @@ class Database(IDatabase):
         }
 
         return objects
+
+    def has_run_hazard(self, scenario_name: str) -> None:
+        """Check if there is already a simulation that has the exact same hazard component.
+        If yes that is copied to avoid running the hazard model twice.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of the scenario to check if needs to be rerun for hazard
+        """
+        scenario = self.get_scenario(scenario_name)
+
+        simulations = list(
+            self.input_path.parent.joinpath("output", "simulations").glob("*")
+        )
+
+        scns_simulated = [self.get_scenario(sim.name) for sim in simulations]
+
+        for scn in scns_simulated:
+            if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
+                path_0 = self.input_path.parent.joinpath(
+                    "output", "simulations", scn.attrs.name
+                )
+                path_new = self.input_path.parent.joinpath(
+                    "output", "simulations", scenario.attrs.name
+                )
+
+                shutil.copytree(path_0, path_new)
+                print(f"Hazard simulation is used from the '{scn.attrs.name}' scenario")
+
+    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        """Runs a scenario hazard and impacts.
+
+        Parameters
+        ----------
+        scenario_name : Union[str, list[str]]
+            name(s) of the scenarios to run.
+        """
+        if not isinstance(scenario_name, list):
+            scenario_name = [scenario_name]
+        for scn in scenario_name:
+            self.has_run_hazard(scn)
+            scenario = self.get_scenario(scn)
+            scenario.run()

@@ -42,10 +42,10 @@ class Hazard:
         self.simulation_path = database_input_path.parent.joinpath(
             "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
         )
-        self.has_run = self.sfincs_has_run_check(self.simulation_path)
+        self.has_run = self.sfincs_has_run_check()
 
-    @staticmethod
-    def sfincs_has_run_check(sfincs_path: str):
+    def sfincs_has_run_check(self):
+        sfincs_path = self.simulation_path
         test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
 
         sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
@@ -139,6 +139,9 @@ class Hazard:
     def run_models(self):
         self.run_sfincs()
 
+        # Indicator that hazard has run
+        self.__setattr__("has_run", True)
+
     def run_sfincs(self):
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
@@ -179,10 +182,12 @@ class Hazard:
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
-        file_path = Path(__file__).resolve()
-
         sfincs_exec = (
-            file_path.parents[3] / "tests" / "system" / "sfincs" / "sfincs.exe"
+            self.database_input_path.parents[2]
+            / "system"
+            / "sfincs"
+            / self.site.attrs.sfincs.version
+            / "sfincs.exe"
         )
 
         with cd(self.simulation_path):
@@ -190,5 +195,11 @@ class Hazard:
             with open(sfincs_log, "w") as log_handler:
                 subprocess.run(sfincs_exec, stdout=log_handler)
 
-        # Indicator that sfincs model has run
-        self.__setattr__("has_run", True)
+    def __eq__(self, other):
+        if not isinstance(other, Hazard):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+        test1 = self.event == other.event
+        test2 = self.physical_projection == other.physical_projection
+        test3 = self.hazard_strategy == other.hazard_strategy
+        return test1 & test2 & test3

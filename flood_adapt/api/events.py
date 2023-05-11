@@ -73,6 +73,10 @@ def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return HistoricalNearshore.read_wl_csv(csvpath)
 
 
+def plot_wl(event: IEvent, database: IDatabase) -> str:
+    return database.plot_wl(event)
+
+
 # def get_event(name: str) -> dict():  # get attributes
 #     pass
 

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.scenarios import IScenario
@@ -30,5 +30,5 @@ def delete_scenario(name: str, database: IDatabase) -> None:
     database.delete_scenario(name)
 
 
-def run_hazard_models(scenario: IScenario) -> None:
-    scenario.run_hazard_models()
+def run_scenario(name: Union[str, list[str]], database: IDatabase) -> None:
+    database.run_scenario(name)

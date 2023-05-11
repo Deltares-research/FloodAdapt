@@ -36,6 +36,21 @@ class DirectImpacts:
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(scenario, database_input_path)
+        # Define results path
+        self.results_path = (
+            self.database_input_path.parent
+            / "output"
+            / "results"
+            / self.scenario.name
+            / "fiat_model"
+        )
+        self.has_run = self.fiat_has_run_check()
+
+    def fiat_has_run_check(self):
+        # TODO update to actual check in files
+        fiat_path = self.results_path
+
+        return fiat_path.exists()
 
     def set_socio_economic_change(self, projection: str) -> None:
         """Sets the SocioEconomicChange object of the scenario.
@@ -78,6 +93,9 @@ class DirectImpacts:
     def run_models(self):
         self.run_fiat()
 
+        # Indicator that direct impacts have run
+        self.__setattr__("has_run", True)
+
     def run_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
 
@@ -97,20 +115,11 @@ class DirectImpacts:
             model_root=template_path, database_path=self.database_input_path.parent
         )
 
-        # Define results path
-        results_path = (
-            self.database_input_path.parent
-            / "output"
-            / "results"
-            / self.scenario.name
-            / "fiat_model"
-        )
-
         # If path for results does not yet exist, make it
-        if not results_path.is_dir():
-            results_path.mkdir(parents=True)
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
         else:
-            shutil.rmtree(results_path)
+            shutil.rmtree(self.results_path)
 
         # Get ids of existing objects
         ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
@@ -173,14 +182,11 @@ class DirectImpacts:
         # fa.set_hazard(self.hazard)
 
         # Save the updated FIAT model
-        fa.fiat_model.set_root(results_path)
+        fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
 
         # Then run FIAT
         print("FIAT not working yet")
-
-        # Indicator that fiat model has run
-        self.__setattr__("has_run", True)
 
     def infographic(
         self,
