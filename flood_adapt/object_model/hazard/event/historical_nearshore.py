@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
-import cht_observation.observation_stations as cht_station
+import cht_observations.observation_stations as cht_station
 import pandas as pd
 import tomli
 import tomli_w

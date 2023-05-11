@@ -146,13 +146,12 @@ class Hazard:
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
         path_in_offshore = input_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.overland_model
+            "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        event_path = (
+        event_dir = (
             self.database_input_path
             / "events"
             / self.event.attrs.name
-            / "{}.toml".format(self.event.attrs.name)
         )
         sfincs_exec = (
             self.database_input_path.parents[2]
@@ -173,12 +172,13 @@ class Hazard:
             self.event.attrs.wind.source == "map"
             or self.event.attrs.rainfall.source == "map"
         ):
-            ds = self.event.download_meteo(site=self.site, path=event_path)
+            ds = self.event.download_meteo(site=self.site, path=event_dir)
 
         # Generate and change water level boundary condition
         template = self.event.attrs.template
         if template == "Synthetic" or template == "Historical_nearshore":
             self.add_wl_ts()
+            model.add_wl_bc_from_ts(self.wl_ts)
         elif template == "Historical_offshore":
             # Use offshore model to derive water level boundary conditions for overland model
 
@@ -196,10 +196,10 @@ class Hazard:
                 offshore_model.add_wind_forcing_from_grid(
                     wind_u=ds["wind_u"], wind_v=ds["wind_v"]
                 )
-                offshore_model.add_pressure_forcing_from_grid(press=ds["pressure"])
+                offshore_model.add_pressure_forcing_from_grid(press=ds["barometric_pressure"])
             elif self.event.attrs.wind.source == "timeseries":
                 offshore_model.add_wind_forcing(
-                    timeseries=event_path.joinpath("wind.csv")
+                    timeseries=event_dir.joinpath("wind.csv")
                 )
             elif self.event.attrs.wind.source == "constant":
                 offshore_model.add_wind_forcing(
@@ -216,7 +216,7 @@ class Hazard:
 
             # Run the offshore model
             with cd(
-                self.simulation_path.joinpath(self.site.attrs.sfincs.overland_model)
+                self.simulation_path.joinpath(self.site.attrs.sfincs.offshore_model)
             ):
                 sfincs_log = "sfincs.log"
                 with open(sfincs_log, "w") as log_handler:
@@ -224,15 +224,11 @@ class Hazard:
 
             # take his results from offshore model as input for wl bnd
             wl_df = offshore_model.get_wl_df_from_offshore_his_results()
+            model.add_wl_bc(wl_df)
 
         elif template == "Hurricane":
             raise NotImplementedError
-
-        # Add waterlevel boundary conditions to overland model
-        if template == "HistoricalNearshore" or template == "Synthetic":
-            model.add_wl_bc_from_ts(self.wl_ts)
-        elif template == "HistoricalOffshore":
-            model.add_wl_bc(wl_df)
+            
 
         # Generate and change discharge boundary condition
         self.add_discharge()
@@ -242,7 +238,7 @@ class Hazard:
         if self.event.attrs.rainfall.source == "map":
             model.add_precip_forcing_from_grid(precip=ds["precipitation"])
         elif self.event.attrs.rainfall.source == "timeseries":
-            model.add_precip_forcing(timeseries=event_path.joinpath("rainfall.csv"))
+            model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
         elif self.event.attrs.wind.source == "constant":
             model.add_precip_forcing(
                 const_precip=self.event.attrs.rainfall.constant_intensity
@@ -252,7 +248,7 @@ class Hazard:
         if self.event.attrs.wind.source == "map":
             model.add_wind_forcing_from_grid(wind_u=ds["wind_u"], wind_v=ds["wind_v"])
         elif self.event.attrs.wind.source == "timeseries":
-            model.add_wind_forcing(timeseries=event_path.joinpath("wind.csv"))
+            model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
         elif self.event.attrs.wind.source == "constant":
             model.add_wind_forcing(
                 const_mag=self.event.attrs.wind.constant_speed.value,

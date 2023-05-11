@@ -132,7 +132,7 @@ class Event:
         datasets = []
 
         # Loop over each file and create a new dataset with a time coordinate
-        for filename in sorted(glob.glob(path)):
+        for filename in sorted(glob.glob(str(path.joinpath("*.nc")))):
             # Open the file as an xarray dataset
             ds = xr.open_dataset(filename)
 

@@ -77,6 +77,11 @@ class SfincsAdapter:
         self.add_wl_bc(df_ts)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
+        
+        # Determine bnd points from reference overland model
+        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
+        gdf_locs.crs = self.sf_model.crs
+        
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
@@ -115,7 +120,7 @@ class SfincsAdapter:
 
     def get_wl_df_from_offshore_his_results(self):
         ds_his = utils.read_sfincs_his_results(
-            Path(self.sf_model.root).joinpath("results_his.nc"),
+            Path(self.sf_model.root).joinpath("sfincs_his.nc"),
             crs=self.sf_model.crs.to_epsg(),
         )
         wl_df = pd.DataFrame(
