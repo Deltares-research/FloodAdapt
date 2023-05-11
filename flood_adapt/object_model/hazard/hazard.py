@@ -182,12 +182,8 @@ class Hazard:
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
-        file_path = Path(__file__).resolve()
-
-        sfincs_exec = (
-            file_path.parents[3] / "tests" / "system" / "sfincs" / "sfincs.exe"
-        )
-
+        sfincs_exec = self.database_input_path.parents[2] / "system" / "sfincs" / self.site.attrs.sfincs.version / "sfincs.exe"
+        
         with cd(self.simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
