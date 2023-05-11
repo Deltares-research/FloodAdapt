@@ -114,8 +114,8 @@ def test_infographic():
         / "charleston"
         / "input"
         / "scenarios"
-        / "current_extreme12ft_strategy_impact_comb"
-        / "current_extreme12ft_strategy_impact_comb.toml"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
     )
 
     assert test_toml.is_file()
@@ -123,6 +123,7 @@ def test_infographic():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
+    test_scenario.infographic()
 
 
 @pytest.mark.skip(reason="We cannot depend on the P drive")

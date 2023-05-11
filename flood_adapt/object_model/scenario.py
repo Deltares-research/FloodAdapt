@@ -2,8 +2,12 @@ import os
 from pathlib import Path
 from typing import Any, Union
 
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
 import tomli
 import tomli_w
+from plotly.subplots import make_subplots
 
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
@@ -62,3 +66,144 @@ class Scenario(IScenario):
         """run direct impact models for the scenario"""
         self.init_object_model()
         self.direct_impacts.run_models()
+
+    def infographic(self) -> None:
+        self.has_run_impact = (
+            True  # TODO remove when this has been added through the Fiat adapter
+        )
+        database_output_path = Path(self.database_input_path).parent.joinpath(
+            "output", "results", self.attrs.name, "fiat_model", "output"
+        )
+
+        if self.has_run_impact:
+            # read FIAT results per object from csv file
+            csv_file = database_output_path.joinpath(f"{self.attrs.name}_results.csv")
+            df = pd.read_csv(csv_file)
+
+            # calculate FEMA damage categories
+            df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
+                df[
+                    [
+                        "Max Potential Damage: Structure",
+                        "Max Potential Damage: Content",
+                        "Max Potential Damage: Other",
+                    ]
+                ],
+                axis=1,
+            )
+            df["Relative Structure Damage"] = (
+                df["Structure Damage Event"] / df["Max Potential Damage: Structure"]
+            )
+            df["Damage Level"] = np.where(
+                df["Relative Damage"] > 0.3, "Severe  (>30%)", "Moderate (<30%)"
+            )
+            df["Damage Level"] = np.where(
+                df["Relative Damage"] < 0.05, "Minor (<5%)", df["Damage Level"]
+            )
+            df["Damage Level"] = np.where(
+                np.isnan(df["Relative Damage"]), "NaN", df["Damage Level"]
+            )
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] != 0, "Affected", np.nan
+            )
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] > 0.25, "Minor", df["FEMA"]
+            )
+            df["FEMA"] = np.where(
+                df["Inundation Depth Event Structure"] > 1.5, "Major", df["FEMA"]
+            )
+            df["FEMA"] = np.where(
+                df["Relative Structure Damage"] > 0.9, "Destroyed", df["FEMA"]
+            )
+
+            categories = ["Affected", "Minor", "Major", "Destroyed"]
+            FEMA_count = {cat: len(df[df["FEMA"] == cat]) for cat in categories}
+            df_affected = pd.DataFrame(FEMA_count.items()).rename(
+                columns={0: "Category", 1: "Count"}
+            )
+
+            # calculate
+
+            fig = make_subplots(rows=1, cols=2)
+
+            fig.add_trace(
+                go.Pie(
+                    labels=df_affected["Category"],
+                    values=df_affected["Count"],
+                    hole=0.6,
+                    title=("FEMA Flood Damage Categories"),
+                    sort=False,
+                    marker={
+                        "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                        "line": {"color": "#000000", "width": 2},
+                    },
+                    row=1,
+                    col=1,
+                )
+            )
+            #         df_affected,
+            #         values="Count",
+            #         names="Category",
+            #         hole=0.6,
+            #         title=("FEMA Flood Damage Categories"),
+            #     ),
+            #     row=1,
+            #     col=1,
+            # )
+
+            # fig.add_trace(
+            #     go.Scatter(x=[20, 30, 40], y=[50, 60, 70]),
+            #     row=1, col=2
+            # )
+
+            # fig = px.pie(
+            #     df_affected,
+            #     values="Count",
+            #     names="Category",
+            #     hole=0.6,
+            #     title=("FEMA Flood Damage Categories"),
+            # )
+
+            # fig.update_traces(
+            #     sort=False,
+            #     marker={
+            #         "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+            #         "line": {"color": "#000000", "width": 2},
+            #     },
+            # )
+
+            fig.add_layout_image(
+                {
+                    "source": "https://openclipart.org/image/800px/217511",
+                    "sizex": 0.3,
+                    "sizey": 0.3,
+                    "x": 0.5,
+                    "y": 0.55,
+                    "xanchor": "center",
+                    "yanchor": "middle",
+                    "visible": True,
+                }
+            )
+
+            fig.add_annotation(
+                x=0.5,
+                y=0.3,
+                text="{}".format(df_affected["Count"].sum()),
+                font={"size": 60, "family": "Verdana", "color": "black"},
+                showarrow=False,
+            )
+
+            fig.update_layout(
+                autosize=True,
+                height=700,
+                width=700,
+                margin={"r": 20, "l": 50, "b": 20, "t": 20},
+                # title=("FEMA Flood Damage Categories"),
+            )
+
+            # write html to results folder
+            fig.write_html(database_output_path.joinpath(self.attrs.name, ".html"))
+        else:
+            raise ValueError(
+                "The Direct Impact Model has not run yet. No inforgraphic can be produced."
+            )
