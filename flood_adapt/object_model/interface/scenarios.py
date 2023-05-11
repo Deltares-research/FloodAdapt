@@ -39,3 +39,8 @@ class IScenario(ABC):
     @abstractmethod
     def run(self) -> None:
         ...
+
+    @abstractmethod
+    def infographic(self) -> str:
+        """creates an infographic and saves it in the scenario results folder"""
+        ...

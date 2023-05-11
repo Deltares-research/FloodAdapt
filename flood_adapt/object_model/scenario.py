@@ -72,17 +72,17 @@ class Scenario(IScenario):
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
 
-    def infographic(self) -> None:
+    def infographic(self) -> str:
         self.has_run_impact = (
             True  # TODO remove when this has been added through the Fiat adapter
         )
-        database_output_path = Path(self.database_input_path).parent.joinpath(
+        output_path = Path(self.database_input_path).parent.joinpath(
             "output", "results", self.attrs.name, "fiat_model", "output"
         )
 
         if self.has_run_impact:
             # read FIAT results per object from csv file
-            csv_file = database_output_path.joinpath(f"{self.attrs.name}_results.csv")
+            csv_file = output_path.joinpath(f"{self.attrs.name}_results.csv")
             df = pd.read_csv(csv_file)
 
             # calculate FEMA damage categories
@@ -132,7 +132,7 @@ class Scenario(IScenario):
                     for cat in categories
                 }
             if "road" in np.unique(df["Primary Object Type"]):
-                FEMA_count["buildings"] -= FEMA_count["road"]
+                FEMA_count["buildings"] = FEMA_count["All"] - FEMA_count["road"]
 
             # calculate
 
@@ -142,6 +142,11 @@ class Scenario(IScenario):
                 labels=FEMA_count.index.to_list(),
                 hole=0.6,
                 name="Buildings",
+                textposition="none",
+                marker={
+                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                    "line": {"color": "#000000", "width": 2},
+                },
             )
 
             trace2 = go.Pie(
@@ -149,6 +154,11 @@ class Scenario(IScenario):
                 labels=FEMA_count.index.to_list(),
                 hole=0.6,
                 name="Businesses",
+                textposition="none",
+                marker={
+                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                    "line": {"color": "#000000", "width": 2},
+                },
             )
 
             trace3 = go.Pie(
@@ -156,69 +166,50 @@ class Scenario(IScenario):
                 labels=FEMA_count.index.to_list(),
                 hole=0.6,
                 name="Education",
+                marker={
+                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                    "line": {"color": "#000000", "width": 2},
+                },
+            )
+
+            trace3 = go.Pie(
+                values=FEMA_count["EDU"].to_list(),
+                labels=FEMA_count.index.to_list(),
+                hole=0.6,
+                name="Education",
+                textposition="none",
+                marker={
+                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                    "line": {"color": "#000000", "width": 2},
+                },
             )
 
             fig = make_subplots(
-                rows=1,
+                rows=2,
                 cols=3,
-                specs=[[{"type": "domain"}, {"type": "domain"}, {"type": "domain"}]],
+                specs=[
+                    [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
+                    [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
+                ],
+                subplot_titles=[
+                    "Homes",
+                    "Businesses",
+                    "Critical Facilities",
+                    "Roads segments interrupted",
+                ],
             )
 
             fig.append_trace(trace1, 1, 1)
             fig.append_trace(trace2, 1, 2)
             fig.append_trace(trace3, 1, 3)
 
-            fig.write_html(database_output_path.joinpath(f"{self.attrs.name}.html"))
-
-            #         hole=0.6,
-            #         title=("FEMA Flood Damage Categories"),
-            #         sort=False,
-            #         marker={
-            #             "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-            #             "line": {"color": "#000000", "width": 2},
-            #         },
-            #         row=1,
-            #         col=1,
-            #     )
-            # )
-            #         df_affected,
-            #         values="Count",
-            #         names="Category",
-            #         hole=0.6,
-            #         title=("FEMA Flood Damage Categories"),
-            #     ),
-            #     row=1,
-            #     col=1,
-            # )
-
-            # fig.add_trace(
-            #     go.Scatter(x=[20, 30, 40], y=[50, 60, 70]),
-            #     row=1, col=2
-            # )
-
-            # fig = px.pie(
-            #     df_affected,
-            #     values="Count",
-            #     names="Category",
-            #     hole=0.6,
-            #     title=("FEMA Flood Damage Categories"),
-            # )
-
-            # fig.update_traces(
-            #     sort=False,
-            #     marker={
-            #         "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-            #         "line": {"color": "#000000", "width": 2},
-            #     },
-            # )
-
             fig.add_layout_image(
                 {
                     "source": "https://openclipart.org/image/800px/217511",
-                    "sizex": 0.3,
-                    "sizey": 0.3,
-                    "x": 0.5,
-                    "y": 0.55,
+                    "sizex": 0.1,
+                    "sizey": 0.1,
+                    "x": 0.145,
+                    "y": 0.83,
                     "xanchor": "center",
                     "yanchor": "middle",
                     "visible": True,
@@ -226,23 +217,46 @@ class Scenario(IScenario):
             )
 
             fig.add_annotation(
+                x=0.10,
+                y=0.785,
+                text="{}".format(FEMA_count["RES"].sum()),
+                font={"size": 16, "family": "Verdana", "color": "black"},
+                align="center",
+                showarrow=False,
+            )
+
+            fig.add_annotation(
                 x=0.5,
-                y=0.3,
-                text="{}".format(df_affected["Count"].sum()),
-                font={"size": 60, "family": "Verdana", "color": "black"},
+                y=0.785,
+                text="{}".format(FEMA_count["COM"].sum()),
+                font={"size": 16, "family": "Verdana", "color": "black"},
+                align="center",
+                showarrow=False,
+            )
+
+            fig.add_annotation(
+                x=0.87,
+                y=0.785,
+                text="{}".format(FEMA_count["EDU"].sum()),
+                font={"size": 16, "family": "Verdana", "color": "black"},
+                align="center",
                 showarrow=False,
             )
 
             fig.update_layout(
+                font={"size": 12, "family": "Verdana", "color": "black"},
                 autosize=True,
-                height=700,
-                width=700,
-                margin={"r": 20, "l": 50, "b": 20, "t": 20},
+                height=500,
+                width=800,
+                # margin={"r": 20, "l": 50, "b": 20, "t": 20},
                 # title=("FEMA Flood Damage Categories"),
             )
 
-            # write html to results folder
-            fig.write_html(database_output_path.joinpath(self.attrs.name, ".html"))
+            infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
+            fig.write_html(infographic_html)
+
+            return str(infographic_html)
+
         else:
             raise ValueError(
                 "The Direct Impact Model has not run yet. No inforgraphic can be produced."
