@@ -3,13 +3,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
+import cht_observation.observation_stations as cht_station
 import pandas as pd
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
-    StationSource,
-)
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
@@ -67,6 +65,6 @@ class HistoricalNearshore(Event, IEvent):
         start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
         stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
         # Get NOAA data
-        source = StationSource.source("noaa_coops")
+        source = cht_station.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
         return df
