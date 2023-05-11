@@ -66,14 +66,6 @@ def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return HistoricalNearshore.read_wl_csv(csvpath)
 
 
-def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
-    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
-
-
-def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-    return HistoricalNearshore.read_wl_csv(csvpath)
-
-
 # def get_event(name: str) -> dict():  # get attributes
 #     pass
 
