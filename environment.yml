@@ -9,6 +9,7 @@ dependencies:
     - NDBC
     - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
   - black
+  - ruff
   - build
   - geopandas
   - hydromt
