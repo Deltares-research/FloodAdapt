@@ -22,7 +22,6 @@ class HistoricalOffshore(Event, IEvent):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = HistoricalOffshoreModel.parse_obj(toml)
-
         return obj
 
     @staticmethod

@@ -57,7 +57,6 @@ class HistoricalNearshore(Event, IEvent):
         df = pd.read_csv(csvpath, index_col=0, names=[1])
         df.index.names = ["time"]
         df.index = pd.to_datetime(df.index)
-        # Save as attribute of HistoricalNearshore class
         return df
 
     @staticmethod

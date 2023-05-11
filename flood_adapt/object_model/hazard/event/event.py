@@ -1,18 +1,17 @@
-# import glob
+import glob
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import tomli
-
-# import xarray as xr
-from pyproj import CRS
-
-from flood_adapt.object_model.hazard.event.cht_scripts.meteo import (
+import xarray as xr
+from cht_meteo.meteo import (
     MeteoGrid,
     MeteoSource,
 )
+from pyproj import CRS
+
 from flood_adapt.object_model.interface.events import (
     EventModel,
     RiverModel,
@@ -128,31 +127,30 @@ class Event:
         time_range = [t0, t1]
 
         gfs_conus.download(time_range)
-        gfs_conus.collect(time_range)
 
-        # # Create an empty list to hold the datasets
-        # datasets = []
+        # Create an empty list to hold the datasets
+        datasets = []
 
-        # # Loop over each file and create a new dataset with a time coordinate
-        # for filename in sorted(glob.glob(path)):
-        #     # Open the file as an xarray dataset
-        #     ds = xr.open_dataset(filename)
+        # Loop over each file and create a new dataset with a time coordinate
+        for filename in sorted(glob.glob(path)):
+            # Open the file as an xarray dataset
+            ds = xr.open_dataset(filename)
 
-        #     # Extract the timestring from the filename and convert to pandas datetime format
-        #     time_str = filename.split('.')[-2]
-        #     time = pd.to_datetime(time_str, format='%Y%m%d_%H%M')
+            # Extract the timestring from the filename and convert to pandas datetime format
+            time_str = filename.split(".")[-2]
+            time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
 
-        #     # Add the time coordinate to the dataset
-        #     ds['time'] = time
+            # Add the time coordinate to the dataset
+            ds["time"] = time
 
-        #     # Append the dataset to the list
-        #     datasets.append(ds)
+            # Append the dataset to the list
+            datasets.append(ds)
 
-        # # Concatenate the datasets along the new time coordinate
-        # ds = xr.concat(datasets, dim='time')
-        # ds.raster.set_crs(4326)
+        # Concatenate the datasets along the new time coordinate
+        ds = xr.concat(datasets, dim="time")
+        ds.raster.set_crs(4326)
 
-        return gfs_conus  # ds
+        return ds
 
     def add_dis_ts(self):
         """adds discharge timeseries to event object

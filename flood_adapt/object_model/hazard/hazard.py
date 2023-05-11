@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -10,7 +9,6 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.hazard.utils import cd
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
@@ -40,7 +38,7 @@ class Hazard:
             database_input_path.parent / "static" / "site" / "site.toml"
         )
         self.simulation_path = database_input_path.parent.joinpath(
-            "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
+            "output", "simulations", self.name
         )
         self.has_run = self.sfincs_has_run_check(self.simulation_path)
 
@@ -136,24 +134,22 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_models(self, site: ISite):
+    def run_models(self):
         self.run_sfincs()
 
-        path_on_p = Path(
-            "p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston"
+    def run_sfincs(self):
+        input_path = self.database_input_path.parent
+        path_in = input_path.joinpath(
+            "static", "templates", self.site.attrs.sfincs.overland_model
         )
-        path_in = path_on_p.joinpath(
-            "static/templates", site.attrs.sfincs.overland_model
+        path_in_offshore = input_path.joinpath(
+            "static", "templates", self.site.attrs.sfincs.overland_model
         )
-        path_in_offshore = path_on_p.joinpath(
-            "static/templates", site.attrs.sfincs.offshore_model
-        )
-        run_folder_overland = path_on_p.joinpath(
-            "output/simulations", self.name, site.attrs.sfincs.overland_model
-        )
-        os.mkdir(run_folder_overland)
-        path_on_p.joinpath(
-            "output/simulations", self.name, site.attrs.sfincs.offshore_model
+        event_path = (
+            self.database_input_path
+            / "events"
+            / self.event.attrs.name
+            / "{}.toml".format(self.event.attrs.name)
         )
 
         # Load overland sfincs model
@@ -167,7 +163,7 @@ class Hazard:
             self.event.attrs.wind.source == "map"
             or self.event.attrs.rainfall.source == "map"
         ):
-            gfs_conus = self.event.download_meteo(site=site, path=run_folder_overland)
+            ds = self.event.download_meteo(site=self.site, path=event_path)
 
         # Generate and change water level boundary condition
         template = self.event.attrs.template
@@ -185,18 +181,30 @@ class Hazard:
             # set wl of offshore model
             offshore_model.add_bzs_from_bca(self.event.attrs)
 
-            # Add wind pressure forcing from files.
+            # Add wind and if applicable pressure forcing from files.
             if self.event.attrs.wind.source == "map":
                 offshore_model.add_wind_forcing_from_grid(
-                    wind_u=gfs_conus["wind_u"], wind_v=gfs_conus["wind_v"]
+                    wind_u=ds["wind_u"], wind_v=ds["wind_v"]
                 )
-                offshore_model.add_pressure_forcing_from_grid(
-                    press=gfs_conus["pressure"]
-                )
+                offshore_model.add_pressure_forcing_from_grid(press=ds["pressure"])
             elif self.event.attrs.wind.source == "timeseries":
-                offshore_model.add_wind_forcing()
+                offshore_model.add_wind_forcing(
+                    timeseries=event_path.joinpath("wind.csv")
+                )
+            elif self.event.attrs.wind.source == "constant":
+                offshore_model.add_wind_forcing(
+                    const_mag=self.event.attrs.wind.constant_speed.value,
+                    const_dir=self.event.attrs.wind.constant_direction.value,
+                )
 
-            # run offshore model
+            # write sfincs model in output destination
+            offshore_model.write_sfincs_model(
+                path_out=self.simulation_path.joinpath(
+                    self.site.attrs.sfincs.offshore_model
+                )
+            )
+
+            # Run the offshore model
 
             # take his results from offshore model as input for wl bnd
 
@@ -221,7 +229,11 @@ class Hazard:
         #     pass
 
         # write sfincs model in output destination
-        model.write_sfincs_model(path_out=self.simulation_path)
+        model.write_sfincs_model(
+            path_out=self.simulation_path.joinpath(
+                self.site.attrs.sfincs.overland_model
+            )
+        )
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
@@ -232,7 +244,7 @@ class Hazard:
             file_path.parents[3] / "tests" / "system" / "sfincs" / "sfincs.exe"
         )
 
-        with cd(self.simulation_path):
+        with cd(self.simulation_path.joinpath(self.site.attrs.sfincs.overland_model)):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
                 subprocess.run(sfincs_exec, stdout=log_handler)
