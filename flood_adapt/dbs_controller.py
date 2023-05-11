@@ -182,7 +182,7 @@ class Database(IDatabase):
         return str(output_loc)
 
     def plot_wl(self, event: IEvent) -> str:
-        if event['template'] == "Synthetic":
+        if event["template"] == "Synthetic":
             temp_event = Synthetic.load_dict(event)
             temp_event.add_tide_and_surge_ts()
             wl_df = temp_event.tide_surge_ts
@@ -199,9 +199,12 @@ class Database(IDatabase):
         wl_current_units = UnitfulLength(value=float(wl_df.iloc[0, 0]), units="meters")
         gui_units = self.site.attrs.gui.default_length_units
         wl_gui_units = wl_current_units.convert(gui_units)
-        conversion_factor = wl_gui_units / wl_current_units.value
+        if wl_current_units.value == 0:
+            conversion_factor = 1
+        else:
+            conversion_factor = wl_gui_units / wl_current_units.value
         wl_df[1] = conversion_factor * wl_df[1]
-        wl_df = wl_df.rename(columns={1:f"Water level (tide + surge) [{gui_units}]"})
+        wl_df = wl_df.rename(columns={1: f"Water level (tide + surge) [{gui_units}]"})
 
         # Plot actual thing
         fig = px.line(
@@ -214,8 +217,8 @@ class Database(IDatabase):
 
         fig.update_layout(
             autosize=False,
-            height=100 * 1.2,
-            width=280 * 1.3,
+            height=100 * 2,
+            width=280 * 2,
             margin={"r": 0, "l": 0, "b": 0, "t": 0},
             font={"size": 10, "color": "black", "family": "Arial"},
             title_font={"size": 10, "color": "black", "family": "Arial"},
