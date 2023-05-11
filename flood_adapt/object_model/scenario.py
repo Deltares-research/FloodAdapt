@@ -67,4 +67,3 @@ class Scenario(IScenario):
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
-
