@@ -28,7 +28,7 @@ dependencies = [
     "pydantic",
     "tomli-w",
     "tomli",
-    "plotly",
+    "plotly"
 ]
 dynamic = ["version"]
 

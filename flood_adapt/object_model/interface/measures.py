@@ -5,19 +5,22 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, validator
 
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitfulLengthRefValue,
+)
 
 
 class ImpactType(str, Enum):
     """Class describing the accepted input for the variable 'type' in ImpactMeasure"""
 
     elevate_properties = "elevate_properties"
-    buyout = "buyout"
-    floodproofing = "floodproofing"
+    buyout_properties = "buyout_properties"
+    floodproof_properties = "floodproof_properties"
 
 
 class HazardType(str, Enum):
-    """class describing the accepted input for the variable 'type' in HazardMeasure"""
+    """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
     pump = "pump"
@@ -32,7 +35,7 @@ class SelectionType(str, Enum):
 
 
 class MeasureModel(BaseModel):
-    """"""
+    """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     name: str
     long_name: str
@@ -51,7 +54,7 @@ class ImpactMeasureModel(MeasureModel):
 
     type: ImpactType
     selection_type: SelectionType
-    # TODO with aggregation area could have an option on type?
+    aggregation_area_type: Optional[str]
     aggregation_area_name: Optional[str]
     polygon_file: Optional[str]
     property_type: str
@@ -86,14 +89,32 @@ class ImpactMeasureModel(MeasureModel):
 
 
 class ElevateModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "elevate" impact measure"""
+
     elevation: UnitfulLengthRefValue
 
 
+class BuyoutModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "buyout" impact measure"""
+
+    ...  # Buyout has only the basic impact measure attributes
+
+
+class FloodProofModel(ImpactMeasureModel):
+    """BaseModel describing the expected variables and data types of the "floodproof" impact measure"""
+
+    elevation: UnitfulLength
+
+
 class FloodWallModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
+
     elevation: UnitfulLengthRefValue
 
 
 class IMeasure(ABC):
+    """This is a class for a FloodAdapt measure"""
+
     attrs: MeasureModel
 
     @staticmethod
@@ -114,8 +135,24 @@ class IMeasure(ABC):
 
 
 class IElevate(IMeasure):
+    """This is a class for a FloodAdapt "elevate" measure"""
+
     attrs: ElevateModel
 
 
+class IBuyout(IMeasure):
+    """This is a class for a FloodAdapt "buyout" measure"""
+
+    attrs: BuyoutModel
+
+
+class IFloodProof(IMeasure):
+    """This is a class for a FloodAdapt "floodproof" measure"""
+
+    attrs: FloodProofModel
+
+
 class IFloodWall(IMeasure):
+    """This is a class for a FloodAdapt "floodwall" measure"""
+
     attrs: FloodWallModel

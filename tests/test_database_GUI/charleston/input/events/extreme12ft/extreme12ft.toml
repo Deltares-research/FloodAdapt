@@ -1,0 +1,47 @@
+name = "extreme12ft"
+long_name = "extreme 12 foot event"
+mode = "single_scenario"
+template = "Synthetic"
+timing = "idealized"
+
+[water_level_offset]
+value = 0
+units = "feet"
+
+[wind]
+source = "constant"
+[wind.constant_speed]
+value = 0
+units = "m/s"
+[wind.constant_direction]
+value = 0
+units = "deg N"
+
+[rainfall]
+source = "none"
+
+[river]
+source = "constant"
+[river.constant_discharge]
+value = 5000
+units = "cfs"
+
+[time]
+duration_before_t0 = 24
+duration_after_t0 = 24
+
+[tide]
+source = "harmonic"
+[tide.harmonic_amplitude]
+value = 3
+units = "feet"
+
+[surge]
+source = "shape"
+shape_type = "gaussian"
+shape_duration = 24
+shape_peak_time = 0
+panel_text = "Storm Surge"
+[surge.shape_peak]
+value = 9.22
+units = "feet"

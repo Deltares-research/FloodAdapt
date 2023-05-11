@@ -16,7 +16,7 @@ class Source(StationSource):
         self.db.set_station_id(id)
         try:
             meta_data = self.db.station_info
-        except:
+        except:  # noqa: E722
             meta_data = None
         return meta_data
 

@@ -59,7 +59,7 @@ class Event:
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
         if river.source == "constant":
-            dis = river.constant_discharge.convert_to_cms() * np.array([1, 1])
+            dis = river.constant_discharge.convert("m3/s") * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], 1: dis})
             df = df.set_index("time")
@@ -81,7 +81,7 @@ class Event:
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
         if wind.source == "constant":
-            vmag = wind.constant_speed.convert_to_mps() * np.array([1, 1])
+            vmag = wind.constant_speed.convert("m/s") * np.array([1, 1])
             vdir = wind.constant_direction.value * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict(
@@ -101,7 +101,6 @@ class Event:
             )
 
     def download_meteo(self, site: ISite, path: Path):
-
         params = ["wind", "barometric_pressure", "precipitation"]
         lon = site.attrs.lon
         lat = site.attrs.lat
@@ -138,14 +137,14 @@ class Event:
         # for filename in sorted(glob.glob(path)):
         #     # Open the file as an xarray dataset
         #     ds = xr.open_dataset(filename)
-            
+
         #     # Extract the timestring from the filename and convert to pandas datetime format
         #     time_str = filename.split('.')[-2]
         #     time = pd.to_datetime(time_str, format='%Y%m%d_%H%M')
-            
+
         #     # Add the time coordinate to the dataset
         #     ds['time'] = time
-            
+
         #     # Append the dataset to the list
         #     datasets.append(ds)
 
@@ -153,4 +152,70 @@ class Event:
         # ds = xr.concat(datasets, dim='time')
         # ds.raster.set_crs(4326)
 
-        return gfs_conus # ds
+        return gfs_conus  # ds
+
+    def add_dis_ts(self):
+        """adds discharge timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant discahrge
+        # TODO: add for loop to handle multiple rivers
+        if self.attrs.river.source == "constant":
+            df = Event.generate_dis_ts(self.attrs.time, self.attrs.river)
+            self.dis_ts = df
+            return self
+        elif self.attrs.river.source == "shape":
+            duration = (
+                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
+            ) * 3600
+            time_shift = (
+                self.attrs.time.duration_before_t0 + self.attrs.river.shape_peak_time
+            ) * 3600
+            start_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_start_time
+            ) * 3600
+            end_shape = (
+                self.attrs.time.duration_before_t0
+                + self.attrs.river.shape_peak_time
+                + self.attrs.river.shape_end_time
+            ) * 3600
+            # subtract base discharge from peak
+            river = self.timeseries_shape(
+                self.attrs.river.shape_type,
+                duration,
+                self.attrs.river.shape_peak.convert("m3/s")
+                - self.attrs.river.base_discharge.convert("m3/s"),
+                time_shift=time_shift,
+                start_shape=start_shape,
+                end_shape=end_shape,
+            )
+            # add base discharge to timeseries
+            river += self.attrs.river.base_discharge.convert("m3/s")
+            # save to object with pandas daterange
+            time = pd.date_range(
+                self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
+            )
+            df = pd.DataFrame.from_dict({"time": time, 1: river})
+            df = df.set_index("time")
+            self.dis_ts = df
+            return self
+
+    def add_wind_ts(self):
+        """adds wind it timeseries to event object
+
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pf.DataFrame format
+        """
+        # generating time series of constant wind
+        if self.attrs.wind.source == "constant":
+            df = Event.generate_wind_ts(self.attrs.time, self.attrs.wind)
+            self.wind_ts = df
+            return self

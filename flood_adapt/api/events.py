@@ -6,9 +6,6 @@ from typing import Any, Union
 import pandas as pd
 
 from flood_adapt.dbs_controller import IDatabase
-from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
-    StationSource,
-)
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
     HistoricalNearshore,
 )
@@ -33,18 +30,25 @@ def create_synthetic_event(attrs: dict[str, Any], database: IDatabase) -> ISynth
     return Synthetic.load_dict(attrs)
 
 
-def create_historical_nearshore_event(
-    attrs: dict[str, Any], database: IDatabase
-) -> IHistoricalNearshore:
+def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
     return HistoricalNearshore.load_dict(attrs)
 
 
-def save_synthetic_event(event: IEvent, database: IDatabase) -> None:
+def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
-def save_historical_nearshore_event(event: IEvent, wl_df: pd.DataFrame, database: IDatabase) -> None:
-    database.save_event(event)    
+
+def save_historical_nearshore_event(
+    event: IEvent, wl_df: pd.DataFrame, database: IDatabase
+) -> None:
+    database.save_event(event)
     database.write_wl_csv(event, wl_df)
+
+
+def save_timeseries_csv(
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
+) -> None:
+    database.write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
@@ -60,8 +64,18 @@ def copy_event(
 ) -> None:
     database.copy_event(old_name, new_name, new_long_name)
 
-def download_wl_data(station_id,start_time, end_time) -> pd.DataFrame:
+
+def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
     return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+
+
+def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+    return HistoricalNearshore.read_wl_csv(csvpath)
+
+
+def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
+    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+
 
 def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return HistoricalNearshore.read_wl_csv(csvpath)

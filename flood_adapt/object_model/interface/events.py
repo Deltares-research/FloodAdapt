@@ -110,7 +110,35 @@ class TimeModel(BaseModel):
     duration_before_t0: Optional[float]
     duration_after_t0: Optional[float]
     start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str]
+    end_time: Optional[str] = "20200103 000000"
+
+
+class TideSource(str, Enum):
+    harmonic = "harmonic"
+    timeseries = "timeseries"
+    model = "model"
+
+
+class TideModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
+    source: TideSource
+    harmonic_amplitude: Optional[UnitfulLength]
+
+
+class SurgeSource(str, Enum):
+    none = "none"
+    shape = "shape"
+
+
+class SurgeModel(BaseModel):
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+
+    source: SurgeSource
+    shape_type: Optional[str] = "gaussian"
+    shape_duration: Optional[float]
+    shape_peak_time: Optional[float]
+    shape_peak: Optional[UnitfulLength]
 
 
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
@@ -126,37 +154,21 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     rainfall: RainfallModel
     river: RiverModel
     time: TimeModel
-
-
-class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    harmonic_amplitude: UnitfulLength
-
-
-class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: str
-    shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_peak: Optional[UnitfulLength]
+    tide: TideModel
+    surge: SurgeModel
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
-    tide: TideModel
-    surge: SurgeModel
-
 
 class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
 
+
 class HistoricalOffshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
+
 
 class IEvent(ABC):
     attrs: EventModel
@@ -184,6 +196,7 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
 
 class IHistoricalOffshore(IEvent):
     attrs: HistoricalOffshoreModel

@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -30,13 +29,10 @@ class SfincsAdapter:
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
 
-        # Get start and end time of event based on different templates
-        if event.template == "Synthetic":
-            tstart = datetime.strptime(event.time.start_time, "%Y%m%d %H%M%S")
-            tstop = datetime.strptime(event.time.end_time, "%Y%m%d %H%M%S")
-        else:
-            tstart = event.time.start_time
-            tstop = event.time.end_time
+        # Get start and end time of event
+        tstart = event.time.start_time
+        tstop = event.time.end_time
+
         # Update timing of the model
         self.sf_model.set_config("tref", tstart)
         self.sf_model.set_config("tstart", tstart)
@@ -127,7 +123,7 @@ class SfincsAdapter:
 
         # Go from 1 timeseries to timeseries for all boundary points
         for i in range(1, len(gdf_locs)):
-            df_ts[i] = df_ts[i]
+            df_ts[i + 1] = df_ts[i]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
