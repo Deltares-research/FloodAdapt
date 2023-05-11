@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from flood_adapt.dbs_controller import Database
@@ -28,3 +29,49 @@ def test_projection_plot_slr():
 
     print(html_file_loc)
     assert Path(html_file_loc).is_file()
+
+
+def test_has_hazard_run():
+    dbs = Database(test_database_path, test_site_name)
+
+    results = [
+        dbs.input_path.parent
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_no_measures",
+        dbs.input_path.parent
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_strategy_impact_comb",
+        dbs.input_path.parent
+        / "output"
+        / "results"
+        / "current_extreme12ft_no_measures",
+        dbs.input_path.parent
+        / "output"
+        / "results"
+        / "current_extreme12ft_strategy_impact_comb",
+    ]
+
+    for res in results:
+        shutil.rmtree(res, ignore_errors=True)
+
+    scenario_name_1 = "current_extreme12ft_no_measures"
+    scenario_name_2 = "current_extreme12ft_strategy_impact_comb"
+
+    scenario1 = dbs.get_scenario(scenario_name_1)
+    assert scenario1.direct_impacts.hazard.has_run is False
+    assert scenario1.direct_impacts.has_run is False
+    dbs.run_scenario(scenario_name_1)
+    scenario1 = dbs.get_scenario(scenario_name_1)
+    assert scenario1.direct_impacts.hazard.has_run is True
+    # assert scenario1.direct_impacts.has_run == True
+
+    scenario2 = dbs.get_scenario(scenario_name_2)
+    assert scenario2.direct_impacts.hazard.has_run is False
+    assert scenario2.direct_impacts.has_run is False
+    dbs.run_scenario(scenario_name_2)
+
+    scenario2 = dbs.get_scenario(scenario_name_2)
+    assert scenario2.direct_impacts.hazard.has_run is True
+    # assert scenario2.direct_impacts.has_run == True
