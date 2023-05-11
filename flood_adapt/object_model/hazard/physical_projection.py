@@ -4,5 +4,14 @@ from flood_adapt.object_model.interface.projections import PhysicalProjectionMod
 class PhysicalProjection:
     """The Projection class containing various risk drivers."""
 
+    attrs: PhysicalProjectionModel
+
     def __init__(self, data: PhysicalProjectionModel):
         self.attrs = PhysicalProjectionModel.parse_obj(data)
+
+    def __eq__(self, other):
+        if not isinstance(other, PhysicalProjection):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.attrs == other.attrs

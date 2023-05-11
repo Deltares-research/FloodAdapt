@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -761,7 +762,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        projections = self.get_object_list(object_type="Projections")
+        projections = self.get_object_list(object_type="projections")
         objects = [Projection.load_file(path) for path in projections["path"]]
         projections["name"] = [obj.attrs.name for obj in objects]
         projections["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -776,7 +777,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        events = self.get_object_list(object_type="Events")
+        events = self.get_object_list(object_type="events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
         events["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -791,7 +792,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        measures = self.get_object_list(object_type="Measures")
+        measures = self.get_object_list(object_type="measures")
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -812,7 +813,7 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        strategies = self.get_object_list(object_type="Strategies")
+        strategies = self.get_object_list(object_type="strategies")
         objects = [Strategy.load_file(path) for path in strategies["path"]]
         strategies["name"] = [obj.attrs.name for obj in objects]
         strategies["long_name"] = [obj.attrs.long_name for obj in objects]
@@ -827,11 +828,58 @@ class Database(IDatabase):
         dict[str, Any]
             Includes 'name', 'long_name', 'path' and 'last_modification_date' info
         """
-        scenarios = self.get_object_list(object_type="Scenarios")
+        scenarios = self.get_object_list(object_type="scenarios")
         objects = [Scenario.load_file(path) for path in scenarios["path"]]
         scenarios["name"] = [obj.attrs.name for obj in objects]
         scenarios["long_name"] = [obj.attrs.long_name for obj in objects]
+        scenarios["Projection"] = [obj.attrs.projection for obj in objects]
+        scenarios["Event"] = [obj.attrs.event for obj in objects]
+        scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
+        scenarios["finished"] = [
+            obj.init_object_model().direct_impacts.has_run for obj in objects
+        ]
+
         return scenarios
+
+    def get_outputs(self) -> dict[str, Any]:
+        all_scenarios = pd.DataFrame(self.get_scenarios())
+        if len(all_scenarios) > 0:
+            df = all_scenarios[all_scenarios["finished"]]
+        else:
+            df = all_scenarios
+        finished = df.drop(columns="finished").reset_index(drop=True)
+        return finished.to_dict()
+
+    def get_topobathy_path(self) -> str:
+        path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
+        return str(path)
+
+    def get_index_path(self) -> str:
+        path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
+        return str(path)
+
+    def get_max_water_level(self, scenario_name: str):
+        """returns an array with the maximum water levels of the SFINCS simulation
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        # raise NotImplementedError
+        model_path = self.input_path.parent.joinpath(
+            "output", "simulations", scenario_name, "overland"
+        )
+        mod = SfincsModel(model_path, mode="r")
+
+        zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+
+        return zsmax
 
     def get_object_list(self, object_type: str) -> dict[str, Any]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
@@ -861,3 +909,47 @@ class Database(IDatabase):
         }
 
         return objects
+
+    def has_run_hazard(self, scenario_name: str) -> None:
+        """Check if there is already a simulation that has the exact same hazard component.
+        If yes that is copied to avoid running the hazard model twice.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of the scenario to check if needs to be rerun for hazard
+        """
+        scenario = self.get_scenario(scenario_name)
+
+        simulations = list(
+            self.input_path.parent.joinpath("output", "simulations").glob("*")
+        )
+
+        scns_simulated = [self.get_scenario(sim.name) for sim in simulations]
+
+        for scn in scns_simulated:
+            if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
+                path_0 = self.input_path.parent.joinpath(
+                    "output", "simulations", scn.attrs.name
+                )
+                path_new = self.input_path.parent.joinpath(
+                    "output", "simulations", scenario.attrs.name
+                )
+
+                shutil.copytree(path_0, path_new)
+                print(f"Hazard simulation is used from the '{scn.attrs.name}' scenario")
+
+    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        """Runs a scenario hazard and impacts.
+
+        Parameters
+        ----------
+        scenario_name : Union[str, list[str]]
+            name(s) of the scenarios to run.
+        """
+        if not isinstance(scenario_name, list):
+            scenario_name = [scenario_name]
+        for scn in scenario_name:
+            self.has_run_hazard(scn)
+            scenario = self.get_scenario(scn)
+            scenario.run()
