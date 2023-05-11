@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
+import hydromt_sfincs.utils as utils
+import numpy as np
 import pandas as pd
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
@@ -55,7 +57,7 @@ class SfincsAdapter:
     def add_precip_forcing(self, precip=None, const_precip=None):
         self.sf_model.setup_precip_forcing(precip=precip, const_precip=const_precip)
 
-    def add_wl_bc(self, df_ts: pd.DataFrame):
+    def add_wl_bc_from_ts(self, df_ts: pd.DataFrame):
         """Changes waterlevel of overland sfincs model based on new waterlevel time series.
 
         Parameters
@@ -72,6 +74,9 @@ class SfincsAdapter:
         for i in range(1, len(gdf_locs)):
             df_ts[i + 1] = df_ts[1]
 
+        self.add_wl_bc(df_ts)
+
+    def add_wl_bc(self, df_ts: pd.DataFrame):
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
@@ -107,6 +112,18 @@ class SfincsAdapter:
         self.sf_model.set_forcing_1d(
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
+
+    def get_wl_df_from_offshore_his_results(self):
+        ds_his = utils.read_sfincs_his_results(
+            Path(self.sf_model.root).joinpath("results_his.nc"),
+            crs=self.sf_model.crs.to_epsg(),
+        )
+        wl_df = pd.DataFrame(
+            data=ds_his.point_zs.to_numpy(),
+            index=ds_his.time.to_numpy(),
+            columns=np.arange(1, ds_his.point_zs.to_numpy().shape[1] + 1, 1),
+        )
+        return wl_df
 
     def add_dis_bc(self, df_ts: pd.DataFrame):
         """Changes discharge of overland sfincs model based on new discharge time series.

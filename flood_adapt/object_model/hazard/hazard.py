@@ -154,6 +154,13 @@ class Hazard:
             / self.event.attrs.name
             / "{}.toml".format(self.event.attrs.name)
         )
+        sfincs_exec = (
+            self.database_input_path.parents[2]
+            / "system"
+            / "sfincs"
+            / self.site.attrs.sfincs.version
+            / "sfincs.exe"
+        )
 
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
@@ -208,24 +215,49 @@ class Hazard:
             )
 
             # Run the offshore model
+            with cd(
+                self.simulation_path.joinpath(self.site.attrs.sfincs.overland_model)
+            ):
+                sfincs_log = "sfincs.log"
+                with open(sfincs_log, "w") as log_handler:
+                    subprocess.run(sfincs_exec, stdout=log_handler)
 
             # take his results from offshore model as input for wl bnd
+            wl_df = offshore_model.get_wl_df_from_offshore_his_results()
 
         elif template == "Hurricane":
             raise NotImplementedError
 
         # Add waterlevel boundary conditions to overland model
-        model.add_wl_bc(self.wl_ts)
+        if template == "HistoricalNearshore" or template == "Synthetic":
+            model.add_wl_bc_from_ts(self.wl_ts)
+        elif template == "HistoricalOffshore":
+            model.add_wl_bc(wl_df)
 
         # Generate and change discharge boundary condition
         self.add_discharge()
         model.add_dis_bc(self.dis_ts)
 
         # Generate and add rainfall boundary condition
-        # TODO
+        if self.event.attrs.rainfall.source == "map":
+            model.add_precip_forcing_from_grid(precip=ds["precipitation"])
+        elif self.event.attrs.rainfall.source == "timeseries":
+            model.add_precip_forcing(timeseries=event_path.joinpath("rainfall.csv"))
+        elif self.event.attrs.wind.source == "constant":
+            model.add_precip_forcing(
+                const_precip=self.event.attrs.rainfall.constant_intensity
+            )
 
         # Generate and add wind boundary condition
-        # TODO, made already a start generating a constant timeseries in Event class
+        if self.event.attrs.wind.source == "map":
+            model.add_wind_forcing_from_grid(wind_u=ds["wind_u"], wind_v=ds["wind_v"])
+        elif self.event.attrs.wind.source == "timeseries":
+            model.add_wind_forcing(timeseries=event_path.joinpath("wind.csv"))
+        elif self.event.attrs.wind.source == "constant":
+            model.add_wind_forcing(
+                const_mag=self.event.attrs.wind.constant_speed.value,
+                const_dir=self.event.attrs.wind.constant_direction.value,
+            )
 
         # Add floodwall if included
         # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
@@ -240,15 +272,6 @@ class Hazard:
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
-
-        sfincs_exec = (
-            self.database_input_path.parents[2]
-            / "system"
-            / "sfincs"
-            / self.site.attrs.sfincs.version
-            / "sfincs.exe"
-        )
-
         with cd(self.simulation_path.joinpath(self.site.attrs.sfincs.overland_model)):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
