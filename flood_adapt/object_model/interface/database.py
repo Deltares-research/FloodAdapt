@@ -148,3 +148,11 @@ class IDatabase(ABC):
     @abstractmethod
     def get_scenarios(self) -> dict[str, Any]:
         ...
+
+    @abstractmethod
+    def get_outputs(self) -> dict[str, Any]:
+        ...
+
+    @abstractmethod
+    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        ...
