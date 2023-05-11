@@ -38,13 +38,6 @@ def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
 
-def save_historical_nearshore_event(
-    event: IEvent, wl_df: pd.DataFrame, database: IDatabase
-) -> None:
-    database.save_event(event)
-    database.write_wl_csv(event, wl_df)
-
-
 def save_timeseries_csv(
     name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
 ) -> None:
