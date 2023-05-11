@@ -1,13 +1,11 @@
 from pathlib import Path
 
-import pytest
-
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-@pytest.mark.skip(reason="There is no sfincs.inp checked in")
+# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_run_synthetic_wl():
     test_toml = (
         test_database
@@ -23,10 +21,10 @@ def test_hazard_run_synthetic_wl():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
-    test_scenario.direct_impacts.hazard.run_sfincs(test_scenario.site_info)
+    test_scenario.direct_impacts.hazard.run_sfincs()
 
 
-@pytest.mark.skip(reason="There is no sfincs.inp checked in")
+# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_run_synthetic_discharge():
     test_toml = (
         test_database
@@ -42,4 +40,4 @@ def test_hazard_run_synthetic_discharge():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
-    test_scenario.direct_impacts.hazard.run_sfincs(test_scenario.site_info)
+    test_scenario.direct_impacts.hazard.run_sfincs()

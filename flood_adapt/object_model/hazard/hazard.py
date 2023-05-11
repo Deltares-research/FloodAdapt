@@ -8,9 +8,8 @@ from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection import (
-    PhysicalProjection,
-)
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.hazard.utils import cd
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
@@ -182,30 +181,17 @@ class Hazard:
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
-        if self.event.attrs.mode == "risk":
-            with open(self.simulation_path.joinpath("run.bat"), "w") as f_out:
-                bat_file: str = (
-                    "cd "
-                    "%~dp0"
-                    "\n"
-                    "..\..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
-                        self.site.attrs.sfincs.version
-                    )
-                )
-                f_out.write(bat_file)
-        elif self.event.attrs.mode == "single_scenario":
-            with open(self.simulation_path.joinpath("run.bat"), "w") as f_out:
-                bat_file: str = (
-                    "cd "
-                    "%~dp0"
-                    "\n"
-                    "..\..\..\..\..\..\system\sfincs\{}\sfincs.exe -> sfincs.log".format(
-                        self.site.attrs.sfincs.version
-                    )
-                )
-                f_out.write(bat_file)
 
-        subprocess.run(self.simulation_path.joinpath("run.bat"))
+        file_path = Path(__file__).resolve()
+
+        sfincs_exec = (
+            file_path.parents[3] / "tests" / "system" / "sfincs" / "sfincs.exe"
+        )
+
+        with cd(self.simulation_path):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
