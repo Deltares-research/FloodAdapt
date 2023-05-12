@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
-from plotly.tools import make_subplots
+from plotly.subplots import make_subplots
 
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
@@ -72,7 +72,7 @@ class Scenario(IScenario):
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
 
-    def infographic(self) -> str:
+    def impact_metrics(self) -> pd.DataFrame:
         self.has_run_impact = (
             True  # TODO remove when this has been added through the Fiat adapter
         )
@@ -135,129 +135,180 @@ class Scenario(IScenario):
                 FEMA_count["buildings"] = FEMA_count["All"] - FEMA_count["road"]
 
             # calculate
-
-            # make figure with subplots
-            trace1 = go.Pie(
-                values=FEMA_count["RES"].to_list(),
-                labels=FEMA_count.index.to_list(),
-                hole=0.6,
-                name="Buildings",
-                textposition="none",
-                marker={
-                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-                    "line": {"color": "#000000", "width": 2},
-                },
-            )
-
-            trace2 = go.Pie(
-                values=FEMA_count["RES"].to_list(),
-                labels=FEMA_count.index.to_list(),
-                hole=0.6,
-                name="Businesses",
-                textposition="none",
-                marker={
-                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-                    "line": {"color": "#000000", "width": 2},
-                },
-            )
-
-            trace3 = go.Pie(
-                values=FEMA_count["EDU"].to_list(),
-                labels=FEMA_count.index.to_list(),
-                hole=0.6,
-                name="Education",
-                marker={
-                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-                    "line": {"color": "#000000", "width": 2},
-                },
-            )
-
-            trace3 = go.Pie(
-                values=FEMA_count["EDU"].to_list(),
-                labels=FEMA_count.index.to_list(),
-                hole=0.6,
-                name="Education",
-                textposition="none",
-                marker={
-                    "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
-                    "line": {"color": "#000000", "width": 2},
-                },
-            )
-
-            fig = make_subplots(
-                rows=2,
-                cols=3,
-                specs=[
-                    [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
-                    [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
-                ],
-                subplot_titles=[
-                    "Homes",
-                    "Businesses",
-                    "Critical Facilities",
-                    "Roads segments interrupted",
-                ],
-            )
-
-            fig.append_trace(trace1, 1, 1)
-            fig.append_trace(trace2, 1, 2)
-            fig.append_trace(trace3, 1, 3)
-
-            fig.add_layout_image(
-                {
-                    "source": "https://openclipart.org/image/800px/217511",
-                    "sizex": 0.1,
-                    "sizey": 0.1,
-                    "x": 0.145,
-                    "y": 0.83,
-                    "xanchor": "center",
-                    "yanchor": "middle",
-                    "visible": True,
-                }
-            )
-
-            fig.add_annotation(
-                x=0.10,
-                y=0.785,
-                text="{}".format(FEMA_count["RES"].sum()),
-                font={"size": 16, "family": "Verdana", "color": "black"},
-                align="center",
-                showarrow=False,
-            )
-
-            fig.add_annotation(
-                x=0.5,
-                y=0.785,
-                text="{}".format(FEMA_count["COM"].sum()),
-                font={"size": 16, "family": "Verdana", "color": "black"},
-                align="center",
-                showarrow=False,
-            )
-
-            fig.add_annotation(
-                x=0.87,
-                y=0.785,
-                text="{}".format(FEMA_count["EDU"].sum()),
-                font={"size": 16, "family": "Verdana", "color": "black"},
-                align="center",
-                showarrow=False,
-            )
-
-            fig.update_layout(
-                font={"size": 12, "family": "Verdana", "color": "black"},
-                autosize=True,
-                height=500,
-                width=800,
-                # margin={"r": 20, "l": 50, "b": 20, "t": 20},
-                # title=("FEMA Flood Damage Categories"),
-            )
-
-            infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
-            fig.write_html(infographic_html)
-
-            return str(infographic_html)
+            return FEMA_count
 
         else:
             raise ValueError(
                 "The Direct Impact Model has not run yet. No inforgraphic can be produced."
             )
+
+    def infographic(self) -> str:
+        FEMA_count = self.impact_metrics()
+        # make figure with subplots
+        trace1 = go.Pie(
+            values=FEMA_count["RES"].to_list(),
+            labels=FEMA_count.index.to_list(),
+            hole=0.6,
+            name="Buildings",
+            textposition="none",
+            marker={
+                "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                "line": {"color": "#000000", "width": 2},
+            },
+        )
+
+        trace2 = go.Pie(
+            values=FEMA_count["RES"].to_list(),
+            labels=FEMA_count.index.to_list(),
+            hole=0.6,
+            name="Businesses",
+            textposition="none",
+            marker={
+                "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                "line": {"color": "#000000", "width": 2},
+            },
+        )
+
+        trace3 = go.Pie(
+            values=FEMA_count["EDU"].to_list(),
+            labels=FEMA_count.index.to_list(),
+            hole=0.6,
+            name="Education",
+            textposition="none",
+            marker={
+                "colors": ["#F8CBAD", "#F29B60", "#9B4837", "#311611"],
+                "line": {"color": "#000000", "width": 2},
+            },
+        )
+
+        fig = make_subplots(
+            rows=2,
+            cols=3,
+            specs=[
+                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
+                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}],
+            ],
+            subplot_titles=[
+                "Homes",
+                "Businesses",
+                "Schools",
+                "Road segments",
+            ],
+        )
+
+        # subplot 1,1: Homes
+        fig.append_trace(trace1, 1, 1)
+
+        fig.add_layout_image(
+            {
+                "source": "https://openclipart.org/image/800px/217511",
+                "sizex": 0.1,
+                "sizey": 0.1,
+                "x": 0.145,
+                "y": 0.83,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "visible": True,
+            }
+        )
+
+        fig.add_annotation(
+            x=0.11,
+            y=0.785,
+            text="{}".format(FEMA_count["RES"].sum()),
+            font={"size": 14, "family": "Verdana", "color": "black"},
+            align="center",
+            showarrow=False,
+        )
+
+        # subplot 1,2: Businesses
+        fig.append_trace(trace2, 1, 2)
+
+        fig.add_layout_image(
+            {
+                "source": "https://openclipart.org/image/800px/229840",
+                "sizex": 0.1,
+                "sizey": 0.1,
+                "x": 0.5,
+                "y": 0.83,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "visible": True,
+            }
+        )
+
+        fig.add_annotation(
+            x=0.5,
+            y=0.785,
+            text="{}".format(FEMA_count["COM"].sum()),
+            font={"size": 14, "family": "Verdana", "color": "black"},
+            align="center",
+            showarrow=False,
+        )
+
+        # subplot 1,3: Schools
+        fig.append_trace(trace3, 1, 3)
+
+        fig.add_layout_image(
+            {
+                "source": "https://openclipart.org/image/800px/190967",
+                "sizex": 0.1,
+                "sizey": 0.1,
+                "x": 0.86,
+                "y": 0.83,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "visible": True,
+            }
+        )
+
+        fig.add_annotation(
+            x=0.87,
+            y=0.785,
+            text="{}".format(FEMA_count["EDU"].sum()),
+            font={"size": 14, "family": "Verdana", "color": "black"},
+            align="center",
+            showarrow=False,
+        )
+
+        # subplot 1,4: Roads
+        fig.add_annotation(
+            x=0.12,
+            y=0.1,
+            text="{}".format(FEMA_count["road"].sum()),
+            font={"size": 14, "family": "Verdana", "color": "black"},
+            align="center",
+            showarrow=False,
+        )
+
+        fig.add_layout_image(
+            {
+                "source": "https://openclipart.org/image/800px/190006",
+                "sizex": 0.1,
+                "sizey": 0.1,
+                "x": 0.145,
+                "y": 0.22,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "visible": True,
+            }
+        )
+
+        fig.update_layout(
+            font={"size": 12, "family": "Verdana", "color": "black"},
+            autosize=True,
+            height=500,
+            width=800,
+            # margin={"r": 20, "l": 50, "b": 20, "t": 20},
+            # title=("FEMA Flood Damage Categories"),
+        )
+
+        fig.update_layout_images()
+
+        output_path = Path(self.database_input_path).parent.joinpath(
+            "output", "results", self.attrs.name, "fiat_model", "output"
+        )
+        infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
+        fig.write_html(infographic_html)
+
+        return str(infographic_html)

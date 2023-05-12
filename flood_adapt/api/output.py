@@ -1,5 +1,7 @@
 from typing import Any
 
+import pandas as pd
+
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.scenarios import IScenario
 
@@ -23,3 +25,7 @@ def get_max_water_level(name: str, database: IDatabase):
 
 def make_infographic(scenario: IScenario) -> str:
     return scenario.infographic()
+
+
+def get_impact_metrics(scenario: IScenario) -> pd.DataFrame:
+    return scenario.impact_metrics()
