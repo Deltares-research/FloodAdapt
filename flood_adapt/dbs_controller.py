@@ -182,19 +182,25 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wl(self, event: IEvent) -> str:
-        if event["template"] == "Synthetic":
-            temp_event = Synthetic.load_dict(event)
-            temp_event.add_tide_and_surge_ts()
-            wl_df = temp_event.tide_surge_ts
-            wl_df.index = np.arange(
-                -temp_event.attrs.time.duration_before_t0,
-                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                1 / 6,
-            )
-            wl_df["Time"] = wl_df.index
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+        if (
+            event["template"] == "Synthetic"
+            or event["template"] == "Historical_nearshore"
+        ):
+            if event["template"] == "Synthetic":
+                temp_event = Synthetic.load_dict(event)
+                temp_event.add_tide_and_surge_ts()
+                wl_df = temp_event.tide_surge_ts
+                wl_df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
+            elif event["template"] == "Historical_nearshore":
+                wl_df = input_wl_df
 
             # convert to units used in GUI
+            wl_df["Time"] = wl_df.index
             wl_current_units = UnitfulLength(
                 value=float(wl_df.iloc[0, 0]), units="meters"
             )
@@ -237,9 +243,11 @@ class Database(IDatabase):
             output_loc.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(output_loc)
             return str(output_loc)
-        
+
         else:
-            NotImplementedError("Plotting only available for Synthetic event.")
+            NotImplementedError(
+                "Plotting only available for Synthetic and Historical Nearshore event."
+            )
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
