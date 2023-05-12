@@ -1,9 +1,11 @@
+import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
+import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
@@ -40,21 +42,71 @@ class SfincsAdapter:
         self.sf_model.set_config("tstart", tstart)
         self.sf_model.set_config("tstop", tstop)
 
-    def add_wind_forcing(self, timeseries=None, const_mag=None, const_dir=None):
+    def add_wind_forcing(
+        self,
+        timeseries: Union[str, os.PathLike] = None,
+        const_mag: float = None,
+        const_dir: float = None,
+    ):
+        """Add spatially constant wind forcing to sfincs model. Use timeseries or a constant magnitude and direction.
+
+        Parameters
+        ----------
+        timeseries : Union[str, os.PathLike], optional
+            path to file of timeseries file (.csv) which has three columns: time, magnitude and direction, by default None
+        const_mag : float, optional
+            magnitude of time-invarient wind forcing [m/s], by default None
+        const_dir : float, optional
+            direction of time-invarient wind forcing [deg], by default None
+        """
         self.sf_model.setup_wind_forcing(
             timeseries=timeseries, const_mag=const_mag, const_dir=const_dir
         )
 
-    def add_wind_forcing_from_grid(self, wind_u, wind_v):
+    def add_wind_forcing_from_grid(self, wind_u: xr.DataArray, wind_v: xr.DataArray):
+        """Add spatially varying wind forcing to sfincs model.
+
+        Parameters
+        ----------
+        wind_u : xr.DataArray
+            Dataarray with eastward wind velocity [m/s]
+        wind_v : xr.DataArray
+            Dataarray with northward wind velocity [m/s]
+        """
         self.sf_model.setup_wind_forcing_from_grid(wind_u=wind_u, wind_v=wind_v)
 
-    def add_pressure_forcing_from_grid(self, press):
+    def add_pressure_forcing_from_grid(self, press: xr.DataArray):
+        """Add spatially varying barometric pressure to sfincs model.
+
+        Parameters
+        ----------
+        press : xr.DataArray
+            Dataarray with barometric pressure [Pa]
+        """
         self.sf_model.setup_pressure_forcing_from_grid(press=press)
 
-    def add_precip_forcing_from_grid(self, precip):
+    def add_precip_forcing_from_grid(self, precip: xr.DataArray):
+        """Add spatially varying precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : xr.DataArray
+            Dataarray with precipitation rates [mm/hr]
+        """
         self.sf_model.setup_precip_forcing_from_grid(precip=precip, aggregate=False)
 
-    def add_precip_forcing(self, precip=None, const_precip=None):
+    def add_precip_forcing(
+        self, precip: Union[str, os.PathLike] = None, const_precip: float = None
+    ):
+        """Add spatially uniform precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : Union[str, os.PathLike], optional
+            timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
+        const_precip : float, optional
+            time-invarient precipitation magnitude [mm/hr], by default None
+        """
         self.sf_model.setup_precip_forcing(precip=precip, const_precip=const_precip)
 
     def add_wl_bc_from_ts(self, df_ts: pd.DataFrame):
@@ -77,6 +129,13 @@ class SfincsAdapter:
         self.add_wl_bc(df_ts)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
+        """Add waterlevel dataframe to sfincs model.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            Dataframe with waterlevel time series at every boundary point (index of the dataframe should be time and every column should be an integer starting with 1)
+        """
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
         gdf_locs.crs = self.sf_model.crs
@@ -117,7 +176,14 @@ class SfincsAdapter:
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def get_wl_df_from_offshore_his_results(self):
+    def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
+        """Function to create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
+
+        Returns
+        -------
+        wl_df: pd.DataFrame
+            time series of water level.
+        """
         ds_his = utils.read_sfincs_his_results(
             Path(self.sf_model.root).joinpath("sfincs_his.nc"),
             crs=self.sf_model.crs.to_epsg(),
