@@ -195,11 +195,13 @@ class Database(IDatabase):
         elif event["template"] == "Historical_nearshore":
             wl_df = input_wl_df
         else:
-            NotImplementedError("Plotting only available for Synthetic and Historical Nearshore event.")
+            NotImplementedError(
+                "Plotting only available for Synthetic and Historical Nearshore event."
+            )
 
         # convert to units used in GUI
         wl_df["Time"] = wl_df.index
-        wl_current_units = UnitfulLength(value=float(wl_df.iloc[0,0]), units="meters")
+        wl_current_units = UnitfulLength(value=float(wl_df.iloc[0, 0]), units="meters")
         gui_units = self.site.attrs.gui.default_length_units
         wl_gui_units = wl_current_units.convert(gui_units)
         if wl_current_units.value == 0:

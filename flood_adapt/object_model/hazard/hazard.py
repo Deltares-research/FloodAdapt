@@ -148,11 +148,7 @@ class Hazard:
         path_in_offshore = input_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        event_dir = (
-            self.database_input_path
-            / "events"
-            / self.event.attrs.name
-        )
+        event_dir = self.database_input_path / "events" / self.event.attrs.name
         sfincs_exec = (
             self.database_input_path.parents[2]
             / "system"
@@ -196,7 +192,9 @@ class Hazard:
                 offshore_model.add_wind_forcing_from_grid(
                     wind_u=ds["wind_u"], wind_v=ds["wind_v"]
                 )
-                offshore_model.add_pressure_forcing_from_grid(press=ds["barometric_pressure"])
+                offshore_model.add_pressure_forcing_from_grid(
+                    press=ds["barometric_pressure"]
+                )
             elif self.event.attrs.wind.source == "timeseries":
                 offshore_model.add_wind_forcing(
                     timeseries=event_dir.joinpath("wind.csv")
@@ -228,7 +226,6 @@ class Hazard:
 
         elif template == "Hurricane":
             raise NotImplementedError
-            
 
         # Generate and change discharge boundary condition
         self.add_discharge()
