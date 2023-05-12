@@ -152,7 +152,7 @@ class Scenario(IScenario):
         )
         infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
         if infographic_html.exists():
-            return infographic_html
+            return str(infographic_html)
         FEMA_count = self.impact_metrics()
         # make figure with subplots
         trace1 = go.Pie(

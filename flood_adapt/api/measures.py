@@ -3,11 +3,9 @@ from typing import Any
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import (
-    IBuyout,
-    IElevate,
-    IFloodProof,
     IMeasure,
 )
 
@@ -20,18 +18,15 @@ def get_measure(name: str, database: IDatabase) -> IMeasure:
     return database.get_measure(name)
 
 
-def create_elevate_measure(attrs: dict[str, Any], database: IDatabase) -> IElevate:
-    return Elevate.load_dict(attrs, database.input_path)
-
-
-def create_buyout_measure(attrs: dict[str, Any], database: IDatabase) -> IBuyout:
-    return Buyout.load_dict(attrs, database.input_path)
-
-
-def create_floodproof_measure(
-    attrs: dict[str, Any], database: IDatabase
-) -> IFloodProof:
-    return FloodProof.load_dict(attrs, database.input_path)
+def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMeasure:
+    if type == "elevate_properties":
+        return Elevate.load_dict(attrs, database.input_path)
+    elif type == "buyout_properties":
+        return Buyout.load_dict(attrs, database.input_path)
+    elif type == "floodproof_properties":
+        return FloodProof.load_dict(attrs, database.input_path)
+    elif type == "floodwall":
+        return FloodWall.load_dict(attrs, database.input_path)
 
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:
