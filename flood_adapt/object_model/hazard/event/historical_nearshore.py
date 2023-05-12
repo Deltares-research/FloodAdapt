@@ -66,4 +66,6 @@ class HistoricalNearshore(Event, IEvent):
         # Get NOAA data
         source = cht_station.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
+        df = pd.DataFrame(df)  # Convert series to dataframe
+        df = df.rename(columns={"v": 1})
         return df
