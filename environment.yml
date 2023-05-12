@@ -6,8 +6,11 @@ channels:
 dependencies:
   - pip
   - pip:
-    - NDBC
     - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
+    - git+https://github.com/Deltares/cht_meteo.git
+    - git+https://github.com/Deltares/cht_tide.git
+    - git+https://github.com/Deltares/cht_observations.git
+    - git+https://github.com/Deltares/cht_cyclones.git
   - black
   - ruff
   - build
@@ -24,5 +27,3 @@ dependencies:
   - tomli
   - tomli-w
   - twine
-  - noaa-coops
-  - census
