@@ -23,8 +23,20 @@ def get_max_water_level(name: str, database: IDatabase):
     return database.get_max_water_level(name)
 
 
-def make_infographic(scenario: IScenario) -> str:
-    return scenario.infographic()
+def get_fiat_results(name: str, database: IDatabase):
+    return database.get_fiat_results(name)
+
+
+def get_fiat_footprints(name: str, database: IDatabase):
+    return database.get_fiat_footprints(name)
+
+
+def get_aggregation(name: str, database: IDatabase):
+    return database.get_aggregation(name)
+
+
+def make_infographic(name: str, database: IDatabase) -> str:
+    return database.get_scenario(name).infographic()
 
 
 def get_impact_metrics(scenario: IScenario) -> pd.DataFrame:

@@ -77,7 +77,9 @@ class Scenario(IScenario):
             True  # TODO remove when this has been added through the Fiat adapter
         )
         output_path = Path(self.database_input_path).parent.joinpath(
-            "output", "results", self.attrs.name, "fiat_model", "output"
+            "output",
+            "results",
+            self.attrs.name,
         )
 
         if self.has_run_impact:
@@ -144,6 +146,14 @@ class Scenario(IScenario):
 
     # TODO: should probably be moved to frontend (like all plotting functions, see dbcontroller)
     def infographic(self) -> str:
+        output_path = Path(self.database_input_path).parent.joinpath(
+            "output",
+            "results",
+            self.attrs.name,
+        )
+        infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
+        if infographic_html.exists():
+            return str(infographic_html)
         FEMA_count = self.impact_metrics()
         # make figure with subplots
         trace1 = go.Pie(
@@ -171,7 +181,7 @@ class Scenario(IScenario):
         )
 
         trace3 = go.Pie(
-            values=FEMA_count["EDU"].to_list(),
+            values=FEMA_count["PUB"].to_list(),
             labels=FEMA_count.index.to_list(),
             hole=0.6,
             name="Education",
@@ -192,7 +202,7 @@ class Scenario(IScenario):
             subplot_titles=[
                 "Homes",
                 "Businesses",
-                "Schools",
+                "Public",
                 "Road segments",
             ],
         )
@@ -266,7 +276,7 @@ class Scenario(IScenario):
         fig.add_annotation(
             x=0.87,
             y=0.785,
-            text="{}".format(FEMA_count["EDU"].sum()),
+            text="{}".format(FEMA_count["PUB"].sum()),
             font={"size": 14, "family": "Verdana", "color": "black"},
             align="center",
             showarrow=False,
@@ -306,10 +316,6 @@ class Scenario(IScenario):
 
         fig.update_layout_images()
 
-        output_path = Path(self.database_input_path).parent.joinpath(
-            "output", "results", self.attrs.name, "fiat_model", "output"
-        )
-        infographic_html = output_path.joinpath(f"{self.attrs.name}.html")
         fig.write_html(infographic_html)
 
         return str(infographic_html)
