@@ -142,6 +142,7 @@ class Scenario(IScenario):
                 "The Direct Impact Model has not run yet. No inforgraphic can be produced."
             )
 
+    # TODO: should probably be moved to frontend (like all plotting functions, see dbcontroller)
     def infographic(self) -> str:
         FEMA_count = self.impact_metrics()
         # make figure with subplots
