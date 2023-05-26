@@ -109,7 +109,7 @@ class FloodProofModel(ImpactMeasureModel):
 class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
 
-    elevation: UnitfulLengthRefValue
+    elevation: UnitfulLength
 
 
 class IMeasure(ABC):

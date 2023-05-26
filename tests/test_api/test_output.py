@@ -1,14 +1,13 @@
 from pathlib import Path
 
-import pytest
+import pandas as pd
 
+import flood_adapt.api.output as api_output
 from flood_adapt.object_model.scenario import Scenario
 
-test_database = Path().absolute() / "tests" / "test_database"
 
-
-@pytest.mark.skip(reason="We cannot depend on the P drive")
-def test_infographic():
+def test_impact_metrics():
+    test_database = Path().absolute() / "tests" / "test_database"
     test_toml = (
         test_database
         / "charleston"
@@ -22,6 +21,7 @@ def test_infographic():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
 
-    test_scenario.direct_impacts.infographic()
+    df = api_output.get_impact_metrics(test_scenario)
+
+    assert df is pd.DataFrame

@@ -55,18 +55,49 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     @staticmethod
-    def read_wl_csv(csvpath: Union[str, os.PathLike]):
+    def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+        """Read a waterlevel timeseries file and return a pd.Dataframe.
+
+        Parameters
+        ----------
+        csvpath : Union[str, os.PathLike]
+            path to csv file
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
         df = pd.read_csv(csvpath, index_col=0, names=[1])
         df.index.names = ["time"]
         df.index = pd.to_datetime(df.index)
-        # Save as attribute of HistoricalNearshore class
         return df
 
     @staticmethod
-    def download_wl_data(station_id, start_time_str, stop_time_str):
+    def download_wl_data(
+        station_id: int, start_time_str: str, stop_time_str: str
+    ) -> pd.DataFrame:
+        """Download waterlevel data from NOAA station using station_id, start and stop time.
+
+        Parameters
+        ----------
+        station_id : int
+            NOAA observation station ID.
+        start_time_str : str
+            Start time of timeseries in the form of: "YYYMMDD HHMMSS"
+        stop_time_str : str
+            End time of timeseries in the form of: "YYYMMDD HHMMSS"
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
         start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
         stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
         # Get NOAA data
         source = StationSource.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
+        df = pd.DataFrame(df)  # Convert series to dataframe
+        df = df.rename(columns={"v": 1})
         return df

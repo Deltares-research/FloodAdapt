@@ -91,6 +91,24 @@ def test_hazard_wl():
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
+def test_infographic():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.infographic()
+
+
 @pytest.mark.skip(reason="We cannot depend on the P drive")
 def test_run_hazard_model():
     test_toml = (

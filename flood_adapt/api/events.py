@@ -34,6 +34,13 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNears
     return HistoricalNearshore.load_dict(attrs)
 
 
+def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
+    # return HistoricalHurricane.load_dict(attrs)
+    raise NotImplementedError(
+        "HurricaneNearshore is not yet implemented in the backend missing"
+    )
+
+
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
@@ -66,8 +73,10 @@ def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return HistoricalNearshore.read_wl_csv(csvpath)
 
 
-def plot_wl(event: IEvent, database: IDatabase) -> str:
-    return database.plot_wl(event)
+def plot_wl(
+    event: IEvent, database: IDatabase, input_wl_df: pd.DataFrame = None
+) -> str:
+    return database.plot_wl(event, input_wl_df)
 
 
 # def get_event(name: str) -> dict():  # get attributes
