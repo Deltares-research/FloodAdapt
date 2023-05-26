@@ -109,7 +109,7 @@ class Database(IDatabase):
                 gui_units = self.site.attrs.gui.default_length_units
                 return np.round(new_slr.convert(gui_units), decimals=2)
 
-    # TODO: shoudl probably be moved to frontend
+    # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
