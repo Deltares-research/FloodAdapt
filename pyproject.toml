@@ -28,7 +28,11 @@ dependencies = [
     "pydantic",
     "tomli-w",
     "tomli",
-    "plotly"
+    "plotly",
+    "cht_cyclones",
+    "cht_observations",
+    "cht_tide",
+    "cht_meteo"
 ]
 dynamic = ["version"]
 
