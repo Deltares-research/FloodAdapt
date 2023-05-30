@@ -185,11 +185,7 @@ class Hazard:
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
         sfincs_exec = (
-            self.database_input_path.parents[2]
-            / "system"
-            / "sfincs"
-            / self.site.attrs.sfincs.version
-            / "sfincs.exe"
+            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
 
         with cd(self.simulation_path):
