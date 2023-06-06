@@ -73,7 +73,8 @@ class SfincsAdapter:
         wind_v : xr.DataArray
             Dataarray with northward wind velocity [m/s]
         """
-        self.sf_model.setup_wind_forcing_from_grid(wind_u=wind_u, wind_v=wind_v)
+        wind = xr.DataArray(data=[wind_u, wind_v])
+        self.sf_model.setup_wind_forcing_from_grid(wind=wind)
 
     def add_pressure_forcing_from_grid(self, press: xr.DataArray):
         """Add spatially varying barometric pressure to sfincs model.
