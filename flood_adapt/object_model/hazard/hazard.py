@@ -10,6 +10,7 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.hazard.utils import cd
+from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
@@ -24,8 +25,8 @@ class Hazard:
 
     name: str
     database_input_path: Path
-    event: Optional[Event]
-    ensemble: Optional[Event]
+    mode: Mode
+    event_set: list[Event]
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False
@@ -33,13 +34,14 @@ class Hazard:
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
-        self.set_event(scenario.event)
+        self.set_event(scenario.event) # also setting the mode
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
         self.site = Site.load_file(
             database_input_path.parent / "static" / "site" / "site.toml"
         )
-        self.simulation_path = database_input_path.parent.joinpath(
+        #TODO additional layer for risk mode, add additional function for set_simulation_paths
+        self.simulation_paths = database_input_path.parent.joinpath(
             "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
         )
         self.has_run = self.sfincs_has_run_check()
@@ -66,18 +68,31 @@ class Hazard:
         Args:
             event_name (str): name of event used in scenario
         """
-        event_path = (
+        #TODO: make if statement around event_path, then for loop over all paths
+        event_set_path = (
             self.database_input_path / "events" / event / "{}.toml".format(event)
         )
         # set mode (probabilistic_set or single_scenario)
-        mode = Event.get_mode(event_path)
+        mode = Event.get_mode(event_set_path)
         if mode == "single_scenario":
-            # parse event config file to get event template
+            event_paths = [event_set_path]
+            self.probabilities = [1]
+        elif mode == "probabilistic_set":
+            #TODO: parse pydantic probabilistic set model (in interface events) and make list of individual event paths
+            event_paths = []
+            self.probabilities = []
+            subevents = None #TODO from pydantic
+            for event in subevents: #TODO fix this
+                event_paths.append(1)
+                self.probabilities.append(1)
+
+        # parse event config file to get event template
+        self.event_set = []
+        for event_path in event_paths:
             template = Event.get_template(event_path)
             # use event template to get the associated event child class
-            self.event = EventFactory.get_event(template).load_file(event_path)
-        elif mode == "probabilistic_set":
-            raise NotImplementedError
+            self.event_set.append(EventFactory.get_event(template).load_file(event_path)) 
+        
 
     def set_physical_projection(self, projection: str) -> None:
         projection_path = (
@@ -142,16 +157,17 @@ class Hazard:
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
-    def run_sfincs(self):
+    def run_sfincs(self): # separate into preparing and running model, loop through all events in both
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
 
+        #TODO start for-loop here
         # Load overland sfincs model
         model = SfincsAdapter(model_root=path_in)
 
-        # adjust timing of model
+        # adjust timing of model 
         model.set_timing(self.event.attrs)
 
         # Generate and change water level boundary condition
@@ -177,7 +193,7 @@ class Hazard:
         #     pass
 
         # write sfincs model in output destination
-        model.write_sfincs_model(path_out=self.simulation_path)
+        model.write_sfincs_model(path_out=self.simulation_path) #TODO use simulation_path from list
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
@@ -190,16 +206,25 @@ class Hazard:
             / "sfincs.exe"
         )
 
+        #TODO start for-loop here
         with cd(self.simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
                 subprocess.run(sfincs_exec, stdout=log_handler)
 
+    def postprocess_sfincs(self):
+        if self.mode == "single_scenario":
+            #create geotiff? tbd
+            ...
+        elif self.mode == "probabilistic_set":
+            # return period flood maps
+            ...
+
     def __eq__(self, other):
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
             return NotImplemented
-        test1 = self.event == other.event
+        test1 = self.event_set == other.event_set #TODO verify this works
         test2 = self.physical_projection == other.physical_projection
         test3 = self.hazard_strategy == other.hazard_strategy
         return test1 & test2 & test3
