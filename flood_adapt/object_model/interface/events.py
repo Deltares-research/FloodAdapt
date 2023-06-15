@@ -15,8 +15,9 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 class Mode(str, Enum):
     """class describing the accepted input for the variable mode in Event"""
-    #TODO change to single_event
-    single_scenario = "single_scenario"
+
+    # TODO change to single_event
+    single_event = "single_event"
     risk = "risk"
 
 
@@ -148,7 +149,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     long_name: str
     mode: Mode
     template: Template
-    timing: Timing  # TODO: do we need this? We can infer this from template
+    timing: Timing
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
@@ -156,6 +157,18 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     time: TimeModel
     tide: TideModel
     surge: SurgeModel
+
+
+class EventSetModel(
+    BaseModel
+):  # add WindModel etc as this is shared among all? templates
+    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
+
+    name: str
+    long_name: str
+    mode: Mode
+    subevent_name: list[str]
+    frequency: list[float]
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
