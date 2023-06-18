@@ -57,36 +57,39 @@ class Hazard:
             ]
         elif self.mode == "risk":  # risk mode requires an additional folder layer
             self.simulation_paths = []
-            subevents = []  # TODO
-            for event in subevents:  # TODO fix this
+            for subevent in self.event_set:
                 self.simulation_paths.append(
                     self.database_input_path.parent.joinpath(
                         "output",
                         "simulations",
                         self.name,
-                        event,
+                        subevent.attrs.name,
                         self.site.attrs.sfincs.overland_model,
                     )
                 )
 
     def sfincs_has_run_check(self) -> bool:
-        for sfincs_path in self.simulation_paths:
-            test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
+        test_combined = False
+        if len(self.simulation_paths) == 0:
+            raise ValueError("The Scenario has not been initialized correctly.")
+        else:
+            for sfincs_path in self.simulation_paths:
+                test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
 
-            sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
+                sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
 
-            if sfincs_log.exists():
-                with open(sfincs_log) as myfile:
-                    if "Simulation finished" in myfile.read():
-                        test2 = True
-                    else:
-                        test2 = False
-            else:
-                test2 = False
+                if sfincs_log.exists():
+                    with open(sfincs_log) as myfile:
+                        if "Simulation finished" in myfile.read():
+                            test2 = True
+                        else:
+                            test2 = False
+                else:
+                    test2 = False
 
-            test_combined = (test1) & (test2)
-            if ~test_combined:
-                break
+                test_combined = (test1) & (test2)
+                if test_combined is False:
+                    break
         return test_combined
 
     def set_event(self, event: str) -> None:
@@ -94,7 +97,6 @@ class Hazard:
         Args:
             event_name (str): name of event used in scenario
         """
-        # TODO: make if statement around event_path, then for loop over all paths
         event_set_path = (
             self.database_input_path / "events" / event / "{}.toml".format(event)
         )
@@ -104,7 +106,6 @@ class Hazard:
             event_paths = [event_set_path]
             self.probabilities = [1]
         elif self.mode == "risk":
-            # TODO: parse pydantic probabilistic set model (in interface events) and make list of individual event paths
             event_paths = []
             event_set = EventSet.load_file(event_set_path)
             self.frequencies = event_set.attrs.frequency

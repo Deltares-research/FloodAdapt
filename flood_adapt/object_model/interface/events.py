@@ -16,7 +16,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
 class Mode(str, Enum):
     """class describing the accepted input for the variable mode in Event"""
 
-    # TODO change to single_event
     single_event = "single_event"
     risk = "risk"
 
