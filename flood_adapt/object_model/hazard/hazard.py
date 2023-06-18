@@ -186,13 +186,33 @@ class Hazard:
         elif mode == "risk":
             return EventSet.load_file(event_path)
 
+    def preprocess_models(self):
+        # Preprocess all hazard model input
+        self.preprocess_sfincs()
+        # add other models here
+
     def run_models(self):
-        self.run_sfincs()
+        # Run new model (create batch file and run it)
+        # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
+
+        sfincs_exec = (
+            self.database_input_path.parents[2]
+            / "system"
+            / "sfincs"
+            / self.site.attrs.sfincs.version
+            / "sfincs.exe"
+        )
+
+        # TODO start for-loop here
+        with cd(self.simulation_path):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
-    def run_sfincs(
+    def preprocess_sfincs(
         self,
     ):  # separate into preparing and running model, loop through all events in both
         input_path = self.database_input_path.parent
@@ -233,23 +253,6 @@ class Hazard:
         model.write_sfincs_model(
             path_out=self.simulation_path
         )  # TODO use simulation_path from list
-
-        # Run new model (create batch file and run it)
-        # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
-
-        sfincs_exec = (
-            self.database_input_path.parents[2]
-            / "system"
-            / "sfincs"
-            / self.site.attrs.sfincs.version
-            / "sfincs.exe"
-        )
-
-        # TODO start for-loop here
-        with cd(self.simulation_path):
-            sfincs_log = "sfincs.log"
-            with open(sfincs_log, "w") as log_handler:
-                subprocess.run(sfincs_exec, stdout=log_handler)
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
