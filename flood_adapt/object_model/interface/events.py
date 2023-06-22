@@ -24,7 +24,7 @@ class Template(str, Enum):
     """class describing the accepted input for the variable template in Event"""
 
     Synthetic = "Synthetic"
-    Hurricane = "Hurricane"
+    Hurricane = "Historical_hurricane"
     Historical_nearshore = "Historical_nearshore"
     Historical_offshore = "Historical_offshore"
 

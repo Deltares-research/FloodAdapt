@@ -16,7 +16,12 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        raise NotImplementedError
+        obj = HistoricalHurricane()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        obj.attrs = HistoricalHurricane.parse_obj(toml)
+
+        return obj
 
     @staticmethod
     def load_dict(data: dict[str, Any]):

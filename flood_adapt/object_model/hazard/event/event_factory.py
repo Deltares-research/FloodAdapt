@@ -12,7 +12,7 @@ class EventFactory:
     def get_event(template: str):
         if template == "Synthetic":
             return Synthetic
-        elif template == "Hurricane":
+        elif template == "Historical_hurricane":
             return HistoricalHurricane
         # elif template.lower() == "Historical_offshore":
         #     return HistoricalOffshore

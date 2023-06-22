@@ -36,7 +36,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IEvent:
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IEvent:
-    return EventFactory.get_event("Hurricane").load_dict(attrs)
+    return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
 
 
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
