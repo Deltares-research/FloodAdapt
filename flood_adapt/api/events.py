@@ -28,14 +28,50 @@ def get_event_mode(name: str, database: IDatabase) -> str:
 
 
 def create_synthetic_event(attrs: dict[str, Any]) -> IEvent:
+    """Create a synthetic event object from a dictionary of attributes
+
+    Parameters
+    ----------
+    attrs : dict[str, Any]
+        Dictionary of attributes
+
+    Returns
+    -------
+    Synthetic
+        Synthetic event object
+    """
     return EventFactory.get_event("Synthetic").load_dict(attrs)
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IEvent:
+    """Create a historical nearshore event object from a dictionary of attributes	
+
+    Parameters
+    ----------
+    attrs : dict[str, Any]
+        Dictionary of attributes
+
+    Returns
+    -------
+    HistoricalNearshore
+        Historical nearshore event object
+    """
     return EventFactory.get_event("Historical_nearshore").load_dict(attrs)
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IEvent:
+    """Create a historical hurricane event object from a dictionary of attributes	
+
+    Parameters
+    ----------
+    attrs : dict[str, Any]
+        Dictionary of attributes
+
+    Returns
+    -------
+    HistoricalHurricane
+        Historical hurricane event object
+    """
     return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
 
 
