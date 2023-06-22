@@ -177,6 +177,8 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
 class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
 
+class HistoricalHurricaneModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
 
 class IEvent(ABC):
     attrs: EventModel
@@ -204,3 +206,7 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+
+class IHistoricalHurricane(IEvent):
+    attrs: HistoricalHurricaneModel
