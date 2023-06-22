@@ -1,16 +1,13 @@
 # Event tab
 
-import os
-from typing import Any, Union
+from typing import Any
 
 import pandas as pd
 
 from flood_adapt.dbs_controller import IDatabase
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.interface.events import (
-    IEvent,
-)
+from flood_adapt.object_model.interface.events import IEvent
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
@@ -44,7 +41,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> IEvent:
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IEvent:
-    """Create a historical nearshore event object from a dictionary of attributes	
+    """Create a historical nearshore event object from a dictionary of attributes
 
     Parameters
     ----------
@@ -60,7 +57,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IEvent:
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IEvent:
-    """Create a historical hurricane event object from a dictionary of attributes	
+    """Create a historical hurricane event object from a dictionary of attributes
 
     Parameters
     ----------

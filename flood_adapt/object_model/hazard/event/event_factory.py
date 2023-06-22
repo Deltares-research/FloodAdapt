@@ -1,12 +1,11 @@
-from flood_adapt.object_model.hazard.event.event import Event
-
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
-)
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
-from flood_adapt.object_model.hazard.event.historical_hurricane import (
+from .event import Event
+from .historical_hurricane import (
     HistoricalHurricane,
 )
+from .historical_nearshore import (
+    HistoricalNearshore,
+)
+from .synthetic import Synthetic
 
 
 class EventFactory:

@@ -1,15 +1,15 @@
+import os
 from typing import Any, Union
+
 import tomli
 import tomli_w
-
-from pathlib import Path
-import os
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
     IHistoricalHurricane,
 )
+
 
 class HistoricalHurricane(Event, IHistoricalHurricane):
     """HistoricalHurricane class object for storing historical 
