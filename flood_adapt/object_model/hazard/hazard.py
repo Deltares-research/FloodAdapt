@@ -203,56 +203,55 @@ class Hazard:
             / "sfincs.exe"
         )
 
-        # TODO start for-loop here
-        with cd(self.simulation_path):
-            sfincs_log = "sfincs.log"
-            with open(sfincs_log, "w") as log_handler:
-                subprocess.run(sfincs_exec, stdout=log_handler)
+        for simulation_path in self.simulation_paths:
+            with cd(simulation_path):
+                sfincs_log = "sfincs.log"
+                with open(sfincs_log, "w") as log_handler:
+                    subprocess.run(sfincs_exec, stdout=log_handler)
 
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
     def preprocess_sfincs(
         self,
-    ):  # separate into preparing and running model, loop through all events in both
+    ):
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
 
-        # TODO start for-loop here
-        # Load overland sfincs model
-        model = SfincsAdapter(model_root=path_in)
+        for ii, event in enumerate(self.event_set):
+            self.event = event  # set current event to ii-th event in event set
+            # Load overland sfincs model
+            model = SfincsAdapter(model_root=path_in)
 
-        # adjust timing of model
-        model.set_timing(self.event.attrs)
+            # adjust timing of model
+            model.set_timing(self.event.attrs)
 
-        # Generate and change water level boundary condition
-        template = self.event.attrs.template
-        if template == "Synthetic" or template == "Historical_nearshore":
-            self.add_wl_ts()
-        elif template == "Hurricane" or template == "Historical_offshore":
-            raise NotImplementedError
-        model.add_wl_bc(self.wl_ts)
+            # Generate and change water level boundary condition
+            template = self.event.attrs.template
+            if template == "Synthetic" or template == "Historical_nearshore":
+                self.add_wl_ts()
+            elif template == "Hurricane" or template == "Historical_offshore":
+                raise NotImplementedError
+            model.add_wl_bc(self.wl_ts)
 
-        # Generate and change discharge boundary condition
-        self.add_discharge()
-        model.add_dis_bc(self.dis_ts)
+            # Generate and change discharge boundary condition
+            self.add_discharge()
+            model.add_dis_bc(self.dis_ts)
 
-        # Generate and add rainfall boundary condition
-        # TODO
+            # Generate and add rainfall boundary condition
+            # TODO
 
-        # Generate and add wind boundary condition
-        # TODO, made already a start generating a constant timeseries in Event class
+            # Generate and add wind boundary condition
+            # TODO, made already a start generating a constant timeseries in Event class
 
-        # Add floodwall if included
-        # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
-        #     pass
+            # Add floodwall if included
+            # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
+            #     pass
 
-        # write sfincs model in output destination
-        model.write_sfincs_model(
-            path_out=self.simulation_path
-        )  # TODO use simulation_path from list
+            # write sfincs model in output destination
+            model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
