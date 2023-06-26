@@ -55,9 +55,9 @@ class SfincsAdapter:
         timeseries : Union[str, os.PathLike], optional
             path to file of timeseries file (.csv) which has three columns: time, magnitude and direction, by default None
         const_mag : float, optional
-            magnitude of time-invarient wind forcing [m/s], by default None
+            magnitude of time-invariant wind forcing [m/s], by default None
         const_dir : float, optional
-            direction of time-invarient wind forcing [deg], by default None
+            direction of time-invariant wind forcing [deg], by default None
         """
         self.sf_model.setup_wind_forcing(
             timeseries=timeseries, const_mag=const_mag, const_dir=const_dir
@@ -106,7 +106,7 @@ class SfincsAdapter:
         precip : Union[str, os.PathLike], optional
             timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
         const_precip : float, optional
-            time-invarient precipitation magnitude [mm/hr], by default None
+            time-invariant precipitation magnitude [mm/hr], by default None
         """
         self.sf_model.setup_precip_forcing(precip=precip, const_precip=const_precip)
 
