@@ -145,11 +145,6 @@ class Hazard:
 
     # no write function is needed since this is only used internally
 
-    def calculate_rp_floodmaps(self, rp: list):
-        raise NotImplementedError
-        # path_to_floodmaps = None
-        # return path_to_floodmaps
-
     def add_wl_ts(self):
         """adds total water level timeseries to hazard object"""
         # generating total time series made of tide, slr and water level offset,
@@ -258,8 +253,8 @@ class Hazard:
             # create geotiff? tbd
             ...
         elif self.mode == "probabilistic_set":
-            # return period flood maps
-            ...
+            self.calculate_rp_floodmaps()
+            self.calculate_floodfrequency_map()
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
@@ -269,3 +264,191 @@ class Hazard:
         test2 = self.physical_projection == other.physical_projection
         test3 = self.hazard_strategy == other.hazard_strategy
         return test1 & test2 & test3
+
+    def calculate_rp_floodmaps(self):
+        floodmap_rp = [float(rp) for rp in config_dict["return_periods"].split(",")]
+        probability = xr.DataArray(
+            data=np.array(scenarioDict["events"]["probability"]).astype(float),
+            dims=["probability"],
+            coords={"index": (["probability"], scenarioDict["events"]["probability"])},
+            name="probability",
+        )
+
+        results_full_path = self.simulation_paths
+        results_full_path.append(path_to_zsmax)
+        # Create RP flood maps
+
+        # 1a: make a table of all water levels and associated probabilities
+        zs = xr.concat(zs_maps, probability)
+        prob = np.tile(probability, (len(index), 1)).transpose()
+
+        # 1b: sort water levels in descending order and include the probabilities in the sorting process
+        # (i.e. each h-value should be linked to the same p-values as in step 1a)
+        sort_index = zs.argsort(axis=0)
+        sorted_prob = np.flipud(np.take_along_axis(prob, sort_index, axis=0))
+        sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
+
+        # 1c: Compute exceedance probabilities of water depths
+        # Method: accumulate probabilities from top to bottom
+        prob_exceed = np.cumsum(sorted_prob, axis=0)
+
+        # 1d: Compute return periods of water depths
+        # Method: simply take the inverse of the exceedance probability (1/Pex)
+        rp_zs = 1.0 / prob_exceed
+
+        # For each return period (T) of interest do the following:
+        # For each grid cell do the following:
+        # Use the table from step [1d] as a “lookup-table” to derive the T-year water depth. Use a 1-d interpolation technique:
+        # h(T) = interp1 (log(T*), h*, log(T))
+        # in which t* and h* are the values from the table and T is the return period (T) of interest
+        # The resulting T-year water depths for all grids combined form the T-year hazard map
+        rp_da = xr.DataArray(rp_zs, dims=zs.dims)
+
+        no_data_value = -999  # in SFINCS
+        sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
+
+        h = np.where(
+            np.all(np.isnan(sorted_zs), axis=0), np.nan, 0
+        )  # do not calculate for cells with no data value
+        valid_cells = np.where(~np.isnan(h))[0]
+
+        for rp in floodmap_rp:
+            logging.info("Started calculation of {}-year RP flood map".format(rp))
+            print(
+                "Started calculation of {}-year RP flood map".format(rp),
+                file=sys.stdout,
+                flush=True,
+            )
+            time.time()
+
+            if rp <= rp_da.max() and rp >= rp_da.min():
+                # using lower threshold
+                # TODO: improve speed
+                for jj in valid_cells:
+                    h[jj] = np.interp(
+                        np.log10(rp),
+                        np.log10(rp_da[::-1, jj]),
+                        sorted_zs[::-1, jj],
+                        left=0,
+                    )
+
+                    # ToDo: decide on interpolation: lower threshold, linear, upper threshold (most risk averse/conservative),
+                    #  now interpolating
+
+                    # h[valid_cells] = np.nanmax(np.where(rp - rp_da[:, valid_cells] > 0, sorted_zs[:, valid_cells], 0),
+                    #                            axis=0)
+
+                    # Code to reuse to speed things up
+                    # rp_array = matlib.repmat(hist_inun.rp, hist_inun.shape[1], 1)
+                    # rp_da = xr.DataArray(rp_array.transpose(), coords=hist_inun.coords, dims=hist_inun.dims)
+                    #
+                    # diff_da = np.subtract(rp_da, matlib.repmat(pl_tile.mrp[use_ind], hist_inun.rp.size, 1))
+                    # diff_da = xr.where(diff_da < 0, np.nan, diff_da)
+                    # index2 = diff_da.argmin(dim='rp', skipna='True')
+                    #
+                    # inun_low = hist_inun[index2 - 1, :]
+                    # inun_up = hist_inun[index2, :]
+                    # regress_slope = (inun_up - inun_low) / (inun_up.rp - inun_low.rp)
+                    #
+                    # pl_height[use_ind] = inun_low.drop('rp') + regress_slope * (pl_tile.mrp[use_ind] - inun_low.rp)
+
+            elif rp > rp_da.max():
+                logging.warning(
+                    "{}-year RP larger than maximum return period in the event ensemble, which is {}. Using max. water levels across all events".format(
+                        rp, rp_da.max()
+                    )
+                )
+                print(
+                    "{}-year RP larger than maximum return period in the event ensemble, which is {}. Using max. water levels across all events".format(
+                        rp, rp_da.max()
+                    )
+                )
+                h[valid_cells] = sorted_zs[0, valid_cells]
+
+            elif rp < rp_da.min():
+                # ToDo: only valid if no area is below MSL
+                h[valid_cells] = 0
+                logging.warning(
+                    "{}-year RP smaller than minimum return period in the event ensemble, which is {:d} years. Setting water levels to zero for RP {}-years".format(
+                        rp, int(rp_da.min()), rp
+                    )
+                )
+                print(
+                    "{}-year RP smaller than minimum return period in the event ensemble, which is {:d} years. Setting water levels to zero for RP {}-years".format(
+                        rp, int(rp_da.min()), rp
+                    )
+                )
+
+            # write binary water level RP map
+            fn_zsmax = fn_hmax_tif.replace("flood_depth.tif", "water_level.dat")
+            fn_zsmax = fn_zsmax.replace("results", "simulations")
+            data_zsmax_rp = data_zs_orig
+            data_zsmax_rp[1 : int(len(data_zs_orig) / 2) - 1] = np.where(
+                np.isnan(h), -999, h
+            )
+            data_zsmax_rp.tofile(fn_zsmax)
+
+    def calculate_floodfrequency_map(self):
+        raise NotImplementedError
+        # CFRSS code below
+        # probability = xr.DataArray(data=np.array(scenarioDict['events']['probability']).astype(float),
+        #                         dims=["probability"],
+        #                         coords=dict(index=(["probability"], scenarioDict['events']['probability'])),
+        #                         name='probability')
+
+        # results_full_path = []
+        # results_full_path.append(path_to_zsmax)
+
+        # # Create Flood frequency map
+        # zs_maps = []
+        # dem = read_geotiff(config_dict, scenarioDict)
+        # freq_dem = np.zeros_like(dem)
+        # for ii, zs_max_path in enumerate(results_full_path):
+        #     # read zsmax data
+        #     fn_dat = zs_max_path.parent.joinpath('sfincs.ind')
+        #     data_ind = np.fromfile(fn_dat, dtype="i4")
+        #     index = data_ind[1:] - 1  # because python starts counting at 0
+        #     fn_dat = zs_max_path
+        #     data_zs_orig = np.fromfile(fn_dat, dtype="f4")
+        #     data_zs = data_zs_orig[1:int(len(data_zs_orig) / 2) - 1]
+        #     da = xr.DataArray(data=data_zs,
+        #                     dims=["index"],
+        #                     coords=dict(index=(["index"], index)))
+        #     zs_maps.append(da) # save for RP map calculation
+
+        #     # create flood depth hmax
+
+        #     nmax = int(sf_input_df.loc['nmax'])
+        #     mmax = int(sf_input_df.loc['mmax'])
+        #     zsmax = np.zeros(nmax * mmax) - 999.0
+        #     zsmax[index] = data_zs
+        #     zsmax_dem = resample_sfincs_on_dem(zsmax, config_dict, scenarioDict)
+        #     # calculate max. flood depth as difference between water level zs and dem, do not allow for negative values
+        #     hmax_dem = zsmax_dem - dem
+        #     hmax_dem = np.where(hmax_dem < 0, 0, hmax_dem)
+
+        #     # For every grid cell, take the sum of frequencies for which it was flooded (above threshold). The sresult is frequency of flooding for that grid cell
+        #     freq_dem += np.where(hmax_dem > threshold, probability[ii], 0)
+
+        # no_datavalue = float(config_dict['no_data_value'])
+        # freq_dem = np.where(np.isnan(hmax_dem), no_datavalue, freq_dem)
+
+        # # write flooding frequency to geotiff
+        # demfile = Path(scenarioDict['static_path'], 'dem', config_dict['demfilename'])
+        # dem_ds = gdal.Open(str(demfile))
+        # [cols, rows] = dem.shape
+        # driver = gdal.GetDriverByName("GTiff")
+        # fn_tif = str(result_folder.joinpath('Flood_frequency.tif'))
+        # outdata = driver.Create(fn_tif, rows, cols, 1, gdal.GDT_Float32)
+        # outdata.SetGeoTransform(dem_ds.GetGeoTransform())  ##sets same geotransform as input
+        # outdata.SetProjection(dem_ds.GetProjection())  ##sets same projection as input
+        # outdata.GetRasterBand(1).WriteArray(freq_dem)
+        # outdata.GetRasterBand(1).SetNoDataValue(no_datavalue)  ##if you want these values transparent
+        # outdata.SetMetadata({k: str(v) for k, v in scenarioDict.items()})
+        # logging.info("Created geotiff file with flood frequency.")
+        # print("Created geotiff file with flood frequency.", file=sys.stdout, flush=True)
+
+        # outdata.FlushCache()  ##saves to disk!!
+        # outdata = None
+        # band = None
+        # dem_ds = None
