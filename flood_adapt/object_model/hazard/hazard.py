@@ -3,6 +3,10 @@
 import subprocess
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+import xarray as xr
+
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -186,6 +190,11 @@ class Hazard:
         self.preprocess_sfincs()
         # add other models here
 
+    def postprocess_models(self):
+        # Preprocess all hazard model input
+        self.postprocess_sfincs()
+        # add other models here
+
     def run_models(self):
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
@@ -250,8 +259,7 @@ class Hazard:
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
-            # create geotiff? tbd
-            ...
+            raise NotImplementedError  # TODO: create geotiff?
         elif self.mode == "probabilistic_set":
             self.calculate_rp_floodmaps()
             self.calculate_floodfrequency_map()
@@ -266,26 +274,26 @@ class Hazard:
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
-        floodmap_rp = [float(rp) for rp in config_dict["return_periods"].split(",")]
-        probability = xr.DataArray(
-            data=np.array(scenarioDict["events"]["probability"]).astype(float),
-            dims=["probability"],
-            coords={"index": (["probability"], scenarioDict["events"]["probability"])},
-            name="probability",
-        )
+        floodmap_rp = self.site.attrs.risk.return_periods
+        frequencies = self.frequencies
 
-        results_full_path = self.simulation_paths
-        results_full_path.append(path_to_zsmax)
+        zs_maps = []
+        for ii, simulation_path in enumerate(self.simulation_paths):
+            # read zsmax data from overland sfincs model
+            sim = SfincsAdapter(model_root=simulation_path)
+            zsmax = sim.read_zsmax().load()
+            zs_maps.append(zsmax.stack(z=("x", "y")))
+
         # Create RP flood maps
 
-        # 1a: make a table of all water levels and associated probabilities
-        zs = xr.concat(zs_maps, probability)
-        prob = np.tile(probability, (len(index), 1)).transpose()
+        # 1a: make a table of all water levels and associated frequencies
+        zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
+        freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
 
-        # 1b: sort water levels in descending order and include the probabilities in the sorting process
+        # 1b: sort water levels in descending order and include the frequencies in the sorting process
         # (i.e. each h-value should be linked to the same p-values as in step 1a)
         sort_index = zs.argsort(axis=0)
-        sorted_prob = np.flipud(np.take_along_axis(prob, sort_index, axis=0))
+        sorted_prob = np.flipud(np.take_along_axis(freq, sort_index, axis=0))
         sorted_zs = np.flipud(np.take_along_axis(zs.values, sort_index, axis=0))
 
         # 1c: Compute exceedance probabilities of water depths
@@ -312,15 +320,10 @@ class Hazard:
         )  # do not calculate for cells with no data value
         valid_cells = np.where(~np.isnan(h))[0]
 
-        for rp in floodmap_rp:
-            logging.info("Started calculation of {}-year RP flood map".format(rp))
-            print(
-                "Started calculation of {}-year RP flood map".format(rp),
-                file=sys.stdout,
-                flush=True,
-            )
-            time.time()
+        zs_rp_maps = []
 
+        for rp in floodmap_rp:
+            print(f"Evaluating {rp}-year return period...")
             if rp <= rp_da.max() and rp >= rp_da.min():
                 # using lower threshold
                 # TODO: improve speed
@@ -353,51 +356,30 @@ class Hazard:
                     # pl_height[use_ind] = inun_low.drop('rp') + regress_slope * (pl_tile.mrp[use_ind] - inun_low.rp)
 
             elif rp > rp_da.max():
-                logging.warning(
-                    "{}-year RP larger than maximum return period in the event ensemble, which is {}. Using max. water levels across all events".format(
-                        rp, rp_da.max()
-                    )
-                )
                 print(
-                    "{}-year RP larger than maximum return period in the event ensemble, which is {}. Using max. water levels across all events".format(
-                        rp, rp_da.max()
-                    )
+                    f"{rp}-year RP larger than maximum return period in the event ensemble, which is {rp_da.max().values}. Using max. water levels across all events"
                 )
                 h[valid_cells] = sorted_zs[0, valid_cells]
 
             elif rp < rp_da.min():
                 # ToDo: only valid if no area is below MSL
                 h[valid_cells] = 0
-                logging.warning(
-                    "{}-year RP smaller than minimum return period in the event ensemble, which is {:d} years. Setting water levels to zero for RP {}-years".format(
-                        rp, int(rp_da.min()), rp
-                    )
-                )
                 print(
-                    "{}-year RP smaller than minimum return period in the event ensemble, which is {:d} years. Setting water levels to zero for RP {}-years".format(
-                        rp, int(rp_da.min()), rp
-                    )
+                    f"{rp}-year RP smaller than minimum return period in the event ensemble, which is {int(rp_da.min())} years. Setting water levels to zero for RP {rp}-years"
                 )
 
-            # write binary water level RP map
-            fn_zsmax = fn_hmax_tif.replace("flood_depth.tif", "water_level.dat")
-            fn_zsmax = fn_zsmax.replace("results", "simulations")
-            data_zsmax_rp = data_zs_orig
-            data_zsmax_rp[1 : int(len(data_zs_orig) / 2) - 1] = np.where(
-                np.isnan(h), -999, h
-            )
-            data_zsmax_rp.tofile(fn_zsmax)
+            zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
+            zs_rp_maps.append(zs_rp_da)
+
+        # write netcdf with water level, add new dimension for rp
+        zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
+        zs_rp = zs_rp.unstack()
+        fn_rp = self.simulation_paths[0].parent.parent.joinpath("rp_water_level.nc")
+        zs_rp.to_netcdf(fn_rp)
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError
         # CFRSS code below
-        # probability = xr.DataArray(data=np.array(scenarioDict['events']['probability']).astype(float),
-        #                         dims=["probability"],
-        #                         coords=dict(index=(["probability"], scenarioDict['events']['probability'])),
-        #                         name='probability')
-
-        # results_full_path = []
-        # results_full_path.append(path_to_zsmax)
 
         # # Create Flood frequency map
         # zs_maps = []

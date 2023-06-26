@@ -78,3 +78,13 @@ class Scenario(IScenario):
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
+
+        if not self.direct_impacts.hazard.has_run:
+            self.direct_impacts.hazard.postprocess_models()
+        if not self.direct_impacts.has_run:
+            ...
+            # self.direct_impacts.postprocess_models()
+        # else:
+        #     print(
+        #         f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+        #     )

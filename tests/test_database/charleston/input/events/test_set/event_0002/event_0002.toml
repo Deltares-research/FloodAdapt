@@ -1,0 +1,39 @@
+name = "event_0002"
+long_name = "event_0002"
+template = "Historical_nearshore"
+timing = "historical"
+mode = "single_event"
+
+[time]
+start_time = "20200101 000000"
+stop_time = "20200103 000000"
+
+[tide]
+source = "timeseries"
+timeseries_file = "tide.csv"
+
+[surge]
+source = "none"
+
+[water_level_offset] 
+value = 0.6
+units = "feet"
+
+[wind]
+source = "constant"
+[wind.constant_speed]
+value = 0
+units = "m/s"
+[wind.constant_direction]
+value = 0
+units = "deg N"
+
+[rainfall]
+source = "timeseries"
+timeseries_file = "rainfall.csv"
+
+[river]
+source = "constant"
+[river.constant_discharge]
+value = 5000
+units = "cfs"

@@ -43,3 +43,30 @@ def test_hazard_run_synthetic_discharge():
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
+
+
+def test_rp_floodmap_calculation():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_test_set_no_measures"
+        / "current_test_set_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
+    nc_file = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_test_set_no_measures"
+        / "rp_water_level.nc"
+    )
+    assert nc_file.is_file()
