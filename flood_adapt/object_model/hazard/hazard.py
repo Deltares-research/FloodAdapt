@@ -149,12 +149,9 @@ class Hazard:
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
         event_dir = self.database_input_path / "events" / self.event.attrs.name
+
         sfincs_exec = (
-            self.database_input_path.parents[2]
-            / "system"
-            / "sfincs"
-            / self.site.attrs.sfincs.version
-            / "sfincs.exe"
+            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
 
         # Load overland sfincs model
@@ -169,6 +166,8 @@ class Hazard:
             or self.event.attrs.rainfall.source == "map"
         ):
             ds = self.event.download_meteo(site=self.site, path=event_dir)
+            ds = ds.rename({"barometric_pressure": "press"})
+            ds = ds.rename({"precipitation": "precip"})
 
         # Generate and change water level boundary condition
         template = self.event.attrs.template
@@ -189,12 +188,8 @@ class Hazard:
 
             # Add wind and if applicable pressure forcing from files.
             if self.event.attrs.wind.source == "map":
-                offshore_model.add_wind_forcing_from_grid(
-                    wind_u=ds["wind_u"], wind_v=ds["wind_v"]
-                )
-                offshore_model.add_pressure_forcing_from_grid(
-                    press=ds["barometric_pressure"]
-                )
+                offshore_model.add_wind_forcing_from_grid(ds=ds)
+                offshore_model.add_pressure_forcing_from_grid(ds=ds)
             elif self.event.attrs.wind.source == "timeseries":
                 offshore_model.add_wind_forcing(
                     timeseries=event_dir.joinpath("wind.csv")
@@ -233,7 +228,7 @@ class Hazard:
 
         # Generate and add rainfall boundary condition
         if self.event.attrs.rainfall.source == "map":
-            model.add_precip_forcing_from_grid(precip=ds["precipitation"])
+            model.add_precip_forcing_from_grid(ds=ds)
         elif self.event.attrs.rainfall.source == "timeseries":
             model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
         elif self.event.attrs.wind.source == "constant":
@@ -243,7 +238,7 @@ class Hazard:
 
         # Generate and add wind boundary condition
         if self.event.attrs.wind.source == "map":
-            model.add_wind_forcing_from_grid(wind_u=ds["wind_u"], wind_v=ds["wind_v"])
+            model.add_wind_forcing_from_grid(ds=ds)
         elif self.event.attrs.wind.source == "timeseries":
             model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
         elif self.event.attrs.wind.source == "constant":
@@ -267,11 +262,6 @@ class Hazard:
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
-
-        sfincs_exec = (
-            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
-        )
-
         with cd(self.simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:

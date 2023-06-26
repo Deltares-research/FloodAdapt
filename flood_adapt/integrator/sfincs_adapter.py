@@ -63,38 +63,42 @@ class SfincsAdapter:
             timeseries=timeseries, const_mag=const_mag, const_dir=const_dir
         )
 
-    def add_wind_forcing_from_grid(self, wind_u: xr.DataArray, wind_v: xr.DataArray):
+    def add_wind_forcing_from_grid(self, ds: xr.DataArray):
         """Add spatially varying wind forcing to sfincs model.
 
         Parameters
         ----------
-        wind_u : xr.DataArray
-            Dataarray with eastward wind velocity [m/s]
-        wind_v : xr.DataArray
-            Dataarray with northward wind velocity [m/s]
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - wind_u: eastward wind velocity [m/s]
+            - wind_v: northward wind velocity [m/s]
+            - spatial_ref: CRS
         """
-        wind = xr.DataArray(data=[wind_u, wind_v])
-        self.sf_model.setup_wind_forcing_from_grid(wind=wind)
+        self.sf_model.setup_wind_forcing_from_grid(wind=ds)
 
-    def add_pressure_forcing_from_grid(self, press: xr.DataArray):
+    def add_pressure_forcing_from_grid(self, ds: xr.DataArray):
         """Add spatially varying barometric pressure to sfincs model.
 
         Parameters
         ----------
-        press : xr.DataArray
-            Dataarray with barometric pressure [Pa]
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - press: barometric pressure [Pa]
+            - spatial_ref: CRS
         """
-        self.sf_model.setup_pressure_forcing_from_grid(press=press)
+        self.sf_model.setup_pressure_forcing_from_grid(press=ds)
 
-    def add_precip_forcing_from_grid(self, precip: xr.DataArray):
+    def add_precip_forcing_from_grid(self, ds: xr.DataArray):
         """Add spatially varying precipitation to sfincs model.
 
         Parameters
         ----------
         precip : xr.DataArray
-            Dataarray with precipitation rates [mm/hr]
+            Dataarray which should contain:
+            - precip: precipitation rates [mm/hr]
+            - spatial_ref: CRS
         """
-        self.sf_model.setup_precip_forcing_from_grid(precip=precip, aggregate=False)
+        self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
 
     def add_precip_forcing(
         self, precip: Union[str, os.PathLike] = None, const_precip: float = None
