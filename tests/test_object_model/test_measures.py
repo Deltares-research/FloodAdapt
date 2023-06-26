@@ -12,7 +12,10 @@ from flood_adapt.object_model.interface.measures import (
     ImpactType,
     SelectionType,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLengthRefValue
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitfulLengthRefValue,
+)
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -28,14 +31,13 @@ def test_floodwall_read():
     assert isinstance(floodwall.attrs.name, str)
     assert isinstance(floodwall.attrs.long_name, str)
     assert isinstance(floodwall.attrs.type, HazardType)
-    assert isinstance(floodwall.attrs.elevation, UnitfulLengthRefValue)
+    assert isinstance(floodwall.attrs.elevation, UnitfulLength)
 
     assert floodwall.attrs.name == "seawall"
     assert floodwall.attrs.long_name == "seawall"
     assert floodwall.attrs.type == "floodwall"
     assert floodwall.attrs.elevation.value == 12
     assert floodwall.attrs.elevation.units == "feet"
-    assert floodwall.attrs.elevation.type == "floodmap"
 
 
 def test_elevate_aggr_area_read():

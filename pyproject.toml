@@ -28,7 +28,12 @@ dependencies = [
     "pydantic",
     "tomli-w",
     "tomli",
-    "plotly"
+    "plotly",
+    "cht_cyclones",
+    "cht_observations",
+    "cht_tide",
+    "cht_meteo",
+    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator"
 ]
 dynamic = ["version"]
 

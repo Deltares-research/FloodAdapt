@@ -253,8 +253,10 @@ class Hazard:
             )
 
         # Add floodwall if included
-        # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
-        #     pass
+        if self.hazard_strategy.measures is not None:
+            for measure in range(len(self.hazard_strategy.measures)):
+                if measure.attrs.type == "floodwall":
+                    model.add_floodwall(floodwall=measure)
 
         # write sfincs model in output destination
         model.write_sfincs_model(
@@ -265,7 +267,12 @@ class Hazard:
 
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
-        with cd(self.simulation_path.joinpath(self.site.attrs.sfincs.overland_model)):
+
+        sfincs_exec = (
+            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
+        )
+
+        with cd(self.simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
                 subprocess.run(sfincs_exec, stdout=log_handler)

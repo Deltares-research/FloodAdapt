@@ -2,15 +2,17 @@ name: flood_adapt
 
 channels:
   - conda-forge
+  - numba
 
 dependencies:
   - pip
   - pip:
     - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
-    - git+https://github.com/Deltares/cht_meteo.git
-    - git+https://github.com/Deltares/cht_tide.git
-    - git+https://github.com/Deltares/cht_observations.git
-    - git+https://github.com/Deltares/cht_cyclones.git
+    - noaa-coops
+    - cht-tide
+    - cht-meteo
+    - cht-observations
+    - cht-cyclones
   - black
   - ruff
   - build
@@ -27,3 +29,4 @@ dependencies:
   - tomli
   - tomli-w
   - twine
+  - census

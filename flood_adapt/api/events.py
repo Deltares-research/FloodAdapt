@@ -42,6 +42,13 @@ def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffsho
     return HistoricalOffshore.load_dict(attrs)
 
 
+def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
+    # return HistoricalHurricane.load_dict(attrs)
+    raise NotImplementedError(
+        "HurricaneNearshore is not yet implemented in the backend missing"
+    )
+
+
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
     database.save_event(event)
 
