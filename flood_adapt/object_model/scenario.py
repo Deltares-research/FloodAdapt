@@ -58,11 +58,11 @@ class Scenario(IScenario):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def run(self):
+    async def run(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
         if not self.direct_impacts.hazard.has_run:
-            self.direct_impacts.hazard.run_models()
+            await self.direct_impacts.hazard.run_models()
         else:
             print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
         if not self.direct_impacts.has_run:

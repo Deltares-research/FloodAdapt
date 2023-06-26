@@ -1,6 +1,6 @@
 # import subprocess
 # import sys
-import subprocess
+from asyncio import create_subprocess_exec, create_task, subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -136,13 +136,21 @@ class Hazard:
         elif mode == "probabilistic_set":
             return None  # TODO: add Ensemble.load()
 
-    def run_models(self):
-        self.run_sfincs()
+    async def run_models(self):
+        process = await self.run_sfincs()
 
+        return create_task(self.is_finished(process))
         # Indicator that hazard has run
-        self.__setattr__("has_run", True)
+        # if process.returncode == 0:
+        #     self.__setattr__("has_run", True)
 
-    def run_sfincs(self):
+    async def is_finished(self, process: subprocess.Process):
+        ret = await process.wait()
+        # Indicator that hazard has run
+        if ret == 0:
+            self.__setattr__("has_run", True)
+
+    async def run_sfincs(self):
         input_path = self.database_input_path.parent
         path_in = input_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
@@ -191,7 +199,11 @@ class Hazard:
         with cd(self.simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
-                subprocess.run(sfincs_exec, stdout=log_handler)
+                # subprocess.run(sfincs_exec, stdout=log_handler)
+                sub_procs = create_task(
+                    create_subprocess_exec(sfincs_exec, stdout=log_handler)
+                )
+                return await sub_procs
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
