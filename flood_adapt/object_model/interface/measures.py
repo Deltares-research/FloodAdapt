@@ -112,6 +112,7 @@ class FloodWallModel(HazardMeasureModel):
 
     elevation: UnitfulLength
 
+
 class PumpModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "pump" hazard measure"""
 
@@ -162,6 +163,7 @@ class IFloodWall(IMeasure):
     """This is a class for a FloodAdapt "floodwall" measure"""
 
     attrs: FloodWallModel
+
 
 class IPump(IMeasure):
     """This is a class for a FloodAdapt "pump" measure"""
