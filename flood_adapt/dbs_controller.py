@@ -672,7 +672,7 @@ class Database(IDatabase):
             # TODO split this
             text = "scenario" if len(scenarios) == 1 else "scenarios"
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in {text} {scenarios}"
+                f"'{name}' strategy cannot be deleted since it is already used in {text} {scenarios}"
             )
         else:
             strategy_path = self.input_path / "strategies" / name
@@ -757,6 +757,7 @@ class Database(IDatabase):
         scenario = Scenario.load_file(scenario_path / f"{name}.toml")
         scenario.init_object_model()
         if scenario.direct_impacts.hazard.has_run:
+            # TODO this should be a check were if the scenario is run you get a warning?
             raise ValueError(
                 f"'{name}' scenario cannot be deleted since the hazard model has already run."
             )
@@ -779,6 +780,56 @@ class Database(IDatabase):
         benefit_path = self.input_path / "benefits" / name / f"{name}.toml"
         benefit = Benefit.load_file(benefit_path)
         return benefit
+
+    def save_benefit(self, benefit: IBenefit) -> None:
+        """Saves a benefit object in the database.
+
+        Parameters
+        ----------
+        measure : IBenefit
+            object of scenario type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of benefits assessments should be unique.
+        """
+        names = self.get_scenarios()["name"]
+        if benefit.attrs.name in names:
+            raise ValueError(
+                f"'{benefit.attrs.name}' name is already used by another benefit. Choose a different name"
+            )
+        # TODO add check to see if a scenario with the same attributes but different name already exists
+        else:
+            (self.input_path / "benefits" / benefit.attrs.name).mkdir()
+            benefit.save(
+                self.input_path
+                / "scenarios"
+                / benefit.attrs.name
+                / f"{benefit.attrs.name}.toml"
+            )
+
+    def delete_benefit(self, name: str):
+        """Deletes an already existing benefit in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the benefit
+
+        Raises
+        ------
+        ValueError
+            Raise error if benefit has already model output
+        """
+        benefit_path = self.input_path / "benefits" / name
+        benefit = Benefit.load_file(benefit_path / f"{name}.toml")
+        if benefit.has_run:
+            raise ValueError(
+                f"'{name}' benefit assessment cannot be deleted since it has already run."
+            )
+        else:
+            shutil.rmtree(benefit_path, ignore_errors=True)
 
     def create_benefit_scenarios(self, benefit: IBenefit):
         """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already"""
