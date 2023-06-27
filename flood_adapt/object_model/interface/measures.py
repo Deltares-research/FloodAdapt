@@ -8,6 +8,7 @@ from pydantic import BaseModel, validator
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
+    UnitfulVolume,
 )
 
 
@@ -23,7 +24,9 @@ class HazardType(str, Enum):
     """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
+    # levee = "levee" --> same functionality as floodwall
     pump = "pump"
+    green_infrastructure = "green_infrastructure"
 
 
 class SelectionType(str, Enum):
@@ -112,6 +115,13 @@ class FloodWallModel(HazardMeasureModel):
     elevation: UnitfulLength
 
 
+class GreenInfrastructureModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
+
+    volume: Optional(UnitfulVolume)
+    height: Optional(UnitfulLength)
+
+
 class IMeasure(ABC):
     """This is a class for a FloodAdapt measure"""
 
@@ -156,3 +166,9 @@ class IFloodWall(IMeasure):
     """This is a class for a FloodAdapt "floodwall" measure"""
 
     attrs: FloodWallModel
+
+
+class IGreenInfrastructure(IMeasure):
+    """This is a class for a FloodAdapt "green infrastrcutre" measure"""
+
+    attrs: GreenInfrastructureModel

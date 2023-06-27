@@ -6,6 +6,9 @@ from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructureModel,
+)
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -90,7 +93,6 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        # TODO polygon file should be txt file with extension xy (!)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
@@ -103,6 +105,34 @@ class SfincsAdapter:
         # HydroMT function: create floodwall
         self.sf_model.create_structures(
             gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        )
+
+    def add_green_infrastructure(self, green_infrastructure: GreenInfrastructureModel):
+        """Adds green infrastructure to sfincs model.
+
+        Parameters
+        ----------
+        green_infrastructure : GreenInfrastructureModel
+            Green infrastructure information
+        """
+
+        # HydroMT function: get geodataframe from filename
+        gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
+            green_infrastructure.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+        )
+
+        if green_infrastructure.volume != 0:
+            volume = green_infrastructure.volume
+            height = None
+        elif green_infrastructure.height != 0:
+            volume = None
+            height = green_infrastructure.height
+        else:
+            ValueError("Volume and height are both none. At least one of the two should have a nonzero value.")
+
+        # HydroMT function: create storage volume
+        self.sf_model.setup_storage_volume(
+            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):

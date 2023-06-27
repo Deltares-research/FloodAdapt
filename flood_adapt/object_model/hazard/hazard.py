@@ -177,6 +177,8 @@ class Hazard:
             for measure in range(len(self.hazard_strategy.measures)):
                 if measure.attrs.type == "floodwall":
                     model.add_floodwall(floodwall=measure)
+                elif measure.attrs.type == "green_infrastructure":
+                    model.add_green_infrastructure(green_infrastructure=measure)
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=self.simulation_path)

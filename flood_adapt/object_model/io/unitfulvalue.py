@@ -25,6 +25,9 @@ class UnitTypesIntensity(str, Enum):
     inch = "inch/hr"
     mm = "mm/hr"
 
+class UnitTypesVolume(str, Enum):
+    m3 = "m3"
+
 
 class VerticalReference(str, Enum):
     floodmap = "floodmap"
@@ -174,3 +177,9 @@ class UnitfulIntensity(BaseModel):
         elif new_units == "mm/hr":
             new_conversion = 1.0 / 25.4
         return conversion * new_conversion * self.value
+    
+class UnitfulVolume(BaseModel):
+    value: float
+    units: UnitTypesVolume
+
+    #TODO: make convert function if other units are known
