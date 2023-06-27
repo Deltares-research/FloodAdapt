@@ -28,9 +28,25 @@ def test_create_benefit_scenarios():
     )
 
     assert benefit_toml.is_file()
+
     benefit = Benefit.load_file(benefit_toml)
-    benefit.check_scenarios()
     dbs.create_benefit_scenarios(benefit)
+
+    # Check if scenarios were created and then delete them
+    scenarios_path = test_database_path.joinpath("charleston", "input", "scenarios")
+
+    path1 = scenarios_path.joinpath("all_projections_test_set_elevate_comb_correct")
+    path2 = scenarios_path.joinpath("all_projections_test_set_no_measures")
+    path3 = scenarios_path.joinpath("current_test_set_elevate_comb_correct")
+
+    assert path1.is_dir()
+    assert path2.is_dir()
+    assert path3.is_dir()
+
+    # Delete scenarios created
+    shutil.rmtree(path1)
+    shutil.rmtree(path2)
+    shutil.rmtree(path3)
 
 
 def test_projection_interp_slr():
