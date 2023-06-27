@@ -61,12 +61,17 @@ class Scenario(IScenario):
     def run(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
+        # preprocess model input data first, then run, then post-process
         if not self.direct_impacts.hazard.has_run:
+            self.direct_impacts.hazard.preprocess_models()
             self.direct_impacts.hazard.run_models()
+            self.direct_impacts.hazard.postprocess_models()
         else:
             print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
         if not self.direct_impacts.has_run:
+            # self.direct_impacts.preprocess_models() #TODO: separate preprocessing and running of impact models
             self.direct_impacts.run_models()
+            # self.direct_impacts.postprocess_models()
         else:
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
