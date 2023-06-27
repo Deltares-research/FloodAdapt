@@ -2,6 +2,7 @@ import filecmp
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pytest
 import xarray as xr
 
 from flood_adapt.object_model.scenario import Scenario
