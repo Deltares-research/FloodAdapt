@@ -12,10 +12,12 @@ from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
 
+from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
@@ -713,6 +715,7 @@ class Database(IDatabase):
             raise ValueError(
                 f"'{scenario.attrs.name}' name is already used by another scenario. Choose a different name"
             )
+        # TODO add check to see if a scenario with the same attributes but different name already exists
         else:
             (self.input_path / "scenarios" / scenario.attrs.name).mkdir()
             scenario.save(
@@ -760,12 +763,50 @@ class Database(IDatabase):
         else:
             shutil.rmtree(scenario_path, ignore_errors=True)
 
+    def get_benefit(self, name: str) -> IBenefit:
+        """Get the respective benefit object using the name of the benefit.
+
+        Parameters
+        ----------
+        name : str
+            name of the benefit
+
+        Returns
+        -------
+        IBenefit
+            Benefit object
+        """
+        benefit_path = self.input_path / "benefits" / name / f"{name}.toml"
+        benefit = Benefit.load_file(benefit_path)
+        return benefit
+
+    def create_benefit_scenarios(self, benefit: IBenefit):
+        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already"""
+        if not hasattr(benefit, "scenarios"):
+            benefit.check_scenarios()
+
+        for index, row in benefit.scenarios.iterrows():
+            if row["scenario created"] == "No":
+                scenario_dict = {}
+                scenario_dict["event"] = row["event"]
+                scenario_dict["projection"] = row["projection"]
+                scenario_dict["strategy"] = row["strategy"]
+                scenario_dict["name"] = "_".join(
+                    [row["event"], row["projection"], row["strategy"]]
+                )
+                scenario_dict["long_name"] = scenario_dict["name"]
+
+                scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
+
+                self.save_scenario(scenario_obj)
+
     def update(self) -> None:
         self.projections = self.get_projections()
         self.events = self.get_events()
         self.measures = self.get_measures()
         self.strategies = self.get_strategies()
         self.scenarios = self.get_scenarios()
+        self.benefits = self.get_benefits()
 
     def get_projections(self) -> dict[str, Any]:
         """Returns a dictionary with info on the projections that currently
@@ -854,6 +895,22 @@ class Database(IDatabase):
         ]
 
         return scenarios
+
+    def get_benefits(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the (cost-)benefit assessments that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'path' and 'last_modification_date' info
+        """
+        benefits = self.get_object_list(object_type="benefits")
+        objects = [Benefit.load_file(path) for path in benefits["path"]]
+        benefits["name"] = [obj.attrs.name for obj in objects]
+        benefits["long_name"] = [obj.attrs.long_name for obj in objects]
+
+        return benefits
 
     def get_outputs(self) -> dict[str, Any]:
         all_scenarios = pd.DataFrame(self.get_scenarios())
