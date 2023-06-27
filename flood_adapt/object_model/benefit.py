@@ -15,6 +15,7 @@ class Benefit(IBenefit):
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
+    has_run: bool = False
 
     def check_scenarios(self):
         """Check which scenarios are needed for this benefit calculation and if they have already been created"""
@@ -75,6 +76,14 @@ class Benefit(IBenefit):
         self.scenarios = pd.DataFrame(scenarios_calc).T
 
         return self.scenarios
+
+    def ready_to_run(self):
+        """Checks if all the required scenarios have already been run"""
+        ...
+
+    def run_cost_benefit(self):
+        """Runs the cost-benefit calculation"""
+        ...
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
