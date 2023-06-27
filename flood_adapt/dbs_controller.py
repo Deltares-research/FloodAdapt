@@ -843,7 +843,7 @@ class Database(IDatabase):
                 scenario_dict["projection"] = row["projection"]
                 scenario_dict["strategy"] = row["strategy"]
                 scenario_dict["name"] = "_".join(
-                    [row["event"], row["projection"], row["strategy"]]
+                    [row["projection"], row["event"], row["strategy"]]
                 )
                 scenario_dict["long_name"] = scenario_dict["name"]
 
