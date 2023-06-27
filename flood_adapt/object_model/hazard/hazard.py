@@ -184,7 +184,7 @@ class Hazard:
             offshore_model.set_timing(self.event.attrs)
 
             # set wl of offshore model
-            offshore_model.add_bzs_from_bca(self.event.attrs)
+            offshore_model.add_bzs_from_bca(self.event.attrs, self.physical_projection.attrs)
 
             # Add wind and if applicable pressure forcing from files.
             if self.event.attrs.wind.source == "map":
