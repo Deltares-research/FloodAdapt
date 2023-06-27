@@ -118,7 +118,9 @@ class SfincsAdapter:
 
         # HydroMT function: get geodataframe from filename
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
-            green_infrastructure.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+            green_infrastructure.polygon_file,
+            geom=self.sf_model.region,
+            crs=self.sf_model.crs,
         )
 
         if green_infrastructure.volume != 0:
@@ -128,7 +130,9 @@ class SfincsAdapter:
             volume = None
             height = green_infrastructure.height
         else:
-            ValueError("Volume and height are both none. At least one of the two should have a nonzero value.")
+            ValueError(
+                "Volume and height are both none. At least one of the two should have a nonzero value."
+            )
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
