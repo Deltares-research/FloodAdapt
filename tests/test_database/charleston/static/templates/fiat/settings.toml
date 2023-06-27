@@ -1,10 +1,31 @@
-[output]
-output_dir = 'output'
-crs = 'EPSG:4326'
+[global]
+crs = "EPSG:4326"
 
-[exposure]
-dbase_file = 'exposure/exposure.csv'
-crs = 'EPSG:4326'
+[output]
+path = "output"
+
+[output.csv]
+name = "output.csv"
+
+[output.geom]
+name1 = "spatial.gpkg"
+
+[hazard]
+file = "hazard/sfincs_map.nc"
+crs = "EPSG:4326"
+risk = false
+spatial_reference = "DEM"
+
+[exposure.geom]
+file1 = "exposure/Buildings.shp"
+csv = "exposure/exposure.csv"
+crs = "EPSG:4326"
 
 [vulnerability]
-dbase_file = 'vulnerability/vulnerability_curves.csv'
+file = "vulnerability/vulnerability_curves.csv"
+
+[categorical_bins]
+low = 0.25
+medium-low = 0.5
+medium-high = 0.75
+high = 1

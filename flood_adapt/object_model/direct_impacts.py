@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
@@ -87,12 +88,15 @@ class DirectImpacts:
         self.hazard = Hazard(scenario, database_input_path)
 
     def run_models(self):
-        self.run_fiat()
+        self.preprocess_fiat()
+
+        return_code = self.run_fiat("settings_toml")
 
         # Indicator that direct impacts have run
-        self.__setattr__("has_run", True)
+        if return_code == 0:
+            self.__setattr__("has_run", True)
 
-    def run_fiat(self):
+    def preprocess_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
 
         # Check if hazard is already run
@@ -181,5 +185,12 @@ class DirectImpacts:
         fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
 
-        # Then run FIAT
-        print("FIAT not working yet")
+    def run_fiat(self, settings_toml: str):
+        with open("fiat.log", "w") as f:
+            process = subprocess.run(
+                ["fiat", "run", str(self.results_path / settings_toml)],
+                stdout=f,
+                check=True,
+            )
+
+            return process.returncode
