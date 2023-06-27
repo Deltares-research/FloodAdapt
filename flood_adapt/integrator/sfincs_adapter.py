@@ -6,6 +6,7 @@ from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
+from flood_adapt.object_model.hazard.measure.pump import PumpModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -90,7 +91,6 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        # TODO polygon file should be txt file with extension xy (!)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
@@ -101,8 +101,27 @@ class SfincsAdapter:
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
-        self.sf_model.create_structures(
-            gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        self.sf_model.setup_structures(
+            structures=gdf_floodwall, stype="weir", merge=True
+        )
+
+    def add_pump(self, pump: PumpModel):
+        """Adds pump to sfincs model.
+
+        Parameters
+        ----------
+        pump : PumpModel
+            pump information
+        """
+
+        # HydroMT function: get geodataframe from filename
+        gdf_pump = self.sf_model.data_catalog.get_geodataframe(
+            pump.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+        )
+
+        # HydroMT function: create floodwall
+        self.sf_model.setup_drainage_structures(
+            gdf_structures=gdf_pump, stype="pump", discharge=pump.discharge,merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):
