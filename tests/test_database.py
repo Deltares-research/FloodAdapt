@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 from flood_adapt.dbs_controller import Database
+from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.site import Site
 
 test_database_path = Path().absolute() / "tests" / "test_database"
@@ -12,6 +13,24 @@ def test_database_controller():
     dbs = Database(test_database_path, test_site_name)
 
     assert isinstance(dbs.site, Site)
+
+
+def test_create_benefit_scenarios():
+    dbs = Database(test_database_path, test_site_name)
+
+    benefit_toml = (
+        test_database_path
+        / "charleston"
+        / "input"
+        / "benefits"
+        / "benefit_raise_properties_2050"
+        / "benefit_raise_properties_2050.toml"
+    )
+
+    assert benefit_toml.is_file()
+    benefit = Benefit.load_file(benefit_toml)
+    benefit.check_scenarios()
+    dbs.create_benefit_scenarios(benefit)
 
 
 def test_projection_interp_slr():
