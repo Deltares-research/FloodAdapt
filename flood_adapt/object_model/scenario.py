@@ -319,3 +319,13 @@ class Scenario(IScenario):
         fig.write_html(infographic_html)
 
         return str(infographic_html)
+
+    def __eq__(self, other):
+        if not isinstance(other, Scenario):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        test1 = self.attrs.event == other.attrs.event
+        test2 = self.attrs.projection == other.attrs.projection
+        test3 = self.attrs.strategy == other.attrs.strategy
+        return test1 & test2 & test3
