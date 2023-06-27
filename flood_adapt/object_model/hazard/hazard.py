@@ -203,15 +203,10 @@ class Hazard:
         # add other models here
 
     def run_sfincs(self):
-        # Run new model (create batch file and run it)
-        # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
+        # Run new model(s)
 
         sfincs_exec = (
-            self.database_input_path.parents[2]
-            / "system"
-            / "sfincs"
-            / self.site.attrs.sfincs.version
-            / "sfincs.exe"
+            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
 
         for simulation_path in self.simulation_paths:
