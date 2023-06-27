@@ -1,6 +1,6 @@
 name = "pump"
 long_name = "pump"
 type = "pump"
-polygon_file = "pump.txt"
-discharge = 200
-datum_text = "NAVD 88"
+polygon_file = "test_pump.geojson"
+discharge.value = 200
+discharge.units = "m3/s"

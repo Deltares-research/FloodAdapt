@@ -7,12 +7,14 @@ from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
     HazardType,
     ImpactType,
     SelectionType,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
     UnitfulLength,
     UnitfulLengthRefValue,
 )
@@ -184,3 +186,34 @@ def test_floodproof_read():
     assert isinstance(floodproof.attrs.type, ImpactType)
     assert isinstance(floodproof.attrs.selection_type, SelectionType)
     assert isinstance(floodproof.attrs.aggregation_area_name, str)
+
+
+def test_pump_read():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "measures"
+        / "pump"
+        / "pump.toml"
+    )
+
+    assert test_toml.is_file()
+
+    pump = Pump.load_file(test_toml)
+
+    assert isinstance(pump.attrs.name, str)
+    assert isinstance(pump.attrs.long_name, str)
+    assert isinstance(pump.attrs.type, HazardType)
+    assert isinstance(pump.attrs.discharge, UnitfulDischarge)
+
+    test_geojson = (
+        test_database
+        / "charleston"
+        / "input"
+        / "measures"
+        / "pump"
+        / pump.attrs.polygon_file
+    )
+
+    assert test_geojson.is_file()
