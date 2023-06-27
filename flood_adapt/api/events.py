@@ -96,12 +96,12 @@ def copy_event(
     database.copy_event(old_name, new_name, new_long_name)
 
 
-# def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
-#     return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
+    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
 
 
-# def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-#     return HistoricalNearshore.read_wl_csv(csvpath)
+def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+    return HistoricalNearshore.read_wl_csv(csvpath)
 
 
 def plot_wl(
