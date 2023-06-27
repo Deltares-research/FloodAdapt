@@ -118,7 +118,7 @@ class SfincsAdapter:
         self.sf_model.write()
 
     def read_zsmax(self):
-        """Read zsmax file nad return absolut maximum water level over entre simulation"""
+        """Read zsmax file and return absolute maximum water level over entre simulation"""
         # Change model root to new folder
 
         # Write sfincs files in output folder

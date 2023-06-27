@@ -190,12 +190,15 @@ class Hazard:
         self.preprocess_sfincs()
         # add other models here
 
+    def run_models(self):
+        self.run_sfincs()
+
     def postprocess_models(self):
         # Preprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
 
-    def run_models(self):
+    def run_sfincs(self):
         # Run new model (create batch file and run it)
         # create batch file to run SFINCS, adjust relative path to SFINCS executable for ensemble run (additional folder depth)
 
@@ -357,7 +360,7 @@ class Hazard:
 
             elif rp > rp_da.max():
                 print(
-                    f"{rp}-year RP larger than maximum return period in the event ensemble, which is {rp_da.max().values}. Using max. water levels across all events"
+                    f"{rp}-year RP larger than maximum return period in the event ensemble, which is {int(rp_da.max())}. Using max. water levels across all events"
                 )
                 h[valid_cells] = sorted_zs[0, valid_cells]
 
