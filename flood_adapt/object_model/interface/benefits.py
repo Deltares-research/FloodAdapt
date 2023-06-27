@@ -38,3 +38,8 @@ class IBenefit(ABC):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Benefit attributes to a toml file"""
         ...
+
+    @abstractmethod
+    def check_scenarios(self):
+        """Check which scenarios are needed for this benefit calculation and if they have already been created"""
+        ...
