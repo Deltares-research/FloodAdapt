@@ -133,7 +133,7 @@ def test_run_prob_eventset():
 
 
 @pytest.mark.skip(
-    reason="Need to run models frist (see above) but that takes a couple of minutes"
+    reason="Need to run models first (see above) but that takes a couple of minutes"
 )
 def test_rp_floodmap_calculation():
     test_toml = (
