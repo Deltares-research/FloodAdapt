@@ -1,6 +1,6 @@
 name = "benefit_raise_properties_2050"
 description = ""
-event_set = "prob_event_set"
+event_set = "test_set"
 strategy = "elevate_comb_correct"
 projection = "all_projections"
 year = 2050
