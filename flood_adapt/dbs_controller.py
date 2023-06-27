@@ -8,6 +8,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import pyproj
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
@@ -1030,3 +1031,23 @@ class Database(IDatabase):
             self.has_run_hazard(scn)
             scenario = self.get_scenario(scn)
             scenario.run()
+
+    def calculate_polygon_area(self, geojson_file: Union(str, Path)) -> float:
+        """Calculate area of a GEOJSON polygon
+
+        Returns
+        -------
+        float
+            Area [m2]
+        """
+        # Read geojson file
+        gdf = gpd.read_file(geojson_file)
+        # Determien local CRS
+        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.csname)
+        gdf = gdf.to_crs(crs)
+
+        # The GeoJSON file contains only one polygon:
+        polygon = gdf.geometry.iloc[0]
+        # Calculate the area of the polygon
+        area = polygon.area
+        return area

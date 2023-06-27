@@ -47,3 +47,14 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         """save Floodwall to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+
+    def calculate_volume(self, area) -> float:
+        """Determine volume from area of the polygon and infiltration height
+
+        Returns
+        -------
+        float
+            Volume [m3]
+        """
+        volume = self.attrs.height * area
+        return volume
