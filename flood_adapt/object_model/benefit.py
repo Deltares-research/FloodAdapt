@@ -64,8 +64,7 @@ class Benefit(IBenefit):
             ]
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                if False:
-                    # if created[0].init_object_model().direct_impacts.has_run:
+                if created[0].init_object_model().direct_impacts.has_run:
                     scenarios_calc[scenario]["scenario run"] = "Yes"
                 else:
                     scenarios_calc[scenario]["scenario run"] = "No"
