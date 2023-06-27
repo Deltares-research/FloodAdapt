@@ -151,7 +151,9 @@ class SfincsAdapter:
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
 
-    def add_bzs_from_bca(self, event: EventModel, physical_projection: PhysicalProjectionModel):
+    def add_bzs_from_bca(
+        self, event: EventModel, physical_projection: PhysicalProjectionModel
+    ):
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs"""
 
         sb = SfincsBoundary()
@@ -167,8 +169,12 @@ class SfincsAdapter:
         )
 
         for bnd_ii in range(len(sb.flow_boundary_points)):
-            tide_ii = predict(sb.flow_boundary_points[bnd_ii].astro, times) + self.event.attrs.water_level_offset.convert("meters") + self.physical_projection.attrs.sea_level_rise.convert("meters")
-            
+            tide_ii = (
+                predict(sb.flow_boundary_points[bnd_ii].astro, times)
+                + self.event.attrs.water_level_offset.convert("meters")
+                + self.physical_projection.attrs.sea_level_rise.convert("meters")
+            )
+
             if bnd_ii == 0:
                 wl_df = pd.DataFrame(data={1: tide_ii}, index=times)
             else:
