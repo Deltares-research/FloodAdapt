@@ -14,7 +14,7 @@ from flood_adapt.object_model.interface.measures import (
 )
 
 
-class GreenInfraStructure(HazardMeasure, IGreenInfrastructure):
+class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
 
     attrs: GreenInfrastructureModel
@@ -24,7 +24,7 @@ class GreenInfraStructure(HazardMeasure, IGreenInfrastructure):
     def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
         """create Floodwall from toml file"""
 
-        obj = GreenInfraStructure()
+        obj = GreenInfrastructure()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = GreenInfrastructureModel.parse_obj(toml)
@@ -38,7 +38,7 @@ class GreenInfraStructure(HazardMeasure, IGreenInfrastructure):
     ) -> IGreenInfrastructure:
         """create Green Infrastructure from object, e.g. when initialized from GUI"""
 
-        obj = GreenInfraStructure()
+        obj = GreenInfrastructure()
         obj.attrs = GreenInfrastructureModel.parse_obj(data)
         obj.database_input_path = database_input_path
         return obj

@@ -42,7 +42,6 @@ class MeasureModel(BaseModel):
 
     name: str
     long_name: str
-    type: str
 
 
 class HazardMeasureModel(MeasureModel):
@@ -118,8 +117,8 @@ class FloodWallModel(HazardMeasureModel):
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
 
-    volume: Optional(UnitfulVolume)
-    height: Optional(UnitfulLength)
+    volume: UnitfulVolume
+    height: UnitfulLength
 
 
 class IMeasure(ABC):
