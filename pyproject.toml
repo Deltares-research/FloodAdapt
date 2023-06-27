@@ -21,14 +21,19 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "geopandas",
-    "hydromt_sfincs",
+    "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
     "hydromt",
     "numpy",
     "pandas",
     "pydantic",
     "tomli-w",
     "tomli",
-    "plotly"
+    "plotly",
+    "cht_cyclones",
+    "cht_observations",
+    "cht_tide",
+    "cht_meteo",
+    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@d1b6473"
 ]
 dynamic = ["version"]
 

@@ -109,6 +109,7 @@ class Database(IDatabase):
                 gui_units = self.site.attrs.gui.default_length_units
                 return np.round(new_slr.convert(gui_units), decimals=2)
 
+    # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
@@ -182,59 +183,72 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wl(self, event: IEvent) -> str:
-        if event["template"] == "Synthetic":
-            temp_event = Synthetic.load_dict(event)
-            temp_event.add_tide_and_surge_ts()
-            wl_df = temp_event.tide_surge_ts
-            wl_df.index = np.arange(
-                -temp_event.attrs.time.duration_before_t0,
-                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                1 / 6,
-            )
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+        if (
+            event["template"] == "Synthetic"
+            or event["template"] == "Historical_nearshore"
+        ):
+            if event["template"] == "Synthetic":
+                temp_event = Synthetic.load_dict(event)
+                temp_event.add_tide_and_surge_ts()
+                wl_df = temp_event.tide_surge_ts
+                wl_df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
+            elif event["template"] == "Historical_nearshore":
+                wl_df = input_wl_df
+
+            # convert to units used in GUI
             wl_df["Time"] = wl_df.index
+            wl_current_units = UnitfulLength(
+                value=float(wl_df.iloc[0, 0]), units="meters"
+            )
+            gui_units = self.site.attrs.gui.default_length_units
+            wl_gui_units = wl_current_units.convert(gui_units)
+            if wl_current_units.value == 0:
+                conversion_factor = 1
+            else:
+                conversion_factor = wl_gui_units / wl_current_units.value
+            wl_df[1] = conversion_factor * wl_df[1]
+            wl_df = wl_df.rename(
+                columns={1: f"Water level (tide + surge) [{gui_units}]"}
+            )
+
+            # Plot actual thing
+            fig = px.line(
+                wl_df,
+                x="Time",
+                y=f"Water level (tide + surge) [{gui_units}]",
+            )
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "wl.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
         else:
-            NotImplementedError("Plotting only available for Synthetic event.")
-
-        # convert to units used in GUI
-        wl_current_units = UnitfulLength(value=float(wl_df.iloc[0, 0]), units="meters")
-        gui_units = self.site.attrs.gui.default_length_units
-        wl_gui_units = wl_current_units.convert(gui_units)
-        if wl_current_units.value == 0:
-            conversion_factor = 1
-        else:
-            conversion_factor = wl_gui_units / wl_current_units.value
-        wl_df[1] = conversion_factor * wl_df[1]
-        wl_df = wl_df.rename(columns={1: f"Water level (tide + surge) [{gui_units}]"})
-
-        # Plot actual thing
-        fig = px.line(
-            wl_df,
-            x="Time",
-            y=f"Water level (tide + surge) [{gui_units}]",
-        )
-
-        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
-        fig.update_layout(
-            autosize=False,
-            height=100 * 2,
-            width=280 * 2,
-            margin={"r": 0, "l": 0, "b": 0, "t": 0},
-            font={"size": 10, "color": "black", "family": "Arial"},
-            title_font={"size": 10, "color": "black", "family": "Arial"},
-            legend=None,
-            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-            # paper_bgcolor="#3A3A3A",
-            # plot_bgcolor="#131313",
-        )
-
-        # write html to results folder
-        output_loc = self.input_path.parent.joinpath("temp", "wl.html")
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
-        fig.write_html(output_loc)
-        return str(output_loc)
+            NotImplementedError(
+                "Plotting only available for Synthetic and Historical Nearshore event."
+            )
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
@@ -880,6 +894,69 @@ class Database(IDatabase):
         zsmax = mod.results["zsmax"][0, :, :].to_numpy()
 
         return zsmax
+
+    def get_fiat_results(self, scenario_name: str):
+        csv_path = self.input_path.parent.joinpath(
+            "output",
+            "results",
+            scenario_name,
+            f"{scenario_name}_results.csv",
+        )
+        csv_path2 = self.input_path.parent.joinpath(
+            "output",
+            "results",
+            scenario_name,
+            f"{scenario_name}_results_filt.csv",
+        )
+        if not csv_path2.exists():
+            df = pd.read_csv(csv_path)
+            df = df[df["Primary Object Type"] != "road"]
+            df = df[df["Inundation Depth Event Structure"] > 0]
+            df = df[~df["Aggregation Label: Subdivision"].isna()]
+            df.to_csv(csv_path2)
+        df = pd.read_csv(csv_path2)
+        gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.X, df.Y))
+        gdf = gdf[["Total Damage Event", "geometry"]]
+        gdf["Total Damage Event"] = np.round(gdf["Total Damage Event"], 0)
+        gdf.crs = 4326
+        return gdf
+
+    def get_fiat_footprints(self, scenario_name: str):
+        shp_path = self.input_path.parent.joinpath(
+            "output",
+            "results",
+            scenario_name,
+            f"{scenario_name}_results.shp",
+        )
+        shp_path2 = self.input_path.parent.joinpath(
+            "output",
+            "results",
+            scenario_name,
+            f"{scenario_name}_results_filt.shp",
+        )
+        # ("Occup Type" != 'road') AND ( "AGG ID" != 'Not aggregated') AND( "Dmg Total" > 0 )
+        if not shp_path2.exists():
+            shp = gpd.read_file(shp_path)
+            shp = shp[shp["Occup Type"] != "road"]
+            shp = shp[shp["AGG ID"] != "Not aggregated"]
+            shp = shp[shp["Dmg Total"] > 0]
+            shp = shp[["Dmg Total", "geometry"]]
+            shp["Dmg Total"] = np.round(shp["Dmg Total"], 0)
+            shp.to_file(shp_path2)
+        shp = gpd.read_file(shp_path2)
+        return shp
+
+    def get_aggregation(self, scenario_name: str):
+        shp_path = self.input_path.parent.joinpath(
+            "output",
+            "results",
+            scenario_name,
+            f"{scenario_name}_subdivision_aggregated.shp",
+        )
+        gdf = gpd.read_file(shp_path)
+        gdf = gdf[["Dmg Total", "geometry"]]
+
+        return gdf
 
     def get_object_list(self, object_type: str) -> dict[str, Any]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths

@@ -44,7 +44,7 @@ def test_scenario_class():
     assert isinstance(
         scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
     )
-    assert isinstance(scenario.direct_impacts.hazard.event, Synthetic)
+    assert isinstance(scenario.direct_impacts.hazard.event_set[0], Synthetic)
 
 
 def test_hazard_load():
@@ -63,8 +63,8 @@ def test_hazard_load():
 
     hazard = scenario.direct_impacts.hazard
 
-    assert hazard.event.attrs.timing == "idealized"
-    assert isinstance(hazard.event.attrs.tide, TideModel)
+    assert hazard.event_set[0].attrs.timing == "idealized"
+    assert isinstance(hazard.event_set[0].attrs.tide, TideModel)
 
 
 def test_hazard_wl():
@@ -89,6 +89,25 @@ def test_hazard_wl():
     assert isinstance(hazard.wl_ts, pd.DataFrame)
     assert len(hazard.wl_ts) > 1
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
+
+
+@pytest.mark.skip(reason="No metric file to read from")
+def test_infographic():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.infographic()
 
 
 @pytest.mark.skip(reason="We cannot depend on the P drive")

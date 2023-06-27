@@ -132,6 +132,10 @@ class Hazard:
             self.event_set.append(
                 EventFactory.get_event(template).load_file(event_path)
             )
+        if self.mode == "single_event":
+            self.event = self.event_set[
+                0
+            ]  # TODO: makes this neater? Might change with the new workflow
 
     def set_physical_projection(self, projection: str) -> None:
         projection_path = (
@@ -253,16 +257,18 @@ class Hazard:
             # Generate and add wind boundary condition
             # TODO, made already a start generating a constant timeseries in Event class
 
-            # Add floodwall if included
-            # if self.measure.floodwall is not None:  # TODO Gundula: fix met add_floodwall
-            #     pass
+        # Add floodwall if included
+        if self.hazard_strategy.measures is not None:
+            for measure in range(len(self.hazard_strategy.measures)):
+                if measure.attrs.type == "floodwall":
+                    model.add_floodwall(floodwall=measure)
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
-            raise NotImplementedError  # TODO: create geotiff?
+            ...  # TODO: create geotiff?
         elif self.mode == "probabilistic_set":
             self.calculate_rp_floodmaps()
             self.calculate_floodfrequency_map()

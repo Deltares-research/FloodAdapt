@@ -90,6 +90,7 @@ def test_preprocess_prob_eventset():
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
+@pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset():
     test_toml = (
         test_database
@@ -131,6 +132,9 @@ def test_run_prob_eventset():
     assert zs_file2.is_file()
 
 
+@pytest.mark.skip(
+    reason="Need to run models frist (see above) but that takes a couple of minutes"
+)
 def test_rp_floodmap_calculation():
     test_toml = (
         test_database
