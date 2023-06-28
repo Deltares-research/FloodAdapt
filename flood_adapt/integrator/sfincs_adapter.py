@@ -168,11 +168,12 @@ class SfincsAdapter:
             freq="10T",
         )
 
+        # Predict tidal signal and add SLR
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + self.event.attrs.water_level_offset.convert("meters")
-                + self.physical_projection.attrs.sea_level_rise.convert("meters")
+                + event.attrs.water_level_offset.convert("meters")
+                + physical_projection.attrs.sea_level_rise.convert("meters")
             )
 
             if bnd_ii == 0:
