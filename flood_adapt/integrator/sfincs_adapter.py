@@ -227,18 +227,14 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        polygon_file = measure_path.joinpath(floodwall.attrs.polygon_file)
+        polygon_file = measure_path.joinpath(floodwall.polygon_file)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
 
         # Add floodwall attributes to geodataframe
-        gdf_floodwall["name"] = floodwall.attrs.name
-        gdf_floodwall[
-            "z"
-        ] = (
-            floodwall.attrs.elevation.value
-        )  # TODO: make sure that elevation is in the correct units
+        gdf_floodwall["name"] = floodwall.name
+        gdf_floodwall["z"] = floodwall.elevation.convert("meters")
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall

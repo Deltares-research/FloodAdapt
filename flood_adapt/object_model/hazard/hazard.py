@@ -301,7 +301,9 @@ class Hazard:
                 model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
             elif self.event.attrs.wind.source == "constant":
                 model.add_precip_forcing(
-                    const_precip=self.event.attrs.rainfall.constant_intensity
+                    const_precip=self.event.attrs.rainfall.constant_intensity.convert(
+                        "mm/hr"
+                    )
                 )
 
             # Generate and add wind boundary condition
@@ -311,7 +313,7 @@ class Hazard:
                 model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
             elif self.event.attrs.wind.source == "constant":
                 model.add_wind_forcing(
-                    const_mag=self.event.attrs.wind.constant_speed.value,
+                    const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
 
@@ -323,7 +325,7 @@ class Hazard:
                     )
                     if measure.attrs.type == "floodwall":
                         model.add_floodwall(
-                            floodwall=measure, measure_path=measure_path
+                            floodwall=measure.attrs, measure_path=measure_path
                         )
 
             # write sfincs model in output destination

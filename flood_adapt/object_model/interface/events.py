@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
+    UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
 )
@@ -77,9 +78,7 @@ class WindModel(BaseModel):
 class RainfallModel(BaseModel):
     source: RainfallSource
     # constant
-    constant_intensity: Optional[
-        float
-    ]  # TODO: add units; intensity is in mm/hr or in/hr
+    constant_intensity: Optional[UnitfulIntensity]
     # timeseries
     rainfall_timeseries_file: Optional[str]
     # shape
