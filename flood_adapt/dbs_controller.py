@@ -794,7 +794,7 @@ class Database(IDatabase):
         ValueError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
-        names = self.get_scenarios()["name"]
+        names = self.get_benefits()["name"]
         if benefit.attrs.name in names:
             raise ValueError(
                 f"'{benefit.attrs.name}' name is already used by another benefit. Choose a different name"
@@ -804,12 +804,35 @@ class Database(IDatabase):
             (self.input_path / "benefits" / benefit.attrs.name).mkdir()
             benefit.save(
                 self.input_path
-                / "scenarios"
+                / "benefits"
                 / benefit.attrs.name
                 / f"{benefit.attrs.name}.toml"
             )
 
-    def delete_benefit(self, name: str):
+    def edit_benefit(self, benefit: IBenefit):
+        """Edits an already existing benefit in the database.
+
+        Parameters
+        ----------
+        benefit : IBenefit
+            object of one of the benefit types (e.g., IBenefit)
+        """
+        benefit.save(
+            self.input_path
+            / "benefits"
+            / benefit.attrs.name
+            / f"{benefit.attrs.name}.toml"
+        )
+
+        # Delete output if edited
+        output_path = (
+            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+        )
+
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)
+
+    def delete_benefit(self, name: str) -> None:
         """Deletes an already existing benefit in the database.
 
         Parameters
@@ -824,18 +847,36 @@ class Database(IDatabase):
         """
         benefit_path = self.input_path / "benefits" / name
         benefit = Benefit.load_file(benefit_path / f"{name}.toml")
-        if benefit.has_run:
-            raise ValueError(
-                f"'{name}' benefit assessment cannot be deleted since it has already run."
-            )
-        else:
-            shutil.rmtree(benefit_path, ignore_errors=True)
+        shutil.rmtree(benefit_path, ignore_errors=True)
+        # Delete output if edited
+        output_path = (
+            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+        )
 
-    def create_benefit_scenarios(self, benefit: IBenefit):
-        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already"""
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)
+
+    def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
+        """Returns a dataframe with the scenarios needed for this benefit assessment run
+
+        Parameters
+        ----------
+        benefit : IBenefit
+        """
+        return benefit.check_scenarios()
+
+    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already
+
+        Parameters
+        ----------
+        benefit : IBenefit
+        """
+        # If the check has not been run yet, do it now
         if not hasattr(benefit, "scenarios"):
             benefit.check_scenarios()
 
+        # Iterate through the scenarios needed and create them if not existing
         for index, row in benefit.scenarios.iterrows():
             if row["scenario created"] == "No":
                 scenario_dict = {}
@@ -850,6 +891,23 @@ class Database(IDatabase):
                 scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
 
                 self.save_scenario(scenario_obj)
+
+        # Update the scenarios check
+        benefit.check_scenarios()
+
+    def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
+        """Runs a (cost-)benefit analysis.
+
+        Parameters
+        ----------
+        benefit_name : Union[str, list[str]]
+            name(s) of the benefits to run.
+        """
+        if not isinstance(benefit_name, list):
+            benefit_name = [benefit_name]
+        for name in benefit_name:
+            benefit = self.get_benefit(name)
+            benefit.run_cost_benefit()
 
     def update(self) -> None:
         self.projections = self.get_projections()
@@ -959,7 +1017,6 @@ class Database(IDatabase):
         benefits = self.get_object_list(object_type="benefits")
         objects = [Benefit.load_file(path) for path in benefits["path"]]
         benefits["name"] = [obj.attrs.name for obj in objects]
-        benefits["long_name"] = [obj.attrs.long_name for obj in objects]
 
         return benefits
 
