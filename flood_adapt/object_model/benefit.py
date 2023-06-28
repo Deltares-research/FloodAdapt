@@ -21,6 +21,7 @@ class Benefit(IBenefit):
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
+    scenarios: pd.DataFrame
     has_run: bool = False
 
     def init(self):
@@ -28,6 +29,7 @@ class Benefit(IBenefit):
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "benefits", self.attrs.name
         )
+        self.check_scenarios()
         self.has_run = self.has_run_check()
 
     def has_run_check(self):
@@ -229,6 +231,7 @@ class Benefit(IBenefit):
         # write html to results folder
         html = self.results_path.joinpath("benefits.html")
         fig.write_html(html)
+        self.has_run_check()
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):

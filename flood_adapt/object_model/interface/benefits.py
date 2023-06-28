@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
+import pandas as pd
 from pydantic import BaseModel
 
 
@@ -24,6 +25,10 @@ class BenefitModel(BaseModel):
 
 class IBenefit(ABC):
     attrs: BenefitModel
+    database_input_path: Union[str, os.PathLike]
+    results_path: Union[str, os.PathLike]
+    scenarios: pd.DataFrame
+    has_run: bool = False
 
     @staticmethod
     @abstractmethod
@@ -43,6 +48,6 @@ class IBenefit(ABC):
         ...
 
     @abstractmethod
-    def check_scenarios(self):
+    def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created"""
         ...
