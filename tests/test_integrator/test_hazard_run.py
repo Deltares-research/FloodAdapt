@@ -2,6 +2,7 @@ import filecmp
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -133,9 +134,9 @@ def test_run_prob_eventset():
     assert zs_file2.is_file()
 
 
-@pytest.mark.skip(
-    reason="Need to run models first (see above) but that takes a couple of minutes"
-)
+# @pytest.mark.skip(
+#     reason="Need to run models first (see above) but that takes a couple of minutes"
+# )
 def test_rp_floodmap_calculation():
     test_toml = (
         test_database
@@ -151,7 +152,7 @@ def test_rp_floodmap_calculation():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
-    test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
+    # test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
         test_database
         / "charleston"
@@ -161,72 +162,52 @@ def test_rp_floodmap_calculation():
         / "rp_water_level.nc"
     )
     assert nc_file.is_file()
-    zs_file1 = (
+    zsrp = xr.open_dataset(nc_file).load()
+    frequencies = test_scenario.direct_impacts.hazard.frequencies
+
+    zs = []
+    event_set = test_scenario.direct_impacts.hazard.event_set
+    for ii, event in enumerate(event_set):
+        zs_file = (
+            test_database
+            / "charleston"
+            / "output"
+            / "simulations"
+            / "current_test_set_no_measures"
+            / event.attrs.name
+            / "overland"
+            / "sfincs_map.nc"
+        )
+        assert zs_file.is_file()
+        zs.append(xr.open_dataset(zs_file).load())
+        # below doesn't work, probably because of small round-off errors, perform visual inspection
+        # if 1.0 / frequencies[ii] in zsrp.rp:
+        #     assert np.equal(
+        #         zs.zsmax.squeeze().to_numpy(),
+        #         zsrp.sel(rp=1.0 / frequencies[ii]).to_array().to_numpy(),
+        #     ).all()
+
+    # for visual checks uncomment those lines (also imports at the top)
+    fig, ax = plt.subplots(len(zsrp.rp), 2, figsize=(12, 18))
+    for ii, event in enumerate(event_set):
+        ax[np.max([1, 2 * ii]), 0].pcolor(
+            zs[ii].x, zs[ii].y, zs[ii].zsmax.squeeze(), vmin=0, vmax=2
+        )
+        ax[np.max([1, 2 * ii]), 0].set_title(
+            f"{event_set[ii].attrs.name}: {int(1/frequencies[ii])} years"
+        )
+    for jj, rp in enumerate(zsrp.rp):
+        ax[jj, 1].pcolor(
+            zs[0].x, zs[0].y, zsrp.sel(rp=rp).to_array().squeeze(), vmin=0, vmax=2
+        )
+        ax[jj, 1].set_title(f"RP={int(rp)}")
+    # save png file
+    fn = (
         test_database
         / "charleston"
         / "output"
         / "simulations"
         / "current_test_set_no_measures"
-        / "event_0001"
-        / "overland"
-        / "sfincs_map.nc"
+        / "floodmaps.png"
     )
-    zs_file2 = (
-        test_database
-        / "charleston"
-        / "output"
-        / "simulations"
-        / "current_test_set_no_measures"
-        / "event_0039"
-        / "overland"
-        / "sfincs_map.nc"
-    )
-    zs_file3 = (
-        test_database
-        / "charleston"
-        / "output"
-        / "simulations"
-        / "current_test_set_no_measures"
-        / "event_0078"
-        / "overland"
-        / "sfincs_map.nc"
-    )
-    assert zs_file1.is_file()
-    assert zs_file2.is_file()
-    assert zs_file3.is_file()
-
-    # for visual checks uncomment those lines
-    # zs1 = xr.open_dataset(zs_file1).load()
-    # zs2 = xr.open_dataset(zs_file2).load()
-    # zs3 = xr.open_dataset(zs_file3).load()
-    # zsrp = xr.open_dataset(nc_file).load()
-
-    # fig, ax = plt.subplots(6, 2, figsize=(12, 18))
-
-    # ax[1, 0].pcolor(zs1.x, zs1.y, zs1.zsmax.squeeze(), vmin=0, vmax=2)
-    # ax[2, 0].pcolor(zs2.x, zs2.y, zs2.zsmax.squeeze(), vmin=0, vmax=2)
-    # ax[4, 0].pcolor(zs3.x, zs3.y, zs3.zsmax.squeeze(), vmin=0, vmax=2)
-    # ax[0, 1].pcolor(zs1.x, zs1.y, zsrp.to_array().sel(rp=1).squeeze(), vmin=0, vmax=2)
-    # ax[1, 1].pcolor(zs2.x, zs2.y, zsrp.to_array().sel(rp=2).squeeze(), vmin=0, vmax=2)
-    # ax[2, 1].pcolor(zs3.x, zs3.y, zsrp.to_array().sel(rp=5).squeeze(), vmin=0, vmax=2)
-    # ax[3, 1].pcolor(zs3.x, zs3.y, zsrp.to_array().sel(rp=10).squeeze(), vmin=0, vmax=2)
-    # ax[4, 1].pcolor(zs3.x, zs3.y, zsrp.to_array().sel(rp=50).squeeze(), vmin=0, vmax=2)
-    # ax[5, 1].pcolor(zs3.x, zs3.y, zsrp.to_array().sel(rp=100).squeeze(), vmin=0, vmax=2)
-    # ax[1, 0].set_title("event_0001: 2 years")
-    # ax[2, 0].set_title("event_0039: 5 years")
-    # ax[4, 0].set_title("event_0078: 50 years")
-    # ax[0, 1].set_title("RP=1")
-    # ax[1, 1].set_title("RP=2")
-    # ax[2, 1].set_title("RP=5")
-    # ax[3, 1].set_title("RP=10")
-    # ax[4, 1].set_title("RP=50")
-    # ax[5, 1].set_title("RP=100")
-    # fn = (
-    #     test_database
-    #     / "charleston"
-    #     / "output"
-    #     / "simulations"
-    #     / "current_test_set_no_measures"
-    #     / "floodmaps.png"
-    # )
-    # plt.savefig(fn, bbox_inches="tight", dpi=225)
+    plt.savefig(fn, bbox_inches="tight", dpi=225)
