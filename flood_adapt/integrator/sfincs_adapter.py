@@ -105,7 +105,7 @@ class SfincsAdapter:
             structures=gdf_floodwall, stype="weir", merge=True
         )
 
-    def add_pump(self, pump: PumpModel):
+    def add_pump(self, pump: PumpModel, measure_path: Path):
         """Adds pump to sfincs model.
 
         Parameters
@@ -115,13 +115,14 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(pump.polygon_file)
         gdf_pump = self.sf_model.data_catalog.get_geodataframe(
-            pump.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+            polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
 
         # HydroMT function: create floodwall
         self.sf_model.setup_drainage_structures(
-            gdf_structures=gdf_pump, stype="pump", discharge=pump.discharge, merge=True
+            structures=gdf_pump, stype="pump", discharge=pump.discharge.convert("m3/s"), merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):

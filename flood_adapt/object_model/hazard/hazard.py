@@ -143,8 +143,8 @@ class Hazard:
         self.__setattr__("has_run", True)
 
     def run_sfincs(self):
-        input_path = self.database_input_path.parent
-        path_in = input_path.joinpath(
+        base_path = self.database_input_path.parent
+        path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
 
@@ -174,11 +174,18 @@ class Hazard:
 
         # Add floodwall if included
         if self.hazard_strategy.measures is not None:
-            for measure in range(len(self.hazard_strategy.measures)):
+            for measure in self.hazard_strategy.measures:
+                measure_path = base_path.joinpath(
+                    "input", "measures", measure.attrs.name
+                )
                 if measure.attrs.type == "floodwall":
-                    model.add_floodwall(floodwall=measure)
-                elif measure.attrs.type == "pump":
-                    model.add_pump(pump=measure)
+                    model.add_floodwall(
+                        floodwall=measure.attrs, measure_path=measure_path
+                    )
+                if measure.attrs.type == "pump":
+                    model.add_pump(
+                        pump=measure.attrs, measure_path=measure_path
+                    )
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=self.simulation_path)
