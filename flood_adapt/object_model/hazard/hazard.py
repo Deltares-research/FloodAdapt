@@ -318,9 +318,13 @@ class Hazard:
             # Add measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
-                    measure_path = base_path.joinpath("input", "measures", measure.attrs.name)
+                    measure_path = base_path.joinpath(
+                        "input", "measures", measure.attrs.name
+                    )
                     if measure.attrs.type == "floodwall":
-                        model.add_floodwall(floodwall=measure, measure_path = measure_path)
+                        model.add_floodwall(
+                            floodwall=measure, measure_path=measure_path
+                        )
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])

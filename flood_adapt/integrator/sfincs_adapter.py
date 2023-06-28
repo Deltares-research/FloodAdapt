@@ -217,7 +217,7 @@ class SfincsAdapter:
             name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
 
-    def add_floodwall(self, floodwall: FloodWallModel, measure_path = Path):
+    def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
         """Adds floodwall to sfincs model.
 
         Parameters
@@ -234,7 +234,11 @@ class SfincsAdapter:
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.attrs.name
-        gdf_floodwall["z"] = floodwall.attrs.elevation.value #TODO: make sure that elevation is in the correct units
+        gdf_floodwall[
+            "z"
+        ] = (
+            floodwall.attrs.elevation.value
+        )  # TODO: make sure that elevation is in the correct units
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
