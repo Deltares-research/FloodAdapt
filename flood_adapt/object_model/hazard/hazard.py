@@ -183,9 +183,7 @@ class Hazard:
                         floodwall=measure.attrs, measure_path=measure_path
                     )
                 if measure.attrs.type == "pump":
-                    model.add_pump(
-                        pump=measure.attrs, measure_path=measure_path
-                    )
+                    model.add_pump(pump=measure.attrs, measure_path=measure_path)
 
         # write sfincs model in output destination
         model.write_sfincs_model(path_out=self.simulation_path)

@@ -122,7 +122,10 @@ class SfincsAdapter:
 
         # HydroMT function: create floodwall
         self.sf_model.setup_drainage_structures(
-            structures=gdf_pump, stype="pump", discharge=pump.discharge.convert("m3/s"), merge=True
+            structures=gdf_pump,
+            stype="pump",
+            discharge=pump.discharge.convert("m3/s"),
+            merge=True,
         )
 
     def write_sfincs_model(self, path_out: Path):

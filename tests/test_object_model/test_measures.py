@@ -190,12 +190,7 @@ def test_floodproof_read():
 
 def test_pump_read():
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "measures"
-        / "pump"
-        / "pump.toml"
+        test_database / "charleston" / "input" / "measures" / "pump" / "pump.toml"
     )
 
     assert test_toml.is_file()
