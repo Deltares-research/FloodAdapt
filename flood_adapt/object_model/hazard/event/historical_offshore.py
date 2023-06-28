@@ -7,11 +7,11 @@ import tomli_w
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalOffshoreModel,
-    IEvent,
+    IHistoricalOffshore,
 )
 
 
-class HistoricalOffshore(Event, IEvent):
+class HistoricalOffshore(Event, IHistoricalOffshore):
     attrs = HistoricalOffshoreModel
 
     @staticmethod
