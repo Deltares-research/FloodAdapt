@@ -1,0 +1,33 @@
+name = "ETA"
+long_name = "ETA"
+mode = "single_scenario"
+template = "Historical_hurricane"
+timing = "historical"
+
+[water_level_offset]
+value = 0.6
+units = "feet"
+
+[wind]
+source = "none"
+
+[rainfall]
+source = "none"
+
+[river]
+source = "constant"
+
+[river.constant_discharge]
+value = 0.0
+units = "cfs"
+
+[time]
+start_time = "20200101 000000"
+end_time = "20200103 000000"
+
+[tide]
+source = "model"
+
+[surge]
+source = "none"
+shape_type = "gaussian"
