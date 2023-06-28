@@ -123,20 +123,14 @@ class SfincsAdapter:
             crs=self.sf_model.crs,
         )
 
-        if green_infrastructure.volume != 0:
-            volume = green_infrastructure.volume
-            height = None
-        elif green_infrastructure.height != 0:
-            volume = None
-            height = green_infrastructure.height
-        else:
-            ValueError(
-                "Volume and height are both none. At least one of the two should have a nonzero value."
-            )
+        # Determine volume capacity of green infrastructure
+        volume = green_infrastructure.volume
+        if green_infrastructure.height != 0.0:
+            volume = green_infrastructure.height * green_infrastructure.percent_area
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
-            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
+            storage_locs=gdf_green_infra, volume=volume, merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):
@@ -150,24 +144,3 @@ class SfincsAdapter:
 
         # Write sfincs files in output folder
         self.sf_model.write()
-
-    # def run_sfincs_models(self):
-    #      pass
-
-    # def add_floodwall(self, polygon_file: str = None):
-
-    #     #HydroMT function: creates structure from dataframe
-    #     #Needs to be completed in hydromt_sfincs
-    #     self.sf_model.create_structures(structures_fn=polygon_file, stype='weir', overwrite=False)
-
-    # def add_meteo_bc(self,
-    #                  precip_ts: Union[xr.DataArray, pd.DataFrame, Dict[str, pd.DataFrame]] = None
-    #                  ):
-    #     #HydroMT function: set precipitation from times series
-    #     self.sf_model.set_forcing(name='precip',ts=precip_ts,xy=xy_precip)
-
-    # def add_discharge_bc(self,
-    #                      dis_ts: Union[xr.DataArray, pd.DataFrame, Dict[str, pd.DataFrame]] = None
-    #                      ):
-    #     #HydroMT function: set river forcing from times series
-    #     self.sf_model.set_forcing_1d(name='dis',ts=dis_ts,xy=self.sf_model.forcing['dis'].vector.to_gdf())

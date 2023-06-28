@@ -9,6 +9,8 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
     UnitfulVolume,
+    UnitTypesLength,
+    UnitTypesVolume,
 )
 
 
@@ -117,8 +119,9 @@ class FloodWallModel(HazardMeasureModel):
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
 
-    volume: UnitfulVolume
-    height: UnitfulLength
+    volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
+    height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    percent_area: float = 100
 
 
 class IMeasure(ABC):
