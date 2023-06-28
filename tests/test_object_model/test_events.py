@@ -154,4 +154,4 @@ def test_download_wl_timeseries():
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-    assert wl_df.dtype == "float64"
+    assert wl_df.iloc[:,0].dtypes == "float64"
