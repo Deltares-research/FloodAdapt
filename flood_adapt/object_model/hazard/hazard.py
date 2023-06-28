@@ -252,11 +252,11 @@ class Hazard:
             # Generate and add wind boundary condition
             # TODO, made already a start generating a constant timeseries in Event class
 
-        # Add floodwall if included
-        if self.hazard_strategy.measures is not None:
-            for measure in range(len(self.hazard_strategy.measures)):
-                if measure.attrs.type == "floodwall":
-                    model.add_floodwall(floodwall=measure)
+            # Add floodwall if included
+            if self.hazard_strategy.measures is not None:
+                for measure in range(len(self.hazard_strategy.measures)):
+                    if measure.attrs.type == "floodwall":
+                        model.add_floodwall(floodwall=measure)
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
@@ -373,11 +373,10 @@ class Hazard:
                 )
 
             zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
-            zs_rp_maps.append(zs_rp_da)
+            zs_rp_maps.append(zs_rp_da.unstack())
 
         # write netcdf with water level, add new dimension for rp
         zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        zs_rp = zs_rp.unstack()
         fn_rp = self.simulation_paths[0].parent.parent.joinpath("rp_water_level.nc")
         zs_rp.to_netcdf(fn_rp)
 
