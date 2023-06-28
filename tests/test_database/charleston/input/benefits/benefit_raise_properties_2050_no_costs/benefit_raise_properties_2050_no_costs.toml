@@ -1,4 +1,4 @@
-name = "benefit_raise_properties_2050"
+name = "benefit_raise_properties_2050_no_costs"
 description = ""
 event_set = "test_set"
 strategy_future = "elevate_comb_correct"
@@ -6,5 +6,4 @@ projection_future = "all_projections"
 year_current = 2023
 year_future = 2050
 discount_rate = 0.07
-implementation_cost = 30000000
-annual_maint_cost = 0.0
+
