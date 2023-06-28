@@ -11,11 +11,11 @@ import tomli_w
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
-    IEvent,
+    IHistoricalNearshore,
 )
 
 
-class HistoricalNearshore(Event, IEvent):
+class HistoricalNearshore(Event, IHistoricalNearshore):
     attrs = HistoricalNearshoreModel
     tide_surge_ts: pd.DataFrame
 
