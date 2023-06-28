@@ -47,7 +47,6 @@ class TestEvent(unittest.TestCase):
 
         assert template == "Synthetic"
 
-
     def test_load_from_toml_synthetic(self):
         test_toml = (
             test_database
@@ -112,7 +111,6 @@ class TestEvent(unittest.TestCase):
         # assert test_synthetic.attrs.river["constant_discharge"]["value"] == 5000
         # assert test_synthetic.attrs.river["constant_discharge"]["units"] == "cfs"
 
-
     def test_save_to_toml_synthetic(self):
         test_toml = (
             test_database
@@ -147,12 +145,7 @@ class TestEvent(unittest.TestCase):
 
     def test_load_from_toml_hurricane(self):
         test_toml = (
-            test_database
-            / "charleston"
-            / "input"
-            / "events"
-            / "ETA"
-            / "ETA.toml"
+            test_database / "charleston" / "input" / "events" / "ETA" / "ETA.toml"
         )
 
         assert test_toml.is_file()
@@ -191,7 +184,7 @@ class TestEvent(unittest.TestCase):
         assert test_synthetic.attrs.water_level_offset.units == "feet"
         assert test_synthetic.attrs.tide.source == "model"
         assert test_synthetic.attrs.river.source == "constant"
-        
+
         # assert test_synthetic.attrs.surge["source"] == "shape"
         # assert test_synthetic.attrs.surge["shape_type"] == "gaussian"
         # assert test_synthetic.attrs.surge["shape_peak"]["value"] == 9.22
@@ -208,7 +201,6 @@ class TestEvent(unittest.TestCase):
         # assert test_synthetic.attrs.river["source"] == "constant"
         # assert test_synthetic.attrs.river["constant_discharge"]["value"] == 5000
         # assert test_synthetic.attrs.river["constant_discharge"]["units"] == "cfs"
-
 
     def test_save_to_toml_hurricane(self):
         test_toml = (
@@ -273,4 +265,4 @@ def test_download_wl_timeseries():
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-    assert wl_df.iloc[:,0].dtypes == "float64"
+    assert wl_df.iloc[:, 0].dtypes == "float64"
