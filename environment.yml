@@ -7,18 +7,19 @@ channels:
 dependencies:
   - pip
   - pip:
-    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
+    - NDBC
+    - git+https://github.com/Deltares/hydromt_fiat.git@d1b6473
     - noaa-coops
     - cht-tide
     - cht-meteo
     - cht-observations
     - cht-cyclones
+    - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
   - black
   - ruff
   - build
   - geopandas
   - hydromt
-  - hydromt_sfincs
   - mypy
   - numpy
   - pandas

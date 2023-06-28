@@ -41,14 +41,13 @@ class Event:
         return obj.attrs.template
 
     @staticmethod
-    def get_mode(filepath: Path):
-        """create Synthetic from toml file"""
+    def get_mode(filepath: Path) -> str:
+        """get mode of the event (single or risk) from toml file"""
 
-        obj = Event()
         with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = EventModel.parse_obj(toml)
-        return obj.attrs.mode
+            event_data = tomli.load(fp)
+        mode = event_data["mode"]
+        return mode
 
     @staticmethod
     def generate_dis_ts(time: TimeModel, river: RiverModel) -> pd.DataFrame:

@@ -6,6 +6,7 @@ from typing import Any, Union
 import pandas as pd
 
 from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
     HistoricalNearshore,
 )
@@ -30,7 +31,12 @@ def get_event(name: str, database: IDatabase) -> IEvent:
     return database.get_event(name)
 
 
-def create_synthetic_event(attrs: dict[str, Any], database: IDatabase) -> ISynthetic:
+def get_event_mode(name: str, database: IDatabase) -> str:
+    filename = database.input_path / "events" / f"{name}" / f"{name}.toml"
+    return Event.get_mode(filename)
+
+
+def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     return Synthetic.load_dict(attrs)
 
 
