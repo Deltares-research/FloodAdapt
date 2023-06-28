@@ -6,7 +6,6 @@ from typing import Any, Union
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import tomli
 import tomli_w
@@ -146,7 +145,7 @@ class Benefit(IBenefit):
             cba.loc[year_end, f"risk_{scen}"] = scenarios.loc[f"future_{scen}", "EAD"]
 
         # Assume linear trend between current and future
-        cba.interpolate(method="linear", inplace=True)
+        cba = cba.interpolate(method="linear")
         # Calculate benefits
         cba["benefits"] = cba["risk_no_measures"] - cba["risk_with_strategy"]
 
