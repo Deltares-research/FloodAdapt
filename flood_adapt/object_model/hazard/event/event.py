@@ -1,9 +1,16 @@
+import glob
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import tomli
+import xarray as xr
+from cht_meteo.meteo import (
+    MeteoGrid,
+    MeteoSource,
+)
+from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
@@ -11,6 +18,7 @@ from flood_adapt.object_model.interface.events import (
     TimeModel,
     WindModel,
 )
+from flood_adapt.object_model.interface.site import ISite
 
 
 class Event:
@@ -89,6 +97,59 @@ class Event:
                 "timeseries"
                 "."
             )
+
+    def download_meteo(self, site: ISite, path: Path):
+        params = ["wind", "barometric_pressure", "precipitation"]
+        lon = site.attrs.lon
+        lat = site.attrs.lat
+
+        # Download the actual datasets
+        gfs_source = MeteoSource(
+            "gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None
+        )
+
+        # Create subset
+        name = "gfs_anl_0p50_us_southeast"
+        gfs_conus = MeteoGrid(
+            name=name,
+            source=gfs_source,
+            parameters=params,
+            path=path,
+            x_range=[lon - 10, lon + 10],
+            y_range=[lat - 10, lat + 10],
+            crs=CRS.from_epsg(4326),
+        )
+
+        # Download and collect data
+        t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
+        t1 = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+        time_range = [t0, t1]
+
+        gfs_conus.download(time_range)
+
+        # Create an empty list to hold the datasets
+        datasets = []
+
+        # Loop over each file and create a new dataset with a time coordinate
+        for filename in sorted(glob.glob(str(path.joinpath("*.nc")))):
+            # Open the file as an xarray dataset
+            ds = xr.open_dataset(filename)
+
+            # Extract the timestring from the filename and convert to pandas datetime format
+            time_str = filename.split(".")[-2]
+            time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
+
+            # Add the time coordinate to the dataset
+            ds["time"] = time
+
+            # Append the dataset to the list
+            datasets.append(ds)
+
+        # Concatenate the datasets along the new time coordinate
+        ds = xr.concat(datasets, dim="time")
+        ds.raster.set_crs(4326)
+
+        return ds
 
     def add_dis_ts(self):
         """adds discharge timeseries to event object
