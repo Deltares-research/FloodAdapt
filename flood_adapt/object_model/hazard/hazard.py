@@ -252,11 +252,11 @@ class Hazard:
             # Generate and add wind boundary condition
             # TODO, made already a start generating a constant timeseries in Event class
 
-        # Add floodwall if included
-        if self.hazard_strategy.measures is not None:
-            for measure in range(len(self.hazard_strategy.measures)):
-                if measure.attrs.type == "floodwall":
-                    model.add_floodwall(floodwall=measure)
+            # Add floodwall if included
+            if self.hazard_strategy.measures is not None:
+                for measure in range(len(self.hazard_strategy.measures)):
+                    if measure.attrs.type == "floodwall":
+                        model.add_floodwall(floodwall=measure)
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
