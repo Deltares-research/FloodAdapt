@@ -11,12 +11,15 @@ class BenefitModel(BaseModel):
     name: str
     description: Optional[str] = ""
     event_set: str
-    strategy: str
-    projection: str
-    year: int
+    strategy_future: str
+    strategy_current: Optional[str] = "no_measures"
+    projection_future: str
+    projection_current: Optional[str] = "current"
+    year_future: int
+    year_current: int  # TODO is this user input or we have a default based on site.toml?
     discount_rate: float
-    implementation_cost: Optional[float] = 0.0
-    annual_maint_cost: Optional[float] = 0.0
+    implementation_cost: Optional[float] = None
+    annual_maint_cost: Optional[float] = None
 
 
 class IBenefit(ABC):
