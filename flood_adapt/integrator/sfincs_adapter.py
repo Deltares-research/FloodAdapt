@@ -61,7 +61,7 @@ class SfincsAdapter:
             direction of time-invariant wind forcing [deg], by default None
         """
         self.sf_model.setup_wind_forcing(
-            timeseries=timeseries, const_mag=const_mag, const_dir=const_dir
+            timeseries=timeseries, magnitude=const_mag, direction=const_dir
         )
 
     def add_wind_forcing_from_grid(self, ds: xr.DataArray):
@@ -113,7 +113,7 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        self.sf_model.setup_precip_forcing(precip=precip, const_precip=const_precip)
+        self.sf_model.setup_precip_forcing(timeseries=precip, magnitude=const_precip)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
