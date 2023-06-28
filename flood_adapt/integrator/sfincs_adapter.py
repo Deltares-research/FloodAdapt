@@ -158,8 +158,8 @@ class SfincsAdapter:
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.attrs.water_level_offset.convert("meters")
-                + physical_projection.attrs.sea_level_rise.convert("meters")
+                + event.water_level_offset.convert("meters")
+                + physical_projection.sea_level_rise.convert("meters")
             )
 
             if bnd_ii == 0:
@@ -217,7 +217,7 @@ class SfincsAdapter:
             name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
 
-    def add_floodwall(self, floodwall: FloodWallModel):
+    def add_floodwall(self, floodwall: FloodWallModel, measure_path = Path):
         """Adds floodwall to sfincs model.
 
         Parameters
@@ -227,19 +227,19 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        # TODO polygon file should be txt file with extension xy (!)
+        polygon_file = measure_path.joinpath(floodwall.attrs.polygon_file)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
-            floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+            polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
 
         # Add floodwall attributes to geodataframe
-        gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation
+        gdf_floodwall["name"] = floodwall.attrs.name
+        gdf_floodwall["z"] = floodwall.attrs.elevation.value #TODO: make sure that elevation is in the correct units
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
-        self.sf_model.create_structures(
-            gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        self.sf_model.setup_structures(
+            structures=gdf_floodwall, stype="weir", merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):

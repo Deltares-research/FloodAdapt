@@ -255,8 +255,8 @@ class Hazard:
     def preprocess_sfincs(
         self,
     ):
-        input_path = self.database_input_path.parent
-        path_in = input_path.joinpath(
+        base_path = self.database_input_path.parent
+        path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
         event_dir = self.database_input_path / "events" / self.event.attrs.name
@@ -317,17 +317,24 @@ class Hazard:
 
             # Add measures if included
             if self.hazard_strategy.measures is not None:
-                for measure in range(len(self.hazard_strategy.measures)):
+                for measure in self.hazard_strategy.measures:
+                    measure_path = base_path.joinpath("input", "measures", measure.attrs.name)
                     if measure.attrs.type == "floodwall":
-                        model.add_floodwall(floodwall=measure)
+                        model.add_floodwall(floodwall=measure, measure_path = measure_path)
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
     def run_offshore_model(self, ds: xr.DataArray, ii: int):
+        """Run offshore model to obtain water levels for boundary condition of the nearshore model
+
+        Args:
+            ds (xr.DataArray): DataArray with meteo information (downloaded using event.download_meteo())
+            ii (int): Iterator for event set
+        """
         # Determine folders for offshore model
-        input_path = self.database_input_path.parent
-        path_in_offshore = input_path.joinpath(
+        base_path = self.database_input_path.parent
+        path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
         event_dir = self.database_input_path / "events" / self.event.attrs.name
