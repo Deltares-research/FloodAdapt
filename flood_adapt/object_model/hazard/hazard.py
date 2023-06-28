@@ -258,8 +258,8 @@ class Hazard:
                     if measure.attrs.type == "floodwall":
                         model.add_floodwall(floodwall=measure)
 
-                # write sfincs model in output destination
-                model.write_sfincs_model(path_out=self.simulation_paths[ii])
+            # write sfincs model in output destination
+            model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
