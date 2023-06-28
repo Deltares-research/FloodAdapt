@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 import tomli
@@ -267,9 +268,9 @@ def test_download_wl_timeseries():
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
 
-    #     wl_df = HistoricalNearshore.download_wl_data(
-    #         station_id, start_time_str, stop_time_str
-    #     )
+    wl_df = HistoricalNearshore.download_wl_data(
+        station_id, start_time_str, stop_time_str
+    )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-    assert wl_df.dtype == "float64"
+    assert wl_df.iloc[:,0].dtypes == "float64"

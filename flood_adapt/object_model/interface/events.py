@@ -156,11 +156,13 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     tide: TideModel
     surge: SurgeModel
 
+
 class TranslationModel(BaseModel):
     """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
 
     horizontal_translation: UnitfulLength
     vertical_translation: UnitfulLength
+
 
 class EventSetModel(
     BaseModel
@@ -188,6 +190,7 @@ class HistoricalOffshoreModel(EventModel):
 
 class HistoricalHurricaneModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+
     hurricane_translation: TranslationModel
     track_name: str
 
@@ -218,3 +221,11 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+
+class IHistoricalOffshore(IEvent):
+    attrs: HistoricalOffshoreModel
+
+
+class IHistoricalHurricane(IEvent):
+    attrs: HistoricalHurricaneModel
