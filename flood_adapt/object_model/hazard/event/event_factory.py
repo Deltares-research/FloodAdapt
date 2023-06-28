@@ -1,11 +1,11 @@
-from .event import Event
-from .historical_hurricane import (
-    HistoricalHurricane,
-)
-from .historical_nearshore import (
+# from flood_adapt.object_model.hazard.event.hurricane import Hurricane
+# from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
     HistoricalNearshore,
 )
 from .synthetic import Synthetic
+from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
 
 class EventFactory:
@@ -34,9 +34,11 @@ class EventFactory:
 
         # Check template name and return object
         if template == "Synthetic":
-            return Synthetic
-        elif template == "Historical_hurricane":
-            return HistoricalHurricane
+            return Synthetic()
+        # elif template.lower() == "Hurricane":
+        #     return Hurricane
+        # elif template.lower() == "Historical_offshore":
+        #     return HistoricalOffshore
         elif template == "Historical_nearshore":
             return HistoricalNearshore
 

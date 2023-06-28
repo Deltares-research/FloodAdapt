@@ -5,6 +5,10 @@ import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
+from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 from flood_adapt.object_model.interface.events import (
     Mode,
     Template,
@@ -13,6 +17,9 @@ from flood_adapt.object_model.interface.events import (
     Timing,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.site import (
+    Site,
+)
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -235,17 +242,34 @@ class TestEvent(unittest.TestCase):
         test_save_toml.unlink()  # added this to delete the file afterwards
 
 
+def test_download_meteo():
+    event_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "kingTideNov2021"
+        / "kingTideNov2021.toml"
+    )
+    kingTide = HistoricalOffshore.load_file(event_toml)
+
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+
+    site = Site.load_file(site_toml)
+    path = test_database / "charleston" / "input" / "events" / "kingTideNov2021"
+    gfs_conus = kingTide.download_meteo(site=site, path=path)
+
+    assert gfs_conus
 
 
-    # @pytest.mark.skip(reason="There uses newer version of noaa-coops which is not on pipy")
-    # def test_download_wl_timeseries():
-    #     station_id = 8665530
-    #     start_time_str = "20230101 000000"
-    #     stop_time_str = "20230102 000000"
+def test_download_wl_timeseries():
+    station_id = 8665530
+    start_time_str = "20230101 000000"
+    stop_time_str = "20230102 000000"
 
     #     wl_df = HistoricalNearshore.download_wl_data(
     #         station_id, start_time_str, stop_time_str
     #     )
 
-    #     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-    #     assert wl_df.dtype == "float64"
+    assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
+    assert wl_df.dtype == "float64"
