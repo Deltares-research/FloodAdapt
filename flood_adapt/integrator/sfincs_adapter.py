@@ -266,24 +266,3 @@ class SfincsAdapter:
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
-
-    # def run_sfincs_models(self):
-    #      pass
-
-    # def add_floodwall(self, polygon_file: str = None):
-
-    #     #HydroMT function: creates structure from dataframe
-    #     #Needs to be completed in hydromt_sfincs
-    #     self.sf_model.create_structures(structures_fn=polygon_file, stype='weir', overwrite=False)
-
-    # def add_meteo_bc(self,
-    #                  precip_ts: Union[xr.DataArray, pd.DataFrame, Dict[str, pd.DataFrame]] = None
-    #                  ):
-    #     #HydroMT function: set precipitation from times series
-    #     self.sf_model.set_forcing(name='precip',ts=precip_ts,xy=xy_precip)
-
-    # def add_discharge_bc(self,
-    #                      dis_ts: Union[xr.DataArray, pd.DataFrame, Dict[str, pd.DataFrame]] = None
-    #                      ):
-    #     #HydroMT function: set river forcing from times series
-    #     self.sf_model.set_forcing_1d(name='dis',ts=dis_ts,xy=self.sf_model.forcing['dis'].vector.to_gdf())
