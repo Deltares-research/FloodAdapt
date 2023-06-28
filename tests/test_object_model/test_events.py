@@ -144,7 +144,6 @@ def test_download_meteo():
     assert gfs_conus
 
 
-@pytest.mark.skip(reason="There uses newer version of noaa-coops which is not on pipy")
 def test_download_wl_timeseries():
     station_id = 8665530
     start_time_str = "20230101 000000"
