@@ -28,6 +28,7 @@ class UnitTypesIntensity(str, Enum):
 
 class UnitTypesVolume(str, Enum):
     m3 = "m3"
+    cf = "cf"
 
 
 class VerticalReference(str, Enum):
@@ -184,4 +185,27 @@ class UnitfulVolume(BaseModel):
     value: float
     units: UnitTypesVolume
 
-    # TODO: make convert function if other units are known
+    def convert(self, new_units: UnitTypesVolume) -> float:
+        """converts given volume to different units
+
+        Parameters
+        ----------
+        new_units : UnitTypesVolume
+            units to be converted to
+
+        Returns
+        -------
+        float
+            converted value
+        """
+        # first, convert to m3
+        if self.units == "cf":  # cubic feet
+            conversion = 0.02831685  # m3
+        elif self.units == "m3":
+            conversion = 1.0
+        # second, convert to new units
+        if new_units == "cf":
+            new_conversion = 1.0 / 0.02831685
+        elif new_units == "m3":
+            new_conversion = 1.0
+        return conversion * new_conversion * self.value

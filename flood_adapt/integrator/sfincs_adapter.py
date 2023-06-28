@@ -107,30 +107,42 @@ class SfincsAdapter:
             gdf_structures=gdf_floodwall, stype="weir", overwrite=False
         )
 
-    def add_green_infrastructure(self, green_infrastructure: GreenInfrastructureModel):
+    def add_green_infrastructure(
+        self, green_infrastructure: GreenInfrastructureModel, measure_path: Path
+    ):
         """Adds green infrastructure to sfincs model.
 
         Parameters
         ----------
         green_infrastructure : GreenInfrastructureModel
             Green infrastructure information
+        measure_path: Path
+            Path of the measure folder
         """
 
         # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
-            green_infrastructure.polygon_file,
+            polygon_file,
             geom=self.sf_model.region,
             crs=self.sf_model.crs,
         )
 
         # Determine volume capacity of green infrastructure
-        volume = green_infrastructure.volume
-        if green_infrastructure.height != 0.0:
-            volume = green_infrastructure.height * green_infrastructure.percent_area
+
+        if green_infrastructure.height.value != 0.0:
+            height = (
+                green_infrastructure.height.convert("m")
+                * green_infrastructure.percent_area
+            )
+            volume = None
+        elif green_infrastructure.volume.value != 0.0:
+            height = None
+            volume = green_infrastructure.volume.convert("m3")
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
-            storage_locs=gdf_green_infra, volume=volume, merge=True
+            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):
