@@ -57,7 +57,7 @@ class Hazard:
                     self.site.attrs.sfincs.overland_model,
                 )
             ]
-            #Create a folder name for the offshore model (will not be used if offshore model is not created)
+            # Create a folder name for the offshore model (will not be used if offshore model is not created)
             self.simulation_paths_offshore = [
                 self.database_input_path.parent.joinpath(
                     "output",
@@ -79,7 +79,7 @@ class Hazard:
                         self.site.attrs.sfincs.overland_model,
                     )
                 )
-                #Create a folder name for the offshore model (will not be used if offshore model is not created)
+                # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 self.simulation_paths_offshore.append(
                     self.database_input_path.parent.joinpath(
                         "output",
@@ -277,7 +277,7 @@ class Hazard:
                 ds = self.event.download_meteo(site=self.site, path=event_dir)
                 ds = ds.rename({"barometric_pressure": "press"})
                 ds = ds.rename({"precipitation": "precip"})
-            else: 
+            else:
                 ds = None
 
             # Generate and change water level boundary condition
@@ -287,7 +287,7 @@ class Hazard:
             elif template == "Historical_offshore":
                 self.run_offshore_model(ds=ds, ii=ii)
             elif template == "Hurricane":
-                raise NotImplementedError    
+                raise NotImplementedError
             model.add_wl_bc(self.wl_ts)
 
             # Generate and change discharge boundary condition
@@ -348,9 +348,7 @@ class Hazard:
             offshore_model.add_wind_forcing_from_grid(ds=ds)
             offshore_model.add_pressure_forcing_from_grid(ds=ds)
         elif self.event.attrs.wind.source == "timeseries":
-            offshore_model.add_wind_forcing(
-                timeseries=event_dir.joinpath("wind.csv")
-            )
+            offshore_model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
         elif self.event.attrs.wind.source == "constant":
             offshore_model.add_wind_forcing(
                 const_mag=self.event.attrs.wind.constant_speed.value,
@@ -358,9 +356,7 @@ class Hazard:
             )
 
         # write sfincs model in output destination
-        offshore_model.write_sfincs_model(
-            path_out=self.simulation_paths_offshore[ii]
-        )
+        offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
 
         # Run the actual SFINCS model
         self.run_sfincs_offshore()
