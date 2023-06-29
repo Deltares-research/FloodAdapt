@@ -3,6 +3,7 @@ import os
 from typing import Any, Union
 
 import pandas as pd
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_controller import IDatabase
 from flood_adapt.object_model.hazard.event.event import Event
@@ -17,8 +18,6 @@ from flood_adapt.object_model.interface.events import (
     IHistoricalOffshore,
     ISynthetic,
 )
-
-from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
