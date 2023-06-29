@@ -1,6 +1,6 @@
 name = "kingTideNov2021"
 long_name = "King Tide - Nov 2021"
-mode = "single_scenario"
+mode = "single_event"
 template = "Historical_offshore"
 timing = "historical"
 
@@ -14,6 +14,9 @@ end_time = "20211109 000000"
 
 [tide]
 source = "timeseries"
+
+[surge]
+source = "none"
 
 [wind]
 source = "map"

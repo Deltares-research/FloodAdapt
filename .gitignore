@@ -172,3 +172,12 @@ tests/test_database/charleston/input/measures/raise_property_aggregation_area/ra
 tests/system/sfincs/
 database
 tests/test_database/charleston/static/cyclone_track_database/
+tests/test_object_model/test_events.py
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_0000.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_0300.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_0600.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_0900.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_1200.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_1500.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_1800.nc
+tests/test_database/charleston/input/events/kingTideNov2021/gfs_anl_0p50_us_southeast.20211104_2100.nc
