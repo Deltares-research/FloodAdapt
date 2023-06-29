@@ -1,6 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
@@ -11,12 +13,13 @@ from flood_adapt.object_model.hazard.event.historical_nearshore import (
 from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 from flood_adapt.object_model.interface.events import (
     Mode,
+    RainfallModel,
     Template,
     TideModel,
     TimeModel,
     Timing,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity, UnitfulLength
 from flood_adapt.object_model.site import (
     Site,
 )
@@ -154,3 +157,83 @@ def test_download_wl_timeseries():
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
     assert wl_df.iloc[:, 0].dtypes == "float64"
+
+
+def test_constant_rainfall():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.rainfall = RainfallModel(
+        source="constant",
+        constant_intensity=UnitfulIntensity(value=2.0, units="inch/hr"),
+    )
+    event.add_rainfall_ts()
+    assert isinstance(event.rain_ts, pd.DataFrame)
+    assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
+    assert np.abs(event.rain_ts.values[0][0] - 2) < 0.001
+
+
+def test_gaussian_rainfall():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.rainfall = RainfallModel(
+        source="shape",
+        cumulative=UnitfulLength(value=10.0, units="millimeters"),
+        shape_type="gaussian",
+        shape_duration=1,
+        shape_peak_time=0,
+    )
+    event.add_rainfall_ts()
+    assert isinstance(event.rain_ts, pd.DataFrame)
+    assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
+    event.rain_ts.to_csv(
+        (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    )
+    # assert np.abs(event.rain_ts.values[0][100] - 2) < 0.001
+
+
+def test_block_rainfall():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.rainfall = RainfallModel(
+        source="shape",
+        cumulative=UnitfulLength(value=10.0, units="inch"),
+        shape_type="block",
+        shape_start_time=0,
+        shape_end_time=1,
+    )
+    event.add_rainfall_ts()
+    assert isinstance(event.rain_ts, pd.DataFrame)
+    assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
+    event.rain_ts.to_csv(
+        (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    )

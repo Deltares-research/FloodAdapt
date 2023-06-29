@@ -244,12 +244,12 @@ class Event:
             mag = self.attrs.rainfall.constant_intensity.convert("mm/hr") * np.array(
                 [1, 1]
             )
-            df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], "vmag": mag})
+            df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], "intensity": mag})
             df = df.set_index("time")
             self.rain_ts = df
             return self
         elif self.attrs.rainfall.source == "shape":
-            cumulative = self.attrs.rainfall.cumulative.convert("mm/hr")
+            cumulative = self.attrs.rainfall.cumulative.convert("millimeters")
             if self.attrs.rainfall.shape_type == "gaussian":
                 shape_duration = 3600 * self.attrs.rainfall.shape_duration
                 peak = 8124.3 * cumulative / shape_duration
@@ -268,7 +268,7 @@ class Event:
                 start_shape = 3600 * self.attrs.rainfall.shape_start_time
                 end_shape = 3600 * self.attrs.rainfall.shape_end_time
                 shape_duration = end_shape - start_shape
-                peak = cumulative / shape_duration
+                peak = 3600 * cumulative / shape_duration  # intensity in mm/hr
                 rainfall = self.timeseries_shape(
                     "block",
                     duration,
@@ -295,9 +295,7 @@ class Event:
                 )
             elif self.attrs.rainfall.shape_type == "SCS-curve":
                 ...
-            df = pd.DataFrame.from_dict(
-                {"time": time_vec[[0, -1]], "intensity": rainfall}
-            )
+            df = pd.DataFrame.from_dict({"time": time_vec, "intensity": rainfall})
             df = df.set_index("time")
             self.rain_ts = df
             return self
