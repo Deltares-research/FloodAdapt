@@ -11,6 +11,9 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
+from flood_adapt.object_model.hazard.event.historical_hurricane import (
+    HistoricalHurricane,
+)
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 
@@ -262,3 +265,29 @@ class SfincsAdapter:
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
+
+    def add_spw_forcing(
+        self,
+        historical_hurricane: HistoricalHurricane,
+        database_path: Path,
+        model_dir: Path,
+    ):
+        """Add spiderweb forcing to the sfincs model
+
+        Parameters
+        ----------
+        historical_hurricane : HistoricalHurricane
+            Information of the historical hurricane event
+        database_path : Path
+            Path of the main database
+        model_dir : Path
+            Output path of the model
+        """
+
+        spw_name = historical_hurricane.make_spw_file(
+            database_path=database_path, model_dir=model_dir
+        )
+        self.set_config_spw(spw_name)
+
+    def set_config_spw(self, spw_name: str):
+        self.sf_model.set_config("spwfile", spw_name)

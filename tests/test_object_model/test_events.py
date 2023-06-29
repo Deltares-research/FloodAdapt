@@ -244,7 +244,8 @@ def test_download_meteo():
         / "kingTideNov2021"
         / "kingTideNov2021.toml"
     )
-    kingTide = HistoricalOffshore.load_file(event_toml)
+    template = Event.get_template(event_toml)
+    kingTide = EventFactory.get_event(template).load_file(event_toml)
 
     site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
 
@@ -266,3 +267,23 @@ def test_download_wl_timeseries():
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
     assert wl_df.iloc[:,0].dtypes == "float64"
+
+
+def test_make_and_translate_spw_file():
+    event_toml = (test_database / "charleston" / "input" / "events" / "HUGO" / "HUGO.toml")
+
+    template = Event.get_template(event_toml)
+    HUGO = EventFactory.get_event(template).load_file(event_toml)
+
+    site_toml = (test_database / "charleston" / "static" / "site" / "site.toml")
+    site = Site.load_file(site_toml)
+
+    HUGO.make_spw_file(database_path=test_database.joinpath("charleston"), model_dir=event_toml.parent, site=site)
+
+    assert event_toml.parent.joinpath("HUGO.spw").is_file()
+
+    # HUGO_with_translation = HUGO
+    # HUGO_with_translation.attrs.hurricane_translation.eastwest_translation.value = 100
+    # HUGO_with_translation.attrs.hurricane_translation.eastwest_translation.units = "meters"
+    # HUGO_with_translation.attrs.hurricane_translation.northsouth_translation.value = 250
+    # HUGO_with_translation.attrs.hurricane_translation.northsouth_translation.units = "meters"

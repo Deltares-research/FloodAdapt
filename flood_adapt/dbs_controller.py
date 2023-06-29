@@ -30,6 +30,8 @@ from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
 
+from cht_cyclones.tropical_cyclone import TropicalCyclone
+
 
 class Database(IDatabase):
     """Implementation of IDatabase class that holds the site information and has methods
@@ -453,6 +455,11 @@ class Database(IDatabase):
             Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
             header=False,
         )
+
+    def write_cyc(self, event: IEvent, track: TropicalCyclone):
+        cyc_file = self.input_path / "events" / event.attrs.name / f"{event.attrs.track_name}.cyc"
+        #cht_cyclone function to write TropicalCyclone as .cyc file
+        track.write_track(filename=cyc_file,fmt="ddb_cyc")
 
     def edit_event(self, event: IEvent):
         """Edits an already existing event in the database.

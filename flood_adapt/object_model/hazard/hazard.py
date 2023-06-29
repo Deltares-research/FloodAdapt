@@ -1,3 +1,5 @@
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -263,6 +265,11 @@ class Hazard:
 
         for ii, event in enumerate(self.event_set):
             self.event = event  # set current event to ii-th event in event set
+
+            # Create folders for offshore model
+            os.mkdir(self.simulation_paths[ii].parent)
+            os.mkdir(self.simulation_paths[ii])
+
             # Load overland sfincs model
             model = SfincsAdapter(model_root=path_in)
 
@@ -284,38 +291,49 @@ class Hazard:
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
                 self.add_wl_ts()
-            elif template == "Historical_offshore":
+            elif (
+                template == "Historical_offshore" or template == "Historical_hurricane"
+            ):
                 self.run_offshore_model(ds=ds, ii=ii)
-            elif template == "Hurricane":
-                raise NotImplementedError
             model.add_wl_bc(self.wl_ts)
 
             # Generate and change discharge boundary condition
             self.add_discharge()
             model.add_dis_bc(self.dis_ts)
 
-            # Generate and add rainfall boundary condition
-            if self.event.attrs.rainfall.source == "map":
-                model.add_precip_forcing_from_grid(ds=ds)
-            elif self.event.attrs.rainfall.source == "timeseries":
-                model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
-            elif self.event.attrs.wind.source == "constant":
-                model.add_precip_forcing(
-                    const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                        "mm/hr"
+            if template != "Historical_hurricane":
+                # Generate and add rainfall boundary condition
+                if self.event.attrs.rainfall.source == "map":
+                    model.add_precip_forcing_from_grid(ds=ds)
+                elif self.event.attrs.rainfall.source == "timeseries":
+                    model.add_precip_forcing(
+                        timeseries=event_dir.joinpath("rainfall.csv")
                     )
-                )
+                elif self.event.attrs.wind.source == "constant":
+                    model.add_precip_forcing(
+                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
+                            "mm/hr"
+                        )
+                    )
 
-            # Generate and add wind boundary condition
-            if self.event.attrs.wind.source == "map":
-                model.add_wind_forcing_from_grid(ds=ds)
-            elif self.event.attrs.wind.source == "timeseries":
-                model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
-            elif self.event.attrs.wind.source == "constant":
-                model.add_wind_forcing(
-                    const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
-                    const_dir=self.event.attrs.wind.constant_direction.value,
+                # Generate and add wind boundary condition
+                if self.event.attrs.wind.source == "map":
+                    model.add_wind_forcing_from_grid(ds=ds)
+                elif self.event.attrs.wind.source == "timeseries":
+                    model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
+                elif self.event.attrs.wind.source == "constant":
+                    model.add_wind_forcing(
+                        const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
+                        const_dir=self.event.attrs.wind.constant_direction.value,
+                    )
+            else:
+                # Copy spw file also to nearshore folder
+                spw_name = self.event.attrs.track_name + ".spw"
+                shutil.copy2(
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    self.simulation_paths[ii].joinpath(spw_name),
                 )
+                model.set_config_spw(spw_name=spw_name)
 
             # Add measures if included
             if self.hazard_strategy.measures is not None:
@@ -345,6 +363,9 @@ class Hazard:
         )
         event_dir = self.database_input_path / "events" / self.event.attrs.name
 
+        # Create folders for offshore model
+        os.mkdir(self.simulation_paths_offshore[ii])
+
         # Initiate offshore model
         offshore_model = SfincsAdapter(model_root=path_in_offshore)
 
@@ -356,16 +377,25 @@ class Hazard:
             self.event.attrs, self.physical_projection.attrs
         )
 
-        # Add wind and if applicable pressure forcing from files.
-        if self.event.attrs.wind.source == "map":
-            offshore_model.add_wind_forcing_from_grid(ds=ds)
-            offshore_model.add_pressure_forcing_from_grid(ds=ds)
-        elif self.event.attrs.wind.source == "timeseries":
-            offshore_model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
-        elif self.event.attrs.wind.source == "constant":
-            offshore_model.add_wind_forcing(
-                const_mag=self.event.attrs.wind.constant_speed.value,
-                const_dir=self.event.attrs.wind.constant_direction.value,
+        # Add wind and if applicable pressure forcing from meteo data (historical_offshore) or spiderweb file (historical_hurricane).
+        if self.event.attrs.template == "Historical_offshore":
+            if self.event.attrs.wind.source == "map":
+                offshore_model.add_wind_forcing_from_grid(ds=ds)
+                offshore_model.add_pressure_forcing_from_grid(ds=ds)
+            elif self.event.attrs.wind.source == "timeseries":
+                offshore_model.add_wind_forcing(
+                    timeseries=event_dir.joinpath("wind.csv")
+                )
+            elif self.event.attrs.wind.source == "constant":
+                offshore_model.add_wind_forcing(
+                    const_mag=self.event.attrs.wind.constant_speed.value,
+                    const_dir=self.event.attrs.wind.constant_direction.value,
+                )
+        elif self.event.attrs.template == "Historical_hurricane":
+            offshore_model.add_spw_forcing(
+                historical_hurricane=self.event,
+                database_path=base_path,
+                model_dir=self.simulation_paths_offshore[ii],
             )
 
         # write sfincs model in output destination

@@ -2,15 +2,18 @@ import os
 from pathlib import Path
 from typing import Any, Union
 
+import pyproj
 import tomli
 import tomli_w
-from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
+from cht_cyclones.tropical_cyclone import TropicalCyclone
+from shapely.affinity import translate
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
     IHistoricalHurricane,
 )
+from flood_adapt.object_model.site import Site
 
 
 class HistoricalHurricane(Event, IHistoricalHurricane):
@@ -96,18 +99,49 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def make_spw_file(self, database_path: Path, model_dir: Path):
+    def make_spw_file(self, database_path: Path, model_dir: Path, site=Site):
         # Location of tropical cyclone database
-        tc_netcdf = database_path.joinpath(
-            "static", "cyclone_track_database", "IBTrACS.NA.v04r00.nc"
+        cyc_file = database_path.joinpath(
+            "input", "events", f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
         )
         # Initialize the tropical cyclone database
-        tc_database = CycloneTrackDatabase("ibtracs", tc_netcdf)
-        # Get the index inside the database based on the track name
-        idx = tc_database.filter(name=self.attrs.track_name)
-        # Get the track based on the index of the track
-        tc = tc_database.get_track(index=idx)
+        tc = TropicalCyclone()
+        tc.read_track(filename=cyc_file, fmt="ddb_cyc")
+
+        # Alter the track of the tc if necessary
+        if (
+            self.attrs.hurricane_translation.eastwest_translation.value != 0
+            or self.attrs.hurricane_translation.northsouth_translation.value != 0
+        ):
+            tc = self.translate_tc_track(tc=tc, site=site)
+
         # Location of spw file
-        spw_file = model_dir.joinpath(f"{tc.name}.spw")
+        filename = f"{tc.name}.spw"
+        spw_file = model_dir.joinpath(filename)
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
+
+        return filename
+
+    def translate_tc_track(self, tc: TropicalCyclone, site: Site):
+        # First convert geodataframe to the local coordinate system
+        crs = pyproj.CRS.from_string(site.attrs.sfincs.csname)
+        tc.track = tc.track.to_crs(crs)
+
+        # Translate the track in the local coordinate system
+        tc.track["geometry"] = tc.track["geometry"].apply(
+            lambda geom: translate(
+                geom,
+                xoff=self.attrs.hurricane_translation.eastwest_translation.convert(
+                    "meters"
+                ),
+                yoff=self.attrs.hurricane_translation.northsouth_translation.convert(
+                    "meters"
+                ),
+            )
+        )
+
+        # Convert the geodataframe to lat/lon
+        tc.track = tc.track.to_crs(epsg=4326)
+
+        return tc

@@ -18,6 +18,8 @@ from flood_adapt.object_model.interface.events import (
     ISynthetic,
 )
 
+from cht_cyclones.tropical_cyclone import TropicalCyclone
+
 
 def get_events(database: IDatabase) -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
@@ -133,6 +135,10 @@ def plot_wl(
     event: IEvent, database: IDatabase, input_wl_df: pd.DataFrame = None
 ) -> str:
     return database.plot_wl(event, input_wl_df)
+
+
+def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):
+    database.write_cyc(event, track)
 
 
 # def get_event(name: str) -> dict():  # get attributes
