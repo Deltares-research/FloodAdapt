@@ -269,21 +269,52 @@ def test_download_wl_timeseries():
     assert wl_df.iloc[:,0].dtypes == "float64"
 
 
-def test_make_and_translate_spw_file():
-    event_toml = (test_database / "charleston" / "input" / "events" / "HUGO" / "HUGO.toml")
+def test_make_spw_file():
+    event_toml = (test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml")
 
     template = Event.get_template(event_toml)
-    HUGO = EventFactory.get_event(template).load_file(event_toml)
+    FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
     site_toml = (test_database / "charleston" / "static" / "site" / "site.toml")
     site = Site.load_file(site_toml)
 
-    HUGO.make_spw_file(database_path=test_database.joinpath("charleston"), model_dir=event_toml.parent, site=site)
+    FLORENCE.make_spw_file(database_path=test_database.joinpath("charleston"), model_dir=event_toml.parent, site=site)
 
-    assert event_toml.parent.joinpath("HUGO.spw").is_file()
+    assert event_toml.parent.joinpath("FLORENCE.spw").is_file()
 
-    # HUGO_with_translation = HUGO
-    # HUGO_with_translation.attrs.hurricane_translation.eastwest_translation.value = 100
-    # HUGO_with_translation.attrs.hurricane_translation.eastwest_translation.units = "meters"
-    # HUGO_with_translation.attrs.hurricane_translation.northsouth_translation.value = 250
-    # HUGO_with_translation.attrs.hurricane_translation.northsouth_translation.units = "meters"
+def test_translate_hurricane_track():
+    from cht_cyclones.tropical_cyclone import TropicalCyclone
+
+    event_toml = (test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml")
+
+    template = Event.get_template(event_toml)
+    FLORENCE = EventFactory.get_event(template).load_file(event_toml)
+
+    site_toml = (test_database / "charleston" / "static" / "site" / "site.toml")
+    site = Site.load_file(site_toml)
+
+    tc = TropicalCyclone()
+    tc.read_track(filename=event_toml.parent.joinpath("FLORENCE.cyc"), fmt="ddb_cyc")
+    ref = tc.track
+
+    #Add translation to FLORENCE
+    dx = 10000
+    dy = 25000
+    FLORENCE.attrs.hurricane_translation.eastwest_translation.value = dx
+    FLORENCE.attrs.hurricane_translation.eastwest_translation.units = "meters"
+    FLORENCE.attrs.hurricane_translation.northsouth_translation.value = dy
+    FLORENCE.attrs.hurricane_translation.northsouth_translation.units = "meters"
+
+    tc = FLORENCE.translate_tc_track(tc=tc, site=site)
+    new = tc.track
+
+    #Determine difference in coordinates between the tracks
+    geom_new = new.iloc[0,1]
+    geom_ref = ref.iloc[0,1]
+    # Subtract the coordinates of the two geometries
+    diff_lat = geom_new.coords[0][0] - geom_ref.coords[0][0]
+    diff_lon = geom_new.coords[0][1] - geom_ref.coords[0][1]
+    assert round(diff_lat,4) == 0.0863
+    assert round(diff_lon,4) == 0.0793
+
+
