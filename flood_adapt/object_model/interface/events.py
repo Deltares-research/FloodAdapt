@@ -64,6 +64,7 @@ class ShapeType(str, Enum):
     gaussian = "gaussian"
     block = "block"
     triangle = "triangle"
+    SCScurve = "SCS-curve"
 
 
 class WindModel(BaseModel):

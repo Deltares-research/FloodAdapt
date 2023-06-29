@@ -14,6 +14,7 @@ from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
+    RainfallModel,
     RiverModel,
     TimeModel,
     WindModel,
@@ -50,6 +51,30 @@ class Event:
         return mode
 
     @staticmethod
+    def timeseries_shape(
+        shape_type: str, duration: float, peak: float, **kwargs
+    ) -> np.ndarray:
+        time_shift = kwargs.get("time_shift", None)
+        start_shape = kwargs.get("start_shape", None)
+        end_shape = kwargs.get("end_shape", None)
+        shape_duration = kwargs.get("shape_duration", None)
+        tt = np.arange(0, duration + 1, 600)
+        if shape_type == "gaussian":
+            ts = peak * np.exp(-(((tt - time_shift) / (0.25 * shape_duration)) ** 2))
+        elif shape_type == "block":
+            ts = np.where((tt > start_shape), peak, 0)
+            ts = np.where((tt > end_shape), 0, ts)
+        elif shape_type == "triangle":
+            tt_interp = [
+                start_shape,
+                time_shift,
+                end_shape,
+            ]
+            value_interp = [0, peak, 0]
+            ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
+        return ts
+
+    @staticmethod
     def generate_dis_ts(time: TimeModel, river: RiverModel) -> pd.DataFrame:
         # generating time series of constant river flow
         # TODO: handle multiple rivers (add as additional columns in dataframe)
@@ -74,7 +99,6 @@ class Event:
 
     @staticmethod
     def generate_wind_ts(time: TimeModel, wind: WindModel) -> pd.DataFrame:
-        # generating time series of constant wind
         tstart = datetime.strptime(time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
@@ -203,13 +227,92 @@ class Event:
             self.dis_ts = df
             return self
 
+    def add_rainfall_ts(self):
+        """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds
+
+        Returns
+        -------
+        self
+            updated object with rainfall timeseries added in pd.DataFrame format
+        """
+        tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
+        tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+        duration = (tstop - tstart).total_seconds()
+        time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
+        # TODO: add rainfall increase from event pop-up (to be added there)
+        if self.attrs.rainfall.source == "constant":
+            mag = self.attrs.rainfall.constant_intensity.convert("mm/hr") * np.array(
+                [1, 1]
+            )
+            df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], "vmag": mag})
+            df = df.set_index("time")
+            self.rain_ts = df
+            return self
+        elif self.attrs.rainfall.source == "shape":
+            cumulative = self.attrs.rainfall.cumulative.convert("mm/hr")
+            if self.attrs.rainfall.shape_type == "gaussian":
+                shape_duration = 3600 * self.attrs.rainfall.shape_duration
+                peak = 8124.3 * cumulative / shape_duration
+                time_shift = (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_peak_time
+                ) * 3600
+                rainfall = self.timeseries_shape(
+                    "gaussian",
+                    duration,
+                    peak,
+                    shape_duration=shape_duration,
+                    time_shift=time_shift,
+                )
+            elif self.attrs.rainfall.shape_type == "block":
+                start_shape = 3600 * self.attrs.rainfall.shape_start_time
+                end_shape = 3600 * self.attrs.rainfall.shape_end_time
+                shape_duration = end_shape - start_shape
+                peak = cumulative / shape_duration
+                rainfall = self.timeseries_shape(
+                    "block",
+                    duration,
+                    peak,
+                    start_shape=start_shape,
+                    end_shape=end_shape,
+                )
+            elif self.attrs.rainfall.shape_type == "triangle":
+                start_shape = 3600 * self.attrs.rainfall.shape_start_time
+                end_shape = 3600 * self.attrs.rainfall.shape_end_time
+                time_shift = (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_peak_time
+                ) * 3600
+                shape_duration = end_shape - start_shape
+                peak = 2 * cumulative / shape_duration
+                rainfall = self.timeseries_shape(
+                    "triangle",
+                    duration,
+                    peak,
+                    start_shape=start_shape,
+                    end_shape=end_shape,
+                    time_shift=time_shift,
+                )
+            elif self.attrs.rainfall.shape_type == "SCS-curve":
+                ...
+            df = pd.DataFrame.from_dict(
+                {"time": time_vec[[0, -1]], "intensity": rainfall}
+            )
+            df = df.set_index("time")
+            self.rain_ts = df
+            return self
+        elif self.attrs.rainfall.source == "timeseries":
+            raise NotImplementedError
+            self.rain_ts = df
+            return self
+
     def add_wind_ts(self):
         """adds wind it timeseries to event object
 
         Returns
         -------
         self
-            updated object with wind timeseries added in pf.DataFrame format
+            updated object with wind timeseries added in pd.DataFrame format
         """
         # generating time series of constant wind
         if self.attrs.wind.source == "constant":
