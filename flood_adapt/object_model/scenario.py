@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
+from fiat_toolbox.metrics_writer.fiat_write_metrics_file import WriteMetricsFile
 from plotly.subplots import make_subplots
 
 from flood_adapt.object_model.direct_impacts import DirectImpacts
@@ -91,6 +92,23 @@ class Scenario(IScenario):
             # read FIAT results per object from csv file
             csv_file = output_path.joinpath(f"{self.attrs.name}_results.csv")
             df = pd.read_csv(csv_file)
+
+            metrics_config_path = Path(self.database_input_path).parent.joinpath(
+                "static",
+                "infometrics",
+                "metrics_config.toml",
+            )
+
+            metrics_outputs_path = Path(self.database_input_path).parent.joinpath(
+                "outputs",
+                "infometrics",
+                "metrics_config.csv",
+            )
+
+            metrics_writer = WriteMetricsFile(metrics_config_path)
+            metrics_writer.parse_metrics_to_file(
+                df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
+            )
 
             # calculate FEMA damage categories
             df["Relative Damage"] = df["Total Damage Event"] / np.nansum(
@@ -186,7 +204,7 @@ class Scenario(IScenario):
         )
 
         trace3 = go.Pie(
-            values=FEMA_count["PUB"].to_list(),
+            values=FEMA_count["RES"].to_list(),
             labels=FEMA_count.index.to_list(),
             hole=0.6,
             name="Education",
@@ -281,7 +299,7 @@ class Scenario(IScenario):
         fig.add_annotation(
             x=0.87,
             y=0.785,
-            text="{}".format(FEMA_count["PUB"].sum()),
+            text="{}".format(FEMA_count["RES"].sum()),
             font={"size": 14, "family": "Verdana", "color": "black"},
             align="center",
             showarrow=False,
