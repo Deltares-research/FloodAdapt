@@ -62,8 +62,8 @@ class Event:
         if shape_type == "gaussian":
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * shape_duration)) ** 2))
         elif shape_type == "block":
-            ts = np.where((tt > start_shape), peak, 0)
-            ts = np.where((tt > end_shape), 0, ts)
+            ts = np.where((tt >= start_shape), peak, 0)
+            ts = np.where((tt >= end_shape), 0, ts)
         elif shape_type == "triangle":
             tt_interp = [
                 start_shape,
@@ -265,8 +265,14 @@ class Event:
                     time_shift=time_shift,
                 )
             elif self.attrs.rainfall.shape_type == "block":
-                start_shape = 3600 * self.attrs.rainfall.shape_start_time
-                end_shape = 3600 * self.attrs.rainfall.shape_end_time
+                start_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_start_time
+                )
+                end_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_end_time
+                )
                 shape_duration = end_shape - start_shape
                 peak = 3600 * cumulative / shape_duration  # intensity in mm/hr
                 rainfall = self.timeseries_shape(
@@ -277,14 +283,20 @@ class Event:
                     end_shape=end_shape,
                 )
             elif self.attrs.rainfall.shape_type == "triangle":
-                start_shape = 3600 * self.attrs.rainfall.shape_start_time
-                end_shape = 3600 * self.attrs.rainfall.shape_end_time
+                start_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_start_time
+                )
+                end_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_end_time
+                )
                 time_shift = (
                     self.attrs.time.duration_before_t0
                     + self.attrs.rainfall.shape_peak_time
                 ) * 3600
                 shape_duration = end_shape - start_shape
-                peak = 2 * cumulative / shape_duration
+                peak = 2 * 3600 * cumulative / shape_duration
                 rainfall = self.timeseries_shape(
                     "triangle",
                     duration,
@@ -293,7 +305,9 @@ class Event:
                     end_shape=end_shape,
                     time_shift=time_shift,
                 )
-            elif self.attrs.rainfall.shape_type == "SCS-curve":
+            elif (
+                self.attrs.rainfall.shape_type == "SCS-curve"
+            ):  # TODO once we have the non-dimensional timeseries of SCS rainfall curves
                 ...
             df = pd.DataFrame.from_dict({"time": time_vec, "intensity": rainfall})
             df = df.set_index("time")

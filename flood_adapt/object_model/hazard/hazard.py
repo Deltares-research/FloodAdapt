@@ -259,7 +259,7 @@ class Hazard:
         path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
-        event_dir = self.database_input_path / "events" / self.event.attrs.name
+        event_dir = self.database_input_path / "events" / self.name
 
         for ii, event in enumerate(self.event_set):
             self.event = event  # set current event to ii-th event in event set
@@ -299,7 +299,7 @@ class Hazard:
                 model.add_precip_forcing_from_grid(ds=ds)
             elif self.event.attrs.rainfall.source == "timeseries":
                 model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
-            elif self.event.attrs.wind.source == "constant":
+            elif self.event.attrs.rainfall.source == "constant":
                 model.add_precip_forcing(
                     const_precip=self.event.attrs.rainfall.constant_intensity.convert(
                         "mm/hr"

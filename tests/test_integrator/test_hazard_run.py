@@ -134,9 +134,9 @@ def test_run_prob_eventset():
     assert zs_file2.is_file()
 
 
-# @pytest.mark.skip(
-#     reason="Need to run models first (see above) but that takes a couple of minutes"
-# )
+@pytest.mark.skip(
+    reason="Need to run models first (see above) but that takes a couple of minutes"
+)
 def test_rp_floodmap_calculation():
     test_toml = (
         test_database
