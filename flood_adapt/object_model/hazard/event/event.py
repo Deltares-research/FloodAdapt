@@ -1,6 +1,8 @@
 import glob
+import os
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -314,7 +316,7 @@ class Event:
             self.rain_ts = df
             return self
         elif self.attrs.rainfall.source == "timeseries":
-            raise NotImplementedError
+            df = self.read_timeseries_csv(self.attrs.rainfall.rainfall_timeseries_file)
             self.rain_ts = df
             return self
 
@@ -331,6 +333,25 @@ class Event:
             df = Event.generate_wind_ts(self.attrs.time, self.attrs.wind)
             self.wind_ts = df
             return self
+
+    @staticmethod
+    def read_timeseries_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+        """Read a rqainfall or discharge, which have a datetime and one value column  timeseries file and return a pd.Dataframe. #TODO: make one for wind, which has two value columns
+
+        Parameters
+        ----------
+        csvpath : Union[str, os.PathLike]
+            path to csv file
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
+        df = pd.read_csv(csvpath, index_col=0, names=[1])
+        df.index.names = ["time"]
+        df.index = pd.to_datetime(df.index)
+        return df
 
     def __eq__(self, other):
         if not isinstance(other, Event):

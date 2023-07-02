@@ -73,7 +73,7 @@ class WindModel(BaseModel):
     constant_speed: Optional[UnitfulVelocity]
     constant_direction: Optional[UnitfulDirection]
     # timeseries
-    wind_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
 
 
 class RainfallModel(BaseModel):
@@ -81,7 +81,7 @@ class RainfallModel(BaseModel):
     # constant
     constant_intensity: Optional[UnitfulIntensity]
     # timeseries
-    rainfall_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     cumulative: Optional[UnitfulLength]
@@ -95,6 +95,8 @@ class RiverModel(BaseModel):
     source: RiverSource
     # constant
     constant_discharge: Optional[UnitfulDischarge]
+    # timeseries
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     base_discharge: Optional[UnitfulDischarge]
