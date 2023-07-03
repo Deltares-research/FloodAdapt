@@ -91,6 +91,7 @@ class FiatModel(BaseModel):
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
+    damage_unit: Optional[str] = "USD"
 
 
 class RiverModel(BaseModel):
