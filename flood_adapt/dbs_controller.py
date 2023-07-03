@@ -202,7 +202,7 @@ class Database(IDatabase):
                 wl_df = input_wl_df
 
             # convert to units used in GUI
-            wl_df["Time"] = wl_df.index
+            #wl_df["Time"] = wl_df.index
             wl_current_units = UnitfulLength(
                 value=float(wl_df.iloc[0, 0]), units="meters"
             )
@@ -220,10 +220,9 @@ class Database(IDatabase):
             # Plot actual thing
             fig = px.line(
                 wl_df,
-                x="Time",
+                x=wl_df.index,
                 y=f"Water level (tide + surge) [{gui_units}]",
-            )
-
+            ).update_layout(xaxis_title="Time")
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
             fig.update_layout(
