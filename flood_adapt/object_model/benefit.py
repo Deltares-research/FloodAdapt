@@ -34,7 +34,10 @@ class Benefit(IBenefit):
     def has_run_check(self):
         """Check if the benefit assessment has already been run"""
         results = self.results_path.joinpath("results.toml")
-
+        if results.exists():
+            with open(results, mode="rb") as fp:
+                self.results = tomli.load(fp)
+            self.results["html"] = str(self.results_path.joinpath("benefits.html"))
         return results.exists()
 
     def check_scenarios(self):
