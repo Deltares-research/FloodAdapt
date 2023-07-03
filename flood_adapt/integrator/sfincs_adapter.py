@@ -105,7 +105,7 @@ class SfincsAdapter:
         self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
 
     def add_precip_forcing(
-        self, precip: Union[str, os.PathLike] = None, const_precip: float = None
+        self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None
     ):
         """Add spatially uniform precipitation to sfincs model.
 
@@ -116,7 +116,7 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        self.sf_model.setup_precip_forcing(timeseries=precip, magnitude=const_precip)
+        self.sf_model.setup_precip_forcing(timeseries=timeseries, magnitude=const_precip)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
