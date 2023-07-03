@@ -116,7 +116,9 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        self.sf_model.setup_precip_forcing(timeseries=timeseries, magnitude=const_precip)
+        self.sf_model.setup_precip_forcing(
+            timeseries=timeseries, magnitude=const_precip
+        )
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
