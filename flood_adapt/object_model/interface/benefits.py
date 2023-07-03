@@ -6,18 +6,22 @@ import pandas as pd
 from pydantic import BaseModel
 
 
+class CurrentSituationModel(BaseModel):
+    projection: str
+    year: int
+
+
 class BenefitModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object"""
 
     name: str
     description: Optional[str] = ""
+    strategy: str
     event_set: str
-    strategy_future: str
-    strategy_current: Optional[str] = "no_measures"
-    projection_future: str
-    projection_current: Optional[str] = "current"
-    year_future: int
-    year_current: int  # TODO is this user input or we have a default based on site.toml?
+    projection: str
+    future_year: int
+    current_situation: CurrentSituationModel
+    baseline_strategy: str
     discount_rate: float
     implementation_cost: Optional[float] = None
     annual_maint_cost: Optional[float] = None

@@ -12,28 +12,32 @@ site_name = "charleston"
 
 
 def test_benefit():
+    # Initialize database object
+    database = api_startup.read_database(test_database_path, site_name)
+
     # Inputs for benefit calculation
     # Name given already exists to do test for error capture
     benefit_dict = {
         "name": "benefit_raise_properties_2050",
         "description": "",
         "event_set": "test_set",
-        "strategy_future": "elevate_comb_correct",
-        "projection_future": "all_projections",
-        "year_current": 2023,
-        "year_future": "two thousand eighty",
+        "strategy": "elevate_comb_correct",
+        "projection": "all_projections",
+        "future_year": "two thousand eighty",
+        "current_situation": {
+            "projection": database.site.attrs.benefits.current_projection,
+            "year": database.site.attrs.benefits.current_year,
+        },
+        "baseline_strategy": database.site.attrs.benefits.baseline_strategy,
         "discount_rate": 0.07,
     }
-
-    # Initialize database object
-    database = api_startup.read_database(test_database_path, site_name)
 
     # When user presses add benefit and chooses the values
     with pytest.raises(ValueError):
         # Assert error if the event is not a correct value
         benefit = api_benefits.create_benefit(benefit_dict, database)
     # correct value
-    benefit_dict["year_future"] = 2080
+    benefit_dict["future_year"] = 2080
     benefit = api_benefits.create_benefit(benefit_dict, database)
 
     with pytest.raises(ValueError):

@@ -53,14 +53,16 @@ class Benefit(IBenefit):
             scenarios_calc[scenario]["event"] = self.attrs.event_set
 
             if "current" in scenario:
-                scenarios_calc[scenario]["projection"] = self.attrs.projection_current
+                scenarios_calc[scenario][
+                    "projection"
+                ] = self.attrs.current_situation.projection
             elif "future" in scenario:
-                scenarios_calc[scenario]["projection"] = self.attrs.projection_future
+                scenarios_calc[scenario]["projection"] = self.attrs.projection
 
             if "no_measures" in scenario:
-                scenarios_calc[scenario]["strategy"] = self.attrs.strategy_current
+                scenarios_calc[scenario]["strategy"] = self.attrs.baseline_strategy
             else:
-                scenarios_calc[scenario]["strategy"] = self.attrs.strategy_future
+                scenarios_calc[scenario]["strategy"] = self.attrs.strategy
 
         # Get the available scenarios
         # TODO this should be done with a function of the database controller
@@ -129,8 +131,8 @@ class Benefit(IBenefit):
             )  # TODO update based on new FIAT
             scenarios.loc[index, "EAD"] = float(metrics["EAD"][0])
 
-        year_start = self.attrs.year_current
-        year_end = self.attrs.year_future
+        year_start = self.attrs.current_situation.year
+        year_end = self.attrs.future_year
 
         cba = pd.DataFrame(
             data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},

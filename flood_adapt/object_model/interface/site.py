@@ -119,6 +119,13 @@ class Obs_stationModel(BaseModel):
     msl: UnitfulLength
 
 
+class BenefitsModel(BaseModel):
+    current_year: int
+    current_projection: str
+    baseline_strategy: str
+    event_set: str
+
+
 class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
@@ -134,6 +141,7 @@ class SiteModel(BaseModel):
     fiat: FiatModel
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
+    benefits: BenefitsModel
 
 
 class ISite(ABC):
