@@ -799,7 +799,10 @@ class Database(IDatabase):
             raise ValueError(
                 f"'{benefit.attrs.name}' name is already used by another benefit. Choose a different name"
             )
-        # TODO add check to see if a scenario with the same attributes but different name already exists
+        elif not all(benefit.scenarios["scenario created"] != "No"):
+            raise ValueError(
+                f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
+            )
         else:
             (self.input_path / "benefits" / benefit.attrs.name).mkdir()
             benefit.save(
