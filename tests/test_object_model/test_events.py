@@ -1,3 +1,4 @@
+import os
 import unittest
 from datetime import datetime
 from pathlib import Path
@@ -281,6 +282,10 @@ def test_make_spw_file():
     FLORENCE.make_spw_file(database_path=test_database.joinpath("charleston"), model_dir=event_toml.parent, site=site)
 
     assert event_toml.parent.joinpath("FLORENCE.spw").is_file()
+
+    #Remove spw file after completion of test
+    if event_toml.parent.joinpath("FLORENCE.spw").is_file():
+        os.remove(event_toml.parent.joinpath("FLORENCE.spw"))
 
 def test_translate_hurricane_track():
     from cht_cyclones.tropical_cyclone import TropicalCyclone
