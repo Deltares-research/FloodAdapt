@@ -110,7 +110,7 @@ def test_run_CBA():
         shutil.rmtree(res_scn_path)
 
 
-def test_run_BA():
+def test_run_benefit_analysis():
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
