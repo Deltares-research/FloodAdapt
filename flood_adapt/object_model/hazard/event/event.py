@@ -16,7 +16,6 @@ from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
-    RainfallModel,
     RiverModel,
     TimeModel,
     WindModel,

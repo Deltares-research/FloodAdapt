@@ -179,7 +179,7 @@ def test_constant_rainfall():
     event.add_rainfall_ts()
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
-    assert np.abs(event.rain_ts.values[0][0] - 2) < 0.001
+    assert np.abs(event.rain_ts.to_numpy[0][0] - 2) < 0.001
 
 
 def test_gaussian_rainfall():
@@ -208,8 +208,8 @@ def test_gaussian_rainfall():
     # event.rain_ts.to_csv(
     #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
     # )
-    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().values
-    cum_rainfall_ts = np.sum(event.rain_ts.values.squeeze() * dt[1:].mean()) / 3600
+    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
     cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
@@ -240,8 +240,8 @@ def test_block_rainfall():
     # event.rain_ts.to_csv(
     #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
     # )
-    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().values
-    cum_rainfall_ts = np.sum(event.rain_ts.values.squeeze() * dt[1:].mean()) / 3600
+    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
     cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
@@ -273,7 +273,7 @@ def test_triangle_rainfall():
     event.rain_ts.to_csv(
         (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
     )
-    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().values
-    cum_rainfall_ts = np.sum(event.rain_ts.values.squeeze() * dt[1:].mean()) / 3600
+    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
     cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
