@@ -160,16 +160,14 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
-class EventSetModel(
-    BaseModel
-):  # add WindModel etc as this is shared among all? templates
+class EventSetModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
 
     name: str
     long_name: str
     mode: Mode
-    subevent_name: list[str]
-    frequency: list[float]
+    subevent_name: Optional[list[str]]
+    frequency: Optional[list[float]]
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event

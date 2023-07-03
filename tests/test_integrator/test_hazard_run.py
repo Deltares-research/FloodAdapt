@@ -57,8 +57,8 @@ def test_preprocess_prob_eventset():
         / "charleston"
         / "input"
         / "scenarios"
-        / "current_test_set_no_measures"
-        / "current_test_set_no_measures.toml"
+        / "current_test_set2_no_measures"
+        / "current_test_set2_no_measures.toml"
     )
 
     assert test_toml.is_file()
