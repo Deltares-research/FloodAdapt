@@ -1,6 +1,6 @@
 name = "extreme_2"
 long_name = "extreme_2"
-mode = "single_scenario"
+mode = "single_event"
 template = "Synthetic"
 timing = "idealized"
 

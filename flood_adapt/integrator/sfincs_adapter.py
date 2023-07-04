@@ -1,7 +1,13 @@
+import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
+import hydromt_sfincs.utils as utils
+import numpy as np
 import pandas as pd
+import xarray as xr
+from cht_tide.read_bca import SfincsBoundary
+from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
@@ -9,6 +15,7 @@ from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
 )
+from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -30,7 +37,7 @@ class SfincsAdapter:
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
 
-        # Get start and end time of event based on different templates
+        # Get start and end time of event
         tstart = event.time.start_time
         tstop = event.time.end_time
 
@@ -39,27 +46,157 @@ class SfincsAdapter:
         self.sf_model.set_config("tstart", tstart)
         self.sf_model.set_config("tstop", tstop)
 
+    def add_wind_forcing(
+        self,
+        timeseries: Union[str, os.PathLike] = None,
+        const_mag: float = None,
+        const_dir: float = None,
+    ):
+        """Add spatially constant wind forcing to sfincs model. Use timeseries or a constant magnitude and direction.
+
+        Parameters
+        ----------
+        timeseries : Union[str, os.PathLike], optional
+            path to file of timeseries file (.csv) which has three columns: time, magnitude and direction, by default None
+        const_mag : float, optional
+            magnitude of time-invariant wind forcing [m/s], by default None
+        const_dir : float, optional
+            direction of time-invariant wind forcing [deg], by default None
+        """
+        self.sf_model.setup_wind_forcing(
+            timeseries=timeseries, magnitude=const_mag, direction=const_dir
+        )
+
+    def add_wind_forcing_from_grid(self, ds: xr.DataArray):
+        """Add spatially varying wind forcing to sfincs model.
+
+        Parameters
+        ----------
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - wind_u: eastward wind velocity [m/s]
+            - wind_v: northward wind velocity [m/s]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_wind_forcing_from_grid(wind=ds)
+
+    def add_pressure_forcing_from_grid(self, ds: xr.DataArray):
+        """Add spatially varying barometric pressure to sfincs model.
+
+        Parameters
+        ----------
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - press: barometric pressure [Pa]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_pressure_forcing_from_grid(press=ds)
+
+    def add_precip_forcing_from_grid(self, ds: xr.DataArray):
+        """Add spatially varying precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : xr.DataArray
+            Dataarray which should contain:
+            - precip: precipitation rates [mm/hr]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
+
+    def add_precip_forcing(
+        self, precip: Union[str, os.PathLike] = None, const_precip: float = None
+    ):
+        """Add spatially uniform precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : Union[str, os.PathLike], optional
+            timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
+        const_precip : float, optional
+            time-invariant precipitation magnitude [mm/hr], by default None
+        """
+        self.sf_model.setup_precip_forcing(timeseries=precip, magnitude=const_precip)
+
     def add_wl_bc(self, df_ts: pd.DataFrame):
-        """Changes waterlevel of overland sfincs model based on new waterlevel time series.
+        """Add waterlevel dataframe to sfincs model.
 
         Parameters
         ----------
         df_ts : pd.DataFrame
-            time series of water level, index should be Pandas DateRange
+            Dataframe with waterlevel time series at every boundary point (index of the dataframe should be time and every column should be an integer starting with 1)
         """
-
         # Determine bnd points from reference overland model
         gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
         gdf_locs.crs = self.sf_model.crs
 
-        # Go from 1 timeseries to timeseries for all boundary points
-        for i in range(1, len(gdf_locs)):
-            df_ts[i + 1] = df_ts[1]
+        if len(df_ts.columns) == 1:
+            # Go from 1 timeseries to timeseries for all boundary points
+            for i in range(1, len(gdf_locs)):
+                df_ts[i + 1] = df_ts[1]
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
+
+    def add_bzs_from_bca(
+        self, event: EventModel, physical_projection: PhysicalProjectionModel
+    ):
+        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs"""
+
+        sb = SfincsBoundary()
+        sb.read_flow_boundary_points(Path(self.sf_model.root).joinpath("sfincs.bnd"))
+        sb.read_astro_boundary_conditions(
+            Path(self.sf_model.root).joinpath("sfincs.bca")
+        )
+
+        times = pd.date_range(
+            start=event.time.start_time,
+            end=event.time.end_time,
+            freq="10T",
+        )
+
+        # Predict tidal signal and add SLR
+        for bnd_ii in range(len(sb.flow_boundary_points)):
+            tide_ii = (
+                predict(sb.flow_boundary_points[bnd_ii].astro, times)
+                + event.water_level_offset.convert("meters")
+                + physical_projection.sea_level_rise.convert("meters")
+            )
+
+            if bnd_ii == 0:
+                wl_df = pd.DataFrame(data={1: tide_ii}, index=times)
+            else:
+                wl_df[bnd_ii + 1] = tide_ii
+
+        # Determine bnd points from reference overland model
+        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
+        gdf_locs.crs = self.sf_model.crs
+
+        # HydroMT function: set waterlevel forcing from time series
+        self.sf_model.set_forcing_1d(
+            name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
+        )
+
+    def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
+        """Function to create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
+
+        Returns
+        -------
+        wl_df: pd.DataFrame
+            time series of water level.
+        """
+        ds_his = utils.read_sfincs_his_results(
+            Path(self.sf_model.root).joinpath("sfincs_his.nc"),
+            crs=self.sf_model.crs.to_epsg(),
+        )
+        wl_df = pd.DataFrame(
+            data=ds_his.point_zs.to_numpy(),
+            index=ds_his.time.to_numpy(),
+            columns=np.arange(1, ds_his.point_zs.to_numpy().shape[1] + 1, 1),
+        )
+        return wl_df
 
     def add_dis_bc(self, df_ts: pd.DataFrame):
         """Changes discharge of overland sfincs model based on new discharge time series.
@@ -83,7 +220,7 @@ class SfincsAdapter:
             name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
         )
 
-    def add_floodwall(self, floodwall: FloodWallModel):
+    def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
         """Adds floodwall to sfincs model.
 
         Parameters
@@ -93,18 +230,57 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(floodwall.polygon_file)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
-            floodwall.polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+            polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation
+        gdf_floodwall["z"] = floodwall.elevation.convert("meters")
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
-        self.sf_model.create_structures(
-            gdf_structures=gdf_floodwall, stype="weir", overwrite=False
+        self.sf_model.setup_structures(
+            structures=gdf_floodwall, stype="weir", merge=True
+        )
+
+    def add_green_infrastructure(
+        self, green_infrastructure: GreenInfrastructureModel, measure_path: Path
+    ):
+        """Adds green infrastructure to sfincs model.
+
+        Parameters
+        ----------
+        green_infrastructure : GreenInfrastructureModel
+            Green infrastructure information
+        measure_path: Path
+            Path of the measure folder
+        """
+
+        # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
+            polygon_file,
+            geom=self.sf_model.region,
+            crs=self.sf_model.crs,
+        )
+
+        # Determine volume capacity of green infrastructure
+
+        if green_infrastructure.height.value != 0.0:
+            height = (
+                green_infrastructure.height.convert("m")
+                * green_infrastructure.percent_area
+            )
+            volume = None
+        elif green_infrastructure.volume.value != 0.0:
+            height = None
+            volume = green_infrastructure.volume.convert("m3")
+
+        # HydroMT function: create storage volume
+        self.sf_model.setup_storage_volume(
+            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
         )
 
     def add_green_infrastructure(
@@ -156,3 +332,12 @@ class SfincsAdapter:
 
         # Write sfincs files in output folder
         self.sf_model.write()
+
+    def read_zsmax(self):
+        """Read zsmax file and return absolute maximum water level over entre simulation"""
+        # Change model root to new folder
+
+        # Write sfincs files in output folder
+        self.sf_model.read_results()
+        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        return zsmax

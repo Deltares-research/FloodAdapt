@@ -1,5 +1,6 @@
 name = "current_extreme12ft_no_measures"
-long_name = "current - extreme 12 foot event - no_measures"
-projection = "current"
+long_name = "current_extreme 12 foot event_no_measures"
+description = ""
 event = "extreme12ft"
+projection = "current"
 strategy = "no_measures"

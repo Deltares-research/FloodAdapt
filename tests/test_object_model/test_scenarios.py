@@ -44,7 +44,7 @@ def test_scenario_class():
     assert isinstance(
         scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
     )
-    assert isinstance(scenario.direct_impacts.hazard.event, Synthetic)
+    assert isinstance(scenario.direct_impacts.hazard.event_set[0], Synthetic)
 
 
 def test_hazard_load():
@@ -63,8 +63,8 @@ def test_hazard_load():
 
     hazard = scenario.direct_impacts.hazard
 
-    assert hazard.event.attrs.timing == "idealized"
-    assert isinstance(hazard.event.attrs.tide, TideModel)
+    assert hazard.event_set[0].attrs.timing == "idealized"
+    assert isinstance(hazard.event_set[0].attrs.tide, TideModel)
 
 
 def test_hazard_wl():
