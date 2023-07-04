@@ -35,7 +35,7 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMe
         return FloodWall.load_dict(attrs, database.input_path)
     elif type == "green_infrastructure":
         return GreenInfrastructure.load_dict(attrs, database.input_path)
-    
+
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:
     database.save_measure(measure)
