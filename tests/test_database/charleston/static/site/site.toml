@@ -87,3 +87,7 @@ units = "meters"
 [obs_station.msl]
 value = 0.890
 units = "meters"
+
+[scs]
+file = "scs_rainfall.csv"
+type = "type_3"

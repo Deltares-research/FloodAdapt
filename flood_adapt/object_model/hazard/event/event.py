@@ -228,7 +228,7 @@ class Event:
             self.dis_ts = df
             return self
 
-    def add_rainfall_ts(self):
+    def add_rainfall_ts(self, **kwargs):
         """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds
 
         Returns
@@ -236,6 +236,8 @@ class Event:
         self
             updated object with rainfall timeseries added in pd.DataFrame format
         """
+        scsfile = kwargs.get("scsfile", None)
+        scstype = kwargs.get("scstype", None)
         tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
@@ -307,9 +309,34 @@ class Event:
                     time_shift=time_shift,
                 )
             elif (
-                self.attrs.rainfall.shape_type == "SCS-curve"
+                self.attrs.rainfall.shape_type == "scs"
             ):  # TODO once we have the non-dimensional timeseries of SCS rainfall curves
-                ...
+                start_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.rainfall.shape_start_time
+                )
+                shape_duration = 3600 * self.attrs.rainfall.shape_duration
+                tt = np.arange(0, duration + 1, 600)
+
+                # rainfall
+                scs_df = pd.read_csv(scsfile, index_col=0)
+                scstype_df = scs_df[scstype]
+                tt_rain = start_shape + scstype_df.index.to_numpy() * shape_duration
+                rain_series = scstype_df.to_numpy()
+                rain_instantaneous = np.diff(rain_series) / np.diff(
+                    tt_rain / 3600
+                )  # divide by time in hours to get mm/hour
+
+                # interpolate instanetaneous rain intensity timeseries to tt
+                rain_interp = np.interp(
+                    tt,
+                    tt_rain,
+                    np.concatenate(([0], rain_instantaneous)),
+                    left=0,
+                    right=0,
+                )
+                rainfall = rain_interp * cumulative / np.trapz(rain_interp, tt / 3600)
+
             df = pd.DataFrame.from_dict({"time": time_vec, "intensity": rainfall})
             df = df.set_index("time")
             self.rain_ts = df

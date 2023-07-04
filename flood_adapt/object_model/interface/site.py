@@ -119,6 +119,15 @@ class Obs_stationModel(BaseModel):
     msl: UnitfulLength
 
 
+class SCSModel(BaseModel):
+    """class describing the accepted input for the variable scs, which included the file with
+    the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type
+    """
+
+    file: str
+    type: str
+
+
 class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
@@ -134,6 +143,7 @@ class SiteModel(BaseModel):
     fiat: FiatModel
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
+    scs: Optional[SCSModel]
 
 
 class ISite(ABC):
