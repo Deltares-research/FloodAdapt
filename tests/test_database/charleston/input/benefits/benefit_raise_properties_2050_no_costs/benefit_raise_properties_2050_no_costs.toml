@@ -1,4 +1,4 @@
-name = "benefit_raise_properties_2050"
+name = "benefit_raise_properties_2050_no_costs"
 description = ""
 event_set = "test_set"
 strategy = "elevate_comb_correct"

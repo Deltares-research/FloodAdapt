@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import geopandas as gpd
@@ -116,6 +117,7 @@ def test_elevate_aggr_area_save():
         test_toml_dict_new = tomli.load(fp)
 
     assert test_toml_dict == test_toml_dict_new
+    test_toml_new.unlink()
 
 
 def test_elevate_polygon_read():

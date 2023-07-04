@@ -49,6 +49,7 @@ indexfilename = "charleston_14m_indices.dat"
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
+damage_unit = "USD"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
