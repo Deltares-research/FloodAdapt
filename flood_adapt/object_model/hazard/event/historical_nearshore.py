@@ -29,7 +29,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
         csv_path = Path(Path(filepath).parents[0], "tide.csv")
-        obj.tide_surge_ts = HistoricalNearshore.read_wl_csv(csv_path)
+        obj.tide_surge_ts = HistoricalNearshore.read_csv(csv_path)
 
         return obj
 

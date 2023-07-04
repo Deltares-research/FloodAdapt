@@ -1,6 +1,6 @@
 name = "ETA"
 long_name = "ETA"
-mode = "single_scenario"
+mode = "single_event"
 template = "Historical_hurricane"
 timing = "historical"
 
