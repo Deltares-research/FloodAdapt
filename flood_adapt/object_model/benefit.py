@@ -9,7 +9,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
-from plotly.subplots import make_subplots
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario

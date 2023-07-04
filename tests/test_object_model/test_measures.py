@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 import geopandas as gpd
