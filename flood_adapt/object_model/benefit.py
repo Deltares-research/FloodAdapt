@@ -9,13 +9,15 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
+from plotly.subplots import make_subplots
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.site import Site
 
 
 class Benefit(IBenefit):
-    """class holding all information related to a benefit analysis"""
+    """Class holding all information related to a benefit analysis"""
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
@@ -30,6 +32,11 @@ class Benefit(IBenefit):
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()
+        # Get monetary units
+        site_obj = Site.load_file(
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        self.unit = site_obj.attrs.fiat.damage_unit
 
     def has_run_check(self):
         """Check if the benefit assessment has already been run"""
@@ -153,30 +160,36 @@ class Benefit(IBenefit):
         cba = cba.interpolate(method="linear")
         # Calculate benefits
         cba["benefits"] = cba["risk_no_measures"] - cba["risk_with_strategy"]
-
+        # Calculate discounted benefits using the provided discount rate
+        cba["benefits_discounted"] = cba["benefits"] / (
+            1 + self.attrs.discount_rate
+        ) ** (cba.index - cba.index[0])
         results = {}
-        # Get net present value of benefits using the provided discount rate
-        results["NPV_benefits"] = np.round(
-            npf.npv(self.attrs.discount_rate, cba["benefits"]), 0
-        )
+        # Get net present value of benefits
+        results["benefits"] = np.round(cba["benefits_discounted"].sum(), 0)
 
         # Only if costs are provided do the full cost-benefit analysis
-        if (self.attrs.implementation_cost is not None) and (
+        cost_calc = (self.attrs.implementation_cost is not None) and (
             self.attrs.annual_maint_cost is not None
-        ):
+        )
+        if cost_calc:
             cba["costs"] = np.nan
             # implementations costs at current year and maintenance from year 1
             cba.loc[year_start, "costs"] = self.attrs.implementation_cost
             cba.loc[cba.index[1:], "costs"] = self.attrs.annual_maint_cost
-
-            results["NPV_costs"] = np.round(
-                npf.npv(self.attrs.discount_rate, cba["costs"]), 0
+            cba["costs_discounted"] = cba["costs"] / (1 + self.attrs.discount_rate) ** (
+                cba.index - cba.index[0]
             )
+            results["costs"] = np.round(cba["costs_discounted"].sum(), 0)
 
             results["BCR"] = np.round(
-                results["NPV_benefits"] / results["NPV_costs"], 2
+                results["benefits"] / results["costs"], 2
             )  # Benefit to Cost Ratio
             cba["profits"] = cba["benefits"] - cba["costs"]
+            cba["profits_discounted"] = cba["profits"] / (
+                1 + self.attrs.discount_rate
+            ) ** (cba.index - cba.index[0])
+            results["NPV"] = np.round(cba["profits_discounted"].sum(), 0)
             results["IRR"] = np.round(
                 npf.irr(cba["profits"]), 3
             )  #  Internal Rate of Return
@@ -202,25 +215,65 @@ class Benefit(IBenefit):
         # Save a plotly graph in an html
         fig = go.Figure()
 
+        # Get only endpoints
+        cba2 = cba.iloc[[0, -1]]
+
+        # Add graph with benefits
         fig.add_trace(
             go.Scatter(
                 x=cba.index,
                 y=cba["benefits"],
                 mode="lines",
                 line_color="black",
-                name="interpolated",
+                name="Interpolated benefits",
             )
         )
-        cba2 = cba.iloc[[0, -1]]
         fig.add_trace(
             go.Scatter(
                 x=cba2.index,
                 y=cba2["benefits"],
                 mode="markers",
                 marker_size=10,
-                name="scenarios",
+                marker_color="rgba(53,217,44,1)",
+                name="Calculated benefits",
             )
         )
+
+        fig.add_trace(
+            go.Scatter(
+                x=cba.index,
+                y=cba["benefits_discounted"],
+                mode="lines",
+                line_color="rgba(35,150,29,1)",
+                name="Discounted benefits",
+            ),
+        )
+        # fig.add_trace(
+        #     go.Scatter(
+        #         x=cba2.index,
+        #         y=cba2["benefits_discounted"],
+        #         mode="markers",
+        #         marker_size=10,
+        #         marker_color="rgba(35,150,29,1)",
+        #         name="Calculated discounted benefits",
+        #     )
+        # )
+
+        fig.add_trace(
+            go.Scatter(
+                x=cba.index,
+                y=cba["benefits_discounted"],
+                mode="none",
+                fill="tozeroy",
+                fillcolor="rgba(35,150,29,0.5)",
+                name="Benefits",
+            )
+        )
+
+        # Update xaxis properties
+        fig.update_xaxes(title_text="Year")
+        # Update yaxis properties
+        fig.update_yaxes(title_text=f"Annual Benefits ({self.unit})")
 
         fig.update_layout(
             autosize=False,
@@ -228,8 +281,6 @@ class Benefit(IBenefit):
             width=800,
             margin={"r": 0, "l": 0, "b": 0, "t": 0},
             font={"size": 12, "color": "black", "family": "Arial"},
-            xaxis_title="Year",
-            yaxis_title="Benefits ($)",
         )
 
         # write html to results folder
