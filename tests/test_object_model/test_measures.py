@@ -220,3 +220,14 @@ def test_green_infra_read():
     )
 
     assert test_geojson.is_file()
+
+
+    # def test_calculate_area():
+    #     test_toml = (
+    #         test_database
+    #         / "charleston"
+    #         / "input"
+    #         / "measures"
+    #         / "green_infra"
+    #         / "green_infra.toml"
+    #     )

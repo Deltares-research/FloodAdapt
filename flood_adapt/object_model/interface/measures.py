@@ -44,6 +44,7 @@ class MeasureModel(BaseModel):
 
     name: str
     long_name: str
+    type: Union[HazardType, ImpactType]
 
 
 class HazardMeasureModel(MeasureModel):
