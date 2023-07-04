@@ -309,7 +309,7 @@ class Hazard:
                     model.add_precip_forcing(
                         timeseries=event_dir.joinpath("rainfall.csv")
                     )
-                elif self.event.attrs.wind.source == "constant":
+                elif self.event.attrs.rainfall.source == "constant":
                     model.add_precip_forcing(
                         const_precip=self.event.attrs.rainfall.constant_intensity.convert(
                             "mm/hr"

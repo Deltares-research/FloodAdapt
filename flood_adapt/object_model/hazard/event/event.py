@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
+import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
 import tomli
@@ -98,7 +99,7 @@ class Event:
                 "timeseries"
                 "."
             )
-        
+
     @staticmethod
     def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
         """Read a timeseries file and return a pd.Dataframe.
