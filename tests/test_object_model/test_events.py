@@ -179,7 +179,7 @@ def test_constant_rainfall():
     event.add_rainfall_ts()
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
-    assert np.abs(event.rain_ts.to_numpy[0][0] - 2) < 0.001
+    assert np.abs(event.rain_ts.to_numpy()[0][0] - 2) < 0.001
 
 
 def test_gaussian_rainfall():
