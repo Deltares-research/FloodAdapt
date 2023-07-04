@@ -53,25 +53,6 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     @staticmethod
-    def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a waterlevel timeseries file and return a pd.Dataframe.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
-        return df
-
-    @staticmethod
     def download_wl_data(
         station_id: int, start_time_str: str, stop_time_str: str
     ) -> pd.DataFrame:

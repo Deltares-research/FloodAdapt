@@ -1,6 +1,7 @@
 import glob
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -97,6 +98,25 @@ class Event:
                 "timeseries"
                 "."
             )
+        
+    @staticmethod
+    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
+        """Read a timeseries file and return a pd.Dataframe.
+
+        Parameters
+        ----------
+        csvpath : Union[str, os.PathLike]
+            path to csv file
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
+        df = pd.read_csv(csvpath, index_col=0, names=[1])
+        df.index.names = ["time"]
+        df.index = pd.to_datetime(df.index)
+        return df
 
     def download_meteo(self, site: ISite, path: Path):
         params = ["wind", "barometric_pressure", "precipitation"]
