@@ -51,6 +51,30 @@ def test_hazard_run_synthetic_discharge():
     test_scenario.direct_impacts.hazard.run_models()
 
 
+def test_preprocess_rainfall_timeseriesfile():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_event_0001_no_measures"
+        / "current_event_0001_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+
+    hazard.preprocess_models()
+
+    assert isinstance(hazard.wl_ts, pd.DataFrame)
+    # assert len(hazard.wl_ts) > 1
+    # assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
+
+
 def test_preprocess_prob_eventset():
     test_toml = (
         test_database

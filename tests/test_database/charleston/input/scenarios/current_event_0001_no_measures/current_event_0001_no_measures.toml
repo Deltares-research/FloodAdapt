@@ -1,0 +1,6 @@
+name = "current_event_0001_no_measures"
+long_name = "current_event_0001_no_measures"
+description = ""
+event = "event_0001"
+projection = "current"
+strategy = "no_measures"
