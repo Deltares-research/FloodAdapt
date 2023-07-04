@@ -3,6 +3,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -70,9 +71,9 @@ def test_preprocess_rainfall_timeseriesfile():
 
     hazard.preprocess_models()
 
-    # assert isinstance(hazard.wl_ts, pd.DataFrame)
-    # assert len(hazard.wl_ts) > 1
-    # assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
+    assert isinstance(hazard.wl_ts, pd.DataFrame)
+    assert len(hazard.wl_ts) > 1
+    assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
 def test_preprocess_prob_eventset():
