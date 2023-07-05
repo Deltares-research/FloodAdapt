@@ -82,7 +82,10 @@ def test_benefit():
         df.to_csv(res_scn_path.joinpath("metrics.csv"), index=False)
 
     api_benefits.run_benefit("benefit_raise_properties_2080", database)
-
+    benefit = api_benefits.get_benefit("benefit_raise_properties_2080", database)
+    assert (
+        len(benefit.results.keys()) == 2
+    )  # check if only benefits and html are produced
     # If the user edits the benefit to add costs
     benefit_dict_new = benefit_dict.copy()
     benefit_dict_new["implementation_cost"] = 30000000
@@ -90,7 +93,9 @@ def test_benefit():
     benefit = api_benefits.create_benefit(benefit_dict_new, database)
     api_benefits.edit_benefit(benefit, database)
     api_benefits.run_benefit("benefit_raise_properties_2080", database)
-
+    benefit = api_benefits.get_benefit("benefit_raise_properties_2080", database)
+    assert "costs" in benefit.results.keys()  # check if costs is in results
+    assert "BCR" in benefit.results.keys()  # check if BCR is in results
     # Delete created files
     scenarios_path = test_database_path.joinpath("charleston", "input", "scenarios")
     path1 = scenarios_path.joinpath("all_projections_test_set_elevate_comb_correct")

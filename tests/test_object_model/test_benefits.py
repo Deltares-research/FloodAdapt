@@ -63,7 +63,7 @@ def test_run_CBA():
     # Test if all scenarios are created
     assert all(benefit.scenarios["scenario created"] != "No")
     # Test that there are scenarios that are not run yet
-    assert sum(benefit.scenarios["scenario run"] == "No") > 0
+    assert sum(~benefit.scenarios["scenario run"]) > 0
 
     with pytest.raises(RuntimeError):
         # Assert error if not yet run
@@ -91,7 +91,7 @@ def test_run_CBA():
 
     benefit.check_scenarios()
     # Test if all scenarios are ^run^
-    assert all(benefit.scenarios["scenario run"] != "No")
+    assert all(benefit.scenarios["scenario run"])
 
     benefit.run_cost_benefit()
 
@@ -131,7 +131,7 @@ def test_run_benefit_analysis():
     # Test if all scenarios are created
     assert all(benefit.scenarios["scenario created"] != "No")
     # Test that there are scenarios that are not run yet
-    assert sum(benefit.scenarios["scenario run"] == "No") > 0
+    assert sum(~benefit.scenarios["scenario run"]) > 0
 
     with pytest.raises(RuntimeError):
         # Assert error if not yet run
@@ -159,7 +159,7 @@ def test_run_benefit_analysis():
 
     benefit.check_scenarios()
     # Test if all scenarios are ^run^
-    assert all(benefit.scenarios["scenario run"] != "No")
+    assert all(benefit.scenarios["scenario run"])
 
     benefit.run_cost_benefit()
 

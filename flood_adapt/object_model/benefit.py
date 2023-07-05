@@ -39,12 +39,18 @@ class Benefit(IBenefit):
 
     def has_run_check(self):
         """Check if the benefit assessment has already been run"""
-        results = self.results_path.joinpath("results.toml")
-        if results.exists():
-            with open(results, mode="rb") as fp:
+        results_toml = self.results_path.joinpath("results.toml")
+        results_csv = self.results_path.joinpath("time_series.csv")
+        results_html = self.results_path.joinpath("benefits.html")
+
+        check = all(
+            result.exists() for result in [results_toml, results_csv, results_html]
+        )
+        if check:
+            with open(results_toml, mode="rb") as fp:
                 self.results = tomli.load(fp)
-            self.results["html"] = str(self.results_path.joinpath("benefits.html"))
-        return results.exists()
+            self.results["html"] = str(results_html)
+        return check
 
     def check_scenarios(self):
         """Check which scenarios are needed for this benefit calculation and if they have already been created"""
@@ -88,7 +94,9 @@ class Benefit(IBenefit):
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scn_dict["long_name"] = scenario
+            scn_dict[
+                "long_name"
+            ] = scenario  # TODO delete this when long_name is not needed
             scenario_obj = Scenario.load_dict(scn_dict, self.database_input_path)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
@@ -96,21 +104,29 @@ class Benefit(IBenefit):
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
                 if created[0].init_object_model().direct_impacts.has_run:
-                    scenarios_calc[scenario]["scenario run"] = "Yes"
+                    scenarios_calc[scenario]["scenario run"] = True
                 else:
-                    scenarios_calc[scenario]["scenario run"] = "No"
+                    scenarios_calc[scenario]["scenario run"] = False
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
-                scenarios_calc[scenario]["scenario run"] = "No"
+                scenarios_calc[scenario]["scenario run"] = False
 
-        self.scenarios = pd.DataFrame(scenarios_calc).T
-
+        df = pd.DataFrame(scenarios_calc).T
+        self.scenarios = df.astype(
+            dtype={
+                "event": "str",
+                "projection": "str",
+                "strategy": "str",
+                "scenario created": "str",
+                "scenario run": bool,
+            }
+        )
         return self.scenarios
 
     def ready_to_run(self):
         """Checks if all the required scenarios have already been run"""
         self.check_scenarios()
-        check = all(self.scenarios["scenario run"] != "No")
+        check = all(self.scenarios["scenario run"])
         return check
 
     def run_cost_benefit(self):
@@ -118,9 +134,7 @@ class Benefit(IBenefit):
 
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
-            scens = self.scenarios["scenario created"][
-                self.scenarios["scenario run"] == "No"
-            ]
+            scens = self.scenarios["scenario created"][self.scenarios["scenario run"]]
             raise RuntimeError(
                 f"Scenarios {', '.join(scens.values)} need to be run before the cost-benefit analysis can be performed"
             )
@@ -149,11 +163,11 @@ class Benefit(IBenefit):
         )
         cba.index.names = ["year"]
 
-        for scen in ["no_measures", "with_strategy"]:
-            cba.loc[year_start, f"risk_{scen}"] = scenarios.loc[
-                f"current_{scen}", "EAD"
+        for strat in ["no_measures", "with_strategy"]:
+            cba.loc[year_start, f"risk_{strat}"] = scenarios.loc[
+                f"current_{strat}", "EAD"
             ]
-            cba.loc[year_end, f"risk_{scen}"] = scenarios.loc[f"future_{scen}", "EAD"]
+            cba.loc[year_end, f"risk_{strat}"] = scenarios.loc[f"future_{strat}", "EAD"]
 
         # Assume linear trend between current and future
         cba = cba.interpolate(method="linear")
