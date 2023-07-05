@@ -1,5 +1,0 @@
-name = "current_prob_event_set_no_measures"
-long_name = "current - prob_event_set - no_measures"
-projection = "current"
-event = "prob_event_set"
-strategy = "no_measures"
