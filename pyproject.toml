@@ -25,7 +25,7 @@ dependencies = [
     "hydromt",
     "numpy",
     "pandas",
-    "pydantic",
+    "pydantic==1.10.9",
     "tomli-w",
     "tomli",
     "plotly",
