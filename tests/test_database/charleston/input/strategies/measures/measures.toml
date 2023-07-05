@@ -1,3 +1,0 @@
-name = "measures"
-long_name = "measures"
-measures = [ "seawall", "levee", "pump", "floodproof", "raise_property_aggregation_area", "buyout",]

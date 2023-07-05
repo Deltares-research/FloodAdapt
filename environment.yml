@@ -24,10 +24,11 @@ dependencies:
   - numpy
   - pandas
   - plotly
-  - pydantic
+  - pydantic=1.10.9
   - pytest
   - python=3.10
   - tomli
   - tomli-w
   - twine
   - census
+  - numpy-financial
