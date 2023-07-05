@@ -1,5 +1,0 @@
-name = "all_projections_extreme12ft_strategy_impact_comb"
-long_name = "all_projections - extreme12ft - strategy_impact_comb"
-projection = "all_projections"
-event = "extreme12ft"
-strategy = "strategy_impact_comb"

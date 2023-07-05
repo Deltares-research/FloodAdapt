@@ -12,10 +12,12 @@ from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
 
+from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
@@ -319,6 +321,11 @@ class Database(IDatabase):
                 / measure.attrs.name
                 / f"{measure.attrs.name}.toml"
             )
+
+    def write_wl_csv(self, event: IEvent, wl_df: pd.DataFrame):
+        wl_df.to_csv(
+            Path(self.input_path, "events", event.attrs.name, "tide.csv"), header=False
+        )
 
     def edit_measure(self, measure: IMeasure):
         """Edits an already existing measure in the database.
@@ -670,7 +677,7 @@ class Database(IDatabase):
             # TODO split this
             text = "scenario" if len(scenarios) == 1 else "scenarios"
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in {text} {scenarios}"
+                f"'{name}' strategy cannot be deleted since it is already used in {text} {scenarios}"
             )
         else:
             strategy_path = self.input_path / "strategies" / name
@@ -713,6 +720,7 @@ class Database(IDatabase):
             raise ValueError(
                 f"'{scenario.attrs.name}' name is already used by another scenario. Choose a different name"
             )
+        # TODO add check to see if a scenario with the same attributes but different name already exists
         else:
             (self.input_path / "scenarios" / scenario.attrs.name).mkdir()
             scenario.save(
@@ -754,11 +762,160 @@ class Database(IDatabase):
         scenario = Scenario.load_file(scenario_path / f"{name}.toml")
         scenario.init_object_model()
         if scenario.direct_impacts.hazard.has_run:
+            # TODO this should be a check were if the scenario is run you get a warning?
             raise ValueError(
                 f"'{name}' scenario cannot be deleted since the hazard model has already run."
             )
         else:
             shutil.rmtree(scenario_path, ignore_errors=True)
+
+    def get_benefit(self, name: str) -> IBenefit:
+        """Get the respective benefit object using the name of the benefit.
+
+        Parameters
+        ----------
+        name : str
+            name of the benefit
+
+        Returns
+        -------
+        IBenefit
+            Benefit object
+        """
+        benefit_path = self.input_path / "benefits" / name / f"{name}.toml"
+        benefit = Benefit.load_file(benefit_path)
+        return benefit
+
+    def save_benefit(self, benefit: IBenefit) -> None:
+        """Saves a benefit object in the database.
+
+        Parameters
+        ----------
+        measure : IBenefit
+            object of scenario type
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use. Names of benefits assessments should be unique.
+        """
+        names = self.get_benefits()["name"]
+        if benefit.attrs.name in names:
+            raise ValueError(
+                f"'{benefit.attrs.name}' name is already used by another benefit. Choose a different name"
+            )
+        elif not all(benefit.scenarios["scenario created"] != "No"):
+            raise ValueError(
+                f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
+            )
+        else:
+            (self.input_path / "benefits" / benefit.attrs.name).mkdir()
+            benefit.save(
+                self.input_path
+                / "benefits"
+                / benefit.attrs.name
+                / f"{benefit.attrs.name}.toml"
+            )
+
+    def edit_benefit(self, benefit: IBenefit):
+        """Edits an already existing benefit in the database.
+
+        Parameters
+        ----------
+        benefit : IBenefit
+            object of one of the benefit types (e.g., IBenefit)
+        """
+        benefit.save(
+            self.input_path
+            / "benefits"
+            / benefit.attrs.name
+            / f"{benefit.attrs.name}.toml"
+        )
+
+        # Delete output if edited
+        output_path = (
+            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+        )
+
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)
+
+    def delete_benefit(self, name: str) -> None:
+        """Deletes an already existing benefit in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the benefit
+
+        Raises
+        ------
+        ValueError
+            Raise error if benefit has already model output
+        """
+        benefit_path = self.input_path / "benefits" / name
+        benefit = Benefit.load_file(benefit_path / f"{name}.toml")
+        shutil.rmtree(benefit_path, ignore_errors=True)
+        # Delete output if edited
+        output_path = (
+            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+        )
+
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)
+
+    def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
+        """Returns a dataframe with the scenarios needed for this benefit assessment run
+
+        Parameters
+        ----------
+        benefit : IBenefit
+        """
+        return benefit.check_scenarios()
+
+    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already
+
+        Parameters
+        ----------
+        benefit : IBenefit
+        """
+        # If the check has not been run yet, do it now
+        if not hasattr(benefit, "scenarios"):
+            benefit.check_scenarios()
+
+        # Iterate through the scenarios needed and create them if not existing
+        for index, row in benefit.scenarios.iterrows():
+            if row["scenario created"] == "No":
+                scenario_dict = {}
+                scenario_dict["event"] = row["event"]
+                scenario_dict["projection"] = row["projection"]
+                scenario_dict["strategy"] = row["strategy"]
+                scenario_dict["name"] = "_".join(
+                    [row["projection"], row["event"], row["strategy"]]
+                )
+                scenario_dict["long_name"] = scenario_dict["name"]
+
+                scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
+
+                self.save_scenario(scenario_obj)
+
+        # Update the scenarios check
+        benefit.check_scenarios()
+
+    def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
+        """Runs a (cost-)benefit analysis.
+
+        Parameters
+        ----------
+        benefit_name : Union[str, list[str]]
+            name(s) of the benefits to run.
+        """
+        if not isinstance(benefit_name, list):
+            benefit_name = [benefit_name]
+        for name in benefit_name:
+            benefit = self.get_benefit(name)
+            benefit.run_cost_benefit()
 
     def update(self) -> None:
         self.projections = self.get_projections()
@@ -766,6 +923,7 @@ class Database(IDatabase):
         self.measures = self.get_measures()
         self.strategies = self.get_strategies()
         self.scenarios = self.get_scenarios()
+        self.benefits = self.get_benefits()
 
     def get_projections(self) -> dict[str, Any]:
         """Returns a dictionary with info on the projections that currently
@@ -854,6 +1012,21 @@ class Database(IDatabase):
         ]
 
         return scenarios
+
+    def get_benefits(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the (cost-)benefit assessments that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'path' and 'last_modification_date' info
+        """
+        benefits = self.get_object_list(object_type="benefits")
+        objects = [Benefit.load_file(path) for path in benefits["path"]]
+        benefits["name"] = [obj.attrs.name for obj in objects]
+
+        return benefits
 
     def get_outputs(self) -> dict[str, Any]:
         all_scenarios = pd.DataFrame(self.get_scenarios())

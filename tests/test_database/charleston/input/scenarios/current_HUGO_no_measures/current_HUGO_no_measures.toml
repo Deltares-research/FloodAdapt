@@ -1,5 +1,0 @@
-name = "current_HUGO_no_measures"
-long_name = "current - HUGO - no_measures"
-projection = "current"
-event = "HUGO"
-strategy = "no_measures"
