@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
+    UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
 )
@@ -77,9 +78,7 @@ class WindModel(BaseModel):
 class RainfallModel(BaseModel):
     source: RainfallSource
     # constant
-    constant_intensity: Optional[
-        float
-    ]  # TODO: add units; intensity is in mm/hr or in/hr
+    constant_intensity: Optional[UnitfulIntensity]
     # timeseries
     rainfall_timeseries_file: Optional[str]
     # shape
@@ -178,6 +177,10 @@ class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
 
 
+class HistoricalOffshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
+
+
 class IEvent(ABC):
     attrs: EventModel
 
@@ -204,3 +207,7 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+
+class IHistoricalOffshore(IEvent):
+    attrs: HistoricalOffshoreModel
