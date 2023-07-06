@@ -295,12 +295,12 @@ def test_scs_rainfall():
     event.attrs.rainfall = RainfallModel(
         source="shape",
         cumulative=UnitfulLength(value=10.0, units="inch"),
-        shape_type="triangle",
+        shape_type="scs",
         shape_start_time=-24,
-        shape_end_time=-20,
-        shape_peak_time=-23,
+        shape_duration=6,
     )
-    event.add_rainfall_ts()
+    scsfile = test_database / "charleston" / "static" / "scs" / "scs_rainfall.csv"
+    event.add_rainfall_ts(scsfile=scsfile, scstype="type_3")
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
     # event.rain_ts.to_csv(
