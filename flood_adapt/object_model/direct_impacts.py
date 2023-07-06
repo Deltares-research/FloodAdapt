@@ -12,6 +12,7 @@ from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import cd
 
 
 class DirectImpacts:
@@ -90,7 +91,7 @@ class DirectImpacts:
     def run_models(self):
         self.preprocess_fiat()
 
-        return_code = self.run_fiat("settings_toml")
+        return_code = self.run_fiat()
 
         # Indicator that direct impacts have run
         if return_code == 0:
@@ -178,19 +179,30 @@ class DirectImpacts:
             else:
                 print("Impact measure type not recognized!")
 
+        # fa.fiat_model.setup_social_vulnerability()
         # Set FIAT hazard
-        # fa.set_hazard(self.hazard)
+        self.hazard.set_sfincs_map_path("single")
+
+        fa.fiat_model.setup_hazard(
+            map_path=self.hazard.sfincs_map_path,
+            mode="single",
+            map_type="water_depth",
+            rp=None,  # change this in new version
+            crs=None,  # change this in new version
+            nodata=-9999,  # change this in new version
+            var="__xarray_dataarray_variable__",
+            chunks="auto",
+            risk_output=False,
+        )
 
         # Save the updated FIAT model
         fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
 
-    def run_fiat(self, settings_toml: str):
-        with open("fiat.log", "w") as f:
+    def run_fiat(self):
+        with cd(self.results_path):
             process = subprocess.run(
-                ["fiat", "run", str(self.results_path / settings_toml)],
-                stdout=f,
-                check=True,
+                ["fiat", "run", "settings.toml"], stdout=subprocess.PIPE
             )
 
             return process.returncode

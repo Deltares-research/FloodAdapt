@@ -9,11 +9,11 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.hazard.utils import cd
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import cd
 
 
 class Hazard:
@@ -39,10 +39,21 @@ class Hazard:
         self.site = Site.load_file(
             database_input_path.parent / "static" / "site" / "site.toml"
         )
+
         self.simulation_path = database_input_path.parent.joinpath(
             "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
         )
+
+        self.set_sfincs_map_path(mode="single")
+
         self.has_run = self.sfincs_has_run_check()
+
+    def set_sfincs_map_path(self, mode: str):
+        if mode == "single":
+            self.sfincs_map_path = self.simulation_path
+
+        elif mode == "risk":
+            self.sfincs_map_path = self.simulation_path.parent
 
     def sfincs_has_run_check(self):
         sfincs_path = self.simulation_path
