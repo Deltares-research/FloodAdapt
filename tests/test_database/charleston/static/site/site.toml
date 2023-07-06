@@ -94,3 +94,7 @@ current_year = 2023
 current_projection = "current"
 baseline_strategy = "no_measures"
 event_set = "test_set"
+
+[scs]
+file = "scs_rainfall.csv"
+type = "type_3"

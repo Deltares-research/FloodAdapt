@@ -28,7 +28,7 @@ class Hazard:
     name: str
     database_input_path: Path
     mode: Mode
-    event_set: list[Event]
+    event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False
@@ -69,7 +69,7 @@ class Hazard:
         elif self.mode == "risk":  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
-            for subevent in self.event_set:
+            for subevent in self.event_list:
                 self.simulation_paths.append(
                     self.database_input_path.parent.joinpath(
                         "output",
@@ -124,14 +124,13 @@ class Hazard:
         )
         # set mode (probabilistic_set or single_event)
         self.mode = Event.get_mode(event_set_path)
+        self.event_set = EventSet.load_file(event_set_path)
         if self.mode == "single_event":
-            event_paths = [event_set_path]
+            self.event_set.event_paths = [event_set_path]
             self.probabilities = [1]
         elif self.mode == "risk":
-            event_paths = []
-            event_set = EventSet.load_file(event_set_path)
-            self.frequencies = event_set.attrs.frequency
-            subevents = event_set.attrs.subevent_name
+            self.event_set.event_paths = []
+            subevents = self.event_set.attrs.subevent_name
             for subevent in subevents:
                 event_path = (
                     self.database_input_path
@@ -140,20 +139,19 @@ class Hazard:
                     / subevent
                     / "{}.toml".format(subevent)
                 )
-                event_paths.append(event_path)
+                self.event_set.event_paths.append(event_path)
 
         # parse event config file to get event template
-        self.event_set = []
-        for event_path in event_paths:
+        self.event_list = []
+        for event_path in self.event_set.event_paths:
             template = Event.get_template(event_path)
             # use event template to get the associated event child class
-            self.event_set.append(
+            self.event_list.append(
                 EventFactory.get_event(template).load_file(event_path)
             )
-        if self.mode == "single_event":
-            self.event = self.event_set[
+            self.event = self.event_list[
                 0
-            ]  # TODO: makes this neater? Might change with the new workflow
+            ]  # set event for single_event to be able to plot wl etc
 
     def set_physical_projection(self, projection: str) -> None:
         projection_path = (
@@ -175,18 +173,19 @@ class Hazard:
         """adds total water level timeseries to hazard object"""
         # generating total time series made of tide, slr and water level offset,
         # only for Synthetic and historical from nearshore
-        if self.event.attrs.template == "Synthetic":
-            self.event.add_tide_and_surge_ts()
-            self.wl_ts = self.event.tide_surge_ts
-        elif self.event.attrs.template == "Historical_nearshore":
-            wl_df = self.event.tide_surge_ts
-            self.wl_ts = wl_df
-        # In both cases add the slr and offset
-        self.wl_ts[1] = (
-            self.wl_ts[1]
-            + self.event.attrs.water_level_offset.convert("meters")
-            + self.physical_projection.attrs.sea_level_rise.convert("meters")
-        )
+        for ii, event in enumerate(self.event_list):
+            if self.event.attrs.template == "Synthetic":
+                self.event.add_tide_and_surge_ts()
+                self.wl_ts = self.event.tide_surge_ts
+            elif self.event.attrs.template == "Historical_nearshore":
+                wl_df = self.event.tide_surge_ts
+                self.wl_ts = wl_df
+            # In both cases add the slr and offset
+            self.wl_ts[1] = (
+                self.wl_ts[1]
+                + self.event.attrs.water_level_offset.convert("meters")
+                + self.physical_projection.attrs.sea_level_rise.convert("meters")
+            )
         return self
 
     def add_discharge(self):
@@ -259,10 +258,11 @@ class Hazard:
         path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
-        event_dir = self.database_input_path / "events" / self.event.attrs.name
 
-        for ii, event in enumerate(self.event_set):
+        for ii, event in enumerate(self.event_list):
             self.event = event  # set current event to ii-th event in event set
+            event_dir = self.event_set.event_paths[ii].parent
+
             # Load overland sfincs model
             model = SfincsAdapter(model_root=path_in)
 
@@ -298,8 +298,24 @@ class Hazard:
             if self.event.attrs.rainfall.source == "map":
                 model.add_precip_forcing_from_grid(ds=ds)
             elif self.event.attrs.rainfall.source == "timeseries":
-                model.add_precip_forcing(timeseries=event_dir.joinpath("rainfall.csv"))
-            elif self.event.attrs.wind.source == "constant":
+                model.add_precip_forcing(
+                    precip=event_dir.joinpath(self.event.attrs.rainfall.timeseries_file)
+                )
+            elif self.event.attrs.rainfall.source == "constant":
+                model.add_precip_forcing(
+                    const_precip=self.event.attrs.rainfall.constant_intensity.convert(
+                        "mm/hr"
+                    )
+                )
+            elif self.event.attrs.rainfall.source == "shape":
+                if self.event.attrs.rainfall.shape_type == "scs":
+                    scsfile = self.database_input_path.parent.joinpath(
+                        "static", "scs", self.site.scs.file
+                    )
+                    scstype = self.site.scs.type
+                    self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
+                else:
+                    self.event.add_rainfall_ts()
                 model.add_precip_forcing(
                     const_precip=self.event.attrs.rainfall.constant_intensity.convert(
                         "mm/hr"
@@ -388,14 +404,14 @@ class Hazard:
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
             return NotImplemented
-        test1 = self.event_set == other.event_set  # TODO verify this works
+        test1 = self.event_list == other.event_list
         test2 = self.physical_projection == other.physical_projection
         test3 = self.hazard_strategy == other.hazard_strategy
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
         floodmap_rp = self.site.attrs.risk.return_periods
-        frequencies = self.frequencies
+        frequencies = self.event_set.attrs.frequency
 
         zs_maps = []
         for ii, simulation_path in enumerate(self.simulation_paths):
