@@ -1029,6 +1029,13 @@ class Database(IDatabase):
         return benefits
 
     def get_outputs(self) -> dict[str, Any]:
+        """Returns a dictionary of the already run scenarios
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+        """
         all_scenarios = pd.DataFrame(self.get_scenarios())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
