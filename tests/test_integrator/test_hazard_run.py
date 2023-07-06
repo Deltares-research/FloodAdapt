@@ -86,7 +86,7 @@ def test_preprocess_rainfall_timeseriesfile():
     hazard.preprocess_models()
 
     prcp_file = hazard.simulation_paths[0].joinpath("sfincs.prcp")
-    assert prcp_file.isfile()
+    assert prcp_file.is_file()
 
     # Delete rainfall file that was created for the test
     os.remove(event_path.joinpath("rain.csv"))
