@@ -56,6 +56,33 @@ class Event:
     def timeseries_shape(
         shape_type: str, duration: float, peak: float, **kwargs
     ) -> np.ndarray:
+        """create generic function to create shape timeseries for rainfall and discharge
+
+        Parameters
+        ----------
+        shape_type : str
+            type of the shape: accepted types are gaussian, block or triangle
+        duration : float
+            total duration (in seconds) of the event
+        peak : float
+            shape_peak value
+
+        Optional Parameters (depending on shape type)
+        -------------------
+        time_shift : float
+            time (in seconds) between start of event and peak of the shape (only for gaussian and triangle)
+        start_shape : float
+            time (in seconds) between start of event and start of shape (only for triangle and block)
+        end_shape : float
+            time (in seconds) between start of event and end of shape (only for triangle and block)
+        shape_duration : float
+            duration (in seconds) of the shape (only for gaussian)
+
+        Returns
+        -------
+        np.ndarray
+            timeseries of the shape, corresponding to a time_vec with dt=600 seconds
+        """
         time_shift = kwargs.get("time_shift", None)
         start_shape = kwargs.get("start_shape", None)
         end_shape = kwargs.get("end_shape", None)

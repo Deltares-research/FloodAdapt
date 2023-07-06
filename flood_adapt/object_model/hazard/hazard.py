@@ -310,7 +310,7 @@ class Hazard:
             elif self.event.attrs.rainfall.source == "shape":
                 if self.event.attrs.rainfall.shape_type == "scs":
                     scsfile = self.database_input_path.parent.joinpath(
-                        "static", "site", self.site.scs.file
+                        "static", "scs", self.site.scs.file
                     )
                     scstype = self.site.scs.type
                     self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
