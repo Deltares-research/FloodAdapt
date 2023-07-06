@@ -337,7 +337,9 @@ class Event:
                 )
                 rainfall = rain_interp * cumulative / np.trapz(rain_interp, tt / 3600)
 
-            df = pd.DataFrame.from_dict({"time": time_vec, "intensity": rainfall})
+            df = pd.DataFrame.from_dict(
+                {"time": time_vec, "intensity": rainfall.round(decimals=2)}
+            )
             df = df.set_index("time")
             self.rain_ts = df
             return self

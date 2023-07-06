@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -43,6 +44,11 @@ def test_strategy():
 
     # Change name to something new
     test_dict["name"] = "test1"
+    # delete an old one if it already exists
+    if database.input_path.joinpath("strategies", test_dict["name"]).is_dir():
+        shutil.rmtree(database.input_path.joinpath("strategies", test_dict["name"]))
+
+    # create new one
     strategy = api_strategies.create_strategy(test_dict, database)
     # If the name is not used before the measure is save in the database
     api_strategies.save_strategy(strategy, database)
