@@ -16,6 +16,7 @@ from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
+    Mode,
     RiverModel,
     TimeModel,
     WindModel,
@@ -43,7 +44,7 @@ class Event:
         return obj.attrs.template
 
     @staticmethod
-    def get_mode(filepath: Path) -> str:
+    def get_mode(filepath: Path) -> Mode:
         """get mode of the event (single or risk) from toml file"""
 
         with open(filepath, mode="rb") as fp:
@@ -364,7 +365,7 @@ class Event:
 
     @staticmethod
     def read_timeseries_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a rqainfall or discharge, which have a datetime and one value column  timeseries file and return a pd.Dataframe. #TODO: make one for wind, which has two value columns
+        """Read a rainfall or discharge, which have a datetime and one value column  timeseries file and return a pd.Dataframe. #TODO: make one for wind, which has two value columns
 
         Parameters
         ----------
