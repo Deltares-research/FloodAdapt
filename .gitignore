@@ -171,4 +171,3 @@ tests/test_database/charleston/static/templates/overland/
 tests/test_database/charleston/input/measures/raise_property_aggregation_area/raise_property_aggregation_area_new.toml
 tests/system/sfincs/
 database
-tests/test_database/charleston/input/events/

@@ -277,3 +277,36 @@ def test_triangle_rainfall():
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
     cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
+
+
+def test_scs_rainfall():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.rainfall = RainfallModel(
+        source="shape",
+        cumulative=UnitfulLength(value=10.0, units="inch"),
+        shape_type="triangle",
+        shape_start_time=-24,
+        shape_end_time=-20,
+        shape_peak_time=-23,
+    )
+    event.add_rainfall_ts()
+    assert isinstance(event.rain_ts, pd.DataFrame)
+    assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
+    # event.rain_ts.to_csv(
+    #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    # )
+    dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
+    cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
+    assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
