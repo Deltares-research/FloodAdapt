@@ -16,9 +16,9 @@ from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
+    Mode,
     RiverModel,
     TimeModel,
-    WindModel,
 )
 from flood_adapt.object_model.interface.site import ISite
 
@@ -27,10 +27,6 @@ class Event:
     """abstract parent class for all event types"""
 
     attrs: EventModel
-
-    @staticmethod
-    def generate_timeseries():
-        ...
 
     @staticmethod
     def get_template(filepath: Path):
@@ -43,7 +39,7 @@ class Event:
         return obj.attrs.template
 
     @staticmethod
-    def get_mode(filepath: Path) -> str:
+    def get_mode(filepath: Path) -> Mode:
         """get mode of the event (single or risk) from toml file"""
 
         with open(filepath, mode="rb") as fp:
@@ -64,7 +60,7 @@ class Event:
             ts = peak * np.exp(-(((tt - time_shift) / (0.25 * shape_duration)) ** 2))
         elif shape_type == "block":
             ts = np.where((tt >= start_shape), peak, 0)
-            ts = np.where((tt >= end_shape), 0, ts)
+            ts = np.where((tt > end_shape), 0, ts)
         elif shape_type == "triangle":
             tt_interp = [
                 start_shape,
@@ -74,54 +70,6 @@ class Event:
             value_interp = [0, peak, 0]
             ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
         return ts
-
-    @staticmethod
-    def generate_dis_ts(time: TimeModel, river: RiverModel) -> pd.DataFrame:
-        # generating time series of constant river flow
-        # TODO: handle multiple rivers (add as additional columns in dataframe)
-        tstart = datetime.strptime(time.start_time, "%Y%m%d %H%M%S")
-        tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
-        duration = (tstop - tstart).total_seconds()
-        if river.source == "constant":
-            dis = river.constant_discharge.convert("m3/s") * np.array([1, 1])
-            time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
-            df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], 1: dis})
-            df = df.set_index("time")
-            return df
-        elif river.source == "timeseries":
-            raise NotImplementedError
-        elif river.source == "shape":
-            raise NotImplementedError
-        else:
-            raise ValueError(
-                "A time series can only be generated for river sources " "constant",
-                " or " "timeseries or shape if Synthetic" ".",
-            )
-
-    @staticmethod
-    def generate_wind_ts(time: TimeModel, wind: WindModel) -> pd.DataFrame:
-        tstart = datetime.strptime(time.start_time, "%Y%m%d %H%M%S")
-        tstop = datetime.strptime(time.end_time, "%Y%m%d %H%M%S")
-        duration = (tstop - tstart).total_seconds()
-        if wind.source == "constant":
-            vmag = wind.constant_speed.convert("m/s") * np.array([1, 1])
-            vdir = wind.constant_direction.value * np.array([1, 1])
-            time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
-            df = pd.DataFrame.from_dict(
-                {"time": time_vec[[0, -1]], "vmag": vmag, "vdir": vdir}
-            )
-            df = df.set_index("time")
-            return df
-        elif wind.source == "timeseries":
-            raise NotImplementedError
-        else:
-            raise ValueError(
-                "A time series can only be generated for wind sources "
-                "constant"
-                " or "
-                "timeseries"
-                "."
-            )
 
     def download_meteo(self, site: ISite, path: Path):
         params = ["wind", "barometric_pressure", "precipitation"]
@@ -185,38 +133,52 @@ class Event:
             updated object with wind timeseries added in pf.DataFrame format
         """
         # generating time series of constant discahrge
-        # TODO: add for loop to handle multiple rivers
+        # TODO: add for loop to handle multiple rivers (or none)
+
+        tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
+        tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+        duration = (tstop - tstart).total_seconds()
+
         if self.attrs.river.source == "constant":
-            df = Event.generate_dis_ts(self.attrs.time, self.attrs.river)
+            dis = self.attrs.river.constant_discharge.convert("m3/s") * np.array([1, 1])
+            time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
+            df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], 1: dis})
+            df = df.set_index("time")
             self.dis_ts = df
             return self
         elif self.attrs.river.source == "shape":
-            duration = (
-                self.attrs.time.duration_before_t0 + self.attrs.time.duration_after_t0
-            ) * 3600
-            time_shift = (
-                self.attrs.time.duration_before_t0 + self.attrs.river.shape_peak_time
-            ) * 3600
-            start_shape = (
-                self.attrs.time.duration_before_t0
-                + self.attrs.river.shape_peak_time
-                + self.attrs.river.shape_start_time
-            ) * 3600
-            end_shape = (
-                self.attrs.time.duration_before_t0
-                + self.attrs.river.shape_peak_time
-                + self.attrs.river.shape_end_time
-            ) * 3600
             # subtract base discharge from peak
-            river = self.timeseries_shape(
-                self.attrs.river.shape_type,
-                duration,
-                self.attrs.river.shape_peak.convert("m3/s")
-                - self.attrs.river.base_discharge.convert("m3/s"),
-                time_shift=time_shift,
-                start_shape=start_shape,
-                end_shape=end_shape,
-            )
+            peak = self.attrs.river.shape_peak.convert(
+                "m3/s"
+            ) - self.attrs.river.base_discharge.convert("m3/s")
+            if self.attrs.river.shape_type == "gaussian":
+                shape_duration = 3600 * self.attrs.river.shape_duration
+                time_shift = (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.river.shape_peak_time
+                ) * 3600
+                river = self.timeseries_shape(
+                    "gaussian",
+                    duration,
+                    peak,
+                    shape_duration=shape_duration,
+                    time_shift=time_shift,
+                )
+            elif self.attrs.river.shape_type == "block":
+                start_shape = 3600 * (
+                    self.attrs.time.duration_before_t0
+                    + self.attrs.river.shape_start_time
+                )
+                end_shape = 3600 * (
+                    self.attrs.time.duration_before_t0 + self.attrs.river.shape_end_time
+                )
+                river = self.timeseries_shape(
+                    "block",
+                    duration,
+                    peak,
+                    start_shape=start_shape,
+                    end_shape=end_shape,
+                )
             # add base discharge to timeseries
             river += self.attrs.river.base_discharge.convert("m3/s")
             # save to object with pandas daterange
@@ -225,7 +187,13 @@ class Event:
             )
             df = pd.DataFrame.from_dict({"time": time, 1: river})
             df = df.set_index("time")
-            self.dis_ts = df
+            self.dis_ts = df.round(decimals=2)
+            return self
+        elif (
+            self.attrs.river.source == "timeseries"
+        ):  # TODO: check with multiple rivers
+            df = self.read_timeseries_csv(self.attrs.river.timeseries_file)
+            self.rain_ts = df
             return self
 
     def add_rainfall_ts(self, **kwargs):
@@ -344,12 +312,12 @@ class Event:
             self.rain_ts = df
             return self
         elif self.attrs.rainfall.source == "timeseries":
-            df = self.read_timeseries_csv(self.attrs.rainfall.rainfall_timeseries_file)
+            df = self.read_timeseries_csv(self.attrs.rainfall.timeseries_file)
             self.rain_ts = df
             return self
 
     def add_wind_ts(self):
-        """adds wind it timeseries to event object
+        """adds constant wind or timeseries from filw to event object
 
         Returns
         -------
@@ -358,8 +326,21 @@ class Event:
         """
         # generating time series of constant wind
         if self.attrs.wind.source == "constant":
-            df = Event.generate_wind_ts(self.attrs.time, self.attrs.wind)
+            tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
+            tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+            duration = (tstop - tstart).total_seconds()
+            vmag = self.attrs.wind.constant_speed.convert("m/s") * np.array([1, 1])
+            vdir = self.attrs.wind.constant_direction.value * np.array([1, 1])
+            time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
+            df = pd.DataFrame.from_dict(
+                {"time": time_vec[[0, -1]], "vmag": vmag, "vdir": vdir}
+            )
+            df = df.set_index("time")
             self.wind_ts = df
+            return self
+        elif self.attrs.wind.source == "timeseries":
+            df = self.read_timeseries_csv(self.attrs.wind.timeseries_file)
+            self.rain_ts = df
             return self
 
     @staticmethod
