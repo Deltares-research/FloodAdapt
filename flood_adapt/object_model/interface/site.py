@@ -152,7 +152,7 @@ class SiteModel(BaseModel):
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
     benefits: BenefitsModel
-    scs: Optional[SCSModel]
+    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
 
 
 class ISite(ABC):
