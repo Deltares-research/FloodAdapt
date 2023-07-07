@@ -116,12 +116,10 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             tc = self.translate_tc_track(tc=tc, site=site)
 
         # Location of spw file
-        filename = f"{tc.name}.spw"
+        filename = "hurricane.spw"
         spw_file = model_dir.joinpath(filename)
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
-
-        return filename
 
     def translate_tc_track(self, tc: TropicalCyclone, site: Site):
         # First convert geodataframe to the local coordinate system

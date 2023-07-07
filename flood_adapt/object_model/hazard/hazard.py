@@ -268,9 +268,6 @@ class Hazard:
             # Check if path_out exists
             if os.path.exists(self.simulation_paths[ii].parent):
                 shutil.rmtree(self.simulation_paths[ii].parent)
-            # Create folders for offshore model
-            os.mkdir(self.simulation_paths[ii].parent)
-            os.mkdir(self.simulation_paths[ii])
 
             # Load overland sfincs model
             model = SfincsAdapter(model_root=path_in)
@@ -345,11 +342,7 @@ class Hazard:
                     )
             else:
                 # Copy spw file also to nearshore folder
-                spw_name = self.event.attrs.track_name + ".spw"
-                shutil.copy2(
-                    self.simulation_paths_offshore[ii].joinpath(spw_name),
-                    self.simulation_paths[ii].joinpath(spw_name),
-                )
+                spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
 
             # Add measures if included
@@ -365,6 +358,13 @@ class Hazard:
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
+
+            #Write spw file to overland folder
+            if self.event.attrs.template == "Historical_hurricane":
+                shutil.copy2(
+                        self.simulation_paths_offshore[ii].joinpath(spw_name),
+                        self.simulation_paths[ii].joinpath(spw_name),
+                    )
 
     def run_offshore_model(self, ds: xr.DataArray, ii: int):
         """Run offshore model to obtain water levels for boundary condition of the nearshore model
@@ -409,14 +409,18 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
         elif self.event.attrs.template == "Historical_hurricane":
-            offshore_model.add_spw_forcing(
-                historical_hurricane=self.event,
-                database_path=base_path,
-                model_dir=self.simulation_paths_offshore[ii],
-            )
+            spw_name = "hurricane.spw"
+            offshore_model.set_config_spw(spw_name=spw_name)
 
         # write sfincs model in output destination
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
+
+        if self.event.attrs.template == "Historical_hurricane":
+            offshore_model.add_spw_forcing(
+                    historical_hurricane=self.event,
+                    database_path=base_path,
+                    model_dir=self.simulation_paths_offshore[ii],
+                )
 
         # Run the actual SFINCS model
         self.run_sfincs_offshore()

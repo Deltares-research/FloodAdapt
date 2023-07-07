@@ -288,10 +288,9 @@ class SfincsAdapter:
             Output path of the model
         """
 
-        spw_name = historical_hurricane.make_spw_file(
+        historical_hurricane.make_spw_file(
             database_path=database_path, model_dir=model_dir
         )
-        self.set_config_spw(spw_name)
 
     def set_config_spw(self, spw_name: str):
         self.sf_model.set_config("spwfile", spw_name)
