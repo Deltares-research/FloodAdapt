@@ -1,4 +1,5 @@
 import os
+import glob
 import unittest
 from datetime import datetime
 from pathlib import Path
@@ -258,6 +259,13 @@ def test_download_meteo():
     gfs_conus = kingTide.download_meteo(site=site, path=path)
 
     assert gfs_conus
+
+    # Delete files
+    file_pattern = os.path.join(path, '*.nc')
+    file_list = glob.glob(file_pattern)
+
+    for file_path in file_list:
+        os.remove(file_path)    
 
 
 def test_download_wl_timeseries():

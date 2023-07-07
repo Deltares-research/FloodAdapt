@@ -10,16 +10,13 @@ units = "feet"
 
 [time]
 start_time = "20211104 000000"
-end_time = "20211109 000000"
+end_time = "20211105 000000"
 
 [surge]
 source = "none"
 
 [tide]
 source = "timeseries"
-
-[surge]
-source = "none"
 
 [wind]
 source = "map"

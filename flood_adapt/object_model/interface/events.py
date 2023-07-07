@@ -143,6 +143,16 @@ class SurgeModel(BaseModel):
     shape_peak_time: Optional[float]
     shape_peak: Optional[UnitfulLength]
 
+class TranslationModel(BaseModel):
+    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
+
+    eastwest_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+    northsouth_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+
 
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""

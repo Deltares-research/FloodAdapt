@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from typing import Optional, Union
 
@@ -253,6 +254,7 @@ class SfincsAdapter:
         Args:
             path_out (Path): new root of sfincs model
         """
+
         # Change model root to new folder
         self.sf_model.set_root(path_out, mode="w+")
 

@@ -124,7 +124,7 @@ def test_scs_rainfall():
     )
 
     scsfile = hazard.database_input_path.parent.joinpath(
-        "static", "site", hazard.site.attrs.scs.file
+        "static", "scs", hazard.site.attrs.scs.file
     )
     scstype = hazard.site.attrs.scs.type
     hazard.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)

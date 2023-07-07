@@ -265,7 +265,9 @@ class Hazard:
             self.event = event  # set current event to ii-th event in event set
             event_dir = self.event_set.event_paths[ii].parent
 
-
+            # Check if path_out exists
+            if os.path.exists(self.simulation_paths[ii].parent):
+                shutil.rmtree(self.simulation_paths[ii].parent)
             # Create folders for offshore model
             os.mkdir(self.simulation_paths[ii].parent)
             os.mkdir(self.simulation_paths[ii])
@@ -302,32 +304,34 @@ class Hazard:
             model.add_dis_bc(self.dis_ts)
 
             # Generate and add rainfall boundary condition
-            if self.event.attrs.rainfall.source == "map":
-                model.add_precip_forcing_from_grid(ds=ds)
-            elif self.event.attrs.rainfall.source == "timeseries":
-                model.add_precip_forcing(
-                    precip=event_dir.joinpath(self.event.attrs.rainfall.timeseries_file)
-                )
-            elif self.event.attrs.rainfall.source == "constant":
-                model.add_precip_forcing(
-                    const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                        "mm/hr"
+
+            if self.event.attrs.template != "Historical_hurricane":
+                if self.event.attrs.rainfall.source == "map":
+                    model.add_precip_forcing_from_grid(ds=ds)
+                elif self.event.attrs.rainfall.source == "timeseries":
+                    model.add_precip_forcing(
+                        timeseries=event_dir.joinpath(self.event.attrs.rainfall.timeseries_file)
                     )
-                )
-            elif self.event.attrs.rainfall.source == "shape":
-                if self.event.attrs.rainfall.shape_type == "scs":
-                    scsfile = self.database_input_path.parent.joinpath(
-                        "static", "scs", self.site.scs.file
+                elif self.event.attrs.rainfall.source == "constant":
+                    model.add_precip_forcing(
+                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
+                            "mm/hr"
+                        )
                     )
-                    scstype = self.site.scs.type
-                    self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
-                else:
-                    self.event.add_rainfall_ts()
-                model.add_precip_forcing(
-                    const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                        "mm/hr"
+                elif self.event.attrs.rainfall.source == "shape":
+                    if self.event.attrs.rainfall.shape_type == "scs":
+                        scsfile = self.database_input_path.parent.joinpath(
+                            "static", "scs", self.site.scs.file
+                        )
+                        scstype = self.site.scs.type
+                        self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
+                    else:
+                        self.event.add_rainfall_ts()
+                    model.add_precip_forcing(
+                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
+                            "mm/hr"
+                        )
                     )
-                )
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
