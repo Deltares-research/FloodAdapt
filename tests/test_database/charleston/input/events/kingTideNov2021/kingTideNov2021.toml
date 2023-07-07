@@ -12,6 +12,9 @@ units = "feet"
 start_time = "20211104 000000"
 end_time = "20211109 000000"
 
+[surge]
+source = "none"
+
 [tide]
 source = "timeseries"
 

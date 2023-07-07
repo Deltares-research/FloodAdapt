@@ -1,8 +1,10 @@
 import filecmp
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -49,6 +51,45 @@ def test_hazard_run_synthetic_discharge():
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
+
+
+def test_preprocess_rainfall_timeseriesfile():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+    event_path = test_database.joinpath("charleston", "input", "events", "extreme12ft")
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+    hazard.event.attrs.rainfall.source = "timeseries"
+    hazard.event.attrs.rainfall.timeseries_file = "rain.csv"
+
+    tt = pd.date_range(
+        start=hazard.event.attrs.time.start_time,
+        end=hazard.event.attrs.time.end_time,
+        freq="1H",
+    )
+    rain = 100 * np.exp(-(((np.arange(0, len(tt), 1) - 24) / (0.25 * 12)) ** 2)).round(
+        decimals=2
+    )
+    df = pd.DataFrame(index=tt, data=rain)
+    df.to_csv(event_path.joinpath("rain.csv"))
+
+    hazard.preprocess_models()
+
+    prcp_file = hazard.simulation_paths[0].joinpath("sfincs.precip")
+    assert prcp_file.is_file()
+
+    # Delete rainfall file that was created for the test
+    os.remove(event_path.joinpath("rain.csv"))
 
 
 def test_preprocess_prob_eventset():
@@ -134,9 +175,9 @@ def test_run_prob_eventset():
     assert zs_file2.is_file()
 
 
-# @pytest.mark.skip(
-#     reason="Need to run models first (see above) but that takes a couple of minutes"
-# )
+@pytest.mark.skip(
+    reason="Need to run models first (see above) but that takes a couple of minutes"
+)
 def test_rp_floodmap_calculation():
     test_toml = (
         test_database

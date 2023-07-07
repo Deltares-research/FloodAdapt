@@ -65,6 +65,7 @@ class ShapeType(str, Enum):
     gaussian = "gaussian"
     block = "block"
     triangle = "triangle"
+    scs = "scs"
 
 
 class WindModel(BaseModel):
@@ -73,7 +74,7 @@ class WindModel(BaseModel):
     constant_speed: Optional[UnitfulVelocity]
     constant_direction: Optional[UnitfulDirection]
     # timeseries
-    wind_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
 
 
 class RainfallModel(BaseModel):
@@ -81,7 +82,7 @@ class RainfallModel(BaseModel):
     # constant
     constant_intensity: Optional[UnitfulIntensity]
     # timeseries
-    rainfall_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     cumulative: Optional[UnitfulLength]
@@ -95,6 +96,8 @@ class RiverModel(BaseModel):
     source: RiverSource
     # constant
     constant_discharge: Optional[UnitfulDischarge]
+    # timeseries
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     base_discharge: Optional[UnitfulDischarge]
@@ -158,17 +161,6 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
-class TranslationModel(BaseModel):
-    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
-
-    eastwest_translation: UnitfulLength = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-    northsouth_translation: UnitfulLength = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-
-
 class EventSetModel(
     BaseModel
 ):  # add WindModel etc as this is shared among all? templates
@@ -177,8 +169,8 @@ class EventSetModel(
     name: str
     long_name: str
     mode: Mode
-    subevent_name: list[str]
-    frequency: list[float]
+    subevent_name: Optional[list[str]]
+    frequency: Optional[list[float]]
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
