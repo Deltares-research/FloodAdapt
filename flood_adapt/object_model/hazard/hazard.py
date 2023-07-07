@@ -491,13 +491,19 @@ class Hazard:
             zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
             zs_rp_maps.append(zs_rp_da.unstack())
 
+            # #create single nc
+            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
+            zs_rp_single = zs_rp_single.rio.write_crs(zsmax.raster.crs, inplace=True)
+            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            fn_rp_test = self.simulation_paths[0].parent.parent.joinpath("RP=" + str(rp)+"_maps.nc")
+            zs_rp_single.to_netcdf(fn_rp_test)
+
 
         # write netcdf with water level, add new dimension for rp
         zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        zs_rp = zs_rp.rio.write_crs("epsg:26917", inplace=True)
-        zs_rp = zs_rp.to_dataset(name="risk_maps")
-
-        fn_rp = self.simulation_paths[0].parent.parent.joinpath("rp_water_level.nc")
+        zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
+        zs_rp = zs_rp.to_dataset(name="risk_map")
+        fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
         zs_rp.to_netcdf(fn_rp)
 
     def calculate_floodfrequency_map(self):
