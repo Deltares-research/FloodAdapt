@@ -93,6 +93,14 @@ def plot_wl(
     return database.plot_wl(event, input_wl_df)
 
 
+def plot_river(event: IEvent, database: IDatabase) -> str:
+    return database.plot_river(event)
+
+
+def plot_rainfall(event: IEvent, database: IDatabase) -> str:
+    return database.plot_rainfall(event)
+
+
 # def get_event(name: str) -> dict():  # get attributes
 #     pass
 

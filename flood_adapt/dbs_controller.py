@@ -252,6 +252,66 @@ class Database(IDatabase):
                 "Plotting only available for Synthetic and Historical Nearshore event."
             )
 
+    def plot_river(self, event: IEvent) -> str: # I think we need a separate function here when we also want to plot multiple rivers
+        if (
+            event.attrs.river.source == "shape"
+            or event.attrs.river.source == "timeseries"
+        ):
+            temp_event = EventFactory.get_event(event).load_dict(event)
+            temp_event.add_dis_ts()
+            df = temp_event.dis_ts
+
+            # convert to units used in GUI
+            df["Time"] = df.index
+            current_units = UnitfulLength(
+                value=float(df.iloc[0, 0]), units="m3/s"
+            )
+            gui_units = self.site.attrs.gui.default_length_units
+            gui_units = current_units.convert(gui_units)
+            if current_units.value == 0:
+                conversion_factor = 1
+            else:
+                conversion_factor = gui_units / current_units.value
+            df[1] = conversion_factor * df[1]
+            df = df.rename(
+                columns={1: f"River discharge [{gui_units}]"}
+            )
+
+            # Plot actual thing
+            fig = px.line(
+                df,
+                x="Time",
+                y=f"River discharge [{gui_units}]",
+                labels={self.site.attrs.river.name: self.site.attrs.river.name}
+            )
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and shape type river discharge."
+            )
+
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
         This should only be the buildings excluding any other types (e.g., roads)

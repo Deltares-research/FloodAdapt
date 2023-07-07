@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
+import pandas as pd
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -36,6 +37,18 @@ class IDatabase(ABC):
 
     @abstractmethod
     def plot_slr_scenarios(self) -> str:
+        ...
+
+    @abstractmethod
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+        ...
+
+    @abstractmethod
+    def plot_river(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
+    def plot_rainfall(self, event: IEvent) -> str:
         ...
 
     @abstractmethod
