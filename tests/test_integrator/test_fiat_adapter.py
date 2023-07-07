@@ -35,6 +35,7 @@ def test_fiat_adapter_no_measures():
     test_scenario.init_object_model()
     # TODO: Hazard class should check if the hazard simulation has already been run when initialized
     test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
+    test_scenario.direct_impacts.hazard.set_sfincs_map_path("single_scenario")
     test_scenario.direct_impacts.run_models()
 
     exposure_scenario = pd.read_csv(

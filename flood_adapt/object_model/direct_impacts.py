@@ -181,16 +181,15 @@ class DirectImpacts:
 
         # fa.fiat_model.setup_social_vulnerability()
         # Set FIAT hazard
-        self.hazard.set_sfincs_map_path("single")
 
         fa.fiat_model.setup_hazard(
             map_path=self.hazard.sfincs_map_path,
-            mode="single",
+            mode=self.hazard.event_mode,
             map_type="water_depth",
             rp=None,  # change this in new version
             crs=None,  # change this in new version
             nodata=-9999,  # change this in new version
-            var="__xarray_dataarray_variable__",
+            var="zsmax",
             chunks="auto",
             risk_output=False,
         )

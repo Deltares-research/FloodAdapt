@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
@@ -31,6 +32,7 @@ class Hazard:
     has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        self._mode: Mode
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.set_event(scenario.event)
@@ -44,15 +46,23 @@ class Hazard:
             "output", "simulations", self.name, self.site.attrs.sfincs.overland_model
         )
 
-        self.set_sfincs_map_path(mode="single")
+        self.set_sfincs_map_path(mode=self.event_mode)
 
         self.has_run = self.sfincs_has_run_check()
 
-    def set_sfincs_map_path(self, mode: str):
-        if mode == "single":
+    @property
+    def event_mode(self):
+        return self._mode
+
+    @event_mode.setter
+    def event_mode(self, mode: Mode):
+        self._mode = mode
+
+    def set_sfincs_map_path(self, mode: Mode):
+        if mode == "single_scenario":
             self.sfincs_map_path = self.simulation_path
 
-        elif mode == "risk":
+        elif mode == "probabilistic_set":
             self.sfincs_map_path = self.simulation_path.parent
 
     def sfincs_has_run_check(self):
@@ -81,13 +91,13 @@ class Hazard:
             self.database_input_path / "events" / event / "{}.toml".format(event)
         )
         # set mode (probabilistic_set or single_scenario)
-        mode = Event.get_mode(event_path)
-        if mode == "single_scenario":
+        self.event_mode = Event.get_mode(event_path)
+        if self.event_mode == "single_scenario":
             # parse event config file to get event template
             template = Event.get_template(event_path)
             # use event template to get the associated event child class
             self.event = EventFactory.get_event(template).load_file(event_path)
-        elif mode == "probabilistic_set":
+        elif self.event_mode == "probabilistic_set":
             raise NotImplementedError
 
     def set_physical_projection(self, projection: str) -> None:
