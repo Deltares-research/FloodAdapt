@@ -491,8 +491,12 @@ class Hazard:
             zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
             zs_rp_maps.append(zs_rp_da.unstack())
 
+
         # write netcdf with water level, add new dimension for rp
         zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
+        zs_rp = zs_rp.rio.write_crs("epsg:26917", inplace=True)
+        zs_rp = zs_rp.to_dataset(name="risk_maps")
+
         fn_rp = self.simulation_paths[0].parent.parent.joinpath("rp_water_level.nc")
         zs_rp.to_netcdf(fn_rp)
 
