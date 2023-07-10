@@ -1,6 +1,8 @@
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from fiat_toolbox.infographics.infographics import InfographicsParser
 
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.scenarios import IScenario
@@ -36,8 +38,16 @@ def get_aggregation(name: str, database: IDatabase):
 
 
 def make_infographic(name: str, database: IDatabase) -> str:
-    return database.get_scenario(name).infographic()
+    # Get the scenario
+    scenario = database.get_scenario(name)
 
+    # Check if the scenario has run
+    scenario.has_run_impact = (
+        True  # TODO remove when this has been added through the Fiat adapter
+    )
 
-def get_impact_metrics(scenario: IScenario) -> pd.DataFrame:
-    return scenario.impact_metrics()
+    return InfographicsParser().write_infographics_to_file(
+        scenario_name = scenario.attrs.name,
+        database_path = Path(scenario.database_input_path).parent,
+        keep_metrics_file = True,
+    )
