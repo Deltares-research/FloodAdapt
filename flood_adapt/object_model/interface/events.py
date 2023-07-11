@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
+    UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
 )
@@ -16,7 +17,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 class Mode(str, Enum):
     """class describing the accepted input for the variable mode in Event"""
 
-    single_scenario = "single_scenario"
+    single_event = "single_event"
     risk = "risk"
 
 
@@ -63,6 +64,7 @@ class ShapeType(str, Enum):
     gaussian = "gaussian"
     block = "block"
     triangle = "triangle"
+    scs = "scs"
 
 
 class WindModel(BaseModel):
@@ -71,17 +73,15 @@ class WindModel(BaseModel):
     constant_speed: Optional[UnitfulVelocity]
     constant_direction: Optional[UnitfulDirection]
     # timeseries
-    wind_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
 
 
 class RainfallModel(BaseModel):
     source: RainfallSource
     # constant
-    constant_intensity: Optional[
-        float
-    ]  # TODO: add units; intensity is in mm/hr or in/hr
+    constant_intensity: Optional[UnitfulIntensity]
     # timeseries
-    rainfall_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     cumulative: Optional[UnitfulLength]
@@ -95,6 +95,8 @@ class RiverModel(BaseModel):
     source: RiverSource
     # constant
     constant_discharge: Optional[UnitfulDischarge]
+    # timeseries
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     base_discharge: Optional[UnitfulDischarge]
@@ -148,7 +150,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     long_name: str
     mode: Mode
     template: Template
-    timing: Timing  # TODO: do we need this? We can infer this from template
+    timing: Timing
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
@@ -158,12 +160,26 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
+class EventSetModel(BaseModel):
+    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
+
+    name: str
+    long_name: str
+    mode: Mode
+    subevent_name: Optional[list[str]]
+    frequency: Optional[list[float]]
+
+
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
 
 class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
+
+
+class HistoricalOffshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
 
 
 class IEvent(ABC):
@@ -192,3 +208,7 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+
+class IHistoricalOffshore(IEvent):
+    attrs: HistoricalOffshoreModel

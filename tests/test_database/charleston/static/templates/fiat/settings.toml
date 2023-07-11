@@ -16,6 +16,5 @@ csv = "./exposure/exposure.csv"
 crs = "EPSG:4326"
 file1 = "./exposure/exposure.gpkg"
 
-[hazard.multiband]
-subset = "zsmax"
-var_as_band = false
+
+

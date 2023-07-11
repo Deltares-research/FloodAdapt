@@ -1,3 +1,0 @@
-name = "elevate_comb_fail_2"
-long_name = "elevate_comb_fail_2"
-measures = ["raise_property_polygon", "raise_property_all_properties"]

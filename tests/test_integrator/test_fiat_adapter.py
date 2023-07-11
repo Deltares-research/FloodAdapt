@@ -53,7 +53,7 @@ def test_fiat_adapter_no_measures():
     assert_frame_equal(exposure_scenario, exposure_template, check_dtype=False)
 
 
-@pytest.mark.skip(reason="There is no sfincs simulation with measures")
+@pytest.mark.skip(reason="test needs to reviewed")
 def test_fiat_adapter_measures():
     test_toml = (
         test_database
@@ -204,4 +204,6 @@ def test_fiat_return_periods():
     test_scenario.init_object_model()
     # TODO: Hazard class should check if the hazard simulation has already been run when initialized
     test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
+    test_scenario.direct_impacts.hazard.event_mode = "risk"
+    test_scenario.direct_impacts.hazard.set_sfincs_map_path(mode="risk")
     test_scenario.direct_impacts.run_models()

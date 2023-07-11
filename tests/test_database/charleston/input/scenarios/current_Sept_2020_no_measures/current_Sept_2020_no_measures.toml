@@ -1,5 +1,0 @@
-name = "current_Sept_2020_no_measures"
-long_name = "current - Sept-2020 - no_measures"
-projection = "current"
-event = "Sept_2020"
-strategy = "no_measures"
