@@ -100,7 +100,7 @@ def test_has_hazard_run():
     dbs.run_scenario(scenario_name_1)
     scenario1 = dbs.get_scenario(scenario_name_1)
     assert scenario1.direct_impacts.hazard.has_run is True
-    assert scenario1.direct_impacts.has_run == True
+    assert scenario1.direct_impacts.has_run is True
 
     scenario2 = dbs.get_scenario(scenario_name_2)
     assert scenario2.direct_impacts.hazard.has_run is False
@@ -109,4 +109,4 @@ def test_has_hazard_run():
 
     scenario2 = dbs.get_scenario(scenario_name_2)
     assert scenario2.direct_impacts.hazard.has_run is True
-    assert scenario2.direct_impacts.has_run == True
+    assert scenario2.direct_impacts.has_run is True
