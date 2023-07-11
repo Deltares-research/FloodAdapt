@@ -1082,19 +1082,11 @@ class Database(IDatabase):
             scenario_name,
             f"{scenario_name}_results.csv",
         )
-        csv_path2 = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results_filt.csv",
-        )
-        if not csv_path2.exists():
-            df = pd.read_csv(csv_path)
-            df = df[df["Primary Object Type"] != "road"]
-            df = df[df["Inundation Depth Event Structure"] > 0]
-            df = df[~df["Aggregation Label: Subdivision"].isna()]
-            df.to_csv(csv_path2)
-        df = pd.read_csv(csv_path2)
+
+        df = pd.read_csv(csv_path)
+        df = df[df["Primary Object Type"] != "road"]
+        df = df[df["Inundation Depth Event Structure"] > 0]
+        # df = df[~df["Aggregation Label: Subdivision"].isna()]
         gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.X, df.Y))
         gdf = gdf[["Total Damage Event", "geometry"]]
         gdf["Total Damage Event"] = np.round(gdf["Total Damage Event"], 0)
@@ -1108,23 +1100,23 @@ class Database(IDatabase):
             scenario_name,
             f"{scenario_name}_results.shp",
         )
-        shp_path2 = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results_filt.shp",
-        )
-        # ("Occup Type" != 'road') AND ( "AGG ID" != 'Not aggregated') AND( "Dmg Total" > 0 )
-        if not shp_path2.exists():
-            shp = gpd.read_file(shp_path)
-            shp = shp[shp["Occup Type"] != "road"]
-            shp = shp[shp["AGG ID"] != "Not aggregated"]
-            shp = shp[shp["Dmg Total"] > 0]
-            shp = shp[["Dmg Total", "geometry"]]
-            shp["Dmg Total"] = np.round(shp["Dmg Total"], 0)
-            shp.to_file(shp_path2)
-        shp = gpd.read_file(shp_path2)
-        return shp
+        # shp_path2 = self.input_path.parent.joinpath(
+        #     "output",
+        #     "results",
+        #     scenario_name,
+        #     f"{scenario_name}_results_filt.shp",
+        # )
+        # # ("Occup Type" != 'road') AND ( "AGG ID" != 'Not aggregated') AND( "Dmg Total" > 0 )
+        # if not shp_path2.exists():
+        #     shp = gpd.read_file(shp_path)
+        #     shp = shp[shp["Occup Type"] != "road"]
+        #     shp = shp[shp["AGG ID"] != "Not aggregated"]
+        #     shp = shp[shp["Dmg Total"] > 0]
+        #     shp = shp[["Dmg Total", "geometry"]]
+        #     shp["Dmg Total"] = np.round(shp["Dmg Total"], 0)
+        #     shp.to_file(shp_path2)
+        # shp = gpd.read_file(shp_path2)
+        return str(shp_path)
 
     def get_aggregation(self, scenario_name: str):
         shp_path = self.input_path.parent.joinpath(
