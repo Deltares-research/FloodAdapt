@@ -51,3 +51,5 @@ def make_infographic(name: str, database: IDatabase) -> str:
         database_path = Path(scenario.database_input_path).parent,
         keep_metrics_file = True,
     )
+
+
