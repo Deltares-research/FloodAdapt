@@ -91,6 +91,24 @@ class DirectImpacts:
         """
         self.hazard = Hazard(scenario, database_input_path)
 
+    def set_hazard_fiat(self, fiat_adapter: FiatAdapter):
+        map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
+
+        is_risk = self.hazard.event_mode == Mode.risk
+        var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
+
+        fiat_adapter.fiat_model.setup_hazard(
+            map_fn=map_fn,
+            map_type="water_depth",
+            rp=None,  # change this in new version
+            crs=None,  # change this in new version
+            nodata=-999,  # change this in new version
+            var=var,
+            chunks="auto",
+            name_catalog=None,
+            risk_output=is_risk,
+        )
+
     def run_models(self):
         self.preprocess_fiat()
 
@@ -182,25 +200,25 @@ class DirectImpacts:
             else:
                 print("Impact measure type not recognized!")
 
-        # fa.fiat_model.setup_social_vulnerability()
-        # Set FIAT hazard
-        map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
+        # # fa.fiat_model.setup_social_vulnerability()
+        # # Set FIAT hazard
+        # map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
 
-        is_risk = self.hazard.event_mode == Mode.risk
-        var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
+        # is_risk = self.hazard.event_mode == Mode.risk
+        # var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
 
-        fa.fiat_model.setup_hazard(
-            map_fn=map_fn,
-            map_type="water_depth",
-            rp=None,  # change this in new version
-            crs=None,  # change this in new version
-            nodata=-999,  # change this in new version
-            var=var,
-            chunks="auto",
-            name_catalog=None,
-            risk_output=is_risk,
-        )
-
+        # fa.fiat_model.setup_hazard(
+        #     map_fn=map_fn,
+        #     map_type="water_depth",
+        #     rp=None,  # change this in new version
+        #     crs=None,  # change this in new version
+        #     nodata=-999,  # change this in new version
+        #     var=var,
+        #     chunks="auto",
+        #     name_catalog=None,
+        #     risk_output=is_risk,
+        # )
+        self.set_hazard_fiat(fa)
         # Save the updated FIAT model
         fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
