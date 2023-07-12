@@ -18,7 +18,7 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
-    """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
+    """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage"""
 
     attrs: GreenInfrastructureModel
     database_input_path: Union[str, os.PathLike]
