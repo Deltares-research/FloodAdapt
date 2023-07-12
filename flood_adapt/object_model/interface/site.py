@@ -91,6 +91,7 @@ class FiatModel(BaseModel):
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
+    damage_unit: Optional[str] = "USD"
 
 
 class RiverModel(BaseModel):
@@ -119,6 +120,22 @@ class Obs_stationModel(BaseModel):
     msl: UnitfulLength
 
 
+class BenefitsModel(BaseModel):
+    current_year: int
+    current_projection: str
+    baseline_strategy: str
+    event_set: str
+
+
+class SCSModel(BaseModel):
+    """class describing the accepted input for the variable scs, which included the file with
+    the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type
+    """
+
+    file: str
+    type: str
+
+
 class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
@@ -134,6 +151,8 @@ class SiteModel(BaseModel):
     fiat: FiatModel
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
+    benefits: BenefitsModel
+    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
 
 
 class ISite(ABC):

@@ -1,6 +1,0 @@
-name = "pump"
-long_name = "pump"
-type = "pump"
-polygon_file = "pump.txt"
-discharge = 200
-datum_text = "NAVD 88"

@@ -1,5 +1,0 @@
-name = "current_kingTideNov2021_measures"
-long_name = "current - King Tide - Nov 2021 - measures"
-projection = "current"
-event = "kingTideNov2021"
-strategy = "measures"
