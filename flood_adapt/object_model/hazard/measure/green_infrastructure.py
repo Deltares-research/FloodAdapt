@@ -25,7 +25,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
-        """create Floodwall from toml file"""
+        """create GreenInfrastructure from toml file"""
 
         obj = GreenInfrastructure()
         with open(filepath, mode="rb") as fp:
