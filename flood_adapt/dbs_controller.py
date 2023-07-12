@@ -346,24 +346,20 @@ class Database(IDatabase):
         ValueError
             Raise error if measure to be deleted is already used in a strategy.
         """
-        # TODO check strategies that use a measure
+
+        # Get all the strategies
         strategies = [
             Strategy.load_file(path) for path in self.get_strategies()["path"]
         ]
-        used_strategy = [
-            name in measures
-            for measures in [strategy.attrs.measures for strategy in strategies]
-        ]
-        if any(used_strategy):
-            strategies = [
-                strategy.attrs.name
-                for i, strategy in enumerate(strategies)
-                if used_strategy[i]
-            ]
-            # TODO split this
+
+        # Check if measure is used in a strategy
+        used_in_strategy = [strategy.attrs.name for strategy in strategies for measures in strategy.attrs.measures if name in measures]
+
+        # If measure is used in a strategy, raise error
+        if used_in_strategy:
             text = "strategy" if len(strategies) == 1 else "strategies"
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
+                f"'{name}' measure cannot be deleted since it is already used in {text}: {', '.join(used_in_strategy)}"
             )
         else:
             measure_path = self.input_path / "measures" / name
@@ -466,12 +462,30 @@ class Database(IDatabase):
         ----------
         name : str
             name of the event
+
+        Raises
+        ------
+        ValueError
+            Raise error if event to be deleted is already used in a scenario.
         """
 
-        # TODO: check if event is used in a hazard
+        # Get all the scenarios
+        scenarios = [
+            Scenario.load_file(path) for path in self.get_scenarios()["path"]
+        ]
 
-        event_path = self.input_path / "events" / name
-        shutil.rmtree(event_path, ignore_errors=True)
+        # Check if event is used in a scenario
+        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.event]
+
+        # If event is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' event cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            event_path = self.input_path / "events" / name
+            shutil.rmtree(event_path, ignore_errors=True)
 
     def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing event, and gives it a new name.
@@ -566,11 +580,28 @@ class Database(IDatabase):
         name : str
             name of the projection
 
+        Raises
+        ------
+        ValueError
+            Raise error if projection to be deleted is already used in a scenario.
         """
-        # TODO: make check if projection is used in strategies
+        # Get all the scenarios
+        scenarios = [
+            Scenario.load_file(path) for path in self.get_scenarios()["path"]
+        ]
 
-        projection_path = self.input_path / "projections" / name
-        shutil.rmtree(projection_path, ignore_errors=True)
+        # Check if projection is used in a scenario
+        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.projection]
+
+        # If projection is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' projection cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            projection_path = self.input_path / "projections" / name
+            shutil.rmtree(projection_path, ignore_errors=True)
 
     def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing projection, and gives it a new name.
@@ -655,19 +686,20 @@ class Database(IDatabase):
         ValueError
             Raise error if strategy to be deleted is already used in a scenario.
         """
-        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
-        used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
 
-        if any(used_scenario):
-            scenarios = [
-                scenario.attrs.name
-                for i, scenario in enumerate(scenarios)
-                if used_scenario[i]
-            ]
-            # TODO split this
-            text = "scenario" if len(scenarios) == 1 else "scenarios"
+        # Get all the scenarios
+        scenarios = [
+            Scenario.load_file(path) for path in self.get_scenarios()["path"]
+        ]
+
+        # Check if strategy is used in a scenario
+        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.strategy]
+
+        # If strategy is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text} {scenarios}"
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
             )
         else:
             strategy_path = self.input_path / "strategies" / name
@@ -748,16 +780,32 @@ class Database(IDatabase):
         ValueError
             Raise error if scenario has already model output
         """
-        scenario_path = self.input_path / "scenarios" / name
-        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
-        scenario.init_object_model()
-        if scenario.direct_impacts.hazard.has_run:
-            # TODO this should be a check were if the scenario is run you get a warning?
+
+        # Get all the benefits
+        benefits = [
+            Benefit.load_file(path) for path in self.get_benefits()["path"]
+        ]
+
+        # Check if strategy is used in a benefit
+        used_in_benefit = [benefit.attrs.name for benefit in benefits if name in benefit.attrs.scenario]
+
+        # If strategy is used in a benefit, raise error
+        if used_in_benefit:
+            text = "benefit" if len(used_in_benefit) == 1 else "benefits"
             raise ValueError(
-                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
-            shutil.rmtree(scenario_path, ignore_errors=True)
+            scenario_path = self.input_path / "scenarios" / name
+            scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+            scenario.init_object_model()
+            if scenario.direct_impacts.hazard.has_run:
+                # TODO this should be a check were if the scenario is run you get a warning?
+                raise ValueError(
+                    f"'{name}' scenario cannot be deleted since the hazard model has already run."
+                )
+            else:
+                shutil.rmtree(scenario_path, ignore_errors=True)
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.
