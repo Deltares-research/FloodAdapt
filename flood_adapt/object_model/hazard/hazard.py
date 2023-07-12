@@ -498,13 +498,13 @@ class Hazard:
             fn_rp_test = self.simulation_paths[0].parent.parent.joinpath("RP=" + str(rp)+"_maps.nc")
             zs_rp_single.to_netcdf(fn_rp_test)
 
-
+        # This component is not longer used in flood adapt. It creates a single netcdf file with multiple hazard maps 
         # write netcdf with water level, add new dimension for rp
-        zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
-        zs_rp = zs_rp.to_dataset(name="risk_map")
-        fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
-        zs_rp.to_netcdf(fn_rp)
+        # zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
+        # zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
+        # zs_rp = zs_rp.to_dataset(name="risk_map")
+        # fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
+        # zs_rp.to_netcdf(fn_rp)
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError
