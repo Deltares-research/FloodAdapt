@@ -76,7 +76,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         float
             Volume [m3]
         """
-        volume = area * height * percent_area / 100.0
+        volume = area.convert("m2") * height.convert("meters") * percent_area / 100.0
         return volume
 
     @staticmethod
