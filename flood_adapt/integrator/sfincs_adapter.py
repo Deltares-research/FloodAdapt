@@ -12,6 +12,9 @@ from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructureModel,
+)
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
@@ -240,6 +243,44 @@ class SfincsAdapter:
         # HydroMT function: create floodwall
         self.sf_model.setup_structures(
             structures=gdf_floodwall, stype="weir", merge=True
+        )
+
+    def add_green_infrastructure(
+        self, green_infrastructure: GreenInfrastructureModel, measure_path: Path
+    ):
+        """Adds green infrastructure to sfincs model.
+
+        Parameters
+        ----------
+        green_infrastructure : GreenInfrastructureModel
+            Green infrastructure information
+        measure_path: Path
+            Path of the measure folder
+        """
+
+        # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
+            polygon_file,
+            geom=self.sf_model.region,
+            crs=self.sf_model.crs,
+        )
+
+        # Determine volume capacity of green infrastructure
+
+        if green_infrastructure.height.value != 0.0:
+            height = (
+                green_infrastructure.height.convert("m")
+                * green_infrastructure.percent_area
+            )
+            volume = None
+        elif green_infrastructure.volume.value != 0.0:
+            height = None
+            volume = green_infrastructure.volume.convert("m3")
+
+        # HydroMT function: create storage volume
+        self.sf_model.setup_storage_volume(
+            storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
         )
 
     def write_sfincs_model(self, path_out: Path):
