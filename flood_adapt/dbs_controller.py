@@ -782,12 +782,10 @@ class Database(IDatabase):
         """
 
         # Get all the benefits
-        benefits = [
-            Benefit.load_file(path) for path in self.get_benefits()["path"]
-        ]
+        benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
 
-        # Check if strategy is used in a benefit
-        used_in_benefit = [benefit.attrs.name for benefit in benefits if name in benefit.attrs.scenario]
+        # Check in which benefits this scenario is used
+        used_in_benefit = [benefit.attrs.name for benefit in benefits if name in self.check_benefit_scenarios(benefit)['scenario created'].to_list()]
 
         # If strategy is used in a benefit, raise error
         if used_in_benefit:
