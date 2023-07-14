@@ -93,13 +93,13 @@ class DirectImpacts:
 
     def set_hazard_fiat(self, fiat_adapter: FiatAdapter):
         map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
-
-        is_risk = self.hazard.event_mode == Mode.risk
+        map_type = self.hazard.site.attrs.fiat.floodmap_type
         var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
+        is_risk = self.hazard.event_mode == Mode.risk
 
         fiat_adapter.fiat_model.setup_hazard(
             map_fn=map_fn,
-            map_type="water_depth",
+            map_type=map_type,
             rp=None,  # change this in new version
             crs=None,  # change this in new version
             nodata=-999,  # change this in new version
