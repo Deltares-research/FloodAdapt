@@ -2,7 +2,6 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-import pandas as pd
 from pydantic import BaseModel
 
 

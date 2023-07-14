@@ -82,4 +82,3 @@ class Scenario(IScenario):
         test2 = self.attrs.projection == other.attrs.projection
         test3 = self.attrs.strategy == other.attrs.strategy
         return test1 & test2 & test3
-            

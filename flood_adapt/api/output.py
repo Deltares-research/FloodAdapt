@@ -1,11 +1,9 @@
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
 from fiat_toolbox.infographics.infographics import InfographicsParser
 
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 def get_outputs(database: IDatabase) -> dict[str, Any]:
@@ -47,9 +45,7 @@ def make_infographic(name: str, database: IDatabase) -> str:
     )
 
     return InfographicsParser().write_infographics_to_file(
-        scenario_name = scenario.attrs.name,
-        database_path = Path(scenario.database_input_path).parent,
-        keep_metrics_file = True,
+        scenario_name=scenario.attrs.name,
+        database_path=Path(scenario.database_input_path).parent,
+        keep_metrics_file=True,
     )
-
-
