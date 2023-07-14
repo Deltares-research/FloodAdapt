@@ -36,16 +36,17 @@ def get_aggregation(name: str, database: IDatabase):
 
 
 def make_infographic(name: str, database: IDatabase) -> str:
-    # Get the scenario
-    scenario = database.get_scenario(name)
+    # Get the direct_impacts objects from the scenario
+    impact = database.get_scenario(name).direct_impacts
 
     # Check if the scenario has run
-    scenario.has_run_impact = (
-        True  # TODO remove when this has been added through the Fiat adapter
-    )
+    if not impact.fiat_has_run_check():
+        raise ValueError(
+            f"Scenario {name} has not been run. Please run the scenario first."
+        )
 
     return InfographicsParser().write_infographics_to_file(
-        scenario_name=scenario.attrs.name,
-        database_path=Path(scenario.database_input_path).parent,
+        scenario_name=name,
+        database_path=Path(database.input_path).parent,
         keep_metrics_file=True,
     )
