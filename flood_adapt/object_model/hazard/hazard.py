@@ -51,7 +51,7 @@ class Hazard:
 
         self.set_simulation_paths()
 
-        self.set_sfincs_map_path(mode=self.event_mode)
+        self._set_sfincs_map_path(mode=self.event_mode)
 
         self.has_run = self.sfincs_has_run_check()
 
@@ -63,7 +63,7 @@ class Hazard:
     def event_mode(self, mode: Mode) -> None:
         self._mode = mode
 
-    def set_sfincs_map_path(self, mode: Mode) -> None:
+    def _set_sfincs_map_path(self, mode: Mode) -> None:
         if mode == Mode.single_event:
             [self.sfincs_map_path] = self.simulation_paths
 
@@ -540,9 +540,10 @@ class Hazard:
             zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(zsmax.raster.crs, inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
-            fn_rp_test = self.simulation_paths[0].parent.parent.joinpath("RP=" + str(rp)+"_maps.nc")
+            fn_rp_test = self.simulation_paths[0].parent.parent.joinpath(
+                "RP=" + str(rp) + "_maps.nc"
+            )
             zs_rp_single.to_netcdf(fn_rp_test)
-
 
         # write netcdf with water level, add new dimension for rp
         zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))

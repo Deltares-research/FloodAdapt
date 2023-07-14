@@ -133,7 +133,7 @@ def test_preprocess_prob_eventset():
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-@pytest.mark.skip(reason="Running models takes a couple of minutes")
+# @pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset():
     test_toml = (
         test_database
@@ -200,7 +200,7 @@ def test_rp_floodmap_calculation():
         / "output"
         / "simulations"
         / "current_test_set_no_measures"
-        / "rp_water_level.nc"
+        / "multiple_rp.nc"
     )
     assert nc_file.is_file()
     zsrp = xr.open_dataset(nc_file).load()

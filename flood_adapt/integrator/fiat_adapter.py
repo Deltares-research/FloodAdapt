@@ -1,5 +1,6 @@
+import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
@@ -7,6 +8,7 @@ from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.site import Site
 
 
@@ -37,7 +39,39 @@ class FiatAdapter:
         self.bfe_name = "bfe"
 
     def set_hazard(self, hazard: Hazard) -> None:
-        raise NotImplementedError
+        map_fn = self._get_sfincs_map_path(hazard)
+        map_type = hazard.site.attrs.fiat.floodmap_type
+        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
+        is_risk = hazard.event_mode == Mode.risk
+
+        self.fiat_model.setup_hazard(
+            map_fn=map_fn,
+            map_type=map_type,
+            rp=None,  # change this in new version
+            crs=None,  # change this in new version
+            nodata=-999,  # change this in new version
+            var=var,
+            chunks="auto",
+            name_catalog=None,
+            risk_output=is_risk,
+        )
+
+    def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
+        map_path = hazard.sfincs_map_path
+        mode = hazard.event_mode
+        map_fn: List[Union[str, Path]] = []
+
+        if mode == Mode.single_event:
+            map_fn.append(map_path.joinpath("sfincs_map.nc"))
+
+        elif mode == Mode.risk:
+            # check for netcdf
+            map_fn.extend(
+                map_path.joinpath(file)
+                for file in os.listdir(str(map_path))
+                if file.endswith(".nc")
+            )
+        return map_fn
 
     def apply_economic_growth(
         self, economic_growth: float, ids: Optional[list[str]] = None

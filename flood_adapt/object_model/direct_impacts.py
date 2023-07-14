@@ -1,8 +1,6 @@
-import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Union
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -10,7 +8,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
@@ -90,24 +87,6 @@ class DirectImpacts:
             Name of the scenario
         """
         self.hazard = Hazard(scenario, database_input_path)
-
-    def set_hazard_fiat(self, fiat_adapter: FiatAdapter):
-        map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
-        map_type = self.hazard.site.attrs.fiat.floodmap_type
-        var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
-        is_risk = self.hazard.event_mode == Mode.risk
-
-        fiat_adapter.fiat_model.setup_hazard(
-            map_fn=map_fn,
-            map_type=map_type,
-            rp=None,  # change this in new version
-            crs=None,  # change this in new version
-            nodata=-999,  # change this in new version
-            var=var,
-            chunks="auto",
-            name_catalog=None,
-            risk_output=is_risk,
-        )
 
     def run_models(self):
         self.preprocess_fiat()
@@ -200,44 +179,12 @@ class DirectImpacts:
             else:
                 print("Impact measure type not recognized!")
 
-        # # fa.fiat_model.setup_social_vulnerability()
-        # # Set FIAT hazard
-        # map_fn = self.get_sfincs_map_path(self.hazard.sfincs_map_path)
+        # setup hazard for fiat
+        fa.set_hazard(self.hazard)
 
-        # is_risk = self.hazard.event_mode == Mode.risk
-        # var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
-
-        # fa.fiat_model.setup_hazard(
-        #     map_fn=map_fn,
-        #     map_type="water_depth",
-        #     rp=None,  # change this in new version
-        #     crs=None,  # change this in new version
-        #     nodata=-999,  # change this in new version
-        #     var=var,
-        #     chunks="auto",
-        #     name_catalog=None,
-        #     risk_output=is_risk,
-        # )
-        self.set_hazard_fiat(fa)
         # Save the updated FIAT model
         fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
-
-    def get_sfincs_map_path(self, map_path: Path):
-        map_fn: List[Union[str, Path]] = []
-        mode: Mode = self.hazard.event_mode
-
-        if mode == Mode.single_event:
-            map_fn.append(map_path.joinpath("sfincs_map.nc"))
-
-        elif mode == Mode.risk:
-            # check for netcdf
-            map_fn.extend(
-                map_path.joinpath(file)
-                for file in os.listdir(str(map_path))
-                if file.endswith(".nc")
-            )
-        return map_fn
 
     def run_fiat(self):
         with cd(self.results_path):

@@ -34,8 +34,7 @@ def test_fiat_adapter_no_measures():
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-    test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
-    test_scenario.direct_impacts.hazard.set_sfincs_map_path("single_scenario")
+
     test_scenario.direct_impacts.run_models()
 
     exposure_scenario = pd.read_csv(
@@ -193,8 +192,8 @@ def test_fiat_return_periods():
         / "charleston"
         / "input"
         / "scenarios"
-        / "current_extreme12ft_no_measures_return_periods"
-        / "current_extreme12ft_no_measures_return_periods.toml"
+        / "current_test_set_no_measures"
+        / "current_test_set_no_measures.toml"
     )
 
     assert test_toml.is_file()
@@ -203,7 +202,5 @@ def test_fiat_return_periods():
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-    test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
-    test_scenario.direct_impacts.hazard.event_mode = "risk"
-    test_scenario.direct_impacts.hazard.set_sfincs_map_path(mode="risk")
+
     test_scenario.direct_impacts.run_models()
