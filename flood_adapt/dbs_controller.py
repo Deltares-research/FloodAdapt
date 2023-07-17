@@ -89,6 +89,27 @@ class Database(IDatabase):
         return df.columns[2:].to_list()
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
+        """interpolating SLR value and referencing it to the SLR reference year from the site toml
+
+        Parameters
+        ----------
+        slr_scenario : str
+            SLR scenario name from the coulmn names in static\slr\slr.csv
+        year : float
+            year to evaluate
+
+        Returns
+        -------
+        float
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -203,15 +224,10 @@ class Database(IDatabase):
 
             # convert to units used in GUI
             # wl_df["Time"] = wl_df.index
-            wl_current_units = UnitfulLength(
-                value=float(wl_df.iloc[0, 0]), units="meters"
-            )
+            wl_current_units = UnitfulLength(value=1.0, units="meters")
             gui_units = self.site.attrs.gui.default_length_units
-            wl_gui_units = wl_current_units.convert(gui_units)
-            if wl_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = wl_gui_units / wl_current_units.value
+            conversion_factor = wl_current_units.convert(gui_units)
+
             wl_df[1] = conversion_factor * wl_df[1]
 
             # Plot actual thing
