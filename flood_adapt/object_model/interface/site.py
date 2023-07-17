@@ -46,6 +46,12 @@ class SfincsModel(BaseModel):
     floodmap_units: UnitTypesLength
 
 
+class Cyclone_track_databaseModel(BaseModel):
+    """class describing the accepted input for the fiel name of the Cyclone_track_database"""
+
+    file: str
+
+
 class SlrModel(BaseModel):
     """class describing the accepted input for the variable slr in Site"""
 
@@ -144,6 +150,7 @@ class SiteModel(BaseModel):
     lat: float
     lon: float
     sfincs: SfincsModel
+    cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
