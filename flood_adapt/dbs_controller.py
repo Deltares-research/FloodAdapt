@@ -353,7 +353,12 @@ class Database(IDatabase):
         ]
 
         # Check if measure is used in a strategy
-        used_in_strategy = [strategy.attrs.name for strategy in strategies for measures in strategy.attrs.measures if name in measures]
+        used_in_strategy = [
+            strategy.attrs.name
+            for strategy in strategies
+            for measures in strategy.attrs.measures
+            if name in measures
+        ]
 
         # If measure is used in a strategy, raise error
         if used_in_strategy:
@@ -470,12 +475,14 @@ class Database(IDatabase):
         """
 
         # Get all the scenarios
-        scenarios = [
-            Scenario.load_file(path) for path in self.get_scenarios()["path"]
-        ]
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
 
         # Check if event is used in a scenario
-        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.event]
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name in scenario.attrs.event
+        ]
 
         # If event is used in a scenario, raise error
         if used_in_scenario:
@@ -586,12 +593,14 @@ class Database(IDatabase):
             Raise error if projection to be deleted is already used in a scenario.
         """
         # Get all the scenarios
-        scenarios = [
-            Scenario.load_file(path) for path in self.get_scenarios()["path"]
-        ]
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
 
         # Check if projection is used in a scenario
-        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.projection]
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name in scenario.attrs.projection
+        ]
 
         # If projection is used in a scenario, raise error
         if used_in_scenario:
@@ -688,12 +697,14 @@ class Database(IDatabase):
         """
 
         # Get all the scenarios
-        scenarios = [
-            Scenario.load_file(path) for path in self.get_scenarios()["path"]
-        ]
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
 
         # Check if strategy is used in a scenario
-        used_in_scenario = [scenario.attrs.name for scenario in scenarios if name in scenario.attrs.strategy]
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name in scenario.attrs.strategy
+        ]
 
         # If strategy is used in a scenario, raise error
         if used_in_scenario:
@@ -785,7 +796,12 @@ class Database(IDatabase):
         benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
 
         # Check in which benefits this scenario is used
-        used_in_benefit = [benefit.attrs.name for benefit in benefits if name in self.check_benefit_scenarios(benefit)['scenario created'].to_list()]
+        used_in_benefit = [
+            benefit.attrs.name
+            for benefit in benefits
+            if name
+            in self.check_benefit_scenarios(benefit)["scenario created"].to_list()
+        ]
 
         # If strategy is used in a benefit, raise error
         if used_in_benefit:
