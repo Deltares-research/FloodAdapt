@@ -135,10 +135,9 @@ class Database(IDatabase):
 
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        slr_current_units = UnitfulLength(value=1.0, units=units)
         gui_units = self.site.attrs.gui.default_length_units
-        slr_gui_units = slr_current_units.convert(gui_units)
-        conversion_factor = slr_gui_units / slr_current_units.value
+        conversion_factor = slr_current_units.convert(gui_units)
         df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
 
         # rename column names that will be shown in html
