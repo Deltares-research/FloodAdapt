@@ -1,0 +1,12 @@
+name = "benefit_raise_properties_2050"
+description = ""
+event_set = "test_set"
+strategy = "elevate_comb_correct"
+projection = "all_projections"
+future_year = 2050
+current_situation.projection = "current"
+current_situation.year = "2023"
+baseline_strategy = "no_measures"
+discount_rate = 0.07
+implementation_cost = 30000000
+annual_maint_cost = 0.0

@@ -7,6 +7,9 @@ from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
 from flood_adapt.object_model.interface.measures import (
     HazardType,
     ImpactType,
@@ -15,6 +18,7 @@ from flood_adapt.object_model.interface.measures import (
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
+    UnitfulVolume,
 )
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -116,6 +120,7 @@ def test_elevate_aggr_area_save():
         test_toml_dict_new = tomli.load(fp)
 
     assert test_toml_dict == test_toml_dict_new
+    test_toml_new.unlink()
 
 
 def test_elevate_polygon_read():
@@ -184,3 +189,45 @@ def test_floodproof_read():
     assert isinstance(floodproof.attrs.type, ImpactType)
     assert isinstance(floodproof.attrs.selection_type, SelectionType)
     assert isinstance(floodproof.attrs.aggregation_area_name, str)
+
+
+def test_green_infra_read():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "measures"
+        / "green_infra"
+        / "green_infra.toml"
+    )
+
+    assert test_toml.is_file()
+
+    green_infra = GreenInfrastructure.load_file(test_toml)
+
+    assert isinstance(green_infra.attrs.name, str)
+    assert isinstance(green_infra.attrs.long_name, str)
+    assert isinstance(green_infra.attrs.type, HazardType)
+    assert isinstance(green_infra.attrs.volume, UnitfulVolume)
+    assert isinstance(green_infra.attrs.height, UnitfulLength)
+
+    test_geojson = (
+        test_database
+        / "charleston"
+        / "input"
+        / "measures"
+        / "green_infra"
+        / green_infra.attrs.polygon_file
+    )
+
+    assert test_geojson.is_file()
+
+    # def test_calculate_area():
+    #     test_toml = (
+    #         test_database
+    #         / "charleston"
+    #         / "input"
+    #         / "measures"
+    #         / "green_infra"
+    #         / "green_infra.toml"
+    #     )

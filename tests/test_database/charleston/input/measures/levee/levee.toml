@@ -1,8 +1,0 @@
-name = "levee"
-long_name = "levee"
-type = "levee"
-polygon_file = "levee.txt"
-elevation = 12
-elevation_vertical_units = "feet"
-elevation_type = "floodmap"
-datum_text = "NAVD 88"

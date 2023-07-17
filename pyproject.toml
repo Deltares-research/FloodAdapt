@@ -22,10 +22,12 @@ requires-python = ">=3.8"
 dependencies = [
     "geopandas",
     "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
+    "fiat_toolbox @ git+https://github.com/Deltares/fiat_toolbox.git",
     "hydromt",
     "numpy",
+    "numpy-financial",
     "pandas",
-    "pydantic",
+    "pydantic==1.10.9",
     "tomli-w",
     "tomli",
     "plotly",

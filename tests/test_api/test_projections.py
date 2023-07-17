@@ -5,7 +5,7 @@ import pytest
 import flood_adapt.api.projections as api_projections
 import flood_adapt.api.startup as api_startup
 
-test_database_path = Path().absolute() / "tests" / "test_database_GUI"
+test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 

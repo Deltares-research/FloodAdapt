@@ -5,6 +5,9 @@ from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
 from flood_adapt.object_model.interface.measures import HazardType, ImpactType
 from flood_adapt.object_model.measure import Measure
 
@@ -61,5 +64,7 @@ class HazardMeasureFactory:
             hazard_measure == "floodwall" or hazard_measure == "levee"
         ):  # these should use the same class right?
             return FloodWall
+        elif hazard_measure == "green_infrastructure":
+            return GreenInfrastructure
         elif hazard_measure == "pump":
             pass

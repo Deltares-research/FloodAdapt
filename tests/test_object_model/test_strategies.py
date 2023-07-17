@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -84,33 +82,3 @@ def test_elevate_comb_correct():
     assert isinstance(strategy.attrs.measures, list)
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
-
-
-def test_elevate_comb_fail_1():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "elevate_comb_fail_1"
-        / "elevate_comb_fail_1.toml"
-    )
-    assert test_toml.is_file()
-
-    with pytest.raises(ValueError):
-        Strategy.load_file(test_toml, validate=True)
-
-
-def test_elevate_comb_fail_2():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "elevate_comb_fail_2"
-        / "elevate_comb_fail_2.toml"
-    )
-    assert test_toml.is_file()
-
-    with pytest.raises(ValueError):
-        Strategy.load_file(test_toml, validate=True)

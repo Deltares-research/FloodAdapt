@@ -5,7 +5,7 @@ import pytest
 import flood_adapt.api.events as api_events
 import flood_adapt.api.startup as api_startup
 
-test_database_path = Path().absolute() / "tests" / "test_database_GUI"
+test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
@@ -13,7 +13,7 @@ def test_synthetic_event():
     test_dict = {
         "name": "extreme12ft",
         "long_name": "extreme 12 foot event",
-        "mode": "single_scenario",
+        "mode": "single_event",
         "template": "Synthetic",
         "timing": "idealized",
         "water_level_offset": {"value": "zero", "units": "feet"},

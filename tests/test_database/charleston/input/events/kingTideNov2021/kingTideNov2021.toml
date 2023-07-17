@@ -1,18 +1,31 @@
 name = "kingTideNov2021"
 long_name = "King Tide - Nov 2021"
-template = "Historical - forced by observed nearshore water levels"
+mode = "single_event"
+template = "Historical_offshore"
 timing = "historical"
+
+[water_level_offset]
+value = 0
+units = "feet"
+
+[time]
 start_time = "20211104 000000"
-stop_time = "20211109 000000"
-tide_source = "timeseries"
-tide_timeseries_file = "tide.csv"
-surge_source = "none"
-water_level_offset = 0
-water_level_offset_vertical_units = "feet"
-wind_source = "constant"
-wind_constant_speed = 0
-wind_constant_direction = 0
-rainfall_source = "none"
-rivers_source = "constant"
-rivers_constant_discharge = 5000
-surge_panel_text = "none"
+end_time = "20211109 000000"
+
+[surge]
+source = "none"
+
+[tide]
+source = "timeseries"
+
+[wind]
+source = "map"
+
+[rainfall]
+source = "map"
+
+[river]
+source = "constant"
+[river.constant_discharge]
+value = 5000
+units = "cfs"
