@@ -31,3 +31,4 @@ dependencies:
   - tomli-w
   - twine
   - census
+  - pre-commit
