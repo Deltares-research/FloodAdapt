@@ -89,6 +89,27 @@ class Database(IDatabase):
         return df.columns[2:].to_list()
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
+        """interpolating SLR value and referencing it to the SLR reference year from the site toml
+
+        Parameters
+        ----------
+        slr_scenario : str
+            SLR scenario name from the coulmn names in static\slr\slr.csv
+        year : float
+            year to evaluate
+
+        Returns
+        -------
+        float
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -133,13 +154,23 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
+        ref_year = self.site.attrs.slr.relative_to_year
+        if ref_year > df["Year"].max() or ref_year < df["Year"].min():
+            raise ValueError(
+                f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+            )
+        else:
+            scenarios = self.get_slr_scn_names()
+            for scn in scenarios:
+                ref_slr = np.interp(ref_year, df["Year"], df[scn])
+                df[scn] -= ref_slr
+
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        slr_current_units = UnitfulLength(value=1.0, units=units)
         gui_units = self.site.attrs.gui.default_length_units
-        slr_gui_units = slr_current_units.convert(gui_units)
-        conversion_factor = slr_gui_units / slr_current_units.value
-        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+        conversion_factor = slr_current_units.convert(gui_units)
+        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
@@ -174,6 +205,7 @@ class Database(IDatabase):
             legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
+            xaxis_range=[ref_year, df["Year"].max()],
             legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
@@ -204,15 +236,10 @@ class Database(IDatabase):
 
             # convert to units used in GUI
             # wl_df["Time"] = wl_df.index
-            wl_current_units = UnitfulLength(
-                value=float(wl_df.iloc[0, 0]), units="meters"
-            )
+            wl_current_units = UnitfulLength(value=1.0, units="meters")
             gui_units = self.site.attrs.gui.default_length_units
-            wl_gui_units = wl_current_units.convert(gui_units)
-            if wl_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = wl_gui_units / wl_current_units.value
+            conversion_factor = wl_current_units.convert(gui_units)
+
             wl_df[1] = conversion_factor * wl_df[1]
 
             # Plot actual thing
