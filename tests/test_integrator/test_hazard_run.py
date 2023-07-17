@@ -200,7 +200,7 @@ def test_rp_floodmap_calculation():
         / "output"
         / "simulations"
         / "current_test_set_no_measures"
-        / "multiple_rp.nc"
+        / "rp_water_level.nc"
     )
     assert nc_file.is_file()
     zsrp = xr.open_dataset(nc_file).load()

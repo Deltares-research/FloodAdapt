@@ -52,7 +52,7 @@ def test_fiat_adapter_no_measures():
     assert_frame_equal(exposure_scenario, exposure_template, check_dtype=False)
 
 
-@pytest.mark.skip(reason="test needs to reviewed")
+# @pytest.mark.skip(reason="test needs to reviewed")
 def test_fiat_adapter_measures():
     test_toml = (
         test_database

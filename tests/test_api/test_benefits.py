@@ -55,7 +55,8 @@ def test_benefit():
 
     df = api_benefits.check_benefit_scenarios(benefit, database)
     if sum(df["scenario created"] == "No") == 0:
-        api_benefits.save_benefit(benefit, database)
+        with pytest.raises(ValueError):
+            api_benefits.save_benefit(benefit, database)
 
     with pytest.raises(RuntimeError):
         # Assert error if not yet run
