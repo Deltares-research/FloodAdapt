@@ -154,12 +154,23 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
+        ref_year = self.site.attrs.slr.relative_to_year
+        if ref_year > df["Year"].max() or ref_year < df["Year"].min():
+            raise ValueError(
+                f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+            )
+        else:
+            scenarios = self.get_slr_scn_names()
+            for scn in scenarios:
+                ref_slr = np.interp(ref_year, df["Year"], df[scn])
+                df[scn] -= ref_slr
+
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
         slr_current_units = UnitfulLength(value=1.0, units=units)
         gui_units = self.site.attrs.gui.default_length_units
         conversion_factor = slr_current_units.convert(gui_units)
-        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
@@ -194,6 +205,7 @@ class Database(IDatabase):
             legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
+            xaxis_range=[ref_year, df["Year"].max()],
             legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
