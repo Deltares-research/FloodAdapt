@@ -51,7 +51,7 @@ pip install -e .
 
 ## Installing pre-commit (For developers)
 Hook scripts are useful for identifying simple issues before submission to code review.
-Precommit runs automatically on every commit point out issues in code such as missing semicolons, trailing whitespace, and debug statements. By pointing these issues out before code review, allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks.
+Precommit runs automatically on every commit point out issues in code such as missing semicolons, trailing whitespace, and debug statements. By pointing these issues out before code review, allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Install the git hook scripts with:
 
 ```bash
 pre-commit install
