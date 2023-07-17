@@ -203,7 +203,7 @@ class Database(IDatabase):
                 wl_df = input_wl_df
 
             # convert to units used in GUI
-            wl_df["Time"] = wl_df.index
+            # wl_df["Time"] = wl_df.index
             wl_current_units = UnitfulLength(
                 value=float(wl_df.iloc[0, 0]), units="meters"
             )
@@ -214,16 +214,9 @@ class Database(IDatabase):
             else:
                 conversion_factor = wl_gui_units / wl_current_units.value
             wl_df[1] = conversion_factor * wl_df[1]
-            wl_df = wl_df.rename(
-                columns={1: f"Water level (tide + surge) [{gui_units}]"}
-            )
 
             # Plot actual thing
-            fig = px.line(
-                wl_df,
-                x="Time",
-                y=f"Water level (tide + surge) [{gui_units}]",
-            )
+            fig = px.line(wl_df)
 
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -235,6 +228,8 @@ class Database(IDatabase):
                 font={"size": 10, "color": "black", "family": "Arial"},
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
+                xaxis_title="Time",
+                yaxis_title=f"Water level (tide + surge) [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 # paper_bgcolor="#3A3A3A",
