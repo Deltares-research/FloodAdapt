@@ -279,8 +279,16 @@ class Hazard:
             if (
                 self.event.attrs.wind.source == "map"
                 or self.event.attrs.rainfall.source == "map"
+                or self.event.attrs.template == "Historical_offshore"
             ):
-                ds = self.event.download_meteo(site=self.site, path=event_dir)
+                meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
+                if ~meteo_dir.is_dir():
+                    os.mkdir(
+                        self.database_input_path.parent.joinpath("output", "meteo")
+                    )
+                ds = self.event.download_meteo(
+                    site=self.site, path=meteo_dir
+                )  # =event_dir)
                 ds = ds.rename({"barometric_pressure": "press"})
                 ds = ds.rename({"precipitation": "precip"})
             else:
@@ -294,6 +302,11 @@ class Hazard:
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
                 self.run_offshore_model(ds=ds, ii=ii)
+                # turn off pressure correction at the boundaries because the effect of
+                # atmospheric pressure is already inlcuded in the water levels from the
+                # offshore model
+                model.turn_off_bnd_press_correction()
+
             model.add_wl_bc(self.wl_ts)
 
             # Generate and change discharge boundary condition
@@ -307,7 +320,9 @@ class Hazard:
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
                     model.add_precip_forcing(
-                        timeseries=event_dir.joinpath(self.event.attrs.rainfall.timeseries_file)
+                        timeseries=event_dir.joinpath(
+                            self.event.attrs.rainfall.timeseries_file
+                        )
                     )
                 elif self.event.attrs.rainfall.source == "constant":
                     model.add_precip_forcing(
@@ -364,12 +379,12 @@ class Hazard:
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
-            #Write spw file to overland folder
+            # Write spw file to overland folder
             if self.event.attrs.template == "Historical_hurricane":
                 shutil.copy2(
-                        self.simulation_paths_offshore[ii].joinpath(spw_name),
-                        self.simulation_paths[ii].joinpath(spw_name),
-                    )
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    self.simulation_paths[ii].joinpath(spw_name),
+                )
 
     def run_offshore_model(self, ds: xr.DataArray, ii: int):
         """Run offshore model to obtain water levels for boundary condition of the nearshore model
@@ -422,16 +437,19 @@ class Hazard:
 
         if self.event.attrs.template == "Historical_hurricane":
             offshore_model.add_spw_forcing(
-                    historical_hurricane=self.event,
-                    database_path=base_path,
-                    model_dir=self.simulation_paths_offshore[ii],
-                )
+                historical_hurricane=self.event,
+                database_path=base_path,
+                model_dir=self.simulation_paths_offshore[ii],
+            )
 
         # Run the actual SFINCS model
         self.run_sfincs_offshore()
 
-        # take his results from offshore model as input for wl bnd
+        # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
+
+        # add difference between vertical datum of offshore and overland model
+        self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":

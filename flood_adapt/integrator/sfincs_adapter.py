@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from typing import Optional, Union
 
@@ -335,3 +334,6 @@ class SfincsAdapter:
 
     def set_config_spw(self, spw_name: str):
         self.sf_model.set_config("spwfile", spw_name)
+
+    def turn_off_bnd_press_correction(self):
+        self.sf_model.set_config("PAVBNDKEY", -9999)
