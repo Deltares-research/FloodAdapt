@@ -143,6 +143,7 @@ class SurgeModel(BaseModel):
     shape_peak_time: Optional[float]
     shape_peak: Optional[UnitfulLength]
 
+
 class TranslationModel(BaseModel):
     """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
 
