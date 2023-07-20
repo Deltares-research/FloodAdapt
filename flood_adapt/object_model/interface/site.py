@@ -64,9 +64,10 @@ class GuiModel(BaseModel):
 
     tide_harmonic_amplitude: UnitfulLength
     default_length_units: UnitTypesLength
-    default_velocity_units = UnitTypesVelocity
-    default_discharge_units = UnitTypesDischarge
-    default_intensity_units = UnitTypesIntensity
+    default_distance_units: UnitTypesLength
+    default_velocity_units: UnitTypesVelocity
+    default_discharge_units: UnitTypesDischarge
+    default_intensity_units: UnitTypesIntensity
 
 
 class RiskModel(BaseModel):

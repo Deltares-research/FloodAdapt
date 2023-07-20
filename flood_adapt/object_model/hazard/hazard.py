@@ -250,9 +250,6 @@ class Hazard:
                 with open(sfincs_log, "w") as log_handler:
                     subprocess.run(sfincs_exec, stdout=log_handler)
 
-        # Indicator that hazard has run
-        self.__setattr__("has_run", True)
-
     def preprocess_sfincs(
         self,
     ):
@@ -301,7 +298,15 @@ class Hazard:
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
-                self.run_offshore_model(ds=ds, ii=ii)
+                self.preprocess_sfincs_offshore(ds=ds, ii=ii)
+                # Run the actual SFINCS model
+                offshore_model = self.run_sfincs_offshore()
+
+                # take the results from offshore model as input for wl bnd
+                self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
+
+                # add difference between vertical datum of offshore and overland model
+                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland
                 # turn off pressure correction at the boundaries because the effect of
                 # atmospheric pressure is already inlcuded in the water levels from the
                 # offshore model
@@ -386,8 +391,8 @@ class Hazard:
                     self.simulation_paths[ii].joinpath(spw_name),
                 )
 
-    def run_offshore_model(self, ds: xr.DataArray, ii: int):
-        """Run offshore model to obtain water levels for boundary condition of the nearshore model
+    def preprocess_sfincs_offshore(self, ds: xr.DataArray, ii: int):
+        """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model
 
         Args:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event.download_meteo())
@@ -401,6 +406,8 @@ class Hazard:
         event_dir = self.database_input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
+        if ~self.simulation_paths_offshore[ii].parent.is_dir():
+            os.mkdir(self.simulation_paths_offshore[ii].parent)
         os.mkdir(self.simulation_paths_offshore[ii])
 
         # Initiate offshore model
@@ -441,15 +448,7 @@ class Hazard:
                 database_path=base_path,
                 model_dir=self.simulation_paths_offshore[ii],
             )
-
-        # Run the actual SFINCS model
-        self.run_sfincs_offshore()
-
-        # take the results from offshore model as input for wl bnd
-        self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
-
-        # add difference between vertical datum of offshore and overland model
-        self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland
+        return offshore_model
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":
