@@ -262,7 +262,7 @@ class Hazard:
             self.event = event  # set current event to ii-th event in event set
             event_dir = self.event_set.event_paths[ii].parent
 
-            # Check if path_out exists
+            # Check if path_out exists and remove if it does because hydromt does not like if there is already an existing model
             if os.path.exists(self.simulation_paths[ii].parent):
                 shutil.rmtree(self.simulation_paths[ii].parent)
 
@@ -300,15 +300,14 @@ class Hazard:
             ):
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
-                offshore_model = self.run_sfincs_offshore()
-
-                # take the results from offshore model as input for wl bnd
-                self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
+                self.run_sfincs_offshore()
+                # add wl_ts to self
+                self.postprocess_sfincs_offshore(ii=ii)
 
                 # add difference between vertical datum of offshore and overland model
-                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland
+                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
                 # turn off pressure correction at the boundaries because the effect of
-                # atmospheric pressure is already inlcuded in the water levels from the
+                # atmospheric pressure is already included in the water levels from the
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
@@ -406,9 +405,7 @@ class Hazard:
         event_dir = self.database_input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
-        if ~self.simulation_paths_offshore[ii].parent.is_dir():
-            os.mkdir(self.simulation_paths_offshore[ii].parent)
-        os.mkdir(self.simulation_paths_offshore[ii])
+        self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
         offshore_model = SfincsAdapter(model_root=path_in_offshore)
@@ -448,7 +445,13 @@ class Hazard:
                 database_path=base_path,
                 model_dir=self.simulation_paths_offshore[ii],
             )
-        return offshore_model
+
+    def postprocess_sfincs_offshore(self, ii: int):
+        # Initiate offshore model
+        offshore_model = SfincsAdapter(model_root=self.simulation_paths_offshore[ii])
+
+        # take the results from offshore model as input for wl bnd
+        self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
 
     def postprocess_sfincs(self):
         if self.mode == "single_event":

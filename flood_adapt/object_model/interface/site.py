@@ -47,7 +47,7 @@ class SfincsModel(BaseModel):
 
 
 class Cyclone_track_databaseModel(BaseModel):
-    """class describing the accepted input for the fiel name of the Cyclone_track_database"""
+    """class describing the accepted input for the variable cyclone_track_database in Site"""
 
     file: str
 
