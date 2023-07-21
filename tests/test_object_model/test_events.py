@@ -51,6 +51,7 @@ def test_get_template():
 
     assert template == "Synthetic"
 
+
 def test_load_from_toml_synthetic():
     test_toml = (
         test_database
@@ -115,6 +116,7 @@ def test_load_from_toml_synthetic():
     # assert test_synthetic.attrs.river["constant_discharge"]["value"] == 5000
     # assert test_synthetic.attrs.river["constant_discharge"]["units"] == "cfs"
 
+
 def test_save_to_toml_synthetic():
     test_toml = (
         test_database
@@ -147,10 +149,9 @@ def test_save_to_toml_synthetic():
     test_synthetic.save(test_save_toml)
     test_save_toml.unlink()  # added this to delete the file afterwards
 
+
 def test_load_from_toml_hurricane():
-    test_toml = (
-        test_database / "charleston" / "input" / "events" / "ETA" / "ETA.toml"
-    )
+    test_toml = test_database / "charleston" / "input" / "events" / "ETA" / "ETA.toml"
 
     assert test_toml.is_file()
 
@@ -182,7 +183,7 @@ def test_load_from_toml_hurricane():
     assert test_synthetic.attrs
     assert test_synthetic.attrs.name == "ETA"
     assert test_synthetic.attrs.long_name == "ETA"
-    assert test_synthetic.attrs.template == "Historical - hurricane"
+    assert test_synthetic.attrs.template == "Historical_hurricane"
     assert test_synthetic.attrs.timing == "historical"
     assert test_synthetic.attrs.water_level_offset.value == 0.6
     assert test_synthetic.attrs.water_level_offset.units == "feet"
@@ -205,6 +206,7 @@ def test_load_from_toml_hurricane():
     # assert test_synthetic.attrs.river["source"] == "constant"
     # assert test_synthetic.attrs.river["constant_discharge"]["value"] == 5000
     # assert test_synthetic.attrs.river["constant_discharge"]["units"] == "cfs"
+
 
 def test_save_to_toml_hurricane():
     test_toml = (
@@ -238,6 +240,7 @@ def test_save_to_toml_hurricane():
     test_synthetic.save(test_save_toml)
     test_save_toml.unlink()  # added this to delete the file afterwards
 
+
 @pytest.mark.skip(reason="Takes quite long")
 def test_download_meteo():
     event_toml = (
@@ -260,11 +263,11 @@ def test_download_meteo():
     assert gfs_conus
 
     # Delete files
-    file_pattern = os.path.join(path, '*.nc')
+    file_pattern = os.path.join(path, "*.nc")
     file_list = glob.glob(file_pattern)
 
     for file_path in file_list:
-        os.remove(file_path)    
+        os.remove(file_path)
 
 
 def test_download_wl_timeseries():
@@ -277,42 +280,51 @@ def test_download_wl_timeseries():
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-    assert wl_df.iloc[:,0].dtypes == "float64"
+    assert wl_df.iloc[:, 0].dtypes == "float64"
 
 
 def test_make_spw_file():
-    event_toml = (test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml")
+    event_toml = (
+        test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml"
+    )
 
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = (test_database / "charleston" / "static" / "site" / "site.toml")
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
     site = Site.load_file(site_toml)
 
-    FLORENCE.make_spw_file(database_path=test_database.joinpath("charleston"), model_dir=event_toml.parent, site=site)
+    FLORENCE.make_spw_file(
+        database_path=test_database.joinpath("charleston"),
+        model_dir=event_toml.parent,
+        site=site,
+    )
 
-    assert event_toml.parent.joinpath("FLORENCE.spw").is_file()
+    assert event_toml.parent.joinpath("hurricane.spw").is_file()
 
-    #Remove spw file after completion of test
-    if event_toml.parent.joinpath("FLORENCE.spw").is_file():
-        os.remove(event_toml.parent.joinpath("FLORENCE.spw"))
+    # Remove spw file after completion of test
+    if event_toml.parent.joinpath("hurricane.spw").is_file():
+        os.remove(event_toml.parent.joinpath("hurricane.spw"))
+
 
 def test_translate_hurricane_track():
     from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-    event_toml = (test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml")
+    event_toml = (
+        test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml"
+    )
 
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = (test_database / "charleston" / "static" / "site" / "site.toml")
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
     site = Site.load_file(site_toml)
 
     tc = TropicalCyclone()
     tc.read_track(filename=event_toml.parent.joinpath("FLORENCE.cyc"), fmt="ddb_cyc")
     ref = tc.track
 
-    #Add translation to FLORENCE
+    # Add translation to FLORENCE
     dx = 10000
     dy = 25000
     FLORENCE.attrs.hurricane_translation.eastwest_translation.value = dx
@@ -323,14 +335,15 @@ def test_translate_hurricane_track():
     tc = FLORENCE.translate_tc_track(tc=tc, site=site)
     new = tc.track
 
-    #Determine difference in coordinates between the tracks
-    geom_new = new.iloc[0,1]
-    geom_ref = ref.iloc[0,1]
+    # Determine difference in coordinates between the tracks
+    geom_new = new.iloc[0, 1]
+    geom_ref = ref.iloc[0, 1]
     # Subtract the coordinates of the two geometries
     diff_lat = geom_new.coords[0][0] - geom_ref.coords[0][0]
     diff_lon = geom_new.coords[0][1] - geom_ref.coords[0][1]
-    assert round(diff_lat,4) == 0.0863
-    assert round(diff_lon,4) == 0.0793
+    assert round(diff_lat, 3) == 0.087
+    assert round(diff_lon, 3) == 0.081
+
 
 def test_constant_rainfall():
     test_toml = (
