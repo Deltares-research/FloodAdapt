@@ -209,17 +209,17 @@ class Hazard:
             return EventSet.load_file(event_path)
 
     def preprocess_models(self):
-        print(f"Preparing hazard models...")
+        print("Preparing hazard models...")
         # Preprocess all hazard model input
         self.preprocess_sfincs()
         # add other models here
 
     def run_models(self):
-        print(f"Running hazard models...")
+        print("Running hazard models...")
         self.run_sfincs()
 
     def postprocess_models(self):
-        print(f"Post-processing hazard models...")
+        print("Post-processing hazard models...")
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
@@ -281,7 +281,7 @@ class Hazard:
                 or self.event.attrs.rainfall.source == "map"
                 or self.event.attrs.template == "Historical_offshore"
             ):
-                print(f"Downloading meteo data...")
+                print("Downloading meteo data...")
                 meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
                 if ~meteo_dir.is_dir():
                     os.mkdir(
@@ -302,10 +302,10 @@ class Hazard:
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
-                print(f"Preparing offshore model to generate tide and surge...")
+                print("Preparing offshore model to generate tide and surge...")
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
-                print(f"Running offshore model...")
+                print("Running offshore model...")
                 self.run_sfincs_offshore()
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
@@ -318,13 +318,13 @@ class Hazard:
                 model.turn_off_bnd_press_correction()
 
             print(
-                f"Adding water level boundary conditions to the overland flood model..."
+                "Adding water level boundary conditions to the overland flood model..."
             )
             model.add_wl_bc(self.wl_ts)
 
             # Generate and change discharge boundary condition
             print(
-                f"Adding discharge boundary conditions if applicable to the overland flood model..."
+                "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             self.add_discharge()
             model.add_dis_bc(self.dis_ts)
@@ -333,17 +333,17 @@ class Hazard:
 
             if self.event.attrs.template != "Historical_hurricane":
                 if self.event.attrs.rainfall.source == "map":
-                    print(f"Adding gridded rainfall to the overland flood model...")
+                    print("Adding gridded rainfall to the overland flood model...")
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
-                    print(f"Adding rainfall timeseries to the overland flood model...")
+                    print("Adding rainfall timeseries to the overland flood model...")
                     model.add_precip_forcing(
                         timeseries=event_dir.joinpath(
                             self.event.attrs.rainfall.timeseries_file
                         )
                     )
                 elif self.event.attrs.rainfall.source == "constant":
-                    print(f"Adding constant rainfall to the overland flood model...")
+                    print("Adding constant rainfall to the overland flood model...")
                     model.add_precip_forcing(
                         const_precip=self.event.attrs.rainfall.constant_intensity.convert(
                             "mm/hr"
@@ -351,7 +351,7 @@ class Hazard:
                     )
                 elif self.event.attrs.rainfall.source == "shape":
                     print(
-                        f"Adding rainfall shape timeseries to the overland flood model..."
+                        "Adding rainfall shape timeseries to the overland flood model..."
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
                         scsfile = self.database_input_path.parent.joinpath(
@@ -369,13 +369,13 @@ class Hazard:
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
-                    print(f"Adding gridded wind field to the overland flood model...")
+                    print("Adding gridded wind field to the overland flood model...")
                     model.add_wind_forcing_from_grid(ds=ds)
                 elif self.event.attrs.wind.source == "timeseries":
-                    print(f"Adding wind timeseries to the overland flood model...")
+                    print("Adding wind timeseries to the overland flood model...")
                     model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
                 elif self.event.attrs.wind.source == "constant":
-                    print(f"Adding constant wind to the overland flood model...")
+                    print("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
                         const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
                         const_dir=self.event.attrs.wind.constant_direction.value,
@@ -383,7 +383,7 @@ class Hazard:
             else:
                 # Copy spw file also to nearshore folder
                 print(
-                    f"Adding wind field generated from hurricane track to the overland flood model..."
+                    "Adding wind field generated from hurricane track to the overland flood model..."
                 )
                 spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
@@ -395,13 +395,13 @@ class Hazard:
                         "input", "measures", measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
-                        print(f"Adding floodwall to the overland flood model...")
+                        print("Adding floodwall to the overland flood model...")
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
                         )
                     if measure.attrs.type == "green_infrastructure":
                         print(
-                            f"Adding green infrastructure to the overland flood model..."
+                            "Adding green infrastructure to the overland flood model..."
                         )
                         model.add_green_infrastructure(
                             green_infrastructure=measure.attrs,
@@ -461,7 +461,7 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
         elif self.event.attrs.template == "Historical_hurricane":
-            print(f"Generating meteo input to the model from the hurricane track...")
+            print("Generating meteo input to the model from the hurricane track...")
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
 
