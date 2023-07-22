@@ -93,6 +93,27 @@ class Database(IDatabase):
         return df.columns[2:].to_list()
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
+        """interpolating SLR value and referencing it to the SLR reference year from the site toml
+
+        Parameters
+        ----------
+        slr_scenario : str
+            SLR scenario name from the coulmn names in static\slr\slr.csv
+        year : float
+            year to evaluate
+
+        Returns
+        -------
+        float
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -137,13 +158,23 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
+        ref_year = self.site.attrs.slr.relative_to_year
+        if ref_year > df["Year"].max() or ref_year < df["Year"].min():
+            raise ValueError(
+                f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+            )
+        else:
+            scenarios = self.get_slr_scn_names()
+            for scn in scenarios:
+                ref_slr = np.interp(ref_year, df["Year"], df[scn])
+                df[scn] -= ref_slr
+
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        slr_current_units = UnitfulLength(value=1.0, units=units)
         gui_units = self.site.attrs.gui.default_length_units
-        slr_gui_units = slr_current_units.convert(gui_units)
-        conversion_factor = slr_gui_units / slr_current_units.value
-        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+        conversion_factor = slr_current_units.convert(gui_units)
+        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
@@ -178,6 +209,7 @@ class Database(IDatabase):
             legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
+            xaxis_range=[ref_year, df["Year"].max()],
             legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
@@ -207,27 +239,81 @@ class Database(IDatabase):
                 wl_df = input_wl_df
 
             # convert to units used in GUI
-            wl_df["Time"] = wl_df.index
-            wl_current_units = UnitfulLength(
-                value=float(wl_df.max()[1]), units="meters"
-            )
+            wl_current_units = UnitfulLength(value=1.0, units="meters")
             gui_units = self.site.attrs.gui.default_length_units
-            wl_gui_units = wl_current_units.convert(gui_units)
-            if wl_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = wl_gui_units / wl_current_units.value
+            conversion_factor = wl_current_units.convert(gui_units)
+
             wl_df[1] = conversion_factor * wl_df[1]
-            wl_df = wl_df.rename(
-                columns={1: f"Water level (tide + surge) [{gui_units}]"}
-            )
 
             # Plot actual thing
-            fig = px.line(
-                wl_df,
-                x="Time",
-                y=f"Water level (tide + surge) [{gui_units}]",
+            fig = px.line(wl_df)
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                xaxis_title="Time",
+                yaxis_title=f"Water level (tide + surge) [{gui_units}]",
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
             )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and synthetic tide + surge."
+            )
+            return str("")
+
+    def plot_rainfall(
+        self, event: IEvent
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if (
+            event["rainfall"]["source"] == "shape"
+            or event["rainfall"]["source"] == "timeseries"
+        ):
+            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+            if (
+                temp_event.attrs.rainfall.source == "shape"
+                and temp_event.attrs.rainfall.shape_type == "scs"
+            ):
+                scsfile = self.input_path.parent.joinpath(
+                    "static", "scs", self.site.attrs.scs.file
+                )
+                if scsfile.is_file() == False:
+                    ValueError(
+                        "Information about SCS file and type missing in site.toml"
+                    )
+                temp_event.add_rainfall_ts(
+                    scsfile=scsfile, scstype=self.site.attrs.scs.type
+                )
+            else:
+                temp_event.add_rainfall_ts()
+            df = temp_event.rain_ts
+
+            # convert to units used in GUI
+            ts_current_units = UnitfulIntensity(value=1.0, units="mm/hr")
+            gui_units = self.site.attrs.gui.default_intensity_units
+            conversion_factor = ts_current_units.convert(gui_units)
+            df = conversion_factor * df
+
+            # Plot actual thing
+            fig = px.line(data_frame=df)
 
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -241,20 +327,23 @@ class Database(IDatabase):
                 legend=None,
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title={"text": "Time"},
+                yaxis_title={"text": f"Rainfall intensity [{gui_units}]"},
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
 
             # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "wl.html")
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
             output_loc.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(output_loc)
             return str(output_loc)
 
         else:
             NotImplementedError(
-                "Plotting only available for Synthetic and Historical Nearshore event."
+                "Plotting only available for timeseries and shape type river discharge."
             )
+            return str("")
 
     def plot_river(
         self, event: IEvent
@@ -314,76 +403,7 @@ class Database(IDatabase):
             NotImplementedError(
                 "Plotting only available for timeseries and shape type river discharge."
             )
-
-    def plot_rainfall(
-        self, event: IEvent
-    ) -> (
-        str
-    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        if (
-            event["rainfall"]["source"] == "shape"
-            or event["rainfall"]["source"] == "timeseries"
-        ):
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-            if (
-                temp_event.attrs.rainfall.source == "shape"
-                and temp_event.attrs.rainfall.shape_type == "scs"
-            ):
-                scsfile = self.input_path.parent.joinpath(
-                    "static", "scs", self.site.attrs.scs.file
-                )
-                if scsfile.is_file() == False:
-                    ValueError(
-                        "Information about SCS file and type missing in site.toml"
-                    )
-                temp_event.add_rainfall_ts(
-                    scsfile=scsfile, scstype=self.site.attrs.scs.type
-                )
-            else:
-                temp_event.add_rainfall_ts()
-            df = temp_event.rain_ts
-
-            # convert to units used in GUI
-            ts_current_units = UnitfulIntensity(value=float(df.max()), units="mm/hr")
-            gui_units = self.site.attrs.gui.default_intensity_units
-            ts_gui_units = ts_current_units.convert(gui_units)
-            if ts_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = ts_gui_units / ts_current_units.value
-            df = conversion_factor * df
-
-            # Plot actual thing
-            fig = px.line(data_frame=df)
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                yaxis_title={"text": f"Rainfall intensity [{gui_units}]"},
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
-
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
-
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type river discharge."
-            )
+            return str("")
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.

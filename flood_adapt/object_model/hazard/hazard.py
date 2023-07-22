@@ -334,7 +334,7 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
 
-            # Add measures if included
+            # Add floodwall if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
                     measure_path = base_path.joinpath(
@@ -343,6 +343,11 @@ class Hazard:
                     if measure.attrs.type == "floodwall":
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
+                        )
+                    if measure.attrs.type == "green_infrastructure":
+                        model.add_green_infrastructure(
+                            green_infrastructure=measure.attrs,
+                            measure_path=measure_path,
                         )
 
             # write sfincs model in output destination
