@@ -296,7 +296,7 @@ class Database(IDatabase):
                 scsfile = self.input_path.parent.joinpath(
                     "static", "scs", self.site.attrs.scs.file
                 )
-                if scsfile.is_file() == False:
+                if scsfile.is_file() is False:
                     ValueError(
                         "Information about SCS file and type missing in site.toml"
                     )

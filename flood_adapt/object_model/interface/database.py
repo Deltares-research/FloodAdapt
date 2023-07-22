@@ -202,7 +202,3 @@ class IDatabase(ABC):
     @abstractmethod
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
         ...
-
-    @abstractmethod
-    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
-        ...
