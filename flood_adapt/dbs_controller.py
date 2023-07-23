@@ -313,6 +313,14 @@ class Database(IDatabase):
             conversion_factor = ts_current_units.convert(gui_units)
             df = conversion_factor * df
 
+            # set timing relative to T0 if event is synthetic
+            if event["template"] == "Synthetic":
+                df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
+
             # Plot actual thing
             fig = px.line(data_frame=df)
 
@@ -361,14 +369,18 @@ class Database(IDatabase):
             df = temp_event.dis_ts
 
             # convert to units used in GUI
-            ts_current_units = UnitfulDischarge(value=float(df.max()), units="m3/s")
-            gui_units = self.site.attrs.gui.default_intensity_units
-            ts_gui_units = ts_current_units.convert(gui_units)
-            if ts_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = ts_gui_units / ts_current_units.value
+            ts_current_units = UnitfulDischarge(value=1.0, units="m3/s")
+            gui_units = self.site.attrs.gui.default_discharge_units
+            conversion_factor = ts_current_units.convert(gui_units)
             df = conversion_factor * df
+
+            # set timing relative to T0 if event is synthetic
+            if event["template"] == "Synthetic":
+                df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
 
             # Plot actual thing
             fig = px.line(

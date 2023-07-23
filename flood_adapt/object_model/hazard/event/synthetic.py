@@ -97,7 +97,7 @@ class Synthetic(Event, ISynthetic):
                 "gaussian",
                 duration,
                 self.attrs.surge.shape_peak.convert("meters"),
-                shape_duration=duration,
+                shape_duration=self.attrs.surge.shape_duration * 3600,
                 time_shift=time_shift,
             )
         elif self.attrs.surge.source == "none":
