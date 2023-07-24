@@ -11,6 +11,18 @@ class UnitTypesLength(str, Enum):
     inch = "inch"
 
 
+class UnitTypesArea(str, Enum):
+    m2 = "m2"
+    cm2 = "cm2"
+    mm2 = "mm2"
+    sf = "sf"
+
+
+class UnitTypesVolume(str, Enum):
+    m3 = "m3"
+    cf = "cf"
+
+
 class UnitTypesVelocity(str, Enum):
     meters = "m/s"
     knots = "knots"
@@ -24,11 +36,6 @@ class UnitTypesDischarge(str, Enum):
 class UnitTypesIntensity(str, Enum):
     inch = "inch/hr"
     mm = "mm/hr"
-
-
-class UnitTypesVolume(str, Enum):
-    m3 = "m3"
-    cf = "cf"
 
 
 class VerticalReference(str, Enum):
@@ -77,6 +84,49 @@ class UnitfulLength(BaseModel):
             new_conversion = 3.28084
         elif new_units == "inch":
             new_conversion = 1.0 / 0.0254
+        else:
+            new_conversion = 1
+        return conversion * new_conversion * self.value
+    
+
+class UnitfulArea(BaseModel):
+    value: float
+    units: UnitTypesArea
+
+    def convert(self, new_units: UnitTypesArea) -> float:
+        """converts given length value different units
+
+        Parameters
+        ----------
+        new_units : UnitTypesArea
+            units to be converted to
+
+        Returns
+        -------
+        float
+            converted value
+        """
+        # first, convert to meters
+        if self.units == "cm2":
+            conversion = 1.0 / 10000  # meters
+        if self.units == "mm2":
+            conversion = 1.0 / 1000000  # meters
+        elif self.units == "m2":
+            conversion = 1.0  # meters
+        elif self.units == "sf":
+            conversion = 1.0 / 10.764  # meters
+        else:
+            conversion = 1.0
+
+        # second, convert to new units
+        if new_units == "cm2":
+            new_conversion = 10000.0
+        if new_units == "mm2":
+            new_conversion = 1000000.0
+        elif new_units == "m2":
+            new_conversion = 1.0
+        elif new_units == "sf":
+            new_conversion = 10.764
         else:
             new_conversion = 1
         return conversion * new_conversion * self.value

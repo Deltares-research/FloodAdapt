@@ -8,10 +8,12 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
+    UnitTypesArea,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
     UnitTypesVelocity,
+    UnitTypesVolume,
 )
 
 
@@ -58,6 +60,8 @@ class GuiModel(BaseModel):
 
     tide_harmonic_amplitude: UnitfulLength
     default_length_units: UnitTypesLength
+    default_area_units: UnitTypesArea
+    default_volume_units: UnitTypesVolume
     default_velocity_units = UnitTypesVelocity
     default_discharge_units = UnitTypesDischarge
     default_intensity_units = UnitTypesIntensity

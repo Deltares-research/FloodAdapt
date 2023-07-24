@@ -28,7 +28,9 @@ class HazardType(str, Enum):
     floodwall = "floodwall"
     # levee = "levee" --> same functionality as floodwall
     pump = "pump"
-    green_infrastructure = "green_infrastructure"
+    water_square = "water_square"
+    greening = "greening"
+    total_storage = "total_storage"
 
 
 class SelectionType(str, Enum):

@@ -33,9 +33,8 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMe
         return FloodProof.load_dict(attrs, database.input_path)
     elif type == "floodwall":
         return FloodWall.load_dict(attrs, database.input_path)
-    elif type == "green_infrastructure":
+    elif type == "water_square" or type == "total_storage" or type == "greening":
         return GreenInfrastructure.load_dict(attrs, database.input_path)
-
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:
     database.save_measure(measure)

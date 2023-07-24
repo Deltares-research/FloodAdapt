@@ -64,7 +64,7 @@ class HazardMeasureFactory:
             hazard_measure == "floodwall" or hazard_measure == "levee"
         ):  # these should use the same class right?
             return FloodWall
-        elif hazard_measure == "green_infrastructure":
+        elif hazard_measure == "water_square" or hazard_measure == "total_storage" or hazard_measure == "greening":
             return GreenInfrastructure
         elif hazard_measure == "pump":
             pass
