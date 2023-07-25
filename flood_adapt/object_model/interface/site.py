@@ -153,6 +153,9 @@ class SiteModel(BaseModel):
     obs_station: Optional[Obs_stationModel]
     benefits: BenefitsModel
     scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
+    standard_events: Optional[list[str]]
+    standard_projections: Optional[list[str]]
+    standard_strategies: Optional[list[str]]
 
 
 class ISite(ABC):
