@@ -475,7 +475,7 @@ class Database(IDatabase):
         """
 
         # Check if event is a standard event
-        if hasattr(self.site.attrs, 'standard_events'):
+        if hasattr(self.site.attrs, "standard_events"):
             if name in self.site.attrs.standard_events:
                 raise ValueError(
                     f"'{name}' event cannot be deleted since it is a standard event."
@@ -601,12 +601,11 @@ class Database(IDatabase):
         """
 
         # Check if projection is a standard projection
-        if hasattr(self.site.attrs, 'standard_projections'):
+        if hasattr(self.site.attrs, "standard_projections"):
             if name in self.site.attrs.standard_projections:
                 raise ValueError(
                     f"'{name}' projection cannot be deleted since it is a standard projection."
                 )
-
 
         # Get all the scenarios
         scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
@@ -713,12 +712,12 @@ class Database(IDatabase):
         """
 
         # Check if strategy is a standard strategy
-        if hasattr(self.site.attrs, 'standard_strategies'):
+        if hasattr(self.site.attrs, "standard_strategies"):
             if name in self.site.attrs.standard_strategies:
                 raise ValueError(
                     f"'{name}' strategy cannot be deleted since it is a standard strategy."
                 )
-                
+
         # Get all the scenarios
         scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
 
