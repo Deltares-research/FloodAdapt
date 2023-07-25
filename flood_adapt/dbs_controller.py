@@ -475,7 +475,7 @@ class Database(IDatabase):
         """
 
         # Check if event is a standard event
-        if hasattr(self.site.attrs, "standard_events"):
+        if hasattr(self.site.attrs, "standard_events") and self.site.attrs.standard_events:
             if name in self.site.attrs.standard_events:
                 raise ValueError(
                     f"'{name}' event cannot be deleted since it is a standard event."
@@ -601,7 +601,7 @@ class Database(IDatabase):
         """
 
         # Check if projection is a standard projection
-        if hasattr(self.site.attrs, "standard_projections"):
+        if hasattr(self.site.attrs, "standard_projections") and self.site.attrs.standard_projections:
             if name in self.site.attrs.standard_projections:
                 raise ValueError(
                     f"'{name}' projection cannot be deleted since it is a standard projection."
@@ -712,7 +712,7 @@ class Database(IDatabase):
         """
 
         # Check if strategy is a standard strategy
-        if hasattr(self.site.attrs, "standard_strategies"):
+        if hasattr(self.site.attrs, "standard_strategies") and self.site.attrs.standard_strategies:
             if name in self.site.attrs.standard_strategies:
                 raise ValueError(
                     f"'{name}' strategy cannot be deleted since it is a standard strategy."
