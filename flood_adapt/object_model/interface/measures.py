@@ -38,6 +38,7 @@ class SelectionType(str, Enum):
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
+    polyline = "polyline"
     all = "all"
 
 
@@ -54,6 +55,8 @@ class HazardMeasureModel(MeasureModel):
 
     type: HazardType
     polygon_file: str
+    selection_type: SelectionType
+
 
 
 class ImpactMeasureModel(MeasureModel):
