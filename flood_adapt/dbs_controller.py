@@ -475,8 +475,8 @@ class Database(IDatabase):
         """
 
         # Check if event is a standard event
-        if self.site.attrs.standard_events:
-            if name in self.site.attrs.standard_events:
+        if self.site.attrs.standard_objects.events:
+            if name in self.site.attrs.standard_objects.events:
                 raise ValueError(
                     f"'{name}' event cannot be deleted since it is a standard event."
                 )
@@ -601,8 +601,8 @@ class Database(IDatabase):
         """
 
         # Check if projection is a standard projection
-        if self.site.attrs.standard_projections:
-            if name in self.site.attrs.standard_projections:
+        if self.site.attrs.standard_objects.projections:
+            if name in self.site.attrs.standard_objects.projections:
                 raise ValueError(
                     f"'{name}' projection cannot be deleted since it is a standard projection."
                 )
@@ -712,8 +712,8 @@ class Database(IDatabase):
         """
 
         # Check if strategy is a standard strategy
-        if self.site.attrs.standard_strategies:
-            if name in self.site.attrs.standard_strategies:
+        if self.site.attrs.standard_objects.strategies:
+            if name in self.site.attrs.standard_objects.strategies:
                 raise ValueError(
                     f"'{name}' strategy cannot be deleted since it is a standard strategy."
                 )
@@ -838,7 +838,7 @@ class Database(IDatabase):
             if scenario.direct_impacts.hazard.has_run:
                 # TODO this should be a check were if the scenario is run you get a warning?
                 raise ValueError(
-                    f"'{name}' scenario cannot be deleted since the hazard model has already run."
+                    f"'{name}' scenario cannot be deleted since the scenario has been run."
                 )
             else:
                 shutil.rmtree(scenario_path, ignore_errors=True)
