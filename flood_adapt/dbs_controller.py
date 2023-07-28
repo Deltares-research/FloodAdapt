@@ -356,8 +356,8 @@ class Database(IDatabase):
         used_in_strategy = [
             strategy.attrs.name
             for strategy in strategies
-            for measures in strategy.attrs.measures
-            if name in measures
+            for measure in strategy.attrs.measures
+            if name == measure
         ]
 
         # If measure is used in a strategy, raise error
@@ -488,7 +488,7 @@ class Database(IDatabase):
         used_in_scenario = [
             scenario.attrs.name
             for scenario in scenarios
-            if name in scenario.attrs.event
+            if name == scenario.attrs.event
         ]
 
         # If event is used in a scenario, raise error
@@ -614,7 +614,7 @@ class Database(IDatabase):
         used_in_scenario = [
             scenario.attrs.name
             for scenario in scenarios
-            if name in scenario.attrs.projection
+            if name == scenario.attrs.projection
         ]
 
         # If projection is used in a scenario, raise error
@@ -725,7 +725,7 @@ class Database(IDatabase):
         used_in_scenario = [
             scenario.attrs.name
             for scenario in scenarios
-            if name in scenario.attrs.strategy
+            if name == scenario.attrs.strategy
         ]
 
         # If strategy is used in a scenario, raise error
@@ -821,8 +821,8 @@ class Database(IDatabase):
         used_in_benefit = [
             benefit.attrs.name
             for benefit in benefits
-            if name
-            in self.check_benefit_scenarios(benefit)["scenario created"].to_list()
+            for scenario in self.check_benefit_scenarios(benefit)["scenario created"].to_list()
+            if name == scenario
         ]
 
         # If strategy is used in a benefit, raise error
