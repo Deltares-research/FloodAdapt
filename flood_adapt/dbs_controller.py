@@ -74,8 +74,9 @@ class Database(IDatabase):
                 self.input_path.parent / "static" / "site" / aggr_dict.file
             ).to_crs(4326)
             # Use always the same column name for name labels
-            aggregation_areas[aggr_dict.name] = aggregation_areas[aggr_dict.name].rename(
-                columns={aggr_dict.field_name: "name"})
+            aggregation_areas[aggr_dict.name] = aggregation_areas[
+                aggr_dict.name
+            ].rename(columns={aggr_dict.field_name: "name"})
             # Make sure they are ordered alphabetically
             aggregation_areas[aggr_dict.name].sort_values(by="name").reset_index(
                 drop=True
