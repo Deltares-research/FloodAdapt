@@ -58,7 +58,6 @@ class HazardMeasureModel(MeasureModel):
     selection_type: SelectionType
 
 
-
 class ImpactMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 

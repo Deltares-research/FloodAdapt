@@ -54,7 +54,9 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
 
     @staticmethod
     def calculate_volume(
-        area: UnitfulArea, height: UnitfulLength = UnitfulLength(value=0.0, units='meters'), percent_area: float = 100.0
+        area: UnitfulArea,
+        height: UnitfulLength = UnitfulLength(value=0.0, units="meters"),
+        percent_area: float = 100.0,
     ) -> float:
         """Determine volume from area of the polygon and infiltration height
 

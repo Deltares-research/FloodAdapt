@@ -87,7 +87,7 @@ class UnitfulLength(BaseModel):
         else:
             new_conversion = 1
         return conversion * new_conversion * self.value
-    
+
 
 class UnitfulArea(BaseModel):
     value: float
