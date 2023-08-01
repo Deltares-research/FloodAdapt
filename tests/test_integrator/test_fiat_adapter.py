@@ -32,10 +32,7 @@ def test_fiat_adapter_no_measures():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-
-    test_scenario.direct_impacts.run_models()
+    test_scenario.run()
 
     exposure_scenario = pd.read_csv(
         test_database
@@ -67,10 +64,7 @@ def test_fiat_adapter_measures():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-    test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
-    test_scenario.direct_impacts.run_models()
+    test_scenario.run()
 
     exposure_scenario = pd.read_csv(
         test_database
@@ -200,7 +194,4 @@ def test_fiat_return_periods():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-
-    test_scenario.direct_impacts.run_models()
+    test_scenario.run()
