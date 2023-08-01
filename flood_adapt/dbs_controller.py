@@ -89,6 +89,27 @@ class Database(IDatabase):
         return df.columns[2:].to_list()
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
+        """interpolating SLR value and referencing it to the SLR reference year from the site toml
+
+        Parameters
+        ----------
+        slr_scenario : str
+            SLR scenario name from the coulmn names in static\slr\slr.csv
+        year : float
+            year to evaluate
+
+        Returns
+        -------
+        float
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
@@ -133,13 +154,23 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
+        ref_year = self.site.attrs.slr.relative_to_year
+        if ref_year > df["Year"].max() or ref_year < df["Year"].min():
+            raise ValueError(
+                f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+            )
+        else:
+            scenarios = self.get_slr_scn_names()
+            for scn in scenarios:
+                ref_slr = np.interp(ref_year, df["Year"], df[scn])
+                df[scn] -= ref_slr
+
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=df.iloc[0, -1], units=units)
+        slr_current_units = UnitfulLength(value=1.0, units=units)
         gui_units = self.site.attrs.gui.default_length_units
-        slr_gui_units = slr_current_units.convert(gui_units)
-        conversion_factor = slr_gui_units / slr_current_units.value
-        df.iloc[:, -1] = conversion_factor * df.iloc[:, -1]
+        conversion_factor = slr_current_units.convert(gui_units)
+        df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
@@ -174,6 +205,7 @@ class Database(IDatabase):
             legend={"entrywidthmode": "fraction", "entrywidth": 0.2},
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title=None,
+            xaxis_range=[ref_year, df["Year"].max()],
             legend_title=None,
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
@@ -203,27 +235,15 @@ class Database(IDatabase):
                 wl_df = input_wl_df
 
             # convert to units used in GUI
-            wl_df["Time"] = wl_df.index
-            wl_current_units = UnitfulLength(
-                value=float(wl_df.iloc[0, 0]), units="meters"
-            )
+            # wl_df["Time"] = wl_df.index
+            wl_current_units = UnitfulLength(value=1.0, units="meters")
             gui_units = self.site.attrs.gui.default_length_units
-            wl_gui_units = wl_current_units.convert(gui_units)
-            if wl_current_units.value == 0:
-                conversion_factor = 1
-            else:
-                conversion_factor = wl_gui_units / wl_current_units.value
+            conversion_factor = wl_current_units.convert(gui_units)
+
             wl_df[1] = conversion_factor * wl_df[1]
-            wl_df = wl_df.rename(
-                columns={1: f"Water level (tide + surge) [{gui_units}]"}
-            )
 
             # Plot actual thing
-            fig = px.line(
-                wl_df,
-                x="Time",
-                y=f"Water level (tide + surge) [{gui_units}]",
-            )
+            fig = px.line(wl_df)
 
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -235,6 +255,8 @@ class Database(IDatabase):
                 font={"size": 10, "color": "black", "family": "Arial"},
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
+                xaxis_title="Time",
+                yaxis_title=f"Water level (tide + surge) [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 # paper_bgcolor="#3A3A3A",
@@ -351,24 +373,25 @@ class Database(IDatabase):
         ValueError
             Raise error if measure to be deleted is already used in a strategy.
         """
-        # TODO check strategies that use a measure
+
+        # Get all the strategies
         strategies = [
             Strategy.load_file(path) for path in self.get_strategies()["path"]
         ]
-        used_strategy = [
-            name in measures
-            for measures in [strategy.attrs.measures for strategy in strategies]
+
+        # Check if measure is used in a strategy
+        used_in_strategy = [
+            strategy.attrs.name
+            for strategy in strategies
+            for measure in strategy.attrs.measures
+            if name == measure
         ]
-        if any(used_strategy):
-            strategies = [
-                strategy.attrs.name
-                for i, strategy in enumerate(strategies)
-                if used_strategy[i]
-            ]
-            # TODO split this
+
+        # If measure is used in a strategy, raise error
+        if used_in_strategy:
             text = "strategy" if len(strategies) == 1 else "strategies"
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
+                f"'{name}' measure cannot be deleted since it is already used in {text}: {', '.join(used_in_strategy)}"
             )
         else:
             measure_path = self.input_path / "measures" / name
@@ -471,12 +494,39 @@ class Database(IDatabase):
         ----------
         name : str
             name of the event
+
+        Raises
+        ------
+        ValueError
+            Raise error if event to be deleted is already used in a scenario.
         """
 
-        # TODO: check if event is used in a hazard
+        # Check if event is a standard event
+        if self.site.attrs.standard_objects.events:
+            if name in self.site.attrs.standard_objects.events:
+                raise ValueError(
+                    f"'{name}' event cannot be deleted since it is a standard event."
+                )
 
-        event_path = self.input_path / "events" / name
-        shutil.rmtree(event_path, ignore_errors=True)
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if event is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.event
+        ]
+
+        # If event is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' event cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            event_path = self.input_path / "events" / name
+            shutil.rmtree(event_path, ignore_errors=True)
 
     def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing event, and gives it a new name.
@@ -571,11 +621,38 @@ class Database(IDatabase):
         name : str
             name of the projection
 
+        Raises
+        ------
+        ValueError
+            Raise error if projection to be deleted is already used in a scenario.
         """
-        # TODO: make check if projection is used in strategies
 
-        projection_path = self.input_path / "projections" / name
-        shutil.rmtree(projection_path, ignore_errors=True)
+        # Check if projection is a standard projection
+        if self.site.attrs.standard_objects.projections:
+            if name in self.site.attrs.standard_objects.projections:
+                raise ValueError(
+                    f"'{name}' projection cannot be deleted since it is a standard projection."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if projection is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.projection
+        ]
+
+        # If projection is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' projection cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            projection_path = self.input_path / "projections" / name
+            shutil.rmtree(projection_path, ignore_errors=True)
 
     def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing projection, and gives it a new name.
@@ -660,19 +737,29 @@ class Database(IDatabase):
         ValueError
             Raise error if strategy to be deleted is already used in a scenario.
         """
-        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
-        used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
 
-        if any(used_scenario):
-            scenarios = [
-                scenario.attrs.name
-                for i, scenario in enumerate(scenarios)
-                if used_scenario[i]
-            ]
-            # TODO split this
-            text = "scenario" if len(scenarios) == 1 else "scenarios"
+        # Check if strategy is a standard strategy
+        if self.site.attrs.standard_objects.strategies:
+            if name in self.site.attrs.standard_objects.strategies:
+                raise ValueError(
+                    f"'{name}' strategy cannot be deleted since it is a standard strategy."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if strategy is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.strategy
+        ]
+
+        # If strategy is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text} {scenarios}"
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
             )
         else:
             strategy_path = self.input_path / "strategies" / name
@@ -753,16 +840,37 @@ class Database(IDatabase):
         ValueError
             Raise error if scenario has already model output
         """
-        scenario_path = self.input_path / "scenarios" / name
-        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
-        scenario.init_object_model()
-        if scenario.direct_impacts.hazard.has_run:
-            # TODO this should be a check were if the scenario is run you get a warning?
+
+        # Get all the benefits
+        benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
+
+        # Check in which benefits this scenario is used
+        used_in_benefit = [
+            benefit.attrs.name
+            for benefit in benefits
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
+            if name == scenario
+        ]
+
+        # If strategy is used in a benefit, raise error
+        if used_in_benefit:
+            text = "benefit" if len(used_in_benefit) == 1 else "benefits"
             raise ValueError(
-                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
-            shutil.rmtree(scenario_path, ignore_errors=True)
+            scenario_path = self.input_path / "scenarios" / name
+            scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+            scenario.init_object_model()
+            if scenario.direct_impacts.hazard.has_run:
+                # TODO this should be a check were if the scenario is run you get a warning?
+                raise ValueError(
+                    f"'{name}' scenario cannot be deleted since the scenario has been run."
+                )
+            else:
+                shutil.rmtree(scenario_path, ignore_errors=True)
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.

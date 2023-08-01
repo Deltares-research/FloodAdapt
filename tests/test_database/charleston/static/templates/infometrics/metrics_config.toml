@@ -1,0 +1,121 @@
+aggregateBy = []
+
+[[queries]]
+name = "ResidentialAffectedCount"
+description = "Number of affected damaged residential buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 25000"
+
+[[queries]]
+name = "ResidentialMinorCount"
+description = "Number of minor damaged residential buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+
+[[queries]]
+name = "ResidentialMajorCount"
+description = "Number of major damaged residential buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+
+[[queries]]
+name = "ResidentialDestroyedCount"
+description = "Number of destroyed residential buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` > 250000"
+
+[[queries]]
+name = "CommercialAffectedCount"
+description = "Number of affected damaged commercial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 25000"
+
+[[queries]]
+name = "CommercialMinorCount"
+description = "Number of minor damaged commercial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+
+[[queries]]
+name = "CommercialMajorCount"
+description = "Number of major damaged commercial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+
+[[queries]]
+name = "CommercialDestroyedCount"
+description = "Number of destroyed commercial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` > 250000"
+
+[[queries]]
+name = "IndustrialAffectedCount"
+description = "Number of affected damaged industrial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 25000"
+
+[[queries]]
+name = "IndustrialMinorCount"
+description = "Number of minor damaged industrial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+
+[[queries]]
+name = "IndustrialMajorCount"
+description = "Number of major damaged industrial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+
+[[queries]]
+name = "IndustrialDestroyedCount"
+description = "Number of destroyed industrial buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` > 250000"
+
+[[queries]]
+name = "GovernmentalAffectedCount"
+description = "Number of affected damaged governmental buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 25000"
+
+[[queries]]
+name = "GovernmentalMinorCount"
+description = "Number of minor damaged governmental buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+
+[[queries]]
+name = "GovernmentalMajorCount"
+description = "Number of major damaged governmental buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+
+[[queries]]
+name = "GovernmentalDestroyedCount"
+description = "Number of destroyed governmental buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` > 250000"
+
+[[queries]]
+name = "EducationalAffectedCount"
+description = "Number of affected damaged educational buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 25000"
+
+[[queries]]
+name = "EducationalMinorCount"
+description = "Number of minor damaged educational buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+
+[[queries]]
+name = "EducationalMajorCount"
+description = "Number of major damaged educational buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+
+[[queries]]
+name = "EducationalDestroyedCount"
+description = "Number of destroyed educational buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` > 250000"

@@ -9,6 +9,7 @@ dependencies:
   - pip:
     - NDBC
     - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
+    - git+https://github.com/Deltares/fiat_toolbox.git
     - noaa-coops
     - cht-tide
     - cht-meteo
@@ -19,7 +20,7 @@ dependencies:
   - ruff
   - build
   - geopandas
-  - hydromt
+  - hydromt=0.7.1
   - mypy
   - numpy
   - pandas
@@ -31,4 +32,5 @@ dependencies:
   - tomli-w
   - twine
   - census
+  - pre-commit
   - numpy-financial

@@ -362,7 +362,7 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
 
-            # Add measures if included
+            # Add floodwall if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
                     measure_path = base_path.joinpath(
@@ -371,6 +371,11 @@ class Hazard:
                     if measure.attrs.type == "floodwall":
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
+                        )
+                    if measure.attrs.type == "green_infrastructure":
+                        model.add_green_infrastructure(
+                            green_infrastructure=measure.attrs,
+                            measure_path=measure_path,
                         )
 
             # write sfincs model in output destination
@@ -538,7 +543,9 @@ class Hazard:
 
             # #create single nc
             zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
-            zs_rp_single = zs_rp_single.rio.write_crs(zsmax.raster.crs, inplace=True)
+            zs_rp_single = zs_rp_single.rio.write_crs(
+                zsmax.raster.crs
+            )  # , inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
             fn_rp_test = self.simulation_paths[0].parent.parent.joinpath(
                 "RP_" + str(rp) + "_maps.nc"

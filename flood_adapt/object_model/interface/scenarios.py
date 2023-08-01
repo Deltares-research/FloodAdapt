@@ -2,7 +2,6 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-import pandas as pd
 from pydantic import BaseModel
 
 
@@ -19,6 +18,7 @@ class ScenarioModel(BaseModel):
 
 class IScenario(ABC):
     attrs: ScenarioModel
+    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
     @abstractmethod
@@ -39,14 +39,4 @@ class IScenario(ABC):
 
     @abstractmethod
     def run(self) -> None:
-        ...
-
-    @abstractmethod
-    def infographic(self) -> str:
-        """creates an infographic and saves it in the scenario results folder"""
-        ...
-
-    @abstractmethod
-    def impact_metrics(self) -> pd.DataFrame:
-        """calculates impact metrics for the scenario, currently FEMA damage categories per object type"""
         ...
