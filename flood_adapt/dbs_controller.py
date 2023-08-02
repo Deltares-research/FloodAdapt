@@ -849,7 +849,9 @@ class Database(IDatabase):
         used_in_benefit = [
             benefit.attrs.name
             for benefit in benefits
-            for scenario in self.check_benefit_scenarios(benefit)["scenario created"].to_list()
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
             if name == scenario
         ]
 
