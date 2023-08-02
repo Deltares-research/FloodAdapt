@@ -127,6 +127,20 @@ class BenefitsModel(BaseModel):
     event_set: str
 
 
+class SCSModel(BaseModel):
+    """class describing the accepted input for the variable scs, which included the file with
+    the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type
+    """
+
+    file: str
+    type: str
+
+class StandardObjectModel(BaseModel):
+    """class describing the accepted input for the variable standard_object in Site"""
+    events: Optional[list[str]]
+    projections: Optional[list[str]]
+    strategies: Optional[list[str]]
+
 class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
@@ -143,6 +157,8 @@ class SiteModel(BaseModel):
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
     benefits: BenefitsModel
+    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
+    standard_objects: Optional[StandardObjectModel] # optional for the US to use standard objects
 
 
 class ISite(ABC):

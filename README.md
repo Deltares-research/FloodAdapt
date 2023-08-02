@@ -1,7 +1,7 @@
 # FloodAdapt
 (previously known as CFRSS)
 
-A software package Support System which can be used to assess the benefits and costs of Flood Resilience measures in a Community. 
+A software package Support System which can be used to assess the benefits and costs of Flood Resilience measures in a Community.
 It uses SFINCS (Super-Fast INundation of CoastS) and FIAT-Objects in the background.
 
 
@@ -49,6 +49,16 @@ In order to develop on `flood_adapt` locally, execute the following line inside 
 pip install -e .
 ```
 
+## Installing pre-commit (For developers)
+Hook scripts are useful for identifying simple issues before submission to code review.
+Precommit runs automatically on every commit point out issues in code such as missing semicolons, trailing whitespace, and debug statements. By pointing these issues out before code review, allows a code reviewer to focus on the architecture of a change while not wasting time with trivial style nitpicks. Install the git hook scripts with:
+
+```bash
+pre-commit install
+```
+
+Running this commands for the first time may take a minute or two, since the hook scripts need to be fetched and installed.
+This scripts are cached, and now pre-commit will run automatically on every ```git commit```.
 ## Running the tests
 
 
