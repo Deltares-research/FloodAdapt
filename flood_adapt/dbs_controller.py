@@ -56,7 +56,7 @@ class Database(IDatabase):
         self.site = Site.load_file(
             Path(database_path) / site_name / "static" / "site" / "site.toml"
         )
-        # self.update()
+        self.aggr_areas = self.get_aggregation_areas()
 
     # General methods
     def get_aggregation_areas(self) -> dict:
@@ -973,15 +973,13 @@ class Database(IDatabase):
         geometries = []
         for path, obj in zip(measures["path"], objects):
             # If polygon is used read the polygon file
-            if obj.attrs.polygon_file is not None:
+            if obj.attrs.polygon_file:
                 geometries.append(
                     gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
                 )
             # If aggregation area is used read the polygon from the aggregation area name
-            elif obj.attrs.aggregation_area_name is not None:
-                # TODO Maybe it makes more sense to have the geometry returned here?
-                aggr_areas = self.get_aggregation_areas()
-                gdf = aggr_areas[obj.attrs.aggregation_area_type]
+            elif obj.attrs.aggregation_area_name:
+                gdf = self.aggr_areas[obj.attrs.aggregation_area_type]
                 geometries.append(
                     gdf.loc[gdf["name"] == obj.attrs.aggregation_area_name, :]
                 )
