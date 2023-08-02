@@ -56,10 +56,10 @@ class Database(IDatabase):
         self.site = Site.load_file(
             Path(database_path) / site_name / "static" / "site" / "site.toml"
         )
-        # self.update()
+        self.aggr_areas = self.get_aggregation_areas()
 
     # General methods
-    def get_aggregation_areas(self) -> list[GeoDataFrame]:
+    def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
         These are expected to much the ones in the FIAT model
 
@@ -68,19 +68,20 @@ class Database(IDatabase):
         list[GeoDataFrame]
             list of geodataframes with the polygons defining the aggregation areas
         """
-        aggregation_areas = [
-            gpd.read_file(
+        aggregation_areas = {}
+        for aggr_dict in self.site.attrs.fiat.aggregation:
+            aggregation_areas[aggr_dict.name] = gpd.read_file(
                 self.input_path.parent / "static" / "site" / aggr_dict.file
             ).to_crs(4326)
-            for aggr_dict in self.site.attrs.fiat.aggregation
-        ]
-        # Make sure they are ordered alphabetically
-        aggregation_areas = [
-            aggregation_areas.sort_values(
-                by=self.site.attrs.fiat.aggregation[i].field_name
-            ).reset_index(drop=True)
-            for i, aggregation_areas in enumerate(aggregation_areas)
-        ]
+            # Use always the same column name for name labels
+            aggregation_areas[aggr_dict.name] = aggregation_areas[
+                aggr_dict.name
+            ].rename(columns={aggr_dict.field_name: "name"})
+            # Make sure they are ordered alphabetically
+            aggregation_areas[aggr_dict.name].sort_values(by="name").reset_index(
+                drop=True
+            )
+
         return aggregation_areas
 
     def get_slr_scn_names(self) -> list:
@@ -291,7 +292,7 @@ class Database(IDatabase):
         )
         fm.read()
         buildings = fm.exposure.select_objects(
-            type="ALL",
+            primary_object_type="ALL",
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
@@ -848,7 +849,9 @@ class Database(IDatabase):
         used_in_benefit = [
             benefit.attrs.name
             for benefit in benefits
-            for scenario in self.check_benefit_scenarios(benefit)["scenario created"].to_list()
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
             if name == scenario
         ]
 
@@ -1069,12 +1072,25 @@ class Database(IDatabase):
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["long_name"] = [obj.attrs.long_name for obj in objects]
-        measures["geometry"] = [
-            gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
-            if obj.attrs.polygon_file is not None
-            else None
-            for (path, obj) in zip(measures["path"], objects)
-        ]
+
+        geometries = []
+        for path, obj in zip(measures["path"], objects):
+            # If polygon is used read the polygon file
+            if obj.attrs.polygon_file:
+                geometries.append(
+                    gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
+                )
+            # If aggregation area is used read the polygon from the aggregation area name
+            elif obj.attrs.aggregation_area_name:
+                gdf = self.aggr_areas[obj.attrs.aggregation_area_type]
+                geometries.append(
+                    gdf.loc[gdf["name"] == obj.attrs.aggregation_area_name, :]
+                )
+            # Else assign a None value
+            else:
+                geometries.append(None)
+
+        measures["geometry"] = geometries
         return measures
 
     def get_strategies(self) -> dict[str, Any]:
