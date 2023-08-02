@@ -8,7 +8,7 @@ dependencies:
   - pip
   - pip:
     - NDBC
-    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
+    - git+https://github.com/Deltares/hydromt_fiat.git@984232b
     - git+https://github.com/Deltares/fiat_toolbox.git
     - noaa-coops
     - cht-tide
