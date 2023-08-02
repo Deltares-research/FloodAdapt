@@ -292,7 +292,7 @@ class Database(IDatabase):
         )
         fm.read()
         buildings = fm.exposure.select_objects(
-            type="ALL",
+            primary_object_type="ALL",
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
