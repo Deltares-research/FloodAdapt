@@ -39,7 +39,7 @@ def get_aggregation(name: str, database: IDatabase):
 
 def make_infographic(name: str, database: IDatabase) -> str:
     """Make the infographic for the given scenario.
-    
+
     Parameters
     ----------
     name : str
@@ -68,9 +68,10 @@ def make_infographic(name: str, database: IDatabase) -> str:
         keep_metrics_file=True,
     )
 
+
 def get_infographic(name: str, database: IDatabase) -> str:
     """Return the HTML string of the infographic for the given scenario.
-    
+
     Parameters
     ----------
     name : str
@@ -97,13 +98,14 @@ def get_infographic(name: str, database: IDatabase) -> str:
         database_path=Path(database.input_path).parent,
     )
 
+
 def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
-    """Return the metrics for the given scenario.	
+    """Return the metrics for the given scenario.
 
     Parameters
     ----------
     name : str
-        The name of the scenario.   
+        The name of the scenario.
     database : IDatabase
         The database object.
 
@@ -116,7 +118,7 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
     FileNotFoundError
         If the metrics file does not exist.
     """
-    
+
     # Create the infographic path
     metrics_path = Path(database.input_path).parent.joinpath(
         "output",
@@ -126,9 +128,11 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
 
     # Check if the file exists
     if not metrics_path.exists():
-        raise FileNotFoundError(
-            f"The metrics file for scenario {name} does not exist."
-        )
+        raise FileNotFoundError(f"The metrics file for scenario {name} does not exist.")
 
     # Read the metrics file
-    return MetricsFileReader(str(metrics_path)).read_metrics_from_file(include_long_names=True, include_description=True, include_metrics_table_selection=True)
+    return MetricsFileReader(str(metrics_path)).read_metrics_from_file(
+        include_long_names=True,
+        include_description=True,
+        include_metrics_table_selection=True,
+    )
