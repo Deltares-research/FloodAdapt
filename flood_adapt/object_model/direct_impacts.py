@@ -45,10 +45,20 @@ class DirectImpacts:
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
-        # TODO update to actual check in files
-        fiat_path = self.results_path
+        """ Checks if fiat has run as expected
 
-        return fiat_path.exists()
+        Returns
+        -------
+        boolean
+            True if fiat has run, False if something went wrong
+        """        
+        fiat_path = self.results_path
+        log_file = fiat_path.joinpath("output", "fiat.log")
+        with open(log_file) as f:
+            if 'All done!' in f.read():
+                return True
+            else:
+                return False
 
     def set_socio_economic_change(self, projection: str) -> None:
         """Sets the SocioEconomicChange object of the scenario.
