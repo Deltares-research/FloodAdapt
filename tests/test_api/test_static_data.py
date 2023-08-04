@@ -19,5 +19,5 @@ def test_aggr_areas():
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     aggr_areas = database.get_aggregation_areas()
-    assert isinstance(aggr_areas, list)
-    assert isinstance(aggr_areas[0], gpd.GeoDataFrame)
+    assert isinstance(aggr_areas, dict)
+    assert isinstance(aggr_areas["aggr_lvl_1"], gpd.GeoDataFrame)
