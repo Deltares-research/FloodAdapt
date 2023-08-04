@@ -292,7 +292,7 @@ class Database(IDatabase):
         )
         fm.read()
         buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
+            primary_object_type=["ALL"],
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
@@ -1305,6 +1305,7 @@ class Database(IDatabase):
 
                 shutil.copytree(path_0, path_new)
                 print(f"Hazard simulation is used from the '{scn.attrs.name}' scenario")
+                break
 
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
         """Runs a scenario hazard and impacts.

@@ -35,7 +35,7 @@ value = 3.0
 units = "meters"
 
 [risk]
-return_periods = [1, 2, 5, 10, 50, 100]
+return_periods = [1, 2, 5, 10, 25, 50, 100]
 [risk.flooding_threshold]
 value = 0.5
 units = "feet"

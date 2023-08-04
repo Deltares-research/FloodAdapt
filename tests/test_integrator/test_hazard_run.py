@@ -13,7 +13,7 @@ from flood_adapt.object_model.scenario import Scenario
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
+@pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_run_synthetic_wl():
     test_toml = (
         test_database
@@ -33,7 +33,7 @@ def test_hazard_run_synthetic_wl():
     test_scenario.direct_impacts.hazard.run_models()
 
 
-# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
+@pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_run_synthetic_discharge():
     test_toml = (
         test_database
@@ -133,7 +133,7 @@ def test_preprocess_prob_eventset():
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-@pytest.mark.skip(reason="Running models takes a couple of minutes")
+# @pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset():
     test_toml = (
         test_database
@@ -193,7 +193,7 @@ def test_rp_floodmap_calculation():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
-    # test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
+    test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
         test_database
         / "charleston"
