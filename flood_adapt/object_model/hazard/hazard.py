@@ -549,7 +549,9 @@ class Hazard:
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
             fn_rp_test = self.simulation_paths[0].parent.parent.joinpath(
                 # "RP_" + str(rp) + "_maps.nc"
-                "RP_" + "{:04d}".format(rp) + "_maps.nc"
+                "RP_"
+                + "{:04d}".format(rp)
+                + "_maps.nc"
             )
             zs_rp_single.to_netcdf(fn_rp_test)
 

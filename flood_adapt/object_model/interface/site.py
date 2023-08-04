@@ -136,14 +136,12 @@ class SCSModel(BaseModel):
     type: str
 
 
-
 class StandardObjectModel(BaseModel):
     """class describing the accepted input for the variable standard_object in Site"""
 
     events: Optional[list[str]] = []
     projections: Optional[list[str]] = []
     strategies: Optional[list[str]] = []
-
 
 
 class SiteModel(BaseModel):
