@@ -195,3 +195,4 @@ def test_fiat_return_periods():
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.run()
+    assert test_scenario.direct_impacts.has_run
