@@ -128,7 +128,9 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
 
     # Check if the file exists
     if not metrics_path.exists():
-        raise FileNotFoundError(f"The metrics file for scenario {name} does not exist.")
+        raise FileNotFoundError(
+            f"The metrics file for scenario {name}({str(metrics_path)}) does not exist."
+        )
 
     # Read the metrics file
     return MetricsFileReader(str(metrics_path)).read_metrics_from_file(
