@@ -110,7 +110,7 @@ class Scenario(IScenario):
 
         # Write the metrics to file
         metrics_writer = MetricsFileWriter(metrics_config_path)
-        
+
         metrics_writer.parse_metrics_to_file(
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
         )
