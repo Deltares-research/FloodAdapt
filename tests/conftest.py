@@ -15,6 +15,7 @@ def get_file_structure(path: str) -> list:
         file_structure.append(relative_path)
     return file_structure
 
+
 def remove_files_and_folders(path, file_structure):
     """Remove all files and folders that are not present in the file structure"""
 
@@ -29,7 +30,6 @@ def remove_files_and_folders(path, file_structure):
                 print(f"PermissionError: {root}")
 
 
-            
 @pytest.fixture
 def cleanup_database():
     """Cleanup the database after each test"""
@@ -39,10 +39,9 @@ def cleanup_database():
     test_site_name = "charleston"
     database_path = str(test_database_path.joinpath(test_site_name))
     file_structure = get_file_structure(database_path)
-    
+
     # Run the test
     yield
-    
+
     # Remove all files and folders that were not present before the test
     remove_files_and_folders(database_path, file_structure)
-    
