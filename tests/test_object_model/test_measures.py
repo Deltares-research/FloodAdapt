@@ -24,7 +24,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_floodwall_read():
+def test_floodwall_read(cleanup_database):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "seawall" / "seawall.toml"
     )
@@ -44,7 +44,7 @@ def test_floodwall_read():
     assert floodwall.attrs.elevation.units == "feet"
 
 
-def test_elevate_aggr_area_read():
+def test_elevate_aggr_area_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -75,7 +75,7 @@ def test_elevate_aggr_area_read():
     assert elevate.attrs.aggregation_area_name == "name5"
 
 
-def test_elevate_aggr_area_read_fail():
+def test_elevate_aggr_area_read_fail(cleanup_database):
     # TODO validators do not work?
     test_dict = {
         "name": "test1",
@@ -90,7 +90,7 @@ def test_elevate_aggr_area_read_fail():
     Elevate.load_dict(test_dict, test_database / "charleston" / "input")
 
 
-def test_elevate_aggr_area_save():
+def test_elevate_aggr_area_save(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -123,7 +123,7 @@ def test_elevate_aggr_area_save():
     test_toml_new.unlink()
 
 
-def test_elevate_polygon_read():
+def test_elevate_polygon_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -156,7 +156,7 @@ def test_elevate_polygon_read():
     assert isinstance(polygon, gpd.GeoDataFrame)
 
 
-def test_buyout_read():
+def test_buyout_read(cleanup_database):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "buyout" / "buyout.toml"
     )
@@ -171,7 +171,7 @@ def test_buyout_read():
     assert isinstance(buyout.attrs.aggregation_area_name, str)
 
 
-def test_floodproof_read():
+def test_floodproof_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -191,7 +191,7 @@ def test_floodproof_read():
     assert isinstance(floodproof.attrs.aggregation_area_name, str)
 
 
-def test_green_infra_read():
+def test_green_infra_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"

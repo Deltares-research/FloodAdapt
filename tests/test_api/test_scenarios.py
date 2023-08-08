@@ -13,7 +13,7 @@ test_site_name = "charleston"
 
 
 @pytest.mark.skip(reason="We cannot depend on the P drive")
-def test_scenario():
+def test_scenario(cleanup_database):
     test_dict = {
         "name": "current_extreme12ft_no_measures",
         "description": "current_extreme12ft_no_measures",

@@ -8,7 +8,7 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.mark.skip(reason="No file to read metrics from")
-def test_impact_metrics():
+def test_impact_metrics(cleanup_database):
     test_database = Path().absolute() / "tests" / "test_database"
     test_toml = (
         test_database

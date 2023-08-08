@@ -10,7 +10,7 @@ from flood_adapt.object_model.benefit import Benefit
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_benefit_read():
+def test_benefit_read(cleanup_database):
     benefit_toml = (
         test_database
         / "charleston"
@@ -25,7 +25,7 @@ def test_benefit_read():
     assert isinstance(benefit, Benefit)
 
 
-def test_check_scenarios():
+def test_check_scenarios(cleanup_database):
     benefit_toml = (
         test_database
         / "charleston"
@@ -42,7 +42,7 @@ def test_check_scenarios():
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_CBA():
+def test_run_CBA(cleanup_database):
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
@@ -110,7 +110,7 @@ def test_run_CBA():
         shutil.rmtree(res_scn_path)
 
 
-def test_run_benefit_analysis():
+def test_run_benefit_analysis(cleanup_database):
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (

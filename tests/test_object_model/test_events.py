@@ -27,7 +27,7 @@ from flood_adapt.object_model.site import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_get_template():
+def test_get_template(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -48,7 +48,7 @@ def test_get_template():
     assert template == "Synthetic"
 
 
-def test_load_and_save_fromtoml_synthetic():
+def test_load_and_save_fromtoml_synthetic(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -126,7 +126,7 @@ def test_load_and_save_fromtoml_synthetic():
     test_save_toml.unlink()  # added this to delete the file afterwards
 
 
-def test_download_meteo():
+def test_download_meteo(cleanup_database):
     event_toml = (
         test_database
         / "charleston"
@@ -146,7 +146,7 @@ def test_download_meteo():
     assert gfs_conus
 
 
-def test_download_wl_timeseries():
+def test_download_wl_timeseries(cleanup_database):
     station_id = 8665530
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
@@ -159,7 +159,7 @@ def test_download_wl_timeseries():
     assert wl_df.iloc[:, 0].dtypes == "float64"
 
 
-def test_constant_rainfall():
+def test_constant_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -182,7 +182,7 @@ def test_constant_rainfall():
     assert np.abs(event.rain_ts.to_numpy()[0][0] - 2) < 0.001
 
 
-def test_gaussian_rainfall():
+def test_gaussian_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -214,7 +214,7 @@ def test_gaussian_rainfall():
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_block_rainfall():
+def test_block_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -246,7 +246,7 @@ def test_block_rainfall():
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_triangle_rainfall():
+def test_triangle_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -279,7 +279,7 @@ def test_triangle_rainfall():
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_scs_rainfall():
+def test_scs_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"

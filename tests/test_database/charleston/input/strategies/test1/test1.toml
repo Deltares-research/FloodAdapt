@@ -1,7 +1,0 @@
-name = "test1"
-description = "strategy_comb"
-measures = [
-    "seawall",
-    "raise_property_aggregation_area",
-    "raise_property_polygon",
-]
