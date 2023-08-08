@@ -100,7 +100,7 @@ class RiverModel(BaseModel):
     # TODO: add functionality to use multiple rivers
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
@@ -110,7 +110,7 @@ class Obs_stationModel(BaseModel):
     """class describing the accepted input for the variable obs_station in Site"""
 
     name: Union[int, str]
-    long_name: str
+    description: Optional[str] = ""
     ID: int
     lat: float
     lon: float
@@ -148,7 +148,7 @@ class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     lat: float
     lon: float
     sfincs: SfincsModel

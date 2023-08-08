@@ -16,7 +16,7 @@ test_site_name = "charleston"
 def test_scenario():
     test_dict = {
         "name": "current_extreme12ft_no_measures",
-        "long_name": "current_extreme12ft_no_measures",
+        "description": "current_extreme12ft_no_measures",
         "projection": "current",
         "strategy": "no_measures",
     }

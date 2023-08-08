@@ -12,7 +12,7 @@ test_site_name = "charleston"
 def test_synthetic_event():
     test_dict = {
         "name": "extreme12ft",
-        "long_name": "extreme 12 foot event",
+        "description": "extreme 12 foot event",
         "mode": "single_event",
         "template": "Synthetic",
         "timing": "idealized",

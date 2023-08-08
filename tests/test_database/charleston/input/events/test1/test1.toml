@@ -1,20 +1,22 @@
-name = "extreme12ft"
+name = "test1"
 description = "extreme 12 foot event"
 mode = "single_event"
 template = "Synthetic"
 timing = "idealized"
 
 [water_level_offset]
-value = 0
+value = 0.0
 units = "feet"
 
 [wind]
 source = "constant"
+
 [wind.constant_speed]
-value = 0
+value = 0.0
 units = "m/s"
+
 [wind.constant_direction]
-value = 0
+value = 0.0
 units = "deg N"
 
 [rainfall]
@@ -22,26 +24,30 @@ source = "none"
 
 [river]
 source = "constant"
+
 [river.constant_discharge]
-value = 5000
+value = 5000.0
 units = "cfs"
 
 [time]
-duration_before_t0 = 24
-duration_after_t0 = 24
+duration_before_t0 = 24.0
+duration_after_t0 = 24.0
+start_time = "20200101 000000"
+end_time = "20200103 000000"
 
 [tide]
 source = "harmonic"
+
 [tide.harmonic_amplitude]
-value = 3
+value = 3.0
 units = "feet"
 
 [surge]
 source = "shape"
 shape_type = "gaussian"
-shape_duration = 24
-shape_peak_time = 0
-panel_text = "Storm Surge"
+shape_duration = 24.0
+shape_peak_time = 0.0
+
 [surge.shape_peak]
 value = 9.22
 units = "feet"

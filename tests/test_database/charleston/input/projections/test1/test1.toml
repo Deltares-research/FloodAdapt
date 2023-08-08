@@ -1,16 +1,16 @@
-name = "current"
-description = "current"
+name = "test1"
+description = "SLR_2ft"
 
 [physical_projection]
 rainfall_increase = 0.0
 storm_frequency_increase = 0.0
 
 [physical_projection.sea_level_rise]
-value = 0.0
+value = 2.0
 units = "feet"
 
 [physical_projection.subsidence]
-value = 0.0
+value = 1.0
 units = "feet"
 
 [socio_economic_change]

@@ -12,7 +12,7 @@ test_site_name = "charleston"
 def test_projection():
     test_dict = {
         "name": "SLR_2ft",
-        "long_name": "SLR_2ft",
+        "description": "SLR_2ft",
         "physical_projection": {
             "sea_level_rise": {"value": "two", "units": "feet"},
             "subsidence": {"value": 1, "units": "feet"},

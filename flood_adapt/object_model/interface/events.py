@@ -147,7 +147,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     mode: Mode
     template: Template
     timing: Timing
@@ -164,7 +164,7 @@ class EventSetModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     mode: Mode
     subevent_name: Optional[list[str]]
     frequency: Optional[list[float]]

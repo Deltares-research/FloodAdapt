@@ -30,7 +30,7 @@ def test_projection_read():
     assert isinstance(projection.get_physical_projection(), PhysicalProjection)
     assert isinstance(projection.get_socio_economic_change(), SocioEconomicChange)
     assert projection.attrs.name == "all_projections"
-    assert projection.attrs.long_name == "all_projections"
+    assert projection.attrs.description == "all_projections"
     assert projection.get_physical_projection().attrs.sea_level_rise.value == 2
     assert projection.get_socio_economic_change().attrs.economic_growth == 20
     with pytest.raises(AttributeError):
@@ -58,6 +58,6 @@ def test_projection_only_slr():
 
     # Assert that the configured risk drivers are set to the values from the toml file
     assert projection.attrs.name == "SLR_2ft"
-    assert projection.attrs.long_name == "SLR_2ft"
+    assert projection.attrs.description == "SLR_2ft"
     assert projection.get_physical_projection().attrs.sea_level_rise.value == 2
     assert projection.get_physical_projection().attrs.sea_level_rise.units == "feet"

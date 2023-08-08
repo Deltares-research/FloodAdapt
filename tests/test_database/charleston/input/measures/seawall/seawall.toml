@@ -1,5 +1,5 @@
 name = "seawall"
-long_name = "seawall"
+description = "seawall"
 type = "floodwall"
 polygon_file = "seawall.geojson"
 elevation.value = 12

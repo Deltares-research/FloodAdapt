@@ -2,6 +2,6 @@
 <root>
   <strategy>
     <name>no_measures</name>
-    <long_name>no_measures</long_name>
+    <description>no_measures</description>
   </strategy>
 </root>

@@ -74,9 +74,9 @@ def delete_event(name: str, database: IDatabase) -> None:
 
 
 def copy_event(
-    old_name: str, database: IDatabase, new_name: str, new_long_name: str
+    old_name: str, database: IDatabase, new_name: str, new_description: str
 ) -> None:
-    database.copy_event(old_name, new_name, new_long_name)
+    database.copy_event(old_name, new_name, new_description)
 
 
 def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:

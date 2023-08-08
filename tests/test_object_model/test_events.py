@@ -79,7 +79,7 @@ def test_load_and_save_fromtoml_synthetic():
     # assert that attributes have been set to correct data types
     assert test_synthetic
     assert isinstance(test_synthetic.attrs.name, str)
-    assert isinstance(test_synthetic.attrs.long_name, str)
+    assert isinstance(test_synthetic.attrs.description, str)
     assert isinstance(test_synthetic.attrs.mode, Mode)
     assert isinstance(test_synthetic.attrs.template, Template)
     assert isinstance(test_synthetic.attrs.timing, Timing)
@@ -94,7 +94,7 @@ def test_load_and_save_fromtoml_synthetic():
     # assert that attributes have been set to values from toml file
     assert test_synthetic.attrs
     assert test_synthetic.attrs.name == "extreme12ft"
-    assert test_synthetic.attrs.long_name == "extreme 12 foot event"
+    assert test_synthetic.attrs.description == "extreme 12 foot event"
     assert test_synthetic.attrs.template == "Synthetic"
     assert test_synthetic.attrs.timing == "idealized"
     assert test_synthetic.attrs.water_level_offset.value == 0

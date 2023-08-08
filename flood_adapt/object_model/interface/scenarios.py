@@ -9,7 +9,6 @@ class ScenarioModel(BaseModel):
     """BaseModel describing the expected variables and data types of a scenario"""
 
     name: str
-    long_name: str
     description: Optional[str] = ""
     event: str
     projection: str

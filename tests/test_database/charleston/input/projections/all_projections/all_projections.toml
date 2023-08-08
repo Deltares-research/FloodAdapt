@@ -1,5 +1,5 @@
 name = "all_projections"
-long_name = "all_projections"
+description = "all_projections"
 [physical_projection]
 sea_level_rise.value = 2
 sea_level_rise.units = "feet"

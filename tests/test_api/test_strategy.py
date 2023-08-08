@@ -13,7 +13,7 @@ test_site_name = "charleston"
 def test_strategy():
     test_dict = {
         "name": "strategy_comb",
-        "long_name": "strategy_comb",
+        "description": "strategy_comb",
         "measures": [
             "seawall",
             "raise_property_aggregation_area",

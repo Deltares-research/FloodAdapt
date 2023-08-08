@@ -1,5 +1,5 @@
 name = "charleston"
-long_name = "Charleston, SC"
+description = "Charleston, SC"
 lat = 32.77
 lon = -79.95
 
@@ -63,7 +63,7 @@ field_name = "name"
 
 [obs_station]
 name = 8665530
-long_name = "Charleston Cooper River Entrance"
+description = "Charleston Cooper River Entrance"
 ID = 8665530
 lat = 32.78
 lon = -79.9233
