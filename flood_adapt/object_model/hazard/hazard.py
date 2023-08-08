@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -14,12 +15,12 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.eventset import EventSet
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.hazard.utils import cd
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import cd
 
 
 class Hazard:
@@ -37,6 +38,9 @@ class Hazard:
     has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+        self._mode: Mode
+        self.simulation_paths: List[Path]
+        self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.set_event(
@@ -47,11 +51,32 @@ class Hazard:
         self.site = Site.load_file(
             database_input_path.parent / "static" / "site" / "site.toml"
         )
+
         self.set_simulation_paths()
+
+        self._set_sfincs_map_path(mode=self.event_mode)
+
         self.has_run = self.sfincs_has_run_check()
 
+    @property
+    def event_mode(self) -> Mode:
+        return self._mode
+
+    @event_mode.setter
+    def event_mode(self, mode: Mode) -> None:
+        self._mode = mode
+
+    def _set_sfincs_map_path(self, mode: Mode) -> None:
+        if mode == Mode.single_event:
+            [self.sfincs_map_path] = self.simulation_paths
+
+        elif mode == Mode.risk:
+            self.sfincs_map_path = self.database_input_path.parent.joinpath(
+                "output", "simulations", self.name
+            )
+
     def set_simulation_paths(self) -> None:
-        if self.mode == "single_event":
+        if self._mode == Mode.single_event:
             self.simulation_paths = [
                 self.database_input_path.parent.joinpath(
                     "output",
@@ -69,7 +94,7 @@ class Hazard:
                     self.site.attrs.sfincs.offshore_model,
                 )
             ]
-        elif self.mode == "risk":  # risk mode requires an additional folder layer
+        elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
@@ -126,14 +151,17 @@ class Hazard:
             self.database_input_path / "events" / event / "{}.toml".format(event)
         )
         # set mode (probabilistic_set or single_event)
-        self.mode = Event.get_mode(event_set_path)
+        self.event_mode = Event.get_mode(event_set_path)
         self.event_set = EventSet.load_file(event_set_path)
-        if self.mode == "single_event":
+
+        if self._mode == Mode.single_event:
             self.event_set.event_paths = [event_set_path]
             self.probabilities = [1]
-        elif self.mode == "risk":
+
+        elif self._mode == Mode.risk:
             self.event_set.event_paths = []
             subevents = self.event_set.attrs.subevent_name
+
             for subevent in subevents:
                 event_path = (
                     self.database_input_path
@@ -180,6 +208,7 @@ class Hazard:
             if self.event.attrs.template == "Synthetic":
                 self.event.add_tide_and_surge_ts()
                 self.wl_ts = self.event.tide_surge_ts
+
             elif self.event.attrs.template == "Historical_nearshore":
                 wl_df = self.event.tide_surge_ts
                 self.wl_ts = wl_df
@@ -201,12 +230,12 @@ class Hazard:
     @staticmethod
     def get_event_object(event_path):  # TODO This could be used above as well?
         mode = Event.get_mode(event_path)
-        if mode == "single_event":
+        if mode == Mode.single_event:
             # parse event config file to get event template
             template = Event.get_template(event_path)
             # use event template to get the associated event child class
             return EventFactory.get_event(template).load_file(event_path)
-        elif mode == "risk":
+        elif mode == Mode.risk:
             return EventSet.load_file(event_path)
 
     def preprocess_models(self):
@@ -496,11 +525,11 @@ class Hazard:
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
 
     def postprocess_sfincs(self):
-        if self.mode == "single_event":
+        if self._mode == Mode.single_event:
             ...  # TODO: create geotiff?
-        elif self.mode == "probabilistic_set":
+        elif self._mode == Mode.risk:
             self.calculate_rp_floodmaps()
-            self.calculate_floodfrequency_map()
+            # self.calculate_floodfrequency_map()
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
@@ -516,9 +545,9 @@ class Hazard:
         frequencies = self.event_set.attrs.frequency
 
         zs_maps = []
-        for ii, simulation_path in enumerate(self.simulation_paths):
+        for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=simulation_path)
+            sim = SfincsAdapter(model_root=str(simulation_path))
             zsmax = sim.read_zsmax().load()
             zs_maps.append(zsmax.stack(z=("x", "y")))
 
@@ -609,10 +638,27 @@ class Hazard:
             zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
             zs_rp_maps.append(zs_rp_da.unstack())
 
+            # #create single nc
+            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
+            zs_rp_single = zs_rp_single.rio.write_crs(
+                zsmax.raster.crs
+            )  # , inplace=True)
+            zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
+            fn_rp_test = self.simulation_paths[0].parent.parent.joinpath(
+                # "RP_" + str(rp) + "_maps.nc"
+                "RP_"
+                + "{:04d}".format(rp)
+                + "_maps.nc"
+            )
+            zs_rp_single.to_netcdf(fn_rp_test)
+
+        # this component is only required in case only one netcdf with multiple hazard maps is needed
         # write netcdf with water level, add new dimension for rp
-        zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        fn_rp = self.simulation_paths[0].parent.parent.joinpath("rp_water_level.nc")
-        zs_rp.to_netcdf(fn_rp)
+        # zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
+        # zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
+        # zs_rp = zs_rp.to_dataset(name="risk_map")
+        # fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
+        # zs_rp.to_netcdf(fn_rp)
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError

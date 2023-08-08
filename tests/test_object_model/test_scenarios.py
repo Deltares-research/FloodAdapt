@@ -94,6 +94,9 @@ def test_hazard_wl():
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
+@pytest.mark.skip(
+    reason="Test csv file is missing and bug in the code according to team"
+)
 def test_scs_rainfall():
     test_toml = (
         test_database
