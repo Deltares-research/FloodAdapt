@@ -177,9 +177,9 @@ class Event:
         Returns
         -------
         self
-            updated object with wind timeseries added in pf.DataFrame format
+            updated object with discharge timeseries added in pf.DataFrame format
         """
-        # generating time series of constant discahrge
+        # generating time series of constant discharge
         # TODO: add for loop to handle multiple rivers (or none)
 
         tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")

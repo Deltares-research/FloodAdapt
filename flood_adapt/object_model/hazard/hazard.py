@@ -31,7 +31,6 @@ class Hazard:
     database_input_path: Path
     mode: Mode
     event_set: EventSet
-    event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False

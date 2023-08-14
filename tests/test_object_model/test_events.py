@@ -371,10 +371,16 @@ def test_constant_rainfall():
         source="constant",
         constant_intensity=UnitfulIntensity(value=2.0, units="inch/hr"),
     )
-    event.add_rainfall_ts()
+    event.add_rainfall_ts()  # also converts to mm/hour!!!
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
-    assert np.abs(event.rain_ts.to_numpy()[0][0] - 2) < 0.001
+    assert (
+        np.abs(
+            event.rain_ts.to_numpy()[0][0]
+            - UnitfulIntensity(value=2, units="inch/hr").convert("mm/hr")
+        )
+        < 0.001
+    )
 
 
 def test_gaussian_rainfall():
