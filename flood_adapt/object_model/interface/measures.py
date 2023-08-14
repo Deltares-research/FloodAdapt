@@ -54,7 +54,7 @@ class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: str
+    polygon_file: Optional[str]
     selection_type: SelectionType
 
 
@@ -126,6 +126,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
     volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
     height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    aggregation_area_type: Optional[str]
+    aggregation_area_name: Optional[str]
     percent_area: float = 100
 
 
