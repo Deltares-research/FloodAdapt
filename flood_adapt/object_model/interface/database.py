@@ -24,7 +24,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def get_aggregation_areas(self) -> list[GeoDataFrame]:
+    def get_aggregation_areas(self) -> dict:
         ...
 
     @abstractmethod

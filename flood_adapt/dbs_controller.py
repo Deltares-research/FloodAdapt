@@ -61,10 +61,10 @@ class Database(IDatabase):
         self.site = Site.load_file(
             Path(database_path) / site_name / "static" / "site" / "site.toml"
         )
-        # self.update()
+        self.aggr_areas = self.get_aggregation_areas()
 
     # General methods
-    def get_aggregation_areas(self) -> list[GeoDataFrame]:
+    def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
         These are expected to much the ones in the FIAT model
 
@@ -73,19 +73,20 @@ class Database(IDatabase):
         list[GeoDataFrame]
             list of geodataframes with the polygons defining the aggregation areas
         """
-        aggregation_areas = [
-            gpd.read_file(
+        aggregation_areas = {}
+        for aggr_dict in self.site.attrs.fiat.aggregation:
+            aggregation_areas[aggr_dict.name] = gpd.read_file(
                 self.input_path.parent / "static" / "site" / aggr_dict.file
             ).to_crs(4326)
-            for aggr_dict in self.site.attrs.fiat.aggregation
-        ]
-        # Make sure they are ordered alphabetically
-        aggregation_areas = [
-            aggregation_areas.sort_values(
-                by=self.site.attrs.fiat.aggregation[i].field_name
-            ).reset_index(drop=True)
-            for i, aggregation_areas in enumerate(aggregation_areas)
-        ]
+            # Use always the same column name for name labels
+            aggregation_areas[aggr_dict.name] = aggregation_areas[
+                aggr_dict.name
+            ].rename(columns={aggr_dict.field_name: "name"})
+            # Make sure they are ordered alphabetically
+            aggregation_areas[aggr_dict.name].sort_values(by="name").reset_index(
+                drop=True
+            )
+
         return aggregation_areas
 
     def get_slr_scn_names(self) -> list:
@@ -435,7 +436,7 @@ class Database(IDatabase):
         )
         fm.read()
         buildings = fm.exposure.select_objects(
-            type="ALL",
+            primary_object_type=["ALL"],
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
@@ -517,24 +518,25 @@ class Database(IDatabase):
         ValueError
             Raise error if measure to be deleted is already used in a strategy.
         """
-        # TODO check strategies that use a measure
+
+        # Get all the strategies
         strategies = [
             Strategy.load_file(path) for path in self.get_strategies()["path"]
         ]
-        used_strategy = [
-            name in measures
-            for measures in [strategy.attrs.measures for strategy in strategies]
+
+        # Check if measure is used in a strategy
+        used_in_strategy = [
+            strategy.attrs.name
+            for strategy in strategies
+            for measure in strategy.attrs.measures
+            if name == measure
         ]
-        if any(used_strategy):
-            strategies = [
-                strategy.attrs.name
-                for i, strategy in enumerate(strategies)
-                if used_strategy[i]
-            ]
-            # TODO split this
+
+        # If measure is used in a strategy, raise error
+        if used_in_strategy:
             text = "strategy" if len(strategies) == 1 else "strategies"
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in {text} {strategies}"
+                f"'{name}' measure cannot be deleted since it is already used in {text}: {', '.join(used_in_strategy)}"
             )
         else:
             measure_path = self.input_path / "measures" / name
@@ -647,12 +649,39 @@ class Database(IDatabase):
         ----------
         name : str
             name of the event
+
+        Raises
+        ------
+        ValueError
+            Raise error if event to be deleted is already used in a scenario.
         """
 
-        # TODO: check if event is used in a hazard
+        # Check if event is a standard event
+        if self.site.attrs.standard_objects.events:
+            if name in self.site.attrs.standard_objects.events:
+                raise ValueError(
+                    f"'{name}' event cannot be deleted since it is a standard event."
+                )
 
-        event_path = self.input_path / "events" / name
-        shutil.rmtree(event_path, ignore_errors=True)
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if event is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.event
+        ]
+
+        # If event is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' event cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            event_path = self.input_path / "events" / name
+            shutil.rmtree(event_path, ignore_errors=True)
 
     def copy_event(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing event, and gives it a new name.
@@ -747,11 +776,38 @@ class Database(IDatabase):
         name : str
             name of the projection
 
+        Raises
+        ------
+        ValueError
+            Raise error if projection to be deleted is already used in a scenario.
         """
-        # TODO: make check if projection is used in strategies
 
-        projection_path = self.input_path / "projections" / name
-        shutil.rmtree(projection_path, ignore_errors=True)
+        # Check if projection is a standard projection
+        if self.site.attrs.standard_objects.projections:
+            if name in self.site.attrs.standard_objects.projections:
+                raise ValueError(
+                    f"'{name}' projection cannot be deleted since it is a standard projection."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if projection is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.projection
+        ]
+
+        # If projection is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' projection cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            projection_path = self.input_path / "projections" / name
+            shutil.rmtree(projection_path, ignore_errors=True)
 
     def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
         """Copies (duplicates) an existing projection, and gives it a new name.
@@ -836,19 +892,29 @@ class Database(IDatabase):
         ValueError
             Raise error if strategy to be deleted is already used in a scenario.
         """
-        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
-        used_scenario = [name == scenario.attrs.strategy for scenario in scenarios]
 
-        if any(used_scenario):
-            scenarios = [
-                scenario.attrs.name
-                for i, scenario in enumerate(scenarios)
-                if used_scenario[i]
-            ]
-            # TODO split this
-            text = "scenario" if len(scenarios) == 1 else "scenarios"
+        # Check if strategy is a standard strategy
+        if self.site.attrs.standard_objects.strategies:
+            if name in self.site.attrs.standard_objects.strategies:
+                raise ValueError(
+                    f"'{name}' strategy cannot be deleted since it is a standard strategy."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if strategy is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.strategy
+        ]
+
+        # If strategy is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text} {scenarios}"
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_scenario)}"
             )
         else:
             strategy_path = self.input_path / "strategies" / name
@@ -929,16 +995,37 @@ class Database(IDatabase):
         ValueError
             Raise error if scenario has already model output
         """
-        scenario_path = self.input_path / "scenarios" / name
-        scenario = Scenario.load_file(scenario_path / f"{name}.toml")
-        scenario.init_object_model()
-        if scenario.direct_impacts.hazard.has_run:
-            # TODO this should be a check were if the scenario is run you get a warning?
+
+        # Get all the benefits
+        benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
+
+        # Check in which benefits this scenario is used
+        used_in_benefit = [
+            benefit.attrs.name
+            for benefit in benefits
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
+            if name == scenario
+        ]
+
+        # If strategy is used in a benefit, raise error
+        if used_in_benefit:
+            text = "benefit" if len(used_in_benefit) == 1 else "benefits"
             raise ValueError(
-                f"'{name}' scenario cannot be deleted since the hazard model has already run."
+                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
-            shutil.rmtree(scenario_path, ignore_errors=True)
+            scenario_path = self.input_path / "scenarios" / name
+            scenario = Scenario.load_file(scenario_path / f"{name}.toml")
+            scenario.init_object_model()
+            if scenario.direct_impacts.hazard.has_run:
+                # TODO this should be a check were if the scenario is run you get a warning?
+                raise ValueError(
+                    f"'{name}' scenario cannot be deleted since the scenario has been run."
+                )
+            else:
+                shutil.rmtree(scenario_path, ignore_errors=True)
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.
@@ -1139,12 +1226,25 @@ class Database(IDatabase):
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["long_name"] = [obj.attrs.long_name for obj in objects]
-        measures["geometry"] = [
-            gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
-            if obj.attrs.polygon_file is not None
-            else None
-            for (path, obj) in zip(measures["path"], objects)
-        ]
+
+        geometries = []
+        for path, obj in zip(measures["path"], objects):
+            # If polygon is used read the polygon file
+            if obj.attrs.polygon_file:
+                geometries.append(
+                    gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
+                )
+            # If aggregation area is used read the polygon from the aggregation area name
+            elif obj.attrs.aggregation_area_name:
+                gdf = self.aggr_areas[obj.attrs.aggregation_area_type]
+                geometries.append(
+                    gdf.loc[gdf["name"] == obj.attrs.aggregation_area_name, :]
+                )
+            # Else assign a None value
+            else:
+                geometries.append(None)
+
+        measures["geometry"] = geometries
         return measures
 
     def get_strategies(self) -> dict[str, Any]:
