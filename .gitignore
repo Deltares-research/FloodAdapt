@@ -180,3 +180,4 @@ tests/test_database/charleston/input/events/event_0001/rainfall.csv
 tests/test_database/charleston/input/events/event_0001/tide.csv
 tests/test_database/charleston/input/events/extreme12ft/rain.csv
 tests/test_database/charleston/static/templates/
+tests/test_database - Copy
