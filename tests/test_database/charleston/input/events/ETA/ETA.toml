@@ -1,0 +1,42 @@
+name = "ETA"
+long_name = "ETA"
+mode = "single_event"
+template = "Historical_hurricane"
+timing = "historical"
+track_name = "ETA"
+
+[water_level_offset]
+value = 0.6
+units = "feet"
+
+[wind]
+source = "none"
+
+[rainfall]
+source = "none"
+
+[river]
+source = "constant"
+
+[river.constant_discharge]
+value = 0.0
+units = "cfs"
+
+[time]
+start_time = "20200101 000000"
+end_time = "20200103 000000"
+
+[tide]
+source = "model"
+
+[surge]
+source = "none"
+shape_type = "gaussian"
+
+[hurricane_translation.eastwest_translation]
+value = 0.0
+units = "miles"
+
+[hurricane_translation.northsouth_translation]
+value = 0.0
+units = "miles"

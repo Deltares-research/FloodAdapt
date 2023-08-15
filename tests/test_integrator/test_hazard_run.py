@@ -13,7 +13,7 @@ from flood_adapt.object_model.scenario import Scenario
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-@pytest.mark.skip(reason="There is no sfincs.inp checked in")
+@pytest.mark.skip(reason="running the model takes long")
 def test_hazard_run_synthetic_wl():
     test_toml = (
         test_database

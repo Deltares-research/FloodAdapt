@@ -9,6 +9,7 @@ class UnitTypesLength(str, Enum):
     millimeters = "millimeters"
     feet = "feet"
     inch = "inch"
+    miles = "miles"
 
 
 class UnitTypesVelocity(str, Enum):
@@ -64,6 +65,8 @@ class UnitfulLength(BaseModel):
             conversion = 1.0 / 3.28084  # meters
         elif self.units == "inch":
             conversion = 0.0254  # meters
+        elif self.units == "miles":
+            conversion = 1609.344  # meters
         else:
             conversion = 1
         # second, convert to new units
@@ -77,6 +80,8 @@ class UnitfulLength(BaseModel):
             new_conversion = 3.28084
         elif new_units == "inch":
             new_conversion = 1.0 / 0.0254
+        elif self.units == "miles":
+            new_conversion = 1.0 / 1609.344
         else:
             new_conversion = 1
         return conversion * new_conversion * self.value

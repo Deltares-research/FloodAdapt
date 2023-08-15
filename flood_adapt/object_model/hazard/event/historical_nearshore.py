@@ -29,7 +29,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
         csv_path = Path(Path(filepath).parents[0], "tide.csv")
-        obj.tide_surge_ts = HistoricalNearshore.read_wl_csv(csv_path)
+        obj.tide_surge_ts = HistoricalNearshore.read_csv(csv_path)
 
         return obj
 
@@ -51,25 +51,6 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
-    @staticmethod
-    def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a waterlevel timeseries file and return a pd.Dataframe.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
-        return df
 
     @staticmethod
     def download_wl_data(

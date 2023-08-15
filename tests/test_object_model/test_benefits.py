@@ -84,7 +84,7 @@ def test_run_CBA():
         res_scn_path = results_path.joinpath(scenario["scenario created"]).joinpath(
             "fiat_model"
         )
-        res_scn_path.mkdir(parents=True)
+        res_scn_path.mkdir(parents=True, exist_ok=True)
 
         df = pd.DataFrame({"EAD": EADs[index]}, index=[0])
         df.to_csv(res_scn_path.joinpath("metrics.csv"), index=False)
