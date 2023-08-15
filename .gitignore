@@ -179,4 +179,4 @@ tests/test_database/charleston/input/events/event_0001/event_0001.toml
 tests/test_database/charleston/input/events/event_0001/rainfall.csv
 tests/test_database/charleston/input/events/event_0001/tide.csv
 tests/test_database/charleston/input/events/extreme12ft/rain.csv
-tests/test_database/charleston/static/templates/fiat
+tests/test_database/charleston/static/templates/
