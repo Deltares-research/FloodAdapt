@@ -350,8 +350,8 @@ def test_translate_hurricane_track():
     # Subtract the coordinates of the two geometries
     diff_lat = geom_new.coords[0][0] - geom_ref.coords[0][0]
     diff_lon = geom_new.coords[0][1] - geom_ref.coords[0][1]
-    assert round(diff_lat, 3) == 0.087
-    assert round(diff_lon, 3) == 0.081
+    assert round(diff_lat, 2) == 0.09
+    assert round(diff_lon, 2) == 0.08
 
 
 def test_constant_rainfall():

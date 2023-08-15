@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -238,17 +239,17 @@ class Hazard:
             return EventSet.load_file(event_path)
 
     def preprocess_models(self):
-        print("Preparing hazard models...")
+        logging.info("Preparing hazard models...")
         # Preprocess all hazard model input
         self.preprocess_sfincs()
         # add other models here
 
     def run_models(self):
-        print("Running hazard models...")
+        logging.info("Running hazard models...")
         self.run_sfincs()
 
     def postprocess_models(self):
-        print("Post-processing hazard models...")
+        logging.info("Post-processing hazard models...")
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
@@ -310,7 +311,7 @@ class Hazard:
                 or self.event.attrs.rainfall.source == "map"
                 or self.event.attrs.template == "Historical_offshore"
             ):
-                print("Downloading meteo data...")
+                logging.info("Downloading meteo data...")
                 meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
                 if ~meteo_dir.is_dir():
                     os.mkdir(
@@ -331,10 +332,10 @@ class Hazard:
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
-                print("Preparing offshore model to generate tide and surge...")
+                logging.info("Preparing offshore model to generate tide and surge...")
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
-                print("Running offshore model...")
+                logging.info("Running offshore model...")
                 self.run_sfincs_offshore()
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
@@ -346,13 +347,13 @@ class Hazard:
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
-            print(
+            logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
             model.add_wl_bc(self.wl_ts)
 
             # Generate and change discharge boundary condition
-            print(
+            logging.info(
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             self.add_discharge()
@@ -362,24 +363,30 @@ class Hazard:
 
             if self.event.attrs.template != "Historical_hurricane":
                 if self.event.attrs.rainfall.source == "map":
-                    print("Adding gridded rainfall to the overland flood model...")
+                    logging.info(
+                        "Adding gridded rainfall to the overland flood model..."
+                    )
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
-                    print("Adding rainfall timeseries to the overland flood model...")
+                    logging.info(
+                        "Adding rainfall timeseries to the overland flood model..."
+                    )
                     model.add_precip_forcing(
                         timeseries=event_dir.joinpath(
                             self.event.attrs.rainfall.timeseries_file
                         )
                     )
                 elif self.event.attrs.rainfall.source == "constant":
-                    print("Adding constant rainfall to the overland flood model...")
+                    logging.info(
+                        "Adding constant rainfall to the overland flood model..."
+                    )
                     model.add_precip_forcing(
                         const_precip=self.event.attrs.rainfall.constant_intensity.convert(
                             "mm/hr"
                         )
                     )
                 elif self.event.attrs.rainfall.source == "shape":
-                    print(
+                    logging.info(
                         "Adding rainfall shape timeseries to the overland flood model..."
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
@@ -398,20 +405,24 @@ class Hazard:
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
-                    print("Adding gridded wind field to the overland flood model...")
+                    logging.info(
+                        "Adding gridded wind field to the overland flood model..."
+                    )
                     model.add_wind_forcing_from_grid(ds=ds)
                 elif self.event.attrs.wind.source == "timeseries":
-                    print("Adding wind timeseries to the overland flood model...")
+                    logging.info(
+                        "Adding wind timeseries to the overland flood model..."
+                    )
                     model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
                 elif self.event.attrs.wind.source == "constant":
-                    print("Adding constant wind to the overland flood model...")
+                    logging.info("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
                         const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
                         const_dir=self.event.attrs.wind.constant_direction.value,
                     )
             else:
                 # Copy spw file also to nearshore folder
-                print(
+                logging.info(
                     "Adding wind field generated from hurricane track to the overland flood model..."
                 )
                 spw_name = "hurricane.spw"
@@ -424,12 +435,12 @@ class Hazard:
                         "input", "measures", measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
-                        print("Adding floodwall to the overland flood model...")
+                        logging.info("Adding floodwall to the overland flood model...")
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
                         )
                     if measure.attrs.type == "green_infrastructure":
-                        print(
+                        logging.info(
                             "Adding green infrastructure to the overland flood model..."
                         )
                         model.add_green_infrastructure(
@@ -490,7 +501,9 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
         elif self.event.attrs.template == "Historical_hurricane":
-            print("Generating meteo input to the model from the hurricane track...")
+            logging.info(
+                "Generating meteo input to the model from the hurricane track..."
+            )
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
 
@@ -577,7 +590,7 @@ class Hazard:
         zs_rp_maps = []
 
         for rp in floodmap_rp:
-            print(f"Evaluating {rp}-year return period...")
+            logging.info(f"Evaluating {rp}-year return period...")
             if rp <= rp_da.max() and rp >= rp_da.min():
                 # using lower threshold
                 # TODO: improve speed
@@ -610,7 +623,7 @@ class Hazard:
                     # pl_height[use_ind] = inun_low.drop('rp') + regress_slope * (pl_tile.mrp[use_ind] - inun_low.rp)
 
             elif rp > rp_da.max():
-                print(
+                logging.warning(
                     f"{rp}-year RP larger than maximum return period in the event ensemble, which is {int(rp_da.max())}. Using max. water levels across all events"
                 )
                 h[valid_cells] = sorted_zs[0, valid_cells]
@@ -618,7 +631,7 @@ class Hazard:
             elif rp < rp_da.min():
                 # ToDo: only valid if no area is below MSL
                 h[valid_cells] = 0
-                print(
+                logging.warning(
                     f"{rp}-year RP smaller than minimum return period in the event ensemble, which is {int(rp_da.min())} years. Setting water levels to zero for RP {rp}-years"
                 )
 
