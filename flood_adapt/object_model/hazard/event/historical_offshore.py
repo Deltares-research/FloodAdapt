@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, Union
 
 import tomli
@@ -22,6 +23,15 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = HistoricalOffshoreModel.parse_obj(toml)
+        if obj.attrs.rainfall.source == "timeseries":
+            rainfall_csv_path = Path(Path(filepath).parents[0], "rainfall.csv")
+            obj.rain_ts = HistoricalOffshore.read_csv(rainfall_csv_path)
+        if obj.attrs.wind.source == "timeseries":
+            wind_csv_path = Path(Path(filepath).parents[0], "wind.csv")
+            obj.wind_ts = HistoricalOffshore.read_csv(wind_csv_path)
+        if obj.attrs.river.source == "timeseries":
+            river_csv_path = Path(Path(filepath).parents[0], "river.csv")
+            obj.dis_ts = HistoricalOffshore.read_csv(river_csv_path)
         return obj
 
     @staticmethod

@@ -281,7 +281,7 @@ class Database(IDatabase):
             return str("")
 
     def plot_rainfall(
-        self, event: IEvent
+        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
@@ -304,9 +304,12 @@ class Database(IDatabase):
                 temp_event.add_rainfall_ts(
                     scsfile=scsfile, scstype=self.site.attrs.scs.type
                 )
+                df = temp_event.rain_ts
+            elif event["rainfall"]["source"] == "timeseries":
+                df = input_rainfall_df
             else:
                 temp_event.add_rainfall_ts()
-            df = temp_event.rain_ts
+                df = temp_event.rain_ts
 
             # convert to units used in GUI
             ts_current_units = UnitfulIntensity(value=1.0, units="mm/hr")
@@ -351,12 +354,12 @@ class Database(IDatabase):
 
         else:
             NotImplementedError(
-                "Plotting only available for timeseries and shape type river discharge."
+                "Plotting only available for timeseries and shape type rainfall."
             )
             return str("")
 
     def plot_river(
-        self, event: IEvent
+        self, event: IEvent, input_river_df: pd.DataFrame = None
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
@@ -365,9 +368,12 @@ class Database(IDatabase):
             or event["river"]["source"] == "timeseries"
         ):
             # TODO: Add functionality for multiple rivers
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-            temp_event.add_dis_ts()
-            df = temp_event.dis_ts
+            if event["river"]["source"] == "timeseries":
+                df = input_river_df
+            elif event["river"]["source"] == "shape":
+                temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+                temp_event.add_dis_ts()
+                df = temp_event.dis_ts
 
             # convert to units used in GUI
             ts_current_units = UnitfulDischarge(value=1.0, units="m3/s")
@@ -412,7 +418,6 @@ class Database(IDatabase):
             output_loc.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(output_loc)
             return str(output_loc)
-
         else:
             NotImplementedError(
                 "Plotting only available for timeseries and shape type river discharge."

@@ -136,12 +136,16 @@ def plot_wl(
     return database.plot_wl(event, input_wl_df)
 
 
-def plot_river(event: IEvent, database: IDatabase) -> str:
-    return database.plot_river(event)
+def plot_river(
+    event: IEvent, database: IDatabase, input_river_df: pd.DataFrame = None
+) -> str:
+    return database.plot_river(event, input_river_df)
 
 
-def plot_rainfall(event: IEvent, database: IDatabase) -> str:
-    return database.plot_rainfall(event)
+def plot_rainfall(
+    event: IEvent, database: IDatabase, input_rainfall_df: pd.DataFrame = None
+) -> str:
+    return database.plot_rainfall(event, input_rainfall_df)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):

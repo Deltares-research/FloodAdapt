@@ -113,26 +113,7 @@ class Event:
         pd.DataFrame
             Dataframe with time as index and waterlevel as first column.
         """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
-        return df
-
-    @staticmethod
-    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.Dataframe.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
+        df = pd.read_csv(csvpath, index_col=0, header=None)
         df.index.names = ["time"]
         df.index = pd.to_datetime(df.index)
         return df
@@ -255,12 +236,6 @@ class Event:
             df = df.set_index("time")
             self.dis_ts = df.round(decimals=2)
             return self
-        elif (
-            self.attrs.river.source == "timeseries"
-        ):  # TODO: check with multiple rivers
-            df = self.read_timeseries_csv(self.attrs.river.timeseries_file)
-            self.rain_ts = df
-            return self
 
     def add_rainfall_ts(self, **kwargs):
         """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds
@@ -375,10 +350,6 @@ class Event:
             df = df.set_index("time")
             self.rain_ts = df
             return self
-        elif self.attrs.rainfall.source == "timeseries":
-            df = self.read_timeseries_csv(self.attrs.rainfall.rainfall_timeseries_file)
-            self.rain_ts = df
-            return self
 
     def add_wind_ts(self):
         """adds constant wind or timeseries from filw to event object
@@ -402,29 +373,25 @@ class Event:
             df = df.set_index("time")
             self.wind_ts = df
             return self
-        elif self.attrs.wind.source == "timeseries":
-            df = self.read_timeseries_csv(self.attrs.wind.timeseries_file)
-            self.rain_ts = df
-            return self
 
-    @staticmethod
-    def read_timeseries_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a rainfall or discharge, which have a datetime and one value column  timeseries file and return a pd.Dataframe. #TODO: make one for wind, which has two value columns
+    # @staticmethod
+    # def read_timeseries_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+    #     """Read a rainfall or discharge, which have a datetime and one value column  timeseries file and return a pd.Dataframe. #TODO: make one for wind, which has two value columns
 
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
+    #     Parameters
+    #     ----------
+    #     csvpath : Union[str, os.PathLike]
+    #         path to csv file
 
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel, rainfall, discharge or wind as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
-        return df
+    #     Returns
+    #     -------
+    #     pd.DataFrame
+    #         Dataframe with time as index and waterlevel, rainfall, discharge or wind as first column.
+    #     """
+    #     df = pd.read_csv(csvpath, index_col=0, names=[1])
+    #     df.index.names = ["time"]
+    #     df.index = pd.to_datetime(df.index)
+    #     return df
 
     def __eq__(self, other):
         if not isinstance(other, Event):
