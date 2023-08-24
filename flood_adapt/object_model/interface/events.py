@@ -11,6 +11,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
+    UnitTypesLength,
 )
 
 
@@ -25,7 +26,7 @@ class Template(str, Enum):
     """class describing the accepted input for the variable template in Event"""
 
     Synthetic = "Synthetic"
-    Hurricane = "Hurricane"
+    Hurricane = "Historical_hurricane"
     Historical_nearshore = "Historical_nearshore"
     Historical_offshore = "Historical_offshore"
 
@@ -143,6 +144,17 @@ class SurgeModel(BaseModel):
     shape_peak: Optional[UnitfulLength]
 
 
+class TranslationModel(BaseModel):
+    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
+
+    eastwest_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+    northsouth_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+
+
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
@@ -160,7 +172,9 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
-class EventSetModel(BaseModel):
+class EventSetModel(
+    BaseModel
+):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
 
     name: str
@@ -180,6 +194,13 @@ class HistoricalNearshoreModel(EventModel):
 
 class HistoricalOffshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
+
+
+class HistoricalHurricaneModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+
+    hurricane_translation: TranslationModel
+    track_name: str
 
 
 class IEvent(ABC):
@@ -212,3 +233,7 @@ class IHistoricalNearshore(IEvent):
 
 class IHistoricalOffshore(IEvent):
     attrs: HistoricalOffshoreModel
+
+
+class IHistoricalHurricane(IEvent):
+    attrs: HistoricalHurricaneModel

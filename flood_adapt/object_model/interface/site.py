@@ -46,6 +46,12 @@ class SfincsModel(BaseModel):
     floodmap_units: UnitTypesLength
 
 
+class Cyclone_track_databaseModel(BaseModel):
+    """class describing the accepted input for the variable cyclone_track_database in Site"""
+
+    file: str
+
+
 class SlrModel(BaseModel):
     """class describing the accepted input for the variable slr in Site"""
 
@@ -58,9 +64,10 @@ class GuiModel(BaseModel):
 
     tide_harmonic_amplitude: UnitfulLength
     default_length_units: UnitTypesLength
-    default_velocity_units = UnitTypesVelocity
-    default_discharge_units = UnitTypesDischarge
-    default_intensity_units = UnitTypesIntensity
+    default_distance_units: UnitTypesLength
+    default_velocity_units: UnitTypesVelocity
+    default_discharge_units: UnitTypesDischarge
+    default_intensity_units: UnitTypesIntensity
 
 
 class RiskModel(BaseModel):
@@ -152,6 +159,7 @@ class SiteModel(BaseModel):
     lat: float
     lon: float
     sfincs: SfincsModel
+    cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
