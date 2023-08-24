@@ -60,7 +60,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_projection(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -80,7 +80,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_event(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -100,7 +100,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_measure(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod

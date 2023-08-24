@@ -9,13 +9,13 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "Charleston"
 
 
-def test_database_controller():
+def test_database_controller(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
 
     assert isinstance(dbs.site, Site)
 
 
-def test_create_benefit_scenarios():
+def test_create_benefit_scenarios(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
 
     benefit_toml = (
@@ -49,7 +49,7 @@ def test_create_benefit_scenarios():
     shutil.rmtree(path3)
 
 
-def test_projection_interp_slr():
+def test_projection_interp_slr(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
 
     slr = dbs.interp_slr("ssp245", 2075)
@@ -58,7 +58,7 @@ def test_projection_interp_slr():
     assert slr < 1.1
 
 
-def test_projection_plot_slr():
+def test_projection_plot_slr(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
     html_file_loc = dbs.plot_slr_scenarios()
 
@@ -66,7 +66,7 @@ def test_projection_plot_slr():
     assert Path(html_file_loc).is_file()
 
 
-def test_has_hazard_run():
+def test_has_hazard_run(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
 
     results = [

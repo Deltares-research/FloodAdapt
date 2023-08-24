@@ -14,7 +14,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 
 @pytest.mark.skip(reason="running the model takes long")
-def test_hazard_run_synthetic_wl():
+def test_hazard_run_synthetic_wl(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -34,7 +34,7 @@ def test_hazard_run_synthetic_wl():
 
 
 @pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_run_synthetic_discharge():
+def test_hazard_run_synthetic_discharge(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -53,7 +53,7 @@ def test_hazard_run_synthetic_discharge():
     test_scenario.direct_impacts.hazard.run_models()
 
 
-def test_preprocess_rainfall_timeseriesfile():
+def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -92,7 +92,7 @@ def test_preprocess_rainfall_timeseriesfile():
     os.remove(event_path.joinpath("rain.csv"))
 
 
-def test_preprocess_prob_eventset():
+def test_preprocess_prob_eventset(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -134,7 +134,7 @@ def test_preprocess_prob_eventset():
 
 
 # @pytest.mark.skip(reason="Running models takes a couple of minutes")
-def test_run_prob_eventset():
+def test_run_prob_eventset(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -178,7 +178,7 @@ def test_run_prob_eventset():
 @pytest.mark.skip(
     reason="Need to run models first (see above) but that takes a couple of minutes"
 )
-def test_rp_floodmap_calculation():
+def test_rp_floodmap_calculation(cleanup_database):
     test_toml = (
         test_database
         / "charleston"

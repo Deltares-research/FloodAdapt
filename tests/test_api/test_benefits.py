@@ -11,7 +11,7 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 site_name = "charleston"
 
 
-def test_benefit():
+def test_benefit(cleanup_database):
     # Initialize database object
     database = api_startup.read_database(test_database_path, site_name)
 

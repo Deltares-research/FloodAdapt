@@ -43,7 +43,7 @@ class MeasureModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     type: Union[HazardType, ImpactType]
 
 

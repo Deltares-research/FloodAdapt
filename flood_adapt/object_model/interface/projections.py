@@ -33,7 +33,7 @@ class SocioEconomicChangeModel(BaseModel):
 
 class ProjectionModel(BaseModel):
     name: str
-    long_name: str
+    description: Optional[str] = ""
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 

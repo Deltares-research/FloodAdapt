@@ -1,5 +1,5 @@
 name = "event_0039"
-long_name = "event_0039"
+description = "event_0039"
 template = "Historical_nearshore"
 timing = "historical"
 mode = "single_event"

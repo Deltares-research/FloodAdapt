@@ -398,7 +398,7 @@ class Database(IDatabase):
             measure_path = self.input_path / "measures" / name
             shutil.rmtree(measure_path, ignore_errors=True)
 
-    def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_measure(self, old_name: str, new_name: str, new_description: str):
         """Copies (duplicates) an existing measures, and gives it a new name.
 
         Parameters
@@ -407,13 +407,13 @@ class Database(IDatabase):
             name of the existing measure
         new_name : str
             name of the new measure
-        new_long_name : str
-            long_name of the new measure
+        new_description : str
+            description of the new measure
         """
         # First do a get
         measure = self.get_measure(old_name)
         measure.attrs.name = new_name
-        measure.attrs.long_name = new_long_name
+        measure.attrs.description = new_description
         # Then a save
         self.save_measure(measure)
         # Then save all the accompanied files
@@ -539,7 +539,7 @@ class Database(IDatabase):
             event_path = self.input_path / "events" / name
             shutil.rmtree(event_path, ignore_errors=True)
 
-    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_event(self, old_name: str, new_name: str, new_description: str):
         """Copies (duplicates) an existing event, and gives it a new name.
 
         Parameters
@@ -548,13 +548,13 @@ class Database(IDatabase):
             name of the existing event
         new_name : str
             name of the new event
-        new_long_name : str
-            long_name of the new event
+        new_description : str
+            description of the new event
         """
         # First do a get
         event = self.get_event(old_name)
         event.attrs.name = new_name
-        event.attrs.long_name = new_long_name
+        event.attrs.description = new_description
         # Then a save
         self.save_event(event)
         # Then save all the accompanied files
@@ -665,7 +665,7 @@ class Database(IDatabase):
             projection_path = self.input_path / "projections" / name
             shutil.rmtree(projection_path, ignore_errors=True)
 
-    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_projection(self, old_name: str, new_name: str, new_description: str):
         """Copies (duplicates) an existing projection, and gives it a new name.
 
         Parameters
@@ -674,13 +674,13 @@ class Database(IDatabase):
             name of the existing projection
         new_name : str
             name of the new projection
-        new_long_name : str
-            long_name of the new projection
+        new_description : str
+            description of the new projection
         """
         # First do a get
         projection = self.get_projection(old_name)
         projection.attrs.name = new_name
-        projection.attrs.long_name = new_long_name
+        projection.attrs.description = new_description
         # Then a save
         self.save_projection(projection)
         # Then save all the accompanied files
@@ -1008,7 +1008,6 @@ class Database(IDatabase):
                 scenario_dict["name"] = "_".join(
                     [row["projection"], row["event"], row["strategy"]]
                 )
-                scenario_dict["long_name"] = scenario_dict["name"]
 
                 scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
 
@@ -1046,12 +1045,12 @@ class Database(IDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         projections = self.get_object_list(object_type="projections")
         objects = [Projection.load_file(path) for path in projections["path"]]
         projections["name"] = [obj.attrs.name for obj in objects]
-        projections["long_name"] = [obj.attrs.long_name for obj in objects]
+        projections["description"] = [obj.attrs.description for obj in objects]
         return projections
 
     def get_events(self) -> dict[str, Any]:
@@ -1061,12 +1060,12 @@ class Database(IDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         events = self.get_object_list(object_type="events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
-        events["long_name"] = [obj.attrs.long_name for obj in objects]
+        events["description"] = [obj.attrs.description for obj in objects]
         return events
 
     def get_measures(self) -> dict[str, Any]:
@@ -1076,12 +1075,12 @@ class Database(IDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         measures = self.get_object_list(object_type="measures")
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
-        measures["long_name"] = [obj.attrs.long_name for obj in objects]
+        measures["description"] = [obj.attrs.description for obj in objects]
 
         geometries = []
         for path, obj in zip(measures["path"], objects):
@@ -1110,12 +1109,12 @@ class Database(IDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         strategies = self.get_object_list(object_type="strategies")
         objects = [Strategy.load_file(path) for path in strategies["path"]]
         strategies["name"] = [obj.attrs.name for obj in objects]
-        strategies["long_name"] = [obj.attrs.long_name for obj in objects]
+        strategies["description"] = [obj.attrs.description for obj in objects]
         return strategies
 
     def get_scenarios(self) -> dict[str, Any]:
@@ -1125,12 +1124,12 @@ class Database(IDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'long_name', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         scenarios = self.get_object_list(object_type="scenarios")
         objects = [Scenario.load_file(path) for path in scenarios["path"]]
         scenarios["name"] = [obj.attrs.name for obj in objects]
-        scenarios["long_name"] = [obj.attrs.long_name for obj in objects]
+        scenarios["description"] = [obj.attrs.description for obj in objects]
         scenarios["Projection"] = [obj.attrs.projection for obj in objects]
         scenarios["Event"] = [obj.attrs.event for obj in objects]
         scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
