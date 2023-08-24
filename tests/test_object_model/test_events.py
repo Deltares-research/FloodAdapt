@@ -199,6 +199,13 @@ def test_download_meteo(cleanup_database):
     for file_path in file_list:
         os.remove(file_path)
 
+    # Delete files
+    file_pattern = os.path.join(path, "*.nc")
+    file_list = glob.glob(file_pattern)
+
+    for file_path in file_list:
+        os.remove(file_path)
+
 
 def test_download_wl_timeseries(cleanup_database):
     station_id = 8665530
@@ -237,7 +244,7 @@ def test_make_spw_file():
         os.remove(event_toml.parent.joinpath("hurricane.spw"))
 
 
-def test_translate_hurricane_track(cleanup_database):
+def test_translate_hurricane_track():
     from cht_cyclones.tropical_cyclone import TropicalCyclone
 
     event_toml = (
