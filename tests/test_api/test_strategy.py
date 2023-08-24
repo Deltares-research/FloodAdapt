@@ -10,10 +10,10 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_strategy():
+def test_strategy(cleanup_database):
     test_dict = {
         "name": "strategy_comb",
-        "long_name": "strategy_comb",
+        "description": "strategy_comb",
         "measures": [
             "seawall",
             "raise_property_aggregation_area",

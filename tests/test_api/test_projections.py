@@ -9,10 +9,10 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_projection():
+def test_projection(cleanup_database):
     test_dict = {
         "name": "SLR_2ft",
-        "long_name": "SLR_2ft",
+        "description": "SLR_2ft",
         "physical_projection": {
             "sea_level_rise": {"value": "two", "units": "feet"},
             "subsidence": {"value": 1, "units": "feet"},

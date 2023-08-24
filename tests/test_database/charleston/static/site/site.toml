@@ -1,5 +1,5 @@
 name = "charleston"
-long_name = "Charleston, SC"
+description = "Charleston, SC"
 lat = 32.77
 lon = -79.95
 
@@ -66,7 +66,7 @@ field_name = "name"
 
 [river]
 name = "cooper"
-long_name = "Cooper River"
+description = "Cooper River"
 x_coordinate = 595546.3
 y_coordinate = 3675590.6
 [river.mean_discharge]
@@ -75,7 +75,7 @@ units = "cfs"
 
 [obs_station]
 name = 8665530
-long_name = "Charleston Cooper River Entrance"
+description = "Charleston Cooper River Entrance"
 ID = 8665530
 lat = 32.78
 lon = -79.9233

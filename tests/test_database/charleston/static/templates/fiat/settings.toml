@@ -15,6 +15,3 @@ step_size = 0.1
 csv = "./exposure/exposure.csv"
 crs = "EPSG:4326"
 file1 = "./exposure/exposure.gpkg"
-
-
-

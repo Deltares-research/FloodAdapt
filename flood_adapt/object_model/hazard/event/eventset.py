@@ -28,5 +28,5 @@ class EventSet:
             return NotImplemented
         attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
-        attrs_1.__delattr__("long_name"), attrs_2.__delattr__("long_name")
+        attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
         return attrs_1 == attrs_2

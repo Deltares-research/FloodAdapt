@@ -8,14 +8,14 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_buildings():
+def test_buildings(cleanup_database):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
 
     assert isinstance(database.get_buildings(), gpd.GeoDataFrame)
 
 
-def test_aggr_areas():
+def test_aggr_areas(cleanup_database):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     aggr_areas = database.get_aggregation_areas()

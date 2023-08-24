@@ -395,10 +395,7 @@ class Hazard:
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
-                    self.event.rain_ts.to_csv(event_dir.joinpath("rainfall.csv"))
-                    model.add_precip_forcing(
-                        timeseries=event_dir.joinpath("rainfall.csv")
-                    )
+                    model.add_precip_forcing(timeseries=self.event.rain_ts)
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
@@ -425,7 +422,7 @@ class Hazard:
                 spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
 
-            # Add floodwall if included
+            # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
                     measure_path = base_path.joinpath(

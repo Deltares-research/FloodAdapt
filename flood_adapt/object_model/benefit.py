@@ -94,9 +94,6 @@ class Benefit(IBenefit):
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scn_dict[
-                "long_name"
-            ] = scenario  # TODO delete this when long_name is not needed
             scenario_obj = Scenario.load_dict(scn_dict, self.database_input_path)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
