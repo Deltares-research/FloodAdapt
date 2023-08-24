@@ -10,10 +10,10 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_strategy():
+def test_strategy(cleanup_database):
     test_dict = {
         "name": "strategy_comb",
-        "long_name": "strategy_comb",
+        "description": "strategy_comb",
         "measures": [
             "seawall",
             "raise_property_aggregation_area",
@@ -43,7 +43,7 @@ def test_strategy():
         api_strategies.save_strategy(strategy, database)
 
     # Change name to something new
-    test_dict["name"] = "test1"
+    test_dict["name"] = "test_strat_1"
     # delete an old one if it already exists
     if database.input_path.joinpath("strategies", test_dict["name"]).is_dir():
         shutil.rmtree(database.input_path.joinpath("strategies", test_dict["name"]))
@@ -59,5 +59,5 @@ def test_strategy():
     #     api_strategies.delete_measure("", database)
 
     # If user presses delete strategy the measure is deleted
-    api_strategies.delete_strategy("test1", database)
+    api_strategies.delete_strategy("test_strat_1", database)
     database.get_strategies()

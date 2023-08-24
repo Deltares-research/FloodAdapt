@@ -1,5 +1,5 @@
 name = "green_infra"
-long_name = "green_roofs"
+description = "green_roofs"
 type = "green_infrastructure"
 polygon_file = "test_green_infra.geojson"
 volume.value = 0

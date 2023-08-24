@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
+import pandas as pd
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -59,7 +60,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_projection(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -79,7 +80,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_event(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -99,7 +100,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_measure(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -188,4 +189,8 @@ class IDatabase(ABC):
 
     @abstractmethod
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
+        ...
+
+    @abstractmethod
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
         ...
