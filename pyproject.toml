@@ -12,6 +12,7 @@ authors = [
     { name = "Frederique de Groen", email = "Frederique.deGroen@deltares.nl" },
     { name = "Tim de Wilde", email = "Tim.deWilde@deltares.nl" },
     { name = "Julian Hofer", email = "Julian.Hofer@deltares.nl" },
+    { name = "Daley Adrichem", email = "Daley.Adrichem@deltares.nl" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
