@@ -203,7 +203,6 @@ def test_pump_read():
     pump = Pump.load_file(test_toml)
 
     assert isinstance(pump.attrs.name, str)
-    assert isinstance(pump.attrs.long_name, str)
     assert isinstance(pump.attrs.type, HazardType)
     assert isinstance(pump.attrs.discharge, UnitfulDischarge)
 

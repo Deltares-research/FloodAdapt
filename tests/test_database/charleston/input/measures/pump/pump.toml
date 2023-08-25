@@ -1,6 +1,7 @@
 name = "pump"
 long_name = "pump"
 type = "pump"
+selection_type = "polyline"
 polygon_file = "test_pump.geojson"
 discharge.value = 200
 discharge.units = "m3/s"
