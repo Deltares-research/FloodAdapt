@@ -76,12 +76,15 @@ class Scenario(IScenario):
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
 
-        # Create the infometrics and infographic files
-        self._create_infometrics_infographics()
+        # Create the infometrics files
+        self._create_infometrics()
 
-    def _create_infometrics_infographics(self):
+        # Create the infographic files
+        self._create_infographics()
+
+    def _create_infometrics(self):
         # Get the metrics
-        metrics_results_path = self.database_input_path.parent.joinpath(
+        fiat_results_path = self.database_input_path.parent.joinpath(
             "output",
             "results",
             f"{self.attrs.name}",
@@ -106,7 +109,7 @@ class Scenario(IScenario):
         )
 
         # Get the results dataframe
-        df = pd.read_csv(metrics_results_path)
+        df = pd.read_csv(fiat_results_path)
 
         # Write the metrics to file
         metrics_writer = MetricsFileWriter(metrics_config_path)
@@ -118,6 +121,7 @@ class Scenario(IScenario):
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
         )
 
+    def _create_infographics(self):
         # Get the infographic
         InfographicsParser().write_infographics_to_file(
             scenario_name=self.attrs.name,
