@@ -8,10 +8,12 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
+    UnitTypesArea,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
     UnitTypesVelocity,
+    UnitTypesVolume,
 )
 
 
@@ -46,6 +48,12 @@ class SfincsModel(BaseModel):
     floodmap_units: UnitTypesLength
 
 
+class Cyclone_track_databaseModel(BaseModel):
+    """class describing the accepted input for the variable cyclone_track_database in Site"""
+
+    file: str
+
+
 class SlrModel(BaseModel):
     """class describing the accepted input for the variable slr in Site"""
 
@@ -58,9 +66,12 @@ class GuiModel(BaseModel):
 
     tide_harmonic_amplitude: UnitfulLength
     default_length_units: UnitTypesLength
-    default_velocity_units = UnitTypesVelocity
-    default_discharge_units = UnitTypesDischarge
-    default_intensity_units = UnitTypesIntensity
+    default_distance_units: UnitTypesLength
+    default_area_units: UnitTypesArea
+    default_volume_units: UnitTypesVolume
+    default_velocity_units: UnitTypesVelocity
+    default_discharge_units: UnitTypesDischarge
+    default_intensity_units: UnitTypesIntensity
 
 
 class RiskModel(BaseModel):
@@ -91,6 +102,7 @@ class FiatModel(BaseModel):
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
+    damage_unit: Optional[str] = "USD"
 
 
 class RiverModel(BaseModel):
@@ -99,7 +111,7 @@ class RiverModel(BaseModel):
     # TODO: add functionality to use multiple rivers
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
@@ -109,7 +121,7 @@ class Obs_stationModel(BaseModel):
     """class describing the accepted input for the variable obs_station in Site"""
 
     name: Union[int, str]
-    long_name: str
+    description: Optional[str] = ""
     ID: int
     lat: float
     lon: float
@@ -119,14 +131,39 @@ class Obs_stationModel(BaseModel):
     msl: UnitfulLength
 
 
+class BenefitsModel(BaseModel):
+    current_year: int
+    current_projection: str
+    baseline_strategy: str
+    event_set: str
+
+
+class SCSModel(BaseModel):
+    """class describing the accepted input for the variable scs, which included the file with
+    the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type
+    """
+
+    file: str
+    type: str
+
+
+class StandardObjectModel(BaseModel):
+    """class describing the accepted input for the variable standard_object in Site"""
+
+    events: Optional[list[str]] = []
+    projections: Optional[list[str]] = []
+    strategies: Optional[list[str]] = []
+
+
 class SiteModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes of the Site class"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     lat: float
     lon: float
     sfincs: SfincsModel
+    cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
@@ -134,6 +171,11 @@ class SiteModel(BaseModel):
     fiat: FiatModel
     river: Optional[RiverModel]
     obs_station: Optional[Obs_stationModel]
+    benefits: BenefitsModel
+    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
+    standard_objects: Optional[
+        StandardObjectModel
+    ] = StandardObjectModel()  # optional for the US to use standard objects
 
 
 class ISite(ABC):

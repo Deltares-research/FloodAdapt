@@ -1,13 +1,13 @@
 name = "charleston"
-long_name = "Charleston, SC"
+description = "Charleston, SC"
 lat = 32.77
 lon = -79.95
 
 [sfincs]
 csname = "WGS 84 / UTM zone 17N"
 cstype = "projected"
-version = "sfincs20_AlpeDHuez_release"
-offshore_model = "sfincs_large_scale_v03"
+version = "SFINCS_v2.0.1_tag_exe" #"sfincs20_AlpeDHuez_release"
+offshore_model = "offshore"
 overland_model = "overland"
 datum_offshore_model = "MSL"
 datum_overland_model = "NAVD88"
@@ -19,6 +19,9 @@ floodmap_units = "feet"
 value = 0.067
 units = "meters"
 
+[cyclone_track_database]
+file = "IBTrACS.NA.v04r00.nc"
+
 [slr]
 relative_to_year = 2020
 [slr.vertical_offset]
@@ -27,9 +30,12 @@ units = "feet"
 
 [gui]
 default_length_units = "feet"
+default_distance_units = "miles"
+default_area_units = "sf"
+default_volume_units = "cf"
 default_velocity_units = "knots"
 default_discharge_units = "cfs"
-default_intensity_units = "inch/hour"
+default_intensity_units = "inch/hr"
 [gui.tide_harmonic_amplitude]
 value = 3.0
 units = "meters"
@@ -49,6 +55,7 @@ indexfilename = "charleston_14m_indices.dat"
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
+damage_unit = "USD"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
@@ -62,7 +69,7 @@ field_name = "name"
 
 [obs_station]
 name = 8665530
-long_name = "Charleston Cooper River Entrance"
+description = "Charleston Cooper River Entrance"
 ID = 8665530
 lat = 32.78
 lon = -79.9233
@@ -78,3 +85,13 @@ units = "meters"
 [obs_station.msl]
 value = 0.890
 units = "meters"
+
+[benefits]
+current_year = 2023
+current_projection = "current"
+baseline_strategy = "no_measures"
+event_set = "test_set"
+
+[scs]
+file = "scs_rainfall.csv"
+type = "type_3"

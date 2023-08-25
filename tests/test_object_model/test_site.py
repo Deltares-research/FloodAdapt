@@ -12,7 +12,7 @@ from flood_adapt.object_model.site import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_read_site_toml():
+def test_read_site_toml(cleanup_database):
     test_toml = test_database / "charleston" / "static" / "site" / "site.toml"
 
     assert test_toml.is_file()
@@ -29,7 +29,7 @@ def test_read_site_toml():
     assert test_data.attrs.river.mean_discharge.value == 5000
 
 
-def test_read_site_toml_without_river():
+def test_read_site_toml_without_river(cleanup_database):
     test_toml = (
         test_database / "charleston" / "static" / "site" / "site_without_river.toml"
     )

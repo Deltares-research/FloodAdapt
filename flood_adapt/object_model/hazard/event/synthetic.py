@@ -93,11 +93,11 @@ class Synthetic(Event, ISynthetic):
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
-            surge = self.timeseries_shape(
+            surge = super().timeseries_shape(
                 "gaussian",
                 duration,
                 self.attrs.surge.shape_peak.convert("meters"),
-                shape_duration=duration,
+                shape_duration=self.attrs.surge.shape_duration * 3600,
                 time_shift=time_shift,
             )
         elif self.attrs.surge.source == "none":
@@ -111,27 +111,3 @@ class Synthetic(Event, ISynthetic):
         df = df.set_index("time")
         self.tide_surge_ts = df
         return self
-
-    @staticmethod
-    def timeseries_shape(
-        shape_type: str, duration: float, peak: float, **kwargs
-    ) -> np.ndarray:
-        time_shift = kwargs.get("time_shift", None)
-        start_shape = kwargs.get("start_shape", None)
-        end_shape = kwargs.get("end_shape", None)
-        shape_duration = kwargs.get("shape_duration", None)
-        tt = np.arange(0, duration + 1, 600)
-        if shape_type == "gaussian":
-            ts = peak * np.exp(-(((tt - time_shift) / (0.25 * shape_duration)) ** 2))
-        elif shape_type == "block":
-            ts = np.where((tt > start_shape), peak, 0)
-            ts = np.where((tt > end_shape), 0, ts)
-        elif shape_type == "triangle":
-            tt_interp = [
-                start_shape,
-                time_shift,
-                end_shape,
-            ]
-            value_interp = [0, peak, 0]
-            ts = np.interp(tt, tt_interp, value_interp, left=0, right=0)
-        return ts

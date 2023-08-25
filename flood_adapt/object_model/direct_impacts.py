@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
@@ -11,6 +12,7 @@ from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import cd
 
 
 class DirectImpacts:
@@ -43,10 +45,23 @@ class DirectImpacts:
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
-        # TODO update to actual check in files
-        fiat_path = self.results_path
+        """Checks if fiat has run as expected
 
-        return fiat_path.exists()
+        Returns
+        -------
+        boolean
+            True if fiat has run, False if something went wrong
+        """
+        fiat_path = self.results_path
+        log_file = fiat_path.joinpath("output", "fiat.log")
+        if log_file.exists():
+            with open(log_file) as f:
+                if "All done!" in f.read():
+                    return True
+                else:
+                    return False
+        else:
+            return False
 
     def set_socio_economic_change(self, projection: str) -> None:
         """Sets the SocioEconomicChange object of the scenario.
@@ -87,12 +102,15 @@ class DirectImpacts:
         self.hazard = Hazard(scenario, database_input_path)
 
     def run_models(self):
-        self.run_fiat()
+        self.preprocess_fiat()
+
+        return_code = self.run_fiat()
 
         # Indicator that direct impacts have run
-        self.__setattr__("has_run", True)
+        if return_code == 0:
+            self.__setattr__("has_run", True)
 
-    def run_fiat(self):
+    def preprocess_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
 
         # Check if hazard is already run
@@ -174,12 +192,17 @@ class DirectImpacts:
             else:
                 print("Impact measure type not recognized!")
 
-        # Set FIAT hazard
-        # fa.set_hazard(self.hazard)
+        # setup hazard for fiat
+        fa.set_hazard(self.hazard)
 
         # Save the updated FIAT model
         fa.fiat_model.set_root(self.results_path)
         fa.fiat_model.write()
 
-        # Then run FIAT
-        print("FIAT not working yet")
+    def run_fiat(self):
+        with cd(self.results_path):
+            process = subprocess.run(
+                ["fiat", "run", "settings.toml"], stdout=subprocess.PIPE, check=True
+            )
+
+            return process.returncode

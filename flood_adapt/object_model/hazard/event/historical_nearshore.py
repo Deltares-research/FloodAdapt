@@ -3,13 +3,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
+import cht_observations.observation_stations as cht_station
 import pandas as pd
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.hazard.event.cht_scripts.station_source import (
-    StationSource,
-)
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
@@ -23,15 +21,24 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Synthetic from toml file"""
+        """create Historical Nearshore from toml file"""
 
         obj = HistoricalNearshore()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
-        csv_path = Path(Path(filepath).parents[0], "tide.csv")
-        obj.tide_surge_ts = HistoricalNearshore.read_wl_csv(csv_path)
+        wl_csv_path = Path(Path(filepath).parents[0], "tide.csv")
+        obj.tide_surge_ts = HistoricalNearshore.read_csv(wl_csv_path)
+        if obj.attrs.rainfall.source == "timeseries":
+            rainfall_csv_path = Path(Path(filepath).parents[0], "rainfall.csv")
+            obj.rain_ts = HistoricalNearshore.read_csv(rainfall_csv_path)
+        if obj.attrs.wind.source == "timeseries":
+            wind_csv_path = Path(Path(filepath).parents[0], "wind.csv")
+            obj.wind_ts = HistoricalNearshore.read_csv(wind_csv_path)
+        if obj.attrs.river.source == "timeseries":
+            river_csv_path = Path(Path(filepath).parents[0], "river.csv")
+            obj.dis_ts = HistoricalNearshore.read_csv(river_csv_path)
 
         return obj
 
@@ -53,25 +60,6 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
-    @staticmethod
-    def read_wl_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-        """Read a waterlevel timeseries file and return a pd.Dataframe.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, names=[1])
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
-        return df
 
     @staticmethod
     def download_wl_data(
@@ -96,7 +84,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
         stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
         # Get NOAA data
-        source = StationSource.source("noaa_coops")
+        source = cht_station.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)
         df = pd.DataFrame(df)  # Convert series to dataframe
         df = df.rename(columns={"v": 1})

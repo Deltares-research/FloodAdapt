@@ -8,26 +8,31 @@ dependencies:
   - pip
   - pip:
     - NDBC
-    - git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator
     - noaa-coops
     - cht-tide
     - cht-meteo
     - cht-observations
-    - cht-cyclones
+    - git+https://github.com/Deltares/hydromt_fiat.git@984232bb4e8bbb0fb12a8a3750d4a20d557945a1
+    - git+https://github.com/Deltares/fiat_toolbox.git
+    - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
+    - git+https://github.com/Deltares/Delft-FIAT.git
+    - git+https://github.com/Deltares/cht_cyclones.git
   - black
+  - typos
   - ruff
   - build
   - geopandas
-  - hydromt
-  - hydromt_sfincs
+  - hydromt=0.7.1
   - mypy
   - numpy
   - pandas
   - plotly
-  - pydantic
+  - pydantic=1.10.9
   - pytest
   - python=3.10
   - tomli
   - tomli-w
   - twine
   - census
+  - pre-commit
+  - numpy-financial

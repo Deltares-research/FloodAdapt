@@ -18,7 +18,7 @@ exposure_template = pd.read_csv(
 )
 
 
-def test_fiat_adapter_no_measures():
+def test_fiat_adapter_no_measures(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -32,10 +32,7 @@ def test_fiat_adapter_no_measures():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-    test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
-    test_scenario.direct_impacts.run_fiat()
+    test_scenario.run()
 
     exposure_scenario = pd.read_csv(
         test_database
@@ -52,7 +49,8 @@ def test_fiat_adapter_no_measures():
     assert_frame_equal(exposure_scenario, exposure_template, check_dtype=False)
 
 
-def test_fiat_adapter_measures():
+# @pytest.mark.skip(reason="test needs to reviewed")
+def test_fiat_adapter_measures(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -66,10 +64,7 @@ def test_fiat_adapter_measures():
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    # TODO: Hazard class should check if the hazard simulation has already been run when initialized
-    test_scenario.direct_impacts.hazard.has_run = True  # manually change this for now
-    test_scenario.direct_impacts.run_fiat()
+    test_scenario.run()
 
     exposure_scenario = pd.read_csv(
         test_database
@@ -183,3 +178,21 @@ def test_fiat_adapter_measures():
         exposure_scenario.loc[inds2, "Damage Function: Structure"]
         != exposure_template.loc[inds1, "Damage Function: Structure"]
     )
+
+
+def test_fiat_return_periods(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_test_set_no_measures"
+        / "current_test_set_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.run()
+    assert test_scenario.direct_impacts.has_run

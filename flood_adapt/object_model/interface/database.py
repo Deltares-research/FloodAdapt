@@ -3,8 +3,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
+import pandas as pd
 from geopandas import GeoDataFrame
 
+from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
@@ -22,7 +24,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def get_aggregation_areas(self) -> list[GeoDataFrame]:
+    def get_aggregation_areas(self) -> dict:
         ...
 
     @abstractmethod
@@ -35,6 +37,18 @@ class IDatabase(ABC):
 
     @abstractmethod
     def plot_slr_scenarios(self) -> str:
+        ...
+
+    @abstractmethod
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+        ...
+
+    @abstractmethod
+    def plot_river(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
+    def plot_rainfall(self, event: IEvent) -> str:
         ...
 
     @abstractmethod
@@ -58,7 +72,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_projection(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_projection(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -78,7 +92,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_event(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_event(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -98,7 +112,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def copy_measure(self, old_name: str, new_name: str, new_long_name: str):
+    def copy_measure(self, old_name: str, new_name: str, new_description: str):
         ...
 
     @abstractmethod
@@ -130,6 +144,34 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_benefit(self, name: str) -> IBenefit:
+        ...
+
+    @abstractmethod
+    def save_benefit(self, benefit: IBenefit) -> None:
+        ...
+
+    @abstractmethod
+    def edit_benefit(self, measure: IBenefit) -> None:
+        ...
+
+    @abstractmethod
+    def delete_benefit(self, name: str) -> None:
+        ...
+
+    @abstractmethod
+    def check_benefit_scenarios(self, benefit: IBenefit) -> None:
+        ...
+
+    @abstractmethod
+    def create_benefit_scenarios(self, benefit: IBenefit) -> None:
+        ...
+
+    @abstractmethod
+    def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
+        ...
+
+    @abstractmethod
     def get_projections(self) -> dict[str, Any]:
         ...
 
@@ -147,6 +189,10 @@ class IDatabase(ABC):
 
     @abstractmethod
     def get_scenarios(self) -> dict[str, Any]:
+        ...
+
+    @abstractmethod
+    def get_benefits(self) -> dict[str, Any]:
         ...
 
     @abstractmethod

@@ -1,0 +1,94 @@
+name = "charleston"
+long_name = "Charleston, SC"
+lat = 32.77
+lon = -79.95
+
+[sfincs]
+csname = "WGS 84 / UTM zone 17N"
+cstype = "projected"
+version = "sfincs20_AlpeDHuez_release"
+offshore_model = "sfincs_large_scale_v03"
+overland_model = "overland"
+datum_offshore_model = "MSL"
+datum_overland_model = "NAVD88"
+tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
+ambient_air_pressure = 102000
+floodmap_no_data_value = -9999
+floodmap_units = "feet"
+[sfincs.diff_datum_offshore_overland]
+value = 0.067
+units = "meters"
+
+[cyclone_track_database]
+file = "IBTrACS.NA.v04r00.nc"
+[slr]
+relative_to_year = 2020
+[slr.vertical_offset]
+value = 0.6
+units = "feet"
+
+[gui]
+default_length_units = "feet"
+default_distance_units = "miles"
+default_velocity_units = "knots"
+default_discharge_units = "cfs"
+default_intensity_units = "inch/hr"
+[gui.tide_harmonic_amplitude]
+value = 3.0
+units = "meters"
+
+[risk]
+return_periods = [1, 2, 5, 10, 25, 50, 100]
+[risk.flooding_threshold]
+value = 0.5
+units = "feet"
+
+[dem]
+filename = "charleston_14m.tif"
+units = "meters"
+indexfilename = "charleston_14m_indices.dat"
+
+[fiat]
+exposure_crs = "EPSG:4326"
+floodmap_type = "water_level"
+non_building_names = ["road"]
+damage_unit = "USD"
+
+[[fiat.aggregation]]
+name = "aggr_lvl_1"
+file = "aggr_lvl_1.geojson"
+field_name = "name"
+
+[[fiat.aggregation]]
+name = "aggr_lvl_2"
+file = "aggr_lvl_2.geojson"
+field_name = "name"
+
+[obs_station]
+name = 8665530
+long_name = "Charleston Cooper River Entrance"
+ID = 8665530
+lat = 32.78
+lon = -79.9233
+[obs_station.mllw]
+value = 0.0
+units = "meters"
+[obs_station.mhhw]
+value = 1.757
+units = "meters"
+[obs_station.localdatum]
+value = 0.957
+units = "meters"
+[obs_station.msl]
+value = 0.890
+units = "meters"
+
+[benefits]
+current_year = 2023
+current_projection = "current"
+baseline_strategy = "no_measures"
+event_set = "test_set"
+
+[scs]
+file = "scs_rainfall.csv"
+type = "type_3"
