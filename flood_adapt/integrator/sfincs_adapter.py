@@ -11,6 +11,9 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.hazard.event.event import EventModel
+from flood_adapt.object_model.hazard.event.historical_hurricane import (
+    HistoricalHurricane,
+)
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
@@ -105,7 +108,7 @@ class SfincsAdapter:
         self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
 
     def add_precip_forcing(
-        self, precip: Union[str, os.PathLike] = None, const_precip: float = None
+        self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None
     ):
         """Add spatially uniform precipitation to sfincs model.
 
@@ -116,7 +119,9 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        self.sf_model.setup_precip_forcing(timeseries=precip, magnitude=const_precip)
+        self.sf_model.setup_precip_forcing(
+            timeseries=timeseries, magnitude=const_precip
+        )
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
@@ -289,6 +294,7 @@ class SfincsAdapter:
         Args:
             path_out (Path): new root of sfincs model
         """
+
         # Change model root to new folder
         self.sf_model.set_root(path_out, mode="w+")
 
@@ -303,3 +309,31 @@ class SfincsAdapter:
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
+
+    def add_spw_forcing(
+        self,
+        historical_hurricane: HistoricalHurricane,
+        database_path: Path,
+        model_dir: Path,
+    ):
+        """Add spiderweb forcing to the sfincs model
+
+        Parameters
+        ----------
+        historical_hurricane : HistoricalHurricane
+            Information of the historical hurricane event
+        database_path : Path
+            Path of the main database
+        model_dir : Path
+            Output path of the model
+        """
+
+        historical_hurricane.make_spw_file(
+            database_path=database_path, model_dir=model_dir
+        )
+
+    def set_config_spw(self, spw_name: str):
+        self.sf_model.set_config("spwfile", spw_name)
+
+    def turn_off_bnd_press_correction(self):
+        self.sf_model.set_config("PAVBNDKEY", -9999)

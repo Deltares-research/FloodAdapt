@@ -9,10 +9,10 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_projection():
+def test_projection(cleanup_database):
     test_dict = {
         "name": "SLR_2ft",
-        "long_name": "SLR_2ft",
+        "description": "SLR_2ft",
         "physical_projection": {
             "sea_level_rise": {"value": "two", "units": "feet"},
             "subsidence": {"value": 1, "units": "feet"},
@@ -37,7 +37,7 @@ def test_projection():
         api_projections.save_projection(projection, database)
 
     # Change name to something new
-    test_dict["name"] = "test1"
+    test_dict["name"] = "test_proj_1"
     projection = api_projections.create_projection(test_dict)
     # If the name is not used before the measure is save in the database
     api_projections.save_projection(projection, database)
@@ -48,5 +48,5 @@ def test_projection():
     #    api_projections.delete_measure("", database)
 
     # If user presses delete projection the measure is deleted
-    api_projections.delete_projection("test1", database)
+    api_projections.delete_projection("test_proj_1", database)
     database.get_projections()

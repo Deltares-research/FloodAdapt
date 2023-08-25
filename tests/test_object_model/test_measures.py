@@ -24,7 +24,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_floodwall_read():
+def test_floodwall_read(cleanup_database):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "seawall" / "seawall.toml"
     )
@@ -33,18 +33,18 @@ def test_floodwall_read():
     floodwall = FloodWall.load_file(test_toml)
 
     assert isinstance(floodwall.attrs.name, str)
-    assert isinstance(floodwall.attrs.long_name, str)
+    assert isinstance(floodwall.attrs.description, str)
     assert isinstance(floodwall.attrs.type, HazardType)
     assert isinstance(floodwall.attrs.elevation, UnitfulLength)
 
     assert floodwall.attrs.name == "seawall"
-    assert floodwall.attrs.long_name == "seawall"
+    assert floodwall.attrs.description == "seawall"
     assert floodwall.attrs.type == "floodwall"
     assert floodwall.attrs.elevation.value == 12
     assert floodwall.attrs.elevation.units == "feet"
 
 
-def test_elevate_aggr_area_read():
+def test_elevate_aggr_area_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -58,14 +58,14 @@ def test_elevate_aggr_area_read():
     elevate = Elevate.load_file(test_toml)
 
     assert isinstance(elevate.attrs.name, str)
-    assert isinstance(elevate.attrs.long_name, str)
+    assert isinstance(elevate.attrs.description, str)
     assert isinstance(elevate.attrs.type, ImpactType)
     assert isinstance(elevate.attrs.elevation, UnitfulLengthRefValue)
     assert isinstance(elevate.attrs.selection_type, SelectionType)
     assert isinstance(elevate.attrs.aggregation_area_name, str)
 
     assert elevate.attrs.name == "raise_property_aggregation_area"
-    assert elevate.attrs.long_name == "raise_property_aggregation_area"
+    assert elevate.attrs.description == "raise_property_aggregation_area"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
     assert elevate.attrs.elevation.units == "feet"
@@ -75,11 +75,11 @@ def test_elevate_aggr_area_read():
     assert elevate.attrs.aggregation_area_name == "name5"
 
 
-def test_elevate_aggr_area_read_fail():
+def test_elevate_aggr_area_read_fail(cleanup_database):
     # TODO validators do not work?
     test_dict = {
         "name": "test1",
-        "long_name": "test1",
+        "description": "test1",
         "type": "elevate_properties",
         "elevation": {"value": 1, "units": "feet", "type": "floodmap"},
         "selection_type": "aggregation_area",
@@ -90,7 +90,7 @@ def test_elevate_aggr_area_read_fail():
     Elevate.load_dict(test_dict, test_database / "charleston" / "input")
 
 
-def test_elevate_aggr_area_save():
+def test_elevate_aggr_area_save(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -123,7 +123,7 @@ def test_elevate_aggr_area_save():
     test_toml_new.unlink()
 
 
-def test_elevate_polygon_read():
+def test_elevate_polygon_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -137,14 +137,14 @@ def test_elevate_polygon_read():
     elevate = Elevate.load_file(test_toml)
 
     assert isinstance(elevate.attrs.name, str)
-    assert isinstance(elevate.attrs.long_name, str)
+    assert isinstance(elevate.attrs.description, str)
     assert isinstance(elevate.attrs.type, ImpactType)
     assert isinstance(elevate.attrs.elevation, UnitfulLengthRefValue)
     assert isinstance(elevate.attrs.selection_type, SelectionType)
     assert isinstance(elevate.attrs.polygon_file, str)
 
     assert elevate.attrs.name == "raise_property_polygon"
-    assert elevate.attrs.long_name == "raise_property_polygon"
+    assert elevate.attrs.description == "raise_property_polygon"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
     assert elevate.attrs.elevation.units == "feet"
@@ -156,7 +156,7 @@ def test_elevate_polygon_read():
     assert isinstance(polygon, gpd.GeoDataFrame)
 
 
-def test_buyout_read():
+def test_buyout_read(cleanup_database):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "buyout" / "buyout.toml"
     )
@@ -165,13 +165,13 @@ def test_buyout_read():
     buyout = Buyout.load_file(test_toml)
 
     assert isinstance(buyout.attrs.name, str)
-    assert isinstance(buyout.attrs.long_name, str)
+    assert isinstance(buyout.attrs.description, str)
     assert isinstance(buyout.attrs.type, ImpactType)
     assert isinstance(buyout.attrs.selection_type, SelectionType)
     assert isinstance(buyout.attrs.aggregation_area_name, str)
 
 
-def test_floodproof_read():
+def test_floodproof_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -185,13 +185,13 @@ def test_floodproof_read():
     floodproof = FloodProof.load_file(test_toml)
 
     assert isinstance(floodproof.attrs.name, str)
-    assert isinstance(floodproof.attrs.long_name, str)
+    assert isinstance(floodproof.attrs.description, str)
     assert isinstance(floodproof.attrs.type, ImpactType)
     assert isinstance(floodproof.attrs.selection_type, SelectionType)
     assert isinstance(floodproof.attrs.aggregation_area_name, str)
 
 
-def test_green_infra_read():
+def test_green_infra_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -206,7 +206,7 @@ def test_green_infra_read():
     green_infra = GreenInfrastructure.load_file(test_toml)
 
     assert isinstance(green_infra.attrs.name, str)
-    assert isinstance(green_infra.attrs.long_name, str)
+    assert isinstance(green_infra.attrs.description, str)
     assert isinstance(green_infra.attrs.type, HazardType)
     assert isinstance(green_infra.attrs.volume, UnitfulVolume)
     assert isinstance(green_infra.attrs.height, UnitfulLength)

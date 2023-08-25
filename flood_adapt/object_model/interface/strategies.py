@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 class StrategyModel(BaseModel):
     name: str
-    long_name: str
+    description: Optional[str] = ""
     measures: Optional[list[str]] = []
 
 

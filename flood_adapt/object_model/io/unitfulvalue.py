@@ -9,6 +9,19 @@ class UnitTypesLength(str, Enum):
     millimeters = "millimeters"
     feet = "feet"
     inch = "inch"
+    miles = "miles"
+
+
+class UnitTypesArea(str, Enum):
+    m2 = "m2"
+    cm2 = "cm2"
+    mm2 = "mm2"
+    sf = "sf"
+
+
+class UnitTypesVolume(str, Enum):
+    m3 = "m3"
+    cf = "cf"
 
 
 class UnitTypesVelocity(str, Enum):
@@ -24,11 +37,6 @@ class UnitTypesDischarge(str, Enum):
 class UnitTypesIntensity(str, Enum):
     inch = "inch/hr"
     mm = "mm/hr"
-
-
-class UnitTypesVolume(str, Enum):
-    m3 = "m3"
-    cf = "cf"
 
 
 class VerticalReference(str, Enum):
@@ -64,6 +72,8 @@ class UnitfulLength(BaseModel):
             conversion = 1.0 / 3.28084  # meters
         elif self.units == "inch":
             conversion = 0.0254  # meters
+        elif self.units == "miles":
+            conversion = 1609.344  # meters
         else:
             conversion = 1
         # second, convert to new units
@@ -77,6 +87,51 @@ class UnitfulLength(BaseModel):
             new_conversion = 3.28084
         elif new_units == "inch":
             new_conversion = 1.0 / 0.0254
+        elif self.units == "miles":
+            new_conversion = 1.0 / 1609.344
+        else:
+            new_conversion = 1
+        return conversion * new_conversion * self.value
+
+
+class UnitfulArea(BaseModel):
+    value: float
+    units: UnitTypesArea
+
+    def convert(self, new_units: UnitTypesArea) -> float:
+        """converts given length value different units
+
+        Parameters
+        ----------
+        new_units : UnitTypesArea
+            units to be converted to
+
+        Returns
+        -------
+        float
+            converted value
+        """
+        # first, convert to meters
+        if self.units == "cm2":
+            conversion = 1.0 / 10000  # meters
+        if self.units == "mm2":
+            conversion = 1.0 / 1000000  # meters
+        elif self.units == "m2":
+            conversion = 1.0  # meters
+        elif self.units == "sf":
+            conversion = 1.0 / 10.764  # meters
+        else:
+            conversion = 1.0
+
+        # second, convert to new units
+        if new_units == "cm2":
+            new_conversion = 10000.0
+        if new_units == "mm2":
+            new_conversion = 1000000.0
+        elif new_units == "m2":
+            new_conversion = 1.0
+        elif new_units == "sf":
+            new_conversion = 10.764
         else:
             new_conversion = 1
         return conversion * new_conversion * self.value

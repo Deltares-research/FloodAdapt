@@ -33,7 +33,7 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMe
         return FloodProof.load_dict(attrs, database.input_path)
     elif type == "floodwall":
         return FloodWall.load_dict(attrs, database.input_path)
-    elif type == "green_infrastructure":
+    elif type == "water_square" or type == "total_storage" or type == "greening":
         return GreenInfrastructure.load_dict(attrs, database.input_path)
 
 
@@ -50,9 +50,9 @@ def delete_measure(name: str, database: IDatabase) -> None:
 
 
 def copy_measure(
-    old_name: str, database: IDatabase, new_name: str, new_long_name: str
+    old_name: str, database: IDatabase, new_name: str, new_description: str
 ) -> None:
-    database.copy_measure(old_name, new_name, new_long_name)
+    database.copy_measure(old_name, new_name, new_description)
 
 
 # Green infrastructure

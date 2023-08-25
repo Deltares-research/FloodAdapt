@@ -12,6 +12,7 @@ authors = [
     { name = "Frederique de Groen", email = "Frederique.deGroen@deltares.nl" },
     { name = "Tim de Wilde", email = "Tim.deWilde@deltares.nl" },
     { name = "Julian Hofer", email = "Julian.Hofer@deltares.nl" },
+    { name = "Daley Adrichem", email = "Daley.Adrichem@deltares.nl" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -21,7 +22,7 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "geopandas",
-    "hydromt == 0.7.1",
+    "hydromt==0.7.1",
     "numpy",
     "numpy-financial",
     "pandas",

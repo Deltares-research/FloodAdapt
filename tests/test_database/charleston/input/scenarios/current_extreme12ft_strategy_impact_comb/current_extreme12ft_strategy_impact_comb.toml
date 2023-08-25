@@ -1,5 +1,5 @@
 name = "current_extreme12ft_strategy_impact_comb"
-long_name = "current - extreme12ft - strategy_impact_comb"
+description = "current - extreme12ft - strategy_impact_comb"
 projection = "current"
 event = "extreme12ft"
 strategy = "strategy_impact_comb"

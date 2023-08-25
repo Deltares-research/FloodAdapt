@@ -28,7 +28,9 @@ class HazardType(str, Enum):
     floodwall = "floodwall"
     # levee = "levee" --> same functionality as floodwall
     pump = "pump"
-    green_infrastructure = "green_infrastructure"
+    water_square = "water_square"
+    greening = "greening"
+    total_storage = "total_storage"
 
 
 class SelectionType(str, Enum):
@@ -36,6 +38,7 @@ class SelectionType(str, Enum):
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
+    polyline = "polyline"
     all = "all"
 
 
@@ -43,7 +46,7 @@ class MeasureModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     type: Union[HazardType, ImpactType]
 
 
@@ -51,7 +54,8 @@ class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: str
+    polygon_file: Optional[str]
+    selection_type: SelectionType
 
 
 class ImpactMeasureModel(MeasureModel):
@@ -122,6 +126,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
     volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
     height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    aggregation_area_type: Optional[str]
+    aggregation_area_name: Optional[str]
     percent_area: float = 100
 
 

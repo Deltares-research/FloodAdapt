@@ -1,5 +1,5 @@
 name = "current"
-long_name = "current"
+description = "current"
 
 [physical_projection]
 rainfall_increase = 0.0

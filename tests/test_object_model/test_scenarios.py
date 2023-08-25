@@ -22,7 +22,7 @@ from flood_adapt.object_model.site import Site
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_scenario_class():
+def test_scenario_class(cleanup_database):
     scenario_toml = (
         test_database
         / "charleston"
@@ -70,7 +70,7 @@ def test_hazard_load():
     assert isinstance(hazard.event_list[0].attrs.tide, TideModel)
 
 
-def test_hazard_wl():
+def test_hazard_wl(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -97,7 +97,7 @@ def test_hazard_wl():
 @pytest.mark.skip(
     reason="Test csv file is missing and bug in the code according to team"
 )
-def test_scs_rainfall():
+def test_scs_rainfall(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -127,7 +127,7 @@ def test_scs_rainfall():
     )
 
     scsfile = hazard.database_input_path.parent.joinpath(
-        "static", "site", hazard.site.attrs.scs.file
+        "static", "scs", hazard.site.attrs.scs.file
     )
     scstype = hazard.site.attrs.scs.type
     hazard.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
@@ -148,7 +148,7 @@ def test_scs_rainfall():
 
 
 @pytest.mark.skip(reason="No metric file to read from")
-def test_infographic():
+def test_infographic(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -167,7 +167,7 @@ def test_infographic():
 
 
 @pytest.mark.skip(reason="We cannot depend on the P drive")
-def test_run_hazard_model():
+def test_run_hazard_model(cleanup_database):
     test_toml = (
         Path(
             r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/input"
@@ -197,7 +197,7 @@ def test_run_hazard_model():
 
 
 @pytest.mark.skip(reason="wind not implemented yet")
-def test_wind_constant():
+def test_wind_constant(cleanup_database):
     test_toml = (
         test_database
         / "charleston"

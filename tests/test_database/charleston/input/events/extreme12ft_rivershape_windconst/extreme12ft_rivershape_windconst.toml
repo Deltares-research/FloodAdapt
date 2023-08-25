@@ -1,5 +1,5 @@
 name = "extreme12ft_rivershape_windconst"
-long_name = "extreme 12 foot event river discharge shape and constant wind"
+description = "extreme 12 foot event river discharge shape and constant wind"
 mode = "single_event"
 template = "Synthetic"
 timing = "idealized"
