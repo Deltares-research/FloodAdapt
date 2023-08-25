@@ -18,6 +18,7 @@ dependencies:
     - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
     - git+https://github.com/Deltares/Delft-FIAT.git
   - black
+  - typos
   - ruff
   - build
   - geopandas

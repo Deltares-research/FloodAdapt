@@ -1,121 +1,169 @@
-aggregateBy = []
+aggregateBy = ['aggr_lvl_1', 'aggr_lvl_2']
+
+[[queries]]
+name = "TotalDamageEvent"
+description = "Total Damage of the Event on buldings"
+select = "SUM(`Total Damage`)"
+filter = "`Primary Object Type` != 'road'"
+long_name = "Total Damage of the Event"
+show_in_metrics_table = "True"
 
 [[queries]]
 name = "ResidentialAffectedCount"
 description = "Number of affected damaged residential buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 25000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 25000 AND `Total Damage` != 0"
+long_name = "Affected Residential Buildings"
+show_in_metrics_table = "True"
 
 [[queries]]
 name = "ResidentialMinorCount"
 description = "Number of minor damaged residential buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 150000 AND `Total Damage` > 25000"
+long_name = "Minor Damaged Residential Buildings"
+show_in_metrics_table = "True"
 
 [[queries]]
 name = "ResidentialMajorCount"
 description = "Number of major damaged residential buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 250000 AND `Total Damage` > 150000"
+long_name = "Major Damaged Residential Buildings"
+show_in_metrics_table = "True"
 
 [[queries]]
 name = "ResidentialDestroyedCount"
 description = "Number of destroyed residential buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'RES' AND `Total Damage Event` > 250000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` > 250000"
+long_name = "Destroyed Residential Buildings"
+show_in_metrics_table = "True"
 
 [[queries]]
 name = "CommercialAffectedCount"
 description = "Number of affected damaged commercial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 25000"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage` < 25000 AND `Total Damage` != 0"
+long_name = "Affected Commercial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "CommercialMinorCount"
 description = "Number of minor damaged commercial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage` < 150000 AND `Total Damage` > 25000"
+long_name = "Minor Damaged Commercial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "CommercialMajorCount"
 description = "Number of major damaged commercial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage` < 250000 AND `Total Damage` > 150000"
+long_name = "Major Damaged Commercial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "CommercialDestroyedCount"
 description = "Number of destroyed commercial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'COM' AND `Total Damage Event` > 250000"
+filter = "`Primary Object Type` = 'COM' AND `Total Damage` > 250000"
+long_name = "Destroyed Commercial Buildings"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "PublicAffectedCount"
+description = "Number of affected damaged Public buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'PUB' AND `Total Damage` < 25000 AND `Total Damage` != 0"
+long_name = "Affected Public Buildings"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "PublicMinorCount"
+description = "Number of minor damaged Public buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'PUB' AND `Total Damage` < 150000 AND `Total Damage` > 25000"
+long_name = "Minor Damaged Public Buildings"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "PublicMajorCount"
+description = "Number of major damaged Public buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'PUB' AND `Total Damage` < 250000 AND `Total Damage` > 150000"
+long_name = "Major Damaged Public Buildings"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "PublicDestroyedCount"
+description = "Number of destroyed Public buildings"
+select = "COUNT(*)"
+filter = "`Primary Object Type` = 'PUB' AND `Total Damage` > 250000"
+long_name = "Destroyed Public Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "IndustrialAffectedCount"
-description = "Number of affected damaged industrial buildings"
+description = "Number of affected damaged Industrial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 25000"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage` < 25000 AND `Total Damage` != 0"
+long_name = "Affected Industrial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "IndustrialMinorCount"
-description = "Number of minor damaged industrial buildings"
+description = "Number of minor damaged Industrial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage` < 150000 AND `Total Damage` > 25000"
+long_name = "Minor Damaged Industrial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "IndustrialMajorCount"
-description = "Number of major damaged industrial buildings"
+description = "Number of major damaged Industrial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage` < 250000 AND `Total Damage` > 150000"
+long_name = "Major Damaged Industrial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "IndustrialDestroyedCount"
-description = "Number of destroyed industrial buildings"
+description = "Number of destroyed Industrial buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'IND' AND `Total Damage Event` > 250000"
+filter = "`Primary Object Type` = 'IND' AND `Total Damage` > 250000"
+long_name = "Destroyed Industrial Buildings"
+show_in_metrics_table = "False"
 
 [[queries]]
-name = "GovernmentalAffectedCount"
-description = "Number of affected damaged governmental buildings"
+name = "FloodedLowVulnerability"
+description = "Number of flooded people with low vulnerability"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 25000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 150000  AND `Total Damage` != 0"
+long_name = "Flooded Low Vulnerability"
+show_in_metrics_table = "False"
 
 [[queries]]
-name = "GovernmentalMinorCount"
-description = "Number of minor damaged governmental buildings"
+name = "FloodedHighVulnerability"
+description = "Number of flooded people with high vulnerability"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 150000 AND `Total Damage` != 0"
+long_name = "Flooded High Vulnerability"
+show_in_metrics_table = "False"
 
 [[queries]]
-name = "GovernmentalMajorCount"
-description = "Number of major damaged governmental buildings"
+name = "DisplacedLowVulnerability"
+description = "Number of displaced people with low vulnerability"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` >= 150000"
+long_name = "Displaced Low Vulnerability"
+show_in_metrics_table = "False"
 
 [[queries]]
-name = "GovernmentalDestroyedCount"
-description = "Number of destroyed governmental buildings"
+name = "DisplacedHighVulnerability"
+description = "Number of displaced people with low vulnerability"
 select = "COUNT(*)"
-filter = "`Primary Object Type` = 'GOV' AND `Total Damage Event` > 250000"
-
-[[queries]]
-name = "EducationalAffectedCount"
-description = "Number of affected damaged educational buildings"
-select = "COUNT(*)"
-filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 25000"
-
-[[queries]]
-name = "EducationalMinorCount"
-description = "Number of minor damaged educational buildings"
-select = "COUNT(*)"
-filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 150000 AND `Total Damage Event` > 25000"
-
-[[queries]]
-name = "EducationalMajorCount"
-description = "Number of major damaged educational buildings"
-select = "COUNT(*)"
-filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` < 250000 AND `Total Damage Event` > 150000"
-
-[[queries]]
-name = "EducationalDestroyedCount"
-description = "Number of destroyed educational buildings"
-select = "COUNT(*)"
-filter = "`Primary Object Type` = 'EDU' AND `Total Damage Event` > 250000"
+filter = "`Primary Object Type` = 'RES' AND `Total Damage` >= 150000"
+long_name = "Displaced High Vulnerability"
+show_in_metrics_table = "False"
