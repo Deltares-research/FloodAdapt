@@ -372,9 +372,7 @@ class Hazard:
                         "Adding rainfall timeseries to the overland flood model..."
                     )
                     model.add_precip_forcing(
-                        timeseries=event_dir.joinpath(
-                            self.event.attrs.rainfall.timeseries_file
-                        )
+                        timeseries=event_dir.joinpath("rainfall.csv")
                     )
                 elif self.event.attrs.rainfall.source == "constant":
                     logging.info(
@@ -391,17 +389,13 @@ class Hazard:
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
                         scsfile = self.database_input_path.parent.joinpath(
-                            "static", "scs", self.site.scs.file
+                            "static", "scs", self.site.attrs.scs.file
                         )
-                        scstype = self.site.scs.type
+                        scstype = self.site.attrs.scs.type
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
-                    model.add_precip_forcing(
-                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                            "mm/hr"
-                        )
-                    )
+                    model.add_precip_forcing(timeseries=self.event.rain_ts)
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
@@ -428,7 +422,7 @@ class Hazard:
                 spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
 
-            # Add floodwall if included
+            # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
                     measure_path = base_path.joinpath(

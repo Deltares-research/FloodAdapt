@@ -26,7 +26,11 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+    UnitfulLength,
+)
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -265,15 +269,160 @@ class Database(IDatabase):
             )
 
             # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "wl.html")
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
             output_loc.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(output_loc)
             return str(output_loc)
 
         else:
             NotImplementedError(
-                "Plotting only available for Synthetic and Historical Nearshore event."
+                "Plotting only available for timeseries and synthetic tide + surge."
             )
+            return str("")
+
+    def plot_rainfall(
+        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if (
+            event["rainfall"]["source"] == "shape"
+            or event["rainfall"]["source"] == "timeseries"
+        ):
+            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+            if (
+                temp_event.attrs.rainfall.source == "shape"
+                and temp_event.attrs.rainfall.shape_type == "scs"
+            ):
+                scsfile = self.input_path.parent.joinpath(
+                    "static", "scs", self.site.attrs.scs.file
+                )
+                if scsfile.is_file() is False:
+                    ValueError(
+                        "Information about SCS file and type missing in site.toml"
+                    )
+                temp_event.add_rainfall_ts(
+                    scsfile=scsfile, scstype=self.site.attrs.scs.type
+                )
+                df = temp_event.rain_ts
+            elif event["rainfall"]["source"] == "timeseries":
+                df = input_rainfall_df
+            else:
+                temp_event.add_rainfall_ts()
+                df = temp_event.rain_ts
+
+            # convert to units used in GUI
+            ts_current_units = UnitfulIntensity(value=1.0, units="mm/hr")
+            gui_units = self.site.attrs.gui.default_intensity_units
+            conversion_factor = ts_current_units.convert(gui_units)
+            df = conversion_factor * df
+
+            # set timing relative to T0 if event is synthetic
+            if event["template"] == "Synthetic":
+                df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
+
+            # Plot actual thing
+            fig = px.line(data_frame=df)
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title={"text": "Time"},
+                yaxis_title={"text": f"Rainfall intensity [{gui_units}]"},
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and shape type rainfall."
+            )
+            return str("")
+
+    def plot_river(
+        self, event: IEvent, input_river_df: pd.DataFrame = None
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if (
+            event["river"]["source"] == "shape"
+            or event["river"]["source"] == "timeseries"
+        ):
+            # TODO: Add functionality for multiple rivers
+            if event["river"]["source"] == "timeseries":
+                df = input_river_df
+            elif event["river"]["source"] == "shape":
+                temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+                temp_event.add_dis_ts()
+                df = temp_event.dis_ts
+
+            # convert to units used in GUI
+            ts_current_units = UnitfulDischarge(value=1.0, units="m3/s")
+            gui_units = self.site.attrs.gui.default_discharge_units
+            conversion_factor = ts_current_units.convert(gui_units)
+            df = conversion_factor * df
+
+            # set timing relative to T0 if event is synthetic
+            if event["template"] == "Synthetic":
+                df.index = np.arange(
+                    -temp_event.attrs.time.duration_before_t0,
+                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    1 / 6,
+                )
+
+            # Plot actual thing
+            fig = px.line(
+                data_frame=df,
+                labels={self.site.attrs.river.name: self.site.attrs.river.name},
+            )
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title={"text": "Time"},
+                yaxis_title={"text": f"River discharge [{gui_units}]"},
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and shape type river discharge."
+            )
+            return str("")
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.

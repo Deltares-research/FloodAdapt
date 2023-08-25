@@ -40,6 +40,18 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+        ...
+
+    @abstractmethod
+    def plot_river(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
+    def plot_rainfall(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
         ...
 
@@ -189,8 +201,4 @@ class IDatabase(ABC):
 
     @abstractmethod
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        ...
-
-    @abstractmethod
-    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
         ...

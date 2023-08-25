@@ -27,6 +27,7 @@ class UnitTypesVolume(str, Enum):
 class UnitTypesVelocity(str, Enum):
     meters = "m/s"
     knots = "knots"
+    mph = "mph"
 
 
 class UnitTypesDischarge(str, Enum):
@@ -75,7 +76,7 @@ class UnitfulLength(BaseModel):
         elif self.units == "miles":
             conversion = 1609.344  # meters
         else:
-            conversion = 1
+            ValueError("Invalid length units")
         # second, convert to new units
         if new_units == "centimeters":
             new_conversion = 100.0
@@ -90,7 +91,7 @@ class UnitfulLength(BaseModel):
         elif self.units == "miles":
             new_conversion = 1.0 / 1609.344
         else:
-            new_conversion = 1
+            ValueError("Invalid length units")
         return conversion * new_conversion * self.value
 
 
@@ -159,11 +160,19 @@ class UnitfulVelocity(BaseModel):
             conversion = 1.0 / 1.943844  # m/s
         elif self.units == "m/s":
             conversion = 1
+        elif self.units == "mph":
+            conversion = 0.44704
+        else:
+            ValueError("Invalid velocity units")
         # second, convert to new units
         if new_units == "knots":
-            new_conversion = 1.0
-        elif new_units == "m/s":
             new_conversion = 1.943844
+        elif new_units == "m/s":
+            new_conversion = 1.0
+        elif new_units == "mph":
+            new_conversion = 2.236936
+        else:
+            ValueError("Invalid velocity units")
         return conversion * new_conversion * self.value
 
 
@@ -198,11 +207,16 @@ class UnitfulDischarge(BaseModel):
             conversion = 0.02832  # m3/s
         elif self.units == "m3/s":
             conversion = 1
+        else:
+            ValueError("Invalid discharg units")
         # second, convert to new units
         if new_units == "cfs":
             new_conversion = 1.0 / 0.02832
         elif new_units == "m3/s":
             new_conversion = 1.0
+        else:
+            ValueError("Invalid discharg units")
+
         return conversion * new_conversion * self.value
 
 
@@ -228,11 +242,15 @@ class UnitfulIntensity(BaseModel):
             conversion = 25.4  # mm/hr
         elif self.units == "mm/hr":
             conversion = 1.0
+        else:
+            ValueError("Invalid rainfall intensity units")
         # second, convert to new units
         if new_units == "inch/hr":
-            new_conversion = 1.0
-        elif new_units == "mm/hr":
             new_conversion = 1.0 / 25.4
+        elif new_units == "mm/hr":
+            new_conversion = 1.0
+        else:
+            ValueError("Invalid rainfall intensity units")
         return conversion * new_conversion * self.value
 
 

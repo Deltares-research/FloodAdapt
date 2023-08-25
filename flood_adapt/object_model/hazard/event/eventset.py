@@ -10,6 +10,7 @@ class EventSet:
     """class for all event sets"""
 
     attrs: EventSetModel
+    event_paths: list[Path]
 
     @staticmethod
     def load_file(filepath: Union[str, Path]):

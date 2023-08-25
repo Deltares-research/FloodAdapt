@@ -28,8 +28,17 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
             toml = tomli.load(fp)
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
-        csv_path = Path(Path(filepath).parents[0], "tide.csv")
-        obj.tide_surge_ts = HistoricalNearshore.read_csv(csv_path)
+        wl_csv_path = Path(Path(filepath).parents[0], "tide.csv")
+        obj.tide_surge_ts = HistoricalNearshore.read_csv(wl_csv_path)
+        if obj.attrs.rainfall.source == "timeseries":
+            rainfall_csv_path = Path(Path(filepath).parents[0], "rainfall.csv")
+            obj.rain_ts = HistoricalNearshore.read_csv(rainfall_csv_path)
+        if obj.attrs.wind.source == "timeseries":
+            wind_csv_path = Path(Path(filepath).parents[0], "wind.csv")
+            obj.wind_ts = HistoricalNearshore.read_csv(wind_csv_path)
+        if obj.attrs.river.source == "timeseries":
+            river_csv_path = Path(Path(filepath).parents[0], "river.csv")
+            obj.dis_ts = HistoricalNearshore.read_csv(river_csv_path)
 
         return obj
 

@@ -16,12 +16,20 @@ from flood_adapt.object_model.hazard.event.historical_offshore import Historical
 from flood_adapt.object_model.interface.events import (
     Mode,
     RainfallModel,
+    RiverModel,
     Template,
     TideModel,
     TimeModel,
     Timing,
+    WindModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity, UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDirection,
+    UnitfulDischarge,
+    UnitfulIntensity,
+    UnitfulLength,
+    UnitfulVelocity,
+)
 from flood_adapt.object_model.site import (
     Site,
 )
@@ -299,10 +307,16 @@ def test_constant_rainfall(cleanup_database):
         source="constant",
         constant_intensity=UnitfulIntensity(value=2.0, units="inch/hr"),
     )
-    event.add_rainfall_ts()
+    event.add_rainfall_ts()  # also converts to mm/hour!!!
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
-    assert np.abs(event.rain_ts.to_numpy()[0][0] - 2) < 0.001
+    assert (
+        np.abs(
+            event.rain_ts.to_numpy()[0][0]
+            - UnitfulIntensity(value=2, units="inch/hr").convert("mm/hr")
+        )
+        < 0.001
+    )
 
 
 def test_gaussian_rainfall(cleanup_database):
@@ -433,3 +447,135 @@ def test_scs_rainfall(cleanup_database):
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
     cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
+
+
+def test_constant_wind():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.wind = WindModel(
+        source="constant",
+        constant_speed=UnitfulVelocity(value=20.0, units="m/s"),
+        constant_direction=UnitfulDirection(value=90, units="deg N"),
+    )
+    event.add_wind_ts()
+    assert isinstance(event.wind_ts, pd.DataFrame)
+    assert isinstance(event.wind_ts.index, pd.DatetimeIndex)
+    assert np.abs(event.wind_ts.to_numpy()[0][0] - 20) < 0.001
+
+
+def test_constant_discharge():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.river = RiverModel(
+        source="constant",
+        constant_discharge=UnitfulDischarge(value=2000.0, units="cfs"),
+    )
+    event.add_dis_ts()
+    assert isinstance(event.dis_ts, pd.DataFrame)
+    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
+    const_dis = event.attrs.river.constant_discharge.convert("m3/s")
+
+    assert np.abs(event.dis_ts.to_numpy()[0][0] - (const_dis)) < 0.001
+
+
+def test_gaussian_discharge():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.river = RiverModel(
+        source="shape",
+        shape_type="gaussian",
+        shape_duration=2.0,
+        shape_peak_time=-22.0,
+        base_discharge=UnitfulDischarge(value=5000, units="cfs"),
+        shape_peak=UnitfulDischarge(value=10000, units="cfs"),
+    )
+    event.add_dis_ts()
+    assert isinstance(event.dis_ts, pd.DataFrame)
+    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
+    # event.dis_ts.to_csv(
+    #     (
+    #         test_database
+    #         / "charleston"
+    #         / "input"
+    #         / "events"
+    #         / "extreme12ft"
+    #         / "river.csv"
+    #     )
+    # )
+    dt = event.dis_ts.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_dis_ts = np.sum(event.dis_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
+    assert np.abs(cum_dis_ts - 6945.8866666) < 0.01
+
+
+def test_block_discharge():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "events"
+        / "extreme12ft"
+        / "extreme12ft.toml"
+    )
+    assert test_toml.is_file()
+    template = Event.get_template(test_toml)
+    # use event template to get the associated event child class
+    event = EventFactory.get_event(template).load_file(test_toml)
+    event.attrs.river = RiverModel(
+        source="shape",
+        base_discharge=UnitfulDischarge(value=5000, units="cfs"),
+        shape_peak=UnitfulDischarge(value=10000, units="cfs"),
+        shape_type="block",
+        shape_start_time=-24.0,
+        shape_end_time=-20.0,
+    )
+    event.add_dis_ts()
+    assert isinstance(event.dis_ts, pd.DataFrame)
+    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
+    # event.dis_ts.to_csv(
+    #     (
+    #         test_database
+    #         / "charleston"
+    #         / "input"
+    #         / "events"
+    #         / "extreme12ft"
+    #         / "river.csv"
+    #     )
+    # )
+    assert (
+        np.abs(event.dis_ts[1][0] - event.attrs.river.shape_peak.convert("m3/s"))
+        < 0.001
+    )
+    assert (
+        np.abs(event.dis_ts[1][-1] - event.attrs.river.base_discharge.convert("m3/s"))
+        < 0.001
+    )
