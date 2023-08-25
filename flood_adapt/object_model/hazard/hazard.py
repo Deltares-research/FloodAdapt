@@ -439,7 +439,11 @@ class Hazard:
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
                         )
-                    if measure.attrs.type == "green_infrastructure":
+                    if (
+                        measure.attrs.type == "greening"
+                        or measure.attrs.type == "total_storage"
+                        or measure.attrs.type == "water_square"
+                    ):
                         logging.info(
                             "Adding green infrastructure to the overland flood model..."
                         )
