@@ -133,6 +133,66 @@ def test_preprocess_prob_eventset(cleanup_database):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
+def test_preprocess_prob_eventset_rainfall_increase(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_test_set2_no_measures"
+        / "current_test_set2_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.physical_projection.attrs.rainfall_increase = (
+        10.0
+    )
+    test_scenario.direct_impacts.hazard.physical_projection.attrs.storm_frequency_increase = (
+        20.0
+    )
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    bzs_file1 = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_test_set2_no_measures"
+        / "event_0001"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    bzs_file2 = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_test_set2_no_measures"
+        / "FLORENCE"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    bzs_file3 = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_test_set2_no_measures"
+        / "kingTideNov2021"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    assert bzs_file1.is_file()
+    assert bzs_file2.is_file()
+    assert bzs_file3.is_file()
+    assert ~filecmp.cmp(bzs_file1, bzs_file2)
+    assert ~filecmp.cmp(bzs_file1, bzs_file3)
+    assert ~filecmp.cmp(bzs_file2, bzs_file3)
+
+
 # @pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(cleanup_database):
     test_toml = (

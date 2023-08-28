@@ -378,11 +378,11 @@ class Hazard:
                     logging.info(
                         "Adding constant rainfall to the overland flood model..."
                     )
-                    model.add_precip_forcing(
-                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                            "mm/hr"
-                        )
+                    const_precipitation = (
+                        self.event.attrs.rainfall.constant_intensity.convert("mm/hr")
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                     )
+                    model.add_precip_forcing(const_precip=const_precipitation)
                 elif self.event.attrs.rainfall.source == "shape":
                     logging.info(
                         "Adding rainfall shape timeseries to the overland flood model..."
@@ -395,7 +395,10 @@ class Hazard:
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
-                    model.add_precip_forcing(timeseries=self.event.rain_ts)
+                    model.add_precip_forcing(
+                        timeseries=self.event.rain_ts
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
+                    )
 
                 # Generate and add wind boundary condition
                 if self.event.attrs.wind.source == "map":
@@ -540,7 +543,16 @@ class Hazard:
 
     def calculate_rp_floodmaps(self):
         floodmap_rp = self.site.attrs.risk.return_periods
+
         frequencies = self.event_set.attrs.frequency
+        # adjust storm frequency for hurricane events
+        if self.physical_projection.attrs.storm_frequency_increase != 0:
+            storminess_increase = (
+                self.physical_projection.attrs.storm_frequency_increase / 100.0
+            )
+            for ii, event in enumerate(self.event_list):
+                if event.attrs.template == "Historical_hurricane":
+                    frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
         zs_maps = []
         for simulation_path in self.simulation_paths:
