@@ -6,6 +6,7 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel, validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
     UnitfulLength,
     UnitfulLengthRefValue,
     UnitfulVolume,
@@ -121,6 +122,12 @@ class FloodWallModel(HazardMeasureModel):
     elevation: UnitfulLength
 
 
+class PumpModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "pump" hazard measure"""
+
+    discharge: UnitfulDischarge
+
+
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
 
@@ -175,6 +182,12 @@ class IFloodWall(IMeasure):
     """This is a class for a FloodAdapt "floodwall" measure"""
 
     attrs: FloodWallModel
+
+
+class IPump(IMeasure):
+    """This is a class for a FloodAdapt "pump" measure"""
+
+    attrs: PumpModel
 
 
 class IGreenInfrastructure(IMeasure):

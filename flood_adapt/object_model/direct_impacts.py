@@ -206,7 +206,10 @@ class DirectImpacts:
 
         with cd(self.results_path):
             process = subprocess.run(
-                f'"{fiat_exec}" run settings.toml', stdout=subprocess.PIPE, check=True, shell=True
+                f'"{fiat_exec}" run settings.toml',
+                stdout=subprocess.PIPE,
+                check=True,
+                shell=True,
             )
 
             return process.returncode

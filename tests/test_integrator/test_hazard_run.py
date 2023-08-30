@@ -70,7 +70,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
 
     hazard = scenario.direct_impacts.hazard
     hazard.event.attrs.rainfall.source = "timeseries"
-    hazard.event.attrs.rainfall.timeseries_file = "rain.csv"
+    hazard.event.attrs.rainfall.timeseries_file = "rainfall.csv"
 
     tt = pd.date_range(
         start=hazard.event.attrs.time.start_time,
@@ -81,7 +81,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
         decimals=2
     )
     df = pd.DataFrame(index=tt, data=rain)
-    df.to_csv(event_path.joinpath("rain.csv"))
+    df.to_csv(event_path.joinpath("rainfall.csv"))
 
     hazard.preprocess_models()
 
@@ -89,7 +89,37 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     assert prcp_file.is_file()
 
     # Delete rainfall file that was created for the test
-    os.remove(event_path.joinpath("rain.csv"))
+    os.remove(event_path.joinpath("rainfall.csv"))
+
+
+def test_preprocess_pump(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.attrs.strategy = "pump"
+    scenario.attrs.name = scenario.attrs.name.replace("no_measures", "pump")
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+
+    hazard.preprocess_models()
+
+    drn_file = hazard.simulation_paths[0].joinpath("sfincs.drn")
+    assert drn_file.is_file()
+
+    drn_templ = scenario.database_input_path.parent.joinpath(
+        "static", "templates", "overland", "sfincs.drn"
+    )
+
+    ~filecmp.cmp(drn_file, drn_templ)
 
 
 def test_preprocess_prob_eventset(cleanup_database):
