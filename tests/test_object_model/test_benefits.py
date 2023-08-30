@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -58,56 +57,27 @@ def test_run_CBA(cleanup_database):
 
     benefit = Benefit.load_file(benefit_toml)
 
+    # Create missing scenarios
     dbs.create_benefit_scenarios(benefit)
 
-    # Test if all scenarios are created
-    assert all(benefit.scenarios["scenario created"] != "No")
-    # Test that there are scenarios that are not run yet
-    assert sum(~benefit.scenarios["scenario run"]) > 0
+    # Check that error is returned if not all runs are finished
+    if not all(benefit.scenarios["scenario run"]):
+        with pytest.raises(RuntimeError):
+            # Assert error if not yet run
+            benefit.run_cost_benefit()
 
-    with pytest.raises(RuntimeError):
-        # Assert error if not yet run
-        benefit.run_cost_benefit()
+    # Runs missing scenarios
+    for name, row in benefit.scenarios.iterrows():
+        if not row["scenario run"]:
+            dbs.run_scenario(row["scenario created"])
 
-    # Simulate FIAT run by creating the results folder for each run and adding a csv with a total EAD
-    EADs = pd.Series(
-        {
-            "current_no_measures": 10000000,
-            "current_with_strategy": 3000000,
-            "future_no_measures": 16000000,
-            "future_with_strategy": 5000000,
-        }
-    )
-
-    results_path = test_database.joinpath("charleston", "output", "results")
-    for index, scenario in benefit.scenarios.iterrows():
-        res_scn_path = results_path.joinpath(scenario["scenario created"]).joinpath(
-            "fiat_model"
-        )
-        res_scn_path.mkdir(parents=True, exist_ok=True)
-
-        df = pd.DataFrame({"EAD": EADs[index]}, index=[0])
-        df.to_csv(res_scn_path.joinpath("metrics.csv"), index=False)
-
+    # Check which
     benefit.check_scenarios()
+
     # Test if all scenarios are ^run^
     assert all(benefit.scenarios["scenario run"])
 
     benefit.run_cost_benefit()
-
-    # Delete created files
-    scenarios_path = test_database.joinpath("charleston", "input", "scenarios")
-    path1 = scenarios_path.joinpath("all_projections_test_set_elevate_comb_correct")
-    path2 = scenarios_path.joinpath("all_projections_test_set_no_measures")
-    path3 = scenarios_path.joinpath("current_test_set_elevate_comb_correct")
-    # Delete scenarios created
-    shutil.rmtree(path1)
-    shutil.rmtree(path2)
-    shutil.rmtree(path3)
-
-    for index, scenario in benefit.scenarios.iterrows():
-        res_scn_path = results_path.joinpath(scenario["scenario created"])
-        shutil.rmtree(res_scn_path)
 
 
 def test_run_benefit_analysis(cleanup_database):
@@ -126,53 +96,24 @@ def test_run_benefit_analysis(cleanup_database):
 
     benefit = Benefit.load_file(benefit_toml)
 
+    # Create missing scenarios
     dbs.create_benefit_scenarios(benefit)
 
-    # Test if all scenarios are created
-    assert all(benefit.scenarios["scenario created"] != "No")
-    # Test that there are scenarios that are not run yet
-    assert sum(~benefit.scenarios["scenario run"]) > 0
+    # Check that error is returned if not all runs are finished
+    if not all(benefit.scenarios["scenario run"]):
+        with pytest.raises(RuntimeError):
+            # Assert error if not yet run
+            benefit.run_cost_benefit()
 
-    with pytest.raises(RuntimeError):
-        # Assert error if not yet run
-        benefit.run_cost_benefit()
+    # Runs missing scenarios
+    for name, row in benefit.scenarios.iterrows():
+        if not row["scenario run"]:
+            dbs.run_scenario(row["scenario created"])
 
-    # Simulate FIAT run by creating the results folder for each run and adding a csv with a total EAD
-    EADs = pd.Series(
-        {
-            "current_no_measures": 10000000,
-            "current_with_strategy": 3000000,
-            "future_no_measures": 16000000,
-            "future_with_strategy": 5000000,
-        }
-    )
-
-    results_path = test_database.joinpath("charleston", "output", "results")
-    for index, scenario in benefit.scenarios.iterrows():
-        res_scn_path = results_path.joinpath(scenario["scenario created"]).joinpath(
-            "fiat_model"
-        )
-        res_scn_path.mkdir(parents=True)
-
-        df = pd.DataFrame({"EAD": EADs[index]}, index=[0])
-        df.to_csv(res_scn_path.joinpath("metrics.csv"), index=False)
-
+    # Check which
     benefit.check_scenarios()
+
     # Test if all scenarios are ^run^
     assert all(benefit.scenarios["scenario run"])
 
     benefit.run_cost_benefit()
-
-    # Delete created files
-    scenarios_path = test_database.joinpath("charleston", "input", "scenarios")
-    path1 = scenarios_path.joinpath("all_projections_test_set_elevate_comb_correct")
-    path2 = scenarios_path.joinpath("all_projections_test_set_no_measures")
-    path3 = scenarios_path.joinpath("current_test_set_elevate_comb_correct")
-    # Delete scenarios created
-    shutil.rmtree(path1)
-    shutil.rmtree(path2)
-    shutil.rmtree(path3)
-
-    for index, scenario in benefit.scenarios.iterrows():
-        res_scn_path = results_path.joinpath(scenario["scenario created"])
-        shutil.rmtree(res_scn_path)

@@ -1,6 +1,7 @@
 import shutil
-import subprocess
 from pathlib import Path
+
+from delft_fiat.main import FIAT
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -12,9 +13,6 @@ from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
-from flood_adapt.object_model.utils import cd
-
-from delft_fiat.main import FIAT
 
 
 class DirectImpacts:
