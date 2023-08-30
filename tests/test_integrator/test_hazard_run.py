@@ -92,7 +92,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     os.remove(event_path.joinpath("rainfall.csv"))
 
 
-def test_run_pump(cleanup_database):
+def test_preprocess_pump(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -120,8 +120,6 @@ def test_run_pump(cleanup_database):
     )
 
     ~filecmp.cmp(drn_file, drn_templ)
-
-    os.removedirs(hazard.simulation_paths[0])
 
 
 def test_preprocess_prob_eventset(cleanup_database):
