@@ -70,7 +70,6 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
 
     hazard = scenario.direct_impacts.hazard
     hazard.event.attrs.rainfall.source = "timeseries"
-    hazard.event.attrs.rainfall.timeseries_file = "rain.csv"
 
     tt = pd.date_range(
         start=hazard.event.attrs.time.start_time,
@@ -81,7 +80,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
         decimals=2
     )
     df = pd.DataFrame(index=tt, data=rain)
-    df.to_csv(event_path.joinpath("rain.csv"))
+    df.to_csv(event_path.joinpath("rainfall.csv"))
 
     hazard.preprocess_models()
 
@@ -89,7 +88,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     assert prcp_file.is_file()
 
     # Delete rainfall file that was created for the test
-    os.remove(event_path.joinpath("rain.csv"))
+    os.remove(event_path.joinpath("rainfall.csv"))
 
 
 def test_preprocess_prob_eventset(cleanup_database):
