@@ -1,0 +1,9 @@
+aggregateBy = ['aggr_lvl_1', 'aggr_lvl_2']
+
+[[queries]]
+name = "TotalEAD"
+description = "Total EAD on buldings"
+select = "SUM(`Risk (EAD)`)"
+filter = "`Primary Object Type` != 'road'"
+long_name = "Total Expected Annual Damage"
+show_in_metrics_table = "True"
