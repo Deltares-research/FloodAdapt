@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Union
 
 import pandas as pd
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -81,6 +82,14 @@ class IDatabase(ABC):
 
     @abstractmethod
     def save_event(self, measure: IEvent) -> None:
+        ...
+
+    @abstractmethod
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame) -> None:
+        ...
+
+    @abstractmethod
+    def write_cyc(self, event: IEvent, track: TropicalCyclone):
         ...
 
     @abstractmethod
