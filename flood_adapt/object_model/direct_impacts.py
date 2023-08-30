@@ -14,8 +14,6 @@ from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd
 
-from delft_fiat.main import FIAT
-
 
 class DirectImpacts:
     """Class holding all information related to the direct impacts of the scenario.
@@ -202,9 +200,13 @@ class DirectImpacts:
         fa.fiat_model.write()
 
     def run_fiat(self):
-        try:
-            fiat_model = FIAT.from_path(str(self.results_path / "settings.toml"))
-            fiat_model.run()
-            return 0  # success
-        except Exception:
-            return 1  # failure
+        fiat_exec = str(
+            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
+        )
+
+        with cd(self.results_path):
+            process = subprocess.run(
+                f'"{fiat_exec}" run settings.toml', stdout=subprocess.PIPE, check=True, shell=True
+            )
+
+            return process.returncode
