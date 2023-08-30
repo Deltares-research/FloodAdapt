@@ -7,6 +7,9 @@ from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.strategy import Strategy
 
@@ -82,3 +85,23 @@ def test_elevate_comb_correct(cleanup_database):
     assert isinstance(strategy.attrs.measures, list)
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
+
+
+def test_green_infra(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "strategies"
+        / "greeninfra"
+        / "greeninfra.toml"
+    )
+    assert test_toml.is_file()
+
+    strategy = Strategy.load_file(test_toml)
+
+    assert strategy.attrs.name == "greeninfra"
+    assert isinstance(strategy.attrs.measures, list)
+    assert isinstance(strategy.get_hazard_strategy().measures[0], GreenInfrastructure)
+    assert isinstance(strategy.get_hazard_strategy().measures[1], GreenInfrastructure)
+    assert isinstance(strategy.get_hazard_strategy().measures[2], GreenInfrastructure)
