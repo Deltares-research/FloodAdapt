@@ -138,7 +138,7 @@ show_in_metrics_table = "False"
 
 [[queries]]
 name = "FloodedLowVulnerability"
-description = "Number of flooded people with low vulnerability"
+description = "Number of flooded people with low vulnerability (for now without actual SVI data)"
 select = "COUNT(*)"
 filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 150000  AND `Total Damage` != 0"
 long_name = "Flooded Low Vulnerability"
@@ -146,7 +146,7 @@ show_in_metrics_table = "False"
 
 [[queries]]
 name = "FloodedHighVulnerability"
-description = "Number of flooded people with high vulnerability"
+description = "Number of flooded people with high vulnerability (for now without actual SVI data)"
 select = "COUNT(*)"
 filter = "`Primary Object Type` = 'RES' AND `Total Damage` < 150000 AND `Total Damage` != 0"
 long_name = "Flooded High Vulnerability"
@@ -154,7 +154,7 @@ show_in_metrics_table = "False"
 
 [[queries]]
 name = "DisplacedLowVulnerability"
-description = "Number of displaced people with low vulnerability"
+description = "Number of displaced people with low vulnerability (for now without actual SVI data)"
 select = "COUNT(*)"
 filter = "`Primary Object Type` = 'RES' AND `Total Damage` >= 150000"
 long_name = "Displaced Low Vulnerability"
@@ -162,7 +162,7 @@ show_in_metrics_table = "False"
 
 [[queries]]
 name = "DisplacedHighVulnerability"
-description = "Number of displaced people with low vulnerability"
+description = "Number of displaced people with low vulnerability (for now without actual SVI data)"
 select = "COUNT(*)"
 filter = "`Primary Object Type` = 'RES' AND `Total Damage` >= 150000"
 long_name = "Displaced High Vulnerability"
