@@ -1,8 +1,0 @@
-{
-"type": "FeatureCollection",
-"name": "Test_pump",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ -79.933253032433541, 32.777417052731863 ], [ -79.917116196169673, 32.790264164901423 ], [ -79.917116196169673, 32.790264164901423 ], [ -79.917116196169673, 32.790264164901423 ] ] ] } }
-]
-}

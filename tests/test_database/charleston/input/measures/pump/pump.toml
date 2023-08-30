@@ -1,7 +1,9 @@
 name = "pump"
-long_name = "pump"
+description = ""
 type = "pump"
+polygon_file = "pump.geojson"
 selection_type = "polyline"
-polygon_file = "test_pump.geojson"
-discharge.value = 200
-discharge.units = "m3/s"
+
+[discharge]
+value = 500.0
+units = "cfs"
