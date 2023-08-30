@@ -18,28 +18,8 @@ def create_scenario(attrs: dict[str, Any], database: IDatabase) -> IScenario:
     return Scenario.load_dict(attrs, database.input_path)
 
 
-def save_scenario(scenario: IScenario, database: IDatabase) -> (bool, str):
-    """Save the scenario to the database.
-
-    Parameters
-    ----------
-    scenario : IScenario
-        The scenario to save.
-    database : IDatabase
-        The database to save the scenario to.
-
-    Returns
-    -------
-    bool
-        Whether the scenario was saved successfully.
-    str
-        The error message if the scenario was not saved successfully.
-    """
-    try:
-        database.save_scenario(scenario)
-        return True, ""
-    except Exception as e:
-        return False, str(e)
+def save_scenario(scenario: IScenario, database: IDatabase) -> None:
+    database.save_scenario(scenario)
 
 
 def edit_scenario(scenario: IScenario, database: IDatabase) -> None:

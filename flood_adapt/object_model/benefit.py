@@ -140,16 +140,14 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        results_path = self.database_input_path.parent.joinpath("output", "results")
+        results_path = self.database_input_path.parent.joinpath("output", "infometrics")
 
         for index, scenario in scenarios.iterrows():
-            res_scn_path = results_path.joinpath(scenario["scenario created"]).joinpath(
-                "fiat_model"
-            )
+            scn_name = scenario["scenario created"]
             metrics = pd.read_csv(
-                res_scn_path.joinpath("metrics.csv")
-            )  # TODO update based on new FIAT
-            scenarios.loc[index, "EAD"] = float(metrics["EAD"][0])
+                results_path.joinpath(f"{scn_name}_metrics.csv"), index_col=0
+            )
+            scenarios.loc[index, "EAD"] = float(metrics["TotalEAD"]["Value"])
 
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
