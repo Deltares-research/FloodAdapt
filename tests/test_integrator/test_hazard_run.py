@@ -159,6 +159,32 @@ def test_preprocess_greenInfra(cleanup_database):
     test_scenario.direct_impacts.hazard.preprocess_models()
 
 
+@pytest.mark.skip(reason="running the model takes long")
+def test_write_floodmap_geotiff(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    test_scenario.direct_impacts.hazard.run_models()
+    test_scenario.direct_impacts.hazard.postprocess_models()
+
+    floodmap_fn = test_scenario.direct_impacts.hazard.simulation_paths[0].joinpath(
+        "floodmap.tif"
+    )
+    assert floodmap_fn.is_file()
+
+
 def test_preprocess_prob_eventset(cleanup_database):
     test_toml = (
         test_database

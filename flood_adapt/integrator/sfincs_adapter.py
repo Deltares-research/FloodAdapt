@@ -20,6 +20,7 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
@@ -325,15 +326,6 @@ class SfincsAdapter:
         # Write sfincs files in output folder
         self.sf_model.write()
 
-    def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entre simulation"""
-        # Change model root to new folder
-
-        # Write sfincs files in output folder
-        self.sf_model.read_results()
-        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
-        return zsmax
-
     def add_spw_forcing(
         self,
         historical_hurricane: HistoricalHurricane,
@@ -361,3 +353,34 @@ class SfincsAdapter:
 
     def turn_off_bnd_press_correction(self):
         self.sf_model.set_config("PAVBNDKEY", -9999)
+
+    def read_zsmax(self):
+        """Read zsmax file and return absolute maximum water level over entre simulation"""
+        self.sf_model.read_results()
+        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        return zsmax
+
+    def write_geotiff(
+        self,
+        demfile: Path,
+        demfile_units: UnitTypesLength,
+        floodmap_fn: Path,
+        floodmap_units: UnitTypesLength,
+    ):
+        # read DEM and model results
+        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
+            UnitTypesLength("meters")
+        )
+        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+        zsmax = self.read_zsmax()
+
+        floodmap_conversion = UnitfulLength(
+            value=1.0, units=UnitTypesLength("meters")
+        ).convert(floodmap_units)
+
+        utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
+            dep=floodmap_conversion * dem,
+            hmin=0.01,
+            floodmap_fn=floodmap_fn,
+        )

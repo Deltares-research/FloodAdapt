@@ -526,10 +526,28 @@ class Hazard:
 
     def postprocess_sfincs(self):
         if self._mode == Mode.single_event:
-            ...  # TODO: create geotiff?
+            self.write_floodmap_geotiff()
         elif self._mode == Mode.risk:
             self.calculate_rp_floodmaps()
             # self.calculate_floodfrequency_map()
+
+    def write_floodmap_geotiff(self):
+        # Load overland sfincs model
+        for sim_path in self.simulation_paths:
+            # read SFINCS model
+            model = SfincsAdapter(model_root=sim_path)
+            # high-resolution elevation dataset
+            demfile = self.database_input_path.parent.joinpath(
+                "static", "dem", self.site.attrs.dem.filename
+            )
+            # output location of the floodmap
+            floodmap_fn = sim_path.joinpath("floodmap.tif")
+            model.write_geotiff(
+                demfile=demfile,
+                demfile_units=self.site.attrs.dem.units,
+                floodmap_fn=floodmap_fn,
+                floodmap_units=self.site.attrs.sfincs.floodmap_units,
+            )
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
