@@ -433,6 +433,8 @@ class Hazard:
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
                         )
+                    if measure.attrs.type == "pump":
+                        model.add_pump(pump=measure.attrs, measure_path=measure_path)
                     if (
                         measure.attrs.type == "greening"
                         or measure.attrs.type == "total_storage"

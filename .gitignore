@@ -184,5 +184,6 @@ tests/test_database/charleston/static/bfe/bfe.geojson
 tests/test_database/charleston/static/site/aggr_lvl_1.geojson
 tests/test_database/charleston/static/site/aggr_lvl_2.geojson
 /tests/test_database - Copy
-tests/test_database/charleston/statict/emplates/fiat/Exposure/exposure.gpkg
+tests/test_database/charleston/statict/templates/fiat/Exposure/exposure.gpkg
 tests/test_database/charleston/static/dem
+tests/system/fiat/

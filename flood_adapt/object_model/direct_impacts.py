@@ -1,7 +1,6 @@
 import shutil
+import subprocess
 from pathlib import Path
-
-from delft_fiat.main import FIAT
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -13,6 +12,7 @@ from flood_adapt.object_model.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import cd
 
 
 class DirectImpacts:
@@ -200,9 +200,16 @@ class DirectImpacts:
         fa.fiat_model.write()
 
     def run_fiat(self):
-        try:
-            fiat_model = FIAT.from_path(str(self.results_path / "settings.toml"))
-            fiat_model.run()
-            return 0  # success
-        except Exception:
-            return 1  # failure
+        fiat_exec = str(
+            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
+        )
+
+        with cd(self.results_path):
+            process = subprocess.run(
+                f'"{fiat_exec}" run settings.toml',
+                stdout=subprocess.PIPE,
+                check=True,
+                shell=True,
+            )
+
+            return process.returncode
