@@ -1,0 +1,14 @@
+name = "greening"
+description = ""
+type = "greening"
+polygon_file = "greening.geojson"
+selection_type = "polygon"
+percent_area = 30.0
+
+[volume]
+value = 13181722.5726565
+units = "cf"
+
+[height]
+value = 3.0
+units = "feet"
