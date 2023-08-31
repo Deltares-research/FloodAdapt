@@ -110,11 +110,11 @@ class RiverModel(BaseModel):
 
     # TODO: add functionality to use multiple rivers
 
-    name: str
-    description: Optional[str] = ""
-    mean_discharge: UnitfulDischarge
-    x_coordinate: float
-    y_coordinate: float
+    name: list[str]
+    description: Optional[list[str]] = []
+    mean_discharge: list[UnitfulDischarge]
+    x_coordinate: list[float]
+    y_coordinate: list[float]
 
 
 class Obs_stationModel(BaseModel):

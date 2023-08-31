@@ -68,13 +68,11 @@ file = "aggr_lvl_2.geojson"
 field_name = "name"
 
 [river]
-name = "cooper"
-description = "Cooper River"
-x_coordinate = 595546.3
-y_coordinate = 3675590.6
-[river.mean_discharge]
-value = 5000.0
-units = "cfs"
+name = ["cooper"]
+description = ["Cooper River"]
+x_coordinate = [595546.3]
+y_coordinate = [3675590.6]
+mean_discharge = [{ value = 5000.0, units = "cfs" }]
 
 [obs_station]
 name = 8665530
