@@ -276,7 +276,7 @@ class SfincsAdapter:
 
         if green_infrastructure.height.value != 0.0:
             height = (
-                green_infrastructure.height.convert("m")
+                green_infrastructure.height.convert("meters")
                 * green_infrastructure.percent_area
             )
             volume = None

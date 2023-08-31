@@ -1,0 +1,7 @@
+name = "greeninfra"
+description = ""
+measures = [
+    "greening",
+    "total_storage",
+    "water_square",
+]

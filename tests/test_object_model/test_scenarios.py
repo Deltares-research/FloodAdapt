@@ -94,9 +94,6 @@ def test_hazard_wl(cleanup_database):
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
-@pytest.mark.skip(
-    reason="Test csv file is missing and bug in the code according to team"
-)
 def test_scs_rainfall(cleanup_database):
     test_toml = (
         test_database
@@ -164,58 +161,3 @@ def test_infographic(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.infographic()
-
-
-@pytest.mark.skip(reason="We cannot depend on the P drive")
-def test_run_hazard_model(cleanup_database):
-    test_toml = (
-        Path(
-            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/input"
-        )
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    scenario = Scenario.load_file(test_toml)
-
-    scenario.run_hazard_models()
-
-    df = pd.read_csv(
-        Path(
-            r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database/charleston/output"
-        )
-        / "simulations"
-        / "current_extreme12ft_no_measures"
-        / "overland"
-        / "sfincs.bzs",
-    )
-
-    assert df.iloc[0, 0][-4:] == "0.86"
-
-
-@pytest.mark.skip(reason="wind not implemented yet")
-def test_wind_constant(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
-
-    hazard = scenario.direct_impacts.hazard
-
-    hazard.add_wind_ts()
-
-    assert isinstance(hazard.event_obj.wind_ts, pd.DataFrame)
-    assert len(hazard.event_obj.wind_ts) > 1
-    assert isinstance(hazard.event_obj.wind_ts.index, pd.DatetimeIndex)
