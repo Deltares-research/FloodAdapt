@@ -80,7 +80,9 @@ class Scenario(IScenario):
         self._create_infometrics()
 
         # Create the infographic files
-        self._create_infographics()
+        # TODO correct infographic creation for risk mode
+        if self.direct_impacts.hazard.event_mode != "risk":
+            self._create_infographics()
 
     def _create_infometrics(self):
         # Get the metrics
@@ -94,11 +96,16 @@ class Scenario(IScenario):
         )
 
         # Get the metrics configuration
+        if self.direct_impacts.hazard.event_mode == "risk":
+            ext = "_risk"
+        else:
+            ext = ""
+
         metrics_config_path = self.database_input_path.parent.joinpath(
             "static",
             "templates",
             "infometrics",
-            "metrics_config.toml",
+            f"metrics_config{ext}.toml",
         )
 
         # Specify the metrics output path
