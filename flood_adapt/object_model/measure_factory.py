@@ -8,6 +8,7 @@ from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
+from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import HazardType, ImpactType
 from flood_adapt.object_model.measure import Measure
 
@@ -71,4 +72,4 @@ class HazardMeasureFactory:
         ):
             return GreenInfrastructure
         elif hazard_measure == "pump":
-            pass
+            return Pump

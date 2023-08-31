@@ -18,6 +18,7 @@ from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
 )
+from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
@@ -286,6 +287,29 @@ class SfincsAdapter:
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
             storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
+        )
+
+    def add_pump(self, pump: PumpModel, measure_path: Path):
+        """Adds pump to sfincs model.
+
+        Parameters
+        ----------
+        pump : PumpModel
+            pump information
+        """
+
+        # HydroMT function: get geodataframe from filename
+        polygon_file = measure_path.joinpath(pump.polygon_file)
+        gdf_pump = self.sf_model.data_catalog.get_geodataframe(
+            polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
+        )
+
+        # HydroMT function: create floodwall
+        self.sf_model.setup_drainage_structures(
+            structures=gdf_pump,
+            stype="pump",
+            discharge=pump.discharge.convert("m3/s"),
+            merge=True,
         )
 
     def write_sfincs_model(self, path_out: Path):
