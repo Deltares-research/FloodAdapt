@@ -125,6 +125,9 @@ def test_preprocess_pump(cleanup_database):
     ~filecmp.cmp(drn_file, drn_templ)
 
 
+@pytest.mark.skip(
+    reason="hydroMT SFINCS Green Infra plug-in requires HydroMT core 0.8.0"
+)
 def test_preprocess_greenInfra(cleanup_database):
     test_toml = (
         test_database
