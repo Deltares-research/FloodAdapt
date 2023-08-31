@@ -30,6 +30,11 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
     UnitfulLength,
+    UnitfulVelocity,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
 )
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
@@ -618,7 +623,28 @@ class Database(IDatabase):
                 / f"{event.attrs.name}.toml"
             )
 
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame, type: str):
+        # convert from GUI units to metric units
+        if type == "waterlevel":
+            conversion_factor = UnitfulLength(
+                value=1.0, units=self.site.attrs.gui.default_length_units
+            ).convert(UnitTypesLength("meters"))
+        elif type == "rainfall":
+            conversion_factor = UnitfulIntensity(
+                value=1.0, units=self.site.attrs.gui.default_intensity_units
+            ).convert(UnitTypesIntensity("mm/hr"))
+        elif type == "discharge":
+            conversion_factor = UnitfulDischarge(
+                value=1.0, units=self.site.attrs.gui.default_discharge_units
+            ).convert(UnitTypesDischarge("m3/s"))
+        elif type == "wind":
+            conversion_factor = UnitfulVelocity(
+                value=1.0, units=self.site.attrs.gui.default_velocity_units
+            ).convert(UnitTypesVelocity("m/s"))
+        else:
+            conversion_factor = 1.0
+
+        df = df * conversion_factor
         df.to_csv(
             Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
             header=False,

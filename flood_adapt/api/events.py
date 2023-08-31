@@ -103,9 +103,9 @@ def save_event_toml(event: IEvent, database: IDatabase) -> None:
 
 
 def save_timeseries_csv(
-    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase, type: str
 ) -> None:
-    database.write_to_csv(name, event, df)
+    database.write_to_csv(name, event, df, type)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
