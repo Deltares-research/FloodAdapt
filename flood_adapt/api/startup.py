@@ -58,6 +58,10 @@ def get_buildings(database: IDatabase) -> GeoDataFrame:
     return database.get_buildings()
 
 
+def get_property_types(database: IDatabase) -> list:
+    return database.get_property_types()
+
+
 def get_hazard_measure_types():
     raise NotImplementedError
 
