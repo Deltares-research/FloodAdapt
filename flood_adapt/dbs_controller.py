@@ -240,6 +240,13 @@ class Database(IDatabase):
             fig = px.line(wl_df)
 
             # plot reference water levels
+            fig.add_hline(
+                y=0,
+                line_dash="dash",
+                line_color="#000000",
+                annotation_text="MSL",
+                annotation_position="bottom right",
+            )
             gui_units = self.site.attrs.gui.default_length_units
             if isinstance(self.site.attrs.obs_station.mllw, UnitfulLength):
                 fig.add_hline(
