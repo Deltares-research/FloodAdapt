@@ -541,7 +541,9 @@ class Hazard:
                 "static", "dem", self.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
-            results_dir = self.database_input_path.parent.joinpath("output")
+            results_dir = self.database_input_path.parent.joinpath(
+                "output", "results", self.name
+            )
             if not results_dir.exists():
                 os.mkdir(results_dir)
             model.write_geotiff(
