@@ -130,9 +130,6 @@ def test_scs_rainfall(cleanup_database):
     hazard.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
     assert isinstance(hazard.event.rain_ts, pd.DataFrame)
     assert isinstance(hazard.event.rain_ts.index, pd.DatetimeIndex)
-    hazard.event.rain_ts.to_csv(
-        (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
-    )
     cum_rainfall_ts = (
         np.trapz(
             hazard.event.rain_ts.to_numpy().squeeze(),
