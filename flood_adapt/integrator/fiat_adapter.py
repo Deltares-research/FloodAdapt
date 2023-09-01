@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Union
 
+from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
@@ -9,6 +10,7 @@ from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
 
@@ -26,7 +28,8 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Loads FIAT model based on a root directory."""
         # Load FIAT template
-        self.fiat_model = FiatModel(root=model_root, mode="r")
+        logger = setuplog("hydromt_fiat", log_level=10)
+        self.fiat_model = FiatModel(root=model_root, mode="r", logger=logger)
         self.fiat_model.read()
 
         # Get site information
@@ -44,6 +47,10 @@ class FiatAdapter:
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
 
+        # Add the hazard data to a data catalog with the unit conversion from meters to feet
+        wl_current_units = UnitfulLength(value=1.0, units="meters")
+        conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
+
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
@@ -52,8 +59,8 @@ class FiatAdapter:
             nodata=-999,  # change this in new version
             var=var,
             chunks="auto",
-            name_catalog=None,
             risk_output=is_risk,
+            unit_conversion_factor=conversion_factor,
         )
 
     def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
