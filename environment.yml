@@ -12,7 +12,7 @@ dependencies:
     - cht-tide
     - cht-meteo
     - cht-observations
-    - git+https://github.com/Deltares/hydromt_fiat.git@984232bb4e8bbb0fb12a8a3750d4a20d557945a1
+    - git+https://github.com/Deltares/hydromt_fiat.git@env_fix
     - git+https://github.com/Deltares/fiat_toolbox.git
     - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
     - git+https://github.com/Deltares/Delft-FIAT.git
@@ -22,7 +22,7 @@ dependencies:
   - ruff
   - build
   - geopandas
-  - hydromt=0.7.1
+  - hydromt=0.8.0
   - mypy
   - numpy
   - pandas
