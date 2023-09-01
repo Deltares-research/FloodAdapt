@@ -140,7 +140,7 @@ def test_scs_rainfall(cleanup_database):
         )
         / 3.6e12
     )
-    cum_rainfall_toml = hazard.event.attrs.rainfall.cumulative.convert("millimeters")
+    cum_rainfall_toml = hazard.event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 

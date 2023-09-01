@@ -20,13 +20,23 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+    UnitfulLength,
+    UnitfulVelocity,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
+)
+from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
 
 class SfincsAdapter:
-    def __init__(self, model_root: Optional[str] = None):
+    def __init__(self, site: Site, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
         Args:
@@ -38,6 +48,7 @@ class SfincsAdapter:
 
         self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
+        self.site = site
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
@@ -68,8 +79,14 @@ class SfincsAdapter:
         const_dir : float, optional
             direction of time-invariant wind forcing [deg], by default None
         """
+        gui_units = UnitfulVelocity(
+            value=1.0, units=self.site.attrs.gui.default_velocity_units
+        )
+        conversion_factor = gui_units.convert(UnitTypesVelocity("m/s"))
         self.sf_model.setup_wind_forcing(
-            timeseries=timeseries, magnitude=const_mag, direction=const_dir
+            timeseries=timeseries,
+            magnitude=conversion_factor * const_mag,
+            direction=const_dir,
         )
 
     def add_wind_forcing_from_grid(self, ds: xr.DataArray):
@@ -121,9 +138,22 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        self.sf_model.setup_precip_forcing(
-            timeseries=timeseries, magnitude=const_precip
+        # convert to metric units
+        gui_units = UnitfulIntensity(
+            value=1.0, units=self.site.attrs.gui.default_intensity_units
         )
+        if timeseries is not None:
+            conversion_factor = gui_units.convert(UnitTypesIntensity("mm/hr"))
+            if timeseries is pd.DataFrame:
+                df = timeseries
+            elif isinstance(timeseries, (str, os.PathLike)):
+                df = pd.read_csv(timeseries, index_col=0)
+            df = conversion_factor * df
+            df.index = pd.DatetimeIndex(df.index)
+        if const_precip is not None:
+            const_precip = const_precip * conversion_factor
+        # Add precipitation to SFINCS model
+        self.sf_model.setup_precip_forcing(timeseries=df, magnitude=const_precip)
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
@@ -141,6 +171,13 @@ class SfincsAdapter:
             # Go from 1 timeseries to timeseries for all boundary points
             for i in range(1, len(gdf_locs)):
                 df_ts[i + 1] = df_ts[1]
+
+        # convert to metric units
+        gui_units = UnitfulLength(
+            value=1.0, units=self.site.attrs.gui.default_length_units
+        )
+        conversion_factor = gui_units.convert(UnitTypesLength("meters"))
+        df_ts = conversion_factor * df_ts
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
@@ -222,6 +259,13 @@ class SfincsAdapter:
         for i in range(1, len(gdf_locs)):
             df_ts[i + 1] = df_ts[i]
 
+        # convert to metric units
+        gui_units = UnitfulDischarge(
+            value=1.0, units=self.site.attrs.gui.default_discharge_units
+        )
+        conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
+        df_ts = conversion_factor * df_ts
+
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
             name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
@@ -244,7 +288,7 @@ class SfincsAdapter:
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation.convert("meters")
+        gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
@@ -309,7 +353,7 @@ class SfincsAdapter:
         self.sf_model.setup_drainage_structures(
             structures=gdf_pump,
             stype="pump",
-            discharge=pump.discharge.convert("m3/s"),
+            discharge=pump.discharge.convert(UnitTypesDischarge("m3/s")),
             merge=True,
         )
 
@@ -360,20 +404,20 @@ class SfincsAdapter:
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
 
-    def write_geotiff(
-        self,
-        demfile: Path,
-        demfile_units: UnitTypesLength,
-        floodmap_fn: Path,
-        floodmap_units: UnitTypesLength,
-    ):
-        # read DEM and model results
+    def write_geotiff(self, demfile: Path, floodmap_fn: Path):
+        # read DEM and convert units to metric units used by SFINCS
+
+        demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+
+        # read model results
         zsmax = self.read_zsmax()
 
+        # determine conversion factor for output floodmap
+        floodmap_units = self.site.attrs.sfincs.floodmap_units
         floodmap_conversion = UnitfulLength(
             value=1.0, units=UnitTypesLength("meters")
         ).convert(floodmap_units)

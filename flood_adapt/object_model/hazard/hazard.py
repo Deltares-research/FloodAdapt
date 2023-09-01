@@ -215,8 +215,8 @@ class Hazard:
             # In both cases add the slr and offset
             self.wl_ts[1] = (
                 self.wl_ts[1]
-                + self.event.attrs.water_level_offset.convert("meters")
-                + self.physical_projection.attrs.sea_level_rise.convert("meters")
+                + self.event.attrs.water_level_offset.value
+                + self.physical_projection.attrs.sea_level_rise.value
             )
         return self
 
@@ -300,7 +300,7 @@ class Hazard:
                 shutil.rmtree(self.simulation_paths[ii].parent)
 
             # Load overland sfincs model
-            model = SfincsAdapter(model_root=path_in)
+            model = SfincsAdapter(model_root=path_in, site=self.site)
 
             # adjust timing of model
             model.set_timing(self.event.attrs)
@@ -379,9 +379,7 @@ class Hazard:
                         "Adding constant rainfall to the overland flood model..."
                     )
                     model.add_precip_forcing(
-                        const_precip=self.event.attrs.rainfall.constant_intensity.convert(
-                            "mm/hr"
-                        )
+                        const_precip=self.event.attrs.rainfall.constant_intensity.value
                     )
                 elif self.event.attrs.rainfall.source == "shape":
                     logging.info(
@@ -411,7 +409,7 @@ class Hazard:
                 elif self.event.attrs.wind.source == "constant":
                     logging.info("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
-                        const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
+                        const_mag=self.event.attrs.wind.constant_speed.value,
                         const_dir=self.event.attrs.wind.constant_direction.value,
                     )
             else:
@@ -476,7 +474,7 @@ class Hazard:
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=path_in_offshore)
+        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.site)
 
         # Set timing of offshore model (same as overland model)
         offshore_model.set_timing(self.event.attrs)
@@ -519,7 +517,9 @@ class Hazard:
 
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=self.simulation_paths_offshore[ii])
+        offshore_model = SfincsAdapter(
+            model_root=self.simulation_paths_offshore[ii], site=self.site
+        )
 
         # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
@@ -535,18 +535,17 @@ class Hazard:
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path)
-            # high-resolution elevation dataset
+            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            # dem file for high resolution flood depth map
             demfile = self.database_input_path.parent.joinpath(
                 "static", "dem", self.site.attrs.dem.filename
             )
-            # output location of the floodmap
-            floodmap_fn = sim_path.joinpath("floodmap.tif")
+            # writing the geotiff to the scenario results folder
+            results_dir = self.database_input_path.parent.joinpath("output")
+            if not results_dir.exists():
+                os.mkdir(results_dir)
             model.write_geotiff(
-                demfile=demfile,
-                demfile_units=self.site.attrs.dem.units,
-                floodmap_fn=floodmap_fn,
-                floodmap_units=self.site.attrs.sfincs.floodmap_units,
+                demfile=demfile, floodmap_fn=results_dir.joinpath("floodmap.tif")
             )
 
     def __eq__(self, other):
@@ -565,7 +564,7 @@ class Hazard:
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=str(simulation_path))
+            sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
             zs_maps.append(zsmax.stack(z=("x", "y")))
 
