@@ -22,7 +22,7 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "geopandas",
-    "hydromt==0.7.1",
+    "hydromt==0.8.0",
     "numpy",
     "numpy-financial",
     "pandas",
@@ -35,7 +35,7 @@ dependencies = [
     "cht_meteo",
     "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
     "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
-    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@984232bb4e8bbb0fb12a8a3750d4a20d557945a1",
+    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@env_fix",
     "delft_fiat @ git+https://github.com/Deltares/Delft-FIAT.git",
     "fiat_toolbox @ git+https://github.com/Deltares/fiat_toolbox.git"
 ]
