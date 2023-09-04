@@ -435,6 +435,72 @@ class Database(IDatabase):
             )
             return str("")
 
+    def plot_wind(
+        self, event: IEvent, input_wind_df: pd.DataFrame = None
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if event["wind"]["source"] == "timeseries":
+            df = input_wind_df
+
+            # Plot actual thing
+            # Create figure with secondary y-axis
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+            # Add traces
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df[1],
+                    name="Wind speed",
+                    mode="lines",
+                ),
+                secondary_y=False,
+            )
+
+            fig.add_trace(
+                go.Scatter(x=df.index, y=df[2], name="Wind direction", mode="markers"),
+                secondary_y=True,
+            )
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+            # Set y-axes titles
+            fig.update_yaxes(
+                title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
+                secondary_y=False,
+            )
+            fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title={"text": "Time"},
+                showlegend=False,
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and shape type wind."
+            )
+            return str("")
+
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
         This should only be the buildings excluding any other types (e.g., roads)
@@ -648,7 +714,7 @@ class Database(IDatabase):
                 / f"{event.attrs.name}.toml"
             )
 
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame, type: str):
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
             Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
             header=False,

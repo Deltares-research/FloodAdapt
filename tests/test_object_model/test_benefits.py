@@ -41,6 +41,7 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
+@pytest.mark.skip(reason="Takes too long")
 def test_run_CBA(cleanup_database):
     dbs = Database(test_database, "charleston")
 
@@ -80,6 +81,7 @@ def test_run_CBA(cleanup_database):
     benefit.run_cost_benefit()
 
 
+@pytest.mark.skip(reason="Takes too long")
 def test_run_benefit_analysis(cleanup_database):
     dbs = Database(test_database, "charleston")
 

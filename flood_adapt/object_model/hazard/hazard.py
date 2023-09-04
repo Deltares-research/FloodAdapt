@@ -396,7 +396,9 @@ class Hazard:
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
                     # convert to metric units
-                    df = pd.read_csv(event_dir.joinpath("rainfall.csv"), index_col=0)
+                    df = pd.read_csv(
+                        event_dir.joinpath("rainfall.csv"), index_col=0, header=None
+                    )
                     df = conversion_factor_precip * df
                     df.index = pd.DatetimeIndex(df.index)
                     logging.info(
@@ -447,8 +449,10 @@ class Hazard:
                     logging.info(
                         "Adding wind timeseries to the overland flood model..."
                     )
-                    df = pd.read_csv(event_dir.joinpath("wind.csv"), index_col=0)
-                    df[0] = conversion_factor_precip * df[0]
+                    df = pd.read_csv(
+                        event_dir.joinpath("wind.csv"), index_col=0, header=None
+                    )
+                    df[1] = conversion_factor_precip * df[1]
                     df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
                 elif self.event.attrs.wind.source == "constant":

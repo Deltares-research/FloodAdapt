@@ -57,6 +57,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def plot_wind(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
         ...
 
@@ -89,9 +93,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def write_to_csv(
-        self, name: str, event: IEvent, df: pd.DataFrame, type: str
-    ) -> None:
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame) -> None:
         ...
 
     @abstractmethod

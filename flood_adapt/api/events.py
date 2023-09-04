@@ -104,9 +104,9 @@ def save_event_toml(event: IEvent, database: IDatabase) -> None:
 
 
 def save_timeseries_csv(
-    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase, type: str
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
 ) -> None:
-    database.write_to_csv(name, event, df, type)
+    database.write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
@@ -149,6 +149,12 @@ def plot_rainfall(
     event: IEvent, database: IDatabase, input_rainfall_df: pd.DataFrame = None
 ) -> str:
     return database.plot_rainfall(event, input_rainfall_df)
+
+
+def plot_wind(
+    event: IEvent, database: IDatabase, input_wind_df: pd.DataFrame = None
+) -> str:
+    return database.plot_wind(event, input_wind_df)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):
