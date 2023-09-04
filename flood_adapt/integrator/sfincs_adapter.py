@@ -205,7 +205,7 @@ class SfincsAdapter:
         )
         return wl_df
 
-    def add_dis_bc(self, river_index: int, timeseries: Union[pd.DataFrame, Path], merge : bool, event_path: Path = None):
+    def add_dis_bc(self, list_df: list):
         """Changes discharge of overland sfincs model based on new discharge time series.
 
         Parameters
@@ -218,17 +218,15 @@ class SfincsAdapter:
         # ASSUMPTION: Order of the rivers is the same as the site.toml file
         gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
         gdf_locs.crs = self.sf_model.crs
-        gdf_loc = gdf_locs[river_index]
 
-        if isinstance(timeseries, pd.DataFrame):
+        if len(list_df) != len(gdf_locs):
+            # TODO: give an error message that says that the number of rivers of the site.toml does not match with the model.
+            pass
 
-            # HydroMT function: set waterlevel forcing from time series
+        if len(list_df) != 0:
             self.sf_model.setup_discharge_forcing(
-                timeseries=timeseries, locations=gdf_loc, merge=merge
-            )
-        elif isinstance(timeseries, Path):
-            timeseries_path = event_path.joinpath(timeseries)
-            self.sf_model.setup_discharge_forcing(timeseries=timeseries_path, locations=gdf_loc, merge=merge)
+                timeseries=list_df, locations=gdf_locs, merge=False
+                )
 
     def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
         """Adds floodwall to sfincs model.

@@ -350,18 +350,8 @@ class Hazard:
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            for ii in range(len(self.event.attrs.river.source)):
-                if ii == 0:
-                    merge = False
-                else:
-                    merge = True
-
-                if self.event.attrs.river.source[ii] == "constant" | self.event.attrs.river.source[ii] == "shape":
-                    dis_ts = self.event.add_dis_ts(river_index=ii)
-                    model.add_dis_bc(river_index=ii, timeseries=dis_ts, merge=merge)
-                elif self.event.attrs.river.source[ii] == "timeseries":
-                    model.add_dis_bc(river_index=ii, timeseries=self.event.attrs.river.timeseries_file, merge=merge, event_path=event_dir)
-
+            self.event.add_dis_ts(event_dir=event_dir, river_names= self.site.attrs.river.name)
+            model.add_dis_bc(list_df=self.event.dis_df)
 
             # Generate and add rainfall boundary condition
 
