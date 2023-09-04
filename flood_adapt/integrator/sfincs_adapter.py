@@ -226,7 +226,7 @@ class SfincsAdapter:
         if len(list_df) != 0:
             self.sf_model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False
-                )
+            )
 
     def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
         """Adds floodwall to sfincs model.

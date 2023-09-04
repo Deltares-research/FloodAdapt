@@ -177,12 +177,12 @@ class Event:
         Returns
         -------
         self
-            
+
         """
 
-        #Create empty list for results
-        list_df = [None]*len(river_names)
-        
+        # Create empty list for results
+        list_df = [None] * len(river_names)
+
         tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
@@ -191,8 +191,10 @@ class Event:
         for ii in range(len(river_names)):
             # generating time series of constant discharge
             if self.attrs.river.source[ii] == "constant":
-                dis = [self.attrs.river.constant_discharge[ii].convert("m3/s")] * len(time_vec)
-                df = pd.DataFrame.from_dict({"time": time_vec, ii+1: dis})
+                dis = [self.attrs.river.constant_discharge[ii].convert("m3/s")] * len(
+                    time_vec
+                )
+                df = pd.DataFrame.from_dict({"time": time_vec, ii + 1: dis})
                 df = df.set_index("time")
                 list_df[ii] = df
             # generating time series for river with shape discharge
@@ -220,7 +222,8 @@ class Event:
                         + self.attrs.river.shape_start_time[ii]
                     )
                     end_shape = 3600 * (
-                        self.attrs.time.duration_before_t0 + self.attrs.river.shape_end_time[ii]
+                        self.attrs.time.duration_before_t0
+                        + self.attrs.river.shape_end_time[ii]
                     )
                     river = self.timeseries_shape(
                         "block",
@@ -232,27 +235,31 @@ class Event:
                 # add base discharge to timeseries
                 river += self.attrs.river.base_discharge[ii].convert("m3/s")
                 # save to object with pandas daterange
-                df = pd.DataFrame.from_dict({"time": time_vec, ii+1: river})
+                df = pd.DataFrame.from_dict({"time": time_vec, ii + 1: river})
                 df = df.set_index("time")
                 df = df.round(decimals=2)
                 list_df[ii] = df
             # generating time series for river with csv file
             elif self.attrs.river.source[ii] == "timeseries":
                 # Read csv file of discharge
-                df_from_csv = Event.read_csv(csvpath=event_dir.joinpath(river_names[ii] + '.csv'))
+                df_from_csv = Event.read_csv(
+                    csvpath=event_dir.joinpath(river_names[ii] + ".csv")
+                )
                 # Interpolate on time_vec
                 t0 = pd.to_datetime(time_vec[0])
-                t_old = (pd.to_datetime(df_from_csv.index) - pd.to_datetime(t0)).total_seconds()
+                t_old = (
+                    pd.to_datetime(df_from_csv.index) - pd.to_datetime(t0)
+                ).total_seconds()
                 t_new = (pd.to_datetime(time_vec) - pd.to_datetime(t0)).total_seconds()
                 f = interp1d(t_old, df_from_csv[1].values)
                 dis_new = f(t_new)
-                #Create df again
-                df = pd.DataFrame.from_dict({"time": time_vec, ii+1: dis_new})
+                # Create df again
+                df = pd.DataFrame.from_dict({"time": time_vec, ii + 1: dis_new})
                 df = df.set_index("time")
                 df = df.round(decimals=2)
                 # Add to list of pd.Dataframes
                 list_df[ii] = df
-   
+
         # Concatonate dataframes to event class
         df_concat = pd.concat(list_df, axis=1)
         self.dis_df = df_concat
