@@ -5,7 +5,6 @@ from typing import Union
 
 import hydromt.raster  # noqa: F401
 import numpy as np
-from scipy.interpolate import interp1d
 import pandas as pd
 import tomli
 import xarray as xr
@@ -14,6 +13,7 @@ from cht_meteo.meteo import (
     MeteoSource,
 )
 from pyproj import CRS
+from scipy.interpolate import interp1d
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
