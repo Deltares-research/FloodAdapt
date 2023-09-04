@@ -8,10 +8,16 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from flood_adapt.object_model.hazard.event.event import (
+    Event,
+)
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.site import (
+    Site,
+)
 
 test_database = Path().absolute() / "tests" / "test_database"
 
@@ -345,3 +351,56 @@ def test_rp_floodmap_calculation(cleanup_database):
         / "floodmaps.png"
     )
     plt.savefig(fn, bbox_inches="tight", dpi=225)
+
+
+def test_multiple_rivers(cleanup_database):
+    # 1) Create new site dictionary
+    test_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+
+    assert test_toml.is_file()
+
+    test_data = Site.load_file(test_toml)
+
+    # Change river data
+    name = []
+    description = []
+    x = []
+    y = []
+    mean_discharge = []
+    for ii in [0, 1]:
+        name.append(f"{test_data.attrs.river.name[0]}_{ii}")
+        description.append(f"{test_data.attrs.river.description[0]} {ii}")
+        x.append(test_data.attrs.river.x_coordinate[0] - 1000 * ii)
+        y.append(test_data.attrs.river.y_coordinate[0] - 1000 * ii)
+        mean_discharge.append(test_data.attrs.river.mean_discharge[0])
+
+    test_data.attrs.river.name = name
+    test_data.attrs.river.x_coordinate = x
+    test_data.attrs.river.y_coordinate = y
+    test_data.attrs.river.mean_discharge = mean_discharge
+    test_data.attrs.river.description = description
+
+    # Change name of reference model
+    test_data.attrs.sfincs.overland_model = "overland_2_rivers"
+
+    # 2) Create information about the two rivers
+    test_event_toml = test_database / "charleston" / "input" / "events" / "extreme12ft" / "extreme12ft.toml"
+
+    assert test_event_toml.is_file()
+
+    test_event_data = Event.load_file(test_event_toml)
+
+    test_event_data.attrs.river.source = ["constant", "shape"]
+    test_event_data.attrs.river.constant_discharge = [{"value":4000, "units":"cfs"},{"value":None, "units":None}]
+    test_event_data.attrs.river.shape_type = [None, "gaussian"]
+    test_event_data.attrs.river.base_discharge = [None, 1000]
+    test_event_data.attrs.river.shape_peak = [None, 2500]
+    test_event_data.attrs.river.shape_duration = [None, 8]
+    test_event_data.attrs.river.shape_peak_time = [None, 0]
+    test_event_data.attrs.river.shape_start_time = [None, None]
+    test_event_data.attrs.river.shape_end_time = [None, None]
+
+    # 3) Make discharge boundary conditions
+    
+
+    # 4) Check discharge boundary conditions
