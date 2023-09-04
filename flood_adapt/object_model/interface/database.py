@@ -29,6 +29,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_property_types(self) -> list:
+        ...
+
+    @abstractmethod
     def get_slr_scn_names(self) -> list:
         ...
 
