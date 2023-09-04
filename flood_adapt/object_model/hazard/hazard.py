@@ -17,6 +17,16 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+    UnitfulLength,
+    UnitfulVelocity,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
+)
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
@@ -329,6 +339,12 @@ class Hazard:
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
                 self.add_wl_ts()
+                # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
+                gui_units = UnitfulLength(
+                    value=1.0, units=self.site.attrs.gui.default_length_units
+                )
+                conversion_factor = gui_units.convert(UnitTypesLength("meters"))
+                self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
@@ -357,10 +373,21 @@ class Hazard:
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             self.add_discharge()
+            # convert to metric units
+            gui_units = UnitfulDischarge(
+                value=1.0, units=self.site.attrs.gui.default_discharge_units
+            )
+            conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
+            self.dis_ts = conversion_factor * self.dis_ts
             model.add_dis_bc(self.dis_ts)
 
             # Generate and add rainfall boundary condition
-
+            gui_units_precip = UnitfulIntensity(
+                value=1.0, units=self.site.attrs.gui.default_intensity_units
+            )
+            conversion_factor_precip = gui_units_precip.convert(
+                UnitTypesIntensity("mm/hr")
+            )
             if self.event.attrs.template != "Historical_hurricane":
                 if self.event.attrs.rainfall.source == "map":
                     logging.info(
@@ -368,18 +395,21 @@ class Hazard:
                     )
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
+                    # convert to metric units
+                    df = pd.read_csv(event_dir.joinpath("rainfall.csv"), index_col=0)
+                    df = conversion_factor_precip * df
+                    df.index = pd.DatetimeIndex(df.index)
                     logging.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
-                    model.add_precip_forcing(
-                        timeseries=event_dir.joinpath("rainfall.csv")
-                    )
+                    model.add_precip_forcing(timeseries=df)
                 elif self.event.attrs.rainfall.source == "constant":
                     logging.info(
                         "Adding constant rainfall to the overland flood model..."
                     )
                     model.add_precip_forcing(
                         const_precip=self.event.attrs.rainfall.constant_intensity.value
+                        * conversion_factor_precip
                     )
                 elif self.event.attrs.rainfall.source == "shape":
                     logging.info(
@@ -393,9 +423,18 @@ class Hazard:
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
-                    model.add_precip_forcing(timeseries=self.event.rain_ts)
+                    model.add_precip_forcing(
+                        timeseries=self.event.rain_ts * conversion_factor_precip
+                    )
 
                 # Generate and add wind boundary condition
+                # conversion factor to metric units
+                gui_units_wind = UnitfulVelocity(
+                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                )
+                conversion_factor_wind = gui_units_wind.convert(
+                    UnitTypesVelocity("m/s")
+                )
                 if self.event.attrs.wind.source == "map":
                     logging.info(
                         "Adding gridded wind field to the overland flood model..."
@@ -405,11 +444,15 @@ class Hazard:
                     logging.info(
                         "Adding wind timeseries to the overland flood model..."
                     )
+                    df = pd.read_csv(event_dir.joinpath("wind.csv"), index_col=0)
+                    df[0] = conversion_factor_precip * df[0]
+                    df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
                 elif self.event.attrs.wind.source == "constant":
                     logging.info("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
-                        const_mag=self.event.attrs.wind.constant_speed.value,
+                        const_mag=self.event.attrs.wind.constant_speed.value
+                        * conversion_factor_wind,
                         const_dir=self.event.attrs.wind.constant_direction.value,
                     )
             else:

@@ -21,14 +21,10 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulIntensity,
     UnitfulLength,
-    UnitfulVelocity,
     UnitTypesDischarge,
-    UnitTypesIntensity,
     UnitTypesLength,
-    UnitTypesVelocity,
+    UnitTypesVolume,
 )
 from flood_adapt.object_model.site import Site
 
@@ -79,13 +75,9 @@ class SfincsAdapter:
         const_dir : float, optional
             direction of time-invariant wind forcing [deg], by default None
         """
-        gui_units = UnitfulVelocity(
-            value=1.0, units=self.site.attrs.gui.default_velocity_units
-        )
-        conversion_factor = gui_units.convert(UnitTypesVelocity("m/s"))
         self.sf_model.setup_wind_forcing(
             timeseries=timeseries,
-            magnitude=conversion_factor * const_mag,
+            magnitude=const_mag,
             direction=const_dir,
         )
 
@@ -138,22 +130,10 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
-        # convert to metric units
-        gui_units = UnitfulIntensity(
-            value=1.0, units=self.site.attrs.gui.default_intensity_units
-        )
-        if timeseries is not None:
-            conversion_factor = gui_units.convert(UnitTypesIntensity("mm/hr"))
-            if timeseries is pd.DataFrame:
-                df = timeseries
-            elif isinstance(timeseries, (str, os.PathLike)):
-                df = pd.read_csv(timeseries, index_col=0)
-            df = conversion_factor * df
-            df.index = pd.DatetimeIndex(df.index)
-        if const_precip is not None:
-            const_precip = const_precip * conversion_factor
         # Add precipitation to SFINCS model
-        self.sf_model.setup_precip_forcing(timeseries=df, magnitude=const_precip)
+        self.sf_model.setup_precip_forcing(
+            timeseries=timeseries, magnitude=const_precip
+        )
 
     def add_wl_bc(self, df_ts: pd.DataFrame):
         """Add waterlevel dataframe to sfincs model.
@@ -171,13 +151,6 @@ class SfincsAdapter:
             # Go from 1 timeseries to timeseries for all boundary points
             for i in range(1, len(gdf_locs)):
                 df_ts[i + 1] = df_ts[1]
-
-        # convert to metric units
-        gui_units = UnitfulLength(
-            value=1.0, units=self.site.attrs.gui.default_length_units
-        )
-        conversion_factor = gui_units.convert(UnitTypesLength("meters"))
-        df_ts = conversion_factor * df_ts
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
@@ -205,8 +178,8 @@ class SfincsAdapter:
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert("meters")
-                + physical_projection.sea_level_rise.convert("meters")
+                + event.water_level_offset.convert(UnitTypesLength("meters"))
+                + physical_projection.sea_level_rise.convert(UnitTypesLength("meters"))
             )
 
             if bnd_ii == 0:
@@ -258,13 +231,6 @@ class SfincsAdapter:
         # Go from 1 timeseries to timeseries for all boundary points
         for i in range(1, len(gdf_locs)):
             df_ts[i + 1] = df_ts[i]
-
-        # convert to metric units
-        gui_units = UnitfulDischarge(
-            value=1.0, units=self.site.attrs.gui.default_discharge_units
-        )
-        conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
-        df_ts = conversion_factor * df_ts
 
         # HydroMT function: set waterlevel forcing from time series
         self.sf_model.set_forcing_1d(
@@ -321,13 +287,13 @@ class SfincsAdapter:
 
         if green_infrastructure.height.value != 0.0:
             height = (
-                green_infrastructure.height.convert("meters")
+                green_infrastructure.height.convert(UnitTypesLength("meters"))
                 * green_infrastructure.percent_area
             )
             volume = None
         elif green_infrastructure.volume.value != 0.0:
             height = None
-            volume = green_infrastructure.volume.convert("m3")
+            volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
