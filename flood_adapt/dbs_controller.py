@@ -26,11 +26,7 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
-)
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -240,15 +236,36 @@ class Database(IDatabase):
             elif event["template"] == "Historical_nearshore":
                 wl_df = input_wl_df
 
-            # convert to units used in GUI
-            wl_current_units = UnitfulLength(value=1.0, units="meters")
-            gui_units = self.site.attrs.gui.default_length_units
-            conversion_factor = wl_current_units.convert(gui_units)
-
-            wl_df[1] = conversion_factor * wl_df[1]
-
             # Plot actual thing
             fig = px.line(wl_df)
+
+            # plot reference water levels
+            fig.add_hline(
+                y=0,
+                line_dash="dash",
+                line_color="#000000",
+                annotation_text="MSL",
+                annotation_position="bottom right",
+            )
+            gui_units = self.site.attrs.gui.default_length_units
+            if isinstance(self.site.attrs.obs_station.mllw, UnitfulLength):
+                fig.add_hline(
+                    y=self.site.attrs.obs_station.mllw.convert(gui_units)
+                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#88cc91",
+                    annotation_text="MLLW",
+                    annotation_position="bottom right",
+                )
+            if isinstance(self.site.attrs.obs_station.mhhw, UnitfulLength):
+                fig.add_hline(
+                    y=self.site.attrs.obs_station.mhhw.convert(gui_units)
+                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#c62525",
+                    annotation_text="MHHW",
+                    annotation_position="bottom right",
+                )
 
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -264,6 +281,7 @@ class Database(IDatabase):
                 yaxis_title=f"Water level (tide + surge) [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                showlegend=False
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -311,12 +329,6 @@ class Database(IDatabase):
                 temp_event.add_rainfall_ts()
                 df = temp_event.rain_ts
 
-            # convert to units used in GUI
-            ts_current_units = UnitfulIntensity(value=1.0, units="mm/hr")
-            gui_units = self.site.attrs.gui.default_intensity_units
-            conversion_factor = ts_current_units.convert(gui_units)
-            df = conversion_factor * df
-
             # set timing relative to T0 if event is synthetic
             if event["template"] == "Synthetic":
                 df.index = np.arange(
@@ -341,7 +353,10 @@ class Database(IDatabase):
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title={"text": "Time"},
-                yaxis_title={"text": f"Rainfall intensity [{gui_units}]"},
+                yaxis_title={
+                    "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
+                },
+                showlegend=False,
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -375,12 +390,6 @@ class Database(IDatabase):
                 temp_event.add_dis_ts()
                 df = temp_event.dis_ts
 
-            # convert to units used in GUI
-            ts_current_units = UnitfulDischarge(value=1.0, units="m3/s")
-            gui_units = self.site.attrs.gui.default_discharge_units
-            conversion_factor = ts_current_units.convert(gui_units)
-            df = conversion_factor * df
-
             # set timing relative to T0 if event is synthetic
             if event["template"] == "Synthetic":
                 df.index = np.arange(
@@ -408,7 +417,9 @@ class Database(IDatabase):
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title={"text": "Time"},
-                yaxis_title={"text": f"River discharge [{gui_units}]"},
+                yaxis_title={
+                    "text": f"River discharge [{self.site.attrs.gui.default_discharge_units}]"
+                },
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -637,7 +648,7 @@ class Database(IDatabase):
                 / f"{event.attrs.name}.toml"
             )
 
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
+    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame, type: str):
         df.to_csv(
             Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
             header=False,
@@ -1482,7 +1493,7 @@ class Database(IDatabase):
                 if (
                     scn.direct_impacts.hazard.sfincs_has_run_check()
                 ):  # only copy results if the hazard model has actually finished
-                    shutil.copytree(path_0, path_new)
+                    shutil.copytree(path_0, path_new, dirs_exist_ok=True)
                     print(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )

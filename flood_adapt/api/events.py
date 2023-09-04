@@ -18,6 +18,7 @@ from flood_adapt.object_model.interface.events import (
     IHistoricalOffshore,
     ISynthetic,
 )
+from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
@@ -103,9 +104,9 @@ def save_event_toml(event: IEvent, database: IDatabase) -> None:
 
 
 def save_timeseries_csv(
-    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
+    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase, type: str
 ) -> None:
-    database.write_to_csv(name, event, df)
+    database.write_to_csv(name, event, df, type)
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
@@ -122,8 +123,10 @@ def copy_event(
     database.copy_event(old_name, new_name, new_description)
 
 
-def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
-    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+def download_wl_data(
+    station_id, start_time, end_time, units: UnitTypesLength
+) -> pd.DataFrame:
+    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time, units)
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:

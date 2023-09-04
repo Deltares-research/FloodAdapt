@@ -89,7 +89,9 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame) -> None:
+    def write_to_csv(
+        self, name: str, event: IEvent, df: pd.DataFrame, type: str
+    ) -> None:
         ...
 
     @abstractmethod

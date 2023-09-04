@@ -17,6 +17,16 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+    UnitfulLength,
+    UnitfulVelocity,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
+)
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
@@ -215,8 +225,8 @@ class Hazard:
             # In both cases add the slr and offset
             self.wl_ts[1] = (
                 self.wl_ts[1]
-                + self.event.attrs.water_level_offset.convert("meters")
-                + self.physical_projection.attrs.sea_level_rise.convert("meters")
+                + self.event.attrs.water_level_offset.value
+                + self.physical_projection.attrs.sea_level_rise.value
             )
         return self
 
@@ -300,7 +310,7 @@ class Hazard:
                 shutil.rmtree(self.simulation_paths[ii].parent)
 
             # Load overland sfincs model
-            model = SfincsAdapter(model_root=path_in)
+            model = SfincsAdapter(model_root=path_in, site=self.site)
 
             # adjust timing of model
             model.set_timing(self.event.attrs)
@@ -329,6 +339,12 @@ class Hazard:
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
                 self.add_wl_ts()
+                # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
+                gui_units = UnitfulLength(
+                    value=1.0, units=self.site.attrs.gui.default_length_units
+                )
+                conversion_factor = gui_units.convert(UnitTypesLength("meters"))
+                self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
@@ -357,10 +373,21 @@ class Hazard:
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             self.add_discharge()
+            # convert to metric units
+            gui_units = UnitfulDischarge(
+                value=1.0, units=self.site.attrs.gui.default_discharge_units
+            )
+            conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
+            self.dis_ts = conversion_factor * self.dis_ts
             model.add_dis_bc(self.dis_ts)
 
             # Generate and add rainfall boundary condition
-
+            gui_units_precip = UnitfulIntensity(
+                value=1.0, units=self.site.attrs.gui.default_intensity_units
+            )
+            conversion_factor_precip = gui_units_precip.convert(
+                UnitTypesIntensity("mm/hr")
+            )
             if self.event.attrs.template != "Historical_hurricane":
                 if self.event.attrs.rainfall.source == "map":
                     logging.info(
@@ -368,12 +395,14 @@ class Hazard:
                     )
                     model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
+                    # convert to metric units
+                    df = pd.read_csv(event_dir.joinpath("rainfall.csv"), index_col=0)
+                    df = conversion_factor_precip * df
+                    df.index = pd.DatetimeIndex(df.index)
                     logging.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
-                    model.add_precip_forcing(
-                        timeseries=event_dir.joinpath("rainfall.csv")
-                    )
+                    model.add_precip_forcing(timeseries=df)
                 elif self.event.attrs.rainfall.source == "constant":
                     logging.info(
                         "Adding constant rainfall to the overland flood model..."
@@ -397,10 +426,18 @@ class Hazard:
                         self.event.add_rainfall_ts()
                     model.add_precip_forcing(
                         timeseries=self.event.rain_ts
+                        * conversion_factor_precip
                         * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                     )
 
                 # Generate and add wind boundary condition
+                # conversion factor to metric units
+                gui_units_wind = UnitfulVelocity(
+                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                )
+                conversion_factor_wind = gui_units_wind.convert(
+                    UnitTypesVelocity("m/s")
+                )
                 if self.event.attrs.wind.source == "map":
                     logging.info(
                         "Adding gridded wind field to the overland flood model..."
@@ -410,11 +447,15 @@ class Hazard:
                     logging.info(
                         "Adding wind timeseries to the overland flood model..."
                     )
+                    df = pd.read_csv(event_dir.joinpath("wind.csv"), index_col=0)
+                    df[0] = conversion_factor_precip * df[0]
+                    df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
                 elif self.event.attrs.wind.source == "constant":
                     logging.info("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
-                        const_mag=self.event.attrs.wind.constant_speed.convert("m/s"),
+                        const_mag=self.event.attrs.wind.constant_speed.value
+                        * conversion_factor_wind,
                         const_dir=self.event.attrs.wind.constant_direction.value,
                     )
             else:
@@ -479,7 +520,7 @@ class Hazard:
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=path_in_offshore)
+        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.site)
 
         # Set timing of offshore model (same as overland model)
         offshore_model.set_timing(self.event.attrs)
@@ -522,7 +563,9 @@ class Hazard:
 
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=self.simulation_paths_offshore[ii])
+        offshore_model = SfincsAdapter(
+            model_root=self.simulation_paths_offshore[ii], site=self.site
+        )
 
         # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
@@ -538,18 +581,19 @@ class Hazard:
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path)
-            # high-resolution elevation dataset
+            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            # dem file for high resolution flood depth map
             demfile = self.database_input_path.parent.joinpath(
                 "static", "dem", self.site.attrs.dem.filename
             )
-            # output location of the floodmap
-            floodmap_fn = sim_path.joinpath("floodmap.tif")
+            # writing the geotiff to the scenario results folder
+            results_dir = self.database_input_path.parent.joinpath(
+                "output", "results", self.name
+            )
+            if not results_dir.exists():
+                os.mkdir(results_dir)
             model.write_geotiff(
-                demfile=demfile,
-                demfile_units=self.site.attrs.dem.units,
-                floodmap_fn=floodmap_fn,
-                floodmap_units=self.site.attrs.sfincs.floodmap_units,
+                demfile=demfile, floodmap_fn=results_dir.joinpath("floodmap.tif")
             )
 
     def __eq__(self, other):
@@ -577,7 +621,7 @@ class Hazard:
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=str(simulation_path))
+            sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
             zs_maps.append(zsmax.stack(z=("x", "y")))
 
