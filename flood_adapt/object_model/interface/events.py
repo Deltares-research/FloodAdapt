@@ -93,19 +93,19 @@ class RainfallModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    source: RiverSource
+    source: list[RiverSource]
     # constant
-    constant_discharge: Optional[UnitfulDischarge]
+    constant_discharge: list[UnitfulDischarge]
     # timeseries
-    timeseries_file: Optional[str]
+    timeseries_file: list[str]
     # shape
-    shape_type: Optional[ShapeType]
-    base_discharge: Optional[UnitfulDischarge]
-    shape_peak: Optional[UnitfulDischarge]
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_start_time: Optional[float]
-    shape_end_time: Optional[float]
+    shape_type: list[ShapeType]
+    base_discharge: list[UnitfulDischarge]
+    shape_peak: list[UnitfulDischarge]
+    shape_duration: list[float]
+    shape_peak_time: list[float]
+    shape_start_time: list[float]
+    shape_end_time: list[float]
 
 
 class TimeModel(BaseModel):

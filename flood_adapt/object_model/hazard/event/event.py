@@ -170,38 +170,41 @@ class Event:
 
         return ds
 
-    def add_dis_ts(self):
-        """adds discharge timeseries to event object
+    def add_dis_ts(self, river_index: int):
+        """Creates pd.Dataframe timeseries for river discharge
+        
+        Parameters
+        ----------
+        river_index : int
+            River index from list of rivers
 
         Returns
         -------
-        self
-            updated object with discharge timeseries added in pf.DataFrame format
+        df
+            pd.DataFrame with tabular timeseries of discharge
         """
-        # generating time series of constant discharge
-        # TODO: add for loop to handle multiple rivers (or none)
-
+        
         tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
         tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
 
-        if self.attrs.river.source == "constant":
-            dis = self.attrs.river.constant_discharge.convert("m3/s") * np.array([1, 1])
+        # generating time series of constant discharge
+        if self.attrs.river.source[river_index] == "constant":
+            dis = self.attrs.river.constant_discharge[river_index].convert("m3/s") * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], 1: dis})
             df = df.set_index("time")
-            self.dis_ts = df
-            return self
-        elif self.attrs.river.source == "shape":
+        # generating time series for river with shape discharge
+        elif self.attrs.river.source[river_index] == "shape":
             # subtract base discharge from peak
-            peak = self.attrs.river.shape_peak.convert(
+            peak = self.attrs.river.shape_peak[river_index].convert(
                 "m3/s"
-            ) - self.attrs.river.base_discharge.convert("m3/s")
-            if self.attrs.river.shape_type == "gaussian":
-                shape_duration = 3600 * self.attrs.river.shape_duration
+            ) - self.attrs.river.base_discharge[river_index].convert("m3/s")
+            if self.attrs.river.shape_type[river_index] == "gaussian":
+                shape_duration = 3600 * self.attrs.river.shape_duration[river_index]
                 time_shift = (
                     self.attrs.time.duration_before_t0
-                    + self.attrs.river.shape_peak_time
+                    + self.attrs.river.shape_peak_time[river_index]
                 ) * 3600
                 river = self.timeseries_shape(
                     "gaussian",
@@ -210,13 +213,13 @@ class Event:
                     shape_duration=shape_duration,
                     time_shift=time_shift,
                 )
-            elif self.attrs.river.shape_type == "block":
+            elif self.attrs.river.shape_type[river_index] == "block":
                 start_shape = 3600 * (
                     self.attrs.time.duration_before_t0
-                    + self.attrs.river.shape_start_time
+                    + self.attrs.river.shape_start_time[river_index]
                 )
                 end_shape = 3600 * (
-                    self.attrs.time.duration_before_t0 + self.attrs.river.shape_end_time
+                    self.attrs.time.duration_before_t0 + self.attrs.river.shape_end_time[ii]
                 )
                 river = self.timeseries_shape(
                     "block",
@@ -226,15 +229,15 @@ class Event:
                     end_shape=end_shape,
                 )
             # add base discharge to timeseries
-            river += self.attrs.river.base_discharge.convert("m3/s")
+            river += self.attrs.river.base_discharge[river_index].convert("m3/s")
             # save to object with pandas daterange
             time = pd.date_range(
                 self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
             )
             df = pd.DataFrame.from_dict({"time": time, 1: river})
             df = df.set_index("time")
-            self.dis_ts = df.round(decimals=2)
-            return self
+            df.round(decimals=2)
+        return df
 
     def add_rainfall_ts(self, **kwargs):
         """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds

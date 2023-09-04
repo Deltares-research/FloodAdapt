@@ -108,8 +108,6 @@ class FiatModel(BaseModel):
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in Site"""
 
-    # TODO: add functionality to use multiple rivers
-
     name: list[str]
     description: Optional[list[str]] = []
     mean_discharge: list[UnitfulDischarge]

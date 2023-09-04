@@ -220,13 +220,6 @@ class Hazard:
             )
         return self
 
-    def add_discharge(self):
-        """adds discharge timeseries to hazard object"""
-        # constant for all event templates, additional: shape for Synthetic or timeseries for all historic
-        self.event.add_dis_ts()
-        self.dis_ts = self.event.dis_ts
-        return self
-
     @staticmethod
     def get_event_object(event_path):  # TODO This could be used above as well?
         mode = Event.get_mode(event_path)
@@ -356,8 +349,19 @@ class Hazard:
             logging.info(
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
-            self.add_discharge()
-            model.add_dis_bc(self.dis_ts)
+            # ASSUMPTION: Order of the rivers is the same as the site.toml file
+            for ii in range(len(self.event.attrs.river.source)):
+                if ii == 0:
+                    merge = False
+                else:
+                    merge = True
+
+                if self.event.attrs.river.source[ii] == "constant" | self.event.attrs.river.source[ii] == "shape":
+                    dis_ts = self.event.add_dis_ts(river_index=ii)
+                    model.add_dis_bc(river_index=ii, timeseries=dis_ts, merge=merge)
+                elif self.event.attrs.river.source[ii] == "timeseries":
+                    model.add_dis_bc(river_index=ii, timeseries=self.event.attrs.river.timeseries_file, merge=merge, event_path=event_dir)
+
 
             # Generate and add rainfall boundary condition
 
