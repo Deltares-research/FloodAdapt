@@ -16,8 +16,8 @@ from flood_adapt.object_model.scenario import Scenario
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-@pytest.mark.skip(reason="running the model takes long")
-def test_hazard_run_synthetic_wl(cleanup_database):
+# @pytest.mark.skip(reason="running the model takes long")
+def test_hazard_preprocess_synthetic_wl(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -33,11 +33,10 @@ def test_hazard_run_synthetic_wl(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
-    test_scenario.direct_impacts.hazard.run_models()
 
 
-@pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_run_synthetic_discharge(cleanup_database):
+# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
+def test_hazard_preprocess_synthetic_discharge(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -53,7 +52,6 @@ def test_hazard_run_synthetic_discharge(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
-    test_scenario.direct_impacts.hazard.run_models()
 
 
 def test_preprocess_rainfall_timeseriesfile(cleanup_database):
