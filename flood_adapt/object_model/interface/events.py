@@ -79,6 +79,7 @@ class WindModel(BaseModel):
 
 class RainfallModel(BaseModel):
     source: RainfallSource
+    increase: Optional[float]
     # constant
     constant_intensity: Optional[UnitfulIntensity]
     # timeseries
