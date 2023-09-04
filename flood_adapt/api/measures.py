@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
+from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
@@ -33,6 +34,10 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMe
         return FloodProof.load_dict(attrs, database.input_path)
     elif type == "floodwall":
         return FloodWall.load_dict(attrs, database.input_path)
+    elif type == "levee":
+        return FloodWall.load_dict(attrs, database.input_path)
+    elif type == "pump":
+        return Pump.load_dict(attrs, database.input_path)
     elif type == "water_square" or type == "total_storage" or type == "greening":
         return GreenInfrastructure.load_dict(attrs, database.input_path)
 

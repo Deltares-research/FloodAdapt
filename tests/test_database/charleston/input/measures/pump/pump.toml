@@ -1,0 +1,9 @@
+name = "pump"
+description = ""
+type = "pump"
+polygon_file = "pump.geojson"
+selection_type = "polyline"
+
+[discharge]
+value = 500.0
+units = "cfs"

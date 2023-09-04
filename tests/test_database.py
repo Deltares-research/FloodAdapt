@@ -68,29 +68,6 @@ def test_projection_plot_slr(cleanup_database):
 
 def test_has_hazard_run(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
-
-    results = [
-        dbs.input_path.parent
-        / "output"
-        / "simulations"
-        / "current_extreme12ft_no_measures",
-        dbs.input_path.parent
-        / "output"
-        / "simulations"
-        / "current_extreme12ft_strategy_impact_comb",
-        dbs.input_path.parent
-        / "output"
-        / "results"
-        / "current_extreme12ft_no_measures",
-        dbs.input_path.parent
-        / "output"
-        / "results"
-        / "current_extreme12ft_strategy_impact_comb",
-    ]
-
-    for res in results:
-        shutil.rmtree(res, ignore_errors=True)
-
     scenario_name_1 = "current_extreme12ft_no_measures"
     scenario_name_2 = "current_extreme12ft_strategy_impact_comb"
 

@@ -441,12 +441,31 @@ class Database(IDatabase):
         )
         fm.read()
         buildings = fm.exposure.select_objects(
-            primary_object_type=["ALL"],
+            primary_object_type="ALL",
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
 
         return buildings
+
+    def get_property_types(self) -> list:
+        """_summary_
+
+        Returns
+        -------
+        list
+            _description_
+        """
+        # use hydromt-fiat to load the fiat model
+        fm = FiatModel(
+            root=self.input_path.parent / "static" / "templates" / "fiat",
+            mode="r",
+        )
+        fm.read()
+        types = fm.exposure.get_primary_object_type()
+        for name in self.site.attrs.fiat.non_building_names:
+            types.remove(name)
+        return types
 
     # Measure methods
     def get_measure(self, name: str) -> IMeasure:

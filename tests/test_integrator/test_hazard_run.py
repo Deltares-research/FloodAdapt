@@ -8,6 +8,9 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -70,7 +73,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
 
     hazard = scenario.direct_impacts.hazard
     hazard.event.attrs.rainfall.source = "timeseries"
-    hazard.event.attrs.rainfall.timeseries_file = "rain.csv"
+    hazard.event.attrs.rainfall.timeseries_file = "rainfall.csv"
 
     tt = pd.date_range(
         start=hazard.event.attrs.time.start_time,
@@ -81,7 +84,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
         decimals=2
     )
     df = pd.DataFrame(index=tt, data=rain)
-    df.to_csv(event_path.joinpath("rain.csv"))
+    df.to_csv(event_path.joinpath("rainfall.csv"))
 
     hazard.preprocess_models()
 
@@ -89,7 +92,97 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     assert prcp_file.is_file()
 
     # Delete rainfall file that was created for the test
-    os.remove(event_path.joinpath("rain.csv"))
+    os.remove(event_path.joinpath("rainfall.csv"))
+
+
+def test_preprocess_pump(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+    assert test_toml.is_file()
+
+    scenario = Scenario.load_file(test_toml)
+    scenario.attrs.strategy = "pump"
+    scenario.attrs.name = scenario.attrs.name.replace("no_measures", "pump")
+    scenario.init_object_model()
+
+    hazard = scenario.direct_impacts.hazard
+
+    hazard.preprocess_models()
+
+    drn_file = hazard.simulation_paths[0].joinpath("sfincs.drn")
+    assert drn_file.is_file()
+
+    drn_templ = scenario.database_input_path.parent.joinpath(
+        "static", "templates", "overland", "sfincs.drn"
+    )
+
+    ~filecmp.cmp(drn_file, drn_templ)
+
+
+@pytest.mark.skip(
+    reason="hydroMT SFINCS Green Infra plug-in requires HydroMT core 0.8.0"
+)
+def test_preprocess_greenInfra(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.attrs.strategy = "greeninfra"
+    test_scenario.init_object_model()
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy.measures[0],
+        GreenInfrastructure,
+    )
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy.measures[1],
+        GreenInfrastructure,
+    )
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy.measures[2],
+        GreenInfrastructure,
+    )
+    test_scenario.direct_impacts.hazard.preprocess_models()
+
+
+@pytest.mark.skip(reason="running the model takes long")
+def test_write_floodmap_geotiff(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    test_scenario.direct_impacts.hazard.run_models()
+    test_scenario.direct_impacts.hazard.postprocess_models()
+
+    floodmap_fn = test_scenario.direct_impacts.hazard.simulation_paths[0].joinpath(
+        "floodmap.tif"
+    )
+    assert floodmap_fn.is_file()
 
 
 def test_preprocess_prob_eventset(cleanup_database):

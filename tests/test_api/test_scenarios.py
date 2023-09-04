@@ -5,14 +5,10 @@ import pytest
 import flood_adapt.api.scenarios as api_scenarios
 import flood_adapt.api.startup as api_startup
 
-# test_database_path = Path().absolute() / "tests" / "test_database"
-test_database_path = Path(
-    r"p:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/database"
-)
+test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-@pytest.mark.skip(reason="We cannot depend on the P drive")
 def test_scenario(cleanup_database):
     test_dict = {
         "name": "current_extreme12ft_no_measures",
@@ -33,9 +29,6 @@ def test_scenario(cleanup_database):
     test_dict["event"] = "extreme12ft"
     scenario = api_scenarios.create_scenario(test_dict, database)
 
-    # run SFINCS
-    api_scenarios.run_hazard_models(scenario)
-
     with pytest.raises(ValueError):
         # Assert error if name already exists
         api_scenarios.save_scenario(scenario, database)
@@ -49,3 +42,10 @@ def test_scenario(cleanup_database):
     # If user presses delete scenario the measure is deleted
     api_scenarios.delete_scenario("test1", database)
     database.get_scenarios()
+
+
+def test_single_event_run(cleanup_database):
+    # Initialize database object
+    database = api_startup.read_database(test_database_path, test_site_name)
+    scenario_name = "current_extreme12ft_no_measures"
+    database.run_scenario(scenario_name)

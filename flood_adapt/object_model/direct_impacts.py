@@ -200,9 +200,16 @@ class DirectImpacts:
         fa.fiat_model.write()
 
     def run_fiat(self):
+        fiat_exec = str(
+            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
+        )
+
         with cd(self.results_path):
             process = subprocess.run(
-                ["fiat", "run", "settings.toml"], stdout=subprocess.PIPE, check=True
+                f'"{fiat_exec}" run settings.toml',
+                stdout=subprocess.PIPE,
+                check=True,
+                shell=True,
             )
 
             return process.returncode

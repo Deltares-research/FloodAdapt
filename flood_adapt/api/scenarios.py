@@ -20,14 +20,12 @@ def create_scenario(attrs: dict[str, Any], database: IDatabase) -> IScenario:
 
 def save_scenario(scenario: IScenario, database: IDatabase) -> (bool, str):
     """Save the scenario to the database.
-
     Parameters
     ----------
     scenario : IScenario
         The scenario to save.
     database : IDatabase
         The database to save the scenario to.
-
     Returns
     -------
     bool
