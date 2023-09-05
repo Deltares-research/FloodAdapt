@@ -29,9 +29,7 @@ def test_scenario(cleanup_database):
     test_dict["event"] = "extreme12ft"
     scenario = api_scenarios.create_scenario(test_dict, database)
 
-    with pytest.raises(ValueError):
-        # Assert error if name already exists
-        api_scenarios.save_scenario(scenario, database)
+    assert not api_scenarios.save_scenario(scenario, database)[0]
 
     # Change name to something new
     test_dict["name"] = "test1"

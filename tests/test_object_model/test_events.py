@@ -221,7 +221,7 @@ def test_download_wl_timeseries(cleanup_database):
     stop_time_str = "20230102 000000"
 
     wl_df = HistoricalNearshore.download_wl_data(
-        station_id, start_time_str, stop_time_str
+        station_id, start_time_str, stop_time_str, units="feet"
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
@@ -313,7 +313,7 @@ def test_constant_rainfall(cleanup_database):
     assert (
         np.abs(
             event.rain_ts.to_numpy()[0][0]
-            - UnitfulIntensity(value=2, units="inch/hr").convert("mm/hr")
+            - UnitfulIntensity(value=2, units="inch/hr").value
         )
         < 0.001
     )
@@ -347,7 +347,7 @@ def test_gaussian_rainfall(cleanup_database):
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
-    cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
+    cum_rainfall_toml = event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
@@ -379,7 +379,7 @@ def test_block_rainfall(cleanup_database):
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
-    cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
+    cum_rainfall_toml = event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
@@ -412,7 +412,7 @@ def test_triangle_rainfall(cleanup_database):
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
-    cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
+    cum_rainfall_toml = event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
@@ -445,7 +445,7 @@ def test_scs_rainfall(cleanup_database):
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
-    cum_rainfall_toml = event.attrs.rainfall.cumulative.convert("millimeters")
+    cum_rainfall_toml = event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
@@ -493,7 +493,7 @@ def test_constant_discharge():
     event.add_dis_ts()
     assert isinstance(event.dis_ts, pd.DataFrame)
     assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
-    const_dis = event.attrs.river.constant_discharge.convert("m3/s")
+    const_dis = event.attrs.river.constant_discharge.value
 
     assert np.abs(event.dis_ts.to_numpy()[0][0] - (const_dis)) < 0.001
 
@@ -534,7 +534,13 @@ def test_gaussian_discharge():
     # )
     dt = event.dis_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_dis_ts = np.sum(event.dis_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
-    assert np.abs(cum_dis_ts - 6945.8866666) < 0.01
+    assert (
+        np.abs(
+            UnitfulDischarge(value=cum_dis_ts, units="cfs").convert("m3/s")
+            - 6945.8866666
+        )
+        < 0.01
+    )
 
 
 def test_block_discharge():
@@ -571,11 +577,5 @@ def test_block_discharge():
     #         / "river.csv"
     #     )
     # )
-    assert (
-        np.abs(event.dis_ts[1][0] - event.attrs.river.shape_peak.convert("m3/s"))
-        < 0.001
-    )
-    assert (
-        np.abs(event.dis_ts[1][-1] - event.attrs.river.base_discharge.convert("m3/s"))
-        < 0.001
-    )
+    assert np.abs(event.dis_ts[1][0] - event.attrs.river.shape_peak.value) < 0.001
+    assert np.abs(event.dis_ts[1][-1] - event.attrs.river.base_discharge.value) < 0.001

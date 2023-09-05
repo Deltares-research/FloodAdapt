@@ -82,7 +82,7 @@ class Synthetic(Event, ISynthetic):
         tt = np.arange(0, duration + 1, 600)
 
         # tide
-        amp = self.attrs.tide.harmonic_amplitude.convert("meters")
+        amp = self.attrs.tide.harmonic_amplitude.value
         omega = 2 * math.pi / (12.4 / 24)
         time_shift = float(self.attrs.time.duration_before_t0) * 3600
         tide = amp * np.cos(omega * (tt - time_shift) / 86400)
@@ -96,7 +96,7 @@ class Synthetic(Event, ISynthetic):
             surge = super().timeseries_shape(
                 "gaussian",
                 duration,
-                self.attrs.surge.shape_peak.convert("meters"),
+                self.attrs.surge.shape_peak.value,
                 shape_duration=self.attrs.surge.shape_duration * 3600,
                 time_shift=time_shift,
             )
