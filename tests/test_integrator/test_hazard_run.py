@@ -374,8 +374,14 @@ def test_multiple_rivers(cleanup_database):
         None,
         "gaussian",
     ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.base_discharge = [None, UnitfulDischarge(value=1000.0, units="cfs")]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak = [None, UnitfulDischarge(value=2500.0, units="cfs")]
+    test_scenario.direct_impacts.hazard.event.attrs.river.base_discharge = [
+        None,
+        UnitfulDischarge(value=1000.0, units="cfs"),
+    ]
+    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak = [
+        None,
+        UnitfulDischarge(value=2500.0, units="cfs"),
+    ]
     test_scenario.direct_impacts.hazard.event.attrs.river.shape_duration = [None, 8]
     test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak_time = [None, 0]
     test_scenario.direct_impacts.hazard.event.attrs.river.shape_start_time = [
@@ -404,13 +410,22 @@ def test_multiple_rivers(cleanup_database):
     test_scenario.direct_impacts.hazard.site.attrs.river.description = description
 
     # Change name of reference model
-    test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = "overland_2_rivers"
+    test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = (
+        "overland_2_rivers"
+    )
 
     # Preprocess the models
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     # Check for the correct output
-    output_folder = test_database / "charleston" / "output"/ "simulations" / "current_extreme12ft_no_measures" / "overland"
+    output_folder = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_no_measures"
+        / "overland"
+    )
     dis_file = output_folder / "sfincs.dis"
     src_file = output_folder / "sfincs.src"
 
@@ -420,9 +435,21 @@ def test_multiple_rivers(cleanup_database):
     # Check if content of file is correct
     dis = pd.read_csv(dis_file, index_col=0, header=None, delim_whitespace=True)
 
-    assert len(dis.columns) == len(test_scenario.direct_impacts.hazard.event.attrs.river.source)
-    assert round(np.mean(dis[1].values),2) == test_scenario.direct_impacts.hazard.event.attrs.river.constant_discharge[0].convert('m3/s')
-    assert np.max(dis[2].values) == test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak[1].convert('m3/s')
+    assert len(dis.columns) == len(
+        test_scenario.direct_impacts.hazard.event.attrs.river.source
+    )
+    assert round(
+        np.mean(dis[1].values), 2
+    ) == test_scenario.direct_impacts.hazard.event.attrs.river.constant_discharge[
+        0
+    ].convert(
+        "m3/s"
+    )
+    assert np.max(
+        dis[2].values
+    ) == test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak[1].convert(
+        "m3/s"
+    )
 
 
 def test_no_rivers(cleanup_database):
@@ -460,13 +487,22 @@ def test_no_rivers(cleanup_database):
     test_scenario.direct_impacts.hazard.site.attrs.river.description = []
 
     # Change name of reference model
-    test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = "overland_0_rivers"
+    test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = (
+        "overland_0_rivers"
+    )
 
     # Preprocess the models
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     # Check for the correct output
-    output_folder = test_database / "charleston" / "output"/ "simulations" / "current_extreme12ft_no_measures" / "overland"
+    output_folder = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_no_measures"
+        / "overland"
+    )
     dis_file = output_folder / "sfincs.dis"
     src_file = output_folder / "sfincs.src"
 
