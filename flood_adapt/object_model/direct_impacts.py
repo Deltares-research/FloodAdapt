@@ -291,11 +291,17 @@ class DirectImpacts:
                 / site_info.attrs.fiat.aggregation[ind].file
             )
 
-            aggr_areas = gpd.read_file(aggr_areas_path)
+            aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
             outpath = output_fold.joinpath(f"aggregated_damages_{aggr_label}.gpkg")
             # Save file
-            AggregationAreas.write_spatial_file(metrics, aggr_areas, outpath)
+            AggregationAreas.write_spatial_file(
+                metrics,
+                aggr_areas,
+                outpath,
+                id_name=site_info.attrs.fiat.aggregation[ind].field_name,
+                file_format="geopackage",
+            )
 
     def _create_footprints(self, fiat_results_path):
         # Get footprints file paths from site.toml
