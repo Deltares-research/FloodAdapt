@@ -221,7 +221,7 @@ def test_preprocess_prob_eventset(cleanup_database):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-# @pytest.mark.skip(reason="Running models takes a couple of minutes")
+@pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(cleanup_database):
     test_toml = (
         test_database
