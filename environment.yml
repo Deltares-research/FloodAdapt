@@ -36,3 +36,4 @@ dependencies:
   - census
   - pre-commit
   - numpy-financial
+  - pyogrio
