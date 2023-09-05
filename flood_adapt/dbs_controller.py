@@ -289,7 +289,7 @@ class Database(IDatabase):
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
                 xaxis_title="Time",
-                yaxis_title=f"Water level [{gui_units} {self.site.attrs.sfincs.datum_overland_model}]",
+                yaxis_title=f"Water level [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 showlegend=False
