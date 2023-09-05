@@ -323,7 +323,7 @@ class Hazard:
             ):
                 logging.info("Downloading meteo data...")
                 meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
-                if ~meteo_dir.is_dir():
+                if not meteo_dir.is_dir():
                     os.mkdir(
                         self.database_input_path.parent.joinpath("output", "meteo")
                     )
