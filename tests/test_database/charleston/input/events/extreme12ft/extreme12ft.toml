@@ -20,9 +20,12 @@ units = "deg N"
 [rainfall]
 source = "none"
 
-[river]
-source = ["constant"]
-constant_discharge =[{value = 5000, units = "cfs"}]
+[[river]]
+source = "constant"
+
+[river.constant_discharge]
+value = 5000
+units = "cfs"
 
 [time]
 duration_before_t0 = 24

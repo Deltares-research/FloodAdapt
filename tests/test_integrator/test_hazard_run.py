@@ -18,7 +18,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 
 @pytest.mark.skip(reason="running the model takes long")
-def test_hazard_run_synthetic_wl(cleanup_database):
+def test_hazard_run_synthetic_wl(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -38,7 +38,7 @@ def test_hazard_run_synthetic_wl(cleanup_database):
 
 
 @pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_run_synthetic_discharge(cleanup_database):
+def test_hazard_run_synthetic_discharge(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -57,7 +57,7 @@ def test_hazard_run_synthetic_discharge(cleanup_database):
     test_scenario.direct_impacts.hazard.run_models()
 
 
-def test_preprocess_rainfall_timeseriesfile(cleanup_database):
+def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -96,7 +96,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database):
     os.remove(event_path.joinpath("rainfall.csv"))
 
 
-def test_preprocess_pump(cleanup_database):
+def test_preprocess_pump(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -129,7 +129,7 @@ def test_preprocess_pump(cleanup_database):
 @pytest.mark.skip(
     reason="hydroMT SFINCS Green Infra plug-in requires HydroMT core 0.8.0"
 )
-def test_preprocess_greenInfra(cleanup_database):
+def test_preprocess_greenInfra(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -161,7 +161,7 @@ def test_preprocess_greenInfra(cleanup_database):
 
 
 @pytest.mark.skip(reason="running the model takes long")
-def test_write_floodmap_geotiff(cleanup_database):
+def test_write_floodmap_geotiff(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -186,7 +186,7 @@ def test_write_floodmap_geotiff(cleanup_database):
     assert floodmap_fn.is_file()
 
 
-def test_preprocess_prob_eventset(cleanup_database):
+def test_preprocess_prob_eventset(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -228,7 +228,7 @@ def test_preprocess_prob_eventset(cleanup_database):
 
 
 # @pytest.mark.skip(reason="Running models takes a couple of minutes")
-def test_run_prob_eventset(cleanup_database):
+def test_run_prob_eventset(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -272,7 +272,7 @@ def test_run_prob_eventset(cleanup_database):
 @pytest.mark.skip(
     reason="Need to run models first (see above) but that takes a couple of minutes"
 )
-def test_rp_floodmap_calculation(cleanup_database):
+def test_rp_floodmap_calculation(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -348,7 +348,7 @@ def test_rp_floodmap_calculation(cleanup_database):
     plt.savefig(fn, bbox_inches="tight", dpi=225)
 
 
-def test_multiple_rivers(cleanup_database):
+def test_multiple_rivers(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -364,50 +364,45 @@ def test_multiple_rivers(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
 
+    # Add an extra river
+    test_scenario.direct_impacts.hazard.event.attrs.river.append(
+        test_scenario.direct_impacts.hazard.event.attrs.river[0].copy()
+    )
     # Overwrite river data of Event
-    test_scenario.direct_impacts.hazard.event.attrs.river.source = ["constant", "shape"]
-    test_scenario.direct_impacts.hazard.event.attrs.river.constant_discharge = [
-        UnitfulDischarge(value=2000.0, units="cfs"),
-        None,
-    ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_type = [
-        None,
-        "gaussian",
-    ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.base_discharge = [
-        None,
-        UnitfulDischarge(value=1000.0, units="cfs"),
-    ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak = [
-        None,
-        UnitfulDischarge(value=2500.0, units="cfs"),
-    ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_duration = [None, 8]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak_time = [None, 0]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_start_time = [
-        None,
-        None,
-    ]
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_end_time = [None, None]
+    test_scenario.direct_impacts.hazard.event.attrs.river[0].source = "constant"
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].source = "shape"
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        0
+    ].constant_discharge = UnitfulDischarge(value=2000.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_type = "gaussian"
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        1
+    ].base_discharge = UnitfulDischarge(value=1000.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        1
+    ].shape_peak = UnitfulDischarge(value=2500.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_duration = 8
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak_time = 0
 
     # Overwrite river data in Site
-    name = []
-    description = []
-    x = []
-    y = []
-    mean_discharge = []
-    for ii in [0, 1]:
-        name.append(f"{test_scenario.site_info.attrs.river.name[0]}_{ii}")
-        description.append(f"{test_scenario.site_info.attrs.river.description[0]} {ii}")
-        x.append(test_scenario.site_info.attrs.river.x_coordinate[0] - 1000 * ii)
-        y.append(test_scenario.site_info.attrs.river.y_coordinate[0] - 1000 * ii)
-        mean_discharge.append(test_scenario.site_info.attrs.river.mean_discharge[0])
+    name = test_scenario.site_info.attrs.river[0].name + "_test"
+    description = test_scenario.site_info.attrs.river[0].description + " test"
+    x = test_scenario.site_info.attrs.river[0].x_coordinate - 1000
+    y = test_scenario.site_info.attrs.river[0].y_coordinate - 1000
+    mean_discharge = test_scenario.site_info.attrs.river[0].mean_discharge.value * 1.5
 
-    test_scenario.direct_impacts.hazard.site.attrs.river.name = name
-    test_scenario.direct_impacts.hazard.site.attrs.river.x_coordinate = x
-    test_scenario.direct_impacts.hazard.site.attrs.river.y_coordinate = y
-    test_scenario.direct_impacts.hazard.site.attrs.river.mean_discharge = mean_discharge
-    test_scenario.direct_impacts.hazard.site.attrs.river.description = description
+    # Add an extra river in site
+    test_scenario.direct_impacts.hazard.site.attrs.river.append(
+        test_scenario.direct_impacts.hazard.site.attrs.river[0].copy()
+    )
+
+    test_scenario.direct_impacts.hazard.site.attrs.river[1].name = name
+    test_scenario.direct_impacts.hazard.site.attrs.river[1].x_coordinate = x
+    test_scenario.direct_impacts.hazard.site.attrs.river[1].y_coordinate = y
+    test_scenario.direct_impacts.hazard.site.attrs.river[
+        1
+    ].mean_discharge = UnitfulDischarge(value=mean_discharge, units="cfs")
+    test_scenario.direct_impacts.hazard.site.attrs.river[1].description = description
 
     # Change name of reference model
     test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = (
@@ -436,23 +431,23 @@ def test_multiple_rivers(cleanup_database):
     dis = pd.read_csv(dis_file, index_col=0, header=None, delim_whitespace=True)
 
     assert len(dis.columns) == len(
-        test_scenario.direct_impacts.hazard.event.attrs.river.source
+        test_scenario.direct_impacts.hazard.event.attrs.river
     )
     assert round(
         np.mean(dis[1].values), 2
-    ) == test_scenario.direct_impacts.hazard.event.attrs.river.constant_discharge[
+    ) == test_scenario.direct_impacts.hazard.event.attrs.river[
         0
-    ].convert(
+    ].constant_discharge.convert(
         "m3/s"
     )
     assert np.max(
         dis[2].values
-    ) == test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak[1].convert(
+    ) == test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak.convert(
         "m3/s"
     )
 
 
-def test_no_rivers(cleanup_database):
+def test_no_rivers(cleanup_database: None):
     test_toml = (
         test_database
         / "charleston"
@@ -469,22 +464,10 @@ def test_no_rivers(cleanup_database):
     test_scenario.init_object_model()
 
     # Overwrite river data of Event
-    test_scenario.direct_impacts.hazard.event.attrs.river.source = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.constant_discharge = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_type = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.base_discharge = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_duration = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_peak_time = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_start_time = []
-    test_scenario.direct_impacts.hazard.event.attrs.river.shape_end_time = []
+    test_scenario.direct_impacts.hazard.event.attrs.river = []
 
     # Overwrite river data in Site
-    test_scenario.direct_impacts.hazard.site.attrs.river.name = []
-    test_scenario.direct_impacts.hazard.site.attrs.river.x_coordinate = []
-    test_scenario.direct_impacts.hazard.site.attrs.river.y_coordinate = []
-    test_scenario.direct_impacts.hazard.site.attrs.river.mean_discharge = []
-    test_scenario.direct_impacts.hazard.site.attrs.river.description = []
+    test_scenario.direct_impacts.hazard.site.attrs.river = []
 
     # Change name of reference model
     test_scenario.direct_impacts.hazard.site.attrs.sfincs.overland_model = (
@@ -505,6 +488,8 @@ def test_no_rivers(cleanup_database):
     )
     dis_file = output_folder / "sfincs.dis"
     src_file = output_folder / "sfincs.src"
+    bnd_file = output_folder / "sfincs.bnd"
 
     assert not dis_file.is_file()
     assert not src_file.is_file()
+    assert bnd_file.is_file()  # To check if the model has run

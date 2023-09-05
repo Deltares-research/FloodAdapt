@@ -350,9 +350,7 @@ class Hazard:
                 "Adding discharge boundary conditions if applicable to the overland flood model..."
             )
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            self.event.add_dis_ts(
-                event_dir=event_dir, river_names=self.site.attrs.river.name
-            )
+            self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
             model.add_dis_bc(list_df=self.event.dis_df)
 
             # Generate and add rainfall boundary condition

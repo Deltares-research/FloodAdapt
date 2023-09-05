@@ -20,16 +20,18 @@ units = "deg N"
 [rainfall]
 source = "none"
 
-[river]
+[[river]]
 source = "shape"
 shape_type = "block"
 shape_duration = 24
 shape_start_time = -12
 shape_end_time = 12
 shape_peak_time = 0
+
 [river.base_discharge]
 value = 5000
 units = "cfs"
+
 [river.shape_peak]
 value = 10000
 units = "cfs"

@@ -93,19 +93,19 @@ class RainfallModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    source: list[RiverSource]
+    source: Optional[RiverSource]
     # constant
-    constant_discharge: Optional[list[UnitfulDischarge]]
+    constant_discharge: Optional[UnitfulDischarge]
     # timeseries
-    timeseries_file: Optional[list[str]]
+    timeseries_file: Optional[str]
     # shape
-    shape_type: Optional[list[ShapeType]]
-    base_discharge: Optional[list[UnitfulDischarge]]
-    shape_peak: Optional[list[UnitfulDischarge]]
-    shape_duration: Optional[list[float]]
-    shape_peak_time: Optional[list[float]]
-    shape_start_time: Optional[list[float]]
-    shape_end_time: Optional[list[float]]
+    shape_type: Optional[ShapeType]
+    base_discharge: Optional[UnitfulDischarge]
+    shape_peak: Optional[UnitfulDischarge]
+    shape_duration: Optional[float]
+    shape_peak_time: Optional[float]
+    shape_start_time: Optional[float]
+    shape_end_time: Optional[float]
 
 
 class TimeModel(BaseModel):
@@ -167,7 +167,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
-    river: RiverModel
+    river: list[RiverModel]
     time: TimeModel
     tide: TideModel
     surge: SurgeModel

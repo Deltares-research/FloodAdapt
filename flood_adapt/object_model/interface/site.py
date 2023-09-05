@@ -108,11 +108,11 @@ class FiatModel(BaseModel):
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in Site"""
 
-    name: list[str]
-    description: Optional[list[str]] = []
-    mean_discharge: list[UnitfulDischarge]
-    x_coordinate: list[float]
-    y_coordinate: list[float]
+    name: str
+    description: Optional[str]
+    mean_discharge: UnitfulDischarge
+    x_coordinate: float
+    y_coordinate: float
 
 
 class Obs_stationModel(BaseModel):
@@ -167,7 +167,7 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[RiverModel]
+    river: Optional[list[RiverModel]]
     obs_station: Optional[Obs_stationModel]
     benefits: BenefitsModel
     scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
