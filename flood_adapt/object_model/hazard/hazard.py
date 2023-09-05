@@ -395,12 +395,11 @@ class Hazard:
                         "Adding gridded rainfall to the overland flood model..."
                     )
                     # add rainfall increase from projection and event, units area already conform with sfincs when downloaded
-                    ds = (
-                        ds
+                    model.add_precip_forcing_from_grid(
+                        ds=ds["precip"]
                         * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                         * (1 + self.event.attrs.rainfall.increase / 100.0)
                     )
-                    model.add_precip_forcing_from_grid(ds=ds)
                 elif self.event.attrs.rainfall.source == "timeseries":
                     # convert to metric units
                     df = pd.read_csv(
@@ -565,7 +564,7 @@ class Hazard:
         if self.event.attrs.template == "Historical_offshore":
             if self.event.attrs.wind.source == "map":
                 offshore_model.add_wind_forcing_from_grid(ds=ds)
-                offshore_model.add_pressure_forcing_from_grid(ds=ds)
+                offshore_model.add_pressure_forcing_from_grid(ds=ds["press"])
             elif self.event.attrs.wind.source == "timeseries":
                 offshore_model.add_wind_forcing(
                     timeseries=event_dir.joinpath("wind.csv")
