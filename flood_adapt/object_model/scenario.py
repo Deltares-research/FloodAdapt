@@ -5,8 +5,6 @@ from typing import Any, Union
 import pandas as pd
 import tomli
 import tomli_w
-from fiat_toolbox.infographics.infographics import InfographicsParser
-from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
 
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
@@ -68,73 +66,13 @@ class Scenario(IScenario):
         else:
             print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
         if not self.direct_impacts.has_run:
-            # self.direct_impacts.preprocess_models() #TODO: separate preprocessing and running of impact models
+            self.direct_impacts.preprocess_models()  # TODO: separate preprocessing and running of impact models
             self.direct_impacts.run_models()
-            # self.direct_impacts.postprocess_models()
+            self.direct_impacts.postprocess_models()
         else:
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
-
-        # Create the infometrics files
-        self._create_infometrics()
-
-        # Create the infographic files
-        # TODO correct infographic creation for risk mode
-        if self.direct_impacts.hazard.event_mode != "risk":
-            self._create_infographics()
-
-    def _create_infometrics(self):
-        # Get the metrics
-        fiat_results_path = self.database_input_path.parent.joinpath(
-            "output",
-            "results",
-            f"{self.attrs.name}",
-            "fiat_model",
-            "output",
-            "output.csv",
-        )
-
-        # Get the metrics configuration
-        if self.direct_impacts.hazard.event_mode == "risk":
-            ext = "_risk"
-        else:
-            ext = ""
-
-        metrics_config_path = self.database_input_path.parent.joinpath(
-            "static",
-            "templates",
-            "infometrics",
-            f"metrics_config{ext}.toml",
-        )
-
-        # Specify the metrics output path
-        metrics_outputs_path = self.database_input_path.parent.joinpath(
-            "output",
-            "infometrics",
-            f"{self.attrs.name}_metrics.csv",
-        )
-
-        # Get the results dataframe
-        df = pd.read_csv(fiat_results_path)
-
-        # Write the metrics to file
-        metrics_writer = MetricsFileWriter(metrics_config_path)
-
-        metrics_writer.parse_metrics_to_file(
-            df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
-        )
-        metrics_writer.parse_metrics_to_file(
-            df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
-        )
-
-    def _create_infographics(self):
-        # Get the infographic
-        InfographicsParser().write_infographics_to_file(
-            scenario_name=self.attrs.name,
-            database_path=Path(self.database_input_path).parent,
-            keep_metrics_file=True,
-        )
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):
