@@ -42,6 +42,7 @@ def test_scenario(cleanup_database):
     database.get_scenarios()
 
 
+@pytest.mark.skip(reason="Part of test_has_hazard_run")
 def test_single_event_run(cleanup_database):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
