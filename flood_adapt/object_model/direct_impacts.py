@@ -274,7 +274,7 @@ class DirectImpacts:
         )
         site_info = Site.load_file(site_toml)
         # loop through metrics aggregated files
-        for file in metrics_fold.glob("*_metrics_*.*"):
+        for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
             # Load metrics
             metrics = pd.read_csv(file)
             # Load aggregation areas
@@ -303,6 +303,10 @@ class DirectImpacts:
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
         site_info = Site.load_file(site_toml)
+        # TODO ensure that if this does not happen we get same file name output from FIAT?
+        # Check if there is a footprint file given
+        if not site_info.attrs.fiat.building_footprints:
+            return
         # Get footprints file
         footprints_path = (
             self.database_input_path.parent
