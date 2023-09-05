@@ -323,7 +323,7 @@ class Hazard:
             ):
                 logging.info("Downloading meteo data...")
                 meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
-                if ~meteo_dir.is_dir():
+                if not meteo_dir.is_dir():
                     os.mkdir(
                         self.database_input_path.parent.joinpath("output", "meteo")
                     )
@@ -406,6 +406,7 @@ class Hazard:
                     df = pd.read_csv(
                         event_dir.joinpath("rainfall.csv"), index_col=0, header=None
                     )
+                    df.index = pd.DatetimeIndex(df.index)
                     # add unit conversion and rainfall increase from projection and event
                     df = (
                         conversion_factor_precip
@@ -413,7 +414,7 @@ class Hazard:
                         * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                         * (1 + self.event.attrs.rainfall.increase / 100.0)
                     )
-                    df.index = pd.DatetimeIndex(df.index)
+
                     logging.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
@@ -448,6 +449,13 @@ class Hazard:
                     )
 
                 # Generate and add wind boundary condition
+                # conversion factor to metric units
+                gui_units_wind = UnitfulVelocity(
+                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                )
+                conversion_factor_wind = gui_units_wind.convert(
+                    UnitTypesVelocity("m/s")
+                )
                 # conversion factor to metric units
                 gui_units_wind = UnitfulVelocity(
                     value=1.0, units=self.site.attrs.gui.default_velocity_units

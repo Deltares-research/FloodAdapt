@@ -290,7 +290,7 @@ def test_preprocess_rainfall_increase(cleanup_database):
     assert np.abs(cum_precip1 * 1.1 - cum_precip2) < 0.1
 
 
-# @pytest.mark.skip(reason="Running models takes a couple of minutes")
+@pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(cleanup_database):
     test_toml = (
         test_database

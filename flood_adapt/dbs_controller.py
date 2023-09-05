@@ -26,7 +26,7 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -141,6 +141,7 @@ class Database(IDatabase):
         ncolors = len(df.columns) - 2
         try:
             units = df["units"].iloc[0]
+            units = UnitTypesLength(units)
         except ValueError(
             "Column " "units" " in input/static/slr/slr.csv file missing."
         ) as e:
@@ -170,15 +171,18 @@ class Database(IDatabase):
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
         slr_current_units = UnitfulLength(value=1.0, units=units)
-        gui_units = self.site.attrs.gui.default_length_units
-        conversion_factor = slr_current_units.convert(gui_units)
+        conversion_factor = slr_current_units.convert(
+            self.site.attrs.gui.default_length_units
+        )
         df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": "Sea level rise [{}]".format(gui_units),
+                "value": "Sea level rise [{}]".format(
+                    self.site.attrs.gui.default_length_units
+                ),
             }
         )
 
@@ -188,7 +192,7 @@ class Database(IDatabase):
         fig = px.line(
             df,
             x="Year",
-            y=f"Sea level rise [{gui_units}]",
+            y=f"Sea level rise [{self.site.attrs.gui.default_length_units}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
@@ -238,7 +242,7 @@ class Database(IDatabase):
 
             # Plot actual thing
             fig = px.line(wl_df)
-
+            gui_units = self.site.attrs.gui.default_length_units
             # plot reference water levels
             fig.add_hline(
                 y=0,
@@ -247,8 +251,11 @@ class Database(IDatabase):
                 annotation_text="MSL",
                 annotation_position="bottom right",
             )
-            gui_units = self.site.attrs.gui.default_length_units
-            if isinstance(self.site.attrs.obs_station.mllw, UnitfulLength):
+            if (
+                self.site.attrs.obs_station
+                and self.site.attrs.obs_station.mllw
+                and self.site.attrs.obs_station.msl
+            ):
                 fig.add_hline(
                     y=self.site.attrs.obs_station.mllw.convert(gui_units)
                     - self.site.attrs.obs_station.msl.convert(gui_units),
@@ -257,7 +264,11 @@ class Database(IDatabase):
                     annotation_text="MLLW",
                     annotation_position="bottom right",
                 )
-            if isinstance(self.site.attrs.obs_station.mhhw, UnitfulLength):
+            if (
+                self.site.attrs.obs_station
+                and self.site.attrs.obs_station.mhhw
+                and self.site.attrs.obs_station.msl
+            ):
                 fig.add_hline(
                     y=self.site.attrs.obs_station.mhhw.convert(gui_units)
                     - self.site.attrs.obs_station.msl.convert(gui_units),
@@ -278,7 +289,7 @@ class Database(IDatabase):
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
                 xaxis_title="Time",
-                yaxis_title=f"Water level (tide + surge) [{gui_units}]",
+                yaxis_title=f"Water level [{gui_units} {self.site.attrs.sfincs.datum_overland_model}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 showlegend=False
