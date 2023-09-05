@@ -260,7 +260,7 @@ class Event:
                 # Add to list of pd.Dataframes
                 list_df[ii] = df
 
-        # Concatonate dataframes and add to event class
+        # Concatenate dataframes and add to event class
         if len(list_df) > 0:
             df_concat = pd.concat(list_df, axis=1)
             self.dis_df = df_concat
