@@ -109,7 +109,7 @@ class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in Site"""
 
     name: str
-    description: Optional[str]
+    description: str
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
