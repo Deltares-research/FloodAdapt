@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import Any, Union
 
-import pandas as pd
 import tomli
 import tomli_w
 

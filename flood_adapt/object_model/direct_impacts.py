@@ -312,7 +312,7 @@ class DirectImpacts:
         )
         # Define where footprint results are saved
         outpath = self.database_input_path.parent.joinpath(
-            "output", "results", f"{self.name}", f"building_footprints.gpkg"
+            "output", "results", f"{self.name}", "building_footprints.gpkg"
         )
 
         # Read files
