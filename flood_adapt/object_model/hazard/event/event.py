@@ -261,8 +261,11 @@ class Event:
                 list_df[ii] = df
 
         # Concatonate dataframes to event class
-        df_concat = pd.concat(list_df, axis=1)
-        self.dis_df = df_concat
+        if len(list_df) > 0:
+            df_concat = pd.concat(list_df, axis=1)
+            self.dis_df = df_concat
+        else:
+            self.dis_df = None
         return self
 
     def add_rainfall_ts(self, **kwargs):

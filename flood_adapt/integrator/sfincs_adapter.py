@@ -216,14 +216,14 @@ class SfincsAdapter:
 
         # Determine bnd points from reference overland model
         # ASSUMPTION: Order of the rivers is the same as the site.toml file
-        gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
-        gdf_locs.crs = self.sf_model.crs
+        if list_df is not None:
+            gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
+            gdf_locs.crs = self.sf_model.crs
 
-        if len(list_df) != len(gdf_locs):
-            # TODO: give an error message that says that the number of rivers of the site.toml does not match with the model.
-            pass
+            if len(list_df) != len(gdf_locs):
+                # TODO: give an error message that says that the number of rivers of the site.toml does not match with the model.
+                pass
 
-        if len(list_df) != 0:
             self.sf_model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False
             )
