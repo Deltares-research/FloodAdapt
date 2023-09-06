@@ -185,6 +185,5 @@ tests/test_database/charleston/static/site/aggr_lvl_1.geojson
 tests/test_database/charleston/static/site/aggr_lvl_2.geojson
 /tests/test_database - Copy
 tests/test_database/charleston/static/templates/fiat/exposure/exposure.gpkg
-tests/test_database/charleston/static/dem
+tests/test_database/charleston/static/dem/*
 tests/system/fiat/*
-tests/test_database/charleston/static/dem/charleston_14m.tif

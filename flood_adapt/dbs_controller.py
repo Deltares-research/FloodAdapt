@@ -243,6 +243,7 @@ class Database(IDatabase):
             # Plot actual thing
             fig = px.line(wl_df)
             gui_units = self.site.attrs.gui.default_length_units
+            # plot reference water levels
             fig.add_hline(
                 y=0,
                 line_dash="dash",
@@ -250,8 +251,6 @@ class Database(IDatabase):
                 annotation_text="MSL",
                 annotation_position="bottom right",
             )
-
-            # plot reference water levels
             if (
                 self.site.attrs.obs_station
                 and self.site.attrs.obs_station.mllw
@@ -290,7 +289,7 @@ class Database(IDatabase):
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
                 xaxis_title="Time",
-                yaxis_title=f"Water level [{gui_units} {self.site.attrs.sfincs.datum_overland_model}]",
+                yaxis_title=f"Water level [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 showlegend=False

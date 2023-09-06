@@ -344,6 +344,7 @@ class Hazard:
                     value=1.0, units=self.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
+                # generate hazard water level bc incl SLR and offset (in the offshore model these are already included)
                 self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
@@ -393,14 +394,26 @@ class Hazard:
                     logging.info(
                         "Adding gridded rainfall to the overland flood model..."
                     )
-                    model.add_precip_forcing_from_grid(ds=ds["precip"])
+                    # add rainfall increase from projection and event, units area already conform with sfincs when downloaded
+                    model.add_precip_forcing_from_grid(
+                        ds=ds["precip"]
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
+                        * (1 + self.event.attrs.rainfall.increase / 100.0)
+                    )
                 elif self.event.attrs.rainfall.source == "timeseries":
                     # convert to metric units
                     df = pd.read_csv(
                         event_dir.joinpath("rainfall.csv"), index_col=0, header=None
                     )
-                    df = conversion_factor_precip * df
                     df.index = pd.DatetimeIndex(df.index)
+                    # add unit conversion and rainfall increase from projection and event
+                    df = (
+                        conversion_factor_precip
+                        * df
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
+                        * (1 + self.event.attrs.rainfall.increase / 100.0)
+                    )
+
                     logging.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
@@ -409,10 +422,12 @@ class Hazard:
                     logging.info(
                         "Adding constant rainfall to the overland flood model..."
                     )
-                    model.add_precip_forcing(
-                        const_precip=self.event.attrs.rainfall.constant_intensity.value
-                        * conversion_factor_precip
+                    # add unit conversion and rainfall increase from projection, not event since the user can adjust constant rainfall accordingly
+                    const_precipitation = (
+                        self.event.attrs.rainfall.constant_intensity.convert("mm/hr")
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                     )
+                    model.add_precip_forcing(const_precip=const_precipitation)
                 elif self.event.attrs.rainfall.source == "shape":
                     logging.info(
                         "Adding rainfall shape timeseries to the overland flood model..."
@@ -425,11 +440,21 @@ class Hazard:
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
+                    # add unit conversion and rainfall increase from projection, not event since the user can adjust cumulative rainfall accordingly
                     model.add_precip_forcing(
-                        timeseries=self.event.rain_ts * conversion_factor_precip
+                        timeseries=self.event.rain_ts
+                        * conversion_factor_precip
+                        * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
                     )
 
                 # Generate and add wind boundary condition
+                # conversion factor to metric units
+                gui_units_wind = UnitfulVelocity(
+                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                )
+                conversion_factor_wind = gui_units_wind.convert(
+                    UnitTypesVelocity("m/s")
+                )
                 # conversion factor to metric units
                 gui_units_wind = UnitfulVelocity(
                     value=1.0, units=self.site.attrs.gui.default_velocity_units
@@ -466,6 +491,10 @@ class Hazard:
                 )
                 spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
+                if self.physical_projection.attrs.rainfall_increase != 0.0:
+                    logging.warning(
+                        "Rainfall increase from projection is not applied to hurricane events where the spatial rainfall is derived from the track variables."
+                    )
 
             # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
@@ -608,7 +637,16 @@ class Hazard:
 
     def calculate_rp_floodmaps(self):
         floodmap_rp = self.site.attrs.risk.return_periods
+
         frequencies = self.event_set.attrs.frequency
+        # adjust storm frequency for hurricane events
+        if self.physical_projection.attrs.storm_frequency_increase != 0:
+            storminess_increase = (
+                self.physical_projection.attrs.storm_frequency_increase / 100.0
+            )
+            for ii, event in enumerate(self.event_list):
+                if event.attrs.template == "Historical_hurricane":
+                    frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
         zs_maps = []
         for simulation_path in self.simulation_paths:

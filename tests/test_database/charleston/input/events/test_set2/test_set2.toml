@@ -1,0 +1,5 @@
+name = "test_set"
+description = "test_set2"
+mode = "risk"
+subevent_name = [ "event_0001", "FLORENCE", "kingTideNov2021"]
+frequency = [1.0, 0.02, 0.2]
