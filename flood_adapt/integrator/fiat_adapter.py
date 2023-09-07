@@ -223,7 +223,7 @@ class FiatAdapter:
             elev_ref = "datum"
 
         # If ids are given use that as an additional filter
-        objectids = elevate.get_object_ids()
+        objectids = elevate.get_object_ids(self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
@@ -260,7 +260,7 @@ class FiatAdapter:
         ].isin(self.site.attrs.fiat.non_building_names)
 
         # Get rows that are affected
-        objectids = buyout.get_object_ids()
+        objectids = buyout.get_object_ids(self.fiat_model)
         rows = (
             self.fiat_model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
@@ -294,7 +294,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = floodproof.get_object_ids()
+        objectids = floodproof.get_object_ids(self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
