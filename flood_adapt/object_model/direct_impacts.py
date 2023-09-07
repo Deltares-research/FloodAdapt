@@ -1,7 +1,7 @@
 import shutil
 import subprocess
-from pathlib import Path
 import time
+from pathlib import Path
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy

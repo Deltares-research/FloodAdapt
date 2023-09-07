@@ -1,7 +1,7 @@
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
@@ -28,7 +28,7 @@ class ImpactMeasure(ABC):
         site = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
-        
+
         # use hydromt-fiat to load the fiat model if it is not provided
         if fiat_model is None:
             fiat_model = FiatModel(
