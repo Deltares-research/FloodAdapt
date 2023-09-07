@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 from pathlib import Path
+import time
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -102,9 +103,15 @@ class DirectImpacts:
         self.hazard = Hazard(scenario, database_input_path)
 
     def run_models(self):
+        start_time = time.time()
         self.preprocess_fiat()
+        end_time = time.time()
+        print(f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds")
 
+        start_time = time.time()
         return_code = self.run_fiat()
+        end_time = time.time()
+        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
         # Indicator that direct impacts have run
         if return_code == 0:
