@@ -95,6 +95,12 @@ class AggregationModel(BaseModel):
     field_name: str
 
 
+class BFEModel(BaseModel):
+    map: str
+    table: Optional[str]
+    field_name: str
+
+
 class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
@@ -104,6 +110,7 @@ class FiatModel(BaseModel):
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
+    bfe: BFEModel
 
 
 class RiverModel(BaseModel):

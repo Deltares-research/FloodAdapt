@@ -38,8 +38,21 @@ class FiatAdapter:
         )
 
         # Get base flood elevation path and variable name
-        self.bfe_path = Path(database_path) / "static" / "bfe" / "bfe.geojson"
-        self.bfe_name = "bfe"
+        self.bfe = {}
+        # if table is given use that, else use the map
+        if self.site.attrs.fiat.bfe.table:
+            self.bfe["mode"] = "table"
+            self.bfe["table"] = (
+                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.table
+            )
+        else:
+            self.bfe["mode"] = "geom"
+        # Map is always needed!
+        self.bfe["map"] = (
+            Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.map
+        )
+
+        self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
 
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = self._get_sfincs_map_path(hazard)
@@ -200,11 +213,15 @@ class FiatAdapter:
             damage_types=["Structure", "Content"],
             vulnerability=self.fiat_model.vulnerability,
             elevation_reference=elev_ref,
-            path_ref=self.bfe_path,
-            attr_ref=self.bfe_name,
+            path_ref=self.bfe["map"],
+            attr_ref=self.bfe["name"],
         )
 
-    def elevate_properties(self, elevate: Elevate, ids: Optional[list[str]] = None):
+    def elevate_properties(
+        self,
+        elevate: Elevate,
+        ids: Optional[list[str]] = None,
+    ):
         """Elevate properties by adjusting the "Ground Floor Height" column
         in the FIAT exposure file.
 
@@ -213,12 +230,17 @@ class FiatAdapter:
         elevate : Elevate
             this is an "elevate" impact measure object
         ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
+            List of FIAT "Object ID" values to elevate,
             by default None
         """
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
-            elev_ref = "geom"
+            elev_ref = self.bfe["mode"]
+            if elev_ref == "table":
+                path_ref = self.bfe["table"]
+            elif elev_ref == "geom":
+                path_ref = self.bfe["map"]
+
         elif elevate.attrs.elevation.type == "datum":
             elev_ref = "datum"
 
@@ -232,8 +254,8 @@ class FiatAdapter:
             raise_by=elevate.attrs.elevation.value,
             objectids=objectids,
             height_reference=elev_ref,
-            path_ref=self.bfe_path,
-            attr_ref=self.bfe_name,
+            path_ref=path_ref,
+            attr_ref=self.bfe["name"],
         )
 
     def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
