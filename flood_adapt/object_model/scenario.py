@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Any, Union
@@ -62,13 +63,20 @@ class Scenario(IScenario):
         self.init_object_model()
         # start log file in scenario results folder
         results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.name
+            "output", "results", self.attrs.name
         )
         for parent in reversed(results_dir.parents):
             if not parent.exists():
                 os.mkdir(parent)
         if not results_dir.exists():
             os.mkdir(results_dir)
+        # Initiate the logger for all the integrator scripts.
+        self.initiate_root_logger(results_dir.joinpath(f"{self.attrs.name}.log"))
+        version = "0.1.0"
+        logging.info(f"FloodAdapt version {version}")
+        logging.info(
+            f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
+        )
 
         # preprocess model input data first, then run, then post-process
         if not self.direct_impacts.hazard.has_run:
@@ -155,3 +163,28 @@ class Scenario(IScenario):
         test2 = self.attrs.projection == other.attrs.projection
         test3 = self.attrs.strategy == other.attrs.strategy
         return test1 & test2 & test3
+
+    @staticmethod
+    def initiate_root_logger(filename):
+        # Create a root logger and set the minimum logging level.
+        logging.getLogger("").setLevel(logging.INFO)
+
+        # Create a file handler and set the required logging level.
+        fh = logging.FileHandler(filename=filename, mode="w")
+        fh.setLevel(logging.DEBUG)
+
+        # Create a console handler and set the required logging level.
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.WARNING)  # Can be also set to WARNING
+
+        # Create a formatter and add to the file and console handlers.
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %I:%M:%S %p",
+        )
+        fh.setFormatter(formatter)
+        ch.setFormatter(formatter)
+
+        # Add the file and console handlers to the root logger.
+        logging.getLogger("").addHandler(fh)
+        logging.getLogger("").addHandler(ch)
