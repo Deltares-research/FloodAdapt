@@ -56,15 +56,16 @@ exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
 damage_unit = "USD"
+building_footprints = "../templates/fiat/footprints/Buildings.shp"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
-file = "aggr_lvl_1.geojson"
+file = "../templates/fiat/aggregation_areas/aggr_lvl_1.geojson"
 field_name = "name"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
-file = "aggr_lvl_2.geojson"
+file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
 field_name = "name"
 
 [river]

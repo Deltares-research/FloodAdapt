@@ -1,7 +1,15 @@
+import logging
 import shutil
 import subprocess
 import time
 from pathlib import Path
+
+import geopandas as gpd
+import pandas as pd
+from fiat_toolbox.infographics.infographics import InfographicsParser
+from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
+from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
+from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -10,6 +18,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.strategy import Strategy
@@ -102,12 +111,16 @@ class DirectImpacts:
         """
         self.hazard = Hazard(scenario, database_input_path)
 
-    def run_models(self):
+    def preprocess_models(self):
+        logging.info("Preparing impact models...")
+        # Preprocess all impact model input
         start_time = time.time()
         self.preprocess_fiat()
         end_time = time.time()
         print(f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds")
 
+    def run_models(self):
+        logging.info("Running impact models...")
         start_time = time.time()
         return_code = self.run_fiat()
         end_time = time.time()
@@ -116,6 +129,11 @@ class DirectImpacts:
         # Indicator that direct impacts have run
         if return_code == 0:
             self.__setattr__("has_run", True)
+
+    def postprocess_models(self):
+        logging.info("Post-processing impact models...")
+        # Preprocess all impact model input
+        self.postprocess_fiat()
 
     def preprocess_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
@@ -220,3 +238,146 @@ class DirectImpacts:
             )
 
             return process.returncode
+
+    def postprocess_fiat(self):
+        fiat_results_path = self.database_input_path.parent.joinpath(
+            "output",
+            "results",
+            f"{self.name}",
+            "fiat_model",
+            "output",
+            "output.csv",
+        )
+        # Create the infometrics files
+        self._create_infometrics(fiat_results_path)
+
+        # Create the infographic files
+        # TODO correct infographic creation for risk mode
+        if self.hazard.event_mode != "risk":
+            self._create_infographics()
+
+        # Aggregate results to regions
+        self._create_aggregation()
+
+        # Create equity
+        self._create_equity()
+
+        # Merge points data to building footprints
+        self._create_footprints(fiat_results_path)
+
+    def _create_equity(self):
+        pass
+
+    def _create_aggregation(self):
+        # Define where aggregated results are saved
+        output_fold = self.database_input_path.parent.joinpath(
+            "output", "results", f"{self.name}"
+        )
+        # Get metrics tables
+        metrics_fold = self.database_input_path.parent.joinpath("output", "infometrics")
+        # Get aggregation area file paths from site.toml
+        site_toml = (
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        site_info = Site.load_file(site_toml)
+        # loop through metrics aggregated files
+        for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
+            # Load metrics
+            metrics = pd.read_csv(file)
+            # Load aggregation areas
+            aggr_label = file.stem.split("_metrics_")[-1]
+            ind = [
+                i
+                for i, n in enumerate(site_info.attrs.fiat.aggregation)
+                if n.name == aggr_label
+            ][0]
+            aggr_areas_path = Path(
+                self.database_input_path.parent
+                / "static"
+                / "site"
+                / site_info.attrs.fiat.aggregation[ind].file
+            )
+
+            aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
+            # Define output path
+            outpath = output_fold.joinpath(f"aggregated_damages_{aggr_label}.gpkg")
+            # Save file
+            AggregationAreas.write_spatial_file(
+                metrics,
+                aggr_areas,
+                outpath,
+                id_name=site_info.attrs.fiat.aggregation[ind].field_name,
+                file_format="geopackage",
+            )
+
+    def _create_footprints(self, fiat_results_path):
+        # Get footprints file paths from site.toml
+        site_toml = (
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        site_info = Site.load_file(site_toml)
+        # TODO ensure that if this does not happen we get same file name output from FIAT?
+        # Check if there is a footprint file given
+        if not site_info.attrs.fiat.building_footprints:
+            return
+        # Get footprints file
+        footprints_path = (
+            self.database_input_path.parent
+            / "static"
+            / "site"
+            / site_info.attrs.fiat.building_footprints
+        )
+        # Define where footprint results are saved
+        outpath = self.database_input_path.parent.joinpath(
+            "output", "results", f"{self.name}", "building_footprints.gpkg"
+        )
+
+        # Read files
+        # TODO Will it save time if we load this footprints once when the database is initialized?
+        footprints = gpd.read_file(footprints_path, engine="pyogrio")
+        results = pd.read_csv(fiat_results_path)
+
+        # Save file
+        PointsToFootprints.write_footprint_file(footprints, results, outpath)
+
+    def _create_infometrics(self, fiat_results_path):
+        # Get the metrics configuration
+        if self.hazard.event_mode == "risk":
+            ext = "_risk"
+        else:
+            ext = ""
+
+        metrics_config_path = self.database_input_path.parent.joinpath(
+            "static",
+            "templates",
+            "infometrics",
+            f"metrics_config{ext}.toml",
+        )
+
+        # Specify the metrics output path
+        metrics_outputs_path = self.database_input_path.parent.joinpath(
+            "output",
+            "infometrics",
+            f"{self.name}_metrics.csv",
+        )
+
+        # Get the results dataframe
+        df = pd.read_csv(fiat_results_path)
+
+        # Write the metrics to file
+        metrics_writer = MetricsFileWriter(metrics_config_path)
+
+        metrics_writer.parse_metrics_to_file(
+            df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
+        )
+        metrics_writer.parse_metrics_to_file(
+            df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
+        )
+
+    def _create_infographics(self):
+        # Get the infographic
+        InfographicsParser().write_infographics_to_file(
+            scenario_name=self.name,
+            database_path=Path(self.database_input_path).parent,
+            keep_metrics_file=True,
+        )

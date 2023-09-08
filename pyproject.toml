@@ -33,6 +33,7 @@ dependencies = [
     "cht_observations",
     "cht_tide",
     "cht_meteo",
+    "pyogrio",
     "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
     "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
     "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@env_fix",
