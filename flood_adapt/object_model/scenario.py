@@ -19,7 +19,7 @@ class Scenario(IScenario):
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: os.PathLike
 
     def init_object_model(self):
         """Create a Direct Impact object"""
@@ -44,7 +44,7 @@ class Scenario(IScenario):
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(data: dict[str, Any], database_input_path: os.PathLike):
         """create Scenario from object, e.g. when initialized from GUI"""
 
         obj = Scenario()
@@ -60,6 +60,16 @@ class Scenario(IScenario):
     def run(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
+        # start log file in scenario results folder
+        results_dir = self.database_input_path.parent.joinpath(
+            "output", "results", self.name
+        )
+        for parent in reversed(results_dir.parents):
+            if not parent.exists():
+                os.mkdir(parent)
+        if not results_dir.exists():
+            os.mkdir(results_dir)
+
         # preprocess model input data first, then run, then post-process
         if not self.direct_impacts.hazard.has_run:
             self.direct_impacts.hazard.preprocess_models()

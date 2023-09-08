@@ -620,11 +620,6 @@ class Hazard:
             results_dir = self.database_input_path.parent.joinpath(
                 "output", "results", self.name
             )
-            for parent in reversed(results_dir.parents):
-                if not parent.exists():
-                    os.mkdir(parent)
-            if not results_dir.exists():
-                os.mkdir(results_dir)
             model.write_geotiff(
                 demfile=demfile, floodmap_fn=results_dir.joinpath("floodmap.tif")
             )
