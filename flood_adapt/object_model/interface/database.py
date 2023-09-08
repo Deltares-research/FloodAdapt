@@ -57,6 +57,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def plot_wind(self, event: IEvent) -> str:
+        ...
+
+    @abstractmethod
     def get_buildings(self) -> GeoDataFrame:
         ...
 

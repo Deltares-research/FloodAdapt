@@ -11,13 +11,14 @@ import xarray as xr
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
+from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-@pytest.mark.skip(reason="running the model takes long")
-def test_hazard_run_synthetic_wl(cleanup_database):
+# @pytest.mark.skip(reason="running the model takes long")
+def test_hazard_preprocess_synthetic_wl(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -33,11 +34,10 @@ def test_hazard_run_synthetic_wl(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
-    test_scenario.direct_impacts.hazard.run_models()
 
 
-@pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_run_synthetic_discharge(cleanup_database):
+# @pytest.mark.skip(reason="There is no sfincs.inp checked in")
+def test_hazard_preprocess_synthetic_discharge(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -53,7 +53,6 @@ def test_hazard_run_synthetic_discharge(cleanup_database):
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
-    test_scenario.direct_impacts.hazard.run_models()
 
 
 def test_preprocess_rainfall_timeseriesfile(cleanup_database):
@@ -125,9 +124,6 @@ def test_preprocess_pump(cleanup_database):
     ~filecmp.cmp(drn_file, drn_templ)
 
 
-@pytest.mark.skip(
-    reason="hydroMT SFINCS Green Infra plug-in requires HydroMT core 0.8.0"
-)
 def test_preprocess_greenInfra(cleanup_database):
     test_toml = (
         test_database
@@ -226,7 +222,75 @@ def test_preprocess_prob_eventset(cleanup_database):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-# @pytest.mark.skip(reason="Running models takes a couple of minutes")
+def test_preprocess_rainfall_increase(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
+        UnitfulIntensity(value=5.0, units="inch/hr")
+    )
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    precip_file1 = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_precip_no_measures"
+        / "overland"
+        / "sfincs.precip"
+    )
+    assert precip_file1.is_file()
+
+    df1 = pd.read_csv(precip_file1, index_col=0, header=None, delim_whitespace=True)
+    cum_precip1 = df1.sum()[1]
+
+    test_scenario.attrs.name = "current_extreme12ft_precip_rainfall_incr_no_measures"
+    test_scenario.init_object_model()
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
+        UnitfulIntensity(value=5.0, units="inch/hr")
+    )
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
+    test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
+    test_scenario.direct_impacts.hazard.physical_projection.attrs.rainfall_increase = (
+        10  # in percent
+    )
+    test_scenario.direct_impacts.hazard.preprocess_models()
+
+    precip_file2 = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_precip_rainfall_incr_no_measures"
+        / "overland"
+        / "sfincs.precip"
+    )
+    assert precip_file2.is_file()
+    df2 = pd.read_csv(precip_file2, index_col=0, header=None, delim_whitespace=True)
+    cum_precip2 = df2.sum()[1]
+
+    assert np.abs(cum_precip1 * 1.1 - cum_precip2) < 0.1
+
+
+@pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(cleanup_database):
     test_toml = (
         test_database

@@ -1,7 +1,7 @@
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
@@ -16,7 +16,7 @@ class ImpactMeasure(ABC):
     attrs: ImpactMeasureModel
     database_input_path: Union[str, os.PathLike]
 
-    def get_object_ids(self) -> list[Any]:
+    def get_object_ids(self, fiat_model: Optional[FiatModel] = None) -> list[Any]:
         """Get ids of objects that are affected by the measure.
 
         Returns
@@ -29,15 +29,16 @@ class ImpactMeasure(ABC):
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
 
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=Path(self.database_input_path).parent
-            / "static"
-            / "templates"
-            / "fiat",
-            mode="r",
-        )
-        fm.read()
+        # use hydromt-fiat to load the fiat model if it is not provided
+        if fiat_model is None:
+            fiat_model = FiatModel(
+                root=Path(self.database_input_path).parent
+                / "static"
+                / "templates"
+                / "fiat",
+                mode="r",
+            )
+            fiat_model.read()
 
         # check if polygon file is used, then get the absolute path
         if self.attrs.polygon_file:
@@ -51,7 +52,7 @@ class ImpactMeasure(ABC):
             polygon_file = None
 
         # use the hydromt-fiat method to the ids
-        ids = fm.exposure.get_object_ids(
+        ids = fiat_model.exposure.get_object_ids(
             selection_type=self.attrs.selection_type,
             property_type=self.attrs.property_type,
             non_building_names=site.attrs.fiat.non_building_names,

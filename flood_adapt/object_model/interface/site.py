@@ -126,8 +126,8 @@ class Obs_stationModel(BaseModel):
     ID: int
     lat: float
     lon: float
-    mllw: UnitfulLength
-    mhhw: UnitfulLength
+    mllw: Optional[UnitfulLength]
+    mhhw: Optional[UnitfulLength]
     localdatum: UnitfulLength
     msl: UnitfulLength
 

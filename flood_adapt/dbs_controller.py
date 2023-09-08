@@ -26,11 +26,7 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
-)
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -146,6 +142,7 @@ class Database(IDatabase):
         ncolors = len(df.columns) - 2
         try:
             units = df["units"].iloc[0]
+            units = UnitTypesLength(units)
         except ValueError(
             "Column " "units" " in input/static/slr/slr.csv file missing."
         ) as e:
@@ -175,15 +172,18 @@ class Database(IDatabase):
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
         slr_current_units = UnitfulLength(value=1.0, units=units)
-        gui_units = self.site.attrs.gui.default_length_units
-        conversion_factor = slr_current_units.convert(gui_units)
+        conversion_factor = slr_current_units.convert(
+            self.site.attrs.gui.default_length_units
+        )
         df.iloc[:, -1] = (conversion_factor * df.iloc[:, -1]).round(decimals=2)
 
         # rename column names that will be shown in html
         df = df.rename(
             columns={
                 "variable": "Scenario",
-                "value": "Sea level rise [{}]".format(gui_units),
+                "value": "Sea level rise [{}]".format(
+                    self.site.attrs.gui.default_length_units
+                ),
             }
         )
 
@@ -193,7 +193,7 @@ class Database(IDatabase):
         fig = px.line(
             df,
             x="Year",
-            y=f"Sea level rise [{gui_units}]",
+            y=f"Sea level rise [{self.site.attrs.gui.default_length_units}]",
             color="Scenario",
             color_discrete_sequence=colors,
         )
@@ -241,15 +241,43 @@ class Database(IDatabase):
             elif event["template"] == "Historical_nearshore":
                 wl_df = input_wl_df
 
-            # convert to units used in GUI
-            wl_current_units = UnitfulLength(value=1.0, units="meters")
-            gui_units = self.site.attrs.gui.default_length_units
-            conversion_factor = wl_current_units.convert(gui_units)
-
-            wl_df[1] = conversion_factor * wl_df[1]
-
             # Plot actual thing
             fig = px.line(wl_df)
+            gui_units = self.site.attrs.gui.default_length_units
+            # plot reference water levels
+            fig.add_hline(
+                y=0,
+                line_dash="dash",
+                line_color="#000000",
+                annotation_text="MSL",
+                annotation_position="bottom right",
+            )
+            if (
+                self.site.attrs.obs_station
+                and self.site.attrs.obs_station.mllw
+                and self.site.attrs.obs_station.msl
+            ):
+                fig.add_hline(
+                    y=self.site.attrs.obs_station.mllw.convert(gui_units)
+                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#88cc91",
+                    annotation_text="MLLW",
+                    annotation_position="bottom right",
+                )
+            if (
+                self.site.attrs.obs_station
+                and self.site.attrs.obs_station.mhhw
+                and self.site.attrs.obs_station.msl
+            ):
+                fig.add_hline(
+                    y=self.site.attrs.obs_station.mhhw.convert(gui_units)
+                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#c62525",
+                    annotation_text="MHHW",
+                    annotation_position="bottom right",
+                )
 
             # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -262,9 +290,10 @@ class Database(IDatabase):
                 title_font={"size": 10, "color": "black", "family": "Arial"},
                 legend=None,
                 xaxis_title="Time",
-                yaxis_title=f"Water level (tide + surge) [{gui_units}]",
+                yaxis_title=f"Water level [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                showlegend=False
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -312,12 +341,6 @@ class Database(IDatabase):
                 temp_event.add_rainfall_ts()
                 df = temp_event.rain_ts
 
-            # convert to units used in GUI
-            ts_current_units = UnitfulIntensity(value=1.0, units="mm/hr")
-            gui_units = self.site.attrs.gui.default_intensity_units
-            conversion_factor = ts_current_units.convert(gui_units)
-            df = conversion_factor * df
-
             # set timing relative to T0 if event is synthetic
             if event["template"] == "Synthetic":
                 df.index = np.arange(
@@ -342,7 +365,10 @@ class Database(IDatabase):
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title={"text": "Time"},
-                yaxis_title={"text": f"Rainfall intensity [{gui_units}]"},
+                yaxis_title={
+                    "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
+                },
+                showlegend=False,
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -376,12 +402,6 @@ class Database(IDatabase):
                 temp_event.add_dis_ts()
                 df = temp_event.dis_ts
 
-            # convert to units used in GUI
-            ts_current_units = UnitfulDischarge(value=1.0, units="m3/s")
-            gui_units = self.site.attrs.gui.default_discharge_units
-            conversion_factor = ts_current_units.convert(gui_units)
-            df = conversion_factor * df
-
             # set timing relative to T0 if event is synthetic
             if event["template"] == "Synthetic":
                 df.index = np.arange(
@@ -409,7 +429,9 @@ class Database(IDatabase):
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title={"text": "Time"},
-                yaxis_title={"text": f"River discharge [{gui_units}]"},
+                yaxis_title={
+                    "text": f"River discharge [{self.site.attrs.gui.default_discharge_units}]"
+                },
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -422,6 +444,72 @@ class Database(IDatabase):
         else:
             NotImplementedError(
                 "Plotting only available for timeseries and shape type river discharge."
+            )
+            return str("")
+
+    def plot_wind(
+        self, event: IEvent, input_wind_df: pd.DataFrame = None
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if event["wind"]["source"] == "timeseries":
+            df = input_wind_df
+
+            # Plot actual thing
+            # Create figure with secondary y-axis
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+            # Add traces
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df[1],
+                    name="Wind speed",
+                    mode="lines",
+                ),
+                secondary_y=False,
+            )
+
+            fig.add_trace(
+                go.Scatter(x=df.index, y=df[2], name="Wind direction", mode="markers"),
+                secondary_y=True,
+            )
+
+            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+            # Set y-axes titles
+            fig.update_yaxes(
+                title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
+                secondary_y=False,
+            )
+            fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
+            fig.update_layout(
+                autosize=False,
+                height=100 * 2,
+                width=280 * 2,
+                margin={"r": 0, "l": 0, "b": 0, "t": 0},
+                font={"size": 10, "color": "black", "family": "Arial"},
+                title_font={"size": 10, "color": "black", "family": "Arial"},
+                legend=None,
+                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                xaxis_title={"text": "Time"},
+                showlegend=False,
+                # paper_bgcolor="#3A3A3A",
+                # plot_bgcolor="#131313",
+            )
+
+            # write html to results folder
+            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+            output_loc.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_loc)
+            return str(output_loc)
+
+        else:
+            NotImplementedError(
+                "Plotting only available for timeseries and shape type wind."
             )
             return str("")
 
@@ -1474,7 +1562,7 @@ class Database(IDatabase):
                 if (
                     scn.direct_impacts.hazard.sfincs_has_run_check()
                 ):  # only copy results if the hazard model has actually finished
-                    shutil.copytree(path_0, path_new)
+                    shutil.copytree(path_0, path_new, dirs_exist_ok=True)
                     print(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )

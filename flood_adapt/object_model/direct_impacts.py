@@ -1,6 +1,7 @@
 import logging
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import geopandas as gpd
@@ -113,11 +114,17 @@ class DirectImpacts:
     def preprocess_models(self):
         logging.info("Preparing impact models...")
         # Preprocess all impact model input
+        start_time = time.time()
         self.preprocess_fiat()
+        end_time = time.time()
+        print(f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds")
 
     def run_models(self):
         logging.info("Running impact models...")
+        start_time = time.time()
         return_code = self.run_fiat()
+        end_time = time.time()
+        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
         # Indicator that direct impacts have run
         if return_code == 0:

@@ -18,6 +18,7 @@ from flood_adapt.object_model.interface.events import (
     IHistoricalOffshore,
     ISynthetic,
 )
+from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
@@ -122,8 +123,10 @@ def copy_event(
     database.copy_event(old_name, new_name, new_description)
 
 
-def download_wl_data(station_id, start_time, end_time) -> pd.DataFrame:
-    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time)
+def download_wl_data(
+    station_id, start_time, end_time, units: UnitTypesLength
+) -> pd.DataFrame:
+    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time, units)
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
@@ -146,6 +149,12 @@ def plot_rainfall(
     event: IEvent, database: IDatabase, input_rainfall_df: pd.DataFrame = None
 ) -> str:
     return database.plot_rainfall(event, input_rainfall_df)
+
+
+def plot_wind(
+    event: IEvent, database: IDatabase, input_wind_df: pd.DataFrame = None
+) -> str:
+    return database.plot_wind(event, input_wind_df)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):

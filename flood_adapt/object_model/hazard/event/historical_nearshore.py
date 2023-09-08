@@ -13,6 +13,7 @@ from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
     IHistoricalNearshore,
 )
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 
 class HistoricalNearshore(Event, IHistoricalNearshore):
@@ -63,7 +64,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def download_wl_data(
-        station_id: int, start_time_str: str, stop_time_str: str
+        station_id: int, start_time_str: str, stop_time_str: str, units: UnitTypesLength
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
@@ -88,4 +89,8 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         df = source.get_data(station_id, start_time, stop_time)
         df = pd.DataFrame(df)  # Convert series to dataframe
         df = df.rename(columns={"v": 1})
+        # convert to gui units
+        metric_units = UnitfulLength(value=1.0, units=UnitTypesLength("meters"))
+        conversion_factor = metric_units.convert(units)
+        df = conversion_factor * df
         return df
