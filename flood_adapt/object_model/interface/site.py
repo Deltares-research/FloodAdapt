@@ -103,6 +103,7 @@ class FiatModel(BaseModel):
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
+    building_footprints: Optional[str]
 
 
 class RiverModel(BaseModel):
@@ -123,8 +124,8 @@ class Obs_stationModel(BaseModel):
     ID: int
     lat: float
     lon: float
-    mllw: UnitfulLength
-    mhhw: UnitfulLength
+    mllw: Optional[UnitfulLength]
+    mhhw: Optional[UnitfulLength]
     localdatum: UnitfulLength
     msl: UnitfulLength
 

@@ -200,9 +200,10 @@ class Event:
             # generating time series for river with shape discharge
             elif self.attrs.river[ii].source == "shape":
                 # subtract base discharge from peak
-                peak = self.attrs.river[ii].shape_peak.convert(
-                    "m3/s"
-                ) - self.attrs.river[ii].base_discharge.convert("m3/s")
+                peak = (
+                    self.attrs.river[ii].shape_peak.value
+                    - self.attrs.river[ii].base_discharge.value
+                )
                 if self.attrs.river[ii].shape_type == "gaussian":
                     shape_duration = 3600 * self.attrs.river[ii].shape_duration
                     time_shift = (
@@ -233,7 +234,7 @@ class Event:
                         end_shape=end_shape,
                     )
                 # add base discharge to timeseries
-                river += self.attrs.river[ii].base_discharge.convert("m3/s")
+                river += self.attrs.river[ii].base_discharge.value
                 # save to object with pandas daterange
                 df = pd.DataFrame.from_dict({"time": time_vec, ii + 1: river})
                 df = df.set_index("time")
@@ -284,15 +285,13 @@ class Event:
         time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
         # TODO: add rainfall increase from event pop-up (to be added there)
         if self.attrs.rainfall.source == "constant":
-            mag = self.attrs.rainfall.constant_intensity.convert("mm/hr") * np.array(
-                [1, 1]
-            )
+            mag = self.attrs.rainfall.constant_intensity.value * np.array([1, 1])
             df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], "intensity": mag})
             df = df.set_index("time")
             self.rain_ts = df
             return self
         elif self.attrs.rainfall.source == "shape":
-            cumulative = self.attrs.rainfall.cumulative.convert("millimeters")
+            cumulative = self.attrs.rainfall.cumulative.value
             if self.attrs.rainfall.shape_type == "gaussian":
                 shape_duration = 3600 * self.attrs.rainfall.shape_duration
                 peak = 8124.3 * cumulative / shape_duration
@@ -395,7 +394,7 @@ class Event:
             tstart = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
             tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
             duration = (tstop - tstart).total_seconds()
-            vmag = self.attrs.wind.constant_speed.convert("m/s") * np.array([1, 1])
+            vmag = self.attrs.wind.constant_speed.value * np.array([1, 1])
             vdir = self.attrs.wind.constant_direction.value * np.array([1, 1])
             time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
             df = pd.DataFrame.from_dict(

@@ -20,13 +20,19 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitTypesDischarge,
+    UnitTypesLength,
+    UnitTypesVolume,
+)
+from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
 
 class SfincsAdapter:
-    def __init__(self, model_root: Optional[str] = None):
+    def __init__(self, site: Site, model_root: Optional[str] = None):
         """Loads overland sfincs model based on a root directory.
 
         Args:
@@ -38,6 +44,7 @@ class SfincsAdapter:
 
         self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
+        self.site = site
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
@@ -69,7 +76,9 @@ class SfincsAdapter:
             direction of time-invariant wind forcing [deg], by default None
         """
         self.sf_model.setup_wind_forcing(
-            timeseries=timeseries, magnitude=const_mag, direction=const_dir
+            timeseries=timeseries,
+            magnitude=const_mag,
+            direction=const_dir,
         )
 
     def add_wind_forcing_from_grid(self, ds: xr.DataArray):
@@ -121,6 +130,7 @@ class SfincsAdapter:
         const_precip : float, optional
             time-invariant precipitation magnitude [mm/hr], by default None
         """
+        # Add precipitation to SFINCS model
         self.sf_model.setup_precip_forcing(
             timeseries=timeseries, magnitude=const_precip
         )
@@ -168,8 +178,8 @@ class SfincsAdapter:
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert("meters")
-                + physical_projection.sea_level_rise.convert("meters")
+                + event.water_level_offset.convert(UnitTypesLength("meters"))
+                + physical_projection.sea_level_rise.convert(UnitTypesLength("meters"))
             )
 
             if bnd_ii == 0:
@@ -245,7 +255,7 @@ class SfincsAdapter:
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation.convert("meters")
+        gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
@@ -278,13 +288,13 @@ class SfincsAdapter:
 
         if green_infrastructure.height.value != 0.0:
             height = (
-                green_infrastructure.height.convert("meters")
+                green_infrastructure.height.convert(UnitTypesLength("meters"))
                 * green_infrastructure.percent_area
             )
             volume = None
         elif green_infrastructure.volume.value != 0.0:
             height = None
-            volume = green_infrastructure.volume.convert("m3")
+            volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
@@ -310,7 +320,7 @@ class SfincsAdapter:
         self.sf_model.setup_drainage_structures(
             structures=gdf_pump,
             stype="pump",
-            discharge=pump.discharge.convert("m3/s"),
+            discharge=pump.discharge.convert(UnitTypesDischarge("m3/s")),
             merge=True,
         )
 
@@ -361,20 +371,20 @@ class SfincsAdapter:
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
 
-    def write_geotiff(
-        self,
-        demfile: Path,
-        demfile_units: UnitTypesLength,
-        floodmap_fn: Path,
-        floodmap_units: UnitTypesLength,
-    ):
-        # read DEM and model results
+    def write_geotiff(self, demfile: Path, floodmap_fn: Path):
+        # read DEM and convert units to metric units used by SFINCS
+
+        demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+
+        # read model results
         zsmax = self.read_zsmax()
 
+        # determine conversion factor for output floodmap
+        floodmap_units = self.site.attrs.sfincs.floodmap_units
         floodmap_conversion = UnitfulLength(
             value=1.0, units=UnitTypesLength("meters")
         ).convert(floodmap_units)
