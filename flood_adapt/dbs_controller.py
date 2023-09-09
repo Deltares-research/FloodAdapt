@@ -72,7 +72,8 @@ class Database(IDatabase):
         aggregation_areas = {}
         for aggr_dict in self.site.attrs.fiat.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file
+                self.input_path.parent / "static" / "site" / aggr_dict.file,
+                engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
             aggregation_areas[aggr_dict.name] = aggregation_areas[
@@ -1476,42 +1477,33 @@ class Database(IDatabase):
         gdf.crs = 4326
         return gdf
 
-    def get_fiat_footprints(self, scenario_name: str):
-        shp_path = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results.shp",
-        )
-        shp_path2 = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results_filt.shp",
-        )
-        # ("Occup Type" != 'road') AND ( "AGG ID" != 'Not aggregated') AND( "Dmg Total" > 0 )
-        if not shp_path2.exists():
-            shp = gpd.read_file(shp_path)
-            shp = shp[shp["Occup Type"] != "road"]
-            shp = shp[shp["AGG ID"] != "Not aggregated"]
-            shp = shp[shp["Dmg Total"] > 0]
-            shp = shp[["Dmg Total", "geometry"]]
-            shp["Dmg Total"] = np.round(shp["Dmg Total"], 0)
-            shp.to_file(shp_path2)
-        shp = gpd.read_file(shp_path2)
-        return shp
-
-    def get_aggregation(self, scenario_name: str):
-        shp_path = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_subdivision_aggregated.shp",
-        )
-        gdf = gpd.read_file(shp_path)
-        gdf = gdf[["Dmg Total", "geometry"]]
-
+    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
+        footprints = out_path / "building_footprints.gpkg"
+        gdf = gpd.read_file(footprints, engine="pyogrio")
+        gdf = gdf.to_crs(4326)
         return gdf
+
+    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+        """Gets a dictionary with the aggregated damages as geodataframes
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of the scenario
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
+        gdfs = {}
+        for aggr_area in out_path.glob("aggregated_damages_*.gpkg"):
+            label = aggr_area.stem.split("aggregated_damages_")[-1]
+            gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
+            gdfs[label] = gdfs[label].to_crs(4326)
+        return gdfs
 
     def get_object_list(self, object_type: str) -> dict[str, Any]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
