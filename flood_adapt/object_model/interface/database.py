@@ -49,15 +49,19 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def plot_river(self, event: IEvent) -> str:
+    def plot_river(
+        self, event: IEvent, active_river: int, input_river_df: pd.DataFrame = None
+    ) -> str:
         ...
 
     @abstractmethod
-    def plot_rainfall(self, event: IEvent) -> str:
+    def plot_rainfall(
+        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
+    ) -> str:
         ...
 
     @abstractmethod
-    def plot_wind(self, event: IEvent) -> str:
+    def plot_wind(self, event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
         ...
 
     @abstractmethod

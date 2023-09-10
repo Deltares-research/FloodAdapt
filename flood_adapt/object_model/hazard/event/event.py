@@ -191,9 +191,7 @@ class Event:
         for ii in range(len(site_river)):
             # generating time series of constant discharge
             if self.attrs.river[ii].source == "constant":
-                dis = [self.attrs.river[ii].constant_discharge.convert("m3/s")] * len(
-                    time_vec
-                )
+                dis = [self.attrs.river[ii].constant_discharge.value] * len(time_vec)
                 df = pd.DataFrame.from_dict({"time": time_vec, ii + 1: dis})
                 df = df.set_index("time")
                 list_df[ii] = df

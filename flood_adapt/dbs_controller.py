@@ -8,6 +8,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
@@ -386,66 +387,74 @@ class Database(IDatabase):
             return str("")
 
     def plot_river(
-        self, event: IEvent, input_river_df: pd.DataFrame = None
+        self, event: IEvent, active_river: int, input_river_df: pd.DataFrame = None
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        if (
-            event["river"]["source"] == "shape"
-            or event["river"]["source"] == "timeseries"
+        if event["river"][active_river]["source"] == "timeseries":
+            df = input_river_df
+            if self.site.attrs.river[active_river].description:
+                river_descriptions = [self.site.attrs.river[active_river].description]
+            else:
+                river_descriptions = [self.site.attrs.river[active_river].name]
+        elif (
+            event["river"][active_river]["source"] == "shape"
+            or event["river"][active_river]["source"] == "constant"
         ):
-            # TODO: Add functionality for multiple rivers
-            if event["river"]["source"] == "timeseries":
-                df = input_river_df
-            elif event["river"]["source"] == "shape":
-                temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-                temp_event.add_dis_ts()
-                df = temp_event.dis_ts
+            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+            event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
+            temp_event.add_dis_ts(event_dir, self.site.attrs.river)
+            river_descriptions = [i.description for i in self.site.attrs.river]
+            river_names = [i.description for i in self.site.attrs.river]
+            river_descriptions = np.where(
+                river_descriptions is None, river_names, river_descriptions
+            ).tolist()
+            df = temp_event.dis_df
 
-            # set timing relative to T0 if event is synthetic
-            if event["template"] == "Synthetic":
-                df.index = np.arange(
-                    -temp_event.attrs.time.duration_before_t0,
-                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                    1 / 6,
+        # set timing relative to T0 if event is synthetic
+        if event["template"] == "Synthetic":
+            df.index = np.arange(
+                -temp_event.attrs.time.duration_before_t0,
+                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                1 / 6,
+            )
+
+        # Plot actual thing
+        fig = go.Figure()
+        for ii, col in enumerate(df.columns):
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df[col],
+                    name=river_descriptions[ii],
+                    mode="lines",
                 )
-
-            # Plot actual thing
-            fig = px.line(
-                data_frame=df,
-                labels={self.site.attrs.river.name: self.site.attrs.river.name},
             )
 
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                yaxis_title={
-                    "text": f"River discharge [{self.site.attrs.gui.default_discharge_units}]"
-                },
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={
+                "text": f"River discharge [{self.site.attrs.gui.default_discharge_units}]"
+            },
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
 
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type river discharge."
-            )
-            return str("")
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def plot_wind(
         self, event: IEvent, input_wind_df: pd.DataFrame = None

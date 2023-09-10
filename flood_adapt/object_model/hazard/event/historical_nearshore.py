@@ -29,23 +29,30 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
             toml = tomli.load(fp)
         obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
 
-        wl_csv_path = Path(Path(filepath).parents[0], "tide.csv")
+        wl_csv_path = Path(Path(filepath).parents[0], obj.attrs.tide.timeseries_file)
         obj.tide_surge_ts = HistoricalNearshore.read_csv(wl_csv_path)
         if obj.attrs.rainfall.source == "timeseries":
-            rainfall_csv_path = Path(Path(filepath).parents[0], "rainfall.csv")
+            rainfall_csv_path = Path(
+                Path(filepath).parents[0], obj.attrs.rainfall.timeseries_file
+            )
             obj.rain_ts = HistoricalNearshore.read_csv(rainfall_csv_path)
         if obj.attrs.wind.source == "timeseries":
-            wind_csv_path = Path(Path(filepath).parents[0], "wind.csv")
+            wind_csv_path = Path(
+                Path(filepath).parents[0], obj.attrs.wind.timeseries_file
+            )
             obj.wind_ts = HistoricalNearshore.read_csv(wind_csv_path)
-        if (
-            obj.attrs.river[0].source == "timeseries"
-        ):  # TODO: SHOULD BE CHANGED FOR MULTIPLE RIVERS!!!!!!!
-            river_csv_path = Path(
-                Path(filepath).parents[0], "river.csv"
-            )  # TODO: SHOULD BE CHANGED FOR MULTIPLE RIVERS!!!!!!!
-            obj.dis_ts = HistoricalNearshore.read_csv(
-                river_csv_path
-            )  # TODO: SHOULD BE CHANGED FOR MULTIPLE RIVERS!!!!!!!
+        obj.dis_dict = {"river": [], "data": []}
+        for ii in range(len(obj.attrs.river)):
+            if obj.attrs.river[ii].source == "timeseries":
+                river_csv_path = Path(
+                    Path(filepath).parents[0], obj.attrs.river[ii].timeseries_file
+                )
+                obj.dis_dict["river"].append(
+                    obj.attrs.river[ii].timeseries_file.split(".csv")[0]
+                )
+                obj.dis_dict["data"].append(
+                    HistoricalNearshore.read_csv(river_csv_path)
+                )
 
         return obj
 

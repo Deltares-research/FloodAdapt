@@ -129,6 +129,7 @@ class TideModel(BaseModel):
 
     source: TideSource
     harmonic_amplitude: Optional[UnitfulLength]
+    timeseries_file: Optional[str]
 
 
 class SurgeSource(str, Enum):
