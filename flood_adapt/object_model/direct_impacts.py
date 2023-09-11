@@ -228,14 +228,17 @@ class DirectImpacts:
         fiat_exec = str(
             self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
         )
-
+        results_dir = self.database_input_path.parent.joinpath(
+            "output", "results", self.name
+        )
         with cd(self.results_path):
-            process = subprocess.run(
-                f'"{fiat_exec}" run settings.toml',
-                stdout=subprocess.PIPE,
-                check=True,
-                shell=True,
-            )
+            with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
+                process = subprocess.run(
+                    f'"{fiat_exec}" run settings.toml',
+                    stdout=log_handler,
+                    check=True,
+                    shell=True,
+                )
 
             return process.returncode
 
