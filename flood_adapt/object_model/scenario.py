@@ -17,7 +17,7 @@ class Scenario(IScenario):
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
-    database_input_path: os.PathLike
+    database_input_path: Union[str, os.PathLike]
 
     def init_object_model(self):
         """Create a Direct Impact object"""
