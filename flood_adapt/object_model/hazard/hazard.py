@@ -362,18 +362,19 @@ class Hazard:
             )
             model.add_wl_bc(self.wl_ts)
 
-            # Generate and change discharge boundary condition
-            logging.info(
-                "Adding discharge boundary conditions if applicable to the overland flood model..."
-            )
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
             self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
-            # convert to metric units
-            gui_units = UnitfulDischarge(
-                value=1.0, units=self.site.attrs.gui.default_discharge_units
-            )
-            conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
-            model.add_dis_bc(list_df=conversion_factor * self.event.dis_df)
+            if self.event.dis_df is not None:
+                # Generate and change discharge boundary condition
+                logging.info(
+                    "Adding discharge boundary conditions if applicable to the overland flood model..."
+                )
+                # convert to metric units
+                gui_units = UnitfulDischarge(
+                    value=1.0, units=self.site.attrs.gui.default_discharge_units
+                )
+                conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
+                model.add_dis_bc(list_df=conversion_factor * self.event.dis_df)
 
             # Generate and add rainfall boundary condition
             gui_units_precip = UnitfulIntensity(

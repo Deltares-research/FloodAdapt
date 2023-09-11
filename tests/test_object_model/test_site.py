@@ -6,6 +6,7 @@ import tomli_w
 from flood_adapt.object_model.interface.site import (
     DemModel,
     Obs_stationModel,
+    RiverModel,
     SfincsModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
@@ -57,23 +58,16 @@ def test_read_site_toml_with_multiple_rivers(cleanup_database):
 
     test_data = Site.load_file(test_toml)
 
-    name = []
-    description = []
-    x = []
-    y = []
-    mean_discharge = []
     for ii in [0, 1, 2]:
-        name.append(f"{test_data.attrs.river.name[0]}_{ii}")
-        description.append(f"{test_data.attrs.river.description[0]} {ii}")
-        x.append(test_data.attrs.river.x_coordinate[0] - 1000 * ii)
-        y.append(test_data.attrs.river.y_coordinate[0] - 1000 * ii)
-        mean_discharge.append(test_data.attrs.river.mean_discharge[0])
-
-    test_data.attrs.river.name = name
-    test_data.attrs.river.x_coordinate = x
-    test_data.attrs.river.y_coordinate = y
-    test_data.attrs.river.mean_discharge = mean_discharge
-    test_data.attrs.river.description = description
+        test_data.attrs.river.append(
+            RiverModel(
+                name=f"{test_data.attrs.river[0].name}_{ii}",
+                description=f"{test_data.attrs.river[0].description} {ii}",
+                x_coordinate=(test_data.attrs.river[0].x_coordinate - 1000 * ii),
+                y_coordinate=(test_data.attrs.river[0].y_coordinate - 1000 * ii),
+                mean_discharge=test_data.attrs.river[0].mean_discharge,
+            )
+        )
 
     test_toml2 = (
         test_database
@@ -89,10 +83,10 @@ def test_read_site_toml_with_multiple_rivers(cleanup_database):
 
     test_data2 = Site.load_file(test_toml2)
 
-    assert isinstance(test_data2.attrs.river.name, list)
-    assert isinstance(test_data2.attrs.river.x_coordinate, list)
-    assert isinstance(test_data2.attrs.river.mean_discharge, list)
-    assert isinstance(test_data2.attrs.river.mean_discharge[1], UnitfulDischarge)
-    assert test_data2.attrs.river.mean_discharge[1].value == 5000.0
+    assert isinstance(test_data2.attrs.river, list)
+    assert isinstance(test_data2.attrs.river[1].name, str)
+    assert isinstance(test_data2.attrs.river[1].x_coordinate, float)
+    assert isinstance(test_data2.attrs.river[1].mean_discharge, UnitfulDischarge)
+    assert test_data2.attrs.river[1].mean_discharge.value == 5000.0
 
     os.remove(test_toml2)

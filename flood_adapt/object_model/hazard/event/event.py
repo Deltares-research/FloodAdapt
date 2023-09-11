@@ -1,7 +1,7 @@
 import glob
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import hydromt.raster  # noqa: F401
 import numpy as np
@@ -171,7 +171,12 @@ class Event:
 
         return ds
 
-    def add_dis_ts(self, event_dir: Path, site_river: list):
+    def add_dis_ts(
+        self,
+        event_dir: Path,
+        site_river: list,
+        input_river_df_list: Optional[list[pd.DataFrame]] = None,
+    ):
         """Creates pd.Dataframe timeseries for river discharge
 
         Returns
@@ -240,10 +245,15 @@ class Event:
                 list_df[ii] = df
             # generating time series for river with csv file
             elif self.attrs.river[ii].source == "timeseries":
-                # Read csv file of discharge
-                df_from_csv = Event.read_csv(
-                    csvpath=event_dir.joinpath(site_river[ii].name + ".csv")
-                )
+                if input_river_df_list:
+                    # when this is used for plotting and the event has not been saved yet there is no csv file,
+                    # use list of dataframes instead (as for plotting other timeseries)
+                    df_from_csv = input_river_df_list[ii]
+                else:
+                    # Read csv file of discharge
+                    df_from_csv = Event.read_csv(
+                        csvpath=event_dir.joinpath(site_river[ii].name + ".csv")
+                    )
                 # Interpolate on time_vec
                 t0 = pd.to_datetime(time_vec[0])
                 t_old = (

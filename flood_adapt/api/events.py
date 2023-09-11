@@ -142,10 +142,9 @@ def plot_wl(
 def plot_river(
     event: IEvent,
     database: IDatabase,
-    input_river_df: pd.DataFrame = None,
-    active_river=int,
+    input_river_df: list[pd.DataFrame],
 ) -> str:
-    return database.plot_river(event, input_river_df, active_river)
+    return database.plot_river(event, input_river_df)
 
 
 def plot_rainfall(

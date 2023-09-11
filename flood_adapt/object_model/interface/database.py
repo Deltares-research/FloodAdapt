@@ -49,9 +49,7 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
-    def plot_river(
-        self, event: IEvent, active_river: int, input_river_df: pd.DataFrame = None
-    ) -> str:
+    def plot_river(self, event: IEvent, input_river_df: list[pd.DataFrame]) -> str:
         ...
 
     @abstractmethod
