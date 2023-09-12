@@ -68,7 +68,7 @@ class Scenario(IScenario):
         if not results_dir.exists():
             os.mkdir(results_dir)
         # Initiate the logger for all the integrator scripts.
-        self.initiate_root_logger(results_dir.joinpath(f"{self.attrs.name}.log"))
+        self.initiate_root_logger(results_dir.joinpath("floodadapt.log"))
         version = "0.1.0"
         logging.info(f"FloodAdapt version {version}")
         logging.info(
