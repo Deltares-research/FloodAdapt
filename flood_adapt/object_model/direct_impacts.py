@@ -232,7 +232,7 @@ class DirectImpacts:
             "output", "results", self.name
         )
         with cd(self.results_path):
-            with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
+            with open(results_dir.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
                     f'"{fiat_exec}" run settings.toml',
                     stdout=log_handler,
