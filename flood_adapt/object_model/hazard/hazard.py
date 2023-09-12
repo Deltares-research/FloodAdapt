@@ -270,13 +270,13 @@ class Hazard:
         sfincs_exec = (
             self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
-        results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.name
-        )
+        # results_dir = self.database_input_path.parent.joinpath(
+        #     "output", "results", self.name
+        # )
         for simulation_path in self.simulation_paths:
             with cd(simulation_path):
-                # sfincs_log = "sfincs.log"
-                with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
+                # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
+                with open("sfincs.log", "a") as log_handler:
                     subprocess.run(sfincs_exec, stdout=log_handler)
 
         # Indicator that hazard has run
