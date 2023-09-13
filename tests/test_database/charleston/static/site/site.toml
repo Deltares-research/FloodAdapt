@@ -58,6 +58,11 @@ non_building_names = ["road"]
 damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
 
+[fiat.bfe]
+geom = "../bfe/bfe.geojson"
+table = "../bfe/bfe.csv"
+field_name = "bfe"
+
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_1.geojson"
