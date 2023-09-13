@@ -7,6 +7,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 from fiat_toolbox.infographics.infographics import InfographicsParser
+from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
@@ -126,6 +127,8 @@ class DirectImpacts:
         end_time = time.time()
         print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
+        self.postprocess_fiat()
+
         # Indicator that direct impacts have run
         if return_code == 0:
             self.__setattr__("has_run", True)
@@ -243,6 +246,7 @@ class DirectImpacts:
             return process.returncode
 
     def postprocess_fiat(self):
+        # Get the metrics
         fiat_results_path = self.database_input_path.parent.joinpath(
             "output",
             "results",
@@ -255,9 +259,7 @@ class DirectImpacts:
         self._create_infometrics(fiat_results_path)
 
         # Create the infographic files
-        # TODO correct infographic creation for risk mode
-        if self.hazard.event_mode != "risk":
-            self._create_infographics()
+        self._create_infographics(self.hazard.event_mode)
 
         # Aggregate results to regions
         self._create_aggregation()
@@ -346,6 +348,7 @@ class DirectImpacts:
         PointsToFootprints.write_footprint_file(footprints, results, outpath)
 
     def _create_infometrics(self, fiat_results_path):
+
         # Get the metrics configuration
         if self.hazard.event_mode == "risk":
             ext = "_risk"
@@ -375,14 +378,24 @@ class DirectImpacts:
         metrics_writer.parse_metrics_to_file(
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
         )
-        metrics_writer.parse_metrics_to_file(
-            df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
-        )
 
-    def _create_infographics(self):
+        if self.hazard.event_mode != "risk":
+            metrics_writer.parse_metrics_to_file(
+                df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
+            )
+
+    def _create_infographics(self, mode):
         # Get the infographic
-        InfographicsParser().write_infographics_to_file(
-            scenario_name=self.name,
-            database_path=Path(self.database_input_path).parent,
-            keep_metrics_file=True,
+        database_path = Path(self.database_input_path).parent
+        metrics_path = database_path.joinpath(
+            "output", "infometrics", f"{self.name}_metrics.csv"
         )
+        config_path = database_path.joinpath("static", "templates", "infographics")
+        output_path = database_path.joinpath("output", "infographics")
+        InforgraphicFactory.create_infographic_file_writer(
+            infographic_mode=mode,
+            scenario_name=self.name,
+            metrics_full_path=metrics_path,
+            config_base_path=config_path,
+            output_base_path=output_path,
+        ).write_infographics_to_file()

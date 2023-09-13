@@ -91,6 +91,7 @@ class Scenario(IScenario):
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
 
+
     def __eq__(self, other):
         if not isinstance(other, Scenario):
             # don't attempt to compare against unrelated types
