@@ -48,8 +48,8 @@ class FiatAdapter:
         else:
             self.bfe["mode"] = "geom"
         # Map is always needed!
-        self.bfe["map"] = (
-            Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.map
+        self.bfe["geom"] = (
+            Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
         )
 
         self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
@@ -213,7 +213,7 @@ class FiatAdapter:
             damage_types=["Structure", "Content"],
             vulnerability=self.fiat_model.vulnerability,
             elevation_reference=elev_ref,
-            path_ref=self.bfe["map"],
+            path_ref=self.bfe["geom"],
             attr_ref=self.bfe["name"],
         )
 
@@ -236,10 +236,7 @@ class FiatAdapter:
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
             elev_ref = self.bfe["mode"]
-            if elev_ref == "table":
-                path_ref = self.bfe["table"]
-            elif elev_ref == "geom":
-                path_ref = self.bfe["map"]
+            path_ref = self.bfe[elev_ref]
 
         elif elevate.attrs.elevation.type == "datum":
             elev_ref = "datum"

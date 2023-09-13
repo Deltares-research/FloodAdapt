@@ -59,7 +59,7 @@ damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
 
 [fiat.bfe]
-map = "../bfe/bfe.geojson"
+geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
 field_name = "bfe"																  
 

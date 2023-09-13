@@ -96,7 +96,7 @@ class AggregationModel(BaseModel):
 
 
 class BFEModel(BaseModel):
-    map: str
+    geom: str
     table: Optional[str]
     field_name: str
 
