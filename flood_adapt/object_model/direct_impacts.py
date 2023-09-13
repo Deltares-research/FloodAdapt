@@ -339,7 +339,9 @@ class DirectImpacts:
         # TODO Will it save time if we load this footprints once when the database is initialized?
         footprints = gpd.read_file(footprints_path, engine="pyogrio")
         results = pd.read_csv(fiat_results_path)
-
+        # Step to ensure that results is not a Geodataframe
+        if "geometry" in results.columns:
+            del results["geometry"]
         # Save file
         PointsToFootprints.write_footprint_file(footprints, results, outpath)
 
