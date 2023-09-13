@@ -240,8 +240,12 @@ class Database(IDatabase):
                     temp_event.attrs.time.duration_after_t0 + 1 / 3600,
                     1 / 6,
                 )
+                xlim1 = -temp_event.attrs.time.duration_before_t0
+                xlim2 = temp_event.attrs.time.duration_after_t0
             elif event["template"] == "Historical_nearshore":
                 wl_df = input_wl_df
+                xlim1 = pd.to_datetime(event["time"]["start_time"])
+                xlim2 = pd.to_datetime(event["time"]["end_time"])
 
             # Plot actual thing
             fig = px.line(wl_df)
@@ -295,7 +299,8 @@ class Database(IDatabase):
                 yaxis_title=f"Water level [{gui_units}]",
                 yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
                 xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                showlegend=False
+                showlegend=False,
+                xaxis={"range": [xlim1, xlim2]},
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -350,6 +355,11 @@ class Database(IDatabase):
                     temp_event.attrs.time.duration_after_t0 + 1 / 3600,
                     1 / 6,
                 )
+                xlim1 = -temp_event.attrs.time.duration_before_t0
+                xlim2 = temp_event.attrs.time.duration_after_t0
+            else:
+                xlim1 = pd.to_datetime(event["time"]["start_time"])
+                xlim2 = pd.to_datetime(event["time"]["end_time"])
 
             # Plot actual thing
             fig = px.line(data_frame=df)
@@ -371,6 +381,7 @@ class Database(IDatabase):
                     "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
                 },
                 showlegend=False,
+                xaxis={"range": [xlim1, xlim2]},
                 # paper_bgcolor="#3A3A3A",
                 # plot_bgcolor="#131313",
             )
@@ -409,6 +420,11 @@ class Database(IDatabase):
                 temp_event.attrs.time.duration_after_t0 + 1 / 3600,
                 1 / 6,
             )
+            xlim1 = -temp_event.attrs.time.duration_before_t0
+            xlim2 = temp_event.attrs.time.duration_after_t0
+        else:
+            xlim1 = pd.to_datetime(event["time"]["start_time"])
+            xlim2 = pd.to_datetime(event["time"]["end_time"])
 
         # Plot actual thing
         fig = go.Figure()
@@ -437,6 +453,7 @@ class Database(IDatabase):
             yaxis_title={
                 "text": f"River discharge [{self.site.attrs.gui.default_discharge_units}]"
             },
+            xaxis={"range": [xlim1, xlim2]},
             # paper_bgcolor="#3A3A3A",
             # plot_bgcolor="#131313",
         )
