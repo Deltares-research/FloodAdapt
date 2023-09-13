@@ -46,6 +46,7 @@ class FiatAdapter:
         map_type = hazard.site.attrs.fiat.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
+        rp = [1 / frequency for frequency in hazard.event_set.attrs.frequency] if hazard.event_mode == Mode.risk else None
 
         # Add the hazard data to a data catalog with the unit conversion from meters to feet
         wl_current_units = UnitfulLength(value=1.0, units="meters")
@@ -54,7 +55,7 @@ class FiatAdapter:
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
-            rp=None,  # change this in new version
+            rp=rp,
             crs=None,  # change this in new version
             nodata=-999,  # change this in new version
             var=var,
@@ -64,19 +65,16 @@ class FiatAdapter:
         )
 
     def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
-        map_path = hazard.sfincs_map_path
         mode = hazard.event_mode
         map_fn: List[Union[str, Path]] = []
 
         if mode == Mode.single_event:
-            map_fn.append(map_path.joinpath("sfincs_map.nc"))
+            map_fn.append(hazard.sfincs_map_path.joinpath("sfincs_map.nc"))
 
         elif mode == Mode.risk:
-            # check for netcdf
+            # check for netcdf in the overland model folders
             map_fn.extend(
-                map_path.joinpath(file)
-                for file in os.listdir(str(map_path))
-                if file.endswith(".nc")
+                folder.joinpath("sfincs_map.nc") for folder in hazard.simulation_paths if folder.joinpath("sfincs_map.nc").is_file()
             )
         return map_fn
 

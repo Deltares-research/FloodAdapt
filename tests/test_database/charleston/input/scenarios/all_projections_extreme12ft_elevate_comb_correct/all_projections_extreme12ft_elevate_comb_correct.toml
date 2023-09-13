@@ -1,0 +1,5 @@
+name = "all_projections_extreme12ft_elevate_comb_correct"
+description = "all_projections - extreme12ft - elevate_comb_correct"
+projection = "all_projections"
+event = "extreme12ft"
+strategy = "elevate_comb_correct"
