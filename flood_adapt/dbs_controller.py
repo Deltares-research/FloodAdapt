@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
@@ -1411,6 +1412,14 @@ class Database(IDatabase):
         return benefits
 
     def get_outputs(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the outputs that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'path', 'last_modification_date' and "finished" info
+        """
         all_scenarios = pd.DataFrame(self.get_scenarios())
         if len(all_scenarios) > 0:
             df = all_scenarios[all_scenarios["finished"]]
@@ -1420,14 +1429,28 @@ class Database(IDatabase):
         return finished.to_dict()
 
     def get_topobathy_path(self) -> str:
+        """Returns the path of the topobathy tiles in order to create flood maps with water level maps
+
+        Returns
+        -------
+        str
+            path to topobathy tiles
+        """
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "topobathy")
         return str(path)
 
     def get_index_path(self) -> str:
+        """Returns the path of the index tiles which are used to connect each water level cell with the topobathy tiles
+
+        Returns
+        -------
+        str
+            path to index tiles
+        """
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
-    def get_max_water_level(self, scenario_name: str):
+    def get_max_water_level(self, scenario_name: str, return_period: int = None):
         """returns an array with the maximum water levels of the SFINCS simulation
 
         Parameters
@@ -1440,13 +1463,22 @@ class Database(IDatabase):
         _type_
             _description_
         """
-        # raise NotImplementedError
-        model_path = self.input_path.parent.joinpath(
-            "output", "simulations", scenario_name, "overland"
-        )
-        mod = SfincsModel(model_path, mode="r")
+        # If single event read with hydromt-sfincs
+        if not return_period:
+            model_path = self.input_path.parent.joinpath(
+                "output", "simulations", scenario_name, "overland"
+            )
+            mod = SfincsModel(model_path, mode="r")
 
-        zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+            zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+        else:
+            file_path = self.input_path.parent.joinpath(
+                "output",
+                "simulations",
+                scenario_name,
+                f"RP_{return_period:04d}_maps.nc",
+            )
+            zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
 
         return zsmax
 

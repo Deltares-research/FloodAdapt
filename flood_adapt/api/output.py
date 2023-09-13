@@ -21,8 +21,8 @@ def get_index_path(database: IDatabase) -> str:
     return database.get_index_path()
 
 
-def get_max_water_level(name: str, database: IDatabase):
-    return database.get_max_water_level(name)
+def get_max_water_level(name: str, database: IDatabase, rp: int = None):
+    return database.get_max_water_level(name, rp)
 
 
 def get_fiat_results(name: str, database: IDatabase):
