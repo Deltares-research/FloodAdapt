@@ -126,8 +126,6 @@ class DirectImpacts:
         end_time = time.time()
         print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
-        self.postprocess_fiat()
-
         # Indicator that direct impacts have run
         if return_code == 0:
             self.__setattr__("has_run", True)
@@ -245,7 +243,7 @@ class DirectImpacts:
             return process.returncode
 
     def postprocess_fiat(self):
-        # Get the metrics
+        # Postprocess the FIAT results
         fiat_results_path = self.database_input_path.parent.joinpath(
             "output",
             "results",
@@ -255,10 +253,10 @@ class DirectImpacts:
             "output.csv",
         )
         # Create the infometrics files
-        self._create_infometrics(fiat_results_path)
+        metrics_path = self._create_infometrics(fiat_results_path)
 
         # Create the infographic files
-        self._create_infographics(self.hazard.event_mode)
+        self._create_infographics(self.hazard.event_mode, metrics_path)
 
         # Aggregate results to regions
         self._create_aggregation()
@@ -346,7 +344,7 @@ class DirectImpacts:
         # Save file
         PointsToFootprints.write_footprint_file(footprints, results, outpath)
 
-    def _create_infometrics(self, fiat_results_path):
+    def _create_infometrics(self, fiat_results_path) -> Path:
         # Get the metrics configuration
         if self.hazard.event_mode == "risk":
             ext = "_risk"
@@ -377,17 +375,15 @@ class DirectImpacts:
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
         )
 
-        if self.hazard.event_mode != "risk":
-            metrics_writer.parse_metrics_to_file(
-                df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
-            )
+        metrics_writer.parse_metrics_to_file(
+            df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
+        )
 
-    def _create_infographics(self, mode):
+        return metrics_outputs_path
+
+    def _create_infographics(self, mode, metrics_path):
         # Get the infographic
         database_path = Path(self.database_input_path).parent
-        metrics_path = database_path.joinpath(
-            "output", "infometrics", f"{self.name}_metrics.csv"
-        )
         config_path = database_path.joinpath("static", "templates", "infographics")
         output_path = database_path.joinpath("output", "infographics")
         InforgraphicFactory.create_infographic_file_writer(
