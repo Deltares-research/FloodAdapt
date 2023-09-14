@@ -216,7 +216,7 @@ class SfincsAdapter:
         )
         return wl_df
 
-    def add_dis_bc(self, list_df: list[pd.DataFrame], site_river: list):
+    def add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
         """Changes discharge of overland sfincs model based on new discharge time series.
 
         Parameters
@@ -231,7 +231,7 @@ class SfincsAdapter:
             gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
             gdf_locs.crs = self.sf_model.crs
 
-            if len(list_df) != len(gdf_locs):
+            if len(list_df.columns) != len(gdf_locs):
                 raise ValueError(
                     "Number of rivers in site.toml and SFINCS template model not compatible"
                 )

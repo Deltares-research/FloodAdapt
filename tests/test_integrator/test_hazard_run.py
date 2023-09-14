@@ -465,8 +465,8 @@ def test_multiple_rivers(cleanup_database: None):
     # Overwrite river data in Site
     name = test_scenario.site_info.attrs.river[0].name + "_test"
     description = test_scenario.site_info.attrs.river[0].description + " test"
-    x = test_scenario.site_info.attrs.river[0].x_coordinate - 1000
-    y = test_scenario.site_info.attrs.river[0].y_coordinate - 1000
+    x = 596800.3
+    y = 3672900.3
     mean_discharge = test_scenario.site_info.attrs.river[0].mean_discharge.value * 1.5
 
     # Add an extra river in site
