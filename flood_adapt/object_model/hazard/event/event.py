@@ -252,7 +252,7 @@ class Event:
                 else:
                     # Read csv file of discharge
                     df_from_csv = Event.read_csv(
-                        csvpath=event_dir.joinpath(site_river[ii].name + ".csv")
+                        csvpath=event_dir.joinpath(self.attrs.river[ii].timeseries_file)
                     )
                 # Interpolate on time_vec
                 t0 = pd.to_datetime(time_vec[0])
