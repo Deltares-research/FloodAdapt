@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -59,7 +58,11 @@ class FiatAdapter:
         map_type = hazard.site.attrs.fiat.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
-        rp = [1 / frequency for frequency in hazard.event_set.attrs.frequency] if hazard.event_mode == Mode.risk else None
+        rp = (
+            [1 / frequency for frequency in hazard.event_set.attrs.frequency]
+            if hazard.event_mode == Mode.risk
+            else None
+        )
 
         # Add the hazard data to a data catalog with the unit conversion from meters to feet
         wl_current_units = UnitfulLength(value=1.0, units="meters")
@@ -87,7 +90,9 @@ class FiatAdapter:
         elif mode == Mode.risk:
             # check for netcdf in the overland model folders
             map_fn.extend(
-                folder.joinpath("sfincs_map.nc") for folder in hazard.simulation_paths if folder.joinpath("sfincs_map.nc").is_file()
+                folder.joinpath("sfincs_map.nc")
+                for folder in hazard.simulation_paths
+                if folder.joinpath("sfincs_map.nc").is_file()
             )
         return map_fn
 

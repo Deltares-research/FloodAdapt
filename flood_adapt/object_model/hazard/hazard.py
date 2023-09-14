@@ -230,13 +230,6 @@ class Hazard:
             )
         return self
 
-    def add_discharge(self):
-        """adds discharge timeseries to hazard object"""
-        # constant for all event templates, additional: shape for Synthetic or timeseries for all historic
-        self.event.add_dis_ts()
-        self.dis_ts = self.event.dis_ts
-        return self
-
     @staticmethod
     def get_event_object(event_path):  # TODO This could be used above as well?
         mode = Event.get_mode(event_path)
@@ -371,18 +364,22 @@ class Hazard:
             )
             model.add_wl_bc(self.wl_ts)
 
-            # Generate and change discharge boundary condition
-            logging.info(
-                "Adding discharge boundary conditions if applicable to the overland flood model..."
-            )
-            self.add_discharge()
-            # convert to metric units
-            gui_units = UnitfulDischarge(
-                value=1.0, units=self.site.attrs.gui.default_discharge_units
-            )
-            conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
-            self.dis_ts = conversion_factor * self.dis_ts
-            model.add_dis_bc(self.dis_ts)
+            # ASSUMPTION: Order of the rivers is the same as the site.toml file
+            self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
+            if self.event.dis_df is not None:
+                # Generate and change discharge boundary condition
+                logging.info(
+                    "Adding discharge boundary conditions if applicable to the overland flood model..."
+                )
+                # convert to metric units
+                gui_units = UnitfulDischarge(
+                    value=1.0, units=self.site.attrs.gui.default_discharge_units
+                )
+                conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
+                model.add_dis_bc(
+                    list_df=conversion_factor * self.event.dis_df,
+                    site_river=self.site.attrs.river,
+                )
 
             # Generate and add rainfall boundary condition
             gui_units_precip = UnitfulIntensity(

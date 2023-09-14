@@ -127,7 +127,7 @@ def test_load_from_toml_hurricane():
     assert test_synthetic.attrs.water_level_offset.value == 0.6
     assert test_synthetic.attrs.water_level_offset.units == "feet"
     assert test_synthetic.attrs.tide.source == "model"
-    assert test_synthetic.attrs.river.source == "constant"
+    assert test_synthetic.attrs.river[0].source == "constant"
 
     # assert test_synthetic.attrs.surge["source"] == "shape"
     # assert test_synthetic.attrs.surge["shape_type"] == "gaussian"
@@ -486,16 +486,20 @@ def test_constant_discharge():
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
     event = EventFactory.get_event(template).load_file(test_toml)
-    event.attrs.river = RiverModel(
-        source="constant",
-        constant_discharge=UnitfulDischarge(value=2000.0, units="cfs"),
-    )
-    event.add_dis_ts()
-    assert isinstance(event.dis_ts, pd.DataFrame)
-    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
-    const_dis = event.attrs.river.constant_discharge.value
+    event.attrs.river = [
+        RiverModel(
+            source="constant",
+            constant_discharge=UnitfulDischarge(value=2000.0, units="cfs"),
+        )
+    ]
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site = Site.load_file(site_toml)
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    assert isinstance(event.dis_df, pd.DataFrame)
+    assert isinstance(event.dis_df.index, pd.DatetimeIndex)
+    const_dis = event.attrs.river[0].constant_discharge.value
 
-    assert np.abs(event.dis_ts.to_numpy()[0][0] - (const_dis)) < 0.001
+    assert np.abs(event.dis_df.to_numpy()[0][0] - (const_dis)) < 0.001
 
 
 def test_gaussian_discharge():
@@ -511,18 +515,22 @@ def test_gaussian_discharge():
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
     event = EventFactory.get_event(template).load_file(test_toml)
-    event.attrs.river = RiverModel(
-        source="shape",
-        shape_type="gaussian",
-        shape_duration=2.0,
-        shape_peak_time=-22.0,
-        base_discharge=UnitfulDischarge(value=5000, units="cfs"),
-        shape_peak=UnitfulDischarge(value=10000, units="cfs"),
-    )
-    event.add_dis_ts()
-    assert isinstance(event.dis_ts, pd.DataFrame)
-    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
-    # event.dis_ts.to_csv(
+    event.attrs.river = [
+        RiverModel(
+            source="shape",
+            shape_type="gaussian",
+            shape_duration=2.0,
+            shape_peak_time=-22.0,
+            base_discharge=UnitfulDischarge(value=5000, units="cfs"),
+            shape_peak=UnitfulDischarge(value=10000, units="cfs"),
+        )
+    ]
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site = Site.load_file(site_toml)
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    assert isinstance(event.dis_df, pd.DataFrame)
+    assert isinstance(event.dis_df.index, pd.DatetimeIndex)
+    # event.dis_df.to_csv(
     #     (
     #         test_database
     #         / "charleston"
@@ -532,12 +540,11 @@ def test_gaussian_discharge():
     #         / "river.csv"
     #     )
     # )
-    dt = event.dis_ts.index.to_series().diff().dt.total_seconds().to_numpy()
-    cum_dis_ts = np.sum(event.dis_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
+    dt = event.dis_df.index.to_series().diff().dt.total_seconds().to_numpy()
+    cum_dis = np.sum(event.dis_df.to_numpy().squeeze() * dt[1:].mean()) / 3600
     assert (
         np.abs(
-            UnitfulDischarge(value=cum_dis_ts, units="cfs").convert("m3/s")
-            - 6945.8866666
+            UnitfulDischarge(value=cum_dis, units="cfs").convert("m3/s") - 6945.8866666
         )
         < 0.01
     )
@@ -556,18 +563,22 @@ def test_block_discharge():
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
     event = EventFactory.get_event(template).load_file(test_toml)
-    event.attrs.river = RiverModel(
-        source="shape",
-        base_discharge=UnitfulDischarge(value=5000, units="cfs"),
-        shape_peak=UnitfulDischarge(value=10000, units="cfs"),
-        shape_type="block",
-        shape_start_time=-24.0,
-        shape_end_time=-20.0,
-    )
-    event.add_dis_ts()
-    assert isinstance(event.dis_ts, pd.DataFrame)
-    assert isinstance(event.dis_ts.index, pd.DatetimeIndex)
-    # event.dis_ts.to_csv(
+    event.attrs.river = [
+        RiverModel(
+            source="shape",
+            base_discharge=UnitfulDischarge(value=5000, units="cfs"),
+            shape_peak=UnitfulDischarge(value=10000, units="cfs"),
+            shape_type="block",
+            shape_start_time=-24.0,
+            shape_end_time=-20.0,
+        )
+    ]
+    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site = Site.load_file(site_toml)
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    assert isinstance(event.dis_df, pd.DataFrame)
+    assert isinstance(event.dis_df.index, pd.DatetimeIndex)
+    # event.dis_df.to_csv(
     #     (
     #         test_database
     #         / "charleston"
@@ -577,5 +588,7 @@ def test_block_discharge():
     #         / "river.csv"
     #     )
     # )
-    assert np.abs(event.dis_ts[1][0] - event.attrs.river.shape_peak.value) < 0.001
-    assert np.abs(event.dis_ts[1][-1] - event.attrs.river.base_discharge.value) < 0.001
+    assert np.abs(event.dis_df[1][0] - event.attrs.river[0].shape_peak.value) < 0.001
+    assert (
+        np.abs(event.dis_df[1][-1] - event.attrs.river[0].base_discharge.value) < 0.001
+    )

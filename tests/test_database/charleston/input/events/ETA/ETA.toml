@@ -15,7 +15,7 @@ source = "none"
 [rainfall]
 source = "none"
 
-[river]
+[[river]]
 source = "constant"
 
 [river.constant_discharge]

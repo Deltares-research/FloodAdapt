@@ -140,7 +140,9 @@ def plot_wl(
 
 
 def plot_river(
-    event: IEvent, database: IDatabase, input_river_df: pd.DataFrame = None
+    event: IEvent,
+    database: IDatabase,
+    input_river_df: list[pd.DataFrame],
 ) -> str:
     return database.plot_river(event, input_river_df)
 

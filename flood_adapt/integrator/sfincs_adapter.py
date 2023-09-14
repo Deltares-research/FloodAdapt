@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
@@ -215,7 +216,7 @@ class SfincsAdapter:
         )
         return wl_df
 
-    def add_dis_bc(self, df_ts: pd.DataFrame):
+    def add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
         """Changes discharge of overland sfincs model based on new discharge time series.
 
         Parameters
@@ -225,17 +226,41 @@ class SfincsAdapter:
         """
 
         # Determine bnd points from reference overland model
-        gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
-        gdf_locs.crs = self.sf_model.crs
+        # ASSUMPTION: Order of the rivers is the same as the site.toml file
+        if np.any(list_df):
+            gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
+            gdf_locs.crs = self.sf_model.crs
 
-        # Go from 1 timeseries to timeseries for all boundary points
-        for i in range(1, len(gdf_locs)):
-            df_ts[i + 1] = df_ts[i]
+            if len(list_df.columns) != len(gdf_locs):
+                raise ValueError(
+                    "Number of rivers in site.toml and SFINCS template model not compatible"
+                )
+                logging.error(
+                    """The number of rivers of the site.toml does not match the
+                              number of rivers in the SFINCS model. Please check the number
+                              of coordinates in the SFINCS *.src file."""
+                )
 
-        # HydroMT function: set waterlevel forcing from time series
-        self.sf_model.set_forcing_1d(
-            name="dis", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
-        )
+            # Test order of rivers is the same in the site file as in the SFICNS model
+            for ii, river in enumerate((site_river)):
+                if not (
+                    np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
+                    and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
+                ):
+                    raise ValueError(
+                        "River coordinates in site.toml and SFINCS template model not compatible"
+                    )
+                    logging.error(
+                        """The location and/or order of rivers in the site.toml does not match the
+                                locations and/or order of rivers in the SFINCS model. Please check the
+                                coordinates and their order in the SFINCS *.src file and ensure they are
+                                consistent with the coordinates and order orf rivers in the site.toml file."""
+                    )
+                    break
+
+            self.sf_model.setup_discharge_forcing(
+                timeseries=list_df, locations=gdf_locs, merge=False
+            )
 
     def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
         """Adds floodwall to sfincs model.

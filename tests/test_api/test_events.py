@@ -23,10 +23,12 @@ def test_synthetic_event(cleanup_database):
             "constant_direction": {"value": 0, "units": "deg N"},
         },
         "rainfall": {"source": "none"},
-        "river": {
-            "source": "constant",
-            "constant_discharge": {"value": 5000, "units": "cfs"},
-        },
+        "river": [
+            {
+                "source": "constant",
+                "constant_discharge": {"value": 5000, "units": "cfs"},
+            }
+        ],
         "time": {"duration_before_t0": 24, "duration_after_t0": "24"},
         "tide": {
             "source": "harmonic",
