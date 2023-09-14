@@ -46,6 +46,7 @@ class SfincsModel(BaseModel):
     ambient_air_pressure: float
     floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
+    save_simulation: bool
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -111,6 +112,7 @@ class FiatModel(BaseModel):
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
     bfe: BFEModel
+    save_simulation: bool
 
 
 class RiverModel(BaseModel):
