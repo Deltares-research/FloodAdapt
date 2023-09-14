@@ -376,7 +376,10 @@ class Hazard:
                     value=1.0, units=self.site.attrs.gui.default_discharge_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
-                model.add_dis_bc(list_df=conversion_factor * self.event.dis_df)
+                model.add_dis_bc(
+                    list_df=conversion_factor * self.event.dis_df,
+                    site_river=self.site.attrs.river,
+                )
 
             # Generate and add rainfall boundary condition
             gui_units_precip = UnitfulIntensity(

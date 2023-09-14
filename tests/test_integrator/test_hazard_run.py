@@ -54,6 +54,21 @@ def test_hazard_preprocess_synthetic_discharge(cleanup_database):
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
+    test_scenario.attrs.name = f"{test_scenario.attrs.name}_2"
+    test_scenario.direct_impacts.hazard.name = f"{test_scenario.attrs.name}_2"
+    test_scenario.direct_impacts.hazard.simulation_paths[0] = (
+        test_scenario.direct_impacts.hazard.simulation_paths[0]
+        .parents[1]
+        .joinpath(
+            f"{test_scenario.direct_impacts.hazard.simulation_paths[0].parents[0].name}_2",
+            "overland",
+        )
+    )
+    test_scenario.direct_impacts.hazard.site.attrs.river[0].x_coordinate += 100
+
+    with pytest.raises(ValueError):
+        test_scenario.direct_impacts.hazard.preprocess_models()
+
 
 def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
     test_toml = (

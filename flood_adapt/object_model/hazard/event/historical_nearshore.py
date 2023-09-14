@@ -41,18 +41,6 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
                 Path(filepath).parents[0], obj.attrs.wind.timeseries_file
             )
             obj.wind_ts = HistoricalNearshore.read_csv(wind_csv_path)
-        # obj.dis_dict = {"river": [], "data": []}
-        # for ii in range(len(obj.attrs.river)):
-        #     if obj.attrs.river[ii].source == "timeseries":
-        #         river_csv_path = Path(
-        #             Path(filepath).parents[0], obj.attrs.river[ii].timeseries_file
-        #         )
-        #         obj.dis_dict["river"].append(
-        #             obj.attrs.river[ii].timeseries_file.split(".csv")[0]
-        #         )
-        #         obj.dis_dict["data"].append(
-        #             HistoricalNearshore.read_csv(river_csv_path)
-        #         )
 
         return obj
 

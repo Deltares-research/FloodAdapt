@@ -58,9 +58,6 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
 
         # load toml into object
         obj.attrs = HistoricalHurricaneModel.parse_obj(toml)
-        # if obj.attrs.river.source == "timeseries":
-        #     river_csv_path = Path(Path(filepath).parents[0], "river.csv")
-        #     obj.dis_ts = HistoricalHurricane.read_csv(river_csv_path)
 
         # return object
         return obj
