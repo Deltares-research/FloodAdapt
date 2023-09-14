@@ -6,7 +6,6 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-from fiat_toolbox.infographics.infographics import InfographicsParser
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
@@ -348,7 +347,6 @@ class DirectImpacts:
         PointsToFootprints.write_footprint_file(footprints, results, outpath)
 
     def _create_infometrics(self, fiat_results_path):
-
         # Get the metrics configuration
         if self.hazard.event_mode == "risk":
             ext = "_risk"
