@@ -24,8 +24,13 @@ class Scenario(IScenario):
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
+        self.results_dir = Path(self.database_input_path).parent.joinpath(
+            "output", "Scenarios", self.attrs.name
+        )
         self.direct_impacts = DirectImpacts(
-            scenario=self.attrs, database_input_path=Path(self.database_input_path)
+            scenario=self.attrs,
+            database_input_path=Path(self.database_input_path),
+            results_dir=self.results_dir,
         )
         return self
 
@@ -59,16 +64,13 @@ class Scenario(IScenario):
         """run direct impact models for the scenario"""
         self.init_object_model()
         # start log file in scenario results folder
-        results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.attrs.name
-        )
-        for parent in reversed(results_dir.parents):
+        for parent in reversed(self.results_dir.parents):
             if not parent.exists():
                 os.mkdir(parent)
-        if not results_dir.exists():
-            os.mkdir(results_dir)
+        if not self.results_dir.exists():
+            os.mkdir(self.results_dir)
         # Initiate the logger for all the integrator scripts.
-        self.initiate_root_logger(results_dir.joinpath("floodadapt.log"))
+        self.initiate_root_logger(self.results_dir.joinpath("floodadapt.log"))
         version = "0.1.0"
         logging.info(f"FloodAdapt version {version}")
         logging.info(

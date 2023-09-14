@@ -37,21 +37,20 @@ class DirectImpacts:
     hazard: Hazard
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def __init__(
+        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+    ) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.scenario = scenario
+        self.results_dir = results_dir
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
-        self.set_hazard(scenario, database_input_path)
-        # Define results path
-        self.results_path = (
-            self.database_input_path.parent
-            / "output"
-            / "results"
-            / self.scenario.name
-            / "fiat_model"
+        self.set_hazard(
+            scenario, database_input_path, self.results_dir.joinpath("Flooding")
         )
+        # Define results path
+        self.results_path = self.results_dir.joinpath("Impacts", "fiat_model")
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
@@ -101,7 +100,9 @@ class DirectImpacts:
         )
         self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
 
-    def set_hazard(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def set_hazard(
+        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+    ) -> None:
         """Sets the Hazard object of the scenario.
 
         Parameters
@@ -109,7 +110,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database_input_path)
+        self.hazard = Hazard(scenario, database_input_path, results_dir)
 
     def preprocess_models(self):
         logging.info("Preparing impact models...")
