@@ -271,6 +271,9 @@ class DirectImpacts:
         pass
 
     def _create_aggregation(self):
+
+        logging.info("Create aggregations...")
+
         # Define where aggregated results are saved
         output_fold = self.database_input_path.parent.joinpath(
             "output", "results", f"{self.name}"
@@ -313,6 +316,9 @@ class DirectImpacts:
             )
 
     def _create_footprints(self, fiat_results_path):
+
+        logging.info("Create footprints...")
+
         # Get footprints file paths from site.toml
         site_toml = (
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
@@ -346,6 +352,8 @@ class DirectImpacts:
 
     def _create_infometrics(self, fiat_results_path) -> Path:
         # Get the metrics configuration
+        logging.info("Creating infometrics...")
+
         if self.hazard.event_mode == "risk":
             ext = "_risk"
         else:
@@ -382,6 +390,8 @@ class DirectImpacts:
         return metrics_outputs_path
 
     def _create_infographics(self, mode, metrics_path):
+        logging.info("Creating infographics...")
+
         # Get the infographic
         database_path = Path(self.database_input_path).parent
         config_path = database_path.joinpath("static", "templates", "infographics")
