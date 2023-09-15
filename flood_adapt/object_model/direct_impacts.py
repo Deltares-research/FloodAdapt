@@ -286,7 +286,8 @@ class DirectImpacts:
             aggr_label = file.stem.split("_metrics_")[-1]
             if aggr_label == self.site_info.attrs.fiat.equity.aggregation_type:
                 fiat_data = pd.read_csv(file)
-
+            file_to_change = file
+        # Create Equity object
         equity = Equity(
             census_table=self.site_toml_path.parent.joinpath(
                 self.site_info.attrs.fiat.equity.census_data
@@ -295,7 +296,28 @@ class DirectImpacts:
             aggregation_label=self.site_info.attrs.fiat.equity.aggregation_label,
             percapitalincome_label=self.site_info.attrs.fiat.equity.percapitalincome_label,
             totalpopulation_label=self.site_info.attrs.fiat.equity.totalpopulation_label,
+            damage_column_pattern="TotalDmg_RP_{rp}",
         )
+        # Calculate equity
+        gamma = 1.2  # elasticity
+        df_equity = equity.equity_calculation(gamma)
+        # Merge with metrics tables and resave
+        metrics_new = fiat_data.merge(
+            df_equity, left_on=fiat_data.columns[0], right_on="name", how="left"
+        )
+        del metrics_new["name"]
+        metrics_new.set_index(metrics_new.columns[0], inplace=True)
+        metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
+            "Equity weight",
+            "Equity weighted certainty equivalent expected annual damage",
+        ]
+        metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
+        metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
+            "Equity weight",
+            "Equity weighted certainty equivalent expected annual damage",
+        ]
+        metrics_new.index.name = None
+        metrics_new.to_csv(file_to_change)
 
     def _create_aggregation(self):
         # Define where aggregated results are saved

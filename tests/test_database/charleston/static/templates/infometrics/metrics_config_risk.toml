@@ -9,7 +9,7 @@ long_name = "Total Expected Annual Damage"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp1"
+name = "TotalDmg_RP_1"
 description = "Total damage on buildings with a return period of 1 years"
 select = "SUM(`Total Damage (1Y)`)"
 filter = ""
@@ -17,7 +17,7 @@ long_name = "Total Damage (RP=1)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp2"
+name = "TotalDmg_RP_2"
 description = "Total damage on buildings with a return period of 2 years"
 select = "SUM(`Total Damage (2Y)`)"
 filter = ""
@@ -25,7 +25,7 @@ long_name = "Total Damage (RP=2)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp5"
+name = "TotalDmg_RP_5"
 description = "Total damage on buildings with a return period of 5 years"
 select = "SUM(`Total Damage (5Y)`)"
 filter = ""
@@ -33,7 +33,7 @@ long_name = "Total Damage (RP=5)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp10"
+name = "TotalDmg_RP_10"
 description = "Total damage on buildings with a return period of 10 years"
 select = "SUM(`Total Damage (10Y)`)"
 filter = ""
@@ -41,7 +41,7 @@ long_name = "Total Damage (RP=10)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp25"
+name = "TotalDmg_RP_25"
 description = "Total damage on buildings with a return period of 25 years"
 select = "SUM(`Total Damage (25Y)`)"
 filter = ""
@@ -49,7 +49,7 @@ long_name = "Total Damage (RP=25)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp50"
+name = "TotalDmg_RP_50"
 description = "Total damage on buildings with a return period of 50 years"
 select = "SUM(`Total Damage (50Y)`)"
 filter = ""
@@ -57,7 +57,7 @@ long_name = "Total Damage (RP=50)"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDmg_rp100"
+name = "TotalDmg_RP_100"
 description = "Total damage on buildings with a return period of 100 years"
 select = "SUM(`Total Damage (100Y)`)"
 filter = ""
