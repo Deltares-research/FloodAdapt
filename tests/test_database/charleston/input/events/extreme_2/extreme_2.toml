@@ -20,7 +20,7 @@ units = "deg N"
 [rainfall]
 source = "none"
 
-[river]
+[[river]]
 source = "constant"
 [river.constant_discharge]
 value = 5000
