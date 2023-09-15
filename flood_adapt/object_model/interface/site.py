@@ -101,6 +101,14 @@ class BFEModel(BaseModel):
     field_name: str
 
 
+class EquityModel(BaseModel):
+    census_data: str
+    aggregation_type: str
+    aggregation_label: Optional[str] = "name"
+    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    totalpopulation_label: Optional[str] = "TotalPopulation"
+
+
 class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
@@ -110,6 +118,7 @@ class FiatModel(BaseModel):
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
+    equity: Optional[EquityModel]
     bfe: BFEModel
 
 
