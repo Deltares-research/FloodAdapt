@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from fiat_toolbox.infographics.infographics import InfographicsParser
+from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.database import IDatabase
@@ -37,38 +37,6 @@ def get_aggregation(name: str, database: IDatabase):
     return database.get_aggregation(name)
 
 
-def make_infographic(name: str, database: IDatabase) -> str:
-    """Make the infographic for the given scenario.
-
-    Parameters
-    ----------
-    name : str
-        The name of the scenario.
-    database : IDatabase
-        The database object.
-
-    Returns
-    -------
-    str
-        The path to the metrics file.
-    """
-
-    # Get the direct_impacts objects from the scenario
-    impact = database.get_scenario(name).direct_impacts
-
-    # Check if the scenario has run
-    if not impact.fiat_has_run_check():
-        raise ValueError(
-            f"Scenario {name} has not been run. Please run the scenario first."
-        )
-
-    return InfographicsParser().write_infographics_to_file(
-        scenario_name=name,
-        database_path=Path(database.input_path).parent,
-        keep_metrics_file=True,
-    )
-
-
 def get_infographic(name: str, database: IDatabase) -> str:
     """Return the HTML string of the infographic for the given scenario.
 
@@ -92,11 +60,21 @@ def get_infographic(name: str, database: IDatabase) -> str:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )
+    
+    database_path = Path(database.input_path).parent
+    config_path = database_path.joinpath("static", "templates", "infographics")
+    output_path = database_path.joinpath("output", "infographics")
+    metrics_outputs_path = database_path.joinpath("output", "infometrics", f"{impact.name}_metrics.csv")
 
-    return InfographicsParser().get_infographics_html(
-        scenario_name=name,
-        database_path=Path(database.input_path).parent,
-    )
+    infographic_path = InforgraphicFactory.create_infographic_file_writer(
+        infographic_mode=impact.hazard.event_mode,
+        scenario_name=impact.name,
+        metrics_full_path=metrics_outputs_path,
+        config_base_path=config_path,
+        output_base_path=output_path,
+    ).get_infographics_html()
+
+    return infographic_path
 
 
 def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:

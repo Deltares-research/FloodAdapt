@@ -7,7 +7,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 from fiat_toolbox.equity.equity import Equity
-from fiat_toolbox.infographics.infographics import InfographicsParser
+from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
@@ -249,6 +249,7 @@ class DirectImpacts:
             return process.returncode
 
     def postprocess_fiat(self):
+        # Postprocess the FIAT results
         fiat_results_path = self.database_input_path.parent.joinpath(
             "output",
             "results",
@@ -258,12 +259,10 @@ class DirectImpacts:
             "output.csv",
         )
         # Create the infometrics files
-        self._create_infometrics(fiat_results_path)
+        metrics_path = self._create_infometrics(fiat_results_path)
 
         # Create the infographic files
-        # TODO correct infographic creation for risk mode
-        if self.hazard.event_mode != "risk":
-            self._create_infographics()
+        self._create_infographics(self.hazard.event_mode, metrics_path)
 
         if self.hazard.event_mode == "risk":
             # Calculate equity based damages
@@ -320,6 +319,8 @@ class DirectImpacts:
         metrics_new.to_csv(file_to_change)
 
     def _create_aggregation(self):
+        logging.info("Create aggregations...")
+
         # Define where aggregated results are saved
         output_fold = self.database_input_path.parent.joinpath(
             "output", "results", f"{self.name}"
@@ -355,6 +356,8 @@ class DirectImpacts:
             )
 
     def _create_footprints(self, fiat_results_path):
+        logging.info("Create footprints...")
+
         # Get footprints file paths from site.toml
         # TODO ensure that if this does not happen we get same file name output from FIAT?
         # Check if there is a footprint file given
@@ -379,8 +382,10 @@ class DirectImpacts:
         # Save file
         PointsToFootprints.write_footprint_file(footprints, results, outpath)
 
-    def _create_infometrics(self, fiat_results_path):
+    def _create_infometrics(self, fiat_results_path) -> Path:
         # Get the metrics configuration
+        logging.info("Creating infometrics...")
+
         if self.hazard.event_mode == "risk":
             ext = "_risk"
         else:
@@ -409,14 +414,24 @@ class DirectImpacts:
         metrics_writer.parse_metrics_to_file(
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
         )
+
         metrics_writer.parse_metrics_to_file(
             df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
         )
 
-    def _create_infographics(self):
+        return metrics_outputs_path
+
+    def _create_infographics(self, mode, metrics_path):
+        logging.info("Creating infographics...")
+
         # Get the infographic
-        InfographicsParser().write_infographics_to_file(
+        database_path = Path(self.database_input_path).parent
+        config_path = database_path.joinpath("static", "templates", "infographics")
+        output_path = database_path.joinpath("output", "infographics")
+        InforgraphicFactory.create_infographic_file_writer(
+            infographic_mode=mode,
             scenario_name=self.name,
-            database_path=Path(self.database_input_path).parent,
-            keep_metrics_file=True,
-        )
+            metrics_full_path=metrics_path,
+            config_base_path=config_path,
+            output_base_path=output_path,
+        ).write_infographics_to_file()
