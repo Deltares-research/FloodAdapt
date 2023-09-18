@@ -369,9 +369,10 @@ class DirectImpacts:
 
         # Specify the metrics output path
         metrics_outputs_path = self.database_input_path.parent.joinpath(
-            "output",
-            "infometrics",
-            f"{self.name}_metrics.csv",
+            "output", 
+            "Scenarios", 
+            self.name,
+            f"Infometrics_{self.name}.csv",
         )
 
         # Get the results dataframe
@@ -396,7 +397,7 @@ class DirectImpacts:
         # Get the infographic
         database_path = Path(self.database_input_path).parent
         config_path = database_path.joinpath("static", "templates", "infographics")
-        output_path = database_path.joinpath("output", "infographics")
+        output_path = database_path.joinpath("output", "Scenarios", self.name)
         InforgraphicFactory.create_infographic_file_writer(
             infographic_mode=mode,
             scenario_name=self.name,
