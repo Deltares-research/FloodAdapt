@@ -29,9 +29,6 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         if obj.attrs.wind.source == "timeseries":
             wind_csv_path = Path(Path(filepath).parents[0], "wind.csv")
             obj.wind_ts = HistoricalOffshore.read_csv(wind_csv_path)
-        if obj.attrs.river.source == "timeseries":
-            river_csv_path = Path(Path(filepath).parents[0], "river.csv")
-            obj.dis_ts = HistoricalOffshore.read_csv(river_csv_path)
         return obj
 
     @staticmethod

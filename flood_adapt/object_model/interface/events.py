@@ -94,7 +94,7 @@ class RainfallModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    source: RiverSource
+    source: Optional[RiverSource]
     # constant
     constant_discharge: Optional[UnitfulDischarge]
     # timeseries
@@ -129,6 +129,7 @@ class TideModel(BaseModel):
 
     source: TideSource
     harmonic_amplitude: Optional[UnitfulLength]
+    timeseries_file: Optional[str]
 
 
 class SurgeSource(str, Enum):
@@ -168,7 +169,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
-    river: RiverModel
+    river: list[RiverModel]
     time: TimeModel
     tide: TideModel
     surge: SurgeModel

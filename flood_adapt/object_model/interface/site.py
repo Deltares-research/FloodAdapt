@@ -95,6 +95,12 @@ class AggregationModel(BaseModel):
     field_name: str
 
 
+class BFEModel(BaseModel):
+    geom: str
+    table: Optional[str]
+    field_name: str
+
+
 class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
@@ -104,15 +110,14 @@ class FiatModel(BaseModel):
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
+    bfe: BFEModel
 
 
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in Site"""
 
-    # TODO: add functionality to use multiple rivers
-
     name: str
-    description: Optional[str] = ""
+    description: str
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
@@ -170,7 +175,7 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[RiverModel]
+    river: Optional[list[RiverModel]]
     obs_station: Optional[Obs_stationModel]
     benefits: BenefitsModel
     scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
