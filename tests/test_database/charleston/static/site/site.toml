@@ -58,13 +58,6 @@ non_building_names = ["road"]
 damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
 
-[fiat.equity]
-census_data  = "../templates/fiat/equity/census_data.csv"
-aggregation_type = "aggr_lvl_2"
-aggregation_label = "name"
-percapitalincome_label= "PerCapitaIncome"
-totalpopulation_label= "TotalPopulation"
-
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
@@ -74,11 +67,21 @@ field_name = "bfe"
 name = "aggr_lvl_1"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_1.geojson"
 field_name = "name"
+[fiat.aggregation.equity]
+census_data  = "../templates/fiat/equity/census_data_aggr_lvl_1.csv"
+percapitalincome_label= "PerCapitaIncome"
+totalpopulation_label= "TotalPopulation"
+
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
 field_name = "name"
+[fiat.aggregation.equity]
+census_data  = "../templates/fiat/equity/census_data_aggr_lvl_2.csv"
+percapitalincome_label= "PerCapitaIncome"
+totalpopulation_label= "TotalPopulation"
+
 
 [[river]]
 name = "cooper"

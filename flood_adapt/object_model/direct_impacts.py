@@ -266,7 +266,7 @@ class DirectImpacts:
 
         if self.hazard.event_mode == "risk":
             # Calculate equity based damages
-            self._create_equity()
+            self._create_equity(metrics_path)
 
         # Aggregate results to regions
         self._create_aggregation()
@@ -274,49 +274,59 @@ class DirectImpacts:
         # Merge points data to building footprints
         self._create_footprints(fiat_results_path)
 
-    def _create_equity(self):
-        if not self.site_info.attrs.fiat.equity:
-            print("Equity information not provided.")
+    def _create_equity(self, metrics_path):
         # Get metrics tables
-        metrics_fold = self.database_input_path.parent.joinpath("output", "infometrics")
+        metrics_fold = metrics_path.parent
         # loop through metrics aggregated files
-        for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
+        for file in metrics_fold.glob(f"{self.name}_metrics_*.csv"):
             # Load metrics
             aggr_label = file.stem.split("_metrics_")[-1]
-            if aggr_label == self.site_info.attrs.fiat.equity.aggregation_type:
-                fiat_data = pd.read_csv(file)
+            ind = [
+                i
+                for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
+                if aggr.name == aggr_label
+            ][0]
+            if not self.site_info.attrs.fiat.aggregation[ind].equity:
+                continue
+
+            fiat_data = pd.read_csv(file)
             file_to_change = file
-        # Create Equity object
-        equity = Equity(
-            census_table=self.site_toml_path.parent.joinpath(
-                self.site_info.attrs.fiat.equity.census_data
-            ),
-            damages_table=fiat_data,
-            aggregation_label=self.site_info.attrs.fiat.equity.aggregation_label,
-            percapitalincome_label=self.site_info.attrs.fiat.equity.percapitalincome_label,
-            totalpopulation_label=self.site_info.attrs.fiat.equity.totalpopulation_label,
-            damage_column_pattern="TotalDmg_RP_{rp}",
-        )
-        # Calculate equity
-        gamma = 1.2  # elasticity
-        df_equity = equity.equity_calculation(gamma)
-        # Merge with metrics tables and resave
-        metrics_new = fiat_data.merge(
-            df_equity, left_on=fiat_data.columns[0], right_on="name", how="left"
-        )
-        del metrics_new["name"]
-        metrics_new.set_index(metrics_new.columns[0], inplace=True)
-        metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
-            "Equity weight",
-            "Equity weighted certainty equivalent expected annual damage",
-        ]
-        metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
-        metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
-            "Equity weight",
-            "Equity weighted certainty equivalent expected annual damage",
-        ]
-        metrics_new.index.name = None
-        metrics_new.to_csv(file_to_change)
+
+            # Create Equity object
+            equity = Equity(
+                census_table=self.site_toml_path.parent.joinpath(
+                    self.site_info.attrs.fiat.aggregation[ind].equity.census_data
+                ),
+                damages_table=fiat_data,
+                aggregation_label=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                percapitalincome_label=self.site_info.attrs.fiat.aggregation[
+                    ind
+                ].equity.percapitalincome_label,
+                totalpopulation_label=self.site_info.attrs.fiat.aggregation[
+                    ind
+                ].equity.totalpopulation_label,
+                damage_column_pattern="TotalDamageRP{rp}",
+            )
+            # Calculate equity
+            gamma = 1.2  # elasticity
+            df_equity = equity.equity_calculation(gamma)
+            # Merge with metrics tables and resave
+            metrics_new = fiat_data.merge(
+                df_equity, left_on=fiat_data.columns[0], right_on=self.site_info.attrs.fiat.aggregation[ind].field_name, how="left"
+            )
+            del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
+            metrics_new.set_index(metrics_new.columns[0], inplace=True)
+            metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
+                "Equity weight",
+                "Equity weighted certainty equivalent expected annual damage",
+            ]
+            metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
+            metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
+                "Equity weight",
+                "Equity weighted certainty equivalent expected annual damage",
+            ]
+            metrics_new.index.name = None
+            metrics_new.to_csv(file_to_change)
 
     def _create_aggregation(self):
         logging.info("Create aggregations...")
