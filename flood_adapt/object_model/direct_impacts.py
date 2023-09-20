@@ -312,10 +312,13 @@ class DirectImpacts:
             df_equity = equity.equity_calculation(gamma)
             # Merge with metrics tables and resave
             metrics_new = fiat_data.merge(
-                df_equity, left_on=fiat_data.columns[0], right_on=self.site_info.attrs.fiat.aggregation[ind].field_name, how="left"
+                df_equity,
+                left_on=fiat_data.columns[0],
+                right_on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                how="left",
             )
             del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
-            metrics_new.set_index(metrics_new.columns[0], inplace=True)
+            metrics_new = metrics_new.set_index(metrics_new.columns[0])
             metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
                 "Equity weight",
                 "Equity weighted certainty equivalent expected annual damage",
