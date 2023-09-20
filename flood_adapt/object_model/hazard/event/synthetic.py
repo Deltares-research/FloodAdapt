@@ -113,7 +113,7 @@ class Synthetic(Event, ISynthetic):
         df = pd.DataFrame.from_dict(
             {
                 "time": time,
-                1: tide + surge + msl,
+                1: tide + surge - msl,
             }
         )
         df = df.set_index("time")
