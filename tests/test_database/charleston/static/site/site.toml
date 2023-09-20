@@ -14,11 +14,29 @@ datum_overland_model = "NAVD88"
 tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
 ambient_air_pressure = 102000
 floodmap_no_data_value = -9999
-floodmap_units = "feet"
+
+save_simulation = "False"
 [sfincs.diff_datum_offshore_overland]
 value = 0.067
 units = "meters"
 
+[water_level]
+reference_label = "MLLW"
+[water_level.reference]
+value = 0.0
+units = "meters"
+[water_level.mllw]
+value = 0.0
+units = "meters"
+[water_level.mhhw]
+value = 1.757
+units = "meters"
+[water_level.localdatum]
+value = 0.957
+units = "meters"
+[water_level.msl]
+value = 0.890
+units = "meters"
 [cyclone_track_database]
 file = "IBTrACS.NA.v04r00.nc"
 
@@ -57,6 +75,7 @@ floodmap_type = "water_level"
 non_building_names = ["road"]
 damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
+save_simulation = "False"
 
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"

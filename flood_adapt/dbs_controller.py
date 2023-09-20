@@ -231,9 +231,12 @@ class Database(IDatabase):
             event["template"] == "Synthetic"
             or event["template"] == "Historical_nearshore"
         ):
+            gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 temp_event = Synthetic.load_dict(event)
-                temp_event.add_tide_and_surge_ts()
+                temp_event.add_tide_and_surge_ts(
+                    self.site.attrs.water_level.msl.convert(gui_units)
+                )
                 wl_df = temp_event.tide_surge_ts
                 wl_df.index = np.arange(
                     -temp_event.attrs.time.duration_before_t0,
@@ -249,7 +252,7 @@ class Database(IDatabase):
 
             # Plot actual thing
             fig = px.line(wl_df)
-            gui_units = self.site.attrs.gui.default_length_units
+
             # plot reference water levels
             fig.add_hline(
                 y=0,
@@ -258,27 +261,19 @@ class Database(IDatabase):
                 annotation_text="MSL",
                 annotation_position="bottom right",
             )
-            if (
-                self.site.attrs.obs_station
-                and self.site.attrs.obs_station.mllw
-                and self.site.attrs.obs_station.msl
-            ):
+            if self.site.attrs.water_level.mllw:
                 fig.add_hline(
-                    y=self.site.attrs.obs_station.mllw.convert(gui_units)
-                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    y=self.site.attrs.water_level.mllw.convert(gui_units)
+                    - self.site.attrs.water_level.msl.convert(gui_units),
                     line_dash="dash",
                     line_color="#88cc91",
                     annotation_text="MLLW",
                     annotation_position="bottom right",
                 )
-            if (
-                self.site.attrs.obs_station
-                and self.site.attrs.obs_station.mhhw
-                and self.site.attrs.obs_station.msl
-            ):
+            if self.site.attrs.water_level.mhhw:
                 fig.add_hline(
-                    y=self.site.attrs.obs_station.mhhw.convert(gui_units)
-                    - self.site.attrs.obs_station.msl.convert(gui_units),
+                    y=self.site.attrs.water_level.mhhw.convert(gui_units)
+                    - self.site.attrs.water_level.msl.convert(gui_units),
                     line_dash="dash",
                     line_color="#c62525",
                     annotation_text="MHHW",

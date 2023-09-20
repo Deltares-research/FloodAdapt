@@ -48,6 +48,15 @@ class SfincsModel(BaseModel):
     floodmap_units: UnitTypesLength
 
 
+class WaterLevelReferenceModel(BaseModel):
+    reference_label: str
+    reference: UnitfulLength
+    localdatum: UnitfulLength
+    msl: UnitfulLength
+    mllw: Optional[UnitfulLength]
+    mhhw: Optional[UnitfulLength]
+
+
 class Cyclone_track_databaseModel(BaseModel):
     """class describing the accepted input for the variable cyclone_track_database in Site"""
 
@@ -133,8 +142,8 @@ class Obs_stationModel(BaseModel):
     lon: float
     mllw: Optional[UnitfulLength]
     mhhw: Optional[UnitfulLength]
-    localdatum: UnitfulLength
-    msl: UnitfulLength
+    localdatum: Optional[UnitfulLength]
+    msl: Optional[UnitfulLength]
 
 
 class BenefitsModel(BaseModel):
@@ -169,6 +178,7 @@ class SiteModel(BaseModel):
     lat: float
     lon: float
     sfincs: SfincsModel
+    water_level: WaterLevelReferenceModel
     cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel
