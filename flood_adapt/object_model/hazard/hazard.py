@@ -218,10 +218,6 @@ class Hazard:
             if self.event.attrs.template == "Synthetic":
                 self.event.add_tide_and_surge_ts()
                 self.wl_ts = self.event.tide_surge_ts
-                # Add water level offset
-                self.wl_ts[1] = (
-                    self.wl_ts[1] + self.event.attrs.water_level_offset.value
-                )
             elif self.event.attrs.template == "Historical_nearshore":
                 self.wl_ts = self.event.tide_surge_ts
             # In both cases add SLR
