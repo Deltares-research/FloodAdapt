@@ -227,7 +227,7 @@ class Hazard:
         return self
 
     @staticmethod
-    def get_event_object(event_path):  # TODO This could be used above as well?
+    def get_event_object(event_path):
         mode = Event.get_mode(event_path)
         if mode == Mode.single_event:
             # parse event config file to get event template
@@ -348,8 +348,6 @@ class Hazard:
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
-                # add difference between vertical datum of offshore and overland model
-                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
                 # turn off pressure correction at the boundaries because the effect of
                 # atmospheric pressure is already included in the water levels from the
                 # offshore model
@@ -358,6 +356,8 @@ class Hazard:
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
+            # add difference between vertical datum of offshore (MSL) and overland model
+            self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
