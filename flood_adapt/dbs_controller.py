@@ -251,11 +251,11 @@ class Database(IDatabase):
                 xlim2 = pd.to_datetime(event["time"]["end_time"])
 
             # Plot actual thing
-            fig = px.line(wl_df)
+            fig = px.line(wl_df + self.site.attrs.water_level.msl.convert(gui_units))
 
             # plot reference water levels
             fig.add_hline(
-                y=0,
+                y=self.site.attrs.water_level.msl.convert(gui_units),
                 line_dash="dash",
                 line_color="#000000",
                 annotation_text="MSL",
@@ -263,8 +263,7 @@ class Database(IDatabase):
             )
             if self.site.attrs.water_level.mllw:
                 fig.add_hline(
-                    y=self.site.attrs.water_level.mllw.convert(gui_units)
-                    - self.site.attrs.water_level.msl.convert(gui_units),
+                    y=self.site.attrs.water_level.mllw.convert(gui_units),
                     line_dash="dash",
                     line_color="#88cc91",
                     annotation_text="MLLW",
@@ -272,8 +271,7 @@ class Database(IDatabase):
                 )
             if self.site.attrs.water_level.mhhw:
                 fig.add_hline(
-                    y=self.site.attrs.water_level.mhhw.convert(gui_units)
-                    - self.site.attrs.water_level.msl.convert(gui_units),
+                    y=self.site.attrs.water_level.mhhw.convert(gui_units),
                     line_dash="dash",
                     line_color="#c62525",
                     annotation_text="MHHW",
