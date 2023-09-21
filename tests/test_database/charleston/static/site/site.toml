@@ -14,7 +14,7 @@ datum_overland_model = "NAVD88"
 tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
 ambient_air_pressure = 102000
 floodmap_no_data_value = -9999
-
+floodmap_units = "feet"
 save_simulation = "False"
 [sfincs.diff_datum_offshore_overland]
 value = 0.067
