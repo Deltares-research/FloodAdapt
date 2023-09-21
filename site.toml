@@ -10,15 +10,27 @@ version = "SFINCS_v2.0.1_tag_exe"
 offshore_model = "offshore"
 overland_model = "overland"
 datum_offshore_model = "MSL"
-datum_overland_model = "NAVD88"
 tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
 ambient_air_pressure = 102000.0
 floodmap_no_data_value = -9999.0
 floodmap_units = "feet"
 
-[sfincs.diff_datum_offshore_overland]
-value = 0.067
-units = "meters"
+[water_level]
+[water_level.reference]
+name = "MLLW"
+height = {value = 0.0, units = "meters"}
+[water_level.msl]
+name = "MSL"
+height= {value = 0.89, units = "meters"}
+[water_level.localdatum]
+name = "NVD88"
+height = {value = 0.957, units = "meters"}
+[[water_level.other]]
+name = "MLLW"
+heighth = {value = 0.0, units = "meters"}
+[[water_level.other]]
+name = "MHHW"
+heighth = {value = 1.757, units = "meters"}
 
 [cyclone_track_database]
 file = "IBTrACS.NA.v04r00.nc"

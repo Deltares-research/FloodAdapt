@@ -235,7 +235,7 @@ class Database(IDatabase):
             if event["template"] == "Synthetic":
                 temp_event = Synthetic.load_dict(event)
                 temp_event.add_tide_and_surge_ts(
-                    self.site.attrs.water_level.msl.convert(gui_units)
+                    self.site.attrs.water_level.msl.height.convert(gui_units)
                 )
                 wl_df = temp_event.tide_surge_ts
                 wl_df.index = np.arange(
@@ -251,34 +251,27 @@ class Database(IDatabase):
                 xlim2 = pd.to_datetime(event["time"]["end_time"])
 
             # Plot actual thing
-            fig = px.line(wl_df + self.site.attrs.water_level.msl.convert(gui_units))
+            fig = px.line(
+                wl_df + self.site.attrs.water_level.msl.height.convert(gui_units)
+            )
 
             # plot reference water levels
             fig.add_hline(
-                y=self.site.attrs.water_level.msl.convert(gui_units),
+                y=self.site.attrs.water_level.msl.height.convert(gui_units),
                 line_dash="dash",
                 line_color="#000000",
                 annotation_text="MSL",
                 annotation_position="bottom right",
             )
-            if self.site.attrs.water_level.mllw:
-                fig.add_hline(
-                    y=self.site.attrs.water_level.mllw.convert(gui_units),
-                    line_dash="dash",
-                    line_color="#88cc91",
-                    annotation_text="MLLW",
-                    annotation_position="bottom right",
-                )
-            if self.site.attrs.water_level.mhhw:
-                fig.add_hline(
-                    y=self.site.attrs.water_level.mhhw.convert(gui_units),
-                    line_dash="dash",
-                    line_color="#c62525",
-                    annotation_text="MHHW",
-                    annotation_position="bottom right",
-                )
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+            if self.site.attrs.water_level.other:
+                for wl_ref in self.site.attrs.water_level.other:
+                    fig.add_hline(
+                        y=wl_ref.height.convert(gui_units),
+                        line_dash="dash",
+                        line_color="#3ec97c",
+                        annotation_text=wl_ref.name,
+                        annotation_position="bottom right",
+                    )
 
             fig.update_layout(
                 autosize=False,

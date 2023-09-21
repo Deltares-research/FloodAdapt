@@ -39,22 +39,21 @@ class SfincsModel(BaseModel):
     version: str
     offshore_model: str
     overland_model: str
-    datum_offshore_model: str
-    datum_overland_model: str
-    diff_datum_offshore_overland: UnitfulLength
-    tidal_components: str
     ambient_air_pressure: float
     floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
 
 
+class VerticalReferenceModel(BaseModel):
+    name: str
+    height: UnitfulLength
+
+
 class WaterLevelReferenceModel(BaseModel):
-    reference_label: str
-    reference: UnitfulLength
-    localdatum: UnitfulLength
-    msl: UnitfulLength
-    mllw: Optional[UnitfulLength]
-    mhhw: Optional[UnitfulLength]
+    reference: VerticalReferenceModel
+    localdatum: VerticalReferenceModel
+    msl: VerticalReferenceModel
+    other: Optional[list[VerticalReferenceModel]]  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):

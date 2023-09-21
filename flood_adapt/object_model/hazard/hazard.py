@@ -217,7 +217,7 @@ class Hazard:
         for ii, event in enumerate(self.event_list):
             if self.event.attrs.template == "Synthetic":
                 self.event.add_tide_and_surge_ts(
-                    self.site.attrs.water_level.msl.convert(
+                    self.site.attrs.water_level.msl.height.convert(
                         self.site.attrs.gui.default_length_units
                     )
                 )
@@ -333,13 +333,14 @@ class Hazard:
             # Generate and change water level boundary condition
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
+                # generate hazard water level bc incl SLR (in the offshore model these are already included)
+                # returning wl referenced to MSL
                 self.add_wl_ts()
                 # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
                 gui_units = UnitfulLength(
                     value=1.0, units=self.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
-                # generate hazard water level bc incl SLR and offset (in the offshore model these are already included)
                 self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
@@ -360,8 +361,12 @@ class Hazard:
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
-            # add difference between vertical datum of offshore (MSL) and overland model
-            self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
+            # add difference between MSL (vertical datum of offshore nad backend in general) and overland model
+            self.wl_ts += self.site.attrs.water_level.msl.height.convert(
+                UnitTypesLength("meters")
+            ) - self.site.attrs.water_level.localdatum.height.convert(
+                UnitTypesLength("meters")
+            )
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file

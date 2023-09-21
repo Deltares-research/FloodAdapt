@@ -57,14 +57,11 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
             "meters"
         )
     )
-    msl = test_scenario.site_info.attrs.water_level.msl.convert("meters")
-    diff_local_datum = (
-        test_scenario.site_info.attrs.sfincs.diff_datum_offshore_overland.convert(
-            "meters"
-        )
+    localdatum = test_scenario.site_info.attrs.water_level.localdatum.height.convert(
+        "meters"
     )
 
-    assert np.abs(peak_model - (surge_peak + tide_amp - msl - diff_local_datum)) < 0.01
+    assert np.abs(peak_model - (surge_peak + tide_amp - localdatum)) < 0.01
 
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
