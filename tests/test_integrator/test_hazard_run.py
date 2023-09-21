@@ -35,6 +35,37 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
+    fn_bc = (
+        test_database
+        / "charleston"
+        / "output"
+        / "simulations"
+        / "current_extreme12ft_no_measures"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    wl = pd.read_csv(fn_bc, index_col=0, delim_whitespace=True, header=None)
+    peak_model = wl.max().max()
+
+    surge_peak = (
+        test_scenario.direct_impacts.hazard.event.attrs.surge.shape_peak.convert(
+            "meters"
+        )
+    )
+    tide_amp = (
+        test_scenario.direct_impacts.hazard.event.attrs.tide.harmonic_amplitude.convert(
+            "meters"
+        )
+    )
+    msl = test_scenario.site_info.attrs.water_level.msl.convert("meters")
+    diff_local_datum = (
+        test_scenario.site_info.attrs.sfincs.diff_datum_offshore_overland.convert(
+            "meters"
+        )
+    )
+
+    assert np.abs(peak_model - (surge_peak + tide_amp - msl - diff_local_datum)) < 0.01
+
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_preprocess_synthetic_discharge(cleanup_database):
