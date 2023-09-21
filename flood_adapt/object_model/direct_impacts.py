@@ -271,7 +271,6 @@ class DirectImpacts:
         pass
 
     def _create_aggregation(self):
-
         logging.info("Create aggregations...")
 
         # Define where aggregated results are saved
@@ -316,7 +315,6 @@ class DirectImpacts:
             )
 
     def _create_footprints(self, fiat_results_path):
-
         logging.info("Create footprints...")
 
         # Get footprints file paths from site.toml
