@@ -30,6 +30,10 @@ class UnitTypesVelocity(str, Enum):
     mph = "mph"
 
 
+class UnitTypesDirection(str, Enum):
+    degrees = "deg N"
+
+
 class UnitTypesDischarge(str, Enum):
     cfs = "cfs"
     cms = "m3/s"
@@ -178,7 +182,7 @@ class UnitfulVelocity(BaseModel):
 
 class UnitfulDirection(BaseModel):
     value: float
-    units: str = "deg N"
+    units: UnitTypesDirection
 
 
 class UnitfulLengthRefValue(UnitfulLength):

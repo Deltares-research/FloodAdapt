@@ -9,6 +9,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
     UnitTypesArea,
+    UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
@@ -70,6 +71,7 @@ class GuiModel(BaseModel):
     default_area_units: UnitTypesArea
     default_volume_units: UnitTypesVolume
     default_velocity_units: UnitTypesVelocity
+    default_direction_units: UnitTypesDirection
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
