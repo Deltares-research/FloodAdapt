@@ -34,8 +34,10 @@ default_distance_units = "miles"
 default_area_units = "sf"
 default_volume_units = "cf"
 default_velocity_units = "knots"
+default_direction_units = "deg N"
 default_discharge_units = "cfs"
 default_intensity_units = "inch/hr"
+default_cumulative_units = "inch"
 [gui.tide_harmonic_amplitude]
 value = 3.0
 units = "meters"
@@ -61,7 +63,7 @@ building_footprints = "../templates/fiat/footprints/Buildings.shp"
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
-field_name = "bfe"																  
+field_name = "bfe"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"

@@ -72,6 +72,7 @@ class GuiModel(BaseModel):
     default_velocity_units: UnitTypesVelocity
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
+    default_cumulative_units: UnitTypesLength
 
 
 class RiskModel(BaseModel):
