@@ -147,7 +147,9 @@ class Benefit(IBenefit):
             metrics = pd.read_csv(
                 results_path.joinpath(f"{scn_name}_metrics.csv"), index_col=0
             )
-            scenarios.loc[index, "EAD"] = float(metrics["ExpectedAnnualDamages"]["Value"])
+            scenarios.loc[index, "EAD"] = float(
+                metrics["ExpectedAnnualDamages"]["Value"]
+            )
 
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
