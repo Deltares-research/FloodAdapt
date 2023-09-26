@@ -6,6 +6,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
@@ -44,6 +45,11 @@ class DirectImpacts:
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(scenario, database_input_path)
+        # Get site config
+        self.site_toml_path = (
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        self.site_info = Site.load_file(self.site_toml_path)
         # Define results path
         self.results_path = (
             self.database_input_path.parent
@@ -258,20 +264,73 @@ class DirectImpacts:
         # Create the infographic files
         self._create_infographics(self.hazard.event_mode, metrics_path)
 
+        if self.hazard.event_mode == "risk":
+            # Calculate equity based damages
+            self._create_equity(metrics_path)
+
         # Aggregate results to regions
         self._create_aggregation()
-
-        # Create equity
-        self._create_equity()
 
         # Merge points data to building footprints
         self._create_footprints(fiat_results_path)
 
-    def _create_equity(self):
-        pass
+    def _create_equity(self, metrics_path):
+        # Get metrics tables
+        metrics_fold = metrics_path.parent
+        # loop through metrics aggregated files
+        for file in metrics_fold.glob(f"{self.name}_metrics_*.csv"):
+            # Load metrics
+            aggr_label = file.stem.split("_metrics_")[-1]
+            ind = [
+                i
+                for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
+                if aggr.name == aggr_label
+            ][0]
+            if not self.site_info.attrs.fiat.aggregation[ind].equity:
+                continue
+
+            fiat_data = pd.read_csv(file)
+
+            # Create Equity object
+            equity = Equity(
+                census_table=self.site_toml_path.parent.joinpath(
+                    self.site_info.attrs.fiat.aggregation[ind].equity.census_data
+                ),
+                damages_table=fiat_data,
+                aggregation_label=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                percapitalincome_label=self.site_info.attrs.fiat.aggregation[
+                    ind
+                ].equity.percapitalincome_label,
+                totalpopulation_label=self.site_info.attrs.fiat.aggregation[
+                    ind
+                ].equity.totalpopulation_label,
+                damage_column_pattern="TotalDamageRP{rp}",
+            )
+            # Calculate equity
+            gamma = 1.2  # elasticity
+            df_equity = equity.equity_calculation(gamma)
+            # Merge with metrics tables and resave
+            metrics_new = fiat_data.merge(
+                df_equity,
+                left_on=fiat_data.columns[0],
+                right_on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                how="left",
+            )
+            del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
+            metrics_new = metrics_new.set_index(metrics_new.columns[0])
+            metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
+                "Equity weight",
+                "Equity weighted certainty equivalent expected annual damage",
+            ]
+            metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
+            metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
+                "Equity weight",
+                "Equity weighted certainty equivalent expected annual damage",
+            ]
+            metrics_new.index.name = None
+            metrics_new.to_csv(file)
 
     def _create_aggregation(self):
-
         logging.info("Create aggregations...")
 
         # Define where aggregated results are saved
@@ -280,11 +339,7 @@ class DirectImpacts:
         )
         # Get metrics tables
         metrics_fold = self.database_input_path.parent.joinpath("output", "infometrics")
-        # Get aggregation area file paths from site.toml
-        site_toml = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        site_info = Site.load_file(site_toml)
+
         # loop through metrics aggregated files
         for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
             # Load metrics
@@ -293,14 +348,11 @@ class DirectImpacts:
             aggr_label = file.stem.split("_metrics_")[-1]
             ind = [
                 i
-                for i, n in enumerate(site_info.attrs.fiat.aggregation)
+                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_label
             ][0]
-            aggr_areas_path = Path(
-                self.database_input_path.parent
-                / "static"
-                / "site"
-                / site_info.attrs.fiat.aggregation[ind].file
+            aggr_areas_path = self.site_toml_path.parent.joinpath(
+                self.site_info.attrs.fiat.aggregation[ind].file
             )
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
@@ -311,29 +363,21 @@ class DirectImpacts:
                 metrics,
                 aggr_areas,
                 outpath,
-                id_name=site_info.attrs.fiat.aggregation[ind].field_name,
+                id_name=self.site_info.attrs.fiat.aggregation[ind].field_name,
                 file_format="geopackage",
             )
 
     def _create_footprints(self, fiat_results_path):
-
         logging.info("Create footprints...")
 
         # Get footprints file paths from site.toml
-        site_toml = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        site_info = Site.load_file(site_toml)
         # TODO ensure that if this does not happen we get same file name output from FIAT?
         # Check if there is a footprint file given
-        if not site_info.attrs.fiat.building_footprints:
-            return
+        if not self.site_info.attrs.fiat.building_footprints:
+            raise ValueError("No building footprints are provided.")
         # Get footprints file
-        footprints_path = (
-            self.database_input_path.parent
-            / "static"
-            / "site"
-            / site_info.attrs.fiat.building_footprints
+        footprints_path = self.site_toml_path.parent.joinpath(
+            self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved
         outpath = self.database_input_path.parent.joinpath(

@@ -89,10 +89,19 @@ class DemModel(BaseModel):
     indexfilename: str
 
 
+class EquityModel(BaseModel):
+    census_data: str
+    # aggregation_type: str
+    # aggregation_label: Optional[str] = "name"
+    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    totalpopulation_label: Optional[str] = "TotalPopulation"
+
+
 class AggregationModel(BaseModel):
     name: str
     file: str
     field_name: str
+    equity: Optional[EquityModel]
 
 
 class BFEModel(BaseModel):
@@ -110,6 +119,7 @@ class FiatModel(BaseModel):
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
+    # equity: Optional[EquityModel]
     bfe: BFEModel
 
 
