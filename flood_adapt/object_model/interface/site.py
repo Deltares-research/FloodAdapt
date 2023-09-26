@@ -36,15 +36,13 @@ class SfincsModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: str
+    version: Optional[str]
     offshore_model: str
     overland_model: str
     datum_offshore_model: str
     datum_overland_model: str
     diff_datum_offshore_overland: UnitfulLength
-    tidal_components: str
     ambient_air_pressure: float
-    floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
     save_simulation: bool
 
