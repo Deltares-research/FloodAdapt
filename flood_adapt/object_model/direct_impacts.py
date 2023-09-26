@@ -56,7 +56,8 @@ class DirectImpacts:
         )
         self.site_info = Site.load_file(self.site_toml_path)
         # Define results path
-        self.fiat_path = self.results_path.joinpath("Impacts", "fiat_model")
+        self.impacts_path = self.results_path.joinpath("Impacts")
+        self.fiat_path = self.impacts_path.joinpath("fiat_model")
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
@@ -67,8 +68,7 @@ class DirectImpacts:
         boolean
             True if fiat has run, False if something went wrong
         """
-        fiat_path = self.fiat_path
-        log_file = fiat_path.joinpath("output", "fiat.log")
+        log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():
             with open(log_file) as f:
                 if "All done!" in f.read():
@@ -248,8 +248,9 @@ class DirectImpacts:
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
-        fiat_results_path = self.fiat_path.joinpath("output", "output.csv")
-        
+        # First move and rename fiat output csv
+        fiat_results_path = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv")
+        shutil.move(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
 
@@ -261,7 +262,7 @@ class DirectImpacts:
             self._create_equity(metrics_path)
 
         # Aggregate results to regions
-        self._create_aggregation()
+        self._create_aggregation(metrics_path)
 
         # Merge points data to building footprints
         self._create_footprints(fiat_results_path)
@@ -270,9 +271,9 @@ class DirectImpacts:
         # Get metrics tables
         metrics_fold = metrics_path.parent
         # loop through metrics aggregated files
-        for file in metrics_fold.glob(f"{self.name}_metrics_*.csv"):
+        for file in metrics_fold.glob(f"Infometrics_{self.name}_*.csv"):
             # Load metrics
-            aggr_label = file.stem.split("_metrics_")[-1]
+            aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
                 for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
@@ -322,22 +323,20 @@ class DirectImpacts:
             metrics_new.index.name = None
             metrics_new.to_csv(file)
 
-    def _create_aggregation(self):
+    def _create_aggregation(self, metrics_path):
         logging.info("Create aggregations...")
 
         # Define where aggregated results are saved
-        output_fold = self.database_input_path.parent.joinpath(
-            "output", "results", f"{self.name}"
-        )
+        output_fold = self.impacts_path
         # Get metrics tables
-        metrics_fold = self.database_input_path.parent.joinpath("output", "infometrics")
+        metrics_fold = metrics_path.parent
 
         # loop through metrics aggregated files
-        for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
+        for file in metrics_fold.glob(f"Infometrics_{self.name}_*.csv"):
             # Load metrics
             metrics = pd.read_csv(file)
             # Load aggregation areas
-            aggr_label = file.stem.split("_metrics_")[-1]
+            aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
@@ -349,7 +348,7 @@ class DirectImpacts:
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
-            outpath = output_fold.joinpath(f"aggregated_damages_{aggr_label}.gpkg")
+            outpath = output_fold.joinpath(f"Impacts_aggregated_{aggr_label}_{self.name}.gpkg")
             # Save file
             AggregationAreas.write_spatial_file(
                 metrics,
@@ -372,9 +371,7 @@ class DirectImpacts:
             self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved
-        outpath = self.database_input_path.parent.joinpath(
-            "output", "results", f"{self.name}", "building_footprints.gpkg"
-        )
+        outpath = self.impacts_path.joinpath(f"Impacts_building_footprints_{self.name}.gpkg")
 
         # Read files
         # TODO Will it save time if we load this footprints once when the database is initialized?

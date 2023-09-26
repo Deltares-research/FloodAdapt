@@ -84,9 +84,7 @@ class Hazard:
             [self.sfincs_map_path] = self.simulation_paths
 
         elif mode == Mode.risk:
-            self.sfincs_map_path = self.database_input_path.parent.joinpath(
-                "output", "simulations", self.name
-            )
+            self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
