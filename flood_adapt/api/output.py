@@ -60,7 +60,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )
-    
+
     database_path = Path(database.input_path).parent
     config_path = database_path.joinpath("static", "templates", "infographics")
     output_path = database_path.joinpath("output", "Scenarios", impact.name)
