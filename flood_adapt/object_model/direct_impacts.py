@@ -290,7 +290,6 @@ class DirectImpacts:
                 continue
 
             fiat_data = pd.read_csv(file)
-            file_to_change = file
 
             # Create Equity object
             equity = Equity(
@@ -329,7 +328,7 @@ class DirectImpacts:
                 "Equity weighted certainty equivalent expected annual damage",
             ]
             metrics_new.index.name = None
-            metrics_new.to_csv(file_to_change)
+            metrics_new.to_csv(file)
 
     def _create_aggregation(self):
         logging.info("Create aggregations...")
@@ -375,7 +374,7 @@ class DirectImpacts:
         # TODO ensure that if this does not happen we get same file name output from FIAT?
         # Check if there is a footprint file given
         if not self.site_info.attrs.fiat.building_footprints:
-            print("No building footprints are provided.")
+            raise ValueError("No building footprints are provided.")
         # Get footprints file
         footprints_path = self.site_toml_path.parent.joinpath(
             self.site_info.attrs.fiat.building_footprints
