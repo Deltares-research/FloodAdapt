@@ -94,7 +94,7 @@ class Synthetic(Event, ISynthetic):
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
             # convert surge peak to MSL in GUI units
-            peak = self.attrs.surge.shape_peak.value
+            peak = self.attrs.surge.shape_peak.value - msl
             surge = super().timeseries_shape(
                 "gaussian",
                 duration=duration,
@@ -113,7 +113,7 @@ class Synthetic(Event, ISynthetic):
         df = pd.DataFrame.from_dict(
             {
                 "time": time,
-                1: tide + surge - msl,
+                1: tide + surge,
             }
         )
         df = df.set_index("time")

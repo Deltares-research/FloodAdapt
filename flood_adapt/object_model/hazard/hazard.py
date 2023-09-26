@@ -225,8 +225,10 @@ class Hazard:
             elif self.event.attrs.template == "Historical_nearshore":
                 self.wl_ts = self.event.tide_surge_ts
             # In both cases add SLR
-            self.wl_ts[1] = (
-                self.wl_ts[1] + self.physical_projection.attrs.sea_level_rise.value
+            self.wl_ts[1] = self.wl_ts[
+                1
+            ] + self.physical_projection.attrs.sea_level_rise.convert(
+                self.site.attrs.gui.default_length_units
             )
         return self
 
