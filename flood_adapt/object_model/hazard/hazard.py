@@ -638,9 +638,9 @@ class Hazard:
         if self._mode == Mode.single_event:
             self.write_floodmap_geotiff()
             # self.sfincs_map_path = self.results_dir.joinpath("sfincs_map.nc")
-            shutil.copyfile(
-                self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
-            )
+            # shutil.copyfile(
+            #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
+            # )
         elif self._mode == Mode.risk:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []

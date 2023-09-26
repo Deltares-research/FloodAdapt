@@ -38,12 +38,12 @@ class DirectImpacts:
     has_run: bool = False
 
     def __init__(
-        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+        self, scenario: ScenarioModel, database_input_path: Path, results_path: Path
     ) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.scenario = scenario
-        self.results_dir = results_dir
+        self.results_dir = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(
@@ -229,11 +229,8 @@ class DirectImpacts:
         fiat_exec = str(
             self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
         )
-        results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.name
-        )
         with cd(self.results_path):
-            with open(results_dir.joinpath("fiat.log"), "a") as log_handler:
+            with open(self.results_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
                     f'"{fiat_exec}" run settings.toml',
                     stdout=log_handler,
@@ -245,14 +242,8 @@ class DirectImpacts:
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
-        fiat_results_path = self.database_input_path.parent.joinpath(
-            "output",
-            "results",
-            f"{self.name}",
-            "fiat_model",
-            "output",
-            "output.csv",
-        )
+        fiat_results_path = self.results_path.joinpath("fiat_model", "output", "output.csv")
+        
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
 

@@ -18,7 +18,7 @@ exposure_template = pd.read_csv(
 )
 
 
-def test_fiat_adapter_no_measures(cleanup_database):
+def test_fiat_adapter_no_measures():
     test_toml = (
         test_database
         / "charleston"
@@ -180,7 +180,7 @@ def test_fiat_adapter_measures(cleanup_database):
     )
 
 
-def test_fiat_return_periods(cleanup_database):
+def test_fiat_return_periods():
     test_toml = (
         test_database
         / "charleston"
