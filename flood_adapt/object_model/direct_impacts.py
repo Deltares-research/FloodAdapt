@@ -43,14 +43,14 @@ class DirectImpacts:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.scenario = scenario
-        self.results_dir = results_path
+        self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(
-            scenario, database_input_path, self.results_dir.joinpath("Flooding")
+            scenario, database_input_path, self.results_path.joinpath("Flooding")
         )
         # Define results path
-        self.results_path = self.results_dir.joinpath("Impacts", "fiat_model")
+        self.fiat_path = self.results_path.joinpath("Impacts", "fiat_model")
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
@@ -61,7 +61,7 @@ class DirectImpacts:
         boolean
             True if fiat has run, False if something went wrong
         """
-        fiat_path = self.results_path
+        fiat_path = self.fiat_path
         log_file = fiat_path.joinpath("output", "fiat.log")
         if log_file.exists():
             with open(log_file) as f:
@@ -156,10 +156,10 @@ class DirectImpacts:
         )
 
         # If path for results does not yet exist, make it
-        if not self.results_path.is_dir():
-            self.results_path.mkdir(parents=True)
+        if not self.fiat_path.is_dir():
+            self.fiat_path.mkdir(parents=True)
         else:
-            shutil.rmtree(self.results_path)
+            shutil.rmtree(self.fiat_path)
 
         # Get ids of existing objects
         ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
@@ -222,15 +222,15 @@ class DirectImpacts:
         fa.set_hazard(self.hazard)
 
         # Save the updated FIAT model
-        fa.fiat_model.set_root(self.results_path)
+        fa.fiat_model.set_root(self.fiat_path)
         fa.fiat_model.write()
 
     def run_fiat(self):
         fiat_exec = str(
             self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
         )
-        with cd(self.results_path):
-            with open(self.results_path.joinpath("fiat.log"), "a") as log_handler:
+        with cd(self.fiat_path):
+            with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
                     f'"{fiat_exec}" run settings.toml',
                     stdout=log_handler,
@@ -242,7 +242,7 @@ class DirectImpacts:
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
-        fiat_results_path = self.results_path.joinpath("fiat_model", "output", "output.csv")
+        fiat_results_path = self.fiat_path.joinpath("output", "output.csv")
         
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
