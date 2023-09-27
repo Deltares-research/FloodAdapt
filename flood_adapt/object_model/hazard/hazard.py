@@ -740,7 +740,7 @@ class Hazard:
             zs_rp_maps.append(zs_rp_da.unstack())
 
             # #create single nc
-            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
+            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}, attrs=dict(units="meters")).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
