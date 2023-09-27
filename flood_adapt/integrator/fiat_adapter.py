@@ -28,8 +28,8 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Loads FIAT model based on a root directory."""
         # Load FIAT template
-        logger = setuplog("hydromt_fiat", log_level=10)
-        self.fiat_model = FiatModel(root=model_root, mode="r", logger=logger)
+        self.fiat_logger = setuplog("hydromt_fiat", log_level=10)
+        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self.fiat_logger)
         self.fiat_model.read()
 
         # Get site information
@@ -53,6 +53,11 @@ class FiatAdapter:
         )
 
         self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
+
+    def __del__(self) -> None:  
+        # Close fiat_logger
+        for handler in self.fiat_logger.handlers:
+            handler.close()
 
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = self._get_sfincs_map_path(hazard)

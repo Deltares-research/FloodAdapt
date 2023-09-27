@@ -95,6 +95,8 @@ class Scenario(IScenario):
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
 
+        self.close_root_logger_handlers()
+
     def __eq__(self, other):
         if not isinstance(other, Scenario):
             # don't attempt to compare against unrelated types
@@ -129,3 +131,16 @@ class Scenario(IScenario):
         # Add the file and console handlers to the root logger.
         logging.getLogger("").addHandler(fh)
         logging.getLogger("").addHandler(ch)
+
+    @staticmethod
+    def close_root_logger_handlers():
+        # Get the root logger
+        root_logger = logging.getLogger("")
+
+        # Retrieve the handlers
+        handlers = root_logger.handlers
+
+        # Close and remove the handlers
+        for handler in handlers:
+            handler.close()
+            root_logger.removeHandler(handler)

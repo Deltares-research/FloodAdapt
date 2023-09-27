@@ -31,6 +31,7 @@ from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
+logger = logging.getLogger(__name__)
 
 class SfincsAdapter:
     def __init__(self, site: Site, model_root: Optional[str] = None):
@@ -43,9 +44,16 @@ class SfincsAdapter:
         # if validate_existence_root_folder(model_root):
         #    self.model_root = model_root
 
-        self.sf_model = SfincsModel(root=model_root, mode="r+")
+        self.sfincs_logger = logging.getLogger(__name__)
+        self.sf_model = SfincsModel(root=model_root, mode="r+", logger=self.sfincs_logger)
         self.sf_model.read()
         self.site = site
+        
+    def __del__(self):
+        # Close the log file associated with the logger
+        for handler in self.sfincs_logger.handlers:
+            handler.close()
+
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
