@@ -188,3 +188,10 @@ tests/test_database/charleston/static/templates/fiat/exposure/exposure.gpkg
 tests/test_database/charleston/static/dem/*
 tests/system/fiat/*
 tests/test_database/charleston/static/templates/fiat/footprints
+tests/test_database/charleston/input/events/test_set/
+tests/test_database/charleston/static/templates/fiat/equity/census_data_aggr_lvl_1.csv
+tests/test_database/charleston/static/templates/fiat/equity/census_data_aggr_lvl_2.csv
+tests/test_database/charleston/static/templates/infographics/config_charts.toml
+tests/test_database/charleston/static/templates/infographics/config_people.toml
+tests/test_database/charleston/static/templates/infographics/config_risk_charts.toml
+tests/test_database/charleston/static/templates/infographics/styles.css
