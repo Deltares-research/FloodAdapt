@@ -67,7 +67,7 @@ class Synthetic(Event, ISynthetic):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def add_tide_and_surge_ts(self):
+    def add_tide_and_surge_ts(self, msl):
         """generating time series of harmoneous tide (cosine) and gaussian surge shape
 
         Returns
@@ -93,10 +93,12 @@ class Synthetic(Event, ISynthetic):
             time_shift = (
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
+            # convert surge peak to MSL in GUI units
+            peak = self.attrs.surge.shape_peak.value - msl
             surge = super().timeseries_shape(
                 "gaussian",
-                duration,
-                self.attrs.surge.shape_peak.value,
+                duration=duration,
+                peak=peak,
                 shape_duration=self.attrs.surge.shape_duration * 3600,
                 time_shift=time_shift,
             )
@@ -107,7 +109,13 @@ class Synthetic(Event, ISynthetic):
         time = pd.date_range(
             self.attrs.time.start_time, periods=duration / 600 + 1, freq="600S"
         )
-        df = pd.DataFrame.from_dict({"time": time, 1: tide + surge})
+        # add tide, surge and difference between water level reference from site toml and MSL
+        df = pd.DataFrame.from_dict(
+            {
+                "time": time,
+                1: tide + surge,
+            }
+        )
         df = df.set_index("time")
         self.tide_surge_ts = df
         return self
