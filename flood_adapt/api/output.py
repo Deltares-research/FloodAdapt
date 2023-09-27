@@ -25,10 +25,6 @@ def get_max_water_level(name: str, database: IDatabase, rp: int = None):
     return database.get_max_water_level(name, rp)
 
 
-def get_fiat_results(name: str, database: IDatabase):
-    return database.get_fiat_results(name)
-
-
 def get_fiat_footprints(name: str, database: IDatabase):
     return database.get_fiat_footprints(name)
 
@@ -60,7 +56,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )
-    
+
     database_path = Path(database.input_path).parent
     config_path = database_path.joinpath("static", "templates", "infographics")
     output_path = database_path.joinpath("output", "Scenarios", impact.name)
@@ -100,8 +96,9 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
     # Create the infographic path
     metrics_path = Path(database.input_path).parent.joinpath(
         "output",
-        "infometrics",
-        f"{name}_metrics.csv",
+        "Scenarios",
+        name,
+        f"Infometrics_{name}.csv",
     )
 
     # Check if the file exists

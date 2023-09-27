@@ -27,7 +27,7 @@ class Benefit(IBenefit):
     def init(self):
         """Initiation function called when object is created through the file or dict options"""
         self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "benefits", self.attrs.name
+            "output", "Benefits", self.attrs.name
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()
@@ -147,7 +147,9 @@ class Benefit(IBenefit):
             metrics = pd.read_csv(
                 results_path.joinpath(f"{scn_name}_metrics.csv"), index_col=0
             )
-            scenarios.loc[index, "EAD"] = float(metrics["TotalEAD"]["Value"])
+            scenarios.loc[index, "EAD"] = float(
+                metrics["ExpectedAnnualDamages"]["Value"]
+            )
 
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year

@@ -84,9 +84,7 @@ class Hazard:
             [self.sfincs_map_path] = self.simulation_paths
 
         elif mode == Mode.risk:
-            self.sfincs_map_path = self.database_input_path.parent.joinpath(
-                "output", "simulations", self.name
-            )
+            self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
@@ -230,15 +228,15 @@ class Hazard:
             if self.event.attrs.template == "Synthetic":
                 self.event.add_tide_and_surge_ts()
                 self.wl_ts = self.event.tide_surge_ts
-
+                # Add water level offset
+                self.wl_ts[1] = (
+                    self.wl_ts[1] + self.event.attrs.water_level_offset.value
+                )
             elif self.event.attrs.template == "Historical_nearshore":
-                wl_df = self.event.tide_surge_ts
-                self.wl_ts = wl_df
-            # In both cases add the slr and offset
+                self.wl_ts = self.event.tide_surge_ts
+            # In both cases add SLR
             self.wl_ts[1] = (
-                self.wl_ts[1]
-                + self.event.attrs.water_level_offset.value
-                + self.physical_projection.attrs.sea_level_rise.value
+                self.wl_ts[1] + self.physical_projection.attrs.sea_level_rise.value
             )
         return self
 
@@ -274,9 +272,8 @@ class Hazard:
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
-
         # WITHOUT A SFINCS FOLDER WE CANNOT READ sfincs_map.nc ANYMORE
-        # # remove simulation folders
+        # remove simulation folders
         # if not self.site.attrs.sfincs.save_simulation:
         #     for simulation_path in self.simulation_paths:
         #         if os.path.exists(simulation_path.parent):
@@ -636,11 +633,13 @@ class Hazard:
 
     def postprocess_sfincs(self):
         if self._mode == Mode.single_event:
+            # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
-            # self.sfincs_map_path = self.results_dir.joinpath("sfincs_map.nc")
-            shutil.copyfile(
-                self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
-            )
+            # Copy SFINCS output map to main folder
+            # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
+            # shutil.copyfile(
+            #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
+            # )
         elif self._mode == Mode.risk:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []

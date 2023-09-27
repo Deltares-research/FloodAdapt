@@ -1,0 +1,109 @@
+[Charts]
+    [Charts.Homes]
+        Name = "Homes"
+        Image = "https://openclipart.org/image/800px/217511"
+    [Charts.Businesses]
+        Name = "Businesses"
+        Image = "https://openclipart.org/image/800px/229840"
+    [Charts.Public]
+        Name = "Public"
+        Image = "https://openclipart.org/image/800px/190967"
+    [Charts.Industrial]
+        Name = "Industrial"
+        Image = "https://openclipart.org/image/800px/190006"
+
+[Categories]
+    [Categories.Affected]
+        Name = "Affected"
+        Color = "#ffff00"
+    [Categories.Minor]
+        Name = "Minor"
+        Color = "#ffa500"
+    [Categories.Major]
+        Name = "Major"
+        Color = "#ff0000"
+    [Categories.Destroyed]
+        Name = "Destroyed"
+        Color = "#000000"
+
+[Slices]
+    [Slices.Affected_Homes]
+        Name = "Affected Homes"
+        Query = "ResidentialAffectedCount"
+        Chart = "Homes"
+        Category = "Affected"
+    [Slices.Minor_Homes]
+        Name = "Minor Homes"
+        Query = "ResidentialMinorCount"
+        Chart = "Homes"
+        Category = "Minor"
+    [Slices.Major_Homes]
+        Name = "Major Homes"
+        Query = "ResidentialMajorCount"
+        Chart = "Homes"
+        Category = "Major"
+    [Slices.Destroyed_Homes]
+        Name = "Destroyed Homes"
+        Query = "ResidentialDestroyedCount"
+        Chart = "Homes"
+        Category = "Destroyed"
+    [Slices.Affected_Businesses]
+        Name = "Affected Businesses"
+        Query = "CommercialAffectedCount"
+        Chart = "Businesses"
+        Category = "Affected"
+    [Slices.Minor_Businesses]
+        Name = "Minor Businesses"
+        Query = "CommercialMinorCount"
+        Chart = "Businesses"
+        Category = "Minor"
+    [Slices.Major_Businesses]
+        Name = "Major Businesses"
+        Query = "CommercialMajorCount"
+        Chart = "Businesses"
+        Category = "Major"
+    [Slices.Destroyed_Businesses]
+        Name = "Destroyed Businesses"
+        Query = "CommercialDestroyedCount"
+        Chart = "Businesses"
+        Category = "Destroyed"
+    [Slices.Affected_Public]
+        Name = "Affected Public"
+        Query = "PublicAffectedCount"
+        Chart = "Public"
+        Category = "Affected"
+    [Slices.Minor_Public]
+        Name = "Minor Public"
+        Query = "PublicMinorCount"
+        Chart = "Public"
+        Category = "Minor"
+    [Slices.Major_Public]
+        Name = "Major Public"
+        Query = "PublicMajorCount"
+        Chart = "Public"
+        Category = "Major"
+    [Slices.Destroyed_Public]
+        Name = "Destroyed Public"
+        Query = "PublicDestroyedCount"
+        Chart = "Public"
+        Category = "Destroyed"
+    [Slices.Affected_Industrial]
+        Name = "Affected Industrial"
+        Query = "IndustrialAffectedCount"
+        Chart = "Industrial"
+        Category = "Affected"
+    [Slices.Minor_Industrial]
+        Name = "Minor Industrial"
+        Query = "IndustrialMinorCount"
+        Chart = "Industrial"
+        Category = "Minor"
+    [Slices.Major_Industrial]
+        Name = "Major Industrial"
+        Query = "IndustrialMajorCount"
+        Chart = "Industrial"
+        Category = "Major"
+    [Slices.Destroyed_Industrial]
+        Name = "Destroyed Industrial"
+        Query = "IndustrialDestroyedCount"
+        Chart = "Industrial"
+        Category = "Destroyed"

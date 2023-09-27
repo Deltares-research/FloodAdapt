@@ -35,12 +35,7 @@ def test_fiat_adapter_no_measures(cleanup_database):
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_database
-        / "charleston"
-        / "output"
-        / "results"
-        / "current_extreme12ft_no_measures"
-        / "fiat_model"
+        test_scenario.direct_impacts.fiat_path
         / "exposure"
         / "exposure.csv"
     )
