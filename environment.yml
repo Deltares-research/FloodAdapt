@@ -15,6 +15,7 @@ dependencies:
     - git+https://github.com/Deltares/hydromt_fiat.git@env_fix
     - git+https://github.com/Deltares/fiat_toolbox.git
     - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
+    - git+https://github.com/Deltares/Delft-FIAT.git
     - git+https://github.com/Deltares/cht_cyclones.git
   - black
   - typos
