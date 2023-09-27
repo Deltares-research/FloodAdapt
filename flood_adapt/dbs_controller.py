@@ -1155,7 +1155,7 @@ class Database(IDatabase):
             if results_path.exists():
                 shutil.rmtree(results_path, ignore_errors=False)
 
-            simulation_path = self.input_path.parent / "output" / "scenarios" / name
+            simulation_path = self.input_path.parent / "output" / "simulations" / name
             if simulation_path.exists():
                 shutil.rmtree(simulation_path, ignore_errors=False)
 
