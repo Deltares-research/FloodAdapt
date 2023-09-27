@@ -1471,7 +1471,12 @@ class Database(IDatabase):
         # If single event read with hydromt-sfincs
         if not return_period:
             model_path = self.input_path.parent.joinpath(
-                "output", "simulations", scenario_name, "overland"
+                "output",
+                "Scenarios",
+                scenario_name,
+                "Flooding",
+                "simulations",
+                self.site.attrs.sfincs.overland_model,
             )
             mod = SfincsModel(model_path, mode="r")
 
@@ -1479,8 +1484,9 @@ class Database(IDatabase):
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
-                "simulations",
+                "Scenarios",
                 scenario_name,
+                "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
@@ -1513,7 +1519,7 @@ class Database(IDatabase):
             "output", "Scenarios", scenario_name, "Impacts"
         )
         gdfs = {}
-        for aggr_area in out_path.glob(f"Impacts_aggregated_*_{scenario_name}.gpkg"):
+        for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
             label = aggr_area.stem.split(f"{scenario_name}_")[-1]
             gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
             gdfs[label] = gdfs[label].to_crs(4326)
