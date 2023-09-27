@@ -27,7 +27,7 @@ class Benefit(IBenefit):
     def init(self):
         """Initiation function called when object is created through the file or dict options"""
         self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "benefits", self.attrs.name
+            "output", "Benefits", self.attrs.name
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()

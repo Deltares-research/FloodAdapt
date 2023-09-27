@@ -272,9 +272,8 @@ class Hazard:
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
-
         # WITHOUT A SFINCS FOLDER WE CANNOT READ sfincs_map.nc ANYMORE
-        # # remove simulation folders
+        # remove simulation folders
         # if not self.site.attrs.sfincs.save_simulation:
         #     for simulation_path in self.simulation_paths:
         #         if os.path.exists(simulation_path.parent):
@@ -634,8 +633,10 @@ class Hazard:
 
     def postprocess_sfincs(self):
         if self._mode == Mode.single_event:
+            # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
-            # self.sfincs_map_path = self.results_dir.joinpath("sfincs_map.nc")
+            # Copy SFINCS output map to main folder
+            # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
             # shutil.copyfile(
             #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
             # )

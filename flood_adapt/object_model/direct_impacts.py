@@ -250,7 +250,7 @@ class DirectImpacts:
         # Postprocess the FIAT results
         # First move and rename fiat output csv
         fiat_results_path = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv")
-        shutil.move(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
+        shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
 
@@ -348,7 +348,7 @@ class DirectImpacts:
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
-            outpath = output_fold.joinpath(f"Impacts_aggregated_{aggr_label}_{self.name}.gpkg")
+            outpath = output_fold.joinpath(f"Impacts_aggregated_{self.name}_{aggr_label}.gpkg")
             # Save file
             AggregationAreas.write_spatial_file(
                 metrics,
