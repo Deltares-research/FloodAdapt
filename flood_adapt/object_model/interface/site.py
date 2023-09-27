@@ -40,13 +40,21 @@ class SfincsModel(BaseModel):
     version: str
     offshore_model: str
     overland_model: str
-    datum_offshore_model: str
-    datum_overland_model: str
-    diff_datum_offshore_overland: UnitfulLength
-    tidal_components: str
     ambient_air_pressure: float
     floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
+
+
+class VerticalReferenceModel(BaseModel):
+    name: str
+    height: UnitfulLength
+
+
+class WaterLevelReferenceModel(BaseModel):
+    reference: VerticalReferenceModel
+    localdatum: VerticalReferenceModel
+    msl: VerticalReferenceModel
+    other: Optional[list[VerticalReferenceModel]]  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -92,10 +100,19 @@ class DemModel(BaseModel):
     indexfilename: str
 
 
+class EquityModel(BaseModel):
+    census_data: str
+    # aggregation_type: str
+    # aggregation_label: Optional[str] = "name"
+    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    totalpopulation_label: Optional[str] = "TotalPopulation"
+
+
 class AggregationModel(BaseModel):
     name: str
     file: str
     field_name: str
+    equity: Optional[EquityModel]
 
 
 class BFEModel(BaseModel):
@@ -113,6 +130,7 @@ class FiatModel(BaseModel):
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
+    # equity: Optional[EquityModel]
     bfe: BFEModel
 
 
@@ -136,8 +154,8 @@ class Obs_stationModel(BaseModel):
     lon: float
     mllw: Optional[UnitfulLength]
     mhhw: Optional[UnitfulLength]
-    localdatum: UnitfulLength
-    msl: UnitfulLength
+    localdatum: Optional[UnitfulLength]
+    msl: Optional[UnitfulLength]
 
 
 class BenefitsModel(BaseModel):
@@ -172,6 +190,7 @@ class SiteModel(BaseModel):
     lat: float
     lon: float
     sfincs: SfincsModel
+    water_level: WaterLevelReferenceModel
     cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel

@@ -28,5 +28,5 @@ def test_property_types(cleanup_database):
     database = api_startup.read_database(test_database_path, test_site_name)
     types = api_startup.get_property_types(database)
     assert isinstance(types, list)
-    assert len(types) == 2
+    assert len(types) == 3
     assert "RES" in types
