@@ -1169,7 +1169,7 @@ class Database(IDatabase):
             # For every file in the infographics folder, check if the scenario name is in the file name. If so, delete it.
             for file in infographics_folder.glob("*"):
                 if name in file.name:
-                    file.unlink()            
+                    file.unlink()
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.

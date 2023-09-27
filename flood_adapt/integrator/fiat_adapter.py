@@ -54,7 +54,7 @@ class FiatAdapter:
 
         self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
 
-    def __del__(self) -> None:  
+    def __del__(self) -> None:
         # Close fiat_logger
         for handler in self.fiat_logger.handlers:
             handler.close()

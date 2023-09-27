@@ -134,10 +134,10 @@ class Scenario(IScenario):
 
     @staticmethod
     def close_root_logger_handlers():
-        """Close and remove all handlers from the root logger. This way, 
-        it is possible to delete the log file, which is not possible if 
+        """Close and remove all handlers from the root logger. This way,
+        it is possible to delete the log file, which is not possible if
         the file is still open."""
-        
+
         # Get the root logger
         root_logger = logging.getLogger("")
 
