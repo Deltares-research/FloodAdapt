@@ -9,15 +9,36 @@ cstype = "projected"
 version = "SFINCS_v2.0.1_tag_exe" #"sfincs20_AlpeDHuez_release"
 offshore_model = "offshore"
 overland_model = "overland"
-datum_offshore_model = "MSL"
-datum_overland_model = "NAVD88"
-tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
 ambient_air_pressure = 102000
 floodmap_no_data_value = -9999
 floodmap_units = "feet"
-save_simulation = "False"						 
-[sfincs.diff_datum_offshore_overland]
-value = 0.067
+save_simulation = "False"
+
+[water_level]
+[water_level.reference]
+name = "MLLW"
+[water_level.reference.height]
+value = 0.0
+units = "meters"
+[water_level.msl]
+name = "MSL"
+[water_level.msl.height]
+value = 0.89
+units = "meters"
+[water_level.localdatum]
+name = "NAVD88"
+[water_level.localdatum.height]
+value = 0.957
+units = "meters"
+[[water_level.other]]
+name = "MHHW"
+[water_level.other.height]
+value = 1.757
+units = "meters"
+[[water_level.other]]
+name = "MLLW"
+[water_level.other.height]
+value = 0.0
 units = "meters"
 
 [cyclone_track_database]
@@ -58,12 +79,12 @@ floodmap_type = "water_level"
 non_building_names = ["road"]
 damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
-save_simulation = "False"						 
+save_simulation = "False"
 
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
-field_name = "bfe"																  
+field_name = "bfe"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"

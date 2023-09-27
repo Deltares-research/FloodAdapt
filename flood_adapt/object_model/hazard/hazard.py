@@ -226,22 +226,24 @@ class Hazard:
         # only for Synthetic and historical from nearshore
         for ii, event in enumerate(self.event_list):
             if self.event.attrs.template == "Synthetic":
-                self.event.add_tide_and_surge_ts()
-                self.wl_ts = self.event.tide_surge_ts
-                # Add water level offset
-                self.wl_ts[1] = (
-                    self.wl_ts[1] + self.event.attrs.water_level_offset.value
+                self.event.add_tide_and_surge_ts(
+                    self.site.attrs.water_level.msl.height.convert(
+                        self.site.attrs.gui.default_length_units
+                    )
                 )
+                self.wl_ts = self.event.tide_surge_ts
             elif self.event.attrs.template == "Historical_nearshore":
                 self.wl_ts = self.event.tide_surge_ts
             # In both cases add SLR
-            self.wl_ts[1] = (
-                self.wl_ts[1] + self.physical_projection.attrs.sea_level_rise.value
+            self.wl_ts[1] = self.wl_ts[
+                1
+            ] + self.physical_projection.attrs.sea_level_rise.convert(
+                self.site.attrs.gui.default_length_units
             )
         return self
 
     @staticmethod
-    def get_event_object(event_path):  # TODO This could be used above as well?
+    def get_event_object(event_path):
         mode = Event.get_mode(event_path)
         if mode == Mode.single_event:
             # parse event config file to get event template
@@ -361,13 +363,14 @@ class Hazard:
             # Generate and change water level boundary condition
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
+                # generate hazard water level bc incl SLR (in the offshore model these are already included)
+                # returning wl referenced to MSL
                 self.add_wl_ts()
                 # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
                 gui_units = UnitfulLength(
                     value=1.0, units=self.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
-                # generate hazard water level bc incl SLR and offset (in the offshore model these are already included)
                 self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
@@ -380,8 +383,6 @@ class Hazard:
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
-                # add difference between vertical datum of offshore and overland model
-                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
                 # turn off pressure correction at the boundaries because the effect of
                 # atmospheric pressure is already included in the water levels from the
                 # offshore model
@@ -389,6 +390,12 @@ class Hazard:
 
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
+            )
+            # add difference between MSL (vertical datum of offshore nad backend in general) and overland model
+            self.wl_ts += self.site.attrs.water_level.msl.height.convert(
+                UnitTypesLength("meters")
+            ) - self.site.attrs.water_level.localdatum.height.convert(
+                UnitTypesLength("meters")
             )
             model.add_wl_bc(self.wl_ts)
 
@@ -779,7 +786,9 @@ class Hazard:
             zs_rp_maps.append(zs_rp_da.unstack())
 
             # #create single nc
-            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
+            zs_rp_single = xr.DataArray(
+                data=h, coords={"z": zs["z"]}, attrs={"units": "meters"}
+            ).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
