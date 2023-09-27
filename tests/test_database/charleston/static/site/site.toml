@@ -93,7 +93,6 @@ census_data  = "../templates/fiat/equity/census_data_aggr_lvl_1.csv"
 percapitalincome_label= "PerCapitaIncome"
 totalpopulation_label= "TotalPopulation"
 
-
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
@@ -102,7 +101,6 @@ field_name = "name"
 census_data  = "../templates/fiat/equity/census_data_aggr_lvl_2.csv"
 percapitalincome_label= "PerCapitaIncome"
 totalpopulation_label= "TotalPopulation"
-
 
 [[river]]
 name = "cooper"

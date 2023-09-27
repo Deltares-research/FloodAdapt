@@ -140,12 +140,13 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        results_path = self.database_input_path.parent.joinpath("output", "infometrics")
+        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
 
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
             metrics = pd.read_csv(
-                results_path.joinpath(f"{scn_name}_metrics.csv"), index_col=0
+                results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
+                index_col=0,
             )
             scenarios.loc[index, "EAD"] = float(
                 metrics["ExpectedAnnualDamages"]["Value"]

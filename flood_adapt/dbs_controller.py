@@ -1560,7 +1560,7 @@ class Database(IDatabase):
         scenario = self.get_scenario(scenario_name)
 
         simulations = list(
-            self.input_path.parent.joinpath("output", "simulations").glob("*")
+            self.input_path.parent.joinpath("output", "Scenarios").glob("*")
         )
 
         scns_simulated = [self.get_scenario(sim.name) for sim in simulations]
@@ -1568,10 +1568,10 @@ class Database(IDatabase):
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
                 path_0 = self.input_path.parent.joinpath(
-                    "output", "simulations", scn.attrs.name
+                    "output", "Scenarios", scn.attrs.name, "Flooding"
                 )
                 path_new = self.input_path.parent.joinpath(
-                    "output", "simulations", scenario.attrs.name
+                    "output", "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.sfincs_has_run_check()

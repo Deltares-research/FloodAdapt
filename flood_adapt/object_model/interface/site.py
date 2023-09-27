@@ -36,7 +36,7 @@ class SfincsModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: Optional[str]
+    version: Optional[str] = ""
     offshore_model: str
     overland_model: str
     ambient_air_pressure: float
