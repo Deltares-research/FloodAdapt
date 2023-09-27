@@ -18,7 +18,7 @@ exposure_template = pd.read_csv(
 )
 
 
-def test_fiat_adapter_no_measures():
+def test_fiat_adapter_no_measures(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -35,12 +35,7 @@ def test_fiat_adapter_no_measures():
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_database
-        / "charleston"
-        / "output"
-        / "results"
-        / "current_extreme12ft_no_measures"
-        / "fiat_model"
+        test_scenario.direct_impacts.fiat_path
         / "exposure"
         / "exposure.csv"
     )
@@ -180,7 +175,7 @@ def test_fiat_adapter_measures(cleanup_database):
     )
 
 
-def test_fiat_return_periods():
+def test_fiat_return_periods(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
