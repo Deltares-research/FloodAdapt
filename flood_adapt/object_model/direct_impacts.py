@@ -249,7 +249,9 @@ class DirectImpacts:
     def postprocess_fiat(self):
         # Postprocess the FIAT results
         # First move and rename fiat output csv
-        fiat_results_path = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv")
+        fiat_results_path = self.impacts_path.joinpath(
+            f"Impacts_detailed_{self.name}.csv"
+        )
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
@@ -270,7 +272,7 @@ class DirectImpacts:
         # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder
         # if not self.site_info.attrs.fiat.save_simulation:
-            # shutil.rmtree(self.fiat_path)
+        # shutil.rmtree(self.fiat_path)
 
     def _create_equity(self, metrics_path):
         # Get metrics tables
@@ -353,7 +355,9 @@ class DirectImpacts:
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
-            outpath = output_fold.joinpath(f"Impacts_aggregated_{self.name}_{aggr_label}.gpkg")
+            outpath = output_fold.joinpath(
+                f"Impacts_aggregated_{self.name}_{aggr_label}.gpkg"
+            )
             # Save file
             AggregationAreas.write_spatial_file(
                 metrics,
@@ -376,7 +380,9 @@ class DirectImpacts:
             self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved
-        outpath = self.impacts_path.joinpath(f"Impacts_building_footprints_{self.name}.gpkg")
+        outpath = self.impacts_path.joinpath(
+            f"Impacts_building_footprints_{self.name}.gpkg"
+        )
 
         # Read files
         # TODO Will it save time if we load this footprints once when the database is initialized?
@@ -406,8 +412,8 @@ class DirectImpacts:
 
         # Specify the metrics output path
         metrics_outputs_path = self.database_input_path.parent.joinpath(
-            "output", 
-            "Scenarios", 
+            "output",
+            "Scenarios",
             self.name,
             f"Infometrics_{self.name}.csv",
         )
