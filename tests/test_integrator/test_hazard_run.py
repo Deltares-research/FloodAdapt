@@ -244,8 +244,10 @@ def test_preprocess_prob_eventset(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
+        / "simulations"
         / "event_0001"
         / "overland"
         / "sfincs.bzs"
@@ -254,8 +256,10 @@ def test_preprocess_prob_eventset(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
+        / "simulations"
         / "event_0039"
         / "overland"
         / "sfincs.bzs"
@@ -293,8 +297,10 @@ def test_preprocess_rainfall_increase(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_precip_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
         / "sfincs.precip"
     )
@@ -321,8 +327,10 @@ def test_preprocess_rainfall_increase(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_precip_rainfall_incr_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
         / "sfincs.precip"
     )
@@ -355,8 +363,10 @@ def test_run_prob_eventset(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
+        / "simulations"
         / "event_0001"
         / "overland"
         / "sfincs_map.nc"
@@ -365,8 +375,10 @@ def test_run_prob_eventset(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
+        / "simulations"
         / "event_0039"
         / "overland"
         / "sfincs_map.nc"
@@ -398,8 +410,9 @@ def test_rp_floodmap_calculation(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
         / "rp_water_level.nc"
     )
     assert nc_file.is_file()
@@ -413,8 +426,10 @@ def test_rp_floodmap_calculation(cleanup_database: None):
             test_database
             / "charleston"
             / "output"
-            / "simulations"
+            / "Scenarios"
             / "current_test_set_no_measures"
+            / "Flooding"
+            / "simulations"
             / event.attrs.name
             / "overland"
             / "sfincs_map.nc"
@@ -447,8 +462,10 @@ def test_rp_floodmap_calculation(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_test_set_no_measures"
+        / "Flooding"
+        / "simulations"
         / "floodmaps.png"
     )
     plt.savefig(fn, bbox_inches="tight", dpi=225)
@@ -523,8 +540,10 @@ def test_multiple_rivers(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
     )
     dis_file = output_folder / "sfincs.dis"
@@ -588,8 +607,10 @@ def test_no_rivers(cleanup_database: None):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
     )
     dis_file = output_folder / "sfincs.dis"

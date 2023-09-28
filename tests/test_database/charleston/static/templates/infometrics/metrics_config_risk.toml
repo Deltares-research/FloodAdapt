@@ -7,3 +7,11 @@ select = "SUM(`Risk (EAD)`)"
 filter = "`Primary Object Type` != 'road'"
 long_name = "Total Expected Annual Damage"
 show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP100"
+description = "Total damage with return period of 100 years"
+select = "SUM(`Total Damage (100Y)`)"
+filter = ""
+long_name = "Total Damage (RP 100)"
+show_in_metrics_table = "True"

@@ -1129,7 +1129,7 @@ class Database(IDatabase):
 
         # If strategy is used in a benefit, raise error
         if used_in_benefit:
-            text = "benefit" if len(used_in_benefit) == 1 else "benefits"
+            text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
             raise ValueError(
                 f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
@@ -1158,7 +1158,7 @@ class Database(IDatabase):
         IBenefit
             Benefit object
         """
-        benefit_path = self.input_path / "benefits" / name / f"{name}.toml"
+        benefit_path = self.input_path / "Benefits" / name / f"{name}.toml"
         benefit = Benefit.load_file(benefit_path)
         return benefit
 
@@ -1185,10 +1185,10 @@ class Database(IDatabase):
                 f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
             )
         else:
-            (self.input_path / "benefits" / benefit.attrs.name).mkdir()
+            (self.input_path / "Benefits" / benefit.attrs.name).mkdir()
             benefit.save(
                 self.input_path
-                / "benefits"
+                / "Benefits"
                 / benefit.attrs.name
                 / f"{benefit.attrs.name}.toml"
             )
@@ -1203,14 +1203,14 @@ class Database(IDatabase):
         """
         benefit.save(
             self.input_path
-            / "benefits"
+            / "Benefits"
             / benefit.attrs.name
             / f"{benefit.attrs.name}.toml"
         )
 
         # Delete output if edited
         output_path = (
-            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+            self.input_path.parent / "output" / "Benefits" / benefit.attrs.name
         )
 
         if output_path.exists():
@@ -1229,12 +1229,12 @@ class Database(IDatabase):
         ValueError
             Raise error if benefit has already model output
         """
-        benefit_path = self.input_path / "benefits" / name
+        benefit_path = self.input_path / "Benefits" / name
         benefit = Benefit.load_file(benefit_path / f"{name}.toml")
         shutil.rmtree(benefit_path, ignore_errors=True)
         # Delete output if edited
         output_path = (
-            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+            self.input_path.parent / "output" / "Benefits" / benefit.attrs.name
         )
 
         if output_path.exists():
@@ -1471,7 +1471,12 @@ class Database(IDatabase):
         # If single event read with hydromt-sfincs
         if not return_period:
             model_path = self.input_path.parent.joinpath(
-                "output", "simulations", scenario_name, "overland"
+                "output",
+                "Scenarios",
+                scenario_name,
+                "Flooding",
+                "simulations",
+                self.site.attrs.sfincs.overland_model,
             )
             mod = SfincsModel(model_path, mode="r")
 
@@ -1479,43 +1484,20 @@ class Database(IDatabase):
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
-                "simulations",
+                "Scenarios",
                 scenario_name,
+                "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
 
         return zsmax
 
-    def get_fiat_results(self, scenario_name: str):
-        csv_path = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results.csv",
-        )
-        csv_path2 = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results_filt.csv",
-        )
-        if not csv_path2.exists():
-            df = pd.read_csv(csv_path)
-            df = df[df["Primary Object Type"] != "road"]
-            df = df[df["Inundation Depth Event Structure"] > 0]
-            df = df[~df["Aggregation Label: Subdivision"].isna()]
-            df.to_csv(csv_path2)
-        df = pd.read_csv(csv_path2)
-        gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.X, df.Y))
-        gdf = gdf[["Total Damage Event", "geometry"]]
-        gdf["Total Damage Event"] = np.round(gdf["Total Damage Event"], 0)
-        gdf.crs = 4326
-        return gdf
-
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
-        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
-        footprints = out_path / "building_footprints.gpkg"
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
+        footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
         gdf = gdf.to_crs(4326)
         return gdf
@@ -1533,10 +1515,12 @@ class Database(IDatabase):
         _type_
             _description_
         """
-        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
         gdfs = {}
-        for aggr_area in out_path.glob("aggregated_damages_*.gpkg"):
-            label = aggr_area.stem.split("aggregated_damages_")[-1]
+        for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
+            label = aggr_area.stem.split(f"{scenario_name}_")[-1]
             gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
@@ -1582,7 +1566,7 @@ class Database(IDatabase):
         scenario = self.get_scenario(scenario_name)
 
         simulations = list(
-            self.input_path.parent.joinpath("output", "simulations").glob("*")
+            self.input_path.parent.joinpath("output", "Scenarios").glob("*")
         )
 
         scns_simulated = [self.get_scenario(sim.name) for sim in simulations]
@@ -1590,10 +1574,10 @@ class Database(IDatabase):
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
                 path_0 = self.input_path.parent.joinpath(
-                    "output", "simulations", scn.attrs.name
+                    "output", "Scenarios", scn.attrs.name, "Flooding"
                 )
                 path_new = self.input_path.parent.joinpath(
-                    "output", "simulations", scenario.attrs.name
+                    "output", "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.sfincs_has_run_check()

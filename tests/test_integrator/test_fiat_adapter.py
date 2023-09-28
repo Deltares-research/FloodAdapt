@@ -35,14 +35,7 @@ def test_fiat_adapter_no_measures(cleanup_database):
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_database
-        / "charleston"
-        / "output"
-        / "results"
-        / "current_extreme12ft_no_measures"
-        / "fiat_model"
-        / "exposure"
-        / "exposure.csv"
+        test_scenario.direct_impacts.fiat_path / "exposure" / "exposure.csv"
     )
 
     # check if exposure is left unchanged
@@ -70,11 +63,10 @@ def test_fiat_adapter_measures(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "results"
+        / "Scenarios"
         / "all_projections_extreme12ft_strategy_comb"
-        / "fiat_model"
-        / "exposure"
-        / "exposure.csv"
+        / "Impacts"
+        / "Impacts_detailed_all_projections_extreme12ft_strategy_comb.csv"
     )
 
     # check if new development area was added
