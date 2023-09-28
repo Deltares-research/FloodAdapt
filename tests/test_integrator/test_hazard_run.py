@@ -39,8 +39,10 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
         / "sfincs.bzs"
     )
