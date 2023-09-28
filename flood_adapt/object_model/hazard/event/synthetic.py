@@ -67,7 +67,7 @@ class Synthetic(Event, ISynthetic):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def add_tide_and_surge_ts(self, msl):
+    def add_tide_and_surge_ts(self):
         """generating time series of harmoneous tide (cosine) and gaussian surge shape
 
         Returns
@@ -94,7 +94,7 @@ class Synthetic(Event, ISynthetic):
                 self.attrs.time.duration_before_t0 + self.attrs.surge.shape_peak_time
             ) * 3600
             # convert surge peak to MSL in GUI units
-            peak = self.attrs.surge.shape_peak.value - msl
+            peak = self.attrs.surge.shape_peak.value
             surge = super().timeseries_shape(
                 "gaussian",
                 duration=duration,

@@ -39,8 +39,10 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
         test_database
         / "charleston"
         / "output"
-        / "simulations"
+        / "Scenarios"
         / "current_extreme12ft_no_measures"
+        / "Flooding"
+        / "simulations"
         / "overland"
         / "sfincs.bzs"
     )
@@ -59,7 +61,7 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
     )
     localdatum = test_scenario.site_info.attrs.water_level.localdatum.height.convert(
         "meters"
-    )
+    ) - test_scenario.site_info.attrs.water_level.msl.height.convert("meters")
 
     assert np.abs(peak_model - (surge_peak + tide_amp - localdatum)) < 0.01
 
