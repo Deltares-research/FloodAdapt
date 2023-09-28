@@ -25,10 +25,6 @@ def get_max_water_level(name: str, database: IDatabase, rp: int = None):
     return database.get_max_water_level(name, rp)
 
 
-def get_fiat_results(name: str, database: IDatabase):
-    return database.get_fiat_results(name)
-
-
 def get_fiat_footprints(name: str, database: IDatabase):
     return database.get_fiat_footprints(name)
 
@@ -63,9 +59,9 @@ def get_infographic(name: str, database: IDatabase) -> str:
 
     database_path = Path(database.input_path).parent
     config_path = database_path.joinpath("static", "templates", "infographics")
-    output_path = database_path.joinpath("output", "infographics")
+    output_path = database_path.joinpath("output", "Scenarios", impact.name)
     metrics_outputs_path = database_path.joinpath(
-        "output", "infometrics", f"{impact.name}_metrics.csv"
+        "output", "Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
     )
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(
@@ -102,8 +98,9 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
     # Create the infographic path
     metrics_path = Path(database.input_path).parent.joinpath(
         "output",
-        "infometrics",
-        f"{name}_metrics.csv",
+        "Scenarios",
+        name,
+        f"Infometrics_{name}.csv",
     )
 
     # Check if the file exists

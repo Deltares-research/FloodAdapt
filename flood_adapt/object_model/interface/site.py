@@ -36,12 +36,12 @@ class SfincsModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: str
+    version: Optional[str] = ""
     offshore_model: str
     overland_model: str
     ambient_air_pressure: float
-    floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
+    save_simulation: bool
 
 
 class VerticalReferenceModel(BaseModel):
@@ -129,6 +129,7 @@ class FiatModel(BaseModel):
     building_footprints: Optional[str]
     # equity: Optional[EquityModel]
     bfe: BFEModel
+    save_simulation: bool
 
 
 class RiverModel(BaseModel):

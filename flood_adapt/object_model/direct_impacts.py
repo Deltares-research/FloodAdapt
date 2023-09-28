@@ -38,26 +38,26 @@ class DirectImpacts:
     hazard: Hazard
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def __init__(
+        self, scenario: ScenarioModel, database_input_path: Path, results_path: Path
+    ) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
         self.scenario = scenario
+        self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
-        self.set_hazard(scenario, database_input_path)
+        self.set_hazard(
+            scenario, database_input_path, self.results_path.joinpath("Flooding")
+        )
         # Get site config
         self.site_toml_path = (
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
         self.site_info = Site.load_file(self.site_toml_path)
         # Define results path
-        self.results_path = (
-            self.database_input_path.parent
-            / "output"
-            / "results"
-            / self.scenario.name
-            / "fiat_model"
-        )
+        self.impacts_path = self.results_path.joinpath("Impacts")
+        self.fiat_path = self.impacts_path.joinpath("fiat_model")
         self.has_run = self.fiat_has_run_check()
 
     def fiat_has_run_check(self):
@@ -68,8 +68,7 @@ class DirectImpacts:
         boolean
             True if fiat has run, False if something went wrong
         """
-        fiat_path = self.results_path
-        log_file = fiat_path.joinpath("output", "fiat.log")
+        log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():
             with open(log_file) as f:
                 if "All done!" in f.read():
@@ -107,7 +106,9 @@ class DirectImpacts:
         )
         self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
 
-    def set_hazard(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def set_hazard(
+        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+    ) -> None:
         """Sets the Hazard object of the scenario.
 
         Parameters
@@ -115,7 +116,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database_input_path)
+        self.hazard = Hazard(scenario, database_input_path, results_dir)
 
     def preprocess_models(self):
         logging.info("Preparing impact models...")
@@ -161,10 +162,10 @@ class DirectImpacts:
         )
 
         # If path for results does not yet exist, make it
-        if not self.results_path.is_dir():
-            self.results_path.mkdir(parents=True)
+        if not self.fiat_path.is_dir():
+            self.fiat_path.mkdir(parents=True)
         else:
-            shutil.rmtree(self.results_path)
+            shutil.rmtree(self.fiat_path)
 
         # Get ids of existing objects
         ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
@@ -227,18 +228,15 @@ class DirectImpacts:
         fa.set_hazard(self.hazard)
 
         # Save the updated FIAT model
-        fa.fiat_model.set_root(self.results_path)
+        fa.fiat_model.set_root(self.fiat_path)
         fa.fiat_model.write()
 
     def run_fiat(self):
         fiat_exec = str(
             self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
         )
-        results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.name
-        )
-        with cd(self.results_path):
-            with open(results_dir.joinpath("fiat.log"), "a") as log_handler:
+        with cd(self.fiat_path):
+            with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
                     f'"{fiat_exec}" run settings.toml',
                     stdout=log_handler,
@@ -250,14 +248,11 @@ class DirectImpacts:
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
-        fiat_results_path = self.database_input_path.parent.joinpath(
-            "output",
-            "results",
-            f"{self.name}",
-            "fiat_model",
-            "output",
-            "output.csv",
+        # First move and rename fiat output csv
+        fiat_results_path = self.impacts_path.joinpath(
+            f"Impacts_detailed_{self.name}.csv"
         )
+        shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_path)
 
@@ -269,18 +264,23 @@ class DirectImpacts:
             self._create_equity(metrics_path)
 
         # Aggregate results to regions
-        self._create_aggregation()
+        self._create_aggregation(metrics_path)
 
         # Merge points data to building footprints
         self._create_footprints(fiat_results_path)
+
+        # TODO add this when hydromt logger issue solution has been merged
+        # If site config is set to not keep FIAT simulation, then delete folder
+        # if not self.site_info.attrs.fiat.save_simulation:
+        # shutil.rmtree(self.fiat_path)
 
     def _create_equity(self, metrics_path):
         # Get metrics tables
         metrics_fold = metrics_path.parent
         # loop through metrics aggregated files
-        for file in metrics_fold.glob(f"{self.name}_metrics_*.csv"):
+        for file in metrics_fold.glob(f"Infometrics_{self.name}_*.csv"):
             # Load metrics
-            aggr_label = file.stem.split("_metrics_")[-1]
+            aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
                 for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
@@ -330,22 +330,20 @@ class DirectImpacts:
             metrics_new.index.name = None
             metrics_new.to_csv(file)
 
-    def _create_aggregation(self):
+    def _create_aggregation(self, metrics_path):
         logging.info("Create aggregations...")
 
         # Define where aggregated results are saved
-        output_fold = self.database_input_path.parent.joinpath(
-            "output", "results", f"{self.name}"
-        )
+        output_fold = self.impacts_path
         # Get metrics tables
-        metrics_fold = self.database_input_path.parent.joinpath("output", "infometrics")
+        metrics_fold = metrics_path.parent
 
         # loop through metrics aggregated files
-        for file in metrics_fold.glob(f"{self.name}_metrics_*.*"):
+        for file in metrics_fold.glob(f"Infometrics_{self.name}_*.csv"):
             # Load metrics
             metrics = pd.read_csv(file)
             # Load aggregation areas
-            aggr_label = file.stem.split("_metrics_")[-1]
+            aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
@@ -357,7 +355,9 @@ class DirectImpacts:
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
-            outpath = output_fold.joinpath(f"aggregated_damages_{aggr_label}.gpkg")
+            outpath = output_fold.joinpath(
+                f"Impacts_aggregated_{self.name}_{aggr_label}.gpkg"
+            )
             # Save file
             AggregationAreas.write_spatial_file(
                 metrics,
@@ -380,8 +380,8 @@ class DirectImpacts:
             self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved
-        outpath = self.database_input_path.parent.joinpath(
-            "output", "results", f"{self.name}", "building_footprints.gpkg"
+        outpath = self.impacts_path.joinpath(
+            f"Impacts_building_footprints_{self.name}.gpkg"
         )
 
         # Read files
@@ -413,8 +413,9 @@ class DirectImpacts:
         # Specify the metrics output path
         metrics_outputs_path = self.database_input_path.parent.joinpath(
             "output",
-            "infometrics",
-            f"{self.name}_metrics.csv",
+            "Scenarios",
+            self.name,
+            f"Infometrics_{self.name}.csv",
         )
 
         # Get the results dataframe
@@ -439,7 +440,7 @@ class DirectImpacts:
         # Get the infographic
         database_path = Path(self.database_input_path).parent
         config_path = database_path.joinpath("static", "templates", "infographics")
-        output_path = database_path.joinpath("output", "infographics")
+        output_path = database_path.joinpath("output", "Scenarios", self.name)
         InforgraphicFactory.create_infographic_file_writer(
             infographic_mode=mode,
             scenario_name=self.name,
