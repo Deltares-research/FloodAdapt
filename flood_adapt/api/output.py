@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Any
+import numpy as np
 
 import pandas as pd
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.database import IDatabase
-
+import geopandas as gpd
 
 def get_outputs(database: IDatabase) -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
@@ -21,17 +22,19 @@ def get_index_path(database: IDatabase) -> str:
     return database.get_index_path()
 
 
-def get_max_water_level(name: str, database: IDatabase, rp: int = None):
+def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.array:
     return database.get_max_water_level(name, rp)
 
 
-def get_fiat_footprints(name: str, database: IDatabase):
+def get_fiat_footprints(name: str, database: IDatabase) ->gpd. GeoDataFrame:
     return database.get_fiat_footprints(name)
 
 
-def get_aggregation(name: str, database: IDatabase):
+def get_aggregation(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     return database.get_aggregation(name)
 
+def get_roads(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+    return database.get_roads(name)
 
 def get_infographic(name: str, database: IDatabase) -> str:
     """Return the HTML string of the infographic for the given scenario.
