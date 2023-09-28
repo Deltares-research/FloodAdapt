@@ -269,10 +269,16 @@ class DirectImpacts:
         # Merge points data to building footprints
         self._create_footprints(fiat_results_path)
 
+        # Create a roads spatial file
+        self._create_roads(fiat_results_path)
+
         # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder
         # if not self.site_info.attrs.fiat.save_simulation:
         # shutil.rmtree(self.fiat_path)
+    
+    def _create_roads(self, fiat_results_path):
+        print("test")
 
     def _create_equity(self, metrics_path):
         # Get metrics tables
