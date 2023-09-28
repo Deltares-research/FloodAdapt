@@ -13,8 +13,8 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -1490,9 +1490,10 @@ class Database(IDatabase):
                 "simulations",
                 self.site.attrs.sfincs.overland_model,
             )
-            mod = SfincsModel(model_path, mode="r")
+            model = SfincsAdapter(model_root=model_path, site=self.site)
 
-            zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+            zsmax = model.read_zsmax().to_numpy()
+            del model
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
