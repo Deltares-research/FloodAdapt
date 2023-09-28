@@ -1151,25 +1151,9 @@ class Database(IDatabase):
             scenario_path = self.input_path / "scenarios" / name
             shutil.rmtree(scenario_path, ignore_errors=False)
 
-            results_path = self.input_path.parent / "output" / "results" / name
+            results_path = self.input_path.parent / "output" / "Scenarios" / name
             if results_path.exists():
                 shutil.rmtree(results_path, ignore_errors=False)
-
-            simulation_path = self.input_path.parent / "output" / "simulations" / name
-            if simulation_path.exists():
-                shutil.rmtree(simulation_path, ignore_errors=False)
-
-            infometrics_folder = self.input_path.parent / "output" / "infometrics"
-            # For every file in the infometrics folder, check if the scenario name is in the file name. If so, delete it.
-            for file in infometrics_folder.glob("*"):
-                if name in file.name:
-                    file.unlink()
-
-            infographics_folder = self.input_path.parent / "output" / "infographics"
-            # For every file in the infographics folder, check if the scenario name is in the file name. If so, delete it.
-            for file in infographics_folder.glob("*"):
-                if name in file.name:
-                    file.unlink()
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.
