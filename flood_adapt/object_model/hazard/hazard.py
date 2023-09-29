@@ -613,9 +613,6 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
         elif self.event.attrs.template == "Historical_hurricane":
-            logging.info(
-                "Generating meteo input to the model from the hurricane track..."
-            )
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
 
@@ -623,11 +620,15 @@ class Hazard:
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
 
         if self.event.attrs.template == "Historical_hurricane":
+            logging.info(
+                "Generating meteo input to the model from the hurricane track..."
+            )
             offshore_model.add_spw_forcing(
                 historical_hurricane=self.event,
                 database_path=base_path,
                 model_dir=self.simulation_paths_offshore[ii],
             )
+            logging.info("Finished generating meteo data from hurricane track.")
 
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
