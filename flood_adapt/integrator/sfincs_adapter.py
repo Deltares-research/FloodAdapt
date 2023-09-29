@@ -380,7 +380,7 @@ class SfincsAdapter:
         """
 
         historical_hurricane.make_spw_file(
-            database_path=database_path, model_dir=model_dir
+            database_path=database_path, model_dir=model_dir, site=self.site
         )
 
     def set_config_spw(self, spw_name: str):
