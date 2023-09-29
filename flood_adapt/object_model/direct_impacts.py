@@ -253,8 +253,12 @@ class DirectImpacts:
             f"Impacts_detailed_{self.name}.csv"
         )
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
+
+        # Get the results dataframe
+        fiat_results_df = pd.read_csv(fiat_results_path)
+
         # Create the infometrics files
-        metrics_path = self._create_infometrics(fiat_results_path)
+        metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
         self._create_infographics(self.hazard.event_mode, metrics_path)
@@ -267,14 +271,39 @@ class DirectImpacts:
         self._create_aggregation(metrics_path)
 
         # Merge points data to building footprints
-        self._create_footprints(fiat_results_path)
+        self._create_footprints(fiat_results_df)
+
+        # Create a roads spatial file
+        if self.site_info.attrs.fiat.roads_file_name:
+            self._create_roads(fiat_results_df)
 
         # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder
         # if not self.site_info.attrs.fiat.save_simulation:
         # shutil.rmtree(self.fiat_path)
 
+    def _create_roads(self, fiat_results_df):
+        logging.info("Saving road impacts...")
+        # Read roads spatial file
+        roads = gpd.read_file(
+            self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
+        )
+        # Get columns to use
+        aggr_cols = [
+            name for name in fiat_results_df.columns if "Aggregation Label:" in name
+        ]
+        inun_cols = [name for name in roads.columns if "Inundation Depth" in name]
+        # Merge data
+        roads = roads[["Object ID", "geometry"] + inun_cols].merge(
+            fiat_results_df[["Object ID", "Primary Object Type"] + aggr_cols],
+            on="Object ID",
+        )
+        # Save as geopackage
+        outpath = self.impacts_path.joinpath(f"Impacts_roads_{self.name}.gpkg")
+        roads.to_file(outpath, format="geopackage")
+
     def _create_equity(self, metrics_path):
+        logging.info("Calculating equity weighted risk...")
         # Get metrics tables
         metrics_fold = metrics_path.parent
         # loop through metrics aggregated files
@@ -331,7 +360,7 @@ class DirectImpacts:
             metrics_new.to_csv(file)
 
     def _create_aggregation(self, metrics_path):
-        logging.info("Create aggregations...")
+        logging.info("Saving impacts on aggregation areas...")
 
         # Define where aggregated results are saved
         output_fold = self.impacts_path
@@ -367,8 +396,8 @@ class DirectImpacts:
                 file_format="geopackage",
             )
 
-    def _create_footprints(self, fiat_results_path):
-        logging.info("Create footprints...")
+    def _create_footprints(self, fiat_results_df):
+        logging.info("Saving impacts on building footprints...")
 
         # Get footprints file paths from site.toml
         # TODO ensure that if this does not happen we get same file name output from FIAT?
@@ -387,16 +416,24 @@ class DirectImpacts:
         # Read files
         # TODO Will it save time if we load this footprints once when the database is initialized?
         footprints = gpd.read_file(footprints_path, engine="pyogrio")
-        results = pd.read_csv(fiat_results_path)
         # Step to ensure that results is not a Geodataframe
-        if "geometry" in results.columns:
-            del results["geometry"]
+        if "geometry" in fiat_results_df.columns:
+            del fiat_results_df["geometry"]
+        # Check if there is new development area
+        new_development_area = None
+        file_path = self.fiat_path.joinpath(
+            "output", self.site_info.attrs.fiat.new_development_file_name
+        )
+        if file_path.exists():
+            new_development_area = gpd.read_file(file_path)
         # Save file
-        PointsToFootprints.write_footprint_file(footprints, results, outpath)
+        PointsToFootprints.write_footprint_file(
+            footprints, fiat_results_df, outpath, extra_footprints=new_development_area
+        )
 
-    def _create_infometrics(self, fiat_results_path) -> Path:
+    def _create_infometrics(self, fiat_results_df) -> Path:
         # Get the metrics configuration
-        logging.info("Creating infometrics...")
+        logging.info("Calculating infometrics...")
 
         if self.hazard.event_mode == "risk":
             ext = "_risk"
@@ -418,18 +455,19 @@ class DirectImpacts:
             f"Infometrics_{self.name}.csv",
         )
 
-        # Get the results dataframe
-        df = pd.read_csv(fiat_results_path)
-
         # Write the metrics to file
         metrics_writer = MetricsFileWriter(metrics_config_path)
 
         metrics_writer.parse_metrics_to_file(
-            df_results=df, metrics_path=metrics_outputs_path, write_aggregate=None
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate=None,
         )
 
         metrics_writer.parse_metrics_to_file(
-            df_results=df, metrics_path=metrics_outputs_path, write_aggregate="all"
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate="all",
         )
 
         return metrics_outputs_path

@@ -1455,7 +1455,9 @@ class Database(IDatabase):
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
-    def get_max_water_level(self, scenario_name: str, return_period: int = None):
+    def get_max_water_level(
+        self, scenario_name: str, return_period: int = None
+    ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
         Parameters
@@ -1499,6 +1501,15 @@ class Database(IDatabase):
         )
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
+        gdf = gdf.to_crs(4326)
+        return gdf
+
+    def get_roads(self, scenario_name: str) -> GeoDataFrame:
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
+        roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
+        gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
         return gdf
 

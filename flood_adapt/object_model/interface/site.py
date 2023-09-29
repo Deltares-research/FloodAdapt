@@ -122,14 +122,15 @@ class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
+    bfe: BFEModel
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "USD"
     building_footprints: Optional[str]
-    # equity: Optional[EquityModel]
-    bfe: BFEModel
-    save_simulation: bool
+    roads_file_name: Optional[str]
+    new_development_file_name: Optional[str]
+    save_simulation: Optional[bool] = False
 
 
 class RiverModel(BaseModel):
