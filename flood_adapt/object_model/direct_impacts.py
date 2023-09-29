@@ -459,11 +459,15 @@ class DirectImpacts:
         metrics_writer = MetricsFileWriter(metrics_config_path)
 
         metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df, metrics_path=metrics_outputs_path, write_aggregate=None
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate=None,
         )
 
         metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df, metrics_path=metrics_outputs_path, write_aggregate="all"
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate="all",
         )
 
         return metrics_outputs_path
