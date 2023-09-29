@@ -387,7 +387,7 @@ class SfincsAdapter:
         self.sf_model.set_config("spwfile", spw_name)
 
     def turn_off_bnd_press_correction(self):
-        self.sf_model.set_config("PAVBNDKEY", -9999)
+        self.sf_model.set_config("pavbnd", -9999)
 
     def read_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entre simulation"""
