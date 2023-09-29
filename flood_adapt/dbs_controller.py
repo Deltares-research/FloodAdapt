@@ -1455,7 +1455,9 @@ class Database(IDatabase):
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
-    def get_max_water_level(self, scenario_name: str, return_period: int = None) -> np.array:
+    def get_max_water_level(
+        self, scenario_name: str, return_period: int = None
+    ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
         Parameters

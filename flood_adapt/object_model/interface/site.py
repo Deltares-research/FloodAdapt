@@ -132,6 +132,7 @@ class FiatModel(BaseModel):
     new_development_file_name: Optional[str]
     save_simulation: Optional[bool] = False
 
+
 class RiverModel(BaseModel):
     """class describing the accepted input for the variable river in Site"""
 

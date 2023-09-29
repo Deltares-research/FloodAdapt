@@ -281,16 +281,23 @@ class DirectImpacts:
         # If site config is set to not keep FIAT simulation, then delete folder
         # if not self.site_info.attrs.fiat.save_simulation:
         # shutil.rmtree(self.fiat_path)
-    
+
     def _create_roads(self, fiat_results):
         logging.info("Saving road impacts...")
         # Read roads spatial file
-        roads = gpd.read_file(self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name))
+        roads = gpd.read_file(
+            self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
+        )
         # Get columns to use
-        aggr_cols = [name for name in fiat_results.columns if "Aggregation Label:" in name]
+        aggr_cols = [
+            name for name in fiat_results.columns if "Aggregation Label:" in name
+        ]
         inun_cols = [name for name in roads.columns if "Inundation Depth" in name]
         # Merge data
-        roads = pd.merge(roads[["Object ID", "geometry"] + inun_cols], fiat_results[["Object ID", "Primary Object Type"] + aggr_cols], on="Object ID")
+        roads = roads[["Object ID", "geometry"] + inun_cols].merge(
+            fiat_results[["Object ID", "Primary Object Type"] + aggr_cols],
+            on="Object ID",
+        )
         # Save as geopackage
         outpath = self.impacts_path.joinpath(f"Impacts_roads_{self.name}.gpkg")
         roads.to_file(outpath, format="geopackage")
@@ -414,11 +421,15 @@ class DirectImpacts:
             del results["geometry"]
         # Check if there is new development area
         new_development_area = None
-        file_path = self.fiat_path.joinpath("output", self.site_info.attrs.fiat.new_development_file_name)
+        file_path = self.fiat_path.joinpath(
+            "output", self.site_info.attrs.fiat.new_development_file_name
+        )
         if file_path.exists():
             new_development_area = gpd.read_file(file_path)
         # Save file
-        PointsToFootprints.write_footprint_file(footprints, results, outpath, extra_footprints=new_development_area)
+        PointsToFootprints.write_footprint_file(
+            footprints, results, outpath, extra_footprints=new_development_area
+        )
 
     def _create_infometrics(self, df) -> Path:
         # Get the metrics configuration
