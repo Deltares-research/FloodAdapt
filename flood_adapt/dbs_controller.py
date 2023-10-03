@@ -88,6 +88,20 @@ class Database(IDatabase):
 
         return aggregation_areas
 
+    def get_svi_map(self) -> gpd.GeoDataFrame:
+        """Get the geospatial social vulnerability index (SVI) data.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            SVI per aggregation area
+        """
+        svi_map = gpd.read_file(
+            self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
+            engine="pyogrio",
+        ).to_crs(4326)
+        return svi_map
+
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
         df = pd.read_csv(input_file)

@@ -118,6 +118,11 @@ class BFEModel(BaseModel):
     field_name: str
 
 
+class SVIModel(BaseModel):
+    geom: str
+    field_name: str
+
+
 class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
@@ -126,11 +131,12 @@ class FiatModel(BaseModel):
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
-    damage_unit: Optional[str] = "USD"
+    damage_unit: Optional[str] = "$"
     building_footprints: Optional[str]
     roads_file_name: Optional[str]
     new_development_file_name: Optional[str]
     save_simulation: Optional[bool] = False
+    svi: Optional[SVIModel]
 
 
 class RiverModel(BaseModel):
