@@ -1141,11 +1141,11 @@ class Database(IDatabase):
             if name == scenario
         ]
 
-        # If strategy is used in a benefit, raise error
+        # If scenario is used in a benefit, raise error
         if used_in_benefit:
             text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
+                f"'{name}' scenario cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
             scenario_path = self.input_path / "scenarios" / name
