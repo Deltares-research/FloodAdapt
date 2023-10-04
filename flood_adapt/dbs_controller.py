@@ -13,8 +13,8 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -87,6 +87,20 @@ class Database(IDatabase):
             )
 
         return aggregation_areas
+
+    def get_svi_map(self) -> gpd.GeoDataFrame:
+        """Get the geospatial social vulnerability index (SVI) data.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            SVI per aggregation area
+        """
+        svi_map = gpd.read_file(
+            self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
+            engine="pyogrio",
+        ).to_crs(4326)
+        return svi_map
 
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
@@ -234,9 +248,7 @@ class Database(IDatabase):
             gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 temp_event = Synthetic.load_dict(event)
-                temp_event.add_tide_and_surge_ts(
-                    self.site.attrs.water_level.msl.height.convert(gui_units)
-                )
+                temp_event.add_tide_and_surge_ts()
                 wl_df = temp_event.tide_surge_ts
                 wl_df.index = np.arange(
                     -temp_event.attrs.time.duration_before_t0,
@@ -1127,23 +1139,19 @@ class Database(IDatabase):
             if name == scenario
         ]
 
-        # If strategy is used in a benefit, raise error
+        # If scenario is used in a benefit, raise error
         if used_in_benefit:
             text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
+                f"'{name}' scenario cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
             scenario_path = self.input_path / "scenarios" / name
-            scenario = Scenario.load_file(scenario_path / f"{name}.toml")
-            scenario.init_object_model()
-            if scenario.direct_impacts.hazard.has_run:
-                # TODO this should be a check were if the scenario is run you get a warning?
-                raise ValueError(
-                    f"'{name}' scenario cannot be deleted since the scenario has been run."
-                )
-            else:
-                shutil.rmtree(scenario_path, ignore_errors=True)
+            shutil.rmtree(scenario_path, ignore_errors=False)
+
+            results_path = self.input_path.parent / "output" / "Scenarios" / name
+            if results_path.exists():
+                shutil.rmtree(results_path, ignore_errors=False)
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.
@@ -1455,7 +1463,9 @@ class Database(IDatabase):
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
-    def get_max_water_level(self, scenario_name: str, return_period: int = None):
+    def get_max_water_level(
+        self, scenario_name: str, return_period: int = None
+    ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
         Parameters
@@ -1478,9 +1488,10 @@ class Database(IDatabase):
                 "simulations",
                 self.site.attrs.sfincs.overland_model,
             )
-            mod = SfincsModel(model_path, mode="r")
+            model = SfincsAdapter(model_root=model_path, site=self.site)
 
-            zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+            zsmax = model.read_zsmax().to_numpy()
+            del model
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
@@ -1499,6 +1510,15 @@ class Database(IDatabase):
         )
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
+        gdf = gdf.to_crs(4326)
+        return gdf
+
+    def get_roads(self, scenario_name: str) -> GeoDataFrame:
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
+        roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
+        gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
         return gdf
 

@@ -79,6 +79,8 @@ floodmap_type = "water_level"
 non_building_names = ["road"]
 damage_unit = "USD"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
+roads_file_name = "spatial2.gpkg"
+new_development_file_name = "spatial3.gpkg"
 save_simulation = "False"
 
 [fiat.bfe]
