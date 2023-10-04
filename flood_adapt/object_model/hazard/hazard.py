@@ -226,11 +226,7 @@ class Hazard:
         # only for Synthetic and historical from nearshore
         for ii, event in enumerate(self.event_list):
             if self.event.attrs.template == "Synthetic":
-                self.event.add_tide_and_surge_ts(
-                    self.site.attrs.water_level.msl.height.convert(
-                        self.site.attrs.gui.default_length_units
-                    )
-                )
+                self.event.add_tide_and_surge_ts()
                 self.wl_ts = self.event.tide_surge_ts
             elif self.event.attrs.template == "Historical_nearshore":
                 self.wl_ts = self.event.tide_surge_ts

@@ -248,9 +248,7 @@ class Database(IDatabase):
             gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 temp_event = Synthetic.load_dict(event)
-                temp_event.add_tide_and_surge_ts(
-                    self.site.attrs.water_level.msl.height.convert(gui_units)
-                )
+                temp_event.add_tide_and_surge_ts()
                 wl_df = temp_event.tide_surge_ts
                 wl_df.index = np.arange(
                     -temp_event.attrs.time.duration_before_t0,
