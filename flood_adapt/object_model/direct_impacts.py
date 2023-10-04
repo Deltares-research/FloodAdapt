@@ -231,6 +231,8 @@ class DirectImpacts:
         fa.fiat_model.set_root(self.fiat_path)
         fa.fiat_model.write()
 
+        del fa
+
     def run_fiat(self):
         fiat_exec = str(
             self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"

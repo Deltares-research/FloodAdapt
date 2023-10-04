@@ -388,6 +388,8 @@ class Hazard:
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
+                del model
+
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
@@ -570,6 +572,8 @@ class Hazard:
                     self.simulation_paths[ii].joinpath(spw_name),
                 )
 
+            del model
+
     def preprocess_sfincs_offshore(self, ds: xr.DataArray, ii: int):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model
 
@@ -630,6 +634,8 @@ class Hazard:
             )
             logging.info("Finished generating meteo data from hurricane track.")
 
+        del offshore_model
+
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
         offshore_model = SfincsAdapter(
@@ -638,6 +644,8 @@ class Hazard:
 
         # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
+
+        del offshore_model
 
     def postprocess_sfincs(self):
         if self._mode == Mode.single_event:
@@ -670,6 +678,8 @@ class Hazard:
                 ),
             )
 
+            del model
+
     def __eq__(self, other):
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
@@ -699,6 +709,7 @@ class Hazard:
             zsmax = sim.read_zsmax().load()
             zs_maps.append(zsmax.stack(z=("x", "y")))
 
+            del sim
         # Create RP flood maps
 
         # 1a: make a table of all water levels and associated frequencies
