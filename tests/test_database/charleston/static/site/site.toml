@@ -1,5 +1,5 @@
 name = "charleston"
-description = "Charleston, SC"
+description = "Charleston, SC - DUMMY MODEL"
 lat = 32.77
 lon = -79.95
 
@@ -54,8 +54,10 @@ default_distance_units = "miles"
 default_area_units = "sf"
 default_volume_units = "cf"
 default_velocity_units = "knots"
+default_direction_units = "deg N"
 default_discharge_units = "cfs"
 default_intensity_units = "inch/hr"
+default_cumulative_units = "inch"
 [gui.tide_harmonic_amplitude]
 value = 3.0
 units = "feet"
@@ -69,18 +71,20 @@ units = "feet"
 [dem]
 filename = "charleston_14m.tif"
 units = "meters"
-indexfilename = "charleston_14m_indices.dat"
 
 [fiat]
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
-damage_unit = "USD"
+damage_unit = "$"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
 roads_file_name = "spatial2.gpkg"
 new_development_file_name = "spatial3.gpkg"
 save_simulation = "False"
 
+[fiat.svi]
+geom = "../templates/fiat/svi/CDC_svi_2020.gpkg"
+field_name = "SVI"
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"

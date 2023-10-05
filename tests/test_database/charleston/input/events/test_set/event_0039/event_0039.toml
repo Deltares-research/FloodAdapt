@@ -29,8 +29,7 @@ value = 0
 units = "deg N"
 
 [rainfall]
-source = "timeseries"
-timeseries_file = "rainfall.csv"
+source = "none"
 
 [[river]]
 source = "constant"

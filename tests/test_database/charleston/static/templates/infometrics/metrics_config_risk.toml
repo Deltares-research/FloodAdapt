@@ -65,14 +65,6 @@ long_name = "Impacted Homes 100 Years"
 show_in_metrics_table = "True"
 
 [[queries]]
-name = "TotalDamageRP1"
-description = "Total damage with return period of 1 years"
-select = "SUM(`Total Damage (1Y)`)"
-filter = ""
-long_name = "Total Damage (RP 1)"
-show_in_metrics_table = "True"
-
-[[queries]]
 name = "TotalDamageRP2"
 description = "Total damage with return period of 2 years"
 select = "SUM(`Total Damage (2Y)`)"
