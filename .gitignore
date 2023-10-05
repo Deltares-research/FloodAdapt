@@ -196,3 +196,4 @@ tests/test_database/charleston/static/templates/overland
 tests/test_database/charleston/static/templates/fiat/footprints
 tests/test_database/charleston/static/templates/fiat/svi
 tests/test_database/charleston/static/templates/infographics
+tests/test_database/charleston/static/templates/fiat/equity
