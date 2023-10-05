@@ -97,7 +97,6 @@ class DemModel(BaseModel):
 
     filename: str
     units: UnitTypesLength
-    indexfilename: str
 
 
 class EquityModel(BaseModel):
