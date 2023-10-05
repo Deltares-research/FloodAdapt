@@ -8,8 +8,9 @@ from flood_adapt.object_model.interface.site import (
     Obs_stationModel,
     RiverModel,
     SfincsModel,
+    WaterLevelReferenceModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
+from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import (
     Site,
 )
@@ -27,6 +28,8 @@ def test_read_site_toml(cleanup_database):
     assert isinstance(test_data.attrs.sfincs, SfincsModel)
     assert isinstance(test_data.attrs.dem, DemModel)
     assert isinstance(test_data.attrs.obs_station, Obs_stationModel)
+    assert isinstance(test_data.attrs.water_level, WaterLevelReferenceModel)
+    assert isinstance(test_data.attrs.water_level.other[0].height, UnitfulLength)
     assert test_data.attrs.lat == 32.77
     assert test_data.attrs.slr.vertical_offset.value == 0.6
     assert test_data.attrs.fiat.exposure_crs == "EPSG:4326"

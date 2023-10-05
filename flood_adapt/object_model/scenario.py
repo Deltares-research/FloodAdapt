@@ -24,8 +24,13 @@ class Scenario(IScenario):
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
+        self.results_path = Path(self.database_input_path).parent.joinpath(
+            "output", "Scenarios", self.attrs.name
+        )
         self.direct_impacts = DirectImpacts(
-            scenario=self.attrs, database_input_path=Path(self.database_input_path)
+            scenario=self.attrs,
+            database_input_path=Path(self.database_input_path),
+            results_path=self.results_path,
         )
         return self
 
@@ -59,16 +64,15 @@ class Scenario(IScenario):
         """run direct impact models for the scenario"""
         self.init_object_model()
         # start log file in scenario results folder
-        results_dir = self.database_input_path.parent.joinpath(
-            "output", "results", self.attrs.name
-        )
-        for parent in reversed(results_dir.parents):
+        for parent in reversed(self.results_path.parents):
             if not parent.exists():
                 os.mkdir(parent)
-        if not results_dir.exists():
-            os.mkdir(results_dir)
+        if not self.results_path.exists():
+            os.mkdir(self.results_path)
         # Initiate the logger for all the integrator scripts.
-        self.initiate_root_logger(results_dir.joinpath("floodadapt.log"))
+        self.initiate_root_logger(
+            self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
+        )
         version = "0.1.0"
         logging.info(f"FloodAdapt version {version}")
         logging.info(
@@ -90,6 +94,8 @@ class Scenario(IScenario):
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
+
+        self.close_root_logger_handlers()
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):
@@ -125,3 +131,20 @@ class Scenario(IScenario):
         # Add the file and console handlers to the root logger.
         logging.getLogger("").addHandler(fh)
         logging.getLogger("").addHandler(ch)
+
+    @staticmethod
+    def close_root_logger_handlers():
+        """Close and remove all handlers from the root logger. This way,
+        it is possible to delete the log file, which is not possible if
+        the file is still open."""
+
+        # Get the root logger
+        root_logger = logging.getLogger("")
+
+        # Retrieve the handlers
+        handlers = root_logger.handlers
+
+        # Close and remove the handlers
+        for handler in handlers:
+            handler.close()
+            root_logger.removeHandler(handler)

@@ -9,6 +9,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
     UnitTypesArea,
+    UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
@@ -36,16 +37,24 @@ class SfincsModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: str
+    version: Optional[str] = ""
     offshore_model: str
     overland_model: str
-    datum_offshore_model: str
-    datum_overland_model: str
-    diff_datum_offshore_overland: UnitfulLength
-    tidal_components: str
     ambient_air_pressure: float
-    floodmap_no_data_value: float
     floodmap_units: UnitTypesLength
+    save_simulation: bool
+
+
+class VerticalReferenceModel(BaseModel):
+    name: str
+    height: UnitfulLength
+
+
+class WaterLevelReferenceModel(BaseModel):
+    reference: VerticalReferenceModel
+    localdatum: VerticalReferenceModel
+    msl: VerticalReferenceModel
+    other: Optional[list[VerticalReferenceModel]]  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -70,6 +79,7 @@ class GuiModel(BaseModel):
     default_area_units: UnitTypesArea
     default_volume_units: UnitTypesVolume
     default_velocity_units: UnitTypesVelocity
+    default_direction_units: UnitTypesDirection
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
@@ -90,10 +100,19 @@ class DemModel(BaseModel):
     indexfilename: str
 
 
+class EquityModel(BaseModel):
+    census_data: str
+    # aggregation_type: str
+    # aggregation_label: Optional[str] = "name"
+    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    totalpopulation_label: Optional[str] = "TotalPopulation"
+
+
 class AggregationModel(BaseModel):
     name: str
     file: str
     field_name: str
+    equity: Optional[EquityModel]
 
 
 class BFEModel(BaseModel):
@@ -102,16 +121,25 @@ class BFEModel(BaseModel):
     field_name: str
 
 
+class SVIModel(BaseModel):
+    geom: str
+    field_name: str
+
+
 class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
+    bfe: BFEModel
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
-    damage_unit: Optional[str] = "USD"
+    damage_unit: Optional[str] = "$"
     building_footprints: Optional[str]
-    bfe: BFEModel
+    roads_file_name: Optional[str]
+    new_development_file_name: Optional[str]
+    save_simulation: Optional[bool] = False
+    svi: Optional[SVIModel]
 
 
 class RiverModel(BaseModel):
@@ -134,8 +162,8 @@ class Obs_stationModel(BaseModel):
     lon: float
     mllw: Optional[UnitfulLength]
     mhhw: Optional[UnitfulLength]
-    localdatum: UnitfulLength
-    msl: UnitfulLength
+    localdatum: Optional[UnitfulLength]
+    msl: Optional[UnitfulLength]
 
 
 class BenefitsModel(BaseModel):
@@ -170,6 +198,7 @@ class SiteModel(BaseModel):
     lat: float
     lon: float
     sfincs: SfincsModel
+    water_level: WaterLevelReferenceModel
     cyclone_track_database: Cyclone_track_databaseModel
     slr: SlrModel
     gui: GuiModel

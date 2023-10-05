@@ -13,8 +13,8 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -87,6 +87,20 @@ class Database(IDatabase):
             )
 
         return aggregation_areas
+
+    def get_svi_map(self) -> gpd.GeoDataFrame:
+        """Get the geospatial social vulnerability index (SVI) data.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            SVI per aggregation area
+        """
+        svi_map = gpd.read_file(
+            self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
+            engine="pyogrio",
+        ).to_crs(4326)
+        return svi_map
 
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
@@ -231,6 +245,7 @@ class Database(IDatabase):
             event["template"] == "Synthetic"
             or event["template"] == "Historical_nearshore"
         ):
+            gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 temp_event = Synthetic.load_dict(event)
                 temp_event.add_tide_and_surge_ts()
@@ -248,44 +263,27 @@ class Database(IDatabase):
                 xlim2 = pd.to_datetime(event["time"]["end_time"])
 
             # Plot actual thing
-            fig = px.line(wl_df)
-            gui_units = self.site.attrs.gui.default_length_units
+            fig = px.line(
+                wl_df + self.site.attrs.water_level.msl.height.convert(gui_units)
+            )
+
             # plot reference water levels
             fig.add_hline(
-                y=0,
+                y=self.site.attrs.water_level.msl.height.convert(gui_units),
                 line_dash="dash",
                 line_color="#000000",
                 annotation_text="MSL",
                 annotation_position="bottom right",
             )
-            if (
-                self.site.attrs.obs_station
-                and self.site.attrs.obs_station.mllw
-                and self.site.attrs.obs_station.msl
-            ):
-                fig.add_hline(
-                    y=self.site.attrs.obs_station.mllw.convert(gui_units)
-                    - self.site.attrs.obs_station.msl.convert(gui_units),
-                    line_dash="dash",
-                    line_color="#88cc91",
-                    annotation_text="MLLW",
-                    annotation_position="bottom right",
-                )
-            if (
-                self.site.attrs.obs_station
-                and self.site.attrs.obs_station.mhhw
-                and self.site.attrs.obs_station.msl
-            ):
-                fig.add_hline(
-                    y=self.site.attrs.obs_station.mhhw.convert(gui_units)
-                    - self.site.attrs.obs_station.msl.convert(gui_units),
-                    line_dash="dash",
-                    line_color="#c62525",
-                    annotation_text="MHHW",
-                    annotation_position="bottom right",
-                )
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+            if self.site.attrs.water_level.other:
+                for wl_ref in self.site.attrs.water_level.other:
+                    fig.add_hline(
+                        y=wl_ref.height.convert(gui_units),
+                        line_dash="dash",
+                        line_color="#3ec97c",
+                        annotation_text=wl_ref.name,
+                        annotation_position="bottom right",
+                    )
 
             fig.update_layout(
                 autosize=False,
@@ -1141,23 +1139,19 @@ class Database(IDatabase):
             if name == scenario
         ]
 
-        # If strategy is used in a benefit, raise error
+        # If scenario is used in a benefit, raise error
         if used_in_benefit:
-            text = "benefit" if len(used_in_benefit) == 1 else "benefits"
+            text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
             raise ValueError(
-                f"'{name}' strategy cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
+                f"'{name}' scenario cannot be deleted since it is already used in {text}: {', '.join(used_in_benefit)}"
             )
         else:
             scenario_path = self.input_path / "scenarios" / name
-            scenario = Scenario.load_file(scenario_path / f"{name}.toml")
-            scenario.init_object_model()
-            if scenario.direct_impacts.hazard.has_run:
-                # TODO this should be a check were if the scenario is run you get a warning?
-                raise ValueError(
-                    f"'{name}' scenario cannot be deleted since the scenario has been run."
-                )
-            else:
-                shutil.rmtree(scenario_path, ignore_errors=True)
+            shutil.rmtree(scenario_path, ignore_errors=False)
+
+            results_path = self.input_path.parent / "output" / "Scenarios" / name
+            if results_path.exists():
+                shutil.rmtree(results_path, ignore_errors=False)
 
     def get_benefit(self, name: str) -> IBenefit:
         """Get the respective benefit object using the name of the benefit.
@@ -1172,7 +1166,7 @@ class Database(IDatabase):
         IBenefit
             Benefit object
         """
-        benefit_path = self.input_path / "benefits" / name / f"{name}.toml"
+        benefit_path = self.input_path / "Benefits" / name / f"{name}.toml"
         benefit = Benefit.load_file(benefit_path)
         return benefit
 
@@ -1199,10 +1193,10 @@ class Database(IDatabase):
                 f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
             )
         else:
-            (self.input_path / "benefits" / benefit.attrs.name).mkdir()
+            (self.input_path / "Benefits" / benefit.attrs.name).mkdir()
             benefit.save(
                 self.input_path
-                / "benefits"
+                / "Benefits"
                 / benefit.attrs.name
                 / f"{benefit.attrs.name}.toml"
             )
@@ -1217,14 +1211,14 @@ class Database(IDatabase):
         """
         benefit.save(
             self.input_path
-            / "benefits"
+            / "Benefits"
             / benefit.attrs.name
             / f"{benefit.attrs.name}.toml"
         )
 
         # Delete output if edited
         output_path = (
-            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+            self.input_path.parent / "output" / "Benefits" / benefit.attrs.name
         )
 
         if output_path.exists():
@@ -1243,12 +1237,12 @@ class Database(IDatabase):
         ValueError
             Raise error if benefit has already model output
         """
-        benefit_path = self.input_path / "benefits" / name
+        benefit_path = self.input_path / "Benefits" / name
         benefit = Benefit.load_file(benefit_path / f"{name}.toml")
         shutil.rmtree(benefit_path, ignore_errors=True)
         # Delete output if edited
         output_path = (
-            self.input_path.parent / "output" / "benefits" / benefit.attrs.name
+            self.input_path.parent / "output" / "Benefits" / benefit.attrs.name
         )
 
         if output_path.exists():
@@ -1469,7 +1463,9 @@ class Database(IDatabase):
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
-    def get_max_water_level(self, scenario_name: str, return_period: int = None):
+    def get_max_water_level(
+        self, scenario_name: str, return_period: int = None
+    ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
         Parameters
@@ -1485,52 +1481,44 @@ class Database(IDatabase):
         # If single event read with hydromt-sfincs
         if not return_period:
             model_path = self.input_path.parent.joinpath(
-                "output", "simulations", scenario_name, "overland"
+                "output",
+                "Scenarios",
+                scenario_name,
+                "Flooding",
+                "simulations",
+                self.site.attrs.sfincs.overland_model,
             )
-            mod = SfincsModel(model_path, mode="r")
+            model = SfincsAdapter(model_root=model_path, site=self.site)
 
-            zsmax = mod.results["zsmax"][0, :, :].to_numpy()
+            zsmax = model.read_zsmax().to_numpy()
+            del model
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
-                "simulations",
+                "Scenarios",
                 scenario_name,
+                "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
 
         return zsmax
 
-    def get_fiat_results(self, scenario_name: str):
-        csv_path = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results.csv",
+    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
         )
-        csv_path2 = self.input_path.parent.joinpath(
-            "output",
-            "results",
-            scenario_name,
-            f"{scenario_name}_results_filt.csv",
-        )
-        if not csv_path2.exists():
-            df = pd.read_csv(csv_path)
-            df = df[df["Primary Object Type"] != "road"]
-            df = df[df["Inundation Depth Event Structure"] > 0]
-            df = df[~df["Aggregation Label: Subdivision"].isna()]
-            df.to_csv(csv_path2)
-        df = pd.read_csv(csv_path2)
-        gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.X, df.Y))
-        gdf = gdf[["Total Damage Event", "geometry"]]
-        gdf["Total Damage Event"] = np.round(gdf["Total Damage Event"], 0)
-        gdf.crs = 4326
+        footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
+        gdf = gpd.read_file(footprints, engine="pyogrio")
+        gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
-        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
-        footprints = out_path / "building_footprints.gpkg"
-        gdf = gpd.read_file(footprints, engine="pyogrio")
+    def get_roads(self, scenario_name: str) -> GeoDataFrame:
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
+        roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
+        gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
         return gdf
 
@@ -1547,10 +1535,12 @@ class Database(IDatabase):
         _type_
             _description_
         """
-        out_path = self.input_path.parent.joinpath("output", "results", scenario_name)
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
         gdfs = {}
-        for aggr_area in out_path.glob("aggregated_damages_*.gpkg"):
-            label = aggr_area.stem.split("aggregated_damages_")[-1]
+        for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
+            label = aggr_area.stem.split(f"{scenario_name}_")[-1]
             gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
@@ -1596,7 +1586,7 @@ class Database(IDatabase):
         scenario = self.get_scenario(scenario_name)
 
         simulations = list(
-            self.input_path.parent.joinpath("output", "simulations").glob("*")
+            self.input_path.parent.joinpath("output", "Scenarios").glob("*")
         )
 
         scns_simulated = [self.get_scenario(sim.name) for sim in simulations]
@@ -1604,10 +1594,10 @@ class Database(IDatabase):
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
                 path_0 = self.input_path.parent.joinpath(
-                    "output", "simulations", scn.attrs.name
+                    "output", "Scenarios", scn.attrs.name, "Flooding"
                 )
                 path_new = self.input_path.parent.joinpath(
-                    "output", "simulations", scenario.attrs.name
+                    "output", "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.sfincs_has_run_check()

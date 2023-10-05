@@ -252,7 +252,7 @@ class Event:
                 else:
                     # Read csv file of discharge
                     df_from_csv = Event.read_csv(
-                        csvpath=event_dir.joinpath(site_river[ii].name + ".csv")
+                        csvpath=event_dir.joinpath(self.attrs.river[ii].timeseries_file)
                     )
                 # Interpolate on time_vec
                 t0 = pd.to_datetime(time_vec[0])
@@ -291,7 +291,6 @@ class Event:
         tstop = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
         duration = (tstop - tstart).total_seconds()
         time_vec = pd.date_range(tstart, periods=duration / 600 + 1, freq="600S")
-        # TODO: add rainfall increase from event pop-up (to be added there)
         if self.attrs.rainfall.source == "constant":
             mag = self.attrs.rainfall.constant_intensity.value * np.array([1, 1])
             df = pd.DataFrame.from_dict({"time": time_vec[[0, -1]], "intensity": mag})
@@ -390,7 +389,7 @@ class Event:
             return self
 
     def add_wind_ts(self):
-        """adds constant wind or timeseries from filw to event object
+        """adds constant wind or timeseries from file to event object
 
         Returns
         -------

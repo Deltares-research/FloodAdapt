@@ -47,11 +47,14 @@ class Hazard:
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database_input_path: Path) -> None:
+    def __init__(
+        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+    ) -> None:
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
+        self.results_dir = results_dir
         self.database_input_path = database_input_path
         self.set_event(
             scenario.event
@@ -81,17 +84,17 @@ class Hazard:
             [self.sfincs_map_path] = self.simulation_paths
 
         elif mode == Mode.risk:
-            self.sfincs_map_path = self.database_input_path.parent.joinpath(
-                "output", "simulations", self.name
-            )
+            self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
             self.simulation_paths = [
                 self.database_input_path.parent.joinpath(
                     "output",
-                    "simulations",
+                    "Scenarios",
                     self.name,
+                    "Flooding",
+                    "simulations",
                     self.site.attrs.sfincs.overland_model,
                 )
             ]
@@ -99,8 +102,10 @@ class Hazard:
             self.simulation_paths_offshore = [
                 self.database_input_path.parent.joinpath(
                     "output",
-                    "simulations",
+                    "Scenarios",
                     self.name,
+                    "Flooding",
+                    "simulations",
                     self.site.attrs.sfincs.offshore_model,
                 )
             ]
@@ -111,8 +116,10 @@ class Hazard:
                 self.simulation_paths.append(
                     self.database_input_path.parent.joinpath(
                         "output",
-                        "simulations",
+                        "Scenarios",
                         self.name,
+                        "Flooding",
+                        "simulations",
                         subevent.attrs.name,
                         self.site.attrs.sfincs.overland_model,
                     )
@@ -121,35 +128,38 @@ class Hazard:
                 self.simulation_paths_offshore.append(
                     self.database_input_path.parent.joinpath(
                         "output",
-                        "simulations",
+                        "Scenarios",
                         self.name,
+                        "Flooding",
+                        "simulations",
                         subevent.attrs.name,
                         self.site.attrs.sfincs.offshore_model,
                     )
                 )
 
     def sfincs_has_run_check(self) -> bool:
+        """checks if the hazard has been already run"""
         test_combined = False
         if len(self.simulation_paths) == 0:
             raise ValueError("The Scenario has not been initialized correctly.")
         else:
+            test1 = False
+            test2 = False
             for sfincs_path in self.simulation_paths:
-                test1 = Path(sfincs_path).joinpath("sfincs_map.nc").exists()
+                if sfincs_path.exists():
+                    for fname in os.listdir(sfincs_path):
+                        if fname.endswith("_map.nc"):
+                            test1 = True
+                            break
 
-                sfincs_log = Path(sfincs_path).joinpath("sfincs.log")
+                sfincs_log = sfincs_path.joinpath("sfincs.log")
 
                 if sfincs_log.exists():
                     with open(sfincs_log) as myfile:
                         if "Simulation finished" in myfile.read():
                             test2 = True
-                        else:
-                            test2 = False
-                else:
-                    test2 = False
 
-                test_combined = (test1) & (test2)
-                if test_combined is False:
-                    break
+            test_combined = (test1) & (test2)
         return test_combined
 
     def set_event(self, event: str) -> None:
@@ -218,20 +228,18 @@ class Hazard:
             if self.event.attrs.template == "Synthetic":
                 self.event.add_tide_and_surge_ts()
                 self.wl_ts = self.event.tide_surge_ts
-                # Add water level offset
-                self.wl_ts[1] = (
-                    self.wl_ts[1] + self.event.attrs.water_level_offset.value
-                )
             elif self.event.attrs.template == "Historical_nearshore":
                 self.wl_ts = self.event.tide_surge_ts
             # In both cases add SLR
-            self.wl_ts[1] = (
-                self.wl_ts[1] + self.physical_projection.attrs.sea_level_rise.value
+            self.wl_ts[1] = self.wl_ts[
+                1
+            ] + self.physical_projection.attrs.sea_level_rise.convert(
+                self.site.attrs.gui.default_length_units
             )
         return self
 
     @staticmethod
-    def get_event_object(event_path):  # TODO This could be used above as well?
+    def get_event_object(event_path):
         mode = Event.get_mode(event_path)
         if mode == Mode.single_event:
             # parse event config file to get event template
@@ -248,14 +256,31 @@ class Hazard:
         # add other models here
 
     def run_models(self):
+        for parent in reversed(self.results_dir.parents):
+            if not parent.exists():
+                os.mkdir(parent)
+        if not self.results_dir.exists():
+            os.mkdir(self.results_dir)
         logging.info("Running hazard models...")
-        self.run_sfincs()
+        if not self.has_run:
+            self.run_sfincs()
 
     def postprocess_models(self):
         logging.info("Post-processing hazard models...")
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
+        # WITHOUT A SFINCS FOLDER WE CANNOT READ sfincs_map.nc ANYMORE
+        # remove simulation folders
+        # if not self.site.attrs.sfincs.save_simulation:
+        #     for simulation_path in self.simulation_paths:
+        #         if os.path.exists(simulation_path.parent):
+        #             try:
+        #                 shutil.rmtree(
+        #                     simulation_path.parent
+        #                 )  # TODO cannot remove simulation because hydromt log file is still being used
+        #             except WindowsError:
+        #                 pass
 
     def run_sfincs(self):
         # Run new model(s)
@@ -268,8 +293,9 @@ class Hazard:
         # )
         for simulation_path in self.simulation_paths:
             with cd(simulation_path):
+                sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
-                with open("sfincs.log", "a") as log_handler:
+                with open(sfincs_log, "a") as log_handler:
                     subprocess.run(sfincs_exec, stdout=log_handler)
 
         # Indicator that hazard has run
@@ -333,13 +359,14 @@ class Hazard:
             # Generate and change water level boundary condition
             template = self.event.attrs.template
             if template == "Synthetic" or template == "Historical_nearshore":
+                # generate hazard water level bc incl SLR (in the offshore model these are already included)
+                # returning wl referenced to MSL
                 self.add_wl_ts()
                 # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
                 gui_units = UnitfulLength(
                     value=1.0, units=self.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
-                # generate hazard water level bc incl SLR and offset (in the offshore model these are already included)
                 self.wl_ts = conversion_factor * self.wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
@@ -352,15 +379,21 @@ class Hazard:
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
-                # add difference between vertical datum of offshore and overland model
-                self.wl_ts -= self.site.attrs.sfincs.diff_datum_offshore_overland.value
                 # turn off pressure correction at the boundaries because the effect of
                 # atmospheric pressure is already included in the water levels from the
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
+                del model
+
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
+            )
+            # add difference between MSL (vertical datum of offshore nad backend in general) and overland model
+            self.wl_ts += self.site.attrs.water_level.msl.height.convert(
+                UnitTypesLength("meters")
+            ) - self.site.attrs.water_level.localdatum.height.convert(
+                UnitTypesLength("meters")
             )
             model.add_wl_bc(self.wl_ts)
 
@@ -402,7 +435,9 @@ class Hazard:
                 elif self.event.attrs.rainfall.source == "timeseries":
                     # convert to metric units
                     df = pd.read_csv(
-                        event_dir.joinpath("rainfall.csv"), index_col=0, header=None
+                        event_dir.joinpath(self.event.attrs.rainfall.timeseries_file),
+                        index_col=0,
+                        header=None,
                     )
                     df.index = pd.DatetimeIndex(df.index)
                     # add unit conversion and rainfall increase from projection and event
@@ -471,11 +506,13 @@ class Hazard:
                         "Adding wind timeseries to the overland flood model..."
                     )
                     df = pd.read_csv(
-                        event_dir.joinpath("wind.csv"), index_col=0, header=None
+                        event_dir.joinpath(self.event.attrs.wind.timeseries_file),
+                        index_col=0,
+                        header=None,
                     )
                     df[1] = conversion_factor_precip * df[1]
                     df.index = pd.DatetimeIndex(df.index)
-                    model.add_wind_forcing(timeseries=event_dir.joinpath("wind.csv"))
+                    model.add_wind_forcing(timeseries=df)
                 elif self.event.attrs.wind.source == "constant":
                     logging.info("Adding constant wind to the overland flood model...")
                     model.add_wind_forcing(
@@ -531,6 +568,8 @@ class Hazard:
                     self.simulation_paths[ii].joinpath(spw_name),
                 )
 
+            del model
+
     def preprocess_sfincs_offshore(self, ds: xr.DataArray, ii: int):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model
 
@@ -566,7 +605,7 @@ class Hazard:
                 offshore_model.add_pressure_forcing_from_grid(ds=ds["press"])
             elif self.event.attrs.wind.source == "timeseries":
                 offshore_model.add_wind_forcing(
-                    timeseries=event_dir.joinpath("wind.csv")
+                    timeseries=event_dir.joinpath(self.event.attrs.wind.timeseries_file)
                 )
             elif self.event.attrs.wind.source == "constant":
                 offshore_model.add_wind_forcing(
@@ -574,9 +613,6 @@ class Hazard:
                     const_dir=self.event.attrs.wind.constant_direction.value,
                 )
         elif self.event.attrs.template == "Historical_hurricane":
-            logging.info(
-                "Generating meteo input to the model from the hurricane track..."
-            )
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
 
@@ -584,11 +620,17 @@ class Hazard:
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
 
         if self.event.attrs.template == "Historical_hurricane":
+            logging.info(
+                "Generating meteo input to the model from the hurricane track..."
+            )
             offshore_model.add_spw_forcing(
                 historical_hurricane=self.event,
                 database_path=base_path,
                 model_dir=self.simulation_paths_offshore[ii],
             )
+            logging.info("Finished generating meteo data from hurricane track.")
+
+        del offshore_model
 
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
@@ -599,11 +641,20 @@ class Hazard:
         # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
 
+        del offshore_model
+
     def postprocess_sfincs(self):
         if self._mode == Mode.single_event:
+            # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
+            # Copy SFINCS output map to main folder
+            # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
+            # shutil.copyfile(
+            #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
+            # )
         elif self._mode == Mode.risk:
             self.calculate_rp_floodmaps()
+            # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
 
     def write_floodmap_geotiff(self):
@@ -616,12 +667,14 @@ class Hazard:
                 "static", "dem", self.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
-            results_dir = self.database_input_path.parent.joinpath(
-                "output", "results", self.name
-            )
             model.write_geotiff(
-                demfile=demfile, floodmap_fn=results_dir.joinpath("floodmap.tif")
+                demfile=demfile,
+                floodmap_fn=sim_path.parent.parent.joinpath(
+                    f"FloodMap_{self.name}.tif"
+                ),
             )
+
+            del model
 
     def __eq__(self, other):
         if not isinstance(other, Hazard):
@@ -652,6 +705,7 @@ class Hazard:
             zsmax = sim.read_zsmax().load()
             zs_maps.append(zsmax.stack(z=("x", "y")))
 
+            del sim
         # Create RP flood maps
 
         # 1a: make a table of all water levels and associated frequencies
@@ -740,18 +794,41 @@ class Hazard:
             zs_rp_maps.append(zs_rp_da.unstack())
 
             # #create single nc
-            zs_rp_single = xr.DataArray(data=h, coords={"z": zs["z"]}).unstack()
+            zs_rp_single = xr.DataArray(
+                data=h, coords={"z": zs["z"]}, attrs={"units": "meters"}
+            ).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
             )  # , inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
-            fn_rp_test = self.simulation_paths[0].parent.parent.joinpath(
-                # "RP_" + str(rp) + "_maps.nc"
-                "RP_"
-                + "{:04d}".format(rp)
-                + "_maps.nc"
+            fn_rp = self.simulation_paths[0].parent.parent.parent.joinpath(
+                f"RP_{rp:04d}_maps.nc"
             )
-            zs_rp_single.to_netcdf(fn_rp_test)
+            zs_rp_single.to_netcdf(fn_rp)
+            # fn_rp_result = self.results_dir.joinpath(
+            #     # "RP_" + str(rp) + "_maps.nc"
+            #     "RP_"
+            #     + "{:04d}".format(rp)
+            #     + "_maps.nc"
+            # )
+            # zs_rp_single.to_netcdf(fn_rp_result)
+
+            # # write geotiff
+            # model = SfincsAdapter(
+            #     model_root=str(self.simulation_paths[0]), site=self.site
+            # )
+            # # dem file for high resolution flood depth map
+            # demfile = self.database_input_path.parent.joinpath(
+            #     "static", "dem", self.site.attrs.dem.filename
+            # )
+            # # writing the geotiff to the scenario results folder
+            # model.write_risk_geotiff(
+            #     zs_max_rp=zs_rp_single,
+            #     demfile=demfile,
+            #     floodmap_fn=self.simulation_paths[0].parent.parent.joinpath(
+            #         f"{self.name}_floodmap_{rp:04d}.tif"
+            #     ),
+            # )
 
         # this component is only required in case only one netcdf with multiple hazard maps is needed
         # write netcdf with water level, add new dimension for rp
