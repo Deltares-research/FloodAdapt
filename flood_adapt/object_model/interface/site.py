@@ -69,6 +69,7 @@ class SlrModel(BaseModel):
     vertical_offset: UnitfulLength
     relative_to_year: int
 
+
 class MapboxLayersModel(BaseModel):
     flood_map_bins: list[float]
     flood_map_colors: list[str]
@@ -77,8 +78,9 @@ class MapboxLayersModel(BaseModel):
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
     svi_bins: Optional[list[float]]
-    svi_colors: Optional[list[str]]  
+    svi_colors: Optional[list[str]]
     damage_decimals: Optional[int] = 0
+
 
 class GuiModel(BaseModel):
     """class describing the accepted input for the variable gui in Site"""

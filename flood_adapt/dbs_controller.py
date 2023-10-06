@@ -98,7 +98,10 @@ class Database(IDatabase):
         """
         if self.site.attrs.fiat.svi:
             svi_map = gpd.read_file(
-                self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
+                self.input_path.parent
+                / "static"
+                / "site"
+                / self.site.attrs.fiat.svi.geom,
                 engine="pyogrio",
             ).to_crs(4326)
         else:
@@ -1481,7 +1484,9 @@ class Database(IDatabase):
         return unit_cor
 
     def get_max_water_level(
-        self, scenario_name: str, return_period: int = None,
+        self,
+        scenario_name: str,
+        return_period: int = None,
     ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
