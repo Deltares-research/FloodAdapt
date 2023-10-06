@@ -171,3 +171,27 @@ tests/test_database/charleston/static/templates/overland/
 tests/test_database/charleston/input/measures/raise_property_aggregation_area/raise_property_aggregation_area_new.toml
 tests/system/sfincs/
 database
+tests/test_database/charleston/static/cyclone_track_database/
+tests/test_object_model/test_events.py
+tests/test_database/charleston/input/events/kingTideNov2021/*.nc
+tests/test_database/charleston/input/events/*.spw
+tests/test_database/charleston/input/scenarios/all_projections_test_set_elevate_comb_correct/all_projections_test_set_elevate_comb_correct.toml
+tests/test_database/charleston/input/scenarios/all_projections_test_set_no_measures/all_projections_test_set_no_measures.toml
+tests/test_database/charleston/input/scenarios/benefits/analysis_1/analysis_1.toml
+tests/test_database/charleston/input/scenarios/current_test_set_elevate_comb_correct/current_test_set_elevate_comb_correct.toml
+tests/test_database/charleston/input/measures/*.geojson
+tests/test_database/charleston/static/bfe/bfe.geojson
+tests/test_database/charleston/static/site/aggr_lvl_1.geojson
+tests/test_database/charleston/static/site/aggr_lvl_2.geojson
+/tests/test_database - Copy
+tests/test_database/charleston/static/templates/fiat/exposure/exposure*.gpkg
+tests/test_database/charleston/static/dem/*
+tests/system/fiat/*
+tests/test_database/charleston/input/events/test_set/
+tests/test_database/charleston/input/events/probabilistic_event_set/
+tests/test_database/charleston/static/templates/overland_0_rivers
+tests/test_database/charleston/static/templates/overland_2_rivers
+tests/test_database/charleston/static/templates/offshore
+tests/test_database/charleston/static/templates/overland
+tests/test_database/charleston/static/templates/fiat/footprints
+tests/test_database/charleston/static/templates/fiat/svi

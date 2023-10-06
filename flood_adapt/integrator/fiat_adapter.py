@@ -1,12 +1,16 @@
+import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
+from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
 
@@ -24,7 +28,8 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Loads FIAT model based on a root directory."""
         # Load FIAT template
-        self.fiat_model = FiatModel(root=model_root, mode="r")
+        self.fiat_logger = setuplog("hydromt_fiat", log_level=10)
+        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self.fiat_logger)
         self.fiat_model.read()
 
         # Get site information
@@ -33,21 +38,65 @@ class FiatAdapter:
         )
 
         # Get base flood elevation path and variable name
-        self.bfe_path = Path(database_path) / "static" / "bfe" / "bfe.geojson"
-        self.bfe_name = "bfe"
-
-    def set_hazard(self, hazard: Hazard):
-        raise NotImplementedError
-        self.fiat_model.setup_hazard(
-            map_fn=hazard.simulation_path.joinpath("RP=100_max_flood_depth.tif"),
-            map_type="water_depth",
-            rp=None,  # change this in new version
-            crs=None,  # change this in new version
-            nodata=None,  # change this in new version
-            var="zsmax",
-            chunks="auto",
-            risk_output=False,
+        self.bfe = {}
+        # if table is given use that, else use the map
+        if self.site.attrs.fiat.bfe.table:
+            self.bfe["mode"] = "table"
+            self.bfe["table"] = (
+                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.table
+            )
+        else:
+            self.bfe["mode"] = "geom"
+        # Map is always needed!
+        self.bfe["geom"] = (
+            Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
         )
+
+        self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
+
+    def __del__(self) -> None:
+        # Close fiat_logger
+        for handler in self.fiat_logger.handlers:
+            handler.close()
+
+    def set_hazard(self, hazard: Hazard) -> None:
+        map_fn = self._get_sfincs_map_path(hazard)
+        map_type = hazard.site.attrs.fiat.floodmap_type
+        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
+        is_risk = hazard.event_mode == Mode.risk
+
+        # Add the hazard data to a data catalog with the unit conversion from meters to feet
+        wl_current_units = UnitfulLength(value=1.0, units="meters")
+        conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
+
+        self.fiat_model.setup_hazard(
+            map_fn=map_fn,
+            map_type=map_type,
+            rp=None,
+            crs=None,  # change this in new version
+            nodata=-999,  # change this in new version
+            var=var,
+            chunks="auto",
+            risk_output=is_risk,
+            unit_conversion_factor=conversion_factor,
+        )
+
+    def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
+        sim_path = hazard.sfincs_map_path
+        mode = hazard.event_mode
+        map_fn: List[Union[str, Path]] = []
+
+        if mode == Mode.single_event:
+            map_fn.append(sim_path.joinpath("sfincs_map.nc"))
+
+        elif mode == Mode.risk:
+            # check for netcdf
+            map_fn.extend(
+                sim_path.joinpath(file)
+                for file in os.listdir(str(sim_path))
+                if file.endswith(".nc")
+            )
+        return map_fn
 
     def apply_economic_growth(
         self, economic_growth: float, ids: Optional[list[str]] = None
@@ -169,11 +218,15 @@ class FiatAdapter:
             damage_types=["Structure", "Content"],
             vulnerability=self.fiat_model.vulnerability,
             elevation_reference=elev_ref,
-            path_ref=self.bfe_path,
-            attr_ref=self.bfe_name,
+            path_ref=self.bfe["geom"],
+            attr_ref=self.bfe["name"],
         )
 
-    def elevate_properties(self, elevate: Elevate, ids: Optional[list[str]] = None):
+    def elevate_properties(
+        self,
+        elevate: Elevate,
+        ids: Optional[list[str]] = None,
+    ):
         """Elevate properties by adjusting the "Ground Floor Height" column
         in the FIAT exposure file.
 
@@ -182,17 +235,19 @@ class FiatAdapter:
         elevate : Elevate
             this is an "elevate" impact measure object
         ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
+            List of FIAT "Object ID" values to elevate,
             by default None
         """
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
-            elev_ref = "geom"
+            elev_ref = self.bfe["mode"]
+            path_ref = self.bfe[elev_ref]
+
         elif elevate.attrs.elevation.type == "datum":
             elev_ref = "datum"
 
         # If ids are given use that as an additional filter
-        objectids = elevate.get_object_ids()
+        objectids = elevate.get_object_ids(self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
@@ -201,8 +256,8 @@ class FiatAdapter:
             raise_by=elevate.attrs.elevation.value,
             objectids=objectids,
             height_reference=elev_ref,
-            path_ref=self.bfe_path,
-            attr_ref=self.bfe_name,
+            path_ref=path_ref,
+            attr_ref=self.bfe["name"],
         )
 
     def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
@@ -229,7 +284,7 @@ class FiatAdapter:
         ].isin(self.site.attrs.fiat.non_building_names)
 
         # Get rows that are affected
-        objectids = buyout.get_object_ids()
+        objectids = buyout.get_object_ids(self.fiat_model)
         rows = (
             self.fiat_model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
@@ -263,7 +318,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = floodproof.get_object_ids()
+        objectids = floodproof.get_object_ids(self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 

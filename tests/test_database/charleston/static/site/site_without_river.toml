@@ -1,23 +1,48 @@
 name = "charleston"
-long_name = "Charleston, SC"
+description = "Charleston, SC"
 lat = 32.77
 lon = -79.95
 
 [sfincs]
 csname = "WGS 84 / UTM zone 17N"
 cstype = "projected"
-version = "sfincs20_AlpeDHuez_release"
-offshore_model = "sfincs_large_scale_v03"
+version = "SFINCS_v2.0.1_tag_exe" #"sfincs20_AlpeDHuez_release"
+offshore_model = "offshore"
 overland_model = "overland"
-datum_offshore_model = "MSL"
-datum_overland_model = "NAVD88"
-tidal_components = "CharlestonCooperRiverEntranceSouthCarolina_tidalcomponents.txt"
 ambient_air_pressure = 102000
 floodmap_no_data_value = -9999
 floodmap_units = "feet"
-[sfincs.diff_datum_offshore_overland]
-value = 0.067
+save_simulation = "False"
+
+[water_level]
+[water_level.reference]
+name = "MLLW"
+[water_level.reference.height]
+value = 0.0
 units = "meters"
+[water_level.msl]
+name = "MSL"
+[water_level.msl.height]
+value = 0.89
+units = "meters"
+[water_level.localdatum]
+name = "NAVD88"
+[water_level.localdatum.height]
+value = 0.957
+units = "meters"
+[[water_level.other]]
+name = "MHHW"
+[water_level.other.height]
+value = 1.757
+units = "meters"
+[[water_level.other]]
+name = "MLLW"
+[water_level.other.height]
+value = 0.0
+units = "meters"
+
+[cyclone_track_database]
+file = "IBTrACS.NA.v04r00.nc"
 
 [slr]
 relative_to_year = 2020
@@ -27,12 +52,17 @@ units = "feet"
 
 [gui]
 default_length_units = "feet"
+default_distance_units = "miles"
+default_area_units = "sf"
+default_volume_units = "cf"
 default_velocity_units = "knots"
+default_direction_units = "deg N"
 default_discharge_units = "cfs"
-default_intensity_units = "inch/hour"
+default_intensity_units = "inch/hr"
+default_cumulative_units = "inch"
 [gui.tide_harmonic_amplitude]
 value = 3.0
-units = "meters"
+units = "feet"
 
 [risk]
 return_periods = [1, 2, 5, 10, 25, 50, 100]
@@ -49,20 +79,28 @@ indexfilename = "charleston_14m_indices.dat"
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
+damage_unit = "USD"
+building_footprints = "../templates/fiat/footprints/Buildings.shp"
+save_simulation = "False"
+
+[fiat.bfe]
+geom = "../bfe/bfe.geojson"
+table = "../bfe/bfe.csv"
+field_name = "bfe"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_1"
-file = "aggr_lvl_1.geojson"
+file = "../templates/fiat/aggregation_areas/aggr_lvl_1.geojson"
 field_name = "name"
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
-file = "aggr_lvl_2.geojson"
+file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
 field_name = "name"
 
 [obs_station]
 name = 8665530
-long_name = "Charleston Cooper River Entrance"
+description = "Charleston Cooper River Entrance"
 ID = 8665530
 lat = 32.78
 lon = -79.9233
@@ -78,3 +116,13 @@ units = "meters"
 [obs_station.msl]
 value = 0.890
 units = "meters"
+
+[benefits]
+current_year = 2023
+current_projection = "current"
+baseline_strategy = "no_measures"
+event_set = "test_set"
+
+[scs]
+file = "scs_rainfall.csv"
+type = "type_3"

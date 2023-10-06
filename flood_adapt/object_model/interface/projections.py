@@ -18,8 +18,8 @@ class PhysicalProjectionModel(BaseModel):
     subsidence: Optional[UnitfulLength] = UnitfulLength(
         value=0.0, units=UnitTypesLength.meters
     )
-    rainfall_increase: Optional[float] = 0.0
-    storm_frequency_increase: Optional[float] = 0.0
+    rainfall_increase: float = 0.0
+    storm_frequency_increase: float = 0.0
 
 
 class SocioEconomicChangeModel(BaseModel):
@@ -33,7 +33,7 @@ class SocioEconomicChangeModel(BaseModel):
 
 class ProjectionModel(BaseModel):
     name: str
-    long_name: str
+    description: Optional[str] = ""
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 

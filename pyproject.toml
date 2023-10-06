@@ -12,6 +12,7 @@ authors = [
     { name = "Frederique de Groen", email = "Frederique.deGroen@deltares.nl" },
     { name = "Tim de Wilde", email = "Tim.deWilde@deltares.nl" },
     { name = "Julian Hofer", email = "Julian.Hofer@deltares.nl" },
+    { name = "Daley Adrichem", email = "Daley.Adrichem@deltares.nl" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -21,21 +22,31 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "geopandas",
-    "hydromt_sfincs",
-    "hydromt",
+    "hydromt==0.8.0",
     "numpy",
+    "numpy-financial",
     "pandas",
-    "pydantic",
+    "pydantic==1.10.9",
     "tomli-w",
     "tomli",
     "plotly",
-    "cht_cyclones",
     "cht_observations",
     "cht_tide",
     "cht_meteo",
-    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@fiat_integrator"
+    "pyogrio",
+    "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
+    "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
+    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@env_fix",
+    "delft_fiat @ git+https://github.com/Deltares/Delft-FIAT.git",
+    "fiat_toolbox @ git+https://github.com/Deltares/fiat_toolbox.git"
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pre-commit"
+]
 
 [tool.setuptools]
 zip-safe = false

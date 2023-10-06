@@ -1,0 +1,14 @@
+name = "total_storage"
+description = ""
+type = "total_storage"
+polygon_file = "total_storage.geojson"
+selection_type = "polygon"
+percent_area = 100
+
+[volume]
+value = 100000000.0
+units = "cf"
+
+[height]
+value = 0.0
+units = "meters"

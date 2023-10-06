@@ -42,8 +42,22 @@ def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
     return database.get_aggregation_areas()
 
 
+def get_svi_map(database: IDatabase) -> GeoDataFrame:
+    """Gets the SVI map that are used in Fiat
+
+    Parameters
+    ----------
+    database : IDatabase
+
+    Returns
+    -------
+    GeoDataFrame
+        GeoDataFrames with the SVI per area
+    """
+    return database.get_svi_map()
+
+
 def get_buildings(database: IDatabase) -> GeoDataFrame:
-    # TODO should this return a geojson? if yes what form?
     """Gets the buildings exposure that are used in Fiat
 
     Parameters
@@ -56,6 +70,10 @@ def get_buildings(database: IDatabase) -> GeoDataFrame:
         GeoDataFrames with the buildings from FIAT exposure
     """
     return database.get_buildings()
+
+
+def get_property_types(database: IDatabase) -> list:
+    return database.get_property_types()
 
 
 def get_hazard_measure_types():

@@ -1,0 +1,37 @@
+[Charts]
+    [Charts.Flooded]
+        Name = "Flooded"
+        Image = "https://openclipart.org/image/800px/217511"
+    [Charts.Displaced]
+        Name = "Displaced"
+        Image = "https://openclipart.org/image/800px/229840"
+
+[Categories]
+    [Categories.LowVulnerability]
+        Name = "LowVulnerability"
+        Color = "#D5DEE1"
+    [Categories.HighVulnerability]
+        Name = "HighVulnerability"
+        Color = "#88A2AA"
+
+[Slices]
+    [Slices.Flooded_Low_Vulnerability_People]
+        Name = "Flooded low vulnerability people"
+        Query = "FloodedLowVulnerability"
+        Chart = "Flooded"
+        Category = "LowVulnerability"
+    [Slices.Flooded_High_Vulnerability_People]
+        Name = "Flooded high vulnerability people"
+        Query = "FloodedHighVulnerability"
+        Chart = "Flooded"
+        Category = "HighVulnerability"
+    [Slices.Displaced_Low_Vulnerability_People]
+        Name = "Displaced low vulnerability people"
+        Query = "DisplacedLowVulnerability"
+        Chart = "Displaced"
+        Category = "LowVulnerability"
+    [Slices.Displaced_High_Vulnerability_People]
+        Name = "Displaced high vulnerability people"
+        Query = "DisplacedHighVulnerability"
+        Chart = "Displaced"
+        Category = "HighVulnerability"

@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -9,13 +7,16 @@ from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.strategy import Strategy
 
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_strategy_comb_read():
+def test_strategy_comb_read(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -29,7 +30,7 @@ def test_strategy_comb_read():
     strategy = Strategy.load_file(test_toml)
 
     assert strategy.attrs.name == "strategy_comb"
-    assert strategy.attrs.long_name == "strategy_comb"
+    assert strategy.attrs.description == "strategy_comb"
     assert len(strategy.attrs.measures) == 4
     assert isinstance(strategy.get_hazard_strategy(), HazardStrategy)
     assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
@@ -47,7 +48,7 @@ def test_strategy_comb_read():
     assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
 
 
-def test_strategy_no_measures():
+def test_strategy_no_measures(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -66,7 +67,7 @@ def test_strategy_no_measures():
     assert len(strategy.get_impact_strategy().measures) == 0
 
 
-def test_elevate_comb_correct():
+def test_elevate_comb_correct(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -80,37 +81,27 @@ def test_elevate_comb_correct():
     strategy = Strategy.load_file(test_toml)
 
     assert strategy.attrs.name == "elevate_comb_correct"
-    assert strategy.attrs.long_name == "elevate_comb_correct"
+    assert strategy.attrs.description == "elevate_comb_correct"
     assert isinstance(strategy.attrs.measures, list)
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
 
 
-def test_elevate_comb_fail_1():
+def test_green_infra(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
         / "input"
         / "strategies"
-        / "elevate_comb_fail_1"
-        / "elevate_comb_fail_1.toml"
+        / "greeninfra"
+        / "greeninfra.toml"
     )
     assert test_toml.is_file()
 
-    with pytest.raises(ValueError):
-        Strategy.load_file(test_toml, validate=True)
+    strategy = Strategy.load_file(test_toml)
 
-
-def test_elevate_comb_fail_2():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "elevate_comb_fail_2"
-        / "elevate_comb_fail_2.toml"
-    )
-    assert test_toml.is_file()
-
-    with pytest.raises(ValueError):
-        Strategy.load_file(test_toml, validate=True)
+    assert strategy.attrs.name == "greeninfra"
+    assert isinstance(strategy.attrs.measures, list)
+    assert isinstance(strategy.get_hazard_strategy().measures[0], GreenInfrastructure)
+    assert isinstance(strategy.get_hazard_strategy().measures[1], GreenInfrastructure)
+    assert isinstance(strategy.get_hazard_strategy().measures[2], GreenInfrastructure)

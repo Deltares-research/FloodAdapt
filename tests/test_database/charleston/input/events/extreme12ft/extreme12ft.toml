@@ -1,6 +1,6 @@
 name = "extreme12ft"
-long_name = "extreme 12 foot event"
-mode = "single_scenario"
+description = "extreme 12 foot event"
+mode = "single_event"
 template = "Synthetic"
 timing = "idealized"
 
@@ -20,8 +20,9 @@ units = "deg N"
 [rainfall]
 source = "none"
 
-[river]
+[[river]]
 source = "constant"
+
 [river.constant_discharge]
 value = 5000
 units = "cfs"

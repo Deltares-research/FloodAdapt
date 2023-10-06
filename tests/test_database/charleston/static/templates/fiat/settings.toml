@@ -1,10 +1,20 @@
 [output]
-output_dir = 'output'
-crs = 'EPSG:4326'
+path = "output"
 
-[exposure]
-dbase_file = 'exposure/exposure.csv'
-crs = 'EPSG:4326'
+[output.csv]
+name = "output.csv"
+
+[output.geom]
+name1 = "spatial.gpkg"
 
 [vulnerability]
-dbase_file = 'vulnerability/vulnerability_curves.csv'
+file = "./vulnerability/vulnerability_curves.csv"
+step_size = 0.1
+unit = "feet"
+
+[exposure.geom]
+csv = "./exposure/exposure.csv"
+crs = "EPSG:4326"
+file1 = "./exposure/exposure.gpkg"
+file2 = "./exposure/exposure1.gpkg"
+unit = "feet"

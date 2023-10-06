@@ -6,8 +6,12 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel, validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
     UnitfulLength,
     UnitfulLengthRefValue,
+    UnitfulVolume,
+    UnitTypesLength,
+    UnitTypesVolume,
 )
 
 
@@ -23,7 +27,11 @@ class HazardType(str, Enum):
     """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
+    levee = "levee"  # same functionality as floodwall
     pump = "pump"
+    water_square = "water_square"
+    greening = "greening"
+    total_storage = "total_storage"
 
 
 class SelectionType(str, Enum):
@@ -31,6 +39,7 @@ class SelectionType(str, Enum):
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
+    polyline = "polyline"
     all = "all"
 
 
@@ -38,15 +47,16 @@ class MeasureModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     name: str
-    long_name: str
-    type: str
+    description: Optional[str] = ""
+    type: Union[HazardType, ImpactType]
 
 
 class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: str
+    polygon_file: Optional[str]
+    selection_type: SelectionType
 
 
 class ImpactMeasureModel(MeasureModel):
@@ -112,6 +122,22 @@ class FloodWallModel(HazardMeasureModel):
     elevation: UnitfulLength
 
 
+class PumpModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "pump" hazard measure"""
+
+    discharge: UnitfulDischarge
+
+
+class GreenInfrastructureModel(HazardMeasureModel):
+    """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
+
+    volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
+    height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    aggregation_area_type: Optional[str]
+    aggregation_area_name: Optional[str]
+    percent_area: float = 100
+
+
 class IMeasure(ABC):
     """This is a class for a FloodAdapt measure"""
 
@@ -156,3 +182,15 @@ class IFloodWall(IMeasure):
     """This is a class for a FloodAdapt "floodwall" measure"""
 
     attrs: FloodWallModel
+
+
+class IPump(IMeasure):
+    """This is a class for a FloodAdapt "pump" measure"""
+
+    attrs: PumpModel
+
+
+class IGreenInfrastructure(IMeasure):
+    """This is a class for a FloodAdapt "green infrastrcutre" measure"""
+
+    attrs: GreenInfrastructureModel

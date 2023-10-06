@@ -45,8 +45,8 @@ class ImpactStrategy:
                     if counter > 0:
                         msg += " and"
                     msg += " between '{}' and '{}'".format(
-                        self.measures[comb[0][0]].attrs.long_name,
-                        self.measures[comb[1][0]].attrs.long_name,
+                        self.measures[comb[0][0]].attrs.name,
+                        self.measures[comb[1][0]].attrs.name,
                     )
                     counter += 1
             raise ValueError(msg)

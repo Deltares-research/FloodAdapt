@@ -5,15 +5,15 @@ import pytest
 import flood_adapt.api.events as api_events
 import flood_adapt.api.startup as api_startup
 
-test_database_path = Path().absolute() / "tests" / "test_database_GUI"
+test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_synthetic_event():
+def test_synthetic_event(cleanup_database):
     test_dict = {
         "name": "extreme12ft",
-        "long_name": "extreme 12 foot event",
-        "mode": "single_scenario",
+        "description": "extreme 12 foot event",
+        "mode": "single_event",
         "template": "Synthetic",
         "timing": "idealized",
         "water_level_offset": {"value": "zero", "units": "feet"},
@@ -23,10 +23,12 @@ def test_synthetic_event():
             "constant_direction": {"value": 0, "units": "deg N"},
         },
         "rainfall": {"source": "none"},
-        "river": {
-            "source": "constant",
-            "constant_discharge": {"value": 5000, "units": "cfs"},
-        },
+        "river": [
+            {
+                "source": "constant",
+                "constant_discharge": {"value": 5000, "units": "cfs"},
+            }
+        ],
         "time": {"duration_before_t0": 24, "duration_after_t0": "24"},
         "tide": {
             "source": "harmonic",

@@ -8,15 +8,17 @@ from pydantic import BaseModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
+    UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
+    UnitTypesLength,
 )
 
 
 class Mode(str, Enum):
     """class describing the accepted input for the variable mode in Event"""
 
-    single_scenario = "single_scenario"
+    single_event = "single_event"
     risk = "risk"
 
 
@@ -24,7 +26,7 @@ class Template(str, Enum):
     """class describing the accepted input for the variable template in Event"""
 
     Synthetic = "Synthetic"
-    Hurricane = "Hurricane"
+    Hurricane = "Historical_hurricane"
     Historical_nearshore = "Historical_nearshore"
     Historical_offshore = "Historical_offshore"
 
@@ -63,6 +65,7 @@ class ShapeType(str, Enum):
     gaussian = "gaussian"
     block = "block"
     triangle = "triangle"
+    scs = "scs"
 
 
 class WindModel(BaseModel):
@@ -71,17 +74,16 @@ class WindModel(BaseModel):
     constant_speed: Optional[UnitfulVelocity]
     constant_direction: Optional[UnitfulDirection]
     # timeseries
-    wind_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
 
 
 class RainfallModel(BaseModel):
     source: RainfallSource
+    increase: Optional[float] = 0.0
     # constant
-    constant_intensity: Optional[
-        float
-    ]  # TODO: add units; intensity is in mm/hr or in/hr
+    constant_intensity: Optional[UnitfulIntensity]
     # timeseries
-    rainfall_timeseries_file: Optional[str]
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     cumulative: Optional[UnitfulLength]
@@ -92,13 +94,16 @@ class RainfallModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    source: RiverSource
+    source: Optional[RiverSource]
     # constant
     constant_discharge: Optional[UnitfulDischarge]
+    # timeseries
+    timeseries_file: Optional[str]
     # shape
     shape_type: Optional[ShapeType]
     base_discharge: Optional[UnitfulDischarge]
     shape_peak: Optional[UnitfulDischarge]
+    shape_duration: Optional[float]
     shape_peak_time: Optional[float]
     shape_start_time: Optional[float]
     shape_end_time: Optional[float]
@@ -124,6 +129,7 @@ class TideModel(BaseModel):
 
     source: TideSource
     harmonic_amplitude: Optional[UnitfulLength]
+    timeseries_file: Optional[str]
 
 
 class SurgeSource(str, Enum):
@@ -141,21 +147,44 @@ class SurgeModel(BaseModel):
     shape_peak: Optional[UnitfulLength]
 
 
+class TranslationModel(BaseModel):
+    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
+
+    eastwest_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+    northsouth_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+
+
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
     name: str
-    long_name: str
+    description: Optional[str] = ""
     mode: Mode
     template: Template
-    timing: Timing  # TODO: do we need this? We can infer this from template
+    timing: Timing
     water_level_offset: UnitfulLength
     wind: WindModel
     rainfall: RainfallModel
-    river: RiverModel
+    river: list[RiverModel]
     time: TimeModel
     tide: TideModel
     surge: SurgeModel
+
+
+class EventSetModel(
+    BaseModel
+):  # add WindModel etc as this is shared among all? templates
+    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
+
+    name: str
+    description: Optional[str] = ""
+    mode: Mode
+    subevent_name: Optional[list[str]]
+    frequency: Optional[list[float]]
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
@@ -164,6 +193,17 @@ class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic even
 
 class HistoricalNearshoreModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
+
+
+class HistoricalOffshoreModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
+
+
+class HistoricalHurricaneModel(EventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+
+    hurricane_translation: TranslationModel
+    track_name: str
 
 
 class IEvent(ABC):
@@ -192,3 +232,11 @@ class ISynthetic(IEvent):
 
 class IHistoricalNearshore(IEvent):
     attrs: HistoricalNearshoreModel
+
+
+class IHistoricalOffshore(IEvent):
+    attrs: HistoricalOffshoreModel
+
+
+class IHistoricalHurricane(IEvent):
+    attrs: HistoricalHurricaneModel

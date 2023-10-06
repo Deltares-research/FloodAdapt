@@ -31,9 +31,9 @@ def delete_projection(name: str, database: IDatabase) -> None:
 
 
 def copy_projection(
-    old_name: str, database: IDatabase, new_name: str, new_long_name: str
+    old_name: str, database: IDatabase, new_name: str, new_description: str
 ) -> None:
-    database.copy_projection(old_name, new_name, new_long_name)
+    database.copy_projection(old_name, new_name, new_description)
 
 
 def get_slr_scn_names(database: IDatabase) -> list:
