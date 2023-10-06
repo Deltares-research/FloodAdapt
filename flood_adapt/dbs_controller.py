@@ -96,10 +96,13 @@ class Database(IDatabase):
         gpd.GeoDataFrame
             SVI per aggregation area
         """
-        svi_map = gpd.read_file(
-            self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
-            engine="pyogrio",
-        ).to_crs(4326)
+        if self.site.attrs.fiat.svi:
+            svi_map = gpd.read_file(
+                self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
+                engine="pyogrio",
+            ).to_crs(4326)
+        else:
+            svi_map = None
         return svi_map
 
     def get_slr_scn_names(self) -> list:
