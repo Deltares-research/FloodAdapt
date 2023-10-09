@@ -1,9 +1,14 @@
 from pathlib import Path
+from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
 import numpy as np
+import geopandas as gpd
+import numpy as np
 import pandas as pd
+from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
+from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
@@ -21,6 +26,10 @@ def get_topobathy_path(database: IDatabase) -> str:
 
 def get_index_path(database: IDatabase) -> str:
     return database.get_index_path()
+
+
+def get_depth_conversion(database: IDatabase) -> float:
+    return database.get_depth_conversion()
 
 
 def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.array:

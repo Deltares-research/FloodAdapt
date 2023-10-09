@@ -10,6 +10,8 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesArea,
     UnitTypesDirection,
+    UnitTypesArea,
+    UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
@@ -70,6 +72,18 @@ class SlrModel(BaseModel):
     relative_to_year: int
 
 
+class MapboxLayersModel(BaseModel):
+    flood_map_bins: list[float]
+    flood_map_colors: list[str]
+    aggregation_dmg_bins: list[float]
+    aggregation_dmg_colors: list[str]
+    footprints_dmg_bins: list[float]
+    footprints_dmg_colors: list[str]
+    svi_bins: Optional[list[float]]
+    svi_colors: Optional[list[str]]
+    damage_decimals: Optional[int] = 0
+
+
 class GuiModel(BaseModel):
     """class describing the accepted input for the variable gui in Site"""
 
@@ -83,6 +97,7 @@ class GuiModel(BaseModel):
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
+    mapbox_layers: MapboxLayersModel
 
 
 class RiskModel(BaseModel):
