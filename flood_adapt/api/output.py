@@ -23,6 +23,10 @@ def get_index_path(database: IDatabase) -> str:
     return database.get_index_path()
 
 
+def get_depth_conversion(database: IDatabase) -> float:
+    return database.get_depth_conversion()
+
+
 def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.array:
     return database.get_max_water_level(name, rp)
 

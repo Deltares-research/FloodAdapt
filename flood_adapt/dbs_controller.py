@@ -96,10 +96,16 @@ class Database(IDatabase):
         gpd.GeoDataFrame
             SVI per aggregation area
         """
-        svi_map = gpd.read_file(
-            self.input_path.parent / "static" / "site" / self.site.attrs.fiat.svi.geom,
-            engine="pyogrio",
-        ).to_crs(4326)
+        if self.site.attrs.fiat.svi:
+            svi_map = gpd.read_file(
+                self.input_path.parent
+                / "static"
+                / "site"
+                / self.site.attrs.fiat.svi.geom,
+                engine="pyogrio",
+            ).to_crs(4326)
+        else:
+            svi_map = None
         return svi_map
 
     def get_slr_scn_names(self) -> list:
@@ -1463,8 +1469,24 @@ class Database(IDatabase):
         path = self.input_path.parent.joinpath("static", "dem", "tiles", "indices")
         return str(path)
 
+    def get_depth_conversion(self) -> float:
+        """returns the flood depth conversion that is need in the gui to plot the flood map
+
+        Returns
+        -------
+        float
+            conversion factor
+        """
+        # Get conresion factor need to get from the sfincs units to the gui units
+        units = UnitfulLength(value=1, units=self.site.attrs.gui.default_length_units)
+        unit_cor = units.convert(new_units="meters")
+
+        return unit_cor
+
     def get_max_water_level(
-        self, scenario_name: str, return_period: int = None
+        self,
+        scenario_name: str,
+        return_period: int = None,
     ) -> np.array:
         """returns an array with the maximum water levels of the SFINCS simulation
 
