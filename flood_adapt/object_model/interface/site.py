@@ -10,8 +10,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesArea,
     UnitTypesDirection,
-    UnitTypesArea,
-    UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
     UnitTypesLength,
