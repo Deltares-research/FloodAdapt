@@ -172,7 +172,7 @@ def test_fiat_adapter_measures(cleanup_database):
     )
 
 
-def test_fiat_raise_datum():
+def test_fiat_raise_datum(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
@@ -188,8 +188,43 @@ def test_fiat_raise_datum():
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.run()
 
+    exposure_scenario = pd.read_csv(
+        test_database
+        / "charleston"
+        / "output"
+        / "Scenarios"
+        / "current_extreme12ft_raise_datum"
+        / "Impacts"
+        / "Impacts_detailed_current_extreme12ft_raise_datum.csv"
+    )
 
-def test_fiat_return_periods():
+    # check if buildings are elevated
+    aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.aggregation_area_type
+    aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.aggregation_area_name
+    build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        0
+    ].attrs.property_type
+    inds1 = (
+        exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
+    inds2 = (
+        exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
+
+    assert all(
+        elev1 <= elev2
+        for elev1, elev2 in zip(
+            exposure_template.loc[inds1, "Ground Floor Height"],
+            exposure_scenario.loc[inds2, "Ground Floor Height"],
+        )
+    )
+
+
+def test_fiat_return_periods(cleanup_database):
     test_toml = (
         test_database
         / "charleston"
