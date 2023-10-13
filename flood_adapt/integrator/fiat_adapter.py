@@ -43,7 +43,10 @@ class FiatAdapter:
             if self.site.attrs.fiat.bfe.table:
                 self.bfe["mode"] = "table"
                 self.bfe["table"] = (
-                    Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.table
+                    Path(database_path)
+                    / "static"
+                    / "site"
+                    / self.site.attrs.fiat.bfe.table
                 )
             else:
                 self.bfe["mode"] = "geom"
@@ -53,7 +56,6 @@ class FiatAdapter:
             )
 
             self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
-
 
     def __del__(self) -> None:
         # Close fiat_logger
@@ -231,7 +233,6 @@ class FiatAdapter:
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-
     def elevate_properties(
         self,
         elevate: Elevate,
@@ -272,11 +273,9 @@ class FiatAdapter:
                 raise_by=elevate.attrs.elevation.value,
                 objectids=objectids,
                 height_reference="datum",
-
             )
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
-
 
     def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
