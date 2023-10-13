@@ -146,7 +146,7 @@ class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
-    bfe: BFEModel
+    bfe: Optional[BFEModel]
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
