@@ -245,6 +245,7 @@ class FiatAdapter:
 
         elif elevate.attrs.elevation.type == "datum":
             elev_ref = "datum"
+            path_ref = None
 
         # If ids are given use that as an additional filter
         objectids = elevate.get_object_ids(self.fiat_model)
