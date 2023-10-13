@@ -71,6 +71,10 @@ class SlrModel(BaseModel):
 
 
 class MapboxLayersModel(BaseModel):
+    """class describing the configuration of the mapbox layers in the gui"""
+
+    flood_map_depth_min: float
+    flood_map_zbmax: float
     flood_map_bins: list[float]
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
