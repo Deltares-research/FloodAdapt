@@ -36,23 +36,24 @@ class FiatAdapter:
         self.site = Site.load_file(
             Path(database_path) / "static" / "site" / "site.toml"
         )
-
-        # Get base flood elevation path and variable name
-        self.bfe = {}
-        # if table is given use that, else use the map
-        if self.site.attrs.fiat.bfe.table:
-            self.bfe["mode"] = "table"
-            self.bfe["table"] = (
-                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.table
+        if self.site.attrs.fiat.bfe:
+            self.bfe = {}
+            # Get base flood elevation path and variable name
+            # if table is given use that, else use the map
+            if self.site.attrs.fiat.bfe.table:
+                self.bfe["mode"] = "table"
+                self.bfe["table"] = (
+                    Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.table
+                )
+            else:
+                self.bfe["mode"] = "geom"
+            # Map is always needed!
+            self.bfe["geom"] = (
+                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
             )
-        else:
-            self.bfe["mode"] = "geom"
-        # Map is always needed!
-        self.bfe["geom"] = (
-            Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
-        )
 
-        self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
+            self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
+
 
     def __del__(self) -> None:
         # Close fiat_logger
@@ -206,21 +207,30 @@ class FiatAdapter:
         """
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
-            elev_ref = "geom"
+            # Use hydromt function
+            self.fiat_model.exposure.setup_new_composite_areas(
+                percent_growth=population_growth,
+                geom_file=Path(area_path),
+                ground_floor_height=ground_floor_height,
+                damage_types=["Structure", "Content"],
+                vulnerability=self.fiat_model.vulnerability,
+                elevation_reference="geom",
+                path_ref=self.bfe["geom"],
+                attr_ref=self.bfe["name"],
+            )
         elif elevation_type == "datum":
-            elev_ref = "datum"
+            # Use hydromt function
+            self.fiat_model.exposure.setup_new_composite_areas(
+                percent_growth=population_growth,
+                geom_file=Path(area_path),
+                ground_floor_height=ground_floor_height,
+                damage_types=["Structure", "Content"],
+                vulnerability=self.fiat_model.vulnerability,
+                elevation_reference="datum",
+            )
+        else:
+            raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-        # Use hydromt function
-        self.fiat_model.exposure.setup_new_composite_areas(
-            percent_growth=population_growth,
-            geom_file=Path(area_path),
-            ground_floor_height=ground_floor_height,
-            damage_types=["Structure", "Content"],
-            vulnerability=self.fiat_model.vulnerability,
-            elevation_reference=elev_ref,
-            path_ref=self.bfe["geom"],
-            attr_ref=self.bfe["name"],
-        )
 
     def elevate_properties(
         self,
@@ -238,28 +248,35 @@ class FiatAdapter:
             List of FIAT "Object ID" values to elevate,
             by default None
         """
-        # Get reference type to align with hydromt
-        if elevate.attrs.elevation.type == "floodmap":
-            elev_ref = self.bfe["mode"]
-            path_ref = self.bfe[elev_ref]
-
-        elif elevate.attrs.elevation.type == "datum":
-            elev_ref = "datum"
-            path_ref = None
-
         # If ids are given use that as an additional filter
         objectids = elevate.get_object_ids(self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
-        # Use hydromt function
-        self.fiat_model.exposure.raise_ground_floor_height(
-            raise_by=elevate.attrs.elevation.value,
-            objectids=objectids,
-            height_reference=elev_ref,
-            path_ref=path_ref,
-            attr_ref=self.bfe["name"],
-        )
+        # Get reference type to align with hydromt
+        if elevate.attrs.elevation.type == "floodmap":
+            elev_ref = self.bfe["mode"]
+            path_ref = self.bfe[elev_ref]
+            # Use hydromt function
+            self.fiat_model.exposure.raise_ground_floor_height(
+                raise_by=elevate.attrs.elevation.value,
+                objectids=objectids,
+                height_reference=elev_ref,
+                path_ref=path_ref,
+                attr_ref=self.bfe["name"],
+            )
+
+        elif elevate.attrs.elevation.type == "datum":
+            # Use hydromt function
+            self.fiat_model.exposure.raise_ground_floor_height(
+                raise_by=elevate.attrs.elevation.value,
+                objectids=objectids,
+                height_reference="datum",
+
+            )
+        else:
+            raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
+
 
     def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
