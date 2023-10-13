@@ -171,6 +171,7 @@ def test_fiat_adapter_measures(cleanup_database):
         != exposure_template.loc[inds1, "Damage Function: Structure"]
     )
 
+
 def test_fiat_raise_datum():
     test_toml = (
         test_database
