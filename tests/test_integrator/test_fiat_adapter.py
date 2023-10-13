@@ -171,8 +171,24 @@ def test_fiat_adapter_measures(cleanup_database):
         != exposure_template.loc[inds1, "Damage Function: Structure"]
     )
 
+def test_fiat_raise_datum():
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_raise_datum"
+        / "current_extreme12ft_raise_datum.toml"
+    )
 
-def test_fiat_return_periods(cleanup_database):
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.run()
+
+
+def test_fiat_return_periods():
     test_toml = (
         test_database
         / "charleston"
