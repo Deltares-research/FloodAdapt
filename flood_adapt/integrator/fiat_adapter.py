@@ -209,6 +209,10 @@ class FiatAdapter:
         """
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
+            if not self.bfe:
+                raise ValueError(
+                    "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
+                )
             # Use hydromt function
             self.fiat_model.exposure.setup_new_composite_areas(
                 percent_growth=population_growth,
@@ -256,6 +260,10 @@ class FiatAdapter:
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
+            if not self.bfe:
+                raise ValueError(
+                    "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
+                )
             elev_ref = self.bfe["mode"]
             path_ref = self.bfe[elev_ref]
             # Use hydromt function
