@@ -56,6 +56,8 @@ class Database(IDatabase):
             site name (same as in the folder structure)
         """
         self.input_path = Path(database_path) / site_name / "input"
+        self.static_path = Path(database_path) / site_name / "static"
+        self.output_path = Path(database_path) / site_name / "output"
         self.site = Site.load_file(
             Path(database_path) / site_name / "static" / "site" / "site.toml"
         )
