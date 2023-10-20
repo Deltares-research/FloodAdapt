@@ -384,8 +384,6 @@ class Hazard:
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
-                del model
-
             logging.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
