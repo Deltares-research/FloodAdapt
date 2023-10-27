@@ -13,6 +13,7 @@ import tomli_w
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
+from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 
 class Benefit(IBenefit):
@@ -144,12 +145,13 @@ class Benefit(IBenefit):
 
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            metrics = pd.read_csv(
-                results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
-                index_col=0,
+            metrics = (
+            MetricsFileReader(results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),)
+                .read_metrics_from_file()
             )
+
             scenarios.loc[index, "EAD"] = float(
-                metrics["ExpectedAnnualDamages"]["Value"]
+                metrics["Value"]["ExpectedAnnualDamages"]
             )
 
         year_start = self.attrs.current_situation.year
