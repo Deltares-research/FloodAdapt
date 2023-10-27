@@ -145,10 +145,9 @@ class Benefit(IBenefit):
 
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            metrics = (
-            MetricsFileReader(results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),)
-                .read_metrics_from_file()
-            )
+            metrics = MetricsFileReader(
+                results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
+            ).read_metrics_from_file()
 
             scenarios.loc[index, "EAD"] = float(
                 metrics["Value"]["ExpectedAnnualDamages"]
