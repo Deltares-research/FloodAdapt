@@ -1,5 +1,0 @@
-name = "current_extreme12ft_elevate_comb_correct"
-description = "current_extreme 12 foot event_elevate_comb_correct"
-event = "extreme12ft"
-projection = "current"
-strategy = "elevate_comb_correct"
