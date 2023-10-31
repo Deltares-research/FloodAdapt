@@ -107,3 +107,11 @@
         Query = "IndustrialDestroyedCount"
         Chart = "Industrial"
         Category = "Destroyed"
+
+[Other]
+    image_scale = 0.15
+    numers_font = 20
+    title = "Building damage"
+    title_font = 30
+    subtitle_font = 25
+    legend_font = 20	   
