@@ -98,6 +98,6 @@
     return_periods_title = "Building damages"
     return_periods_font_size = 30
     return_periods_image_scale = 0.125
-    return_periods_numers_font = 15
+    return_periods_numbers_font = 15
     return_periods_subtitle_font = 25
     return_periods_legend_font = 20

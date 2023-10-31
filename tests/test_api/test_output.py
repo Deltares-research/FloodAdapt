@@ -13,6 +13,7 @@ test_site_name = "charleston"
 database_path = str(test_database_path)  # .joinpath(test_site_name))
 test_database = api_startup.read_database(database_path, test_site_name)
 
+
 # TODO How to delete the scenario after tests have been run?
 @pytest.fixture(scope="session")
 def scenario_event():

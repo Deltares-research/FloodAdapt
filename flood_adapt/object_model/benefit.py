@@ -185,7 +185,7 @@ class Benefit(IBenefit):
         cba["benefits_discounted"] = cba["benefits"] / (
             1 + self.attrs.discount_rate
         ) ** (cba.index - cba.index[0])
-        cba = cba.round(0) # Round results
+        cba = cba.round(0)  # Round results
 
         results = {}
         # Get net present value of benefits
@@ -203,7 +203,7 @@ class Benefit(IBenefit):
             cba["costs_discounted"] = cba["costs"] / (1 + self.attrs.discount_rate) ** (
                 cba.index - cba.index[0]
             )
-            cba = cba.round(0) # Round results
+            cba = cba.round(0)  # Round results
             results["costs"] = cba["costs_discounted"].sum()
 
             results["BCR"] = np.round(
@@ -213,7 +213,7 @@ class Benefit(IBenefit):
             cba["profits_discounted"] = cba["profits"] / (
                 1 + self.attrs.discount_rate
             ) ** (cba.index - cba.index[0])
-            cba = cba.round(0) # Round results
+            cba = cba.round(0)  # Round results
             results["NPV"] = cba["profits_discounted"].sum()
             results["IRR"] = np.round(
                 npf.irr(cba["profits"]), 3

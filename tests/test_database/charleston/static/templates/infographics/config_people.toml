@@ -38,7 +38,7 @@
 		
 [Other]
     image_scale = 0.15
-    numers_font = 20
+    numbers_font = 20
     title = "People"
     title_font = 30
     subtitle_font = 25

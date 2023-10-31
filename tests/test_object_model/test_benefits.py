@@ -68,30 +68,45 @@ def test_run_benefit_analysis(cleanup_database):
             benefit.run_cost_benefit()
 
     # Create dummy results to use for benefit analysis
-    damages_dummy = {"current_no_measures": 100e6,
-                     "current_with_strategy": 50e6,
-                     "future_no_measures": 300e6,
-                     "future_with_strategy": 180e6}
-    
+    damages_dummy = {
+        "current_no_measures": 100e6,
+        "current_with_strategy": 50e6,
+        "future_no_measures": 300e6,
+        "future_with_strategy": 180e6,
+    }
+
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = test_database / "charleston" / "output" / "Scenarios" / row["scenario created"]
+        output_path = (
+            test_database
+            / "charleston"
+            / "output"
+            / "Scenarios"
+            / row["scenario created"]
+        )
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
-        dummy_metrics = pd.DataFrame({"Description": "", 
-                                      "Show In Metrics Table": "TRUE", 
-                                      "Long Name": "", 
-                                      "Value": damages_dummy[name]
-                                      }, 
-                                      index=["ExpectedAnnualDamages"])
-        dummy_metrics.to_csv(output_path.joinpath(f"Infometrics_{row['scenario created']}.csv"))
+        dummy_metrics = pd.DataFrame(
+            {
+                "Description": "",
+                "Show In Metrics Table": "TRUE",
+                "Long Name": "",
+                "Value": damages_dummy[name],
+            },
+            index=["ExpectedAnnualDamages"],
+        )
+        dummy_metrics.to_csv(
+            output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
+        )
 
     # Run benefit analysis with dummy data
     benefit.cba()
 
     # Read results
-    results_path = test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name 
+    results_path = (
+        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
+    )
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 
@@ -134,30 +149,45 @@ def test_run_CBA(cleanup_database):
             benefit.run_cost_benefit()
 
     # Create dummy results to use for benefit analysis
-    damages_dummy = {"current_no_measures": 100e6,
-                     "current_with_strategy": 50e6,
-                     "future_no_measures": 300e6,
-                     "future_with_strategy": 180e6}
-    
+    damages_dummy = {
+        "current_no_measures": 100e6,
+        "current_with_strategy": 50e6,
+        "future_no_measures": 300e6,
+        "future_with_strategy": 180e6,
+    }
+
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = test_database / "charleston" / "output" / "Scenarios" / row["scenario created"]
+        output_path = (
+            test_database
+            / "charleston"
+            / "output"
+            / "Scenarios"
+            / row["scenario created"]
+        )
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
-        dummy_metrics = pd.DataFrame({"Description": "", 
-                                      "Show In Metrics Table": "TRUE", 
-                                      "Long Name": "", 
-                                      "Value": damages_dummy[name]
-                                      }, 
-                                      index=["ExpectedAnnualDamages"])
-        dummy_metrics.to_csv(output_path.joinpath(f"Infometrics_{row['scenario created']}.csv"))
+        dummy_metrics = pd.DataFrame(
+            {
+                "Description": "",
+                "Show In Metrics Table": "TRUE",
+                "Long Name": "",
+                "Value": damages_dummy[name],
+            },
+            index=["ExpectedAnnualDamages"],
+        )
+        dummy_metrics.to_csv(
+            output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
+        )
 
     # Run benefit analysis with dummy data
     benefit.cba()
 
     # Read results
-    results_path = test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name 
+    results_path = (
+        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
+    )
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 
@@ -176,8 +206,6 @@ def test_run_CBA(cleanup_database):
     # assert if results are equal to the expected values based on the input
     assert tot_benefits == 963433925
     assert tot_costs == 201198671
-    assert results["BCR"]== 4.79
-    assert results["NPV"]== 762235253
-    assert results["IRR"]== 0.394
-
-
+    assert results["BCR"] == 4.79
+    assert results["NPV"] == 762235253
+    assert results["IRR"] == 0.394
