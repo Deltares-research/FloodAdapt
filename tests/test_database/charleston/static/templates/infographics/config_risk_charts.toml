@@ -89,6 +89,15 @@
         Category = "HighVulnerability"
 
 [Other]
-    expected_damage_image = "https://openclipart.org/image/800px/217511"
-    flooded_title = "Number of homes with a high chance of being flooded"
+    expected_damage_image = "https://openclipart.org/image/800px/217511"							  
+    expected_damage_title = "Expected annual damages"
+    expected_damage_font_size = 30
+	flooded_title = "Number of homes with a high chance of being flooded in a 30-year period"
     flooded_image = "https://openclipart.org/image/800px/217511"
+    flooded_font_size = 30
+    return_periods_title = "Building damages"
+    return_periods_font_size = 30
+    return_periods_image_scale = 0.125
+    return_periods_numbers_font = 15
+    return_periods_subtitle_font = 25
+    return_periods_legend_font = 20

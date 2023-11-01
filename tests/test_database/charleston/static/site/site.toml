@@ -9,6 +9,7 @@ cstype = "projected"
 offshore_model = "offshore"
 overland_model = "overland"
 ambient_air_pressure = 102000
+floodmap_no_data_value = -9999			  
 floodmap_units = "feet"
 save_simulation = "False"
 
@@ -63,7 +64,7 @@ value = 3.0
 units = "feet"
 [gui.mapbox_layers]
 flood_map_depth_min = 0.328  # mask areas with flood depth lower than this
-flood_map_zbmax = 3.28 # mask areas with elevation lower than this																   
+flood_map_zbmax = 3.28 # mask areas with elevation lower than this																			  																				 
 flood_map_bins = [1, 3, 5]
 flood_map_colors = ['#BED2FF', '#B4D79E', '#1F80B8', '#081D58']
 aggregation_dmg_bins = [0.00001, 1000000, 2500000, 5000000, 10000000]
@@ -71,7 +72,7 @@ aggregation_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720',
 footprints_dmg_bins = [0.00001, 15000, 50000, 100000, 250000]
 footprints_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
 svi_bins = [0.05, 0.2, 0.4, 0.6, 0.8]
-svi_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
+svi_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']				   																			   
 
 [risk]
 return_periods = [1, 2, 5, 10, 25, 50, 100]
@@ -95,7 +96,7 @@ save_simulation = "False"
 
 [fiat.svi]
 geom = "../templates/fiat/svi/CDC_svi_2020.gpkg"
-field_name = "SVI"
+field_name = "SVI"				  
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
@@ -110,6 +111,7 @@ census_data  = "../templates/fiat/equity/census_data_aggr_lvl_1.csv"
 percapitalincome_label= "PerCapitaIncome"
 totalpopulation_label= "TotalPopulation"
 
+
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
@@ -118,6 +120,7 @@ field_name = "name"
 census_data  = "../templates/fiat/equity/census_data_aggr_lvl_2.csv"
 percapitalincome_label= "PerCapitaIncome"
 totalpopulation_label= "TotalPopulation"
+
 
 [[river]]
 name = "cooper"

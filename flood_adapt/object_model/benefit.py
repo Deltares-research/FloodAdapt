@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
+from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
@@ -131,11 +132,17 @@ class Benefit(IBenefit):
 
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
-            scens = self.scenarios["scenario created"][self.scenarios["scenario run"]]
+            scens = self.scenarios["scenario created"][~self.scenarios["scenario run"]]
             raise RuntimeError(
                 f"Scenarios {', '.join(scens.values)} need to be run before the cost-benefit analysis can be performed"
             )
+        # Run the cost-benefit analysis
+        self.cba()
+        # Updates results
+        self.has_run_check()
 
+    def cba(self):
+        """Cost-benefit analysis"""
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
@@ -144,23 +151,26 @@ class Benefit(IBenefit):
 
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            metrics = pd.read_csv(
+            metrics = MetricsFileReader(
                 results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
-                index_col=0,
-            )
+            ).read_metrics_from_file()
+
             scenarios.loc[index, "EAD"] = float(
-                metrics["ExpectedAnnualDamages"]["Value"]
+                metrics["Value"]["ExpectedAnnualDamages"]
             )
 
+        # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
 
+        # Prepare dataframe
         cba = pd.DataFrame(
             data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
             index=np.arange(year_start, year_end + 1),
         )
         cba.index.names = ["year"]
 
+        # Fill in dataframe
         for strat in ["no_measures", "with_strategy"]:
             cba.loc[year_start, f"risk_{strat}"] = scenarios.loc[
                 f"current_{strat}", "EAD"
@@ -175,9 +185,11 @@ class Benefit(IBenefit):
         cba["benefits_discounted"] = cba["benefits"] / (
             1 + self.attrs.discount_rate
         ) ** (cba.index - cba.index[0])
+        cba = cba.round(0)  # Round results
+
         results = {}
         # Get net present value of benefits
-        results["benefits"] = np.round(cba["benefits_discounted"].sum(), 0)
+        results["benefits"] = cba["benefits_discounted"].sum()
 
         # Only if costs are provided do the full cost-benefit analysis
         cost_calc = (self.attrs.implementation_cost is not None) and (
@@ -191,7 +203,8 @@ class Benefit(IBenefit):
             cba["costs_discounted"] = cba["costs"] / (1 + self.attrs.discount_rate) ** (
                 cba.index - cba.index[0]
             )
-            results["costs"] = np.round(cba["costs_discounted"].sum(), 0)
+            cba = cba.round(0)  # Round results
+            results["costs"] = cba["costs_discounted"].sum()
 
             results["BCR"] = np.round(
                 results["benefits"] / results["costs"], 2
@@ -200,7 +213,8 @@ class Benefit(IBenefit):
             cba["profits_discounted"] = cba["profits"] / (
                 1 + self.attrs.discount_rate
             ) ** (cba.index - cba.index[0])
-            results["NPV"] = np.round(cba["profits_discounted"].sum(), 0)
+            cba = cba.round(0)  # Round results
+            results["NPV"] = cba["profits_discounted"].sum()
             results["IRR"] = np.round(
                 npf.irr(cba["profits"]), 3
             )  #  Internal Rate of Return
@@ -219,10 +233,14 @@ class Benefit(IBenefit):
             tomli_w.dump(results, f)
 
         # Save time-series in a csv
-        cba = cba.round(0)
         time_series = self.results_path.joinpath("time_series.csv")
         cba.to_csv(time_series)
 
+        # Make html
+        self._make_html(cba)
+
+    def _make_html(self, cba):
+        "Make an html with the time-series of the benefits and discounted benefits"
         # Save a plotly graph in an html
         fig = go.Figure()
 
@@ -297,7 +315,6 @@ class Benefit(IBenefit):
         # write html to results folder
         html = self.results_path.joinpath("benefits.html")
         fig.write_html(html)
-        self.has_run_check()
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
