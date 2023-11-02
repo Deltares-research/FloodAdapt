@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
+import geopandas as gpd
 import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
@@ -311,15 +312,35 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        if green_infrastructure.selection_type == "polygon":
+            polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        elif green_infrastructure.selection_type == "aggregation_area":
+            # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
+            # Loop through available aggregation area types
+            for aggr_dict in self.site.attrs.fiat.aggregation:
+                # check which one is used in measure
+                if not aggr_dict.name == green_infrastructure.aggregation_area_type:
+                    continue
+                # load geodataframe
+                aggr_areas = gpd.read_file(
+                    measure_path.parents[2] / "static" / "site" / aggr_dict.file,
+                    engine="pyogrio",
+                ).to_crs(4326)
+                # keep only aggregation area chosen
+                polygon_file = aggr_areas.loc[ aggr_areas[aggr_dict.field_name] == green_infrastructure.aggregation_area_name, ["geometry"]].reset_index(drop=True)
+        else:
+            raise ValueError(f"The selection type: {green_infrastructure.selection_type} is not valid")
+
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
             polygon_file,
             geom=self.sf_model.region,
             crs=self.sf_model.crs,
         )
+        
+        # Make sure no multipolygons are there
+        gdf_green_infra = gdf_green_infra.explode()
 
         # Determine volume capacity of green infrastructure
-
         if green_infrastructure.height.value != 0.0:
             height = (
                 green_infrastructure.height.convert(UnitTypesLength("meters"))
