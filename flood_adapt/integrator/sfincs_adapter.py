@@ -327,16 +327,22 @@ class SfincsAdapter:
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
-                polygon_file = aggr_areas.loc[ aggr_areas[aggr_dict.field_name] == green_infrastructure.aggregation_area_name, ["geometry"]].reset_index(drop=True)
+                polygon_file = aggr_areas.loc[
+                    aggr_areas[aggr_dict.field_name]
+                    == green_infrastructure.aggregation_area_name,
+                    ["geometry"],
+                ].reset_index(drop=True)
         else:
-            raise ValueError(f"The selection type: {green_infrastructure.selection_type} is not valid")
+            raise ValueError(
+                f"The selection type: {green_infrastructure.selection_type} is not valid"
+            )
 
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
             polygon_file,
             geom=self.sf_model.region,
             crs=self.sf_model.crs,
         )
-        
+
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 

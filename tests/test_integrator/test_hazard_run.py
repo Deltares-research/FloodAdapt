@@ -199,6 +199,7 @@ def test_preprocess_greenInfra(cleanup_database):
     )
     test_scenario.direct_impacts.hazard.preprocess_models()
 
+
 def test_preprocess_greenInfra_aggr_area(cleanup_database):
     test_toml = (
         test_database
@@ -220,6 +221,7 @@ def test_preprocess_greenInfra_aggr_area(cleanup_database):
         GreenInfrastructure,
     )
     test_scenario.direct_impacts.hazard.preprocess_models()
+
 
 @pytest.mark.skip(reason="running the model takes long")
 def test_write_floodmap_geotiff(cleanup_database: None):
