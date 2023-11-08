@@ -2,6 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import Any, Union
+import glob 
 
 import numpy as np
 import numpy_financial as npf
@@ -148,16 +149,34 @@ class Benefit(IBenefit):
         scenarios["EAD"] = None
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
-
+        
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            metrics = MetricsFileReader(
-                results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
-            ).read_metrics_from_file()
+            #for glob function (Infometrics_scn_name....): could create a nested dic 1 level scenario, inside each scenario the EAD per aggregation zone 
+            collective_fn = results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv")
+            aggregation_fn = glob.glob(str(results_path.joinpath(scn_name, f"Infometrics_{scn_name}_*")))
+            #metrics = MetricsFileReader(
+            #    results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
+            #).read_metrics_from_file()
+            collective_metrics = MetricsFileReader(collective_fn,).read_metrics_from_file()
+            aggregation_metrics = []
+            for i in aggregation_fn:
+                aggregated_metrics = MetricsFileReader(i,).read_aggregated_metric_from_file("ExpectedAnnualDamages")[2:]
+                EAD = aggregated_metrics.astype(float).values
+                aggregation_metrics.append(EAD)
+            nested_df={}
+            for idx, arr in enumerate(aggregation_metrics):
+                df = pd.DataFrame({'Column': arr})
+                nested_df[idx] = df
+                    
 
+            #Fill scenarios EAD column with values from metrics
             scenarios.loc[index, "EAD"] = float(
-                metrics["Value"]["ExpectedAnnualDamages"]
+                collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
+            
+            aggregation_metrics:
+
 
         # Get years of interest
         year_start = self.attrs.current_situation.year
