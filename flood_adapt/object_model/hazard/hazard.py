@@ -788,8 +788,8 @@ class Hazard:
                     f"{rp}-year RP smaller than minimum return period in the event ensemble, which is {int(rp_da.min())} years. Setting water levels to zero for RP {rp}-years"
                 )
 
-            zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
-            zs_rp_maps.append(zs_rp_da.unstack())
+            # zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
+            # zs_rp_maps.append(zs_rp_da.unstack())
 
             # #create single nc
             zs_rp_single = xr.DataArray(
@@ -811,30 +811,23 @@ class Hazard:
             # )
             # zs_rp_single.to_netcdf(fn_rp_result)
 
-            # # write geotiff
-            # model = SfincsAdapter(
-            #     model_root=str(self.simulation_paths[0]), site=self.site
-            # )
-            # # dem file for high resolution flood depth map
-            # demfile = self.database_input_path.parent.joinpath(
-            #     "static", "dem", self.site.attrs.dem.filename
-            # )
-            # # writing the geotiff to the scenario results folder
-            # model.write_risk_geotiff(
-            #     zs_max_rp=zs_rp_single,
-            #     demfile=demfile,
-            #     floodmap_fn=self.simulation_paths[0].parent.parent.joinpath(
-            #         f"{self.name}_floodmap_{rp:04d}.tif"
-            #     ),
-            # )
+            # write geotiff
+            model = SfincsAdapter(
+                model_root=str(self.simulation_paths[0]), site=self.site
+            )
+            # dem file for high resolution flood depth map
+            demfile = self.database_input_path.parent.joinpath(
+                "static", "dem", self.site.attrs.dem.filename
+            )
+            # writing the geotiff to the scenario results folder
+            model.write_risk_geotiff(
+                zs_max_rp=zs_rp_single.to_array().squeeze().transpose(),
+                demfile=demfile,
+                floodmap_fn=self.simulation_paths[0].parent.parent.parent.joinpath(
+                    f"RP_{rp:04d}_maps.tif"
+                ),
+            )
 
-        # this component is only required in case only one netcdf with multiple hazard maps is needed
-        # write netcdf with water level, add new dimension for rp
-        # zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        # zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
-        # zs_rp = zs_rp.to_dataset(name="risk_map")
-        # fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
-        # zs_rp.to_netcdf(fn_rp)
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError
