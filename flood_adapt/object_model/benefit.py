@@ -150,25 +150,22 @@ class Benefit(IBenefit):
         scenarios["EAD"] = None
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
-        
+        count2= 0
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            #for glob function (Infometrics_scn_name....): could create a nested dic 1 level scenario, inside each scenario the EAD per aggregation zone 
             collective_fn = results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv")
             aggregation_fn = glob.glob(str(results_path.joinpath(scn_name, f"Infometrics_{scn_name}_*")))
-            #metrics = MetricsFileReader(
-            #    results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv"),
-            #).read_metrics_from_file()
             collective_metrics = MetricsFileReader(collective_fn,).read_metrics_from_file()
             aggregation_metrics = []
             aggregation_metrics_zones = []
+            nested_df={}
             for i in aggregation_fn:
                 aggregated_metrics = MetricsFileReader(i,).read_aggregated_metric_from_file("ExpectedAnnualDamages")[2:]
+                aggregated_metrics= aggregated_metrics.loc[aggregated_metrics.index.dropna()]
                 EAD = aggregated_metrics.astype(float).values
                 zones = aggregated_metrics.index
-                aggregation_metrics.apspend(EAD)
+                aggregation_metrics.append(EAD)
                 aggregation_metrics_zones.append(zones)
-            nested_df={}
             count = 0
             for idx, arr in enumerate(aggregation_metrics):
                 df = pd.DataFrame({f"{Path(aggregation_fn[count]).name}": arr})
@@ -190,20 +187,39 @@ class Benefit(IBenefit):
             scenarios.loc[index, "EAD"] = float(
                 collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
-            
+               
             count = 0
-            count2 = 0
             scenarios_agg_EAD = {}
             for key,value in agg_scenarios_dic.items():
                 df = value
                 df.reset_index()
-                df.iloc[0,5:] = df.iloc[0,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
-                scenarios_agg_EAD[f"{Path(aggregation_fn[count]).name}"] = df
-                count =+1
-            
-            
+                df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
+                df.to_csv(os.path.join(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files", (f"{scn_name}_{Path(aggregation_fn[count]).name}")))
+                scenarios_agg_EAD[f"{Path(aggregation_fn[count]).name}"] = df 
+                count = count +1
+            count2 = count2 +1 
 
-
+        #Open files to create one dataframe for aggregation per level
+        # # Find way with glob open all files and then run through all
+        #                                        
+        df_1 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_1.csv")
+        df_2 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_1.csv")
+        df_3 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_1.csv")
+        df_4=  pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_1.csv")
+        df_1.update(df_2)
+        df_1.update(df_3)
+        df_1.update(df_4)
+        aggregation_scenarios_EAD_level1 = df_1
+        df_1 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_2.csv")
+        df_2 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_2.csv")
+        df_3 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_2.csv")
+        df_4=  pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_2.csv")
+        df_1.update(df_2)
+        df_1.update(df_3)
+        df_1.update(df_4)
+        aggregation_scenarios_EAD_level2 = df_1
+        aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
+        
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
