@@ -146,6 +146,7 @@ class Benefit(IBenefit):
         """Cost-benefit analysis"""
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
+        scenarios_agg = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
@@ -160,22 +161,47 @@ class Benefit(IBenefit):
             #).read_metrics_from_file()
             collective_metrics = MetricsFileReader(collective_fn,).read_metrics_from_file()
             aggregation_metrics = []
+            aggregation_metrics_zones = []
             for i in aggregation_fn:
                 aggregated_metrics = MetricsFileReader(i,).read_aggregated_metric_from_file("ExpectedAnnualDamages")[2:]
                 EAD = aggregated_metrics.astype(float).values
-                aggregation_metrics.append(EAD)
+                zones = aggregated_metrics.index
+                aggregation_metrics.apspend(EAD)
+                aggregation_metrics_zones.append(zones)
             nested_df={}
+            count = 0
             for idx, arr in enumerate(aggregation_metrics):
-                df = pd.DataFrame({'Column': arr})
+                df = pd.DataFrame({f"{Path(aggregation_fn[count]).name}": arr})
                 nested_df[idx] = df
-                    
+                count = count + 1
+            aggregation_metrics_df=[]
+            agg_scenarios_dic = {}
+            count = 0
+            for key, value in nested_df.items():
+                df_transpose = value.transpose()
+                column_names = aggregation_metrics_zones[count]
+                df_transpose.columns = column_names
+                aggregation_metrics_df.append(df_transpose) #create horizontal data to fill in in scenarios
+                agg_scenarios = pd.concat([scenarios_agg,pd.DataFrame(columns=column_names)]) 
+                agg_scenarios_dic[f"{Path(aggregation_fn[count]).name}"] = agg_scenarios    # Create dictionary with df inside of scenarios and empty columns with layer names
+                count = count + 1                  
 
             #Fill scenarios EAD column with values from metrics
             scenarios.loc[index, "EAD"] = float(
                 collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
             
-            aggregation_metrics:
+            count = 0
+            count2 = 0
+            scenarios_agg_EAD = {}
+            for key,value in agg_scenarios_dic.items():
+                df = value
+                df.reset_index()
+                df.iloc[0,5:] = df.iloc[0,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
+                scenarios_agg_EAD[f"{Path(aggregation_fn[count]).name}"] = df
+                count =+1
+            
+            
 
 
         # Get years of interest
