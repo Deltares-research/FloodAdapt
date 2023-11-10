@@ -222,13 +222,17 @@ class Hazard:
 
     def add_wl_ts(self):
         """adds total water level timeseries to hazard object"""
-        # generating total time series made of tide, slr and water level offset,
-        # only for Synthetic and historical from nearshore
+        # generating total time series made of tide, slr (and water level offset for synthetic event),
+        # only for Synthetic and historical from nearshore, otherwise these come from the offshore model
         for ii, event in enumerate(self.event_list):
             if self.event.attrs.template == "Synthetic":
-                self.event.add_tide_and_surge_ts()
-                self.wl_ts = self.event.tide_surge_ts
+                self.event.add_tide_and_surge_ts() 
+                # add water level offset due to historic SLR for synthetic event
+                self.wl_ts = self.event.tide_surge_ts + self.site.attrs.slr.vertical_offset.convert(
+                    self.site.attrs.gui.default_length_units
+                )
             elif self.event.attrs.template == "Historical_nearshore":
+                # water level offset due to historic SLR already included in observations
                 self.wl_ts = self.event.tide_surge_ts
             # In both cases add SLR
             self.wl_ts[1] = self.wl_ts[

@@ -187,12 +187,4 @@ tests/test_database/charleston/static/site/aggr_lvl_2.geojson
 tests/test_database/charleston/static/templates/fiat/exposure/exposure*.gpkg
 tests/test_database/charleston/static/dem/*
 tests/system/fiat/*
-tests/test_database/charleston/input/events/test_set/
-tests/test_database/charleston/input/events/probabilistic_event_set/
-tests/test_database/charleston/static/templates/overland_0_rivers
-tests/test_database/charleston/static/templates/overland_2_rivers
-tests/test_database/charleston/static/templates/offshore
-tests/test_database/charleston/static/templates/overland
-tests/test_database/charleston/static/templates/fiat/footprints
-tests/test_database/charleston/static/templates/fiat/svi
-tests/test_database/charleston/input/scenarios/current_probabilistic_event_set_no_measures/current_probabilistic_event_set_no_measures.toml
+tests/test_database
