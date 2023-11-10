@@ -210,6 +210,7 @@ class Benefit(IBenefit):
         df_1.update(df_3)
         df_1.update(df_4)
         aggregation_scenarios_EAD_level1 = df_1
+        #For all column after aggregation_scenarios_EAD_level1.iloc[0:,6] do subtraction current no - current with and future no - future with
         df_1 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_2.csv")
         df_2 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_2.csv")
         df_3 = pd.read_csv(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files\all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_2.csv")
@@ -219,7 +220,16 @@ class Benefit(IBenefit):
         df_1.update(df_4)
         aggregation_scenarios_EAD_level2 = df_1
         aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
-        
+
+        # Calculate current and future benefits
+        for idx, i in enumerate(aggregation_scenarios_EAD):
+            current_benefit = pd.Series(i.iloc[0, 6:] - i.iloc[1, 6:], name="current Benefits")
+            future_benefit = pd.Series(i.iloc[2, 6:] - i.iloc[3, 6:], name="Future Benefits")
+            i = i.append(current_benefit, ignore_index=True)
+            i = i.append(future_benefit, ignore_index=True)
+            aggregation_scenarios_EAD[idx] = i
+
+       
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
