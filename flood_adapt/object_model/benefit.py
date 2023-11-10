@@ -291,6 +291,12 @@ class Benefit(IBenefit):
                 aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)
                 aggregation_benefits.append(aggregation_benefits_single_aggregation)
 
+        output_directory = r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files"  # Change this to your desired directory
+
+        for idx, df in enumerate(aggregation_benefits):
+            csv_filename = os.path.join(output_directory, f"output_df_{idx + 1}.csv")
+            df.to_csv(csv_filename, index=True)
+        
         # Only if costs are provided do the full cost-benefit analysis
         cost_calc = (self.attrs.implementation_cost is not None) and (
             self.attrs.annual_maint_cost is not None
