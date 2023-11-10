@@ -93,7 +93,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
         The HTML string of the infographic.
     """
     # Get the direct_impacts objects from the scenario
-    impact = database.get_scenario(name).direct_impacts
+    impact = database.scenarios.get(name).direct_impacts
 
     # Check if the scenario has run
     if not impact.has_run_check():
