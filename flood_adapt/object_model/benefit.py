@@ -261,26 +261,25 @@ class Benefit(IBenefit):
                 for idx_i, i in enumerate(aggregation_scenarios_EAD):  
                     current_column = 5
                     data = []
-                    while current_column < i.shape[1]:
-                        for strat in ["no_measures", "with_strategy"]:
-                            for zone, values in i.iteritems():
-                                cba_agg.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
-                                    f"current_{strat}"), current_column
-                                ]
-                                cba_agg.loc[year_end, f"risk_{strat}"] =  i.iloc[i.index.get_loc(f"future_{strat}"), current_column]
-                        cba_agg = cba_agg.interpolate(method="linear")
-                        cba_agg["benefits"] = cba_agg["risk_no_measures"] - cba_agg["risk_with_strategy"]
-                        cba_agg["benefits_discounted"] = cba_agg["benefits"] / (
-                            1 + self.attrs.discount_rate
-                        ) ** (cba_agg.index - cba_agg.index[0])
-                        cba_agg = cba_agg.round(0)  # Round results
-                        benefits_agg = cba_agg["benefits_discounted"].sum()
-                        zone_name= i.columns[current_column]
-                        data.append({'Zone': zone_name, 'Benefits': benefits_agg})                
-                    current_column = current_column + 1
+                    for zone, values in i.iteritems():
+                        while current_column < i.shape[1]:
+                            for strat in ["no_measures", "with_strategy"]:
+                                    cba_agg.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
+                                        f"current_{strat}"), current_column
+                                    ]
+                                    cba_agg.loc[year_end, f"risk_{strat}"] =  i.iloc[i.index.get_loc(f"future_{strat}"), current_column]
+                            cba_agg = cba_agg.interpolate(method="linear")
+                            cba_agg["benefits"] = cba_agg["risk_no_measures"] - cba_agg["risk_with_strategy"]
+                            cba_agg["benefits_discounted"] = cba_agg["benefits"] / (
+                                1 + self.attrs.discount_rate
+                            ) ** (cba_agg.index - cba_agg.index[0])
+                            cba_agg = cba_agg.round(0)  # Round results
+                            benefits_agg = cba_agg["benefits_discounted"].sum()
+                            zone_name= i.columns[current_column]
+                            data.append({'Zone': zone_name, 'Benefits': benefits_agg})                
+                            current_column = current_column + 1
                     new_entries_df = pd.DataFrame(data)
                     aggregation_benefits_single_aggregation = pd.concat([aggregation_benefits_single_aggregation, new_entries_df], ignore_index=True) 
-                    aggregation_benefits_single_aggregation = aggregation_benefits_single_aggregation.drop_duplicates(subset=['Zone'], keep='last')   
                 aggregation_benefits[f"{Path(aggregation_fn[count]).name}"] = aggregation_benefits_single_aggregation
                 break
 
