@@ -252,6 +252,8 @@ class Benefit(IBenefit):
         # Fill in dataframe aggregation
         for idx_i, i in enumerate(aggregation_scenarios_EAD):
             i.set_index(i.columns[0], inplace=True)
+
+        aggregation_benefits = {}
         for idx, cba_agg in enumerate(cba_aggregations):
             count = 0
             aggregation_benefits_single_aggregation = pd.DataFrame(columns=['Zone', 'Benefits'])  # Initialize a DataFrame
@@ -278,9 +280,10 @@ class Benefit(IBenefit):
                         new_entries_df = pd.DataFrame(data)
                         aggregation_benefits_single_aggregation = pd.concat([aggregation_benefits_single_aggregation, new_entries_df], ignore_index=True) 
                         aggregation_benefits_single_aggregation = aggregation_benefits_single_aggregation.drop_duplicates(subset=['Zone'], keep='last')   
-                aggregation_benefits = {}
-                aggregation_benefits[f"{Path(aggregation_fn[count]).name}"] = aggregation_benefits_single_aggregation
-            count = count + 1
+                    aggregation_benefits[f"{Path(aggregation_fn[count]).name}"] = aggregation_benefits_single_aggregation
+                    break
+                count = count + 1
+
         # Assume linear trend between current and future
         cba = cba.interpolate(method="linear")
         # Calculate benefits
