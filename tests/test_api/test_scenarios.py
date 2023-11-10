@@ -24,6 +24,7 @@ def test_scenario(test_db):
 
     # Change name to something new
     test_dict["name"] = "test1"
+<<<<<<< HEAD
     scenario = api_scenarios.create_scenario(test_dict, test_db)
     api_scenarios.save_scenario(scenario, test_db)
     test_db.get_scenarios()
@@ -31,6 +32,15 @@ def test_scenario(test_db):
     # If user presses delete scenario the measure is deleted
     api_scenarios.delete_scenario("test1", test_db)
     test_db.get_scenarios()
+=======
+    scenario = api_scenarios.create_scenario(test_dict, database)
+    api_scenarios.save_scenario(scenario, database)
+    database.scenarios.list_objects()
+
+    # If user presses delete scenario the measure is deleted
+    api_scenarios.delete_scenario("test1", database)
+    database.scenarios.list_objects()
+>>>>>>> 970d29b (Fix dbs classes)
 
 
 @pytest.mark.skip(reason="Part of test_has_hazard_run")

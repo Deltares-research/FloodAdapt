@@ -31,13 +31,23 @@ def test_projection(test_db):
     test_dict["name"] = "test_proj_1"
     projection = api_projections.create_projection(test_dict)
     # If the name is not used before the measure is save in the database
+<<<<<<< HEAD
     api_projections.save_projection(projection, test_db)
     test_db.get_projections()
+=======
+    api_projections.save_projection(projection, database)
+    database.projections.list_objects()
+>>>>>>> 970d29b (Fix dbs classes)
 
     # Try to delete a measure which is already used in a scenario
     # with pytest.raises(ValueError):
     #    api_projections.delete_measure("", database)
 
     # If user presses delete projection the measure is deleted
+<<<<<<< HEAD
     api_projections.delete_projection("test_proj_1", test_db)
     test_db.get_projections()
+=======
+    api_projections.delete_projection("test_proj_1", database)
+    database.projections.list_objects()
+>>>>>>> 970d29b (Fix dbs classes)
