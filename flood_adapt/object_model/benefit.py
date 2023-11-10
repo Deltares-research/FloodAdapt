@@ -254,12 +254,16 @@ class Benefit(IBenefit):
         for idx, cba in enumerate(cba_aggregations):
             for strat in ["no_measures", "with_strategy"]:
                 for idx_i, i in enumerate(aggregation_scenarios_EAD):
+                    i.set_index(cba.columns[0], inplace=True)
                     current_column = 5
                     while current_column < i.shape[1]:
                         for zone, values in i.iteritems():
+                            print(i.index)
+                break
                             cba.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
                                 f"current_{strat}"), current_column
                             ]
+                        break
                             cba.loc[year_end, f"risk_{strat}"] =  i.iloc[i.index.get_loc(f"future_{strat}"), current_column]
                             cba = cba.interpolate(method="linear")
                             cba["benefits"] = cba["risk_no_measures"] - cba["risk_with_strategy"]
