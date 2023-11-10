@@ -253,16 +253,21 @@ class Benefit(IBenefit):
         for idx_i, i in enumerate(aggregation_scenarios_EAD):
             i.set_index(i.columns[0], inplace=True)
 
-        aggregation_benefits = {}
+        aggregation_benefits = []
         for idx, cba_agg in enumerate(cba_aggregations):
             count = 0
             aggregation_benefits_single_aggregation = pd.DataFrame(columns=['Zone', 'Benefits'])  # Initialize a DataFrame
-            for strat in ["no_measures", "with_strategy"]:
-                for idx_i, i in enumerate(aggregation_scenarios_EAD):  
-                    current_column = 5
-                    data = []
+            for idx_i, i in enumerate(aggregation_scenarios_EAD): 
+                print(i) 
+                count = 0
+                current_column = 5
+                data = []
+                for _ in range(2):
+                    strat = "no_measures" if _ == 0 else "with_strategy"
+                    
                     while current_column < i.shape[1]:
                         for zone, values in i.iteritems():
+                            # Your existing code within the while loop goes here
                             cba_agg.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
                                 f"current_{strat}"), current_column
                             ]
@@ -275,14 +280,17 @@ class Benefit(IBenefit):
                             cba_agg = cba_agg.round(0)  # Round results
                             benefits_agg = cba_agg["benefits_discounted"].sum()
                             zone_name= i.columns[current_column]
-                            data.append({'Zone': zone_name, 'Benefits': benefits_agg})                
-                        current_column = current_column + 1
-                        new_entries_df = pd.DataFrame(data)
-                        aggregation_benefits_single_aggregation = pd.concat([aggregation_benefits_single_aggregation, new_entries_df], ignore_index=True) 
-                        aggregation_benefits_single_aggregation = aggregation_benefits_single_aggregation.drop_duplicates(subset=['Zone'], keep='last')   
-                    aggregation_benefits[f"{Path(aggregation_fn[count]).name}"] = aggregation_benefits_single_aggregation
+                            data.append({'Zone': zone_name, 'Benefits': benefits_agg})
+                        
+                        current_column += 1
+                    new_entries_df = pd.DataFrame(data)
+                    aggregation_benefits_single_aggregation = pd.concat([aggregation_benefits_single_aggregation, new_entries_df], ignore_index=True) 
+                    aggregation_benefits_single_aggregation = aggregation_benefits_single_aggregation.drop_duplicates(subset=['Zone'], keep='last')
                     break
-                count = count + 1
+                    aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], inplace=True)  
+                aggregation_benefits.append(aggregation_benefits_single_aggregation)
+                break
+                    count = count + 1
 
         # Assume linear trend between current and future
         cba = cba.interpolate(method="linear")
