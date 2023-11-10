@@ -221,15 +221,6 @@ class Benefit(IBenefit):
         aggregation_scenarios_EAD_level2 = df_1
         aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
 
-        # Calculate current and future benefits
-        for idx, i in enumerate(aggregation_scenarios_EAD):
-            current_benefit = pd.Series(i.iloc[0, 6:] - i.iloc[1, 6:], name="current Benefits")
-            future_benefit = pd.Series(i.iloc[2, 6:] - i.iloc[3, 6:], name="Future Benefits")
-            i = i.append(current_benefit, ignore_index=True)
-            i = i.append(future_benefit, ignore_index=True)
-            aggregation_scenarios_EAD[idx] = i
-
-       
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
@@ -241,12 +232,48 @@ class Benefit(IBenefit):
         )
         cba.index.names = ["year"]
 
+        # Prepare dataframe aggregation
+        cba_aggregations = []
+        for idx, i in enumerate(aggregation_scenarios_EAD):
+            cba_aggregation = pd.DataFrame(
+            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
+            index=np.arange(year_start, year_end + 1),
+            )
+            cba_aggregation.index.names = ["year"]
+            cba_aggregations.append(cba_aggregation)
+
         # Fill in dataframe
         for strat in ["no_measures", "with_strategy"]:
             cba.loc[year_start, f"risk_{strat}"] = scenarios.loc[
                 f"current_{strat}", "EAD"
             ]
             cba.loc[year_end, f"risk_{strat}"] = scenarios.loc[f"future_{strat}", "EAD"]
+        
+        # Fill in dataframe aggregation
+        
+        for idx, cba in enumerate(cba_aggregations):
+            for strat in ["no_measures", "with_strategy"]:
+                for idx_i, i in enumerate(aggregation_scenarios_EAD):
+                    current_column = 5
+                    while current_column < i.shape[1]:
+                        for zone, values in i.iteritems():
+                            cba.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
+                                f"current_{strat}"), current_column
+                            ]
+                            cba.loc[year_end, f"risk_{strat}"] =  i.iloc[i.index.get_loc(f"future_{strat}"), current_column]
+                            cba = cba.interpolate(method="linear")
+                            cba["benefits"] = cba["risk_no_measures"] - cba["risk_with_strategy"]
+                            cba["benefits_discounted"] = cba["benefits"] / (
+                                1 + self.attrs.discount_rate
+                            ) ** (cba.index - cba.index[0])
+                            cba = cba.round(0)  # Round results
+                            benefits = cba["benefits_discounted"].sum()
+                            aggregation_benefits_single_aggregation = {}
+                            zone_name= i.columns[current_column]
+                            aggregation_benefits_single_aggregation[zone_name] = benefits
+                        current_column = current_column + 1
+            aggregation_benefits = {}
+            aggregation_benefits[f"{Path(aggregation_fn[count]).name}"] = aggregation_benefits_single_aggregation
 
         # Assume linear trend between current and future
         cba = cba.interpolate(method="linear")
