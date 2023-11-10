@@ -223,13 +223,12 @@ class Benefit(IBenefit):
         aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
 
         # Delete files
-        for file_path in file_paths:
-            try:
-                os.remove(file_path)
-                print(f"File deleted: {file_path}")
-            except OSError as e:
-                print(f"Error deleting file {file_path}: {e}")
-                
+        file_list = os.listdir(file_path)
+        for file_name in file_list:
+            file_paths = os.path.join(file_path, file_name)
+            if os.path.isfile(file_paths):
+                os.remove(file_paths)
+
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
