@@ -190,11 +190,12 @@ class Benefit(IBenefit):
                
             count = 0
             scenarios_agg_EAD = {}
+            file_path = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
             for key,value in agg_scenarios_dic.items():
                 df = value
                 df.reset_index()
                 df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
-                df.to_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / f"{scn_name}_{Path(aggregation_fn[count]).name}")
+                df.to_csv(file_path / f"{scn_name}_{Path(aggregation_fn[count]).name}")
                 scenarios_agg_EAD[f"{Path(aggregation_fn[count]).name}"] = df 
                 count = count +1
             count2 = count2 +1 
@@ -202,25 +203,33 @@ class Benefit(IBenefit):
         #Open files to create one dataframe for aggregation per level
         # # Find way with glob open all files and then run through all
         #                                        
-        df_1 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_1.csv")
-        df_2 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_1.csv")
-        df_3 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_1.csv")
-        df_4=  pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_1.csv")
+        df_1 = pd.read_csv(file_path / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_1.csv")
+        df_2 = pd.read_csv(file_path / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_1.csv")
+        df_3 = pd.read_csv(file_path / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_1.csv")
+        df_4=  pd.read_csv(file_path / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_1.csv")
         df_1.update(df_2)
         df_1.update(df_3)
         df_1.update(df_4)
         aggregation_scenarios_EAD_level1 = df_1
         #For all column after aggregation_scenarios_EAD_level1.iloc[0:,6] do subtraction current no - current with and future no - future with
-        df_1 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_2.csv")
-        df_2 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_2.csv")
-        df_3 = pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_2.csv")
-        df_4=  pd.read_csv(Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_2.csv")
+        df_1 = pd.read_csv(file_path / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_2.csv")
+        df_2 = pd.read_csv(file_path / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_2.csv")
+        df_3 = pd.read_csv(file_path / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_2.csv")
+        df_4=  pd.read_csv(file_path / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_2.csv")
         df_1.update(df_2)
         df_1.update(df_3)
         df_1.update(df_4)
         aggregation_scenarios_EAD_level2 = df_1
         aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
 
+        # Delete files
+        for file_path in file_paths:
+            try:
+                os.remove(file_path)
+                print(f"File deleted: {file_path}")
+            except OSError as e:
+                print(f"Error deleting file {file_path}: {e}")
+                
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
