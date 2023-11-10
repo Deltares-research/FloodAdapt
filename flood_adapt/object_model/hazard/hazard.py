@@ -744,8 +744,6 @@ class Hazard:
         )  # do not calculate for cells with no data value
         valid_cells = np.where(~np.isnan(h))[0]
 
-        zs_rp_maps = []
-
         for rp in floodmap_rp:
             logging.info(f"Evaluating {rp}-year return period...")
             if rp <= rp_da.max() and rp >= rp_da.min():
@@ -792,9 +790,6 @@ class Hazard:
                     f"{rp}-year RP smaller than minimum return period in the event ensemble, which is {int(rp_da.min())} years. Setting water levels to zero for RP {rp}-years"
                 )
 
-            # zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
-            # zs_rp_maps.append(zs_rp_da.unstack())
-
             # #create single nc
             zs_rp_single = xr.DataArray(
                 data=h, coords={"z": zs["z"]}, attrs={"units": "meters"}
@@ -807,13 +802,6 @@ class Hazard:
                 f"RP_{rp:04d}_maps.nc"
             )
             zs_rp_single.to_netcdf(fn_rp)
-            # fn_rp_result = self.results_dir.joinpath(
-            #     # "RP_" + str(rp) + "_maps.nc"
-            #     "RP_"
-            #     + "{:04d}".format(rp)
-            #     + "_maps.nc"
-            # )
-            # zs_rp_single.to_netcdf(fn_rp_result)
 
             # write geotiff
             model = SfincsAdapter(
