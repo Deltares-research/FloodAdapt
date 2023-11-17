@@ -435,12 +435,16 @@ class SfincsAdapter:
     def write_geotiff(self, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
 
+        print(f"Demfile: {demfile}, type: {type(demfile)}")
+        print(f"Floodmap_fn: {floodmap_fn}, type: {type(floodmap_fn)}")
         demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
 
+
+        print( "Test1")
         # read model results
         zsmax = self.read_zsmax()
 
@@ -450,12 +454,14 @@ class SfincsAdapter:
             value=1.0, units=UnitTypesLength("meters")
         ).convert(floodmap_units)
 
+        print( "Test2")
         utils.downscale_floodmap(
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
             floodmap_fn=floodmap_fn,
         )
+        print( "Test3")
 
     def write_risk_geotiff(
         self, zs_max_rp: xr.Dataset, demfile: Path, floodmap_fn: Path

@@ -658,12 +658,14 @@ class Hazard:
     def write_floodmap_geotiff(self):
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
+            print(f"Sim_path: {sim_path}, type: {type(sim_path)}")
             # read SFINCS model
             model = SfincsAdapter(model_root=sim_path, site=self.site)
             # dem file for high resolution flood depth map
             demfile = self.database_input_path.parent.joinpath(
                 "static", "dem", self.site.attrs.dem.filename
             )
+            print(f"Demfile: {demfile}, type: {type(demfile)}")
             # writing the geotiff to the scenario results folder
             model.write_geotiff(
                 demfile=demfile,
