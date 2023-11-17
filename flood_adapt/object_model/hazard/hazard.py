@@ -668,9 +668,9 @@ class Hazard:
             print(f"Demfile: {demfile}, type: {type(demfile)}")
             # writing the geotiff to the scenario results folder
             model.write_geotiff(
-                demfile=demfile,
-                floodmap_fn=sim_path.parent.parent.joinpath(
-                    f"FloodMap_{self.name}.tif"
+                demfile=Path(demfile),
+                floodmap_fn=Path(
+                    sim_path.parent.parent.joinpath(f"FloodMap_{self.name}.tif")
                 ),
             )
 
