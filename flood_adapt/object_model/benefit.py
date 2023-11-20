@@ -302,8 +302,8 @@ class Benefit(IBenefit):
         output_directory = r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files"  # Change this to your desired directory
 
         for idx, df in enumerate(aggregation_benefits):
-            csv_filename = os.path.join(output_directory, f"output_df_{idx + 1}.csv")
-            #csv_filename = os.path.join(output_directory, {f"{Path(aggregation_fn[int(idx) + 1]).name}"})  
+            #csv_filename = os.path.join(output_directory, f"output_df_{idx + 1}.csv")
+            csv_filename = os.path.join(output_directory, str(f"{Path(aggregation_fn[int(idx)]).name}"))  
             df.to_csv(csv_filename, index=True)
       
         # Only if costs are provided do the full cost-benefit analysis
