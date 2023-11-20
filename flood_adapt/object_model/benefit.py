@@ -151,6 +151,7 @@ class Benefit(IBenefit):
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
         count2= 0
+        scenarios_agg_EAD = {}
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
             collective_fn = results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv")
@@ -187,47 +188,38 @@ class Benefit(IBenefit):
             scenarios.loc[index, "EAD"] = float(
                 collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
-               
+
+            #write individual dataframes to files 
             count = 0
-            scenarios_agg_EAD = {}
             file_path = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
             for key,value in agg_scenarios_dic.items():
                 df = value
                 df.reset_index()
                 df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
                 df.to_csv(file_path / f"{scn_name}_{Path(aggregation_fn[count]).name}")
-                scenarios_agg_EAD[f"{Path(aggregation_fn[count]).name}"] = df 
+                scenarios_agg_EAD[f"{scn_name}_{Path(aggregation_fn[count]).name}"] = df 
                 count = count +1
             count2 = count2 +1 
 
-        #Open files to create one dataframe for aggregation per level
-        # # Find way with glob open all files and then run through all
-        #                                        
-        df_1 = pd.read_csv(file_path / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_1.csv")
-        df_2 = pd.read_csv(file_path / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_1.csv")
-        df_3 = pd.read_csv(file_path / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_1.csv")
-        df_4=  pd.read_csv(file_path / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_1.csv")
-        df_1.update(df_2)
-        df_1.update(df_3)
-        df_1.update(df_4)
-        aggregation_scenarios_EAD_level1 = df_1
-        #For all column after aggregation_scenarios_EAD_level1.iloc[0:,6] do subtraction current no - current with and future no - future with
-        df_1 = pd.read_csv(file_path / "all_projections_test_set_elevate_comb_correct_Infometrics_all_projections_test_set_elevate_comb_correct_aggr_lvl_2.csv")
-        df_2 = pd.read_csv(file_path / "current_test_set_no_measures_Infometrics_current_test_set_no_measures_aggr_lvl_2.csv")
-        df_3 = pd.read_csv(file_path / "all_projections_test_set_no_measures_Infometrics_all_projections_test_set_no_measures_aggr_lvl_2.csv")
-        df_4=  pd.read_csv(file_path / "current_test_set_elevate_comb_correct_Infometrics_current_test_set_elevate_comb_correct_aggr_lvl_2.csv")
-        df_1.update(df_2)
-        df_1.update(df_3)
-        df_1.update(df_4)
-        aggregation_scenarios_EAD_level2 = df_1
+        lvl_1 = []
+        lvl_2 = []
+        for key,value in scenarios_agg_EAD.items():
+            if "aggr_lvl_1" in key: 
+                lvl_1.append(value)
+            elif "aggr_lvl_2" in key:
+                lvl_2.append(value)
+            else:
+                break
+        lvl_1[0].update(lvl_1[1])
+        lvl_1[0].update(lvl_1[2])
+        lvl_1[0].update(lvl_1[3])
+        aggregation_scenarios_EAD_level1 = lvl_1[0]
+        
+        lvl_2[0].update(lvl_2[1])
+        lvl_2[0].update(lvl_2[2])
+        lvl_2[0].update(lvl_2[3])
+        aggregation_scenarios_EAD_level2 = lvl_2[0]
         aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
-
-        # Delete files
-        file_list = os.listdir(file_path)
-        for file_name in file_list:
-            file_paths = os.path.join(file_path, file_name)
-            if os.path.isfile(file_paths):
-                os.remove(file_paths)
 
         # Get years of interest
         year_start = self.attrs.current_situation.year
@@ -239,13 +231,6 @@ class Benefit(IBenefit):
             index=np.arange(year_start, year_end + 1),
         )
         cba.index.names = ["year"]
-
-        # Prepare dataframe aggregation
-        cba_agg = pd.DataFrame(
-            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
-            index=np.arange(year_start, year_end + 1),
-        )
-        cba_agg.index.names = ["year"]
 
         # Fill in dataframe
         for strat in ["no_measures", "with_strategy"]:
@@ -269,9 +254,6 @@ class Benefit(IBenefit):
         results["benefits"] = cba["benefits_discounted"].sum()
 
         # Fill in dataframe aggregation and create benefits per layer
-        for idx_i, i in enumerate(aggregation_scenarios_EAD):
-            i.set_index(i.columns[0], inplace=True)
-
         aggregation_benefits = []
         aggregation_benefits_single_aggregation = pd.DataFrame(columns=['Zone', 'Benefits'])  # Initialize a DataFrame
         
@@ -280,6 +262,11 @@ class Benefit(IBenefit):
             data = []
             for zone, values in i.iteritems():
                 while current_column < i.shape[1]:
+                    cba_agg = pd.DataFrame(
+                    data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
+                    index=np.arange(year_start, year_end + 1),
+                    )
+                    cba_agg.index.names = ["year"]
                     for strat in ["no_measures", "with_strategy"]:
                             cba_agg.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
                                 f"current_{strat}"), current_column
@@ -303,7 +290,7 @@ class Benefit(IBenefit):
 
         for idx, df in enumerate(aggregation_benefits):
             #csv_filename = os.path.join(output_directory, f"output_df_{idx + 1}.csv")
-            csv_filename = os.path.join(output_directory, str(f"{Path(aggregation_fn[int(idx)]).name}"))  
+            csv_filename = os.path.join(output_directory, str(f"{Path(aggregation_fn[idx]).name}"))  
             df.to_csv(csv_filename, index=True)
       
         # Only if costs are provided do the full cost-benefit analysis
