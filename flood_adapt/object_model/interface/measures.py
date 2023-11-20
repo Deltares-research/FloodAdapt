@@ -40,6 +40,7 @@ class SelectionType(str, Enum):
     aggregation_area = "aggregation_area"
     polygon = "polygon"
     polyline = "polyline"
+    import_area = "import_area"
     all = "all"
 
 
