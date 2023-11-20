@@ -150,6 +150,7 @@ class Benefit(IBenefit):
         scenarios["EAD"] = None
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
         count2= 0
         scenarios_agg_EAD = {}
         for index, scenario in scenarios.iterrows():
@@ -189,14 +190,12 @@ class Benefit(IBenefit):
                 collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
 
-            #write individual dataframes to files 
+            #write individual dataframes to list
             count = 0
-            file_path = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
             for key,value in agg_scenarios_dic.items():
                 df = value
                 df.reset_index()
                 df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
-                df.to_csv(file_path / f"{scn_name}_{Path(aggregation_fn[count]).name}")
                 scenarios_agg_EAD[f"{scn_name}_{Path(aggregation_fn[count]).name}"] = df 
                 count = count +1
             count2 = count2 +1 
@@ -286,11 +285,9 @@ class Benefit(IBenefit):
             aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)
             aggregation_benefits.append(aggregation_benefits_single_aggregation)
 
-        output_directory = r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FloodAdapt\Benefit_Aggregation\test_run_files"  # Change this to your desired directory
-
+        
         for idx, df in enumerate(aggregation_benefits):
-            #csv_filename = os.path.join(output_directory, f"output_df_{idx + 1}.csv")
-            csv_filename = os.path.join(output_directory, str(f"{Path(aggregation_fn[idx]).name}"))  
+            csv_filename = os.path.join(agg_results_path, str(f"{Path(aggregation_fn[idx]).name}"))  
             df.to_csv(csv_filename, index=True)
       
         # Only if costs are provided do the full cost-benefit analysis
