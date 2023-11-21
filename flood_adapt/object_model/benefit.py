@@ -289,9 +289,9 @@ class Benefit(IBenefit):
             aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)
             aggregation_benefits.append(aggregation_benefits_single_aggregation)
 
-        
+        # Save benefits per aggregation area 
         for idx, df in enumerate(aggregation_benefits):
-            csv_filename = os.path.join(agg_results_path, str(f"{Path(aggregation_fn[idx]).name}"))  
+            csv_filename = os.path.join(agg_results_path, f"benefit_aggregation_{idx}.csv")  
             df.to_csv(csv_filename, index=True)
 
         # Remove temp files
