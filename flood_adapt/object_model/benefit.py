@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Union
 import glob 
+import tempfile
 
 import numpy as np
 import numpy_financial as npf
@@ -148,6 +149,7 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios_agg = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
+        temp_dir = tempfile.mkdtemp()
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
         agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
@@ -187,12 +189,12 @@ class Benefit(IBenefit):
                 agg_scenarios_dic[f"{Path(aggregation_fn[count]).name}"] = agg_scenarios    # Create dictionary with df inside of scenarios and empty columns with layer names
                 count = count + 1                  
 
-            #Fill scenarios EAD column with values from metrics
+            # Fill scenarios EAD column with values from metrics
             scenarios.loc[index, "EAD"] = float(
                 collective_metrics["Value"]["ExpectedAnnualDamages"] 
             )
 
-            #write individual dataframes to list
+            # write individual dataframes to list
             count = 0
             for key,value in agg_scenarios_dic.items():
                 df = value
@@ -200,17 +202,17 @@ class Benefit(IBenefit):
                 df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_list[count].iloc[0,0:])      
                 count3 = count % len(aggregation_fn)         
                 if pd.notna(df.iloc[0,5]):
-                    df.to_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv")) 
+                    df.to_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv")) 
                 else:
-                    old_df = pd.read_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv"), index_col='Unnamed: 0')
+                    old_df = pd.read_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv"), index_col='Unnamed: 0')
                     df_update = old_df.combine_first(df)
-                    df_update.to_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv")) 
+                    df_update.to_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv")) 
                 count += 1
             count2 +=1 
 
         pre_aggregation_scenarios_EAD = []
         for i in range(len(aggregation_fn)):
-             df= pd.read_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{i}.csv"), index_col='Unnamed: 0')
+             df= pd.read_csv(os.path.join(temp_dir, f"aggregation_{i}.csv"), index_col='Unnamed: 0')
              pre_aggregation_scenarios_EAD.append(df)   
         
         # Create new dataframe
@@ -291,7 +293,14 @@ class Benefit(IBenefit):
         for idx, df in enumerate(aggregation_benefits):
             csv_filename = os.path.join(agg_results_path, str(f"{Path(aggregation_fn[idx]).name}"))  
             df.to_csv(csv_filename, index=True)
-      
+
+        # Remove temp files
+        if os.path.exists(temp_dir):
+            for file_name in os.listdir(temp_dir):
+                file_path = os.path.join(temp_dir, file_name)
+                os.remove(file_path)
+            os.rmdir(temp_dir)
+
         # Only if costs are provided do the full cost-benefit analysis
         cost_calc = (self.attrs.implementation_cost is not None) and (
             self.attrs.annual_maint_cost is not None
