@@ -171,16 +171,18 @@ class Benefit(IBenefit):
             count = 0
             for idx, arr in enumerate(aggregation_metrics):
                 df = pd.DataFrame({f"{Path(aggregation_fn[count]).name}": arr})
-                nested_df[idx] = df
+                df = df.set_index(aggregation_metrics_zones[count])
+                #nested_df[idx] = df
+                nested_df[f"{Path(aggregation_fn[count]).name}"] = df
                 count = count + 1
-            aggregation_metrics_df=[]
+            aggregation_metrics_list=[]
             agg_scenarios_dic = {}
             count = 0
+            
             for key, value in nested_df.items():
                 df_transpose = value.transpose()
-                column_names = aggregation_metrics_zones[count]
-                df_transpose.columns = column_names
-                aggregation_metrics_df.append(df_transpose) #create horizontal data to fill in in scenarios
+                column_names = df_transpose.columns
+                aggregation_metrics_list.append(df_transpose) #create horizontal data to fill in in scenarios
                 agg_scenarios = pd.concat([scenarios_agg,pd.DataFrame(columns=column_names)]) 
                 agg_scenarios_dic[f"{Path(aggregation_fn[count]).name}"] = agg_scenarios    # Create dictionary with df inside of scenarios and empty columns with layer names
                 count = count + 1                  
@@ -195,30 +197,30 @@ class Benefit(IBenefit):
             for key,value in agg_scenarios_dic.items():
                 df = value
                 df.reset_index()
-                df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_df[count].iloc[0,0:])
-                scenarios_agg_EAD[f"{scn_name}_{Path(aggregation_fn[count]).name}"] = df 
-                count = count +1
-            count2 = count2 +1 
+                df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_list[count].iloc[0,0:])      
+                count3 = count % len(aggregation_fn)         
+                if pd.notna(df.iloc[0,5]):
+                    df.to_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv")) 
+                else:
+                    old_df = pd.read_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv"), index_col='Unnamed: 0')
+                    df_update = old_df.combine_first(df)
+                    df_update.to_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{count3}.csv")) 
+                count += 1
+            count2 +=1 
 
-        lvl_1 = []
-        lvl_2 = []
-        for key,value in scenarios_agg_EAD.items():
-            if "aggr_lvl_1" in key: 
-                lvl_1.append(value)
-            elif "aggr_lvl_2" in key:
-                lvl_2.append(value)
-            else:
-                break
-        lvl_1[0].update(lvl_1[1])
-        lvl_1[0].update(lvl_1[2])
-        lvl_1[0].update(lvl_1[3])
-        aggregation_scenarios_EAD_level1 = lvl_1[0]
+        pre_aggregation_scenarios_EAD = []
+        for i in range(len(aggregation_fn)):
+             df= pd.read_csv(os.path.join(Path(os.path.abspath("")).parent / "OneDrive - Stichting Deltares" / "Documents" / "Projects" / "FloodAdapt" / "Benefit_Aggregation" / "test_run_files", f"aggregation_{i}.csv"), index_col='Unnamed: 0')
+             pre_aggregation_scenarios_EAD.append(df)   
         
-        lvl_2[0].update(lvl_2[1])
-        lvl_2[0].update(lvl_2[2])
-        lvl_2[0].update(lvl_2[3])
-        aggregation_scenarios_EAD_level2 = lvl_2[0]
-        aggregation_scenarios_EAD =[aggregation_scenarios_EAD_level1,aggregation_scenarios_EAD_level2]
+        # Create new dataframe
+        aggregation_scenarios_EAD = []
+        count = 0
+        for i in pre_aggregation_scenarios_EAD:
+            zones = '|'.join(aggregation_metrics_zones[count])
+            df2 =  i[i.columns[i.columns.str.contains(zones)]]
+            aggregation_scenarios_EAD.append(df2)
+            count += 1
 
         # Get years of interest
         year_start = self.attrs.current_situation.year
@@ -257,7 +259,7 @@ class Benefit(IBenefit):
         aggregation_benefits_single_aggregation = pd.DataFrame(columns=['Zone', 'Benefits'])  # Initialize a DataFrame
         
         for idx_i, i in enumerate(aggregation_scenarios_EAD):  
-            current_column = 5
+            current_column = 0
             data = []
             for zone, values in i.iteritems():
                 while current_column < i.shape[1]:
