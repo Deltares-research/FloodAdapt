@@ -324,7 +324,7 @@ class Benefit(IBenefit):
 
         # Fill in dataframe aggregation and create benefits per layer
         aggregation_benefits = []
-        aggregation_benefits_single_aggregation = pd.DataFrame(columns=['Zone', 'Benefits'])  # Initialize a DataFrame
+        aggregation_benefits_single_aggregation = pd.DataFrame(columns=["zone", "benefits_discounted"])  # Initialize a DataFrame
         
         for idx_i, i in enumerate(aggregation_scenarios_EAD):   # iterate through aggregation dataframes
             current_column = 0
@@ -349,7 +349,7 @@ class Benefit(IBenefit):
                     cba_agg = cba_agg.round(0)  # Round results
                     benefits_agg = cba_agg["benefits_discounted"].sum() # Get discounted benefits per zone within aggregation layer
                     zone_name= i.columns[current_column]
-                    data.append({'Zone': zone_name, 'Benefits': benefits_agg})  # Save benefits per zone within aggregation layer              
+                    data.append({"zone": zone_name, "benefits_discounted": benefits_agg})  # Save benefits per zone within aggregation layer              
                     current_column = current_column + 1
             aggregation_benefits_single_aggregation = pd.DataFrame(data) # Create dataframe for aggregation layer with benefit per zone
             aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)

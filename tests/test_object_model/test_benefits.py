@@ -122,6 +122,12 @@ def test_run_benefit_analysis(cleanup_database):
     # assert if results are equal to the expected values based on the input
     assert tot_benefits == 963433925
 
+    # get aggregation 
+    csv_agg_results = pd.read_csv(results_path.joinpath("benefit_aggregation_2.csv"))
+    tot_benefits_agg = csv_agg_results["benefits_discounted"].sum()
+    
+    # assert if results are equal to the expected values based on the input
+    assert tot_benefits_agg == 963433923
 
 def test_run_CBA(cleanup_database):
     dbs = Database(test_database, "charleston")
