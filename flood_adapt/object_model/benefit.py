@@ -253,7 +253,7 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         temp_dir = tempfile.mkdtemp()
 
-        agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
+        #agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
         count2= 0
         
         # Get metrics per scenario
@@ -357,7 +357,7 @@ class Benefit(IBenefit):
 
         # Save benefits per aggregation area 
         for idx, df in enumerate(aggregation_benefits):
-            csv_filename = os.path.join(agg_results_path, f"benefit_aggregation_{idx}.csv")  
+            csv_filename = os.path.join(self.results_path, f"benefit_aggregation_{idx}.csv")  
             df.to_csv(csv_filename, index=True)
 
         # Remove temp files
