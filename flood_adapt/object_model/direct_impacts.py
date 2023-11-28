@@ -468,7 +468,9 @@ class DirectImpacts:
         # Get the exceedance probability
         fiat_results_df = ExceedanceProbabilityCalculator(
             config["column"]
-        ).append_to_file(fiat_results_path, fiat_results_path, config["threshold"], config["period"])
+        ).append_to_file(
+            fiat_results_path, fiat_results_path, config["threshold"], config["period"]
+        )
 
         return fiat_results_df
 
