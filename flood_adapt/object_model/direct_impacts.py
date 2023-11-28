@@ -6,9 +6,13 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import tomli
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
+from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
+    ExceedanceProbabilityCalculator,
+)
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
@@ -256,6 +260,10 @@ class DirectImpacts:
         )
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
 
+        # Add exceedance probability if needed (only for risk)
+        if self.hazard.event_mode == "risk":
+            fiat_results_df = self._add_exeedance_probability(fiat_results_path)
+
         # Get the results dataframe
         fiat_results_df = pd.read_csv(fiat_results_path)
 
@@ -432,6 +440,39 @@ class DirectImpacts:
         PointsToFootprints.write_footprint_file(
             footprints, fiat_results_df, outpath, extra_footprints=new_development_area
         )
+
+    def _add_exeedance_probability(self, fiat_results_path):
+        """Adds exceedance probability to the fiat results dataframe
+
+        Parameters
+        ----------
+        fiat_results_path : str
+            Path to the fiat results csv file
+
+        Returns
+        -------
+        pandas.DataFrame
+            FIAT results dataframe with exceedance probability added"""
+
+        # Get config path
+        config_path = self.database_input_path.parent.joinpath(
+            "static", "templates", "infometrics", "metrics_additional_risk_configs.toml"
+        )
+        with open(config_path, mode="rb") as fp:
+            config = tomli.load(fp)["flood_exceedance"]
+
+        # Check whether all configs are present
+        if not all(key in config for key in ["column", "threshold", "period"]):
+            raise ValueError("Not all required keys are present in the config file.")
+
+        # Get the exceedance probability
+        fiat_results_df = ExceedanceProbabilityCalculator(
+            config["column"]
+        ).append_to_file(
+            fiat_results_path, fiat_results_path, config["threshold"], config["period"]
+        )
+
+        return fiat_results_df
 
     def _create_infometrics(self, fiat_results_df) -> Path:
         # Get the metrics configuration
