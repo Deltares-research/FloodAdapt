@@ -260,6 +260,10 @@ class DirectImpacts:
         )
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
 
+        # Add exceedance probability if needed (only for risk)
+        if self.hazard.event_mode == "risk":
+            fiat_results_df = self._add_exeedance_probability(fiat_results_path)
+
         # Get the results dataframe
         fiat_results_df = pd.read_csv(fiat_results_path)
 
@@ -437,13 +441,13 @@ class DirectImpacts:
             footprints, fiat_results_df, outpath, extra_footprints=new_development_area
         )
 
-    def _add_exeedance_probability(self, fiat_results_df):
+    def _add_exeedance_probability(self, fiat_results_path):
         """Adds exceedance probability to the fiat results dataframe
 
         Parameters
         ----------
-        fiat_results_df : pandas.DataFrame
-            FIAT results dataframe
+        fiat_results_path : str
+            Path to the fiat results csv file
 
         Returns
         -------
@@ -464,7 +468,7 @@ class DirectImpacts:
         # Get the exceedance probability
         fiat_results_df = ExceedanceProbabilityCalculator(
             config["column"]
-        ).append_probability(fiat_results_df, config["threshold"], config["period"])
+        ).append_to_file(fiat_results_path, fiat_results_path, config["threshold"], config["period"])
 
         return fiat_results_df
 
@@ -476,9 +480,6 @@ class DirectImpacts:
             ext = "_risk"
         else:
             ext = ""
-
-        if self.hazard.event_mode == "risk":
-            fiat_results_df = self._add_exeedance_probability(fiat_results_df)
 
         metrics_config_path = self.database_input_path.parent.joinpath(
             "static",
