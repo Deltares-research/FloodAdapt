@@ -357,7 +357,8 @@ class Benefit(IBenefit):
 
         # Save benefits per aggregation area 
         for idx, df in enumerate(aggregation_benefits):
-            csv_filename = os.path.join(self.results_path, f"benefit_aggregation_{idx}.csv")  
+            file_name = Path(aggregation_fn[idx]).name
+            csv_filename = os.path.join(self.results_path, file_name.split(scn_name)[-1])  
             df.to_csv(csv_filename, index=True)
 
         # Remove temp files
