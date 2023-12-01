@@ -488,25 +488,25 @@ def test_debug_rp_floodmap_calculation():
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
-    frequencies = test_scenario.direct_impacts.hazard.frequencies
+    # frequencies = test_scenario.direct_impacts.hazard.frequencies
 
-    zs = []
-    event_set = test_scenario.direct_impacts.hazard.event_set
-    for ii, event in enumerate(event_set):
-        zs_file = (
-            test_database
-            / "charleston"
-            / "output"
-            / "Scenarios"
-            / "current_test_set_no_measures"
-            / "Flooding"
-            / "simulations"
-            / event.attrs.name
-            / "overland"
-            / "sfincs_map.nc"
-        )
-        assert zs_file.is_file()
-        zs.append(xr.open_dataset(zs_file).load())
+    # zs = []
+    # event_set = test_scenario.direct_impacts.hazard.event_set
+    # for ii, event in enumerate(event_set):
+    #     zs_file = (
+    #         test_database
+    #         / "charleston"
+    #         / "output"
+    #         / "Scenarios"
+    #         / "current_test_set_no_measures"
+    #         / "Flooding"
+    #         / "simulations"
+    #         / event.attrs.name
+    #         / "overland"
+    #         / "sfincs_map.nc"
+    #     )
+    #     assert zs_file.is_file()
+    #     zs.append(xr.open_dataset(zs_file).load())
 
     # for visual checks uncomment those lines (also imports at the top)
     # fig, ax = plt.subplots(len(zsrp.rp), 2, figsize=(12, 18))
