@@ -405,7 +405,7 @@ class SfincsAdapter:
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
 
-    def write_geotiff(self, demfile: Path, floodmap_fn: Path):
+    def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
 
         demfile_units = self.site.attrs.dem.units
@@ -413,9 +413,6 @@ class SfincsAdapter:
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # read model results
-        zsmax = self.read_zsmax()
 
         # determine conversion factor for output floodmap
         floodmap_units = self.site.attrs.sfincs.floodmap_units
@@ -425,30 +422,6 @@ class SfincsAdapter:
 
         utils.downscale_floodmap(
             zsmax=floodmap_conversion * zsmax,
-            dep=floodmap_conversion * dem,
-            hmin=0.01,
-            floodmap_fn=floodmap_fn,
-        )
-
-    def write_risk_geotiff(
-        self, zs_max_rp: xr.Dataset, demfile: Path, floodmap_fn: Path
-    ):
-        # read DEM and convert units to metric units used by SFINCS
-
-        demfile_units = self.site.attrs.dem.units
-        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
-            UnitTypesLength("meters")
-        )
-        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.floodmap_units
-        floodmap_conversion = UnitfulLength(
-            value=1.0, units=UnitTypesLength("meters")
-        ).convert(floodmap_units)
-
-        utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zs_max_rp,
             dep=floodmap_conversion * dem,
             hmin=0.01,
             floodmap_fn=floodmap_fn,

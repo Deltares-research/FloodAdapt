@@ -668,8 +668,13 @@ class Hazard:
             demfile = self.database_input_path.parent.joinpath(
                 "static", "dem", self.site.attrs.dem.filename
             )
+
+            # read max. water level
+            zsmax = model.read_zsmax()
+
             # writing the geotiff to the scenario results folder
             model.write_geotiff(
+                zsmax,
                 demfile=demfile,
                 floodmap_fn=sim_path.parent.parent.joinpath(
                     f"FloodMap_{self.name}.tif"
