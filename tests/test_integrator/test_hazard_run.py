@@ -200,6 +200,29 @@ def test_preprocess_greenInfra(cleanup_database):
     test_scenario.direct_impacts.hazard.preprocess_models()
 
 
+def test_preprocess_greenInfra_aggr_area(cleanup_database):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.attrs.strategy = "total_storage_aggregation_area"
+    test_scenario.init_object_model()
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy.measures[0],
+        GreenInfrastructure,
+    )
+    test_scenario.direct_impacts.hazard.preprocess_models()
+
+
 @pytest.mark.skip(reason="running the model takes long")
 def test_write_floodmap_geotiff(cleanup_database: None):
     test_toml = (
