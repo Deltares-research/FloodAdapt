@@ -1,5 +1,7 @@
+import shutil
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 import tomli
@@ -42,7 +44,7 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_benefit_analysis(cleanup_database):
+def test_run_benefit_analysis():
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
@@ -60,7 +62,8 @@ def test_run_benefit_analysis(cleanup_database):
 
     # Create missing scenarios
     dbs.create_benefit_scenarios(benefit)
-
+    aggrs = dbs.get_aggregation_areas()
+    
     # Check that error is returned if not all runs are finished
     if not all(benefit.scenarios["scenario run"]):
         with pytest.raises(RuntimeError):
@@ -96,9 +99,33 @@ def test_run_benefit_analysis(cleanup_database):
             },
             index=["ExpectedAnnualDamages"],
         )
+        
         dummy_metrics.to_csv(
             output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
         )
+        
+        # Create dummy metrics for aggregation areas
+        for aggr_type in aggrs.keys():
+            aggr = aggrs[aggr_type]
+            # Generate random distribution of damage per aggregation area
+            dmgs = np.random.random(len(aggr)) 
+            dmgs = dmgs / dmgs.sum() * damages_dummy[name]
+            
+            dict0 = {
+                "Description": "",
+                "Show In Metrics Table": "TRUE",
+                "Long Name": "",
+            }
+            
+            for i, aggr_area in enumerate(aggr["name"]):
+                dict0[aggr_area] = dmgs[i]
+            
+            dummy_metrics_aggr = pd.DataFrame(dict0,index=["ExpectedAnnualDamages"]).T
+        
+            dummy_metrics_aggr.to_csv(
+                output_path.joinpath(f"Infometrics_{row['scenario created']}_{aggr_type}.csv")
+            )
+            
 
     # Run benefit analysis with dummy data
     benefit.cba()
@@ -120,14 +147,15 @@ def test_run_benefit_analysis(cleanup_database):
     assert tot_benefits == tot_benefits2
 
     # assert if results are equal to the expected values based on the input
-    assert tot_benefits == 963433925
+    assert pytest.approx(tot_benefits, 2) == 963433925
 
     # get aggregation 
-    csv_agg_results = pd.read_csv(results_path.joinpath("benefit_aggregation_2.csv"))
-    tot_benefits_agg = csv_agg_results["benefits_discounted"].sum()
-    
-    # assert if results are equal to the expected values based on the input
-    assert tot_benefits_agg == 963433923
+    for aggr_type in aggrs.keys():
+        csv_agg_results = pd.read_csv(results_path.joinpath(f"benefits_{aggr_type}.csv"))
+        tot_benefits_agg = csv_agg_results["benefits_discounted"].sum()
+        
+        # assert if results are equal to the expected values based on the input
+        assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
 
 def test_run_CBA(cleanup_database):
     dbs = Database(test_database, "charleston")

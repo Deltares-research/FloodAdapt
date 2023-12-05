@@ -1,9 +1,9 @@
+import glob
 import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Union
-import glob 
-import tempfile
 
 import numpy as np
 import numpy_financial as npf
@@ -189,7 +189,6 @@ class Benefit(IBenefit):
         cba["benefits_discounted"] = cba["benefits"] / (
             1 + self.attrs.discount_rate
         ) ** (cba.index - cba.index[0])
-        cba = cba.round(0)  # Round results
 
         results = {}
         # Get net present value of benefits
@@ -207,7 +206,6 @@ class Benefit(IBenefit):
             cba["costs_discounted"] = cba["costs"] / (1 + self.attrs.discount_rate) ** (
                 cba.index - cba.index[0]
             )
-            cba = cba.round(0)  # Round results
             results["costs"] = cba["costs_discounted"].sum()
 
             results["BCR"] = np.round(
@@ -217,7 +215,6 @@ class Benefit(IBenefit):
             cba["profits_discounted"] = cba["profits"] / (
                 1 + self.attrs.discount_rate
             ) ** (cba.index - cba.index[0])
-            cba = cba.round(0)  # Round results
             results["NPV"] = cba["profits_discounted"].sum()
             results["IRR"] = np.round(
                 npf.irr(cba["profits"]), 3
@@ -248,19 +245,19 @@ class Benefit(IBenefit):
 
     def cba_aggregation(self, results_path, year_start, year_end):
         """Zonal Benefits per aggregation"""
+        # TODO: At some point we need to refactor this method to make sure there is 
+        # no repetition with cba() and try to use more uniform modules
         
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
         temp_dir = tempfile.mkdtemp()
 
-        #agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
         count2= 0
         
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            aggregation_fn = glob.glob(str(results_path.joinpath(scn_name, f"Infometrics_{scn_name}_*")))
-
+            aggregation_fn = list(results_path.joinpath(scn_name).glob(f"Infometrics_{scn_name}_*"))
             # Get metrics per scenario and per aggregation
             aggregation_metrics = []
             aggregation_metrics_zones = []
@@ -324,7 +321,7 @@ class Benefit(IBenefit):
 
         # Fill in dataframe aggregation and create benefits per layer
         aggregation_benefits = []
-        aggregation_benefits_single_aggregation = pd.DataFrame(columns=["zone", "benefits_discounted"])  # Initialize a DataFrame
+        aggregation_benefits_single_aggregation = pd.DataFrame(columns=["name", "benefits_discounted"])  # Initialize a DataFrame
         
         for idx_i, i in enumerate(aggregation_scenarios_EAD):   # iterate through aggregation dataframes
             current_column = 0
@@ -346,10 +343,9 @@ class Benefit(IBenefit):
                     cba_agg["benefits_discounted"] = cba_agg["benefits"] / (
                         1 + self.attrs.discount_rate
                     ) ** (cba_agg.index - cba_agg.index[0])
-                    cba_agg = cba_agg.round(0)  # Round results
                     benefits_agg = cba_agg["benefits_discounted"].sum() # Get discounted benefits per zone within aggregation layer
                     zone_name= i.columns[current_column]
-                    data.append({"zone": zone_name, "benefits_discounted": benefits_agg})  # Save benefits per zone within aggregation layer              
+                    data.append({"name": zone_name, "benefits_discounted": benefits_agg})  # Save benefits per zone within aggregation layer              
                     current_column = current_column + 1
             aggregation_benefits_single_aggregation = pd.DataFrame(data) # Create dataframe for aggregation layer with benefit per zone
             aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)
@@ -357,8 +353,9 @@ class Benefit(IBenefit):
 
         # Save benefits per aggregation area 
         for idx, df in enumerate(aggregation_benefits):
-            file_name = Path(aggregation_fn[idx]).name
-            csv_filename = os.path.join(self.results_path, file_name.split(scn_name)[-1])  
+            metrics_name = Path(aggregation_fn[idx]).stem
+            file_name = metrics_name.split(scn_name + "_")[-1]
+            csv_filename = self.results_path.joinpath(f"benefits_{file_name}.csv")
             df.to_csv(csv_filename, index=True)
 
         # Remove temp files
