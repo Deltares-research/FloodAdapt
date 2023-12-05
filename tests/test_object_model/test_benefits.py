@@ -43,7 +43,7 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_benefit_analysis():
+def test_run_benefit_analysis(cleanup_database):
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
