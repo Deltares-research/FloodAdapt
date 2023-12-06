@@ -430,10 +430,21 @@ class SfincsAdapter:
         self.sf_model.set_config("pavbnd", -9999)
 
     def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entre simulation"""
+        """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
+    
+    def get_mask(self):
+        """Get mask with inactive cells from model"""
+        mask = self.sf_model.grid["msk"]
+        return mask
+    
+    def get_bedlevel(self):
+        """Get bed level from model"""
+        self.sf_model.read_results()
+        zb = self.sf_model.results["zb"]
+        return zb
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
@@ -453,6 +464,28 @@ class SfincsAdapter:
         utils.downscale_floodmap(
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
-            hmin=0.01,
+            hmin=0.0001,
+            reproj_method="bilinear",
             floodmap_fn=floodmap_fn,
         )
+
+    def downscale_hmax(self, zsmax, demfile: Path):
+        # read DEM and convert units to metric units used by SFINCS        
+        demfile_units = self.site.attrs.dem.units
+        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
+            UnitTypesLength("meters")
+        )
+        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+
+        # determine conversion factor for output floodmap
+        floodmap_units = self.site.attrs.sfincs.floodmap_units
+        floodmap_conversion = UnitfulLength(
+            value=1.0, units=UnitTypesLength("meters")
+        ).convert(floodmap_units)
+
+        hmax = utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
+            dep=floodmap_conversion * dem,
+            hmin=0.01,
+        )
+        return hmax

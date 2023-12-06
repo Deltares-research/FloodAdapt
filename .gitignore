@@ -188,3 +188,12 @@ tests/test_database/charleston/static/templates/fiat/exposure/exposure*.gpkg
 tests/test_database/charleston/static/dem/*
 tests/system/fiat/*
 tests/test_database
+tests/test_database/charleston/input/events/test_set/
+tests/test_database/charleston/input/events/probabilistic_event_set/
+tests/test_database/charleston/static/templates/overland_0_rivers
+tests/test_database/charleston/static/templates/overland_2_rivers
+tests/test_database/charleston/static/templates/offshore
+tests/test_database/charleston/static/templates/overland
+tests/test_database/charleston/static/templates/fiat/footprints
+tests/test_database/charleston/static/templates/fiat/svi
+tests/test_database/.svn
