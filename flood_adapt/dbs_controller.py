@@ -1548,7 +1548,7 @@ class Database(IDatabase):
 
     def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
         """Gets a dictionary with the aggregated damages as geodataframes
-
+        
         Parameters
         ----------
         scenario_name : str
@@ -1556,8 +1556,8 @@ class Database(IDatabase):
 
         Returns
         -------
-        _type_
-            _description_
+        dict[GeoDataFrame]
+            dictionary with aggregated damages per aggregation type
         """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
@@ -1569,6 +1569,29 @@ class Database(IDatabase):
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
 
+    def get_aggregation_benefits(self, benefit_name:str) -> dict[GeoDataFrame]:
+        """Gets a dictionary with the aggregated benefits as geodataframes
+
+        Parameters
+        ----------
+        benefit_name : str
+            name of the benefit analysis
+
+        Returns
+        -------
+        dict[GeoDataFrame]
+            dictionary with aggregated benefits per aggregation type
+        """
+        out_path = self.input_path.parent.joinpath(
+            "output", "Benefits", benefit_name,
+        )
+        gdfs = {}
+        for aggr_area in out_path.glob(f"benefits_*.gpkg"):
+            label = aggr_area.stem.split(f"benefits_")[-1]
+            gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
+            gdfs[label] = gdfs[label].to_crs(4326)
+        return gdfs
+    
     def get_object_list(self, object_type: str) -> dict[str, Any]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
         and last modification dates that exist in the database.
