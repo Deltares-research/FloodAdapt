@@ -83,6 +83,8 @@ class MapboxLayersModel(BaseModel):
     footprints_dmg_colors: list[str]
     svi_bins: Optional[list[float]]
     svi_colors: Optional[list[str]]
+    benefits_bins: list[float]
+    benefits_colors: list[str]
     damage_decimals: Optional[int] = 0
 
 
