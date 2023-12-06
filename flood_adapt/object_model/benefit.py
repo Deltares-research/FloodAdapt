@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Union
 
+import geopandas as gpd
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
@@ -11,6 +12,7 @@ import plotly.graph_objects as go
 import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
+from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
@@ -38,6 +40,11 @@ class Benefit(IBenefit):
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
         self.unit = site_obj.attrs.fiat.damage_unit
+        # Get site config
+        self.site_toml_path = (
+            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+        )
+        self.site_info = Site.load_file(self.site_toml_path)
 
     def has_run_check(self):
         """Check if the benefit assessment has already been run"""
@@ -399,12 +406,32 @@ class Benefit(IBenefit):
                 aggregation_benefits_single_aggregation
             )  # Append benefits dataframes per Aggregation layer
 
-        # Save benefits per aggregation area
+        # Save benefits per aggregation area (csv and gpkg)
         for idx, df in enumerate(aggregation_benefits):
             metrics_name = Path(aggregation_fn[idx]).stem
-            file_name = metrics_name.split(scn_name + "_")[-1]
-            csv_filename = self.results_path.joinpath(f"benefits_{file_name}.csv")
+            aggr_label = metrics_name.split(scn_name + "_")[-1]
+            csv_filename = self.results_path.joinpath(f"benefits_{aggr_label}.csv")
             df.to_csv(csv_filename, index=True)
+            
+            # Load aggregation areas
+            ind = [
+                i
+                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
+                if n.name == aggr_label
+
+            ][0]
+            aggr_areas_path = self.site_toml_path.parent.joinpath(
+                self.site_info.attrs.fiat.aggregation[ind].file
+            )
+
+            aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
+            # Define output path
+            outpath = self.results_path.joinpath(
+                f"benefits_{aggr_label}.gpkg"
+            )
+            # Save file
+            aggr_areas = aggr_areas.join(df, on=self.site_info.attrs.fiat.aggregation[ind].field_name)
+            aggr_areas.to_file(outpath, driver="GPKG")
 
         # Remove temp files
         if os.path.exists(temp_dir):
@@ -451,16 +478,6 @@ class Benefit(IBenefit):
                 name="Discounted benefits",
             ),
         )
-        # fig.add_trace(
-        #     go.Scatter(
-        #         x=cba2.index,
-        #         y=cba2["benefits_discounted"],
-        #         mode="markers",
-        #         marker_size=10,
-        #         marker_color="rgba(35,150,29,1)",
-        #         name="Calculated discounted benefits",
-        #     )
-        # )
 
         fig.add_trace(
             go.Scatter(
