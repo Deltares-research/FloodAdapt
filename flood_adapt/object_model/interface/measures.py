@@ -143,7 +143,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
         if volume.value <= 0:
             raise ValueError("Volume cannot be zero or negative")
         return volume
-    
+
     @validator("height")
     def validate_height(cls, height: UnitfulLength, values: Any) -> UnitfulLength:
         if height.value <= 0:
