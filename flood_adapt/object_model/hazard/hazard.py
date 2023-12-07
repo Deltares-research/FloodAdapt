@@ -697,6 +697,13 @@ class Hazard:
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
+        # calculates flood risk maps from a set of (currently) SFINCS water level outputs, 
+        # using linear interpolation, would be nice to make it more widely applicable and 
+        # move the loading of teh SFINCS results to self.postprocess_sfincs()
+        # generates return period water level maps in netcdf format to be used by FIAT
+        # generates return period water depth maps in geotiff format as product for users
+        #TODO: make this robust and more efficient for bigger datasets
+
         floodmap_rp = self.site.attrs.risk.return_periods
 
         frequencies = self.event_set.attrs.frequency
@@ -767,8 +774,8 @@ class Hazard:
         )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
         logging.info("Calculating flood risk maps, this may take some time...")
-        for jj in valid_cells:
-            # linear interpolation
+        for jj in valid_cells: # looping over all non-masked cells. 
+            # linear interpolation for all return periods to evluate
             h[:, jj] = np.interp(
                 np.log10(floodmap_rp),
                 np.log10(rp_da[::-1, jj]),
