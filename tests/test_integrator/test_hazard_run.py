@@ -495,6 +495,7 @@ def test_rp_floodmap_calculation(cleanup_database: None):
     )
     plt.savefig(fn, bbox_inches="tight", dpi=225)
 
+
 def test_debug_rp_floodmap_calculation():
     test_toml = (
         test_database

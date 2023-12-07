@@ -434,12 +434,12 @@ class SfincsAdapter:
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
-    
+
     def get_mask(self):
         """Get mask with inactive cells from model"""
         mask = self.sf_model.grid["msk"]
         return mask
-    
+
     def get_bedlevel(self):
         """Get bed level from model"""
         self.sf_model.read_results()
@@ -470,7 +470,7 @@ class SfincsAdapter:
         )
 
     def downscale_hmax(self, zsmax, demfile: Path):
-        # read DEM and convert units to metric units used by SFINCS        
+        # read DEM and convert units to metric units used by SFINCS
         demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")

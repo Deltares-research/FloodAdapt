@@ -227,10 +227,13 @@ class Hazard:
         # only for Synthetic and historical from nearshore, otherwise these come from the offshore model
         for ii, event in enumerate(self.event_list):
             if self.event.attrs.template == "Synthetic":
-                self.event.add_tide_and_surge_ts() 
+                self.event.add_tide_and_surge_ts()
                 # add water level offset due to historic SLR for synthetic event
-                self.wl_ts = self.event.tide_surge_ts + self.site.attrs.slr.vertical_offset.convert(
-                    self.site.attrs.gui.default_length_units
+                self.wl_ts = (
+                    self.event.tide_surge_ts
+                    + self.site.attrs.slr.vertical_offset.convert(
+                        self.site.attrs.gui.default_length_units
+                    )
                 )
             elif self.event.attrs.template == "Historical_nearshore":
                 # water level offset due to historic SLR already included in observations
@@ -710,7 +713,7 @@ class Hazard:
             model_root=str(self.simulation_paths[0]), site=self.site
         )
         mask = dummymodel.get_mask().stack(z=("x", "y"))
-        zb = dummymodel.get_bedlevel().stack(z=("x", "y")).values
+        zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
         del dummymodel
 
         zs_maps = []
@@ -720,7 +723,7 @@ class Hazard:
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
             # fill nan values with minumum bed levels in each grid cell, np.interp cannot ignore nan values
-            zs_stacked = xr.where(np.isnan(zs_stacked),zb,zs_stacked)
+            zs_stacked = xr.where(np.isnan(zs_stacked), zb, zs_stacked)
             zs_maps.append(zs_stacked)
 
             del sim
@@ -756,14 +759,17 @@ class Hazard:
         # no_data_value = -999  # in SFINCS
         # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
 
-        valid_cells = np.where(mask==1)[0] # only loop over cells where model is not masked
-        h = matlib.repmat(np.copy(zb),len(floodmap_rp),1) # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
+        valid_cells = np.where(mask == 1)[
+            0
+        ]  # only loop over cells where model is not masked
+        h = matlib.repmat(
+            np.copy(zb), len(floodmap_rp), 1
+        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
         logging.info("Calculating flood risk maps, this may take some time...")
         for jj in valid_cells:
-            
             # linear interpolation
-            h[:,jj] = np.interp(
+            h[:, jj] = np.interp(
                 np.log10(floodmap_rp),
                 np.log10(rp_da[::-1, jj]),
                 sorted_zs[::-1, jj],
@@ -787,7 +793,7 @@ class Hazard:
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc
             zs_rp_single = xr.DataArray(
-                data=h[ii,:], coords={"z": zs["z"]}, attrs={"units": "meters"}
+                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
             ).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
@@ -810,12 +816,13 @@ class Hazard:
             dummymodel.write_geotiff(
                 zs_rp_single.to_array().squeeze().transpose(),
                 demfile=demfile,
-                floodmap_fn=str(self.simulation_paths[0].parent.parent.parent.joinpath(
-                    f"RP_{rp:04d}_maps.tif"
-                )),
+                floodmap_fn=str(
+                    self.simulation_paths[0].parent.parent.parent.joinpath(
+                        f"RP_{rp:04d}_maps.tif"
+                    )
+                ),
             )
             del dummymodel
-
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError
