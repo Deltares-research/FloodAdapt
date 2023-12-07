@@ -138,6 +138,18 @@ class GreenInfrastructureModel(HazardMeasureModel):
     aggregation_area_name: Optional[str]
     percent_area: float = 100
 
+    @validator("volume")
+    def validate_volume(cls, volume: UnitfulVolume, values: Any) -> UnitfulVolume:
+        if volume.value <= 0:
+            raise ValueError("Volume cannot be zero or negative")
+        return volume
+    
+    @validator("height")
+    def validate_height(cls, height: UnitfulLength, values: Any) -> UnitfulLength:
+        if height.value <= 0:
+            raise ValueError("Height cannot be zero or negative")
+        return height
+
 
 class IMeasure(ABC):
     """This is a class for a FloodAdapt measure"""
