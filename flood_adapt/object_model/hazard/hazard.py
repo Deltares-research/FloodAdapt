@@ -699,7 +699,7 @@ class Hazard:
     def calculate_rp_floodmaps(self):
         # calculates flood risk maps from a set of (currently) SFINCS water level outputs,
         # using linear interpolation, would be nice to make it more widely applicable and
-        # move the loading of teh SFINCS results to self.postprocess_sfincs()
+        # move the loading of the SFINCS results to self.postprocess_sfincs()
         # generates return period water level maps in netcdf format to be used by FIAT
         # generates return period water depth maps in geotiff format as product for users
         # TODO: make this robust and more efficient for bigger datasets
@@ -729,7 +729,7 @@ class Hazard:
             sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
-            # fill nan values with minumum bed levels in each grid cell, np.interp cannot ignore nan values
+            # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
             zs_stacked = xr.where(np.isnan(zs_stacked), zb, zs_stacked)
             zs_maps.append(zs_stacked)
 
@@ -775,7 +775,7 @@ class Hazard:
 
         logging.info("Calculating flood risk maps, this may take some time...")
         for jj in valid_cells:  # looping over all non-masked cells.
-            # linear interpolation for all return periods to evluate
+            # linear interpolation for all return periods to evaluate
             h[:, jj] = np.interp(
                 np.log10(floodmap_rp),
                 np.log10(rp_da[::-1, jj]),
