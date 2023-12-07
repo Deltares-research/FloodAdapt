@@ -43,6 +43,7 @@ def create_benefit_scenarios(benefit: IBenefit, database: IDatabase):
 
 def run_benefit(name: Union[str, list[str]], database: IDatabase) -> None:
     database.run_benefit(name)
-    
+
+
 def get_aggregation_benefits(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
     return database.get_aggregation_benefits(name)

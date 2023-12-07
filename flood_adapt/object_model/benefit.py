@@ -12,7 +12,6 @@ import plotly.graph_objects as go
 import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
-from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
@@ -412,13 +411,12 @@ class Benefit(IBenefit):
             aggr_label = metrics_name.split(scn_name + "_")[-1]
             csv_filename = self.results_path.joinpath(f"benefits_{aggr_label}.csv")
             df.to_csv(csv_filename, index=True)
-            
+
             # Load aggregation areas
             ind = [
                 i
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_label
-
             ][0]
             aggr_areas_path = self.site_toml_path.parent.joinpath(
                 self.site_info.attrs.fiat.aggregation[ind].file
@@ -426,11 +424,11 @@ class Benefit(IBenefit):
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
-            outpath = self.results_path.joinpath(
-                f"benefits_{aggr_label}.gpkg"
-            )
+            outpath = self.results_path.joinpath(f"benefits_{aggr_label}.gpkg")
             # Save file
-            aggr_areas = aggr_areas.join(df, on=self.site_info.attrs.fiat.aggregation[ind].field_name)
+            aggr_areas = aggr_areas.join(
+                df, on=self.site_info.attrs.fiat.aggregation[ind].field_name
+            )
             aggr_areas.to_file(outpath, driver="GPKG")
 
         # Remove temp files
