@@ -464,9 +464,8 @@ class SfincsAdapter:
         utils.downscale_floodmap(
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
-            hmin=0.0001,
-            reproj_method="bilinear",
-            floodmap_fn=floodmap_fn,
+            hmin=0.01,
+            floodmap_fn=str(floodmap_fn),
         )
 
     def downscale_hmax(self, zsmax, demfile: Path):

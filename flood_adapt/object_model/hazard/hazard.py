@@ -783,20 +783,6 @@ class Hazard:
                 left=0,
             )
 
-            # Code to reuse to speed things up, do interpolation as matrix calculation
-            # rp_array = matlib.repmat(hist_inun.rp, hist_inun.shape[1], 1)
-            # rp_da = xr.DataArray(rp_array.transpose(), coords=hist_inun.coords, dims=hist_inun.dims)
-            #
-            # diff_da = np.subtract(rp_da, matlib.repmat(pl_tile.mrp[use_ind], hist_inun.rp.size, 1))
-            # diff_da = xr.where(diff_da < 0, np.nan, diff_da)
-            # index2 = diff_da.argmin(dim='rp', skipna='True')
-            #
-            # inun_low = hist_inun[index2 - 1, :]
-            # inun_up = hist_inun[index2, :]
-            # regress_slope = (inun_up - inun_low) / (inun_up.rp - inun_low.rp)
-            #
-            # pl_height[use_ind] = inun_low.drop('rp') + regress_slope * (pl_tile.mrp[use_ind] - inun_low.rp)
-
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc
             zs_rp_single = xr.DataArray(
@@ -823,11 +809,10 @@ class Hazard:
             dummymodel.write_geotiff(
                 zs_rp_single.to_array().squeeze().transpose(),
                 demfile=demfile,
-                floodmap_fn=str(
+                floodmap_fn=
                     self.simulation_paths[0].parent.parent.parent.joinpath(
                         f"RP_{rp:04d}_maps.tif"
-                    )
-                ),
+                    ),
             )
             del dummymodel
 

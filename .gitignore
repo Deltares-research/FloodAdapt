@@ -184,5 +184,5 @@ tests/test_database/charleston/static/bfe/bfe.geojson
 tests/test_database/charleston/static/site/aggr_lvl_1.geojson
 tests/test_database/charleston/static/site/aggr_lvl_2.geojson
 /tests/test_database - Copy
+tests/system/
 tests/test_database
-tests/system
