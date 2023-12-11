@@ -243,13 +243,13 @@ class SfincsAdapter:
             gdf_locs.crs = self.sf_model.crs
 
             if len(list_df.columns) != len(gdf_locs):
-                raise ValueError(
-                    "Number of rivers in site.toml and SFINCS template model not compatible"
-                )
                 logging.error(
                     """The number of rivers of the site.toml does not match the
                               number of rivers in the SFINCS model. Please check the number
                               of coordinates in the SFINCS *.src file."""
+                )
+                raise ValueError(
+                    "Number of rivers in site.toml and SFINCS template model not compatible"
                 )
 
             # Test order of rivers is the same in the site file as in the SFICNS model
@@ -258,14 +258,14 @@ class SfincsAdapter:
                     np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
                     and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
                 ):
-                    raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
-                    )
                     logging.error(
                         """The location and/or order of rivers in the site.toml does not match the
                                 locations and/or order of rivers in the SFINCS model. Please check the
                                 coordinates and their order in the SFINCS *.src file and ensure they are
                                 consistent with the coordinates and order orf rivers in the site.toml file."""
+                    )
+                    raise ValueError(
+                        "River coordinates in site.toml and SFINCS template model not compatible"
                     )
                     break
 
@@ -430,12 +430,23 @@ class SfincsAdapter:
         self.sf_model.set_config("pavbnd", -9999)
 
     def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entre simulation"""
+        """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
 
-    def write_geotiff(self, demfile: Path, floodmap_fn: Path):
+    def get_mask(self):
+        """Get mask with inactive cells from model"""
+        mask = self.sf_model.grid["msk"]
+        return mask
+
+    def get_bedlevel(self):
+        """Get bed level from model"""
+        self.sf_model.read_results()
+        zb = self.sf_model.results["zb"]
+        return zb
+
+    def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
 
         demfile_units = self.site.attrs.dem.units
@@ -443,9 +454,6 @@ class SfincsAdapter:
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # read model results
-        zsmax = self.read_zsmax()
 
         # determine conversion factor for output floodmap
         floodmap_units = self.site.attrs.sfincs.floodmap_units
@@ -457,14 +465,11 @@ class SfincsAdapter:
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
-            floodmap_fn=floodmap_fn,
+            floodmap_fn=str(floodmap_fn),
         )
 
-    def write_risk_geotiff(
-        self, zs_max_rp: xr.Dataset, demfile: Path, floodmap_fn: Path
-    ):
+    def downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
-
         demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")
@@ -477,9 +482,9 @@ class SfincsAdapter:
             value=1.0, units=UnitTypesLength("meters")
         ).convert(floodmap_units)
 
-        utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zs_max_rp,
+        hmax = utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
-            floodmap_fn=floodmap_fn,
         )
+        return hmax
