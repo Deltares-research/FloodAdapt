@@ -697,12 +697,14 @@ class Hazard:
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
-        # calculates flood risk maps from a set of (currently) SFINCS water level outputs,
-        # using linear interpolation, would be nice to make it more widely applicable and
-        # move the loading of the SFINCS results to self.postprocess_sfincs()
-        # generates return period water level maps in netcdf format to be used by FIAT
-        # generates return period water depth maps in geotiff format as product for users
-        # TODO: make this robust and more efficient for bigger datasets
+        """calculates flood risk maps from a set of (currently) SFINCS water level outputs,
+        using linear interpolation, would be nice to make it more widely applicable and
+        move the loading of the SFINCS results to self.postprocess_sfincs()
+        generates return period water level maps in netcdf format to be used by FIAT
+        generates return period water depth maps in geotiff format as product for users
+        TODO: make this robust and more efficient for bigger datasets
+        """        
+
 
         floodmap_rp = self.site.attrs.risk.return_periods
 
