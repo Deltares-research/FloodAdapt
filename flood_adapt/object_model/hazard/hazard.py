@@ -703,8 +703,7 @@ class Hazard:
         generates return period water level maps in netcdf format to be used by FIAT
         generates return period water depth maps in geotiff format as product for users
         TODO: make this robust and more efficient for bigger datasets
-        """        
-
+        """
 
         floodmap_rp = self.site.attrs.risk.return_periods
 
@@ -811,10 +810,9 @@ class Hazard:
             dummymodel.write_geotiff(
                 zs_rp_single.to_array().squeeze().transpose(),
                 demfile=demfile,
-                floodmap_fn=
-                    self.simulation_paths[0].parent.parent.parent.joinpath(
-                        f"RP_{rp:04d}_maps.tif"
-                    ),
+                floodmap_fn=self.simulation_paths[0].parent.parent.parent.joinpath(
+                    f"RP_{rp:04d}_maps.tif"
+                ),
             )
             del dummymodel
 
