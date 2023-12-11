@@ -35,7 +35,7 @@ def get_fiat_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     return database.get_fiat_footprints(name)
 
 
-def get_aggregation(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
     return database.get_aggregation(name)
 
 
