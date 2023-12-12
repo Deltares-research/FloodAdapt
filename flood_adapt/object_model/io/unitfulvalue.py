@@ -55,7 +55,8 @@ class ValueUnitPair(BaseModel):
 
     def __str__(self):
         return f"{self.value} ({self.units})"
-    
+
+
 class UnitfulLength(ValueUnitPair):
     value: float
     units: UnitTypesLength
@@ -110,7 +111,6 @@ class UnitfulArea(ValueUnitPair):
     value: float
     units: UnitTypesArea
 
-    
     def convert(self, new_units: UnitTypesArea) -> float:
         """converts given length value different units
 
@@ -192,6 +192,7 @@ class UnitfulDirection(ValueUnitPair):
     value: float
     units: UnitTypesDirection
 
+
 class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
@@ -200,7 +201,6 @@ class UnitfulDischarge(ValueUnitPair):
     value: float
     units: UnitTypesDischarge
 
-    
     def convert(self, new_units: UnitTypesDischarge) -> float:
         """converts given discharge to different units
 
@@ -235,7 +235,7 @@ class UnitfulDischarge(ValueUnitPair):
 class UnitfulIntensity(ValueUnitPair):
     value: float
     units: UnitTypesIntensity
-    
+
     def convert(self, new_units: UnitTypesIntensity) -> float:
         """converts given rainfall intensity to different units
 
@@ -269,7 +269,7 @@ class UnitfulIntensity(ValueUnitPair):
 class UnitfulVolume(ValueUnitPair):
     value: float
     units: UnitTypesVolume
-    
+
     def convert(self, new_units: UnitTypesVolume) -> float:
         """converts given volume to different units
 
