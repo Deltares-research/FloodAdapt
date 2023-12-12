@@ -563,6 +563,12 @@ class Hazard:
                             green_infrastructure=measure.attrs,
                             measure_path=measure_path,
                         )
+            
+            # add observation points from site.toml
+            model.add_obs_points()
+            logging.info(
+                "Adding observation points to the overland flood model..."
+            )
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])

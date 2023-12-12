@@ -429,6 +429,30 @@ class SfincsAdapter:
     def turn_off_bnd_press_correction(self):
         self.sf_model.set_config("pavbnd", -9999)
 
+    def add_obs_points(self):
+        """add observation points provided in the site toml to SFINCS model
+        """        
+        obs_points = self.site.attrs.obs_point
+        names = []
+        lat = []
+        lon = []
+        for pt in obs_points:           
+            names.append(pt.name)
+            lat.append(pt.lat)
+            lon.append(pt.lon)
+
+        # create GeoDataFrame from obs_points in site file
+        df = pd.DataFrame({"Name": names, "Latitude": lat, "Longitude": lon})
+        gdf = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(df.Longitude, df.Latitude), crs="EPSG:4326"
+        )
+        gdf.drop(columns=["Longitude","Latitude"])
+
+        # Add locations to SFINCS file
+        self.sf_model.setup_observation_points(locations = gdf, merge = False)
+
+
+
     def read_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
