@@ -431,15 +431,23 @@ class SfincsAdapter:
 
     def add_obs_points(self):
         """add observation points provided in the site toml to SFINCS model
+        always adds the observation station where the tide gauge data is downloaded first if applicable
         """        
-        obs_points = self.site.attrs.obs_point
-        names = []
-        lat = []
-        lon = []
-        for pt in obs_points:           
-            names.append(pt.name)
-            lat.append(pt.lat)
-            lon.append(pt.lon)
+        if self.site.attrs.obs_station is not None:
+            names = [self.site.attrs.obs_station.name]
+            lat = [self.site.attrs.obs_station.lat]
+            lon = [self.site.attrs.obs_station.lon]
+        else:
+            names = []
+            lat = []
+            lon = []
+            
+        if self.site.attrs.obs_point is not None:
+            obs_points = self.site.attrs.obs_point
+            for pt in obs_points:           
+                names.append(pt.name)
+                lat.append(pt.lat)
+                lon.append(pt.lon)
 
         # create GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"Name": names, "Latitude": lat, "Longitude": lon})
