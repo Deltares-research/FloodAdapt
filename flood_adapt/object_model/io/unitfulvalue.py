@@ -49,7 +49,14 @@ class VerticalReference(str, Enum):
     datum = "datum"
 
 
-class UnitfulLength(BaseModel):
+class ValueUnitPair(BaseModel):
+    value: float
+    units: str
+
+    def __str__(self):
+        return f"{self.value} ({self.units})"
+    
+class UnitfulLength(ValueUnitPair):
     value: float
     units: UnitTypesLength
 
@@ -99,10 +106,11 @@ class UnitfulLength(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulArea(BaseModel):
+class UnitfulArea(ValueUnitPair):
     value: float
     units: UnitTypesArea
 
+    
     def convert(self, new_units: UnitTypesArea) -> float:
         """converts given length value different units
 
@@ -142,7 +150,7 @@ class UnitfulArea(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulVelocity(BaseModel):
+class UnitfulVelocity(ValueUnitPair):
     value: float
     units: UnitTypesVelocity
 
@@ -180,19 +188,19 @@ class UnitfulVelocity(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulDirection(BaseModel):
+class UnitfulDirection(ValueUnitPair):
     value: float
     units: UnitTypesDirection
-
 
 class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
 
-class UnitfulDischarge(BaseModel):
+class UnitfulDischarge(ValueUnitPair):
     value: float
     units: UnitTypesDischarge
 
+    
     def convert(self, new_units: UnitTypesDischarge) -> float:
         """converts given discharge to different units
 
@@ -224,10 +232,10 @@ class UnitfulDischarge(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulIntensity(BaseModel):
+class UnitfulIntensity(ValueUnitPair):
     value: float
     units: UnitTypesIntensity
-
+    
     def convert(self, new_units: UnitTypesIntensity) -> float:
         """converts given rainfall intensity to different units
 
@@ -258,10 +266,10 @@ class UnitfulIntensity(BaseModel):
         return conversion * new_conversion * self.value
 
 
-class UnitfulVolume(BaseModel):
+class UnitfulVolume(ValueUnitPair):
     value: float
     units: UnitTypesVolume
-
+    
     def convert(self, new_units: UnitTypesVolume) -> float:
         """converts given volume to different units
 

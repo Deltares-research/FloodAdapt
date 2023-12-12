@@ -457,7 +457,7 @@ class SfincsAdapter:
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
-            floodmap_fn=floodmap_fn,
+            floodmap_fn=str(floodmap_fn),
         )
 
     def write_risk_geotiff(
