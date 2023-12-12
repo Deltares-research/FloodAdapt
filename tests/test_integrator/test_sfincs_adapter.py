@@ -34,6 +34,8 @@ def test_add_obs_points(cleanup_database: None):
     # write sfincs model in output destination
     model.write_sfincs_model(path_out=scenario.direct_impacts.hazard.simulation_paths[0])
 
+    del model
+
     # assert points are the same
     sfincs_obs = pd.read_csv(scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"), header=None, delim_whitespace=True)
 
@@ -68,6 +70,9 @@ def test_add_obs_points(cleanup_database: None):
 
     # write sfincs model in output destination
     model.write_sfincs_model(path_out=scenario.direct_impacts.hazard.simulation_paths[0])
+    del model
+
+
     sfincs_obs = pd.read_csv(scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"), header=None, delim_whitespace=True)
 
     assert np.abs(sfincs_obs.loc[0,0] - site_obs.loc[1].geometry.x) < 1
@@ -84,6 +89,8 @@ def test_add_obs_points(cleanup_database: None):
 
     # write sfincs model in output destination
     model.write_sfincs_model(path_out=scenario.direct_impacts.hazard.simulation_paths[0])
+    del model
+
     sfincs_obs = pd.read_csv(scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"), header=None, delim_whitespace=True)
 
     assert np.abs(sfincs_obs.loc[0,0] - site_obs.loc[0].geometry.x) < 1
