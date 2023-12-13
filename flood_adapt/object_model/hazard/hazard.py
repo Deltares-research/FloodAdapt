@@ -7,6 +7,8 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import xarray as xr
 from numpy import matlib
 
@@ -563,12 +565,10 @@ class Hazard:
                             green_infrastructure=measure.attrs,
                             measure_path=measure_path,
                         )
-            
+
             # add observation points from site.toml
             model.add_obs_points()
-            logging.info(
-                "Adding observation points to the overland flood model..."
-            )
+            logging.info("Adding observation points to the overland flood model...")
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
@@ -659,6 +659,7 @@ class Hazard:
         if self._mode == Mode.single_event:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
+            self.plot_wl_obs()
             # Copy SFINCS output map to main folder
             # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
             # shutil.copyfile(
@@ -668,6 +669,68 @@ class Hazard:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
+
+    def plot_wl_obs(self):
+        """Plot water levels at SFINCS observation points as html
+        Only for single event scenarios
+        """
+        for sim_path in self.simulation_paths:
+            # read SFINCS model
+            model = SfincsAdapter(model_root=sim_path, site=self.site)
+
+            df, gdf = model.read_zs_points()
+
+            del model
+
+            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
+
+            conversion_factor = UnitfulLength(value=1.0, units=UnitTypesLength("meters")).convert(gui_units)
+
+            for ii,col in enumerate(df.columns):
+            # Plot actual thing
+                fig = px.line(
+                    df[col]* conversion_factor
+                    + self.site.attrs.water_level.msl.height.convert(gui_units), 
+                )
+
+                # plot reference water levels
+                fig.add_hline(
+                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#000000",
+                    annotation_text="MSL",
+                    annotation_position="bottom right",
+                )
+                if self.site.attrs.water_level.other:
+                    for wl_ref in self.site.attrs.water_level.other:
+                        fig.add_hline(
+                            y=wl_ref.height.convert(gui_units),
+                            line_dash="dash",
+                            line_color="#3ec97c",
+                            annotation_text=wl_ref.name,
+                            annotation_position="bottom right",
+                        )
+
+                fig.update_layout(
+                    autosize=False,
+                    height=100 * 2,
+                    width=280 * 2,
+                    margin={"r": 0, "l": 0, "b": 0, "t": 20},
+                    font={"size": 10, "color": "black", "family": "Arial"},
+                    title={"text": gdf.iloc[ii]["Description"], 
+                                "font": {"size": 12, "color": "black", "family": "Arial"},
+                                "x": 0.5,
+                                "xanchor": "center"},
+                    xaxis_title="Time",
+                    yaxis_title=f"Water level [{gui_units}]",
+                    yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    showlegend=False,
+                )
+
+                # write html to results folder
+                station_name = gdf.iloc[ii]["Name"]
+                fig.write_html(sim_path.parent.parent.joinpath(f"{station_name}_timeseries.html"))
 
     def write_floodmap_geotiff(self):
         # Load overland sfincs model
