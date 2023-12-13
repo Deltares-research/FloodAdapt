@@ -94,7 +94,7 @@ class Database(IDatabase):
         """Get the model boundary from the SFINCS model"""
         # TODO: this should be a Interface class ModelAdapter.
         # All models should implement their own Adapters, which should inherit from ModelAdapter
-        # Which declares all functions (so no implentation) required to run floodadapt and the gui.
+        # Which declares all functions (so no implementation) required to run floodadapt and the gui.
 
         # the class SfincsAdapter(ModelAdapter) should have the implementation for the functions declared in ModelAdapter
         # and then we should have a ModelFactory that returns the correct model based on the site config
