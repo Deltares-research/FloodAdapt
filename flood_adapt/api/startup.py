@@ -80,6 +80,7 @@ def get_svi_map(database: IDatabase) -> GeoDataFrame:
     except Exception:
         return None
 
+
 def get_buildings(database: IDatabase) -> GeoDataFrame:
     """Gets the buildings exposure that are used in Fiat
 
