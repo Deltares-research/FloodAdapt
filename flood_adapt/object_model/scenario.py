@@ -94,7 +94,10 @@ class Scenario(IScenario):
             print(
                 f"Direct impacts for scenario '{self.attrs.name}' has already been run."
             )
-
+        
+        logging.info(
+            f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
+        )
         self.close_root_logger_handlers()
 
     def __eq__(self, other):

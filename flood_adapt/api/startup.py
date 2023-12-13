@@ -75,7 +75,10 @@ def get_svi_map(database: IDatabase) -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the SVI per area
     """
-    return database.get_svi_map()
+    try:
+        return database.get_static_map(database.site.attrs.fiat.svi.geom)
+    except Exception:
+        return None
 
 
 def get_buildings(database: IDatabase) -> GeoDataFrame:
