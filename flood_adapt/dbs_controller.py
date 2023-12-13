@@ -133,19 +133,20 @@ class Database(IDatabase):
         )
         return gdf
 
-    def get_static_map(self, path: str) -> gpd.GeoDataFrame:
-        """Get a static map from the static folder
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
+        """Get a map from the static folder
 
         Parameters
         ----------
-        path : str
-            relative path to the static map
+        path : Union[str, Path]
+            Path to the map relative to the static folder
 
         Returns
         -------
         gpd.GeoDataFrame
-            geodataframe with the static map
+            GeoDataFrame with the map in crs 4326
         """
+        # Read the map
         full_path = self.static_path / path
         if full_path.is_file():
             map = gpd.read_file(full_path, engine="pyogrio").to_crs(4326)

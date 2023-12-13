@@ -73,13 +73,12 @@ def get_svi_map(database: IDatabase) -> GeoDataFrame:
     Returns
     -------
     GeoDataFrame
-        GeoDataFrames with the SVI per area
+        GeoDataFrames with the SVI map, None if not available
     """
     try:
         return database.get_static_map(database.site.attrs.fiat.svi.geom)
     except Exception:
         return None
-
 
 def get_buildings(database: IDatabase) -> GeoDataFrame:
     """Gets the buildings exposure that are used in Fiat
