@@ -42,6 +42,10 @@ def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
     return database.get_aggregation_areas()
 
 
+def get_model_boundary(database: IDatabase) -> GeoDataFrame:
+    return database.get_model_boundary()
+
+
 def get_svi_map(database: IDatabase) -> GeoDataFrame:
     """Gets the SVI map that are used in Fiat
 
