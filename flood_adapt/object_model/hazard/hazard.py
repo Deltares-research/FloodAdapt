@@ -8,7 +8,6 @@ from typing import List
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import xarray as xr
 from numpy import matlib
 
@@ -684,13 +683,15 @@ class Hazard:
 
             gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
 
-            conversion_factor = UnitfulLength(value=1.0, units=UnitTypesLength("meters")).convert(gui_units)
+            conversion_factor = UnitfulLength(
+                value=1.0, units=UnitTypesLength("meters")
+            ).convert(gui_units)
 
-            for ii,col in enumerate(df.columns):
-            # Plot actual thing
+            for ii, col in enumerate(df.columns):
+                # Plot actual thing
                 fig = px.line(
-                    df[col]* conversion_factor
-                    + self.site.attrs.water_level.msl.height.convert(gui_units), 
+                    df[col] * conversion_factor
+                    + self.site.attrs.water_level.msl.height.convert(gui_units),
                 )
 
                 # plot reference water levels
@@ -717,10 +718,12 @@ class Hazard:
                     width=280 * 2,
                     margin={"r": 0, "l": 0, "b": 0, "t": 20},
                     font={"size": 10, "color": "black", "family": "Arial"},
-                    title={"text": gdf.iloc[ii]["Description"], 
-                                "font": {"size": 12, "color": "black", "family": "Arial"},
-                                "x": 0.5,
-                                "xanchor": "center"},
+                    title={
+                        "text": gdf.iloc[ii]["Description"],
+                        "font": {"size": 12, "color": "black", "family": "Arial"},
+                        "x": 0.5,
+                        "xanchor": "center",
+                    },
                     xaxis_title="Time",
                     yaxis_title=f"Water level [{gui_units}]",
                     yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
@@ -730,7 +733,9 @@ class Hazard:
 
                 # write html to results folder
                 station_name = gdf.iloc[ii]["Name"]
-                fig.write_html(sim_path.parent.parent.joinpath(f"{station_name}_timeseries.html"))
+                fig.write_html(
+                    sim_path.parent.parent.joinpath(f"{station_name}_timeseries.html")
+                )
 
     def write_floodmap_geotiff(self):
         # Load overland sfincs model
