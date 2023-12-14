@@ -63,7 +63,10 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
         "meters"
     ) - test_scenario.site_info.attrs.water_level.msl.height.convert("meters")
 
-    assert np.abs(peak_model - (surge_peak + tide_amp - localdatum)) < 0.01
+    slr_offset = test_scenario.site_info.attrs.slr.vertical_offset.convert("meters")
+
+    assert np.abs(peak_model - (surge_peak + tide_amp + slr_offset - localdatum)) < 0.01
+
 
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")

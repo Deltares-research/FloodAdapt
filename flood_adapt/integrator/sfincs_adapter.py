@@ -496,6 +496,10 @@ class SfincsAdapter:
         zb = self.sf_model.results["zb"]
         return zb
 
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
+        """Get bounding box from model"""
+        return self.sf_model.region
+
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
 
