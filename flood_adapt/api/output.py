@@ -74,7 +74,7 @@ def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame
     for station in gdf.name:
         timeseries_output_path.append(str(output_path.joinpath("Flooding",f"{station}_timeseries.html")))
 
-    gdf["url"] = timeseries_output_path
+    gdf["html"] = timeseries_output_path
 
     return gdf
 
