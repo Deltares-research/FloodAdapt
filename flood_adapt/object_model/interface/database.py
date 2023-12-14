@@ -29,6 +29,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_obs_points(self) -> GeoDataFrame:
+        ...
+
+    @abstractmethod
     def get_property_types(self) -> list:
         ...
 

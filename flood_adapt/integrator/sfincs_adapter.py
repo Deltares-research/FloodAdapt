@@ -443,14 +443,14 @@ class SfincsAdapter:
                 lat.append(pt.lat)
                 lon.append(pt.lon)
 
-        # create GeoDataFrame from obs_points in site file
-        df = pd.DataFrame({"name": names})
-        gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-        )
+            # create GeoDataFrame from obs_points in site file
+            df = pd.DataFrame({"name": names})
+            gdf = gpd.GeoDataFrame(
+                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            )
 
-        # Add locations to SFINCS file
-        self.sf_model.setup_observation_points(locations=gdf, merge=False)
+            # Add locations to SFINCS file
+            self.sf_model.setup_observation_points(locations=gdf, merge=False)
 
     def read_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation"""
