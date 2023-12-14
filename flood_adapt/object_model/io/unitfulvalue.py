@@ -54,7 +54,7 @@ class ValueUnitPair(BaseModel):
     units: str
 
     def __str__(self):
-        return f"{self.value} ({self.units})"
+        return f"{self.value} {self.units}"
 
 
 class UnitfulLength(ValueUnitPair):
