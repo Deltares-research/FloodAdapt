@@ -110,7 +110,7 @@ class Database(IDatabase):
         )
         model = SfincsAdapter(model_root=path_in, site=self.site)
         return model.get_model_boundary()
-    
+
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model"""
         if self.site.attrs.obs_point is not None:
@@ -127,11 +127,11 @@ class Database(IDatabase):
 
         # create GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"name": names, "description": descriptions})
-        #TODO: make crs flexible and add this as a parameter to site.toml?
+        # TODO: make crs flexible and add this as a parameter to site.toml?
         gdf = gpd.GeoDataFrame(
             df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
         )
-        return gdf     
+        return gdf
 
     def get_svi_map(self) -> gpd.GeoDataFrame:
         """Get the geospatial social vulnerability index (SVI) data.

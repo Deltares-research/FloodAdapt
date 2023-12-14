@@ -68,7 +68,6 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
     assert np.abs(peak_model - (surge_peak + tide_amp + slr_offset - localdatum)) < 0.01
 
 
-
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_preprocess_synthetic_discharge(cleanup_database):
     test_toml = (

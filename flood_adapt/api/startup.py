@@ -41,9 +41,10 @@ def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
     """
     return database.get_aggregation_areas()
 
+
 def get_obs_points(database: IDatabase) -> GeoDataFrame:
-    """Gets the observation points specified in the site.toml. These are 
-        also added to the flood hazard model. They are used as marker 
+    """Gets the observation points specified in the site.toml. These are
+        also added to the flood hazard model. They are used as marker
         locations to plot water level time series in the output tab.
 
     Parameters
@@ -53,9 +54,10 @@ def get_obs_points(database: IDatabase) -> GeoDataFrame:
     Returns
     -------
     GeoDataFrame
-        GeoDataFrame with observation points from the site.toml. 
-    """    
+        GeoDataFrame with observation points from the site.toml.
+    """
     return database.get_obs_points()
+
 
 def get_model_boundary(database: IDatabase) -> GeoDataFrame:
     return database.get_model_boundary()

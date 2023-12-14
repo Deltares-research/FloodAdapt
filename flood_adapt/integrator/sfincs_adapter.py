@@ -430,8 +430,7 @@ class SfincsAdapter:
         self.sf_model.set_config("pavbnd", -9999)
 
     def add_obs_points(self):
-        """add observation points provided in the site toml to SFINCS model
-        """
+        """add observation points provided in the site toml to SFINCS model"""
 
         if self.site.attrs.obs_point is not None:
             obs_points = self.site.attrs.obs_point
@@ -460,7 +459,7 @@ class SfincsAdapter:
 
     def read_zs_points(self):
         """Read water level (zs) timeseries at observation points
-        Names are allocated from the site.toml. 
+        Names are allocated from the site.toml.
         See also add_obs_points() above
         """
 

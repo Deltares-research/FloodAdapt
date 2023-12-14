@@ -42,6 +42,7 @@ def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
 def get_roads(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     return database.get_roads(name)
 
+
 def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     """Return the HTML strings of the water level timeseries for the given scenario.
 
@@ -72,11 +73,14 @@ def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame
     timeseries_output_path = []
 
     for station in gdf.name:
-        timeseries_output_path.append(str(output_path.joinpath("Flooding",f"{station}_timeseries.html")))
+        timeseries_output_path.append(
+            str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
+        )
 
     gdf["html"] = timeseries_output_path
 
     return gdf
+
 
 def get_infographic(name: str, database: IDatabase) -> str:
     """Return the HTML string of the infographic for the given scenario.
