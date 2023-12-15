@@ -696,7 +696,7 @@ class Hazard:
                     df[col] * conversion_factor
                     + self.site.attrs.water_level.msl.height.convert(gui_units),
                 )
-                
+
                 # plot reference water levels
                 fig.add_hline(
                     y=self.site.attrs.water_level.msl.height.convert(gui_units),
@@ -738,21 +738,27 @@ class Hazard:
                 if self.event.attrs.timing == "historical":
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
-                    if isinstance(self.site.attrs.obs_point[ii].ID, int): 
+                    if isinstance(self.site.attrs.obs_point[ii].ID, int):
                         df_gauge = HistoricalNearshore.download_wl_data(
-                            station_id = self.site.attrs.obs_point[ii].ID, 
-                            start_time_str = self.event.attrs.time.start_time, 
-                            stop_time_str = self.event.attrs.time.end_time, 
-                            units = UnitTypesLength(gui_units)
+                            station_id=self.site.attrs.obs_point[ii].ID,
+                            start_time_str=self.event.attrs.time.start_time,
+                            stop_time_str=self.event.attrs.time.end_time,
+                            units=UnitTypesLength(gui_units),
                         )
                         import plotly.graph_objects as go
-                        fig.add_trace(go.Scatter(
-                            x =  pd.DatetimeIndex(df_gauge.index),
-                            y = df_gauge[1] + self.site.attrs.water_level.msl.height.convert(gui_units),
-                            line_color="#ea6404",
-                        ))
-                        fig['data'][0]['name'] = 'model'
-                        fig['data'][1]['name'] = 'measurement'
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=pd.DatetimeIndex(df_gauge.index),
+                                y=df_gauge[1]
+                                + self.site.attrs.water_level.msl.height.convert(
+                                    gui_units
+                                ),
+                                line_color="#ea6404",
+                            )
+                        )
+                        fig["data"][0]["name"] = "model"
+                        fig["data"][1]["name"] = "measurement"
                         fig.update_layout(showlegend=True)
 
                 # write html to results folder
