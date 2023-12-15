@@ -1,0 +1,28 @@
+---
+name: Meta Issue
+description: Create a meta issue for this project
+labels: [meta issue, needs refinement]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      description: >
+        Please provide a clear and concise description of the functionality you're requesting. This needs to be filled in by the creator of the meta issue.
+      label: Description
+    validations:
+      required: true
+  - type: textarea
+    id: issue-list
+    attributes:
+      description: >
+        Please provide the list of issues that this meta issue is tracking. This needs to be filled in by the team during refinement.
+      label: Issue list
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      description: >
+        Please describe a situation in which this feature would be useful to you. This needs to be filled in by the creator of the meta issue, but is optional.
+      label: Use case
