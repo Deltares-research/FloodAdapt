@@ -309,18 +309,18 @@ class Hazard:
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
-    def run_sfincs_offshore(self):
+    def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
 
         sfincs_exec = (
             self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
 
-        for simulation_path in self.simulation_paths_offshore:
-            with cd(simulation_path):
-                sfincs_log = "sfincs.log"
-                with open(sfincs_log, "w") as log_handler:
-                    subprocess.run(sfincs_exec, stdout=log_handler)
+        simulation_path = self.simulation_paths_offshore[ii]
+        with cd(simulation_path):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
     def preprocess_sfincs(
         self,
@@ -383,7 +383,7 @@ class Hazard:
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
                 logging.info("Running offshore model...")
-                self.run_sfincs_offshore()
+                self.run_sfincs_offshore(ii=ii)
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
@@ -588,7 +588,10 @@ class Hazard:
         path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        event_dir = self.database_input_path / "events" / self.event.attrs.name
+        if self.event_mode == Mode.risk:
+            event_dir = self.database_input_path / "events" / self.event_set.attrs.name / self.event.attrs.name
+        else:
+            event_dir = self.database_input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
