@@ -203,6 +203,10 @@ class FiatAdapter:
         ground_floor_height: float,
         elevation_type: str,
         area_path: str,
+        ground_elevation: Union[None, str, Path] = None,
+        aggregation_areas: Union[List[str], List[Path], str, Path] = None,
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
     ):
         """Implement population growth in new development area.
 
@@ -233,6 +237,10 @@ class FiatAdapter:
                 elevation_reference="geom",
                 path_ref=self.bfe["geom"],
                 attr_ref=self.bfe["name"],
+                ground_elevation=ground_elevation,
+                aggregation_area_fn=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
         elif elevation_type == "datum":
             # Use hydromt function
@@ -243,6 +251,10 @@ class FiatAdapter:
                 damage_types=["Structure", "Content"],
                 vulnerability=self.fiat_model.vulnerability,
                 elevation_reference="datum",
+                ground_elevation=ground_elevation,
+                aggregation_area_fn=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
