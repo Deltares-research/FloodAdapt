@@ -69,10 +69,10 @@ class FiatAdapter:
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
 
-        # Add the hazard data to a data catalog with the unit conversion 
+        # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
-        
+
         # Read SFINCS map in a hydromt compatible format
         if not is_risk:
             sfincs_root = map_fn[0].parent
@@ -81,7 +81,7 @@ class FiatAdapter:
             da = sfincs_model.results["zsmax"]
             da = da.isel(timemax=0).drop("timemax")
             map_fn = [da]
-            
+
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
