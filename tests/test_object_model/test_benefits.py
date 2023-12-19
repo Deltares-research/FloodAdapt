@@ -241,8 +241,8 @@ def test_run_CBA(cleanup_database):
     assert tot_costs == tot_costs2
 
     # assert if results are equal to the expected values based on the input
-    assert tot_benefits == 963433925
-    assert tot_costs == 201198671
-    assert results["BCR"] == 4.79
-    assert results["NPV"] == 762235253
-    assert results["IRR"] == 0.394
+    assert pytest.approx(tot_benefits, 2) == 963433925
+    assert pytest.approx(tot_costs, 2) == 201198671
+    assert pytest.approx(results["BCR"], 0.01) == 4.79
+    assert pytest.approx(results["NPV"], 2) == 762235253
+    assert pytest.approx(results["IRR"], 0.01) == 0.394

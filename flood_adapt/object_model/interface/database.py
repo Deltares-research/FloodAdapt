@@ -191,6 +191,10 @@ class IDatabase(ABC):
         ...
 
     @abstractmethod
+    def get_model_boundary(self) -> dict[str, Any]:
+        ...
+
+    @abstractmethod
     def get_projections(self) -> dict[str, Any]:
         ...
 
