@@ -108,7 +108,8 @@ def test_fiat_adapter_measures(cleanup_database):
         * exposure_template.loc[:, "Max Potential Damage: Structure"].sum()
     )
 
-    # check if buildings are elevated
+    # check if buildings are elevated correctly
+    # First get the elevate measure attributes
     aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
         0
     ].attrs.aggregation_area_type
@@ -118,20 +119,29 @@ def test_fiat_adapter_measures(cleanup_database):
     build_type = test_scenario.direct_impacts.impact_strategy.measures[
         0
     ].attrs.property_type
-    inds1 = (
-        exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
-    ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
-    inds2 = (
+    elevate_val = test_scenario.direct_impacts.impact_strategy.measures[
+            0
+        ].attrs.elevation.value
+    # Read the base flood map information
+    bfes = pd.read_csv(test_scenario.database_input_path.parent.joinpath("static","bfe","bfe.csv"))
+    # Create a dataframe to save the initial object attributes
+    exposures = exposure_template.merge(bfes, on="Object ID")[["Object ID", "bfe", "Ground Floor Height"]].rename(columns={"Ground Floor Height": "Ground Floor Height 1"})
+    # Merge with the adapted fiat model exposure
+    exposures = exposures.merge(exposure_scenario, on="Object ID").rename(columns={"Ground Floor Height": "Ground Floor Height 2"})
+    # Filter to only the objects affected by the measure
+    exposures = exposures.loc[(
         exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
-    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
-
-    assert all(
-        elev1 <= elev2
-        for elev1, elev2 in zip(
-            exposure_template.loc[inds1, "Ground Floor Height"],
-            exposure_scenario.loc[inds2, "Ground Floor Height"],
-        )
-    )
+    ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type), :]
+    exposures = exposures[["Object ID", "Ground Elevation", "bfe", "Ground Floor Height 1", "Ground Floor Height 2"]]
+    # Check if elevation took place correctly at each object
+    for i, row in exposures.iterrows():
+        # If the initial elevation is smaller than the required one it should have been elevated to than one
+        if row["Ground Elevation"] + row["Ground Floor Height 1"] < row["bfe"] + elevate_val:
+            assert row["Ground Elevation"] + row["Ground Floor Height 2"] == row["bfe"] + elevate_val
+        # if not it should have stated the same
+        else:
+             assert row["Ground Floor Height 2"] == row["Ground Floor Height 1"] 
+    
 
     # check if buildings are bought-out
     aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
