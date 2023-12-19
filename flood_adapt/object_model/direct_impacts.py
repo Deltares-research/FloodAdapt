@@ -367,6 +367,7 @@ class DirectImpacts:
                 damage_column_pattern="TotalDamageRP{rp}",
             )
             # Calculate equity
+            # TODO gamma in configuration file?
             gamma = 1.2  # elasticity
             df_equity = equity.equity_calculation(gamma)
             # Merge with metrics tables and resave
@@ -378,14 +379,20 @@ class DirectImpacts:
             )
             del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
             metrics_new = metrics_new.set_index(metrics_new.columns[0])
-            metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
+            metrics_new.loc["Description", ["EW", "EWEAD", "EWCEAD"]] = [
                 "Equity weight",
-                "Equity weighted certainty equivalent expected annual damage",
+                "Equity weighted  expected annual damage",
+                "Equity weighted certainty equivalent  annual damage",
             ]
-            metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
-            metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
+            metrics_new.loc["Show In Metrics Table", ["EW", "EWEAD", "EWCEAD"]] = [
+                True,
+                True,
+                True,
+            ]
+            metrics_new.loc["Long Name", ["EW", "EWEAD", "EWCEAD"]] = [
                 "Equity weight",
-                "Equity weighted certainty equivalent expected annual damage",
+                "Equity weighted  expected annual damage",
+                "Equity weighted certainty equivalent  annual damage",
             ]
             metrics_new.index.name = None
             metrics_new.to_csv(file)
