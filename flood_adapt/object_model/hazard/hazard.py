@@ -589,7 +589,12 @@ class Hazard:
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
         if self.event_mode == Mode.risk:
-            event_dir = self.database_input_path / "events" / self.event_set.attrs.name / self.event.attrs.name
+            event_dir = (
+                self.database_input_path
+                / "events"
+                / self.event_set.attrs.name
+                / self.event.attrs.name
+            )
         else:
             event_dir = self.database_input_path / "events" / self.event.attrs.name
 
@@ -625,13 +630,11 @@ class Hazard:
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
             if event_dir.joinpath(spw_name).is_file():
-                logging.info(
-                    "Using existing hurricane meteo data."
-                )
+                logging.info("Using existing hurricane meteo data.")
                 # copy spw file from event directory to offshore model folder
                 shutil.copy2(
-                        event_dir.joinpath(spw_name), 
-                        self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    event_dir.joinpath(spw_name),
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
                 )
             else:
                 logging.info(
@@ -644,8 +647,8 @@ class Hazard:
                 )
                 # save created spw file in the event directory
                 shutil.copy2(
-                        self.simulation_paths_offshore[ii].joinpath(spw_name),
-                        event_dir.joinpath(spw_name), 
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    event_dir.joinpath(spw_name),
                 )
                 logging.info("Finished generating meteo data from hurricane track.")
 
