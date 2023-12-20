@@ -74,8 +74,8 @@ class DirectImpacts:
         """
         log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():
-            with open(log_file) as f:
-                if "All done!" in f.read():
+            with open(log_file, "r", encoding='cp1252') as f:
+                if "Geom calculation are done!" in f.read():
                     return True
                 else:
                     return False
