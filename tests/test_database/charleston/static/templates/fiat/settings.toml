@@ -12,7 +12,6 @@ file = "./vulnerability/vulnerability_curves.csv"
 step_size = 0.1
 unit = "feet"
 
-
 [exposure.csv]
 file =  "./exposure/exposure.csv"
 
