@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 import flood_adapt.api.benefits as api_benefits
-import flood_adapt.api.scenarios as api_scenarios
 import flood_adapt.api.startup as api_startup
 
 test_database_path = Path().absolute() / "tests" / "test_database"
