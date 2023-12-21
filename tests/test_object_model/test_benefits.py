@@ -9,7 +9,7 @@ from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.benefit import Benefit
 
 test_database = Path().absolute() / "tests" / "test_database"
-
+rng = np.random.default_rng(2021)
 
 def test_benefit_read(cleanup_database):
     benefit_toml = (
@@ -117,9 +117,11 @@ def test_run_benefit_analysis():
             }
 
             for i, aggr_area in enumerate(aggr["name"]):
-                dict0[aggr_area] = [dmgs[i], np.random.normal(1, 0.2) * dmgs[i]]
+                dict0[aggr_area] = [dmgs[i], rng.normal(1, 0.2) * dmgs[i]]
 
-            dummy_metrics_aggr = pd.DataFrame(dict0, index=["ExpectedAnnualDamages", "EWEAD"]).T
+            dummy_metrics_aggr = pd.DataFrame(
+                dict0, index=["ExpectedAnnualDamages", "EWEAD"]
+            ).T
 
             dummy_metrics_aggr.to_csv(
                 output_path.joinpath(
