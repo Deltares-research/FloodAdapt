@@ -769,7 +769,7 @@ class Hazard:
                             stop_time_str=self.event.attrs.time.end_time,
                             units=UnitTypesLength(gui_units),
                         )
-                        
+
                         fig.add_trace(
                             go.Scatter(
                                 x=pd.DatetimeIndex(df_gauge.index),
