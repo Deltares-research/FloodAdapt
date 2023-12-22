@@ -8,6 +8,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import xarray as xr
 from numpy import matlib
 
@@ -768,8 +769,7 @@ class Hazard:
                             stop_time_str=self.event.attrs.time.end_time,
                             units=UnitTypesLength(gui_units),
                         )
-                        import plotly.graph_objects as go
-
+                        
                         fig.add_trace(
                             go.Scatter(
                                 x=pd.DatetimeIndex(df_gauge.index),
