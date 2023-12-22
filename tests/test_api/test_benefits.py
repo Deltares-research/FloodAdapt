@@ -11,6 +11,7 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 site_name = "charleston"
 rng = np.random.default_rng(2021)
 
+
 def test_benefit(cleanup_database):
     # Initialize database object
     database = api_startup.read_database(test_database_path, site_name)
