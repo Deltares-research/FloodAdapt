@@ -18,6 +18,8 @@ from flood_adapt.object_model.interface.strategies import IStrategy
 
 class IDatabase(ABC):
     input_path: Path
+    output_path: Path
+    static_path = Path
     site: ISite
 
     @abstractmethod
