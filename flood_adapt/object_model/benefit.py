@@ -158,18 +158,18 @@ class Benefit(IBenefit):
         Parameters
         ----------
         years : list[int, int]
-            _description_
+            the current and future year for the analysis
         risk_no_measures : list[float, float]
-            _description_
+            the current and future risk value without any measures
         risk_with_strategy : list[float, float]
-            _description_
+            the current and future risk value with the strategy under investigation
         discount_rate : float
-            _description_
+            the yearly discount rate used to calculated the total benefit
 
         Returns
         -------
         pd.DataFrame
-            _description_
+            Dataframe containing the time-series of risks and benefits per year
         """
         benefits = pd.DataFrame(
             data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
@@ -210,18 +210,18 @@ class Benefit(IBenefit):
         Parameters
         ----------
         benefits : pd.DataFrame
-            _description_
+            a time series of benefits per year (produced with __calc_benefits method)
         implementation_cost : float
-            _description_
+            initial costs of implementing the adaptation strategy
         annual_maint_cost : float
-            _description_
+            annual maintenance cost of the adaptation  strategy 
         discount_rate : float
-            _description_
+            yearly discount rate
 
         Returns
         -------
         pd.DataFrame
-            _description_
+            Dataframe containing the time-series of benefits, costs and profits per year
         """
         benefits = benefits.copy()
         benefits["costs"] = np.nan
