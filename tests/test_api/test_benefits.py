@@ -9,7 +9,7 @@ import flood_adapt.api.startup as api_startup
 
 test_database_path = Path().absolute() / "tests" / "test_database"
 site_name = "charleston"
-
+rng = np.random.default_rng(2021)
 
 def test_benefit(cleanup_database):
     # Initialize database object
@@ -114,15 +114,17 @@ def test_benefit(cleanup_database):
             dmgs = dmgs / dmgs.sum() * damages_dummy[name]
 
             dict0 = {
-                "Description": "",
-                "Show In Metrics Table": "TRUE",
-                "Long Name": "",
+                "Description": ["", ""],
+                "Show In Metrics Table": ["TRUE", "TRUE"],
+                "Long Name": ["", ""],
             }
 
             for i, aggr_area in enumerate(aggr["name"]):
-                dict0[aggr_area] = dmgs[i]
+                dict0[aggr_area] = [dmgs[i], rng.normal(1, 0.2) * dmgs[i]]
 
-            dummy_metrics_aggr = pd.DataFrame(dict0, index=["ExpectedAnnualDamages"]).T
+            dummy_metrics_aggr = pd.DataFrame(
+                dict0, index=["ExpectedAnnualDamages", "EWEAD"]
+            ).T
 
             dummy_metrics_aggr.to_csv(
                 output_path.joinpath(
