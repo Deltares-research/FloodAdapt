@@ -11,5 +11,5 @@ value = 100000000.0
 units = "cf"
 
 [height]
-value = 0.0
+value = 1.0
 units = "meters"
