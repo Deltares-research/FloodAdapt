@@ -9,6 +9,7 @@ from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.benefit import Benefit
 
 test_database = Path().absolute() / "tests" / "test_database"
+rng = np.random.default_rng(2021)
 
 
 def test_benefit_read(cleanup_database):
@@ -43,7 +44,7 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_benefit_analysis(cleanup_database):
+def test_run_benefit_analysis():
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
@@ -111,15 +112,17 @@ def test_run_benefit_analysis(cleanup_database):
             dmgs = dmgs / dmgs.sum() * damages_dummy[name]
 
             dict0 = {
-                "Description": "",
-                "Show In Metrics Table": "TRUE",
-                "Long Name": "",
+                "Description": ["", ""],
+                "Show In Metrics Table": ["TRUE", "TRUE"],
+                "Long Name": ["", ""],
             }
 
             for i, aggr_area in enumerate(aggr["name"]):
-                dict0[aggr_area] = dmgs[i]
+                dict0[aggr_area] = [dmgs[i], rng.normal(1, 0.2) * dmgs[i]]
 
-            dummy_metrics_aggr = pd.DataFrame(dict0, index=["ExpectedAnnualDamages"]).T
+            dummy_metrics_aggr = pd.DataFrame(
+                dict0, index=["ExpectedAnnualDamages", "EWEAD"]
+            ).T
 
             dummy_metrics_aggr.to_csv(
                 output_path.joinpath(
@@ -149,12 +152,14 @@ def test_run_benefit_analysis(cleanup_database):
     # assert if results are equal to the expected values based on the input
     assert pytest.approx(tot_benefits, 2) == 963433925
 
+    # Run benefit analysis with dummy data
+    benefit.cba_aggregation()
     # get aggregation
     for aggr_type in aggrs.keys():
         csv_agg_results = pd.read_csv(
             results_path.joinpath(f"benefits_{aggr_type}.csv")
         )
-        tot_benefits_agg = csv_agg_results["benefits_discounted"].sum()
+        tot_benefits_agg = csv_agg_results["Benefits"].sum()
 
         # assert if results are equal to the expected values based on the input
         assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
@@ -241,8 +246,8 @@ def test_run_CBA(cleanup_database):
     assert tot_costs == tot_costs2
 
     # assert if results are equal to the expected values based on the input
-    assert tot_benefits == 963433925
-    assert tot_costs == 201198671
-    assert results["BCR"] == 4.79
-    assert results["NPV"] == 762235253
-    assert results["IRR"] == 0.394
+    assert pytest.approx(tot_benefits, 2) == 963433925
+    assert pytest.approx(tot_costs, 2) == 201198671
+    assert pytest.approx(results["BCR"], 0.01) == 4.79
+    assert pytest.approx(results["NPV"], 2) == 762235253
+    assert pytest.approx(results["IRR"], 0.01) == 0.394

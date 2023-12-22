@@ -1,16 +1,15 @@
 name = "charleston"
-description = "Charleston, SC"
+description = "Charleston, SC - DUMMY MODEL"
 lat = 32.77
 lon = -79.95
 
 [sfincs]
 csname = "WGS 84 / UTM zone 17N"
 cstype = "projected"
-version = "SFINCS_v2.0.1_tag_exe" #"sfincs20_AlpeDHuez_release"
 offshore_model = "offshore"
 overland_model = "overland"
 ambient_air_pressure = 102000
-floodmap_no_data_value = -9999
+floodmap_no_data_value = -9999			  
 floodmap_units = "feet"
 save_simulation = "False"
 
@@ -73,7 +72,9 @@ aggregation_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720',
 footprints_dmg_bins = [0.00001, 15000, 50000, 100000, 250000]
 footprints_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
 svi_bins = [0.05, 0.2, 0.4, 0.6, 0.8]
-svi_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']						   
+svi_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']	
+benefits_bins = [0, 0.01, 1000000, 10000000, 50000000]
+benefits_colors = ['#FF7D7D', '#FFFFFF', '#DCEDC8', '#AED581', '#7CB342', '#33691E']			   																			   
 
 [risk]
 return_periods = [1, 2, 5, 10, 25, 50, 100]
@@ -84,16 +85,20 @@ units = "feet"
 [dem]
 filename = "charleston_14m.tif"
 units = "meters"
-indexfilename = "charleston_14m_indices.dat"
 
 [fiat]
 exposure_crs = "EPSG:4326"
 floodmap_type = "water_level"
 non_building_names = ["road"]
-damage_unit = "USD"
+damage_unit = "$"
 building_footprints = "../templates/fiat/footprints/Buildings.shp"
+roads_file_name = "spatial2.gpkg"
+new_development_file_name = "spatial3.gpkg"
 save_simulation = "False"
 
+[fiat.svi]
+geom = "../templates/fiat/svi/CDC_svi_2020.gpkg"
+field_name = "SVI"				  
 [fiat.bfe]
 geom = "../bfe/bfe.geojson"
 table = "../bfe/bfe.csv"
@@ -103,11 +108,21 @@ field_name = "bfe"
 name = "aggr_lvl_1"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_1.geojson"
 field_name = "name"
+[fiat.aggregation.equity]
+census_data  = "../templates/fiat/equity/census_data_aggr_lvl_1.csv"
+percapitalincome_label= "PerCapitaIncome"
+totalpopulation_label= "TotalPopulation"
+
 
 [[fiat.aggregation]]
 name = "aggr_lvl_2"
 file = "../templates/fiat/aggregation_areas/aggr_lvl_2.geojson"
 field_name = "name"
+[fiat.aggregation.equity]
+census_data  = "../templates/fiat/equity/census_data_aggr_lvl_2.csv"
+percapitalincome_label= "PerCapitaIncome"
+totalpopulation_label= "TotalPopulation"
+
 
 [obs_station]
 name = 8665530
