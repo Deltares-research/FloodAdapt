@@ -214,7 +214,7 @@ class Benefit(IBenefit):
         implementation_cost : float
             initial costs of implementing the adaptation strategy
         annual_maint_cost : float
-            annual maintenance cost of the adaptation  strategy 
+            annual maintenance cost of the adaptation  strategy
         discount_rate : float
             yearly discount rate
 
