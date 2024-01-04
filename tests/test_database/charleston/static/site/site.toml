@@ -153,6 +153,19 @@ units = "meters"
 value = 0.890
 units = "meters"
 
+[[obs_point]]
+name = "ashley_river"
+description = "Ashley River - James Island Expy"
+lat = 32.7765
+lon = -79.9543
+
+[[obs_point]]
+name = 8665530
+description = "Charleston Cooper River Entrance"
+ID = 8665530
+lat = 32.78
+lon = -79.9233
+
 [benefits]
 current_year = 2023
 current_projection = "current"

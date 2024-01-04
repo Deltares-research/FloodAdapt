@@ -429,11 +429,60 @@ class SfincsAdapter:
     def turn_off_bnd_press_correction(self):
         self.sf_model.set_config("pavbnd", -9999)
 
+    def add_obs_points(self):
+        """add observation points provided in the site toml to SFINCS model"""
+
+        if self.site.attrs.obs_point is not None:
+            obs_points = self.site.attrs.obs_point
+            names = []
+            lat = []
+            lon = []
+            for pt in obs_points:
+                names.append(pt.name)
+                lat.append(pt.lat)
+                lon.append(pt.lon)
+
+            # create GeoDataFrame from obs_points in site file
+            df = pd.DataFrame({"name": names})
+            gdf = gpd.GeoDataFrame(
+                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            )
+
+            # Add locations to SFINCS file
+            self.sf_model.setup_observation_points(locations=gdf, merge=False)
+
     def read_zsmax(self):
         """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
+
+    def read_zs_points(self):
+        """Read water level (zs) timeseries at observation points
+        Names are allocated from the site.toml.
+        See also add_obs_points() above
+        """
+
+        self.sf_model.read_results()
+        da = self.sf_model.results["point_zs"]
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+
+        # get station names from site.toml
+        if self.site.attrs.obs_point is not None:
+            names = []
+            descriptions = []
+            obs_points = self.site.attrs.obs_point
+            for pt in obs_points:
+                names.append(pt.name)
+                descriptions.append(pt.description)
+
+        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
+        gdf = gpd.GeoDataFrame(
+            pt_df,
+            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
+            crs=self.sf_model.crs,
+        )
+        return df, gdf
 
     def get_mask(self):
         """Get mask with inactive cells from model"""
