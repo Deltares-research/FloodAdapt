@@ -18,7 +18,7 @@ class Pump(HazardMeasure, IPump):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
 
     attrs: PumpModel
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IPump:
@@ -34,7 +34,7 @@ class Pump(HazardMeasure, IPump):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IPump:
         """create Floodwall from object, e.g. when initialized from GUI"""
 
