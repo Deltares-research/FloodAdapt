@@ -15,7 +15,7 @@ class Elevate(ImpactMeasure, IElevate):
     """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height"""
 
     attrs: ElevateModel
-    database_input_path: Union[str, os.PathLike, None]
+    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IElevate:
@@ -31,7 +31,7 @@ class Elevate(ImpactMeasure, IElevate):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
     ) -> IElevate:
         """create Elevate from object, e.g. when initialized from GUI"""
 
