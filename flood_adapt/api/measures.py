@@ -54,7 +54,7 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase = None)
         return FloodProof.load_dict(attrs, database_path)
     elif type in ["floodwall", "thin_dam", "levee"]:
         return FloodWall.load_dict(attrs, database_path)
-    elif type == "pump":
+    elif type in ["pump", "culvert"]:
         return Pump.load_dict(attrs, database_path)
     elif type in ["water_square", "total_storage", "greening"]:
         return GreenInfrastructure.load_dict(attrs, database_path)
