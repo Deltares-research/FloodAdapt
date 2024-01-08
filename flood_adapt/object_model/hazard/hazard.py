@@ -7,6 +7,8 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import xarray as xr
 from numpy import matlib
 
@@ -14,6 +16,9 @@ from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.eventset import EventSet
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
@@ -309,18 +314,18 @@ class Hazard:
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
-    def run_sfincs_offshore(self):
+    def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
 
         sfincs_exec = (
             self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
         )
 
-        for simulation_path in self.simulation_paths_offshore:
-            with cd(simulation_path):
-                sfincs_log = "sfincs.log"
-                with open(sfincs_log, "w") as log_handler:
-                    subprocess.run(sfincs_exec, stdout=log_handler)
+        simulation_path = self.simulation_paths_offshore[ii]
+        with cd(simulation_path):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
     def preprocess_sfincs(
         self,
@@ -383,7 +388,7 @@ class Hazard:
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
                 logging.info("Running offshore model...")
-                self.run_sfincs_offshore()
+                self.run_sfincs_offshore(ii=ii)
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
@@ -564,6 +569,10 @@ class Hazard:
                             measure_path=measure_path,
                         )
 
+            # add observation points from site.toml
+            model.add_obs_points()
+            logging.info("Adding observation points to the overland flood model...")
+
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
@@ -588,7 +597,15 @@ class Hazard:
         path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        event_dir = self.database_input_path / "events" / self.event.attrs.name
+        if self.event_mode == Mode.risk:
+            event_dir = (
+                self.database_input_path
+                / "events"
+                / self.event_set.attrs.name
+                / self.event.attrs.name
+            )
+        else:
+            event_dir = self.database_input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
@@ -621,20 +638,31 @@ class Hazard:
         elif self.event.attrs.template == "Historical_hurricane":
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
+            if event_dir.joinpath(spw_name).is_file():
+                logging.info("Using existing hurricane meteo data.")
+                # copy spw file from event directory to offshore model folder
+                shutil.copy2(
+                    event_dir.joinpath(spw_name),
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                )
+            else:
+                logging.info(
+                    "Generating meteo input to the model from the hurricane track..."
+                )
+                offshore_model.add_spw_forcing(
+                    historical_hurricane=self.event,
+                    database_path=base_path,
+                    model_dir=self.simulation_paths_offshore[ii],
+                )
+                # save created spw file in the event directory
+                shutil.copy2(
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    event_dir.joinpath(spw_name),
+                )
+                logging.info("Finished generating meteo data from hurricane track.")
 
         # write sfincs model in output destination
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
-
-        if self.event.attrs.template == "Historical_hurricane":
-            logging.info(
-                "Generating meteo input to the model from the hurricane track..."
-            )
-            offshore_model.add_spw_forcing(
-                historical_hurricane=self.event,
-                database_path=base_path,
-                model_dir=self.simulation_paths_offshore[ii],
-            )
-            logging.info("Finished generating meteo data from hurricane track.")
 
         del offshore_model
 
@@ -653,6 +681,7 @@ class Hazard:
         if self._mode == Mode.single_event:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
+            self.plot_wl_obs()
             # Copy SFINCS output map to main folder
             # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
             # shutil.copyfile(
@@ -662,6 +691,104 @@ class Hazard:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
+
+    def plot_wl_obs(self):
+        """Plot water levels at SFINCS observation points as html
+        Only for single event scenarios
+        """
+        for sim_path in self.simulation_paths:
+            # read SFINCS model
+            model = SfincsAdapter(model_root=sim_path, site=self.site)
+
+            df, gdf = model.read_zs_points()
+
+            del model
+
+            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
+
+            conversion_factor = UnitfulLength(
+                value=1.0, units=UnitTypesLength("meters")
+            ).convert(gui_units)
+
+            for ii, col in enumerate(df.columns):
+                # Plot actual thing
+                fig = px.line(
+                    df[col] * conversion_factor
+                    + (
+                        self.site.attrs.water_level.localdatum.height.convert(gui_units)
+                        - self.site.attrs.water_level.msl.height.convert(gui_units)
+                    ),  # convert model output to MSL
+                    +self.site.attrs.water_level.msl.height.convert(gui_units),
+                )
+
+                # plot reference water levels
+                fig.add_hline(
+                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#000000",
+                    annotation_text="MSL",
+                    annotation_position="bottom right",
+                )
+                if self.site.attrs.water_level.other:
+                    for wl_ref in self.site.attrs.water_level.other:
+                        fig.add_hline(
+                            y=wl_ref.height.convert(gui_units),
+                            line_dash="dash",
+                            line_color="#3ec97c",
+                            annotation_text=wl_ref.name,
+                            annotation_position="bottom right",
+                        )
+
+                fig.update_layout(
+                    autosize=False,
+                    height=100 * 2,
+                    width=280 * 2,
+                    margin={"r": 0, "l": 0, "b": 0, "t": 20},
+                    font={"size": 10, "color": "black", "family": "Arial"},
+                    title={
+                        "text": gdf.iloc[ii]["Description"],
+                        "font": {"size": 12, "color": "black", "family": "Arial"},
+                        "x": 0.5,
+                        "xanchor": "center",
+                    },
+                    xaxis_title="Time",
+                    yaxis_title=f"Water level [{gui_units}]",
+                    yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    showlegend=False,
+                )
+
+                # check if event is historic
+                if self.event.attrs.timing == "historical":
+                    # check if observation station has a tide gauge ID
+                    # if yes to both download tide gauge data and add to plot
+                    if isinstance(self.site.attrs.obs_point[ii].ID, int):
+                        df_gauge = HistoricalNearshore.download_wl_data(
+                            station_id=self.site.attrs.obs_point[ii].ID,
+                            start_time_str=self.event.attrs.time.start_time,
+                            stop_time_str=self.event.attrs.time.end_time,
+                            units=UnitTypesLength(gui_units),
+                        )
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=pd.DatetimeIndex(df_gauge.index),
+                                y=df_gauge[1]
+                                + self.site.attrs.water_level.msl.height.convert(
+                                    gui_units
+                                ),
+                                line_color="#ea6404",
+                            )
+                        )
+                        fig["data"][0]["name"] = "model"
+                        fig["data"][1]["name"] = "measurement"
+                        fig.update_layout(showlegend=True)
+
+                # write html to results folder
+                station_name = gdf.iloc[ii]["Name"]
+                fig.write_html(
+                    sim_path.parent.parent.joinpath(f"{station_name}_timeseries.html")
+                )
 
     def write_floodmap_geotiff(self):
         # Load overland sfincs model

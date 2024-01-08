@@ -171,7 +171,9 @@ class RiverModel(BaseModel):
 
 
 class Obs_stationModel(BaseModel):
-    """class describing the accepted input for the variable obs_station in Site"""
+    """class describing the accepted input for the variable obs_station in Site.
+    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition
+    """
 
     name: Union[int, str]
     description: Optional[str] = ""
@@ -182,6 +184,20 @@ class Obs_stationModel(BaseModel):
     mhhw: Optional[UnitfulLength]
     localdatum: Optional[UnitfulLength]
     msl: Optional[UnitfulLength]
+
+
+class Obs_pointModel(BaseModel):
+    """class describing the accepted input for the variable obs_point in Site.
+    obs_points is used to define output locations in the hazard model, which will be plotted in the user interface
+    """
+
+    name: Union[int, str]
+    description: Optional[str] = ""
+    ID: Optional[
+        int
+    ] = None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
+    lat: float
+    lon: float
 
 
 class BenefitsModel(BaseModel):
@@ -225,6 +241,7 @@ class SiteModel(BaseModel):
     fiat: FiatModel
     river: Optional[list[RiverModel]]
     obs_station: Optional[Obs_stationModel]
+    obs_point: Optional[list[Obs_pointModel]]
     benefits: BenefitsModel
     scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
     standard_objects: Optional[

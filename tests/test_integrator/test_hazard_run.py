@@ -647,3 +647,38 @@ def test_no_rivers(cleanup_database: None):
     assert not dis_file.is_file()
     assert not src_file.is_file()
     assert bnd_file.is_file()  # To check if the model has run
+
+
+def test_plot_wl_obs(cleanup_database: None):
+    test_toml = (
+        test_database
+        / "charleston"
+        / "input"
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml"
+    )
+
+    assert test_toml.is_file()
+
+    # Use event template to get the associated Event child class
+    test_scenario = Scenario.load_file(test_toml)
+    test_scenario.init_object_model()
+
+    # Preprocess the models
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    test_scenario.direct_impacts.hazard.run_models()
+    test_scenario.direct_impacts.hazard.plot_wl_obs()
+
+    # Check for the correct output
+    output_folder = (
+        test_database
+        / "charleston"
+        / "output"
+        / "Scenarios"
+        / "current_extreme12ft_no_measures"
+        / "Flooding"
+    )
+    html_file = output_folder / "8665530_timeseries.html"
+
+    assert html_file.is_file()
