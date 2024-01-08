@@ -714,7 +714,9 @@ class Hazard:
                 # Plot actual thing
                 fig = px.line(
                     df[col] * conversion_factor
-                    + self.site.attrs.water_level.localdatum.height.convert(gui_units) # convert to reference datum for plotting
+                    + self.site.attrs.water_level.localdatum.height.convert(
+                        gui_units
+                    )  # convert to reference datum for plotting
                 )
 
                 # plot reference water levels
