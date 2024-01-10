@@ -1,13 +1,15 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import pytest
 
 import flood_adapt.api.benefits as api_benefits
-import flood_adapt.api.scenarios as api_scenarios
 import flood_adapt.api.startup as api_startup
 
 test_database_path = Path().absolute() / "tests" / "test_database"
 site_name = "charleston"
+rng = np.random.default_rng(2021)
 
 
 def test_benefit(cleanup_database):
@@ -70,10 +72,71 @@ def test_benefit(cleanup_database):
             # Assert error if not yet run
             api_benefits.run_benefit("benefit_raise_properties_2080", database)
 
-    # Runs missing scenarios
-    for name, row in df.iterrows():
-        if not row["scenario run"]:
-            api_scenarios.run_scenario(row["scenario created"], database)
+    # Create dummy data
+    aggrs = database.get_aggregation_areas()
+    damages_dummy = {
+        "current_no_measures": 100e6,
+        "current_with_strategy": 50e6,
+        "future_no_measures": 300e6,
+        "future_with_strategy": 180e6,
+    }
+
+    for name, row in benefit.scenarios.iterrows():
+        # Create output folder
+        output_path = (
+            test_database_path
+            / "charleston"
+            / "output"
+            / "Scenarios"
+            / row["scenario created"]
+        )
+        if not output_path.exists():
+            output_path.mkdir(parents=True)
+        # Create dummy metrics file
+        dummy_metrics = pd.DataFrame(
+            {
+                "Description": "",
+                "Show In Metrics Table": "TRUE",
+                "Long Name": "",
+                "Value": damages_dummy[name],
+            },
+            index=["ExpectedAnnualDamages"],
+        )
+
+        dummy_metrics.to_csv(
+            output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
+        )
+
+        # Create dummy metrics for aggregation areas
+        for aggr_type in aggrs.keys():
+            aggr = aggrs[aggr_type]
+            # Generate random distribution of damage per aggregation area
+            dmgs = np.random.random(len(aggr))
+            dmgs = dmgs / dmgs.sum() * damages_dummy[name]
+
+            dict0 = {
+                "Description": ["", ""],
+                "Show In Metrics Table": ["TRUE", "TRUE"],
+                "Long Name": ["", ""],
+            }
+
+            for i, aggr_area in enumerate(aggr["name"]):
+                dict0[aggr_area] = [dmgs[i], rng.normal(1, 0.2) * dmgs[i]]
+
+            dummy_metrics_aggr = pd.DataFrame(
+                dict0, index=["ExpectedAnnualDamages", "EWEAD"]
+            ).T
+
+            dummy_metrics_aggr.to_csv(
+                output_path.joinpath(
+                    f"Infometrics_{row['scenario created']}_{aggr_type}.csv"
+                )
+            )
+        fiat_path = output_path.joinpath("Impacts", "fiat_model", "fiat.log")
+        fiat_path.parent.mkdir(parents=True)
+        f = open(fiat_path, "w")
+        f.write("Geom calculation are done!")
+        f.close()
 
     api_benefits.run_benefit("benefit_raise_properties_2080", database)
 

@@ -12,8 +12,10 @@ file = "./vulnerability/vulnerability_curves.csv"
 step_size = 0.1
 unit = "feet"
 
+[exposure.csv]
+file =  "./exposure/exposure.csv"
+
 [exposure.geom]
-csv = "./exposure/exposure.csv"
 crs = "EPSG:4326"
 file1 = "./exposure/exposure.gpkg"
 file2 = "./exposure/exposure1.gpkg"

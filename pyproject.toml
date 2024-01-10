@@ -34,9 +34,10 @@ dependencies = [
     "cht_tide",
     "cht_meteo",
     "pyogrio",
+    "geojson",
     "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
     "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume",
-    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@env_fix",
+    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git@release",
     "fiat_toolbox @ git+https://github.com/Deltares/fiat_toolbox.git"
 ]
 dynamic = ["version"]

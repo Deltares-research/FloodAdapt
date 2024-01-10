@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs import SfincsModel
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -68,9 +69,18 @@ class FiatAdapter:
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
 
-        # Add the hazard data to a data catalog with the unit conversion from meters to feet
+        # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
+
+        # Read SFINCS map in a hydromt compatible format
+        if not is_risk:
+            sfincs_root = map_fn[0].parent
+            sfincs_model = SfincsModel(sfincs_root, mode="r")
+            sfincs_model.read_results()
+            da = sfincs_model.results["zsmax"]
+            da = da.isel(timemax=0).drop("timemax")
+            map_fn = [da]
 
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
@@ -193,6 +203,10 @@ class FiatAdapter:
         ground_floor_height: float,
         elevation_type: str,
         area_path: str,
+        ground_elevation: Union[None, str, Path] = None,
+        aggregation_areas: Union[List[str], List[Path], str, Path] = None,
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
     ):
         """Implement population growth in new development area.
 
@@ -223,6 +237,10 @@ class FiatAdapter:
                 elevation_reference="geom",
                 path_ref=self.bfe["geom"],
                 attr_ref=self.bfe["name"],
+                ground_elevation=ground_elevation,
+                aggregation_area_fn=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
         elif elevation_type == "datum":
             # Use hydromt function
@@ -233,6 +251,10 @@ class FiatAdapter:
                 damage_types=["Structure", "Content"],
                 vulnerability=self.fiat_model.vulnerability,
                 elevation_reference="datum",
+                ground_elevation=ground_elevation,
+                aggregation_area_fn=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")

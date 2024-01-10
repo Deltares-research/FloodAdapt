@@ -1,10 +1,10 @@
 [Charts]
     [Charts.Flooded]
         Name = "Flooded"
-        Image = "https://openclipart.org/image/800px/217511"
+        Image = "{image_path}/person.png"
     [Charts.Displaced]
         Name = "Displaced"
-        Image = "https://openclipart.org/image/800px/229840"
+        Image = "{image_path}/person.png"
 
 [Categories]
     [Categories.LowVulnerability]
@@ -35,11 +35,21 @@
         Query = "DisplacedHighVulnerability"
         Chart = "Displaced"
         Category = "HighVulnerability"
-		
+
 [Other]
-    image_scale = 0.15
-    numbers_font = 20
-    title = "People"
-    title_font = 30
-    subtitle_font = 25
-    legend_font = 20
+    [Other.Plot]
+        image_scale = 0.15
+        numbers_font = 20
+        height = 350
+        width = 600
+    [Other.Title]
+        text = "People"
+        font = 30
+    [Other.Subtitle]
+        font = 25
+    [Other.Legend]
+        font = 20
+    [Other.Info]
+        text="Hi im the info for the people chart"
+        image="https://openclipart.org/image/800px/302413"
+        scale=0.1

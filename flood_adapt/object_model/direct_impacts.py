@@ -74,8 +74,8 @@ class DirectImpacts:
         """
         log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():
-            with open(log_file) as f:
-                if "All done!" in f.read():
+            with open(log_file, "r", encoding="cp1252") as f:
+                if "Geom calculation are done!" in f.read():
                     return True
                 else:
                     return False
@@ -193,12 +193,33 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
+            dem = (
+                self.database_input_path.parent
+                / "static"
+                / "dem"
+                / self.site_info.attrs.dem.filename
+            )
+            aggregation_areas = [
+                self.database_input_path.parent / "static" / "site" / aggr.file
+                for aggr in self.site_info.attrs.fiat.aggregation
+            ]
+            attribute_names = [
+                aggr.field_name for aggr in self.site_info.attrs.fiat.aggregation
+            ]
+            label_names = [
+                f"Aggregation Label: {aggr.name}"
+                for aggr in self.site_info.attrs.fiat.aggregation
+            ]
 
             fa.apply_population_growth_new(
                 population_growth=self.socio_economic_change.attrs.population_growth_new,
                 ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
                 elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
                 area_path=area_path,
+                ground_elevation=dem,
+                aggregation_areas=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
 
         # Last apply population growth to existing objects
