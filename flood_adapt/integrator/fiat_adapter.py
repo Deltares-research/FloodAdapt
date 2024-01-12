@@ -4,8 +4,8 @@ from typing import List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -76,11 +76,11 @@ class FiatAdapter:
         # Read SFINCS map in a hydromt compatible format
         if not is_risk:
             sfincs_root = map_fn[0].parent
-            sfincs_model = SfincsModel(sfincs_root, mode="r")
-            sfincs_model.read_results()
-            da = sfincs_model.results["zsmax"]
-            da = da.isel(timemax=0).drop("timemax").fillna(0)
+            model = SfincsAdapter(model_root=sfincs_root, site=self.site)
+            da = model.read_zsmax()
+            da = da.fillna(0)
             map_fn = [da]
+            del model
 
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
