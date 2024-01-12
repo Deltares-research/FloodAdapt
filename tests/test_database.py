@@ -68,22 +68,15 @@ def test_projection_plot_slr(cleanup_database):
 
 def test_has_hazard_run(cleanup_database):
     dbs = Database(test_database_path, test_site_name)
-    scenario_name_1 = "current_extreme12ft_no_measures"
-    # scenario_name_2 = "current_extreme12ft_strategy_impact_comb"
-
-    scenario1 = dbs.get_scenario(scenario_name_1)
+    scenario_name = "current_extreme12ft_no_measures"
+    output_path = dbs.output_path.joinpath("Scenarios", scenario_name)
+    if output_path.exists():
+        shutil.rmtree(output_path)
+    scenario1 = dbs.get_scenario(scenario_name)
     assert scenario1.direct_impacts.hazard.has_run is False
     assert scenario1.direct_impacts.has_run is False
-    dbs.run_scenario(scenario_name_1)
-    scenario1 = dbs.get_scenario(scenario_name_1)
+    dbs.run_scenario(scenario_name)
+    scenario1 = dbs.get_scenario(scenario_name)
     assert scenario1.direct_impacts.hazard.has_run is True
     assert scenario1.direct_impacts.has_run is True
 
-    # scenario2 = dbs.get_scenario(scenario_name_2)
-    # assert scenario2.direct_impacts.hazard.has_run is False
-    # assert scenario2.direct_impacts.has_run is False
-    # dbs.run_scenario(scenario_name_2)
-
-    # scenario2 = dbs.get_scenario(scenario_name_2)
-    # assert scenario2.direct_impacts.hazard.has_run is True
-    # assert scenario2.direct_impacts.has_run is True
