@@ -79,4 +79,3 @@ def test_has_hazard_run(cleanup_database):
     scenario1 = dbs.get_scenario(scenario_name)
     assert scenario1.direct_impacts.hazard.has_run is True
     assert scenario1.direct_impacts.has_run is True
-
