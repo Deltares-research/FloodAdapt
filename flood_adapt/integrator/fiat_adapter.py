@@ -81,6 +81,7 @@ class FiatAdapter:
             da = sfincs_model.results["zsmax"]
             da = da.isel(timemax=0).drop("timemax").fillna(0)
             map_fn = [da]
+            del sfincs_model
 
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
