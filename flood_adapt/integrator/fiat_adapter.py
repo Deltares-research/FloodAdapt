@@ -4,7 +4,6 @@ from typing import List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
