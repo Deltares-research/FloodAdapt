@@ -14,6 +14,10 @@ Recent developments of the decision-support system include (1) simplifying and p
 
 FloodAdapt is currently in an intensive development stage. Independent usage of the repository will be challenging prior to end-of-year 2024. FloodAdapt documentation will be expanded on throughout 2024.  
 
+# Joining the team
+
+Whenever someone joins the team, a few steps needs to be taken before you can access the full list of repositories that we use. First of all, you need to be part of the Deltares and Deltares-research organisations. This access needs to be granted by one of the enterprise owners. When this access is granted, you can request to join the FloodAdaptAdmins team if you are a part of the core team, the FloodAdaptDevelopers if you'll sporadically be working on Flood Adapt and the FloodAdaptUsers team if you are testing the application.
+
 # Contributing
 
 
