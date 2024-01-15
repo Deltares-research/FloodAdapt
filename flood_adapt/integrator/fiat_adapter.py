@@ -79,6 +79,8 @@ class FiatAdapter:
             model = SfincsAdapter(model_root=sfincs_root, site=self.site)
             da = model.read_zsmax()
             da = da.fillna(0)
+            # TODO the units should come from SfincsAdapter
+            da.attrs["units"] = "m"
             map_fn = [da]
             del model
 
