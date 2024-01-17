@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from flood_adapt.api.startup import read_database
+
 
 def get_file_structure(path: str) -> list:
     """Get the file structure of a directory and store it in a list"""
@@ -31,17 +33,24 @@ def remove_files_and_folders(path, file_structure):
 
 
 @pytest.fixture
-def cleanup_database():
-    """Cleanup the database after each test"""
+def test_db():
+    """This fixture is used for testing in general to setup the test database,
+    perform the test, and clean the database after each test.
+    It is used by other fixtures to set up and clean the test_database"""
 
     # Get the database file structure before the test
-    test_database_path = Path().absolute() / "tests" / "test_database"
-    test_site_name = "charleston"
-    database_path = str(test_database_path.joinpath(test_site_name))
+    rootPath = Path().absolute().parent / "Database"  # the path to the database
+    site_name = "charleston_test"  # the name of the test site
+
+    database_path = str(rootPath.joinpath(site_name))
     file_structure = get_file_structure(database_path)
+    dbs = read_database(rootPath, site_name)
+
+    # NOTE: to access the contents of this function in the test,
+    #  the first line of your test needs to initialize the yielded variables:
+    #   'dbs, folders = test_db'
 
     # Run the test
-    yield
-
+    yield dbs
     # Remove all files and folders that were not present before the test
     remove_files_and_folders(database_path, file_structure)

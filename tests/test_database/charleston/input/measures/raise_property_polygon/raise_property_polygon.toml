@@ -1,9 +1,0 @@
-name = "raise_property_polygon"
-description = "raise_property_polygon"
-type = "elevate_properties"
-polygon_file = "raise_property_polygon.geojson"
-elevation.value = 1
-elevation.units = "feet"
-elevation.type = "floodmap"
-selection_type = "polygon"
-property_type = "RES"
