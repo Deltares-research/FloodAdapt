@@ -34,7 +34,8 @@ class Benefit(IBenefit):
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()
-        self.get_output()
+        if self.has_run:
+            self.get_output()
         # Get site config
         self.site_toml_path = (
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
