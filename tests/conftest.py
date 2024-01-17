@@ -1,8 +1,10 @@
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
+import toml
 
 from flood_adapt.api.startup import read_database
 
@@ -32,23 +34,31 @@ def remove_files_and_folders(path, file_structure):
                 print(f"PermissionError: {root}")
 
 
+@pytest.fixture(scope="session")  # This fixture is only run once per session
+def updateSVN():
+    database_path = toml.load("database.toml")["database_path"]
+    batch_file_path = Path().absolute() / "tests" / "updateSVN.bat"
+    subprocess.run([str(batch_file_path), database_path], shell=True)
+    print("Updated SVN\n\n\n")
+
+
 @pytest.fixture
-def test_db():
+def test_db(updateSVN):
     """This fixture is used for testing in general to setup the test database,
     perform the test, and clean the database after each test.
     It is used by other fixtures to set up and clean the test_database"""
 
     # Get the database file structure before the test
-    rootPath = Path().absolute().parent / "Database"  # the path to the database
+    database_root = Path(toml.load("database.toml")["database_root"])
     site_name = "charleston_test"  # the name of the test site
 
-    database_path = str(rootPath.joinpath(site_name))
+    database_path = database_root / site_name
     file_structure = get_file_structure(database_path)
-    dbs = read_database(rootPath, site_name)
+    dbs = read_database(database_path, site_name)
 
     # NOTE: to access the contents of this function in the test,
     #  the first line of your test needs to initialize the yielded variables:
-    #   'dbs, folders = test_db'
+    #   'dbs = test_db'
 
     # Run the test
     yield dbs
