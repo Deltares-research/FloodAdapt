@@ -1,3 +1,0 @@
-name = "strategy_comb"
-description = "strategy_comb"
-measures = [ "seawall", "raise_property_aggregation_area", "buyout", "floodproof"]

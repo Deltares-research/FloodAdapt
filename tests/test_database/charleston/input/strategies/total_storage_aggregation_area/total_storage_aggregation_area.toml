@@ -1,5 +1,0 @@
-name = "total_storage_aggregation_area"
-description = ""
-measures = [
-    "total_storage_aggregation_area"
-]
