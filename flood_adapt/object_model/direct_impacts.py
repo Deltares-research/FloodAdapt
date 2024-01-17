@@ -259,9 +259,10 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        fiat_exec = str(
-            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
+        fiat_exec = (
+            Path(tomli.load("database.toml")["system_folder"]) / "fiat" / "fiat.exe"
         )
+
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(

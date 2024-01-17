@@ -1,2 +1,5 @@
 # this should be the folder containing all of the case folders
 database_root="C:/Users/blom_lk/dev/Database"
+
+# this should be the folder containing the folders 'sfincs' and 'fiat' from the SVN
+system_folder="C:/Users/blom_lk/dev/Database/system"

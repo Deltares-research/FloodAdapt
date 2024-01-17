@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import tomli
 import xarray as xr
 from numpy import matlib
 
@@ -297,10 +298,10 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
-
         sfincs_exec = (
-            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
+            Path(tomli.load("database.toml")["system_folder"]) / "sfincs" / "sfincs.exe"
         )
+
         # results_dir = self.database_input_path.parent.joinpath(
         #     "output", "results", self.name
         # )
@@ -318,7 +319,7 @@ class Hazard:
         # Run offshore model(s)
 
         sfincs_exec = (
-            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
+            Path(tomli.load("database.toml")["system_folder"]) / "sfincs" / "sfincs.exe"
         )
 
         simulation_path = self.simulation_paths_offshore[ii]
