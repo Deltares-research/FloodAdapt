@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-import toml
+import tomli
 
 from flood_adapt.api.startup import read_database
 
@@ -36,7 +36,7 @@ def remove_files_and_folders(path, file_structure):
 
 @pytest.fixture(scope="session")  # This fixture is only run once per session
 def updatedSVN():
-    database_root = toml.load("database.toml")["database_root"]
+    database_root = tomli.load("database.toml")["database_root"]
     batch_file_path = Path().absolute() / "tests" / "updateSVN.bat"
     subprocess.run([str(batch_file_path), database_root], shell=True)
     print("Updated SVN\n\n\n")
