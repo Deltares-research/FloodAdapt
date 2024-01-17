@@ -180,6 +180,7 @@ def test_save_to_toml_hurricane():
     test_synthetic.save(test_save_toml)
     test_save_toml.unlink()  # added this to delete the file afterwards
 
+
 @pytest.mark.skip(reason="This right now takes ages to run! Check why!")
 def test_download_meteo(cleanup_database):
     event_toml = (
