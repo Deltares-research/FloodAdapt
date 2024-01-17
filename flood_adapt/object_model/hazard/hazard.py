@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import tomli
 import xarray as xr
 from numpy import matlib
 
+from flood_adapt import __system_folder__
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -298,9 +298,7 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
-        sfincs_exec = (
-            Path(tomli.load("database.toml")["system_folder"]) / "sfincs" / "sfincs.exe"
-        )
+        sfincs_exec = __system_folder__ / "sfincs" / "sfincs.exe"
 
         # results_dir = self.database_input_path.parent.joinpath(
         #     "output", "results", self.name
@@ -318,9 +316,7 @@ class Hazard:
     def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
 
-        sfincs_exec = (
-            Path(tomli.load("database.toml")["system_folder"]) / "sfincs" / "sfincs.exe"
-        )
+        sfincs_exec = __system_folder__ / "sfincs" / "sfincs.exe"
 
         simulation_path = self.simulation_paths_offshore[ii]
         with cd(simulation_path):

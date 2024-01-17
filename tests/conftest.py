@@ -44,7 +44,27 @@ def updatedSVN():
 
 
 @pytest.fixture
-def test_db(updatedSVN):
+def cleanup_database(updatedSVN):
+    """This fixture is used for testing in general to setup the test database,
+    perform the test, and clean the database after each test.
+    It is used by other fixtures to set up and clean the test_database"""
+
+    # Get the database file structure before the test
+    database_root = updatedSVN
+    site_name = "charleston_test"  # the name of the test site
+
+    database_path = database_root / site_name
+    file_structure = get_file_structure(database_path)
+
+    # Run the test
+    yield
+
+    # Remove all files and folders that were not present before the test
+    remove_files_and_folders(database_path, file_structure)
+
+
+@pytest.fixture
+def test_db(updatedSVN, cleanup_database):
     """This fixture is used for testing in general to setup the test database,
     perform the test, and clean the database after each test.
     It is used by other fixtures to set up and clean the test_database"""
