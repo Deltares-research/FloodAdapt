@@ -35,21 +35,22 @@ def remove_files_and_folders(path, file_structure):
 
 
 @pytest.fixture(scope="session")  # This fixture is only run once per session
-def updateSVN():
-    database_path = toml.load("database.toml")["database_path"]
+def updatedSVN():
+    database_root = toml.load("database.toml")["database_root"]
     batch_file_path = Path().absolute() / "tests" / "updateSVN.bat"
-    subprocess.run([str(batch_file_path), database_path], shell=True)
+    subprocess.run([str(batch_file_path), database_root], shell=True)
     print("Updated SVN\n\n\n")
+    return database_root
 
 
 @pytest.fixture
-def test_db(updateSVN):
+def test_db(updatedSVN):
     """This fixture is used for testing in general to setup the test database,
     perform the test, and clean the database after each test.
     It is used by other fixtures to set up and clean the test_database"""
 
     # Get the database file structure before the test
-    database_root = Path(toml.load("database.toml")["database_root"])
+    database_root = updatedSVN
     site_name = "charleston_test"  # the name of the test site
 
     database_path = database_root / site_name
