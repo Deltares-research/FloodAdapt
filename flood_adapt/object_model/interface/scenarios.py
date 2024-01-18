@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class ScenarioModel(BaseModel):
@@ -10,9 +10,19 @@ class ScenarioModel(BaseModel):
 
     name: str
     description: Optional[str] = ""
+    lock_count: int = 0
     event: str
     projection: str
     strategy: str
+
+    @validator("lock_count")	
+    def validate_lock_count(
+        cls, lock_count: int
+    ) -> int:
+        """Validate lock_count"""	
+        if lock_count < 0:    
+            raise ValueError("lock_count must be a positive integer")
+        return lock_count
 
 
 class IScenario(ABC):
