@@ -40,7 +40,7 @@ class DbsMeasure(DbsTemplate):
         dict[str, Any]
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
-        measures = self.get_object_list(object_type="measures")
+        measures = self._get_object_list()
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["description"] = [obj.attrs.description for obj in objects]
@@ -55,7 +55,7 @@ class DbsMeasure(DbsTemplate):
                 )
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
-                gdf = self.aggr_areas[obj.attrs.aggregation_area_type]
+                gdf = self._database.aggr_areas[obj.attrs.aggregation_area_type]
                 geometries.append(
                     gdf.loc[gdf["name"] == obj.attrs.aggregation_area_name, :]
                 )

@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -34,8 +34,18 @@ class SocioEconomicChangeModel(BaseModel):
 class ProjectionModel(BaseModel):
     name: str
     description: Optional[str] = ""
+    lock_count: int = 0
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
+
+    @validator("lock_count")	
+    def validate_lock_count(
+        cls, lock_count: int
+    ) -> int:
+        """Validate lock_count"""	
+        if lock_count < 0:    
+            raise ValueError("lock_count must be a positive integer")
+        return lock_count
 
 
 class IProjection(ABC):

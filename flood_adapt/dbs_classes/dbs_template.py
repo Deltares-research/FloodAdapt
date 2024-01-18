@@ -1,8 +1,9 @@
 import shutil
-from abc import ABC, abstractmethod
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Union
 
+from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
@@ -14,101 +15,21 @@ from flood_adapt.object_model.interface.strategies import IStrategy
 ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
 
-class AbstractDatabase(ABC):
-    def __init__(self):
-        """
-        Initialize any necessary attributes.
-        """
-        pass
-
-    @abstractmethod
-    def get(self, name: str) -> ObjectModel:
-        """
-        Retrieve data from the database.
-
-        Parameters:
-            name (str): The name of the data to retrieve.
-
-        Returns:
-            Any: The retrieved data.
-        """
-        pass
-
-    @abstractmethod
-    def list_objects(self) -> dict[str, Any]:
-        """
-        List data from the database.
-
-        Returns:
-            List[Any]: The listed data.
-        """
-        pass
-
-    @abstractmethod
-    def copy(self, old_name: str, new_name: str, new_description: str):
-        """
-        Copy data in the database.
-
-        Parameters:
-        ----------
-        old_name : str
-            name of the existing object
-        new_name : str
-            name of the new object
-        new_description : str
-            description of the new object
-        """
-        pass
-
-    @abstractmethod
-    def save(self, ojbect_model: ObjectModel):
-        """
-        Save data to the database.
-
-        Parameters
-        ----------
-        ojbect_model : ObjectModel
-            object to be saved in the database
-        """
-        pass
-
-    @abstractmethod
-    def edit(self, object_model: ObjectModel):
-        """
-        Edit data in the database.
-
-        Parameters
-        ----------
-        object : ObjectModel
-            object to be edited in the database
-        """
-        pass
-
-    @abstractmethod
-    def delete(self, name: str):
-        """
-        Delete data from the database.
-
-        Parameters
-        ----------
-        name : str
-            name of the object to be deleted
-        """
-        pass
-
-
-class DbsTemplate(AbstractDatabase):
+class DbsTemplate(AbstractDatabaseElement):
     _type = ""
     _folder_name = ""
     _object_model_class = None
 
     def __init__(self, database: IDatabase):
+        """
+        Initialize any necessary attributes.
+        """
         self.input_path = database.input_path
         self._path = self.input_path / self._folder_name
         self._database = database
 
     def get(self, name: str) -> ObjectModel:
-        """Returns an object of the type of the database.
+        """Returns an object of the type of the database with the given name.
 
         Parameters
         ----------
@@ -118,11 +39,115 @@ class DbsTemplate(AbstractDatabase):
         Returns
         -------
         ObjectModel
-            object of the type of the database
+            object of the type of the specified object model
         """
+        # Make the full path to the object
         full_path = self._path / name / f"{name}.toml"
+
+        # Check if the object exists
+        if not Path(full_path).is_file():
+            raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
+
+        # Load and return the object
         object_model = self._object_model_class.load_file(full_path)
         return object_model
+
+    def set_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
+        """Locks the element in the database to prevent other processes from accessing it. The object can be locked by 
+        providing either the model_object or the name. If both are provided, the model_object is used. An element can 
+        be locked multiple times. For example, if 2 scenario's are running that use the same event, it should be locked 
+        twice. The lock is only released when both scenario's are finished.
+
+        Parameters
+        ----------
+        model_object : ObjectModel, optional
+            The model_object to lock, by default None
+        name : str, optional
+            The name of the model_object to lock, by default None
+
+        Raises
+        ------
+        ValueError
+            Raise error if both model_object and name are None.
+        """
+        # If both model_object and name are None, raise error
+        if model_object is None and name is None:
+            raise ValueError("Either model_object or name must be provided.")
+
+        # If only name is provided, get the model_object
+        if model_object is None:
+            model_object = self.get(name)
+
+        # Set the lock and save the object
+        model_object.attrs.lock_count += 1
+        self.save(model_object, overwrite=True)
+
+    def release_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
+        """Releases the lock on the element in the database. The object can be unlocked by providing either the
+        model_object or the name. If both are provided, the model_object is used. An element can be locked multiple
+        times. For example, if 2 scenario's are running that use the same event, it should be locked twice. The lock
+        is only released when both scenario's are finished.
+
+        Parameters
+        ----------
+        model_object : ObjectModel, optional
+            The model_object to lock, by default None
+        name : str, optional
+            The name of the model_object to lock, by default None
+
+        Raises
+        ------
+        ValueError
+            Raise error if both model_object and name are None.
+        """
+        # If both model_object and name are None, raise error
+        if model_object is None and name is None:
+            raise ValueError("Either model_object or name must be provided.")
+
+        # If only name is provided, get the model_object
+        if model_object is None:
+            model_object = self.get(name)
+
+        # Check if the object is locked
+        if model_object.attrs.lock_count < 1:
+            raise ValueError(
+                f"'{model_object.attrs.name}' {self._type} is not locked and thus cannot be released."
+            )
+        
+        # Release the lock and save the object
+        model_object.attrs.lock_count -= 1
+        self.save(model_object, overwrite=True)
+
+    def is_locked(self, model_object: ObjectModel = None, name: str = None) -> bool:
+        """Checks if the element in the database is locked.
+
+        Parameters
+        ----------
+        model_object : ObjectModel, optional
+            The model_object to lock, by default None
+        name : str, optional
+            The name of the model_object to lock, by default None
+
+        Raises
+        ------
+        ValueError
+            Raise error if both model_object and name are None.
+
+        Returns
+        -------
+        bool
+            True if the element is locked, False otherwise.
+        """
+        # If both model_object and name are None, raise error
+        if model_object is None and name is None:
+            raise ValueError("Either model_object or name must be provided.")
+
+        # If only name is provided, get the model_object
+        if model_object is None:
+            model_object = self.get(name)
+
+        # Return whether the object is locked
+        return model_object.attrs.lock_count > 0
 
     def list_objects(self):
         """Returns a dictionary with info on the objects that currently
@@ -131,12 +156,21 @@ class DbsTemplate(AbstractDatabase):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'description', 'path' and 'last_modification_date' info
+            Includes 'name', 'description', 'path' and 'last_modification_date' info, as well as the objects themselves
         """
+        # Check if all objects exist
         object_list = self._get_object_list()
+        if not all(Path(path).is_file() for path in object_list["path"]):
+            raise ValueError(
+                f"Error in {self._type} database. Some {self._type} are missing from the database."
+            )
+
+        # Load all objects
         objects = [
             self._object_model_class.load_file(path) for path in object_list["path"]
         ]
+
+        # From the loaded objects, get the name and description and add them to the object_list
         object_list["name"] = [obj.attrs.name for obj in objects]
         object_list["description"] = [obj.attrs.description for obj in objects]
         object_list["objects"] = objects
@@ -154,12 +188,16 @@ class DbsTemplate(AbstractDatabase):
         new_description : str
             description of the new measure
         """
-        # First do a get
+        # Check if the provided old_name is valid
+        if old_name not in self.list_objects()["name"]:
+            raise ValueError(f"'{old_name}' {self._type} does not exist.")
+
+        # First do a get and change the name and description
         copy_object = self.get(old_name)
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
-        # Then a save
+        # Then a save. Checking whether the name is already in use is done in the save function
         self.save(copy_object)
 
         # Then save all the accompanied files
@@ -169,29 +207,37 @@ class DbsTemplate(AbstractDatabase):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
-    def save(self, ojbect_model: ObjectModel):
+    def save(self, object_model: ObjectModel, overwrite: bool = False):
         """Saves an object in the database.
 
         Parameters
         ----------
-        ojbect_model : ObjectModel
+        object_model : ObjectModel
             object to be saved in the database
+        overwrite : bool, optional
+            whether to overwrite the object if it already exists in the database, by default False
 
         Raises
         ------
         ValueError
             Raise error if name is already in use.
         """
+        # If you want to overwrite the object, and the object already exists, first delete it
+        if overwrite and object_model.attrs.name in self.list_objects()["name"]:
+            self.delete(object_model.attrs.name)
+
+        # If you don't want to overwrite, check if name is already in use
         names = self.list_objects()["name"]
-        if ojbect_model.attrs.name in names:
+        if not overwrite and object_model.attrs.name in names:
             raise ValueError(
-                f"'{ojbect_model.attrs.name}' name is already used by another {self._type}. Choose a different name"
+                f"'{object_model.attrs.name}' name is already used by another {self._type}. Choose a different name"
             )
-        else:
-            (self._path / ojbect_model.attrs.name).mkdir()
-            ojbect_model.save(
-                self._path / ojbect_model.attrs.name / f"{ojbect_model.attrs.name}.toml"
-            )
+
+        # Make the folder and save the object
+        (self._path / object_model.attrs.name).mkdir()
+        object_model.save(
+            self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
+        )
 
     def edit(self, object_model: ObjectModel):
         """Edits an already existing object in the database.
@@ -206,17 +252,16 @@ class DbsTemplate(AbstractDatabase):
         ValueError
             Raise error if name is already in use.
         """
-        name = object_model.attrs.name
-        # Check if it is possible to delete the object. This then also covers checking whether the
-        # object is already used in a higher level object. If this is the case, it cannot be deleted.
-        try:
-            self.delete(name)
-        except ValueError as e:
-            # If not, raise error
-            raise ValueError(e)
-        else:
-            # If correctly deleted, save the object
-            self.save(object_model)
+        # Check if the object exists
+        if object_model.attrs.name not in self.list_objects()["name"]:
+            raise ValueError(
+                f"'{object_model.attrs.name}' {self._type} does not exist. You cannot edit an object that does not exist."
+            )
+
+        # Check if it is possible to delete the object by saving with overwrite. This then
+        # also covers checking whether the object is a standard object, is already used in
+        # a higher level object of is locked. If any of these are the case, it cannot be deleted.
+        self.save(object_model, overwrite=True)
 
     def delete(self, name: str):
         """Deletes an already existing object in the database.
@@ -237,6 +282,12 @@ class DbsTemplate(AbstractDatabase):
 
         # Check if object is used in a higher level object
         used_in = self._check_higher_level_usage(name)
+
+        # Check if the object is locked by another process
+        if self.is_locked(name=name):
+            raise ValueError(
+                f"'{name}' {self._type} is locked by another process and cannot be deleted."
+            )
 
         # If measure is used in a strategy, raise error
         if used_in:
@@ -276,7 +327,7 @@ class DbsTemplate(AbstractDatabase):
         # level object. By default, return an empty list
         return []
 
-    def _get_object_list(self) -> dict[str, Any]:
+    def _get_object_list(self) -> dict[Path, datetime]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
         and last modification dates that exist in the database.
 
@@ -286,7 +337,7 @@ class DbsTemplate(AbstractDatabase):
             Includes 'path' and 'last_modification_date' info
         """
         paths = [
-            path / f"{path.name}.toml"
+            Path(path / f"{path.name}.toml")
             for path in list((self.input_path / self._folder_name).iterdir())
         ]
         last_modification_date = [

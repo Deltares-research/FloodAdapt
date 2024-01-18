@@ -10,19 +10,25 @@ class DbsBenefit(DbsTemplate):
     _folder_name = "benefits"
     _object_model_class = Benefit
 
-    def save(self, benefit: IBenefit):
+    def save(self, benefit: IBenefit, overwrite: bool = False):
         """Saves a benefit object in the database.
 
         Parameters
         ----------
         measure : IBenefit
             object of scenario type
+        overwrite : bool, optional
+            whether to overwrite existing benefit with same name, by default False
 
         Raises
         ------
         ValueError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
+        # If overwrite is True, delete existing benefit with same name
+        if overwrite:
+            self.delete(benefit.attrs.name)
+        
         names = self.list_objects()["name"]
         if benefit.attrs.name in names:
             raise ValueError(
@@ -49,6 +55,15 @@ class DbsBenefit(DbsTemplate):
         ValueError
             Raise error if benefit has already model output
         """
+
+        # Check if it is possible to delete the benefit. This then also covers checking whether the
+        # benefit is locked. If this is the case, it cannot be deleted.
+        if self.is_locked(name=name):
+            raise ValueError(
+                f"'{name}' {self._type} is locked by another process and cannot be deleted."
+            )
+        
+        # Delete benefit
         benefit_path = self._path / name
         benefit = Benefit.load_file(benefit_path / f"{name}.toml")
         shutil.rmtree(benefit_path, ignore_errors=True)

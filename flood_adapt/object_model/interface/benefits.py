@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class CurrentSituationModel(BaseModel):
@@ -16,6 +16,7 @@ class BenefitModel(BaseModel):
 
     name: str
     description: Optional[str] = ""
+    lock_count: int = 0
     strategy: str
     event_set: str
     projection: str
@@ -25,6 +26,15 @@ class BenefitModel(BaseModel):
     discount_rate: float
     implementation_cost: Optional[float] = None
     annual_maint_cost: Optional[float] = None
+
+    @validator("lock_count")	
+    def validate_lock_count(
+        cls, lock_count: int
+    ) -> int:
+        """Validate lock_count"""	
+        if lock_count < 0:    
+            raise ValueError("lock_count must be a positive integer")
+        return lock_count
 
 
 class IBenefit(ABC):

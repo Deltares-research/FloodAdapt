@@ -40,7 +40,7 @@ class DbsEvent(DbsTemplate):
         dict[str, Any]
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
-        events = self.get_object_list(object_type="events")
+        events = self._get_object_list()
         objects = [Hazard.get_event_object(path) for path in events["path"]]
         events["name"] = [obj.attrs.name for obj in objects]
         events["description"] = [obj.attrs.description for obj in objects]
