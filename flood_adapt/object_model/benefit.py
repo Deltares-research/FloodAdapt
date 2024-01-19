@@ -162,6 +162,9 @@ class Benefit(IBenefit):
 
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
+            # First check is scenarios are there
+            if "No" in self.scenarios["scenario created"].to_numpy():
+                raise RuntimeError("Necessary scenarios have not been created yet.")
             scens = self.scenarios["scenario created"][~self.scenarios["scenario run"]]
             raise RuntimeError(
                 f"Scenarios {', '.join(scens.values)} need to be run before the cost-benefit analysis can be performed"
