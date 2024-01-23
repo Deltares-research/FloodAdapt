@@ -18,7 +18,7 @@ exposure_template = pd.read_csv(
 )
 
 
-def test_fiat_adapter_no_measures(cleanup_database):
+def test_fiat_adapter_no_measures(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -43,7 +43,7 @@ def test_fiat_adapter_no_measures(cleanup_database):
 
 
 # @pytest.mark.skip(reason="test needs to reviewed")
-def test_fiat_adapter_measures(cleanup_database):
+def test_fiat_adapter_measures(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -203,7 +203,7 @@ def test_fiat_adapter_measures(cleanup_database):
     )
 
 
-def test_fiat_raise_datum(cleanup_database):
+def test_fiat_raise_datum(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -255,7 +255,7 @@ def test_fiat_raise_datum(cleanup_database):
     )
 
 
-def test_fiat_return_periods(cleanup_database):
+def test_fiat_return_periods(test_db):
     test_toml = (
         test_database
         / "charleston"

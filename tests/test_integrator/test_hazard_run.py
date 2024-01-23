@@ -18,7 +18,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 
 # @pytest.mark.skip(reason="running the model takes long")
-def test_hazard_preprocess_synthetic_wl(cleanup_database):
+def test_hazard_preprocess_synthetic_wl(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -69,7 +69,7 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
 
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_preprocess_synthetic_discharge(cleanup_database):
+def test_hazard_preprocess_synthetic_discharge(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -102,7 +102,7 @@ def test_hazard_preprocess_synthetic_discharge(cleanup_database):
         test_scenario.direct_impacts.hazard.preprocess_models()
 
 
-def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
+def test_preprocess_rainfall_timeseriesfile(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -141,7 +141,7 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
     os.remove(event_path.joinpath("rainfall.csv"))
 
 
-def test_preprocess_pump(cleanup_database: None):
+def test_preprocess_pump(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -171,7 +171,7 @@ def test_preprocess_pump(cleanup_database: None):
     ~filecmp.cmp(drn_file, drn_templ)
 
 
-def test_preprocess_greenInfra(cleanup_database):
+def test_preprocess_greenInfra(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -202,7 +202,7 @@ def test_preprocess_greenInfra(cleanup_database):
     test_scenario.direct_impacts.hazard.preprocess_models()
 
 
-def test_preprocess_greenInfra_aggr_area(cleanup_database):
+def test_preprocess_greenInfra_aggr_area(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -226,7 +226,7 @@ def test_preprocess_greenInfra_aggr_area(cleanup_database):
 
 
 @pytest.mark.skip(reason="running the model takes long")
-def test_write_floodmap_geotiff(cleanup_database: None):
+def test_write_floodmap_geotiff(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -251,7 +251,7 @@ def test_write_floodmap_geotiff(cleanup_database: None):
     assert floodmap_fn.is_file()
 
 
-def test_preprocess_prob_eventset(cleanup_database: None):
+def test_preprocess_prob_eventset(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -296,7 +296,7 @@ def test_preprocess_prob_eventset(cleanup_database: None):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-def test_preprocess_rainfall_increase(cleanup_database):
+def test_preprocess_rainfall_increase(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -369,7 +369,7 @@ def test_preprocess_rainfall_increase(cleanup_database):
 
 
 @pytest.mark.skip(reason="Running models takes a couple of minutes")
-def test_run_prob_eventset(cleanup_database):
+def test_run_prob_eventset(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -417,7 +417,7 @@ def test_run_prob_eventset(cleanup_database):
 @pytest.mark.skip(
     reason="Need to run models first (see above) but that takes a couple of minutes"
 )
-def test_rp_floodmap_calculation(cleanup_database: None):
+def test_rp_floodmap_calculation(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -498,7 +498,7 @@ def test_rp_floodmap_calculation(cleanup_database: None):
     plt.savefig(fn, bbox_inches="tight", dpi=225)
 
 
-def test_multiple_rivers(cleanup_database: None):
+def test_multiple_rivers(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -599,7 +599,7 @@ def test_multiple_rivers(cleanup_database: None):
     )
 
 
-def test_no_rivers(cleanup_database: None):
+def test_no_rivers(test_db: None):
     test_toml = (
         test_database
         / "charleston"
@@ -649,7 +649,7 @@ def test_no_rivers(cleanup_database: None):
     assert bnd_file.is_file()  # To check if the model has run
 
 
-def test_plot_wl_obs(cleanup_database: None):
+def test_plot_wl_obs(test_db: None):
     test_toml = (
         test_database
         / "charleston"

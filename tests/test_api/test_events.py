@@ -9,7 +9,7 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_synthetic_event(cleanup_database):
+def test_synthetic_event(test_db):
     test_dict = {
         "name": "extreme12ft",
         "description": "extreme 12 foot event",

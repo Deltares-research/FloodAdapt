@@ -9,7 +9,7 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_projection(cleanup_database):
+def test_projection(test_db):
     test_dict = {
         "name": "SLR_2ft",
         "description": "SLR_2ft",
