@@ -26,7 +26,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_floodwall_read(cleanup_database):
+def test_floodwall_read(test_db):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "seawall" / "seawall.toml"
     )
@@ -46,7 +46,7 @@ def test_floodwall_read(cleanup_database):
     assert floodwall.attrs.elevation.units == "feet"
 
 
-def test_elevate_aggr_area_read(cleanup_database):
+def test_elevate_aggr_area_read(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -77,7 +77,7 @@ def test_elevate_aggr_area_read(cleanup_database):
     assert elevate.attrs.aggregation_area_name == "name5"
 
 
-def test_elevate_aggr_area_read_fail(cleanup_database):
+def test_elevate_aggr_area_read_fail(test_db):
     # TODO validators do not work?
     test_dict = {
         "name": "test1",
@@ -92,7 +92,7 @@ def test_elevate_aggr_area_read_fail(cleanup_database):
     Elevate.load_dict(test_dict, test_database / "charleston" / "input")
 
 
-def test_elevate_aggr_area_save(cleanup_database):
+def test_elevate_aggr_area_save(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -125,7 +125,7 @@ def test_elevate_aggr_area_save(cleanup_database):
     test_toml_new.unlink()
 
 
-def test_elevate_polygon_read(cleanup_database):
+def test_elevate_polygon_read(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -158,7 +158,7 @@ def test_elevate_polygon_read(cleanup_database):
     assert isinstance(polygon, gpd.GeoDataFrame)
 
 
-def test_buyout_read(cleanup_database):
+def test_buyout_read(test_db):
     test_toml = (
         test_database / "charleston" / "input" / "measures" / "buyout" / "buyout.toml"
     )
@@ -173,7 +173,7 @@ def test_buyout_read(cleanup_database):
     assert isinstance(buyout.attrs.aggregation_area_name, str)
 
 
-def test_floodproof_read(cleanup_database):
+def test_floodproof_read(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -218,7 +218,7 @@ def test_pump_read():
     assert test_geojson.is_file()
 
 
-def test_green_infra_read(cleanup_database):
+def test_green_infra_read(test_db):
     test_toml = (
         test_database
         / "charleston"

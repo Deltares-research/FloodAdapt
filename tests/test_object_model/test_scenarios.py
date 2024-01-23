@@ -22,7 +22,7 @@ from flood_adapt.object_model.site import Site
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_scenario_class(cleanup_database):
+def test_scenario_class(test_db):
     scenario_toml = (
         test_database
         / "charleston"
@@ -70,7 +70,7 @@ def test_hazard_load():
     assert isinstance(hazard.event_list[0].attrs.tide, TideModel)
 
 
-def test_hazard_wl(cleanup_database):
+def test_hazard_wl(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -94,7 +94,7 @@ def test_hazard_wl(cleanup_database):
     assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
 
 
-def test_scs_rainfall(cleanup_database):
+def test_scs_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -142,7 +142,7 @@ def test_scs_rainfall(cleanup_database):
 
 
 @pytest.mark.skip(reason="No metric file to read from")
-def test_infographic(cleanup_database):
+def test_infographic(test_db):
     test_toml = (
         test_database
         / "charleston"

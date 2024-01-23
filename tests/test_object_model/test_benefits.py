@@ -12,7 +12,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 rng = np.random.default_rng(2021)
 
 
-def test_benefit_read(cleanup_database):
+def test_benefit_read(test_db):
     benefit_toml = (
         test_database
         / "charleston"
@@ -27,7 +27,7 @@ def test_benefit_read(cleanup_database):
     assert isinstance(benefit, Benefit)
 
 
-def test_check_scenarios(cleanup_database):
+def test_check_scenarios(test_db):
     benefit_toml = (
         test_database
         / "charleston"
@@ -44,7 +44,7 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_benefit_analysis(cleanup_database):
+def test_run_benefit_analysis(test_db):
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (
@@ -165,7 +165,7 @@ def test_run_benefit_analysis(cleanup_database):
         assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
 
 
-def test_run_CBA(cleanup_database):
+def test_run_CBA(test_db):
     dbs = Database(test_database, "charleston")
 
     benefit_toml = (

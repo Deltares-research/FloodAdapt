@@ -12,7 +12,7 @@ site_name = "charleston"
 rng = np.random.default_rng(2021)
 
 
-def test_benefit(cleanup_database):
+def test_benefit(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, site_name)
 

@@ -10,7 +10,7 @@ from flood_adapt.object_model.scenario import Scenario
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_add_obs_points(cleanup_database: None):
+def test_add_obs_points(test_db: None):
     test_toml = (
         test_database
         / "charleston"

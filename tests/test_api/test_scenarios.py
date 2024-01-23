@@ -9,7 +9,7 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_scenario(cleanup_database):
+def test_scenario(test_db):
     test_dict = {
         "name": "current_extreme12ft_no_measures",
         "description": "current_extreme12ft_no_measures",
@@ -43,7 +43,7 @@ def test_scenario(cleanup_database):
 
 
 @pytest.mark.skip(reason="Part of test_has_hazard_run")
-def test_single_event_run(cleanup_database):
+def test_single_event_run(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     scenario_name = "current_extreme12ft_no_measures"
@@ -51,7 +51,7 @@ def test_single_event_run(cleanup_database):
 
 
 @pytest.mark.skip(reason="test takes too much time")
-def test_risk_run(cleanup_database):
+def test_risk_run(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     scenario_name = "current_test_set_no_measures"

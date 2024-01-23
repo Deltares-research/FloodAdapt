@@ -1,2 +1,2 @@
-def test_addition(cleanup_database):
+def test_addition(test_db):
     assert 1 + 1 == 2

@@ -8,14 +8,14 @@ test_database_path = Path().absolute() / "tests" / "test_database"
 test_site_name = "charleston"
 
 
-def test_buildings(cleanup_database):
+def test_buildings(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
 
     assert isinstance(api_startup.get_buildings(database), gpd.GeoDataFrame)
 
 
-def test_aggr_areas(cleanup_database):
+def test_aggr_areas(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     aggr_areas = api_startup.get_aggregation_areas(database)
@@ -23,7 +23,7 @@ def test_aggr_areas(cleanup_database):
     assert isinstance(aggr_areas["aggr_lvl_1"], gpd.GeoDataFrame)
 
 
-def test_property_types(cleanup_database):
+def test_property_types(test_db):
     # Initialize database object
     database = api_startup.read_database(test_database_path, test_site_name)
     types = api_startup.get_property_types(database)
