@@ -27,10 +27,12 @@ class HazardType(str, Enum):
     """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
-    thin_dam = "thin_dam"  # same functionality as floodwall
-    levee = "levee"  # same functionality as floodwall
+    thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
+    levee = "levee"  # For now, same functionality as floodwall TODO: Add levee functionality
     pump = "pump"
-    culvert = "culvert"  # same functionality as pump
+    culvert = (
+        "culvert"  # For now, same functionality as pump TODO: Add culvert functionality
+    )
     water_square = "water_square"
     greening = "greening"
     total_storage = "total_storage"
