@@ -25,9 +25,11 @@ def get_measure(name: str, database: IDatabase) -> IMeasure:
     return database.get_measure(name)
 
 
-def create_measure(attrs: dict[str, Any], type: str, database: IDatabase = None) -> IMeasure:
+def create_measure(
+    attrs: dict[str, Any], type: str, database: IDatabase = None
+) -> IMeasure:
     """Create a measure from a dictionary of attributes and a type string.
-    
+
     Parameters
     ----------
     attrs : dict[str, Any]
@@ -40,7 +42,7 @@ def create_measure(attrs: dict[str, Any], type: str, database: IDatabase = None)
     Returns
     -------
     IMeasure
-        Measure object.    
+        Measure object.
     """
 
     # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
