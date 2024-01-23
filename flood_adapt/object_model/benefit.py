@@ -62,13 +62,24 @@ class Benefit(IBenefit):
         )
         return check
 
-    def get_output(self):
-        """Reads the benefit analysis results and the path of the html output"""
+    def get_output(self) -> dict:
+        """Reads the benefit analysis results and the path of the html output
+
+        Returns
+        -------
+        dict
+            results of benefit calculation
+        """
+        if not self.has_run_check():
+            raise RuntimeError(
+                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
+            )
         results_toml = self.results_path.joinpath("results.toml")
         results_html = self.results_path.joinpath("benefits.html")
         with open(results_toml, mode="rb") as fp:
             self.results = tomli.load(fp)
         self.results["html"] = str(results_html)
+        return self.results
 
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created.
@@ -169,6 +180,14 @@ class Benefit(IBenefit):
             raise RuntimeError(
                 f"Scenarios {', '.join(scens.values)} need to be run before the cost-benefit analysis can be performed"
             )
+
+        # If path for results does not yet exist, make it, and if it does delete it and recreate it
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
+        else:
+            shutil.rmtree(self.results_path)
+            self.results_path.mkdir(parents=True)
+
         # Run the cost-benefit analysis
         self.cba()
         # Run aggregation benefits
@@ -244,11 +263,7 @@ class Benefit(IBenefit):
             results["IRR"] = np.round(npf.irr(cba["profits"]), 3)
 
         # Save results
-        # If path for results does not yet exist, make it
         if not self.results_path.is_dir():
-            self.results_path.mkdir(parents=True)
-        else:
-            shutil.rmtree(self.results_path)
             self.results_path.mkdir(parents=True)
 
         # Save indicators in a toml file
@@ -341,6 +356,10 @@ class Benefit(IBenefit):
                     benefits[aggr_name].loc[row.name, var_output[var]] = cba[
                         "benefits_discounted"
                     ].sum()
+
+        # Save results
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
 
         # Save benefits per aggregation area (csv and gpkg)
         for i, aggr_name in enumerate(aggregations):
