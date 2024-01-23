@@ -15,7 +15,7 @@ class FloodProof(ImpactMeasure, IFloodProof):
     """Subclass of ImpactMeasure describing the measure of flood-proof buildings"""
 
     attrs: FloodProofModel
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IFloodProof:
@@ -31,7 +31,7 @@ class FloodProof(ImpactMeasure, IFloodProof):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IFloodProof:
         """create FloodProof from object, e.g. when initialized from GUI"""
 

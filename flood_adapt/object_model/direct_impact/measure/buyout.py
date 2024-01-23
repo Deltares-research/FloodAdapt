@@ -15,7 +15,7 @@ class Buyout(ImpactMeasure, IBuyout):
     """Subclass of ImpactMeasure describing the measure of buying-out buildings"""
 
     attrs: BuyoutModel
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IBuyout:
@@ -31,7 +31,7 @@ class Buyout(ImpactMeasure, IBuyout):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IBuyout:
         """create Buyout from object, e.g. when initialized from GUI"""
 
