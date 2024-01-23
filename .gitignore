@@ -164,3 +164,4 @@ cython_debug/
 /.pytest_cache
 .vscode/launch.json
 /tests/test_database
+/tests/system
