@@ -39,8 +39,8 @@ def test_db():
     It is used by other fixtures to set up and clean the test_database"""
 
     # Get the database file structure before the test
-    rootPath = Path().absolute().parent / "Database"  # the path to the database
-    site_name = "charleston_test"  # the name of the test site
+    rootPath = Path().absolute() / "tests" / "test_database"  # the path to the database
+    site_name = "Charleston"  # the name of the test site
 
     database_path = str(rootPath.joinpath(site_name))
     file_structure = get_file_structure(database_path)
