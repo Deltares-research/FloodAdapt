@@ -60,7 +60,7 @@ class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: Optional[str]
+    polygon_file: Optional[str] = None
     selection_type: SelectionType
 
 
@@ -69,9 +69,9 @@ class ImpactMeasureModel(MeasureModel):
 
     type: ImpactType
     selection_type: SelectionType
-    aggregation_area_type: Optional[str]
-    aggregation_area_name: Optional[str]
-    polygon_file: Optional[str]
+    aggregation_area_type: Optional[str] = None
+    aggregation_area_name: Optional[str] = None
+    polygon_file: Optional[str] = None
     property_type: str
 
     # TODO #94 pydantic validators do not currently work
@@ -138,8 +138,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
     volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
     height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
-    aggregation_area_type: Optional[str]
-    aggregation_area_name: Optional[str]
+    aggregation_area_type: Optional[str] = None
+    aggregation_area_name: Optional[str] = None
     percent_area: float = 100
 
     @validator("volume")
