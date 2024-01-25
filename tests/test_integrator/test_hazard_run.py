@@ -11,7 +11,10 @@ import xarray as xr
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulIntensity
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+)
 from flood_adapt.object_model.scenario import Scenario
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -272,7 +275,7 @@ def test_preprocess_prob_eventset(test_db: None):
         / "charleston"
         / "output"
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0001"
@@ -284,7 +287,7 @@ def test_preprocess_prob_eventset(test_db: None):
         / "charleston"
         / "output"
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0039"
@@ -294,6 +297,30 @@ def test_preprocess_prob_eventset(test_db: None):
     assert bzs_file1.is_file()
     assert bzs_file2.is_file()
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
+
+    # add SLR
+
+    test_scenario.attrs.projection = "SLR_2ft"
+    test_scenario.attrs.name = "SLR_2ft_test_set_no_measures"
+    test_scenario.init_object_model()
+    slr = test_scenario.direct_impacts.hazard.physical_projection.attrs.sea_level_rise
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    bzs_file1_slr = (
+        test_database
+        / "charleston"
+        / "output"
+        / "Scenarios"
+        / test_scenario.attrs.name
+        / "Flooding"
+        / "simulations"
+        / "event_0001"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    df = pd.read_csv(bzs_file1, header=None, index_col=0, delim_whitespace=True)
+    df_slr = pd.read_csv(bzs_file1_slr, header=None, index_col=0, delim_whitespace=True)
+
+    assert np.abs((df_slr[1] - df[1]).mean() - slr.convert("meters")) < 0.01
 
 
 def test_preprocess_rainfall_increase(test_db):
