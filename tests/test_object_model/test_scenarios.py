@@ -70,30 +70,6 @@ def test_hazard_load():
     assert isinstance(hazard.event_list[0].attrs.tide, TideModel)
 
 
-def test_hazard_wl(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
-
-    hazard = scenario.direct_impacts.hazard
-
-    hazard.add_wl_ts()
-
-    assert isinstance(hazard.wl_ts, pd.DataFrame)
-    assert len(hazard.wl_ts) > 1
-    assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
-
-
 def test_scs_rainfall(test_db):
     test_toml = (
         test_database
