@@ -275,7 +275,7 @@ def test_preprocess_prob_eventset(test_db: None):
         / "charleston"
         / "output"
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0001"
@@ -287,7 +287,7 @@ def test_preprocess_prob_eventset(test_db: None):
         / "charleston"
         / "output"
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0039"
@@ -300,8 +300,8 @@ def test_preprocess_prob_eventset(test_db: None):
 
     # add SLR
 
-    test_scenario.attrs.projection = "SLR_1ft"
-    test_scenario.attrs.name = "SLR_1ft_test_set_no_measures"
+    test_scenario.attrs.projection = "SLR_2ft"
+    test_scenario.attrs.name = "SLR_2ft_test_set_no_measures"
     test_scenario.init_object_model()
     slr = test_scenario.direct_impacts.hazard.physical_projection.attrs.sea_level_rise
     test_scenario.direct_impacts.hazard.preprocess_models()
@@ -310,7 +310,7 @@ def test_preprocess_prob_eventset(test_db: None):
         / "charleston"
         / "output"
         / "Scenarios"
-        / "SLR_1ft_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0001"
