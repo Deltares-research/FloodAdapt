@@ -1,11 +1,10 @@
 ---
-title: Introduction
+title: Overview of FloodAdapt
 filters:
   - lightbox
 lightbox: auto
 ---
 
-## Overview
 FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful "what-if" scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.
 
 {{< video https://www.youtube.com/watch?v=VYd-G7yE0o4 
@@ -22,27 +21,3 @@ The backend of FloodAdapt leverages the open-source, state-of-the-art process-ba
 When a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.
 
 ![Schematic showing the design concepts behind the FloodAdapt software](../_static/images/floodadapt.png){#fig-logo}
-
-## Intended User of FloodAdapt
-FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options. 
-
-FloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.
-
-FloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt. 
-
-## Reader Guidance
-FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. @fig-readerGuidance provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation. 
-
-The [Setup Guide](/3_setup_guide/index.qmd) is intended for those who will "build" or configure FloodAdapt for a new site and set of end-users. 
-
-The [Installation Guide](/2_installation_guide/index.qmd) helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt. 
-
-The [User Guide](/4_user_guide/index.qmd) walks the user through all the functionality of FloodAdapt. 
-
-The section on [Updating FloodAdapt](/5_update_model/index.qmd) describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available. 
-
-The [Demonstration of FloodAdapt](/6_demo/index.qmd) helps the reader understand how FloodAdapt can support adaptation and resilience planning. 
-
-The section on [Preparing a probabilistic event set](/7_appendix/appendix_a/index.qmd) provides a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. 
-
-![Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section](../_static/images/readerGuidance.svg){#fig-readerGuidance}

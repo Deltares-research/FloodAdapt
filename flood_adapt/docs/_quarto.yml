@@ -63,12 +63,14 @@ website:
       contents:
         - text: "HOME"
           file: index.qmd
-        - section: "INTRODUCTION"
+        - text: "INTRODUCTION"
           file: 1_introduction/index.qmd
+        - section: "SETUP GUIDE"
+          file: 3_setup_guide/index.qmd
           contents:
-            - "1_introduction/intended_use.qmd"
-            - "1_introduction/reader_guidance.qmd"
-            - "1_introduction/terminology.qmd"
+            - "3_setup_guide/database.qmd"
+            - "3_setup_guide/gui.qmd"
+            - "3_setup_guide/risk_analysis.qmd"
         - section: "INSTALLATION GUIDE"
           file: 2_installation_guide/index.qmd
           contents:
@@ -76,12 +78,6 @@ website:
             - "2_installation_guide/software_req.qmd"
             - "2_installation_guide/installation.qmd"
             - "2_installation_guide/folder_struct.qmd"
-        - section: "SETUP GUIDE"
-          file: 3_setup_guide/index.qmd
-          contents:
-            - "3_setup_guide/database.qmd"
-            - "3_setup_guide/gui.qmd"
-            - "3_setup_guide/risk_analysis.qmd"
         - section: "USER GUIDE"
           file: 4_user_guide/index.qmd # This contains text before sections start
           contents:
@@ -94,7 +90,7 @@ website:
                 - "4_user_guide/events/historic_events.qmd"
                 - "4_user_guide/events/synthetic_events.qmd"
                 - "4_user_guide/events/probablistic_events.qmd"
-            - section: "Projection"
+            - section: "Projections"
               file: "4_user_guide/projections/index.qmd"
               contents:
                 - "4_user_guide/projections/slr.qmd"
