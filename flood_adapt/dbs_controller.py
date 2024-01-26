@@ -92,24 +92,15 @@ class Database(IDatabase):
 
     def get_model_boundary(self) -> GeoDataFrame:
         """Get the model boundary from the SFINCS model"""
-        # TODO: this should be a Interface class ModelAdapter.
-        # All models should implement their own Adapters, which should inherit from ModelAdapter
-        # Which declares all functions (so no implementation) required to run floodadapt and the gui.
-
-        # the class SfincsAdapter(ModelAdapter) should have the implementation for the functions declared in ModelAdapter
-        # and then we should have a ModelFactory that returns the correct model based on the site config
-        # instead of hard coding
-        #   model = SfincsAdapter()
-        # we have
-        #   model = ModelFactory.get_model(site))
-        # then, we can call model.get_model_boundary() without knowing which model it is and everything should work
-        # NOTE: this is not only appliccable to this function, but to all/most the functions in this class.
         base_path = self.input_path.parent
         path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
         model = SfincsAdapter(model_root=path_in, site=self.site)
-        return model.get_model_boundary()
+        boundary = model.get_model_boundary()
+        del model
+
+        return boundary
 
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model"""

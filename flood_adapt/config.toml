@@ -1,8 +1,0 @@
-# FloodAdapt version
-version="0.1.0"
-
-# this should be the folder containing all of the case folders
-database_root="../Database"
-
-# this should be the folder containing the folders 'sfincs' and 'fiat' from the SVN
-system_folder="../Database/system"
