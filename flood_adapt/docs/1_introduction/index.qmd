@@ -23,7 +23,7 @@ When a user specifies a what-if scenario, the backend of FloodAdapt automaticall
 
 ![Schematic showing the design concepts behind the FloodAdapt software](../_static/images/floodadapt.png){#fig-logo}
 
-## Intended User of FloodAdapt
+## Intended Uses of FloodAdapt
 FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options. 
 
 FloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.
