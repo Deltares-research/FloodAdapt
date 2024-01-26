@@ -4,9 +4,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
-import tomli
 
 from flood_adapt.api.startup import read_database
+from flood_adapt.config import parse_config
 
 
 def get_file_structure(path: str) -> list:
@@ -22,7 +22,6 @@ def get_file_structure(path: str) -> list:
 
 def remove_files_and_folders(path, file_structure):
     """Remove all files and folders that are not present in the file structure"""
-
     # Walk through the directory
     for root, dirs, files in os.walk(path):
         relative_path = os.path.relpath(root, path)
@@ -36,44 +35,20 @@ def remove_files_and_folders(path, file_structure):
 
 @pytest.fixture(scope="session")  # This fixture is only run once per session
 def updatedSVN():
-    database_root = tomli.load("database.toml")["database_root"]
-    batch_file_path = Path().absolute() / "tests" / "updateSVN.bat"
-    subprocess.run([str(batch_file_path), database_root], shell=True)
-    print("Updated SVN\n\n\n")
-    return database_root
+    parse_config("config.toml")  # Set the database root, system folder, and site name
+    batch_file_path = Path(__file__).parent / "updateSVN.bat"
+    subprocess.run([str(batch_file_path), os.environ["DATABASE_ROOT"]], shell=True)
 
 
 @pytest.fixture
-def cleanup_database(updatedSVN):
+def test_db(updatedSVN):
     """This fixture is used for testing in general to setup the test database,
     perform the test, and clean the database after each test.
     It is used by other fixtures to set up and clean the test_database"""
 
     # Get the database file structure before the test
-    database_root = updatedSVN
-    site_name = "charleston_test"  # the name of the test site
-
-    database_path = database_root / site_name
-    file_structure = get_file_structure(database_path)
-
-    # Run the test
-    yield
-
-    # Remove all files and folders that were not present before the test
-    remove_files_and_folders(database_path, file_structure)
-
-
-@pytest.fixture
-def test_db(updatedSVN, cleanup_database):
-    """This fixture is used for testing in general to setup the test database,
-    perform the test, and clean the database after each test.
-    It is used by other fixtures to set up and clean the test_database"""
-
-    # Get the database file structure before the test
-    database_root = updatedSVN
-    site_name = "charleston_test"  # the name of the test site
-
-    database_path = database_root / site_name
+    database_path = os.environ["DATABASE_ROOT"]
+    site_name = os.environ["SITE_NAME"]
     file_structure = get_file_structure(database_path)
     dbs = read_database(database_path, site_name)
 
