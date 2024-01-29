@@ -1,33 +1,44 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
 from flood_adapt.object_model.scenario import Scenario
 
-test_database = Path().absolute() / "tests" / "test_database"
-exposure_template = pd.read_csv(
-    test_database
-    / "charleston"
-    / "static"
-    / "templates"
-    / "fiat"
-    / "exposure"
-    / "exposure.csv"
-)
+
+@pytest.fixture()
+def exposure_template(test_db):
+    exposure_template = pd.read_csv(
+        test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
+    )
+    return exposure_template
 
 
-def test_fiat_adapter_no_measures(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+@pytest.fixture()
+def test_tomls(test_db):
+    test_tomls = [
+        test_db.input_path
         / "scenarios"
         / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+        / "current_extreme12ft_no_measures.toml",
+        test_db.input_path
+        / "scenarios"
+        / "current_test_set_no_measures"
+        / "current_test_set_no_measures.toml",
+        test_db.input_path
+        / "scenarios"
+        / "all_projections_extreme12ft_strategy_comb"
+        / "all_projections_extreme12ft_strategy_comb.toml",
+        test_db.input_path
+        / "scenarios"
+        / "current_extreme12ft_raise_datum"
+        / "current_extreme12ft_raise_datum.toml",
+    ]
+    test_tomls = {test_toml.name: test_toml for test_toml in test_tomls}
+    return test_tomls
 
+
+def test_fiat_adapter_no_measures(test_tomls, exposure_template):
+    test_toml = test_tomls["current_extreme12ft_no_measures.toml"]
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class
@@ -43,26 +54,15 @@ def test_fiat_adapter_no_measures(cleanup_database):
 
 
 # @pytest.mark.skip(reason="test needs to reviewed")
-def test_fiat_adapter_measures(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "all_projections_extreme12ft_strategy_comb"
-        / "all_projections_extreme12ft_strategy_comb.toml"
-    )
-
+def test_fiat_adapter_measures(test_db, test_tomls, exposure_template):
+    test_toml = test_tomls["all_projections_extreme12ft_strategy_comb.toml"]
     assert test_toml.is_file()
 
-    # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "all_projections_extreme12ft_strategy_comb"
         / "Impacts"
@@ -203,16 +203,8 @@ def test_fiat_adapter_measures(cleanup_database):
     )
 
 
-def test_fiat_raise_datum(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_raise_datum"
-        / "current_extreme12ft_raise_datum.toml"
-    )
-
+def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
+    test_toml = test_tomls["current_extreme12ft_raise_datum.toml"]
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class
@@ -220,9 +212,7 @@ def test_fiat_raise_datum(cleanup_database):
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_raise_datum"
         / "Impacts"
@@ -255,16 +245,8 @@ def test_fiat_raise_datum(cleanup_database):
     )
 
 
-def test_fiat_return_periods(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_test_set_no_measures"
-        / "current_test_set_no_measures.toml"
-    )
-
+def test_fiat_return_periods(test_tomls):
+    test_toml = test_tomls["current_test_set_no_measures.toml"]
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class

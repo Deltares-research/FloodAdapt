@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.api.startup import read_database
-from flood_adapt.config import parse_config
+from flood_adapt.config import parse_config, set_site_name
 
 
 def get_file_structure(path: str) -> list:
@@ -35,7 +35,10 @@ def remove_files_and_folders(path, file_structure):
 
 @pytest.fixture(scope="session")  # This fixture is only run once per session
 def updatedSVN():
-    parse_config("config.toml")  # Set the database root, system folder, and site name
+    parse_config(
+        "config.toml"
+    )  # Set the database root, system folder, based on the config file
+    set_site_name("charleston_test")  # set the site name to the test database
     batch_file_path = Path(__file__).parent / "updateSVN.bat"
     subprocess.run([str(batch_file_path), os.environ["DATABASE_ROOT"]], shell=True)
 
@@ -49,6 +52,7 @@ def test_db(updatedSVN):
     # Get the database file structure before the test
     database_path = os.environ["DATABASE_ROOT"]
     site_name = os.environ["SITE_NAME"]
+
     file_structure = get_file_structure(database_path)
     dbs = read_database(database_path, site_name)
 

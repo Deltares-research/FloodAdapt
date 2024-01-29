@@ -1,6 +1,5 @@
 import filecmp
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,31 +13,34 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulIntensity
 from flood_adapt.object_model.scenario import Scenario
 
-test_database = Path().absolute() / "tests" / "test_database"
+
+@pytest.fixture()
+def test_scenarios(test_db):
+    test_tomls = [
+        test_db.input_path
+        / "scenarios"
+        / "current_extreme12ft_no_measures"
+        / "current_extreme12ft_no_measures.toml",
+        test_db.input_path
+        / "scenarios"
+        / "current_extreme12ft_rivershape_windconst_no_measures"
+        / "current_extreme12ft_rivershape_windconst_no_measures.toml",
+    ]
+
+    test_scenarios = {
+        toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
+    }
+    return test_scenarios
 
 
 # @pytest.mark.skip(reason="running the model takes long")
-def test_hazard_preprocess_synthetic_wl(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     fn_bc = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
@@ -69,20 +71,8 @@ def test_hazard_preprocess_synthetic_wl(cleanup_database):
 
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
-def test_hazard_preprocess_synthetic_discharge(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_rivershape_windconst_no_measures"
-        / "current_extreme12ft_rivershape_windconst_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_hazard_preprocess_synthetic_discharge(test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
@@ -102,22 +92,13 @@ def test_hazard_preprocess_synthetic_discharge(cleanup_database):
         test_scenario.direct_impacts.hazard.preprocess_models()
 
 
-def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-    event_path = test_database.joinpath("charleston", "input", "events", "extreme12ft")
-    assert test_toml.is_file()
+def test_preprocess_rainfall_timeseriesfile(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+    event_path = test_db.input_path / "events" / "extreme12ft"
 
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
+    test_scenario.init_object_model()
 
-    hazard = scenario.direct_impacts.hazard
+    hazard = test_scenario.direct_impacts.hazard
     hazard.event.attrs.rainfall.source = "timeseries"
     hazard.event.attrs.rainfall.timeseries_file = "rainfall.csv"
 
@@ -141,50 +122,27 @@ def test_preprocess_rainfall_timeseriesfile(cleanup_database: None):
     os.remove(event_path.joinpath("rainfall.csv"))
 
 
-def test_preprocess_pump(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-    assert test_toml.is_file()
+def test_preprocess_pump(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+    test_scenario.attrs.strategy = "pump"
+    test_scenario.attrs.name = test_scenario.attrs.name.replace("no_measures", "pump")
+    test_scenario.init_object_model()
 
-    scenario = Scenario.load_file(test_toml)
-    scenario.attrs.strategy = "pump"
-    scenario.attrs.name = scenario.attrs.name.replace("no_measures", "pump")
-    scenario.init_object_model()
-
-    hazard = scenario.direct_impacts.hazard
+    hazard = test_scenario.direct_impacts.hazard
 
     hazard.preprocess_models()
 
     drn_file = hazard.simulation_paths[0].joinpath("sfincs.drn")
     assert drn_file.is_file()
 
-    drn_templ = scenario.database_input_path.parent.joinpath(
-        "static", "templates", "overland", "sfincs.drn"
-    )
+    drn_templ = test_db.static_path / "templates" / "overland" / "sfincs.drn"
 
     ~filecmp.cmp(drn_file, drn_templ)
 
 
-def test_preprocess_greenInfra(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+def test_preprocess_greenInfra(test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
     test_scenario.attrs.strategy = "greeninfra"
     test_scenario.init_object_model()
     assert isinstance(
@@ -202,20 +160,9 @@ def test_preprocess_greenInfra(cleanup_database):
     test_scenario.direct_impacts.hazard.preprocess_models()
 
 
-def test_preprocess_greenInfra_aggr_area(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+def test_preprocess_greenInfra_aggr_area(test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
     test_scenario.attrs.strategy = "total_storage_aggregation_area"
     test_scenario.init_object_model()
     assert isinstance(
@@ -226,20 +173,9 @@ def test_preprocess_greenInfra_aggr_area(cleanup_database):
 
 
 @pytest.mark.skip(reason="running the model takes long")
-def test_write_floodmap_geotiff(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+def test_write_floodmap_geotiff(test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
@@ -251,26 +187,13 @@ def test_write_floodmap_geotiff(cleanup_database: None):
     assert floodmap_fn.is_file()
 
 
-def test_preprocess_prob_eventset(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_test_set_no_measures"
-        / "current_test_set_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_preprocess_prob_eventset(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
+
     bzs_file1 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -280,9 +203,7 @@ def test_preprocess_prob_eventset(cleanup_database: None):
         / "sfincs.bzs"
     )
     bzs_file2 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -296,20 +217,9 @@ def test_preprocess_prob_eventset(cleanup_database: None):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
 
-def test_preprocess_rainfall_increase(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+def test_preprocess_rainfall_increase(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
     test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
@@ -321,9 +231,7 @@ def test_preprocess_rainfall_increase(cleanup_database):
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
     test_scenario.direct_impacts.hazard.preprocess_models()
     precip_file1 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_precip_no_measures"
         / "Flooding"
@@ -351,9 +259,7 @@ def test_preprocess_rainfall_increase(cleanup_database):
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     precip_file2 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_precip_rainfall_incr_no_measures"
         / "Flooding"
@@ -369,27 +275,14 @@ def test_preprocess_rainfall_increase(cleanup_database):
 
 
 @pytest.mark.skip(reason="Running models takes a couple of minutes")
-def test_run_prob_eventset(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_test_set_no_measures"
-        / "current_test_set_no_measures.toml"
-    )
+def test_run_prob_eventset(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
     zs_file1 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -399,9 +292,7 @@ def test_run_prob_eventset(cleanup_database):
         / "sfincs_map.nc"
     )
     zs_file2 = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -417,26 +308,12 @@ def test_run_prob_eventset(cleanup_database):
 @pytest.mark.skip(
     reason="Need to run models first (see above) but that takes a couple of minutes"
 )
-def test_rp_floodmap_calculation(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_test_set_no_measures"
-        / "current_test_set_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_rp_floodmap_calculation(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_test_set_no_measures.toml"]
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -450,9 +327,7 @@ def test_rp_floodmap_calculation(cleanup_database: None):
     event_set = test_scenario.direct_impacts.hazard.event_set
     for ii, event in enumerate(event_set):
         zs_file = (
-            test_database
-            / "charleston"
-            / "output"
+            test_db.output_path
             / "Scenarios"
             / "current_test_set_no_measures"
             / "Flooding"
@@ -486,9 +361,7 @@ def test_rp_floodmap_calculation(cleanup_database: None):
         ax[jj, 1].set_title(f"RP={int(rp)}")
     # save png file
     fn = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
@@ -498,20 +371,8 @@ def test_rp_floodmap_calculation(cleanup_database: None):
     plt.savefig(fn, bbox_inches="tight", dpi=225)
 
 
-def test_multiple_rivers(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # Use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_multiple_rivers(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
 
     # Add an extra river
@@ -564,9 +425,7 @@ def test_multiple_rivers(cleanup_database: None):
 
     # Check for the correct output
     output_folder = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
@@ -599,20 +458,8 @@ def test_multiple_rivers(cleanup_database: None):
     )
 
 
-def test_no_rivers(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # Use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_no_rivers(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
 
     # Overwrite river data of Event
@@ -631,9 +478,7 @@ def test_no_rivers(cleanup_database: None):
 
     # Check for the correct output
     output_folder = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
@@ -649,20 +494,8 @@ def test_no_rivers(cleanup_database: None):
     assert bnd_file.is_file()  # To check if the model has run
 
 
-def test_plot_wl_obs(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    # Use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
+def test_plot_wl_obs(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.init_object_model()
 
     # Preprocess the models
@@ -672,9 +505,7 @@ def test_plot_wl_obs(cleanup_database: None):
 
     # Check for the correct output
     output_folder = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
         / "Scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
