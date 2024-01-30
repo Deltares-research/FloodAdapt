@@ -125,6 +125,7 @@ class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
 
     elevation: UnitfulLength
+    absolute_elevation: Optional[bool]
 
 
 class PumpModel(HazardMeasureModel):
