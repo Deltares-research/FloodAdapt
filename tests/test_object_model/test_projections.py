@@ -13,7 +13,7 @@ from flood_adapt.object_model.projection import Projection
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_projection_read(cleanup_database):
+def test_projection_read(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -39,7 +39,7 @@ def test_projection_read(cleanup_database):
         projection.get_physical_projection().attrs.economic_growth
 
 
-def test_projection_only_slr(cleanup_database):
+def test_projection_only_slr(test_db):
     test_toml = (
         test_database
         / "charleston"

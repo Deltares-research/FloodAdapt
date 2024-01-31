@@ -16,7 +16,7 @@ from flood_adapt.object_model.strategy import Strategy
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_strategy_comb_read(cleanup_database):
+def test_strategy_comb_read(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -48,7 +48,7 @@ def test_strategy_comb_read(cleanup_database):
     assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
 
 
-def test_strategy_no_measures(cleanup_database):
+def test_strategy_no_measures(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -67,7 +67,7 @@ def test_strategy_no_measures(cleanup_database):
     assert len(strategy.get_impact_strategy().measures) == 0
 
 
-def test_elevate_comb_correct(cleanup_database):
+def test_elevate_comb_correct(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -87,7 +87,7 @@ def test_elevate_comb_correct(cleanup_database):
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
 
 
-def test_green_infra(cleanup_database):
+def test_green_infra(test_db):
     test_toml = (
         test_database
         / "charleston"

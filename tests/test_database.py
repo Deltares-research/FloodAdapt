@@ -41,14 +41,12 @@ def test_create_benefit_scenarios(test_db):
 
 def test_projection_interp_slr(test_db):
     slr = test_db.interp_slr("ssp245", 2075)
-
     assert slr > 1.0
     assert slr < 1.1
 
 
 def test_projection_plot_slr(test_db):
     html_file_loc = test_db.plot_slr_scenarios()
-
     print(html_file_loc)
     assert Path(html_file_loc).is_file()
 

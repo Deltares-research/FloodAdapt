@@ -10,8 +10,12 @@ import xarray as xr
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulIntensity
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulIntensity,
+)
 from flood_adapt.object_model.scenario import Scenario
+
 
 
 @pytest.fixture()
@@ -73,6 +77,7 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
 def test_hazard_preprocess_synthetic_discharge(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
@@ -143,6 +148,7 @@ def test_preprocess_pump(test_db, test_scenarios):
 def test_preprocess_greenInfra(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
+
     test_scenario.attrs.strategy = "greeninfra"
     test_scenario.init_object_model()
     assert isinstance(
@@ -159,9 +165,9 @@ def test_preprocess_greenInfra(test_scenarios):
     )
     test_scenario.direct_impacts.hazard.preprocess_models()
 
-
 def test_preprocess_greenInfra_aggr_area(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
 
     test_scenario.attrs.strategy = "total_storage_aggregation_area"
     test_scenario.init_object_model()
@@ -175,6 +181,7 @@ def test_preprocess_greenInfra_aggr_area(test_scenarios):
 @pytest.mark.skip(reason="running the model takes long")
 def test_write_floodmap_geotiff(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
 
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
@@ -195,7 +202,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
     bzs_file1 = (
         test_db.output_path
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0001"
@@ -205,7 +212,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
     bzs_file2 = (
         test_db.output_path
         / "Scenarios"
-        / "current_test_set_no_measures"
+        / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
         / "event_0039"
@@ -216,10 +223,36 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
     assert bzs_file2.is_file()
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
+    # add SLR
+
+    
+def test_preprocess_rainfall_increase(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+    test_scenario.attrs.projection = "SLR_2ft"
+    test_scenario.attrs.name = "SLR_2ft_test_set_no_measures"
+    test_scenario.init_object_model()
+    slr = test_scenario.direct_impacts.hazard.physical_projection.attrs.sea_level_rise
+    test_scenario.direct_impacts.hazard.preprocess_models()
+    bzs_file1_slr = (
+        test_database
+        / "charleston"
+        / "output"
+        / "Scenarios"
+        / test_scenario.attrs.name
+        / "Flooding"
+        / "simulations"
+        / "event_0001"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    df = pd.read_csv(bzs_file1, header=None, index_col=0, delim_whitespace=True)
+    df_slr = pd.read_csv(bzs_file1_slr, header=None, index_col=0, delim_whitespace=True)
+
+    assert np.abs((df_slr[1] - df[1]).mean() - slr.convert("meters")) < 0.01
+
 
 def test_preprocess_rainfall_increase(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
     test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
@@ -277,7 +310,6 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
 @pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
@@ -310,6 +342,7 @@ def test_run_prob_eventset(test_db, test_scenarios):
 )
 def test_rp_floodmap_calculation(test_db, test_scenarios):
     test_scenario = test_scenarios["current_test_set_no_measures.toml"]
+
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
@@ -373,6 +406,7 @@ def test_rp_floodmap_calculation(test_db, test_scenarios):
 
 def test_multiple_rivers(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
     test_scenario.init_object_model()
 
     # Add an extra river
@@ -382,16 +416,16 @@ def test_multiple_rivers(test_db, test_scenarios):
     # Overwrite river data of Event
     test_scenario.direct_impacts.hazard.event.attrs.river[0].source = "constant"
     test_scenario.direct_impacts.hazard.event.attrs.river[1].source = "shape"
-    test_scenario.direct_impacts.hazard.event.attrs.river[
-        0
-    ].constant_discharge = UnitfulDischarge(value=2000.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[0].constant_discharge = (
+        UnitfulDischarge(value=2000.0, units="cfs")
+    )
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_type = "gaussian"
-    test_scenario.direct_impacts.hazard.event.attrs.river[
-        1
-    ].base_discharge = UnitfulDischarge(value=1000.0, units="cfs")
-    test_scenario.direct_impacts.hazard.event.attrs.river[
-        1
-    ].shape_peak = UnitfulDischarge(value=2500.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].base_discharge = (
+        UnitfulDischarge(value=1000.0, units="cfs")
+    )
+    test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak = (
+        UnitfulDischarge(value=2500.0, units="cfs")
+    )
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_duration = 8
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak_time = 0
 
@@ -410,9 +444,9 @@ def test_multiple_rivers(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.site.attrs.river[1].name = name
     test_scenario.direct_impacts.hazard.site.attrs.river[1].x_coordinate = x
     test_scenario.direct_impacts.hazard.site.attrs.river[1].y_coordinate = y
-    test_scenario.direct_impacts.hazard.site.attrs.river[
-        1
-    ].mean_discharge = UnitfulDischarge(value=mean_discharge, units="cfs")
+    test_scenario.direct_impacts.hazard.site.attrs.river[1].mean_discharge = (
+        UnitfulDischarge(value=mean_discharge, units="cfs")
+    )
     test_scenario.direct_impacts.hazard.site.attrs.river[1].description = description
 
     # Change name of reference model
@@ -460,6 +494,7 @@ def test_multiple_rivers(test_db, test_scenarios):
 
 def test_no_rivers(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
     test_scenario.init_object_model()
 
     # Overwrite river data of Event
@@ -496,6 +531,7 @@ def test_no_rivers(test_db, test_scenarios):
 
 def test_plot_wl_obs(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
     test_scenario.init_object_model()
 
     # Preprocess the models

@@ -27,8 +27,12 @@ class HazardType(str, Enum):
     """Class describing the accepted input for the variable 'type' in HazardMeasure"""
 
     floodwall = "floodwall"
-    levee = "levee"  # same functionality as floodwall
+    thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
+    levee = "levee"  # For now, same functionality as floodwall TODO: Add levee functionality
     pump = "pump"
+    culvert = (
+        "culvert"  # For now, same functionality as pump TODO: Add culvert functionality
+    )
     water_square = "water_square"
     greening = "greening"
     total_storage = "total_storage"
@@ -56,7 +60,7 @@ class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: Optional[str]
+    polygon_file: Optional[str] = None
     selection_type: SelectionType
 
 
@@ -65,9 +69,9 @@ class ImpactMeasureModel(MeasureModel):
 
     type: ImpactType
     selection_type: SelectionType
-    aggregation_area_type: Optional[str]
-    aggregation_area_name: Optional[str]
-    polygon_file: Optional[str]
+    aggregation_area_type: Optional[str] = None
+    aggregation_area_name: Optional[str] = None
+    polygon_file: Optional[str] = None
     property_type: str
 
     # TODO #94 pydantic validators do not currently work
@@ -121,6 +125,7 @@ class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
 
     elevation: UnitfulLength
+    absolute_elevation: Optional[bool] = False
 
 
 class PumpModel(HazardMeasureModel):
@@ -134,8 +139,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
     volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
     height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
-    aggregation_area_type: Optional[str]
-    aggregation_area_name: Optional[str]
+    aggregation_area_type: Optional[str] = None
+    aggregation_area_name: Optional[str] = None
     percent_area: float = 100
 
     @validator("volume")

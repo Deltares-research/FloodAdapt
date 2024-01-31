@@ -18,7 +18,7 @@ class FloodWall(HazardMeasure, IFloodWall):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
 
     attrs: FloodWallModel
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IFloodWall:
@@ -34,7 +34,7 @@ class FloodWall(HazardMeasure, IFloodWall):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IFloodWall:
         """create Floodwall from object, e.g. when initialized from GUI"""
 
