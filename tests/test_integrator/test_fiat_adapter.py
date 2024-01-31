@@ -13,6 +13,7 @@ def exposure_template(test_db):
     return exposure_template
 
 
+
 @pytest.fixture()
 def test_tomls(test_db):
     test_tomls = [
@@ -205,6 +206,7 @@ def test_fiat_adapter_measures(test_db, test_tomls, exposure_template):
 
 def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
     test_toml = test_tomls["current_extreme12ft_raise_datum.toml"]
+
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class
@@ -244,9 +246,9 @@ def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
         )
     )
 
-
 def test_fiat_return_periods(test_tomls):
     test_toml = test_tomls["current_test_set_no_measures.toml"]
+
     assert test_toml.is_file()
 
     # use event template to get the associated Event child class

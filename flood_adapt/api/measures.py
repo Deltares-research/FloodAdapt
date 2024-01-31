@@ -25,21 +25,41 @@ def get_measure(name: str, database: IDatabase) -> IMeasure:
     return database.get_measure(name)
 
 
-def create_measure(attrs: dict[str, Any], type: str, database: IDatabase) -> IMeasure:
+def create_measure(
+    attrs: dict[str, Any], type: str, database: IDatabase = None
+) -> IMeasure:
+    """Create a measure from a dictionary of attributes and a type string.
+
+    Parameters
+    ----------
+    attrs : dict[str, Any]
+        Dictionary of attributes for the measure.
+    type : str
+        Type of measure to create.
+    database : IDatabase, optional
+        Database to use for creating the measure, by default None
+
+    Returns
+    -------
+    IMeasure
+        Measure object.
+    """
+
+    # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
+    database_path = database.input_path if database else None
+
     if type == "elevate_properties":
-        return Elevate.load_dict(attrs, database.input_path)
+        return Elevate.load_dict(attrs, database_path)
     elif type == "buyout_properties":
-        return Buyout.load_dict(attrs, database.input_path)
+        return Buyout.load_dict(attrs, database_path)
     elif type == "floodproof_properties":
-        return FloodProof.load_dict(attrs, database.input_path)
-    elif type == "floodwall":
-        return FloodWall.load_dict(attrs, database.input_path)
-    elif type == "levee":
-        return FloodWall.load_dict(attrs, database.input_path)
-    elif type == "pump":
-        return Pump.load_dict(attrs, database.input_path)
-    elif type == "water_square" or type == "total_storage" or type == "greening":
-        return GreenInfrastructure.load_dict(attrs, database.input_path)
+        return FloodProof.load_dict(attrs, database_path)
+    elif type in ["floodwall", "thin_dam", "levee"]:
+        return FloodWall.load_dict(attrs, database_path)
+    elif type in ["pump", "culvert"]:
+        return Pump.load_dict(attrs, database_path)
+    elif type in ["water_square", "total_storage", "greening"]:
+        return GreenInfrastructure.load_dict(attrs, database_path)
 
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:

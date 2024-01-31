@@ -19,7 +19,7 @@ from flood_adapt.object_model.site import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_read_site_toml(cleanup_database):
+def test_read_site_toml(test_db):
     test_toml = test_database / "charleston" / "static" / "site" / "site.toml"
 
     assert test_toml.is_file()
@@ -37,7 +37,7 @@ def test_read_site_toml(cleanup_database):
     assert test_data.attrs.river[0].mean_discharge.value == 5000
 
 
-def test_read_site_toml_without_river(cleanup_database):
+def test_read_site_toml_without_river(test_db):
     test_toml = (
         test_database / "charleston" / "static" / "site" / "site_without_river.toml"
     )
@@ -58,7 +58,7 @@ def test_read_site_toml_without_river(cleanup_database):
 @pytest.mark.skip(
     reason="ID of observation station is None and site.toml cannot currently be saved"
 )
-def test_read_site_toml_with_multiple_rivers(cleanup_database):
+def test_read_site_toml_with_multiple_rivers(test_db):
     test_toml = test_database / "charleston" / "static" / "site" / "site.toml"
 
     assert test_toml.is_file()

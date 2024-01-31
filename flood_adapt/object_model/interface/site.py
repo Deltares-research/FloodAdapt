@@ -54,7 +54,7 @@ class WaterLevelReferenceModel(BaseModel):
     reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]]  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = None  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -81,8 +81,8 @@ class MapboxLayersModel(BaseModel):
     aggregation_dmg_colors: list[str]
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
-    svi_bins: Optional[list[float]]
-    svi_colors: Optional[list[str]]
+    svi_bins: Optional[list[float]] = None
+    svi_colors: Optional[list[str]] = None
     benefits_bins: list[float]
     benefits_colors: list[str]
     damage_decimals: Optional[int] = 0
@@ -120,8 +120,6 @@ class DemModel(BaseModel):
 
 class EquityModel(BaseModel):
     census_data: str
-    # aggregation_type: str
-    # aggregation_label: Optional[str] = "name"
     percapitalincome_label: Optional[str] = "PerCapitalIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
@@ -130,12 +128,12 @@ class AggregationModel(BaseModel):
     name: str
     file: str
     field_name: str
-    equity: Optional[EquityModel]
+    equity: Optional[EquityModel] = None
 
 
 class BFEModel(BaseModel):
     geom: str
-    table: Optional[str]
+    table: Optional[str] = None
     field_name: str
 
 
@@ -148,16 +146,16 @@ class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
-    bfe: Optional[BFEModel]
+    bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "$"
-    building_footprints: Optional[str]
-    roads_file_name: Optional[str]
-    new_development_file_name: Optional[str]
+    building_footprints: Optional[str] = None
+    roads_file_name: Optional[str] = None
+    new_development_file_name: Optional[str] = None
     save_simulation: Optional[bool] = False
-    svi: Optional[SVIModel]
+    svi: Optional[SVIModel] = None
 
 
 class RiverModel(BaseModel):
@@ -180,10 +178,10 @@ class Obs_stationModel(BaseModel):
     ID: int
     lat: float
     lon: float
-    mllw: Optional[UnitfulLength]
-    mhhw: Optional[UnitfulLength]
-    localdatum: Optional[UnitfulLength]
-    msl: Optional[UnitfulLength]
+    mllw: Optional[UnitfulLength] = None
+    mhhw: Optional[UnitfulLength] = None
+    localdatum: Optional[UnitfulLength] = None
+    msl: Optional[UnitfulLength] = None
 
 
 class Obs_pointModel(BaseModel):
@@ -239,11 +237,12 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]]
-    obs_station: Optional[Obs_stationModel]
-    obs_point: Optional[list[Obs_pointModel]]
+    river: Optional[list[RiverModel]] = None
+    obs_station: Optional[Obs_stationModel] = None
+    obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
-    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
+    scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
+
     standard_objects: Optional[StandardObjectModel] = (
         StandardObjectModel()
     )  # optional for the US to use standard objects

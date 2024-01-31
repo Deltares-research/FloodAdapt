@@ -38,7 +38,7 @@ from flood_adapt.object_model.site import (
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_get_template(cleanup_database):
+def test_get_template(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -59,7 +59,7 @@ def test_get_template(cleanup_database):
     assert template == "Synthetic"
 
 
-def test_load_and_save_fromtoml_synthetic(cleanup_database):
+def test_load_and_save_fromtoml_synthetic(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -182,7 +182,7 @@ def test_save_to_toml_hurricane():
 
 
 @pytest.mark.skip(reason="This right now takes ages to run! Check why!")
-def test_download_meteo(cleanup_database):
+def test_download_meteo(test_db):
     event_toml = (
         test_database
         / "charleston"
@@ -217,7 +217,7 @@ def test_download_meteo(cleanup_database):
         os.remove(file_path)
 
 
-def test_download_wl_timeseries(cleanup_database):
+def test_download_wl_timeseries(test_db):
     station_id = 8665530
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
@@ -292,7 +292,7 @@ def test_translate_hurricane_track():
     assert round(diff_lon, 2) == 0.08
 
 
-def test_constant_rainfall(cleanup_database):
+def test_constant_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -321,7 +321,7 @@ def test_constant_rainfall(cleanup_database):
     )
 
 
-def test_gaussian_rainfall(cleanup_database):
+def test_gaussian_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -353,7 +353,7 @@ def test_gaussian_rainfall(cleanup_database):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_block_rainfall(cleanup_database):
+def test_block_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -385,7 +385,7 @@ def test_block_rainfall(cleanup_database):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_triangle_rainfall(cleanup_database):
+def test_triangle_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"
@@ -418,7 +418,7 @@ def test_triangle_rainfall(cleanup_database):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_scs_rainfall(cleanup_database):
+def test_scs_rainfall(test_db):
     test_toml = (
         test_database
         / "charleston"

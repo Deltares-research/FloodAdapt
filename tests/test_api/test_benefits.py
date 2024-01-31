@@ -9,7 +9,6 @@ import flood_adapt.api.benefits as api_benefits
 def get_rng():
     return np.random.default_rng(2021)
 
-
 def test_benefit(test_db, get_rng):
     # Inputs for benefit calculation
     # Name given already exists to do test for error capture
