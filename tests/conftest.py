@@ -53,7 +53,6 @@ def test_db(updatedSVN):
     database_path = os.environ["DATABASE_ROOT"]
     site_name = os.environ["SITE_NAME"]
 
-
     file_structure = get_file_structure(database_path)
     dbs = read_database(database_path, site_name)
 

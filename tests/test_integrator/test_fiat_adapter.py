@@ -13,7 +13,6 @@ def exposure_template(test_db):
     return exposure_template
 
 
-
 @pytest.fixture()
 def test_tomls(test_db):
     test_tomls = [
@@ -245,6 +244,7 @@ def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
             exposure_scenario.loc[inds2, "Ground Floor Height"],
         )
     )
+
 
 def test_fiat_return_periods(test_tomls):
     test_toml = test_tomls["current_test_set_no_measures.toml"]

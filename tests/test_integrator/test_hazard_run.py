@@ -17,7 +17,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
 from flood_adapt.object_model.scenario import Scenario
 
 
-
 @pytest.fixture()
 def test_scenarios(test_db):
     test_tomls = [
@@ -148,7 +147,6 @@ def test_preprocess_pump(test_db, test_scenarios):
 def test_preprocess_greenInfra(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-
     test_scenario.attrs.strategy = "greeninfra"
     test_scenario.init_object_model()
     assert isinstance(
@@ -165,9 +163,9 @@ def test_preprocess_greenInfra(test_scenarios):
     )
     test_scenario.direct_impacts.hazard.preprocess_models()
 
+
 def test_preprocess_greenInfra_aggr_area(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
 
     test_scenario.attrs.strategy = "total_storage_aggregation_area"
     test_scenario.init_object_model()
@@ -181,7 +179,6 @@ def test_preprocess_greenInfra_aggr_area(test_scenarios):
 @pytest.mark.skip(reason="running the model takes long")
 def test_write_floodmap_geotiff(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
 
     test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
@@ -225,7 +222,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
 
     # add SLR
 
-    
+
 def test_preprocess_rainfall_increase(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.projection = "SLR_2ft"
@@ -234,9 +231,17 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
     slr = test_scenario.direct_impacts.hazard.physical_projection.attrs.sea_level_rise
     test_scenario.direct_impacts.hazard.preprocess_models()
     bzs_file1_slr = (
-        test_database
-        / "charleston"
-        / "output"
+        test_db.output_path
+        / "Scenarios"
+        / test_scenario.attrs.name
+        / "Flooding"
+        / "simulations"
+        / "event_0001"
+        / "overland"
+        / "sfincs.bzs"
+    )
+    bzs_file1 = (
+        test_db.output_path
         / "Scenarios"
         / test_scenario.attrs.name
         / "Flooding"
@@ -251,7 +256,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
     assert np.abs((df_slr[1] - df[1]).mean() - slr.convert("meters")) < 0.01
 
 
-def test_preprocess_rainfall_increase(test_db, test_scenarios):
+def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
     test_scenario.init_object_model()
