@@ -64,3 +64,25 @@ def test_db(updatedSVN):
     yield dbs
     # Remove all files and folders that were not present before the test
     remove_files_and_folders(database_path, file_structure)
+
+
+@pytest.fixture(scope="session")
+def test_db_session(updatedSVN):
+    """This fixture is used for testing in general to setup the test database once per session.
+    Then it performs the test, and cleans the database after each test is completed."""
+
+    # Get the database file structure before the test
+    database_path = os.environ["DATABASE_ROOT"]
+    site_name = os.environ["SITE_NAME"]
+
+    file_structure = get_file_structure(database_path)
+    dbs = read_database(database_path, site_name)
+
+    # NOTE: to access the contents of this function in the test,
+    #  the first line of your test needs to initialize the yielded variables:
+    #   'dbs = test_db'
+
+    # Run the test
+    yield dbs
+    # Remove all files and folders that were not present before the test
+    remove_files_and_folders(database_path, file_structure)
