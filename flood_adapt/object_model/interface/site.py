@@ -54,7 +54,7 @@ class WaterLevelReferenceModel(BaseModel):
     reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]] = None  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -81,8 +81,8 @@ class MapboxLayersModel(BaseModel):
     aggregation_dmg_colors: list[str]
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
-    svi_bins: Optional[list[float]] = None
-    svi_colors: Optional[list[str]] = None
+    svi_bins: Optional[list[float]] = []
+    svi_colors: Optional[list[str]] = []
     benefits_bins: list[float]
     benefits_colors: list[str]
     damage_decimals: Optional[int] = 0
@@ -237,9 +237,9 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]] = None
+    river: Optional[list[RiverModel]] = []
     obs_station: Optional[Obs_stationModel] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[Obs_pointModel]] = []
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
 

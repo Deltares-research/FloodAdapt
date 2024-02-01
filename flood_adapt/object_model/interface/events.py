@@ -183,8 +183,8 @@ class EventSetModel(
     name: str
     description: Optional[str] = ""
     mode: Mode
-    subevent_name: Optional[list[str]] = None
-    frequency: Optional[list[float]] = None
+    subevent_name: Optional[list[str]] = []
+    frequency: Optional[list[float]] = []
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
