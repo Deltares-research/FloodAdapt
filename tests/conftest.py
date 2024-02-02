@@ -33,18 +33,25 @@ def remove_files_and_folders(path, file_structure):
                 print(f"PermissionError: {root}")
 
 
-@pytest.fixture(scope="session")  # This fixture is only run once per session
+@pytest.fixture(
+    autouse=True, scope="session"
+)  # This fixture is only run once per session
 def updatedSVN():
     parse_config(
         "config.toml"
     )  # Set the database root, system folder, based on the config file
     set_site_name("charleston_test")  # set the site name to the test database
-    batch_file_path = Path(__file__).parent / "updateSVN.bat"
-    subprocess.run([str(batch_file_path), os.environ["DATABASE_ROOT"]], shell=True)
+    updateSVN_file_path = Path(__file__).parent / "updateSVN.py"
+    subprocess.run(
+        [str(updateSVN_file_path), os.environ["DATABASE_ROOT"]],
+        shell=True,
+        capture_output=True,
+    )
+    print("Database updated successfully.")
 
 
 @pytest.fixture
-def test_db(updatedSVN):
+def test_db():
     """This fixture is used for testing in general to setup the test database,
     perform the test, and clean the database after each test.
     It is used by other fixtures to set up and clean the test_database"""
@@ -67,7 +74,7 @@ def test_db(updatedSVN):
 
 
 @pytest.fixture(scope="session")
-def test_db_session(updatedSVN):
+def test_db_session():
     """This fixture is used for testing in general to setup the test database once per session.
     Then it performs the test, and cleans the database after each test is completed."""
 

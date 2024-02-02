@@ -4,14 +4,13 @@ from pathlib import Path
 
 if len(sys.argv) != 2:
     print("Error: This script requires exactly one argument: the database_root.")
-    sys.exit(1)
+    exit(1)
 
 database_root = sys.argv[1]
 
 if not Path(database_root).is_dir():
     print(f"Error: {database_root} is not a directory")
-    sys.exit(1)
-
+    exit(1)
 try:
     subprocess.run(["svn", "update", database_root])
 except Exception:
