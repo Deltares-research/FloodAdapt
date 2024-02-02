@@ -5,7 +5,7 @@ from geopandas import GeoDataFrame
 
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.database import IDatabase
-
+from pathlib import Path
 # upon start up of FloodAdapt
 
 
@@ -63,7 +63,8 @@ def get_model_boundary(database: IDatabase) -> GeoDataFrame:
     return database.get_model_boundary()
 
 
-def get_svi_map(database: IDatabase) -> GeoDataFrame:
+@staticmethod
+def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
     """Gets the SVI map that are used in Fiat
 
     Parameters
@@ -77,6 +78,30 @@ def get_svi_map(database: IDatabase) -> GeoDataFrame:
     """
     try:
         return database.get_static_map(database.site.attrs.fiat.svi.geom)
+    except Exception:
+        return None
+
+
+@staticmethod
+def get_static_map(
+    database: IDatabase, path: Union[str, Path]
+) -> Union[GeoDataFrame, None]:
+    """Gets a static map from the database
+
+    Parameters
+    ----------
+    database : IDatabase
+        database object
+    path : Union[str, Path]
+        path to the static map
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        GeoDataFrame with the static map
+    """
+    try:
+        return database.get_static_map(path)
     except Exception:
         return None
 

@@ -145,14 +145,19 @@ class Database(IDatabase):
         -------
         gpd.GeoDataFrame
             GeoDataFrame with the map in crs 4326
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file is not found
         """
         # Read the map
         full_path = self.static_path / path
         if full_path.is_file():
             return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
 
-        # If the file does not exist, return an empty GeoDataFrame
-        return None
+        # If the file is not found, throw an error
+        raise FileNotFoundError(f"File {full_path} not found")
 
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
