@@ -14,6 +14,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.config import parse_config, set_database_root, set_site_name
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -45,22 +46,54 @@ class Database(IDatabase):
     input_path: Path
     site: ISite
 
-    def __init__(self, database_path: Union[str, os.PathLike], site_name: str) -> None:
-        """Database is initialized with a path and a site name
+    def __init__(
+        self,
+        database_path: Union[str, os.PathLike, None] = None,
+        site_name: Union[str, None] = None,
+    ) -> None:
+        """Database is initialized with a path and a site name.
+        Default: config.toml in the root of the project
+        Alternate: from these variables
 
-        Parameters
+        Optional parameters
         ----------
-        database_path : Union[str, os.PathLike]
+        database_path : Union[str, os.PathLike, None]
             database path
-        site_name : str
+        site_name : Union[str, None]
             site name (same as in the folder structure)
         """
-        self.input_path = Path(database_path) / site_name / "input"
-        self.static_path = Path(database_path) / site_name / "static"
-        self.output_path = Path(database_path) / site_name / "output"
-        self.site = Site.load_file(
-            Path(database_path) / site_name / "static" / "site" / "site.toml"
+        config_file = Path(__file__).parent.parent / "config.toml"
+        parse_config(config_file)
+
+        if database_path is not None:
+            print(
+                f"Database_path provided, using {database_path} instead of config.toml"
+            )
+            set_database_root(database_path)
+        else:
+            print(
+                f"No database_path provided, using config.toml: {os.environ['DATABASE_ROOT']}"
+            )
+
+        if site_name is not None:
+            print(f"site_name provided, using {site_name} instead of config.toml")
+            set_site_name(site_name)
+        else:
+            print(
+                f"No site_name provided, using config.toml: {os.environ['SITE_NAME']}"
+            )
+
+        self.input_path = (
+            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "input"
         )
+        self.static_path = (
+            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "static"
+        )
+        self.output_path = (
+            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "output"
+        )
+
+        self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
 
     # General methods

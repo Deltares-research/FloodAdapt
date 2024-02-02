@@ -4,7 +4,7 @@ from pathlib import Path
 import tomli
 
 
-def set_database_root(database_root) -> None:
+def set_database_root(database_root: Path) -> None:
     """
     Sets the root directory for the database.
 
@@ -13,10 +13,10 @@ def set_database_root(database_root) -> None:
     """
     if not Path(database_root).is_dir():
         raise ValueError(f"{database_root} is not a directory")
-    os.environ["DATABASE_ROOT"] = database_root
+    os.environ["DATABASE_ROOT"] = str(database_root)
 
 
-def set_system_folder(system_folder) -> None:
+def set_system_folder(system_folder: Path) -> None:
     """
     Sets the system folder path.
 
@@ -25,10 +25,10 @@ def set_system_folder(system_folder) -> None:
     """
     if not Path(system_folder).is_dir():
         raise ValueError(f"{system_folder} is not a directory")
-    os.environ["SYSTEM_FOLDER"] = system_folder
+    os.environ["SYSTEM_FOLDER"] = str(system_folder)
 
 
-def set_site_name(site_name) -> None:
+def set_site_name(site_name: str) -> None:
     """
     Sets the site_name.
 
@@ -39,10 +39,10 @@ def set_site_name(site_name) -> None:
     full_site_path = Path(db_root, site_name)
     if not full_site_path.is_dir():
         raise ValueError(f"{full_site_path} is not a directory")
-    os.environ["SITE_NAME"] = site_name
+    os.environ["SITE_NAME"] = str(site_name)
 
 
-def parse_config(config_path) -> dict:
+def parse_config(config_path: Path) -> dict:
     with open(config_path, "rb") as f:
         config = tomli.load(f)
 
