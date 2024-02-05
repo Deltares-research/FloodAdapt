@@ -189,6 +189,7 @@ def test_dict():
             "event_set": "test_set",
         },
         "scs": {"file": "scs_rainfall.csv", "type": "type_3"},
+        "standard_objects": {...},
     }
     return config_values
 
@@ -213,7 +214,7 @@ def test_loadFile_validFiles(test_tomls):
         Site.load_file(toml_filepath)
 
 
-def test_loadFile_invalidFiles_raiseFileNotFoundError(test_db):
+def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
     with pytest.raises(FileNotFoundError):
         Site.load_file("not_a_file.toml")
 
@@ -231,8 +232,18 @@ def get_required_attrs(cls):
     return required_attrs
 
 
+@pytest.mark.parametrize("attr, attr_type", list(SiteModel.__annotations__.items()))
+def test_loadDict_invalidDatatypes_raiseValidationError(attr, attr_type, test_dict):
+    if attr_type is int:
+        test_dict[attr] = "not an int"
+    else:
+        test_dict[attr] = 1
+    with pytest.raises(Exception):
+        Site.load_dict(test_dict)
+
+
 @pytest.mark.parametrize("removed_key", get_required_attrs(SiteModel))
-def test_loadDict_invalidDict_raiseValidationError(test_dict, removed_key):
+def test_loadDict_missingRequiredAttrs_raiseValidationError(test_dict, removed_key):
     test_dict.pop(removed_key)
     # Validation errors dont have an __eq__ method, so we cant use pytest.raises(ValidationError)
     with pytest.raises(Exception) as e_info:
@@ -241,15 +252,10 @@ def test_loadDict_invalidDict_raiseValidationError(test_dict, removed_key):
     assert "missing" in str(e_info)
 
 
-def test_loadFile_validFile_returnSiteModel(test_db, test_sites):
+def test_loadFile_validFile_returnSiteModel(test_sites):
     test_site = test_sites["site.toml"]
     assert isinstance(test_site, Site)
     assert isinstance(test_site.attrs, SiteModel)
-
-
-def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
-    with pytest.raises(FileNotFoundError):
-        Site.load_file("not_a_file.toml")
 
 
 def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
@@ -262,7 +268,7 @@ def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
     assert test_site.attrs.river[0].mean_discharge.value == 5000
 
 
-def test_read_site_toml_without_river(test_sites):
+def test_loadFile_tomlFile_no_river(test_sites):
     test_site = test_sites["site_without_river.toml"]
     assert isinstance(test_site.attrs.name, str)
     assert isinstance(test_site.attrs.sfincs, SfincsModel)
@@ -293,23 +299,23 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
     test_site_1_river.save(new_toml)
     assert new_toml.is_file()
 
-    site_multiple_rivers = Site.load_file(new_toml)
+    test_site_multiple_rivers = Site.load_file(new_toml)
 
-    assert isinstance(site_multiple_rivers.attrs.river, list)
+    assert isinstance(test_site_multiple_rivers.attrs.river, list)
     assert (
-        len(site_multiple_rivers.attrs.river)
+        len(test_site_multiple_rivers.attrs.river)
         == number_additional_rivers + number_rivers_before
     )
 
-    for i, river in enumerate(site_multiple_rivers.attrs.river):
+    for i, river in enumerate(test_site_multiple_rivers.attrs.river):
         assert isinstance(river, RiverModel)
 
-        assert isinstance(site_multiple_rivers.attrs.river[i].name, str)
-        assert isinstance(site_multiple_rivers.attrs.river[i].x_coordinate, float)
+        assert isinstance(test_site_multiple_rivers.attrs.river[i].name, str)
+        assert isinstance(test_site_multiple_rivers.attrs.river[i].x_coordinate, float)
         assert isinstance(
-            site_multiple_rivers.attrs.river[i].mean_discharge, UnitfulDischarge
+            test_site_multiple_rivers.attrs.river[i].mean_discharge, UnitfulDischarge
         )
         assert (
-            site_multiple_rivers.attrs.river[i].mean_discharge.value
+            test_site_multiple_rivers.attrs.river[i].mean_discharge.value
             == test_site_1_river.attrs.river[i].mean_discharge.value
         )

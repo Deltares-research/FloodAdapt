@@ -6,7 +6,6 @@ import flood_adapt.api.output as api_output
 import flood_adapt.api.scenarios as api_scenarios
 
 
-# TODO Have a completed scenario in the SVN and read its output
 @pytest.fixture(scope="session")
 def scenario_event(test_db_session):
     scenario_name = "current_extreme12ft_no_measures"

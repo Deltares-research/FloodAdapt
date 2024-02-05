@@ -47,49 +47,38 @@ def updatedSVN():
         shell=True,
         capture_output=True,
     )
-    print("Database updated successfully.")
 
 
-@pytest.fixture
-def test_db():
-    """This fixture is used for testing in general to setup the test database,
-    perform the test, and clean the database after each test.
-    It is used by other fixtures to set up and clean the test_database"""
+def make_db_fixture(scope):
+    """
+    This fixture is used for testing in general.
+    It functions as follows:
+        1) Setup database controller
+        2) Perform all tests in scope
+        3) Clean the database
+    Scope can be one of the following: "function", "class", "module", "package", "session"
+    """
+    if scope not in ["function", "class", "module", "package", "session"]:
+        raise ValueError(f"Invalid fixture scope: {scope}")
 
-    # Get the database file structure before the test
-    database_path = os.environ["DATABASE_ROOT"]
-    site_name = os.environ["SITE_NAME"]
+    @pytest.fixture(scope=scope)
+    def _db_fixture():
+        database_path = os.environ["DATABASE_ROOT"]
+        site_name = os.environ["SITE_NAME"]
+        file_structure = get_file_structure(database_path)
+        dbs = read_database(database_path, site_name)
+        yield dbs
+        remove_files_and_folders(database_path, file_structure)
 
-    file_structure = get_file_structure(database_path)
-    dbs = read_database(database_path, site_name)
-
-    # NOTE: to access the contents of this function in the test,
-    #  the first line of your test needs to initialize the yielded variables:
-    #   'dbs = test_db'
-
-    # Run the test
-    yield dbs
-    # Remove all files and folders that were not present before the test
-    remove_files_and_folders(database_path, file_structure)
+    return _db_fixture
 
 
-@pytest.fixture(scope="session")
-def test_db_session():
-    """This fixture is used for testing in general to setup the test database once per session.
-    Then it performs the test, and cleans the database after each test is completed."""
-
-    # Get the database file structure before the test
-    database_path = os.environ["DATABASE_ROOT"]
-    site_name = os.environ["SITE_NAME"]
-
-    file_structure = get_file_structure(database_path)
-    dbs = read_database(database_path, site_name)
-
-    # NOTE: to access the contents of this function in the test,
-    #  the first line of your test needs to initialize the yielded variables:
-    #   'dbs = test_db'
-
-    # Run the test
-    yield dbs
-    # Remove all files and folders that were not present before the test
-    remove_files_and_folders(database_path, file_structure)
+# NOTE: to access the contents the fixtures in the test functions,
+# the fixture name needs to be passed as an argument to the test function.
+# the first line of your test needs to initialize the yielded variables:
+# 'dbs = _db_fixture'
+test_db = make_db_fixture("function")
+test_db_class = make_db_fixture("class")
+test_db_module = make_db_fixture("module")
+test_db_package = make_db_fixture("package")
+test_db_session = make_db_fixture("session")

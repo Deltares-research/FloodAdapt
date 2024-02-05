@@ -61,7 +61,7 @@ def test_projection_save_createsFile(test_db, test_dict):
         test_db.input_path / "projections" / "new_projection" / "new_projection.toml"
     )
     test_projection.save(file_path)
-    assert file_path.exists()
+    assert file_path.is_file()
 
 
 def test_projection_loadFile_checkAllAttrs(test_db, test_dict):

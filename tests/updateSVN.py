@@ -12,7 +12,8 @@ if not Path(database_root).is_dir():
     print(f"Error: {database_root} is not a directory")
     exit(1)
 try:
-    subprocess.run(["svn", "update", database_root])
+    subprocess.run(["svn", "update", database_root], capture_output=True)
+    print("Database updated successfully.")
 except Exception:
     print(
         """
