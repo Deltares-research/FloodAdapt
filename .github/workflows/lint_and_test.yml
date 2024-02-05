@@ -9,9 +9,6 @@ on:
 jobs:
   env_and_test:
     runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash -el {0}
     strategy:
       max-parallel: 5
     steps:
@@ -23,6 +20,8 @@ jobs:
           environment-file: environment.yml
           auto-activate-base: true
       - run: |
+          conda init
+          conda activate flood_adapt
           pip install .
           conda info
           conda list
