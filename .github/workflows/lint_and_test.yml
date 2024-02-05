@@ -19,9 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Setup conda
-        run: |
-          # $CONDA is an environment variable pointing to the root of the miniconda directory
-          echo $CONDA/bin >> $GITHUB_PATH
+        run: echo $CONDA/bin >> $GITHUB_PATH
       - name: Make environment
         uses: conda-incubator/setup-miniconda@v3
         with:
