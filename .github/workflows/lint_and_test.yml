@@ -18,7 +18,6 @@ jobs:
       - name: Make environment
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniconda-version: latest
           activate-environment: flood_adapt
           environment-file: environment.yml
           auto-activate-base: true
