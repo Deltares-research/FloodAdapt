@@ -1,6 +1,10 @@
 name: Python Package using Conda
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - setup_automated_testing
+  workflow_dispatch:
 
 jobs:
   env_and_test:
