@@ -12,17 +12,26 @@ jobs:
     strategy:
       max-parallel: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make environment
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: latest
           activate-environment: flood_adapt
           environment-file: environment.yml
           auto-activate-base: true
-      - run: |
+
+      - name: Install Dependencies
+        shell: pwsh
+        run: |
           conda init
           conda activate flood_adapt
           pip install .
           conda info
           conda list
-          pytest tests
+
+      - name: Test
+        shell: pwsh
+        run: pytest tests
