@@ -55,13 +55,33 @@ class MeasureModel(BaseModel):
     description: Optional[str] = ""
     type: Union[HazardType, ImpactType]
 
+    @validator("name")
+    def validate_name(cls, name: str) -> str:
+        if len(name) < 1:
+            raise ValueError("Name cannot be empty")
+        return name
+
 
 class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
 
     type: HazardType
-    polygon_file: Optional[str] = None
     selection_type: SelectionType
+    polygon_file: Optional[str] = None
+
+    @validator("polygon_file", always=True)
+    def validate_polygon_file(
+        cls, polygon_file: Optional[str], values: Any
+    ) -> Optional[str]:
+        if (
+            values.get("selection_type") not in [SelectionType.aggregation_area, SelectionType.all]
+            and polygon_file is None
+        ):
+            raise ValueError(
+                "If `selection_type` is not 'aggregation_area' or 'all', then `polygon_file` needs to be set."
+            )
+        return polygon_file
+    
 
 
 class ImpactMeasureModel(MeasureModel):
@@ -138,10 +158,17 @@ class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
 
     volume: UnitfulVolume = UnitfulVolume(value=0.0, units=UnitTypesVolume.m3)
-    height: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    height: Optional[UnitfulLength] = None
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
-    percent_area: float = 100
+    percent_area: Optional[float] = None
+
+
+    @validator("type", always=True)
+    def validate_type(cls, type: HazardType, values: Any) -> HazardType:
+        if type not in [HazardType.water_square, HazardType.greening, HazardType.total_storage]:
+            raise ValueError("Type must be one of 'water_square', 'greening', or 'total_storage'")
+        return type
 
     @validator("volume")
     def validate_volume(cls, volume: UnitfulVolume, values: Any) -> UnitfulVolume:
@@ -149,12 +176,61 @@ class GreenInfrastructureModel(HazardMeasureModel):
             raise ValueError("Volume cannot be zero or negative")
         return volume
 
-    @validator("height")
-    def validate_height(cls, height: UnitfulLength, values: Any) -> UnitfulLength:
-        if height.value <= 0:
+    @validator("height", always=True)
+    def validate_height(
+        cls, height: Optional[UnitfulLength], values: Any
+    ) -> Optional[UnitfulLength]:
+        if values.get("type", "") == HazardType.total_storage:
+            if height is not None:
+                raise ValueError("Height cannot be set for total storage type measures")
+            return None  # Height is not required for total storage type measures
+        elif not isinstance(height, UnitfulLength):
+            raise ValueError("Height must be a UnitfulLength")
+        elif height.value <= 0:
             raise ValueError("Height cannot be zero or negative")
         return height
 
+    @validator("percent_area", always=True)
+    def validate_percent_area(
+        cls, percent_area: Optional[float], values: Any
+    ) -> Optional[float]:
+        if values.get("type", "") in [HazardType.total_storage , HazardType.water_square]:
+            if percent_area is not None:
+                raise ValueError(
+                    "Percent area cannot be set for total storage or water square type measures"
+                )
+            return None  # Percent area is not required for total storage type measures
+        elif not isinstance(percent_area, float):
+            raise ValueError("Percent area must be a float")
+        elif percent_area < 0 or percent_area > 100:
+            raise ValueError("Percent area must be between 0 and 100")
+        return percent_area
+
+    @validator("aggregation_area_name", always=True)
+    def validate_aggregation_area_name(
+        cls, aggregation_area_name: Optional[str], values: Any
+    ) -> Optional[str]:
+        if (
+            values.get("selection_type", "") == SelectionType.aggregation_area
+            and aggregation_area_name is None
+        ):
+            raise ValueError(
+                "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
+            )
+        return aggregation_area_name
+
+    @validator("aggregation_area_type", always=True)
+    def validate_aggregation_area_type(
+        cls, aggregation_area_type: Optional[str], values: Any
+    ) -> Optional[str]:
+        if (
+            values.get("selection_type", "") == SelectionType.aggregation_area
+            and aggregation_area_type is None
+        ):
+            raise ValueError(
+                "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
+            )
+        return aggregation_area_type
 
 class IMeasure(ABC):
     """This is a class for a FloodAdapt measure"""
