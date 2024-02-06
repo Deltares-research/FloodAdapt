@@ -142,9 +142,10 @@ class SVIModel(BaseModel):
     field_name: str
 
 
-class FiatModel(BaseModel):
+class DirectImpactsModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
+    model: Optional[str] = "fiat"
     exposure_crs: str
     bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
@@ -236,7 +237,7 @@ class SiteModel(BaseModel):
     gui: GuiModel
     risk: RiskModel
     dem: DemModel
-    fiat: FiatModel
+    direct_impacts: DirectImpactsModel
     river: Optional[list[RiverModel]] = None
     obs_station: Optional[Obs_stationModel] = None
     obs_point: Optional[list[Obs_pointModel]] = None

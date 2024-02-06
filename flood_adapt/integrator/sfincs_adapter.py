@@ -320,7 +320,7 @@ class SfincsAdapter:
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
-            for aggr_dict in self.site.attrs.fiat.aggregation:
+            for aggr_dict in self.site.attrs.direct_impacts.aggregation:
                 # check which one is used in measure
                 if not aggr_dict.name == green_infrastructure.aggregation_area_type:
                     continue

@@ -19,7 +19,7 @@ class Site(ISite):
         obj = Site()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = SiteModel.parse_obj(toml)
+        obj.attrs = SiteModel.model_validate(toml)
         return obj
 
     @staticmethod
@@ -27,7 +27,7 @@ class Site(ISite):
         """create Synthetic from object, e.g. when initialized from GUI"""
 
         obj = Site()
-        obj.attrs = SiteModel.parse_obj(data)
+        obj.attrs = SiteModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]) -> None:

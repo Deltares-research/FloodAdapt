@@ -74,7 +74,7 @@ class Database(IDatabase):
             list of geodataframes with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
-        for aggr_dict in self.site.attrs.fiat.aggregation:
+        for aggr_dict in self.site.attrs.direct_impacts.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
                 self.input_path.parent / "static" / "site" / aggr_dict.file,
                 engine="pyogrio",
@@ -141,12 +141,12 @@ class Database(IDatabase):
         gpd.GeoDataFrame
             SVI per aggregation area
         """
-        if self.site.attrs.fiat.svi:
+        if self.site.attrs.direct_impacts.svi:
             svi_map = gpd.read_file(
                 self.input_path.parent
                 / "static"
                 / "site"
-                / self.site.attrs.fiat.svi.geom,
+                / self.site.attrs.direct_impacts.svi.geom,
                 engine="pyogrio",
             ).to_crs(4326)
         else:
@@ -597,7 +597,7 @@ class Database(IDatabase):
         fm.read()
         buildings = fm.exposure.select_objects(
             primary_object_type="ALL",
-            non_building_names=self.site.attrs.fiat.non_building_names,
+            non_building_names=self.site.attrs.direct_impacts.non_building_names,
             return_gdf=True,
         )
 
@@ -618,7 +618,7 @@ class Database(IDatabase):
         )
         fm.read()
         types = fm.exposure.get_primary_object_type()
-        for name in self.site.attrs.fiat.non_building_names:
+        for name in self.site.attrs.direct_impacts.non_building_names:
             types.remove(name)
         # Add "all" type for using as identifier
         types.append("all")

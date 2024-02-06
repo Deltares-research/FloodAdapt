@@ -33,7 +33,7 @@ def test_read_site_toml(test_db):
     assert isinstance(test_data.attrs.water_level.other[0].height, UnitfulLength)
     assert test_data.attrs.lat == 32.77
     assert test_data.attrs.slr.vertical_offset.value == 0.6
-    assert test_data.attrs.fiat.exposure_crs == "EPSG:4326"
+    assert test_data.attrs.direct_impacts.exposure_crs == "EPSG:4326"
     assert test_data.attrs.river[0].mean_discharge.value == 5000
 
 
@@ -52,7 +52,7 @@ def test_read_site_toml_without_river(test_db):
     assert isinstance(test_data.attrs.obs_station, Obs_stationModel)
     assert test_data.attrs.lat == 32.77
     assert test_data.attrs.slr.vertical_offset.value == 0.6
-    assert test_data.attrs.fiat.exposure_crs == "EPSG:4326"
+    assert test_data.attrs.direct_impacts.exposure_crs == "EPSG:4326"
 
 
 @pytest.mark.skip(

@@ -1,18 +1,23 @@
 import os
+import subprocess
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.interface.measures import (
+    IBuyout,
+    IElevate,
+    IFloodProof,
+    ImpactMeasureModel,
+)
+from flood_adapt.object_model.interface.site import DirectImpactsModel, ISite
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.utils import cd
 
 
 class FiatAdapter:
@@ -21,57 +26,121 @@ class FiatAdapter:
     attributes.
     """
 
-    fiat_model: FiatModel  # hydroMT-FIAT model
-    site: Site  # Site model
-    bfe_path: Path  # path for the base flood elevation file
-    bfe_name: str  # variable name of the base flood elevation
+    name = "Delft-FIAT"
+    template_model_root: Path
+    model_path: Path
+    exec_path: Path
+    config: DirectImpactsModel
 
-    def __init__(self, model_root: str, database_path: str) -> None:
+    def __init__(
+        self,
+        database_path: str,
+        impacts_path: str,
+        site: ISite,
+        config: DirectImpactsModel,
+    ) -> None:
         """Loads FIAT model based on a root directory."""
-        # Load FIAT template
-        self.fiat_logger = setuplog("hydromt_fiat", log_level=10)
-        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self.fiat_logger)
-        self.fiat_model.read()
-
-        # Get site information
-        self.site = Site.load_file(
-            Path(database_path) / "static" / "site" / "site.toml"
-        )
-        if self.site.attrs.fiat.bfe:
+        self.template_model_root = Path(database_path) / "static" / "templates" / "fiat"
+        self.exec_path = Path(database_path).parents[1] / "system" / "fiat" / "fiat.exe"
+        self.model_path = Path(impacts_path).joinpath("fiat")
+        self.config = config
+        self.site = site
+        self.database_input_path = Path(database_path) / "input"
+        # Setup base flood elevation if given
+        if config.bfe:
             self.bfe = {}
-            # Get base flood elevation path and variable name
-            # if table is given use that, else use the map
-            if self.site.attrs.fiat.bfe.table:
+            if config.bfe.table:
                 self.bfe["mode"] = "table"
                 self.bfe["table"] = (
-                    Path(database_path)
-                    / "static"
-                    / "site"
-                    / self.site.attrs.fiat.bfe.table
+                    Path(database_path) / "static" / "site" / config.bfe.table
                 )
             else:
                 self.bfe["mode"] = "geom"
             # Map is always needed!
-            self.bfe["geom"] = (
-                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
-            )
+            self.bfe["geom"] = Path(database_path) / "static" / "site" / config.bfe.geom
+            self.bfe["name"] = config.bfe.field_name
 
-            self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
-
-    def __del__(self) -> None:
+    def close_model(self) -> None:
         # Close fiat_logger
-        for handler in self.fiat_logger.handlers:
+        for handler in self.logger.handlers:
             handler.close()
+        del self.model
+
+    def read_template(self):
+        # First read template FIAT model
+        self.logger = setuplog("hydromt_fiat", log_level=10)
+        self.model = FiatModel(
+            root=self.template_model_root, mode="r", logger=self.logger
+        )
+        self.model.read()
+
+    def get_all_object_ids(self):
+        # Get ids of existing objects
+        return self.model.exposure.exposure_db["Object ID"].to_list()
+
+    def get_object_ids(self, attrs: ImpactMeasureModel) -> list[Any]:
+        """Get ids of objects that are affected by the measure.
+
+        Returns
+        -------
+        list[Any]
+            list of ids
+        """
+
+        # use hydromt-fiat to load the fiat model if it is not provided
+        fiat_model = FiatModel(root=self.template_model_root, mode="r")
+        fiat_model.read()
+
+        # check if polygon file is used, then get the absolute path
+        if attrs.polygon_file:
+            polygon_file = (
+                Path(self.database_input_path)
+                / "measures"
+                / attrs.name
+                / attrs.polygon_file
+            )
+        else:
+            polygon_file = None
+
+        # use the hydromt-fiat method to the ids
+        ids = fiat_model.exposure.get_object_ids(
+            selection_type=attrs.selection_type,
+            property_type=attrs.property_type,
+            non_building_names=self.config.non_building_names,
+            aggregation=attrs.aggregation_area_type,
+            aggregation_area_name=attrs.aggregation_area_name,
+            polygon_file=polygon_file,
+        )
+
+        return ids
+
+    def has_run_check(self):
+        """Checks if direct impacts model has finished
+
+        Returns
+        -------
+        boolean
+            True if it has run, False if something went wrong
+        """
+        log_file = self.fiat_path.joinpath("fiat.log")
+        if log_file.exists():
+            with open(log_file, "r", encoding="cp1252") as f:
+                if "Geom calculation are done!" in f.read():
+                    return True
+                else:
+                    return False
+        else:
+            return False
 
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = self._get_sfincs_map_path(hazard)
-        map_type = hazard.site.attrs.fiat.floodmap_type
+        map_type = hazard.site.attrs.direct_impacts.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
 
         # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
-        conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
+        conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
         # Read SFINCS map in a hydromt compatible format
         if not is_risk:
@@ -84,7 +153,7 @@ class FiatAdapter:
             map_fn = [da]
             del model
 
-        self.fiat_model.setup_hazard(
+        self.model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
             rp=None,
@@ -122,37 +191,36 @@ class FiatAdapter:
         Parameters
         ----------
         economic_growth : float
-            Percentage value of economic growth.
+            Percentage value of economic growth
         ids : Optional[list[str]], optional
             List of FIAT "Object ID" values to apply the economic growth on,
-            by default None
-        """
+            by default None"""
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self.fiat_model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if "Max Potential Damage:" in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.non_building_names)
+        buildings_rows = ~self.model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # If ids are given use that as an additional filter
         if ids:
-            buildings_rows = buildings_rows & self.fiat_model.exposure.exposure_db[
+            buildings_rows = buildings_rows & self.model.exposure.exposure_db[
                 "Object ID"
             ].isin(ids)
 
         # Update columns using economic growth value
-        updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
             1.0 + economic_growth / 100.0
         )
 
         # update fiat model
-        self.fiat_model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
@@ -173,29 +241,29 @@ class FiatAdapter:
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self.fiat_model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if "Max Potential Damage:" in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.non_building_names)
+        buildings_rows = ~self.model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # If ids are given use that as an additional filter
         if ids:
-            buildings_rows = buildings_rows & self.fiat_model.exposure.exposure_db[
+            buildings_rows = buildings_rows & self.model.exposure.exposure_db[
                 "Object ID"
             ].isin(ids)
 
         # Update columns using economic growth value
-        updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[buildings_rows, damage_cols] *= (
             1.0 + population_growth / 100.0
         )
 
         # update fiat model
-        self.fiat_model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
@@ -225,17 +293,17 @@ class FiatAdapter:
         """
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
-            if not self.bfe:
+            if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
             # Use hydromt function
-            self.fiat_model.exposure.setup_new_composite_areas(
+            self.model.exposure.setup_new_composite_areas(
                 percent_growth=population_growth,
                 geom_file=Path(area_path),
                 ground_floor_height=ground_floor_height,
                 damage_types=["Structure", "Content"],
-                vulnerability=self.fiat_model.vulnerability,
+                vulnerability=self.model.vulnerability,
                 elevation_reference="geom",
                 path_ref=self.bfe["geom"],
                 attr_ref=self.bfe["name"],
@@ -246,12 +314,12 @@ class FiatAdapter:
             )
         elif elevation_type == "datum":
             # Use hydromt function
-            self.fiat_model.exposure.setup_new_composite_areas(
+            self.model.exposure.setup_new_composite_areas(
                 percent_growth=population_growth,
                 geom_file=Path(area_path),
                 ground_floor_height=ground_floor_height,
                 damage_types=["Structure", "Content"],
-                vulnerability=self.fiat_model.vulnerability,
+                vulnerability=self.model.vulnerability,
                 elevation_reference="datum",
                 ground_elevation=ground_elevation,
                 aggregation_area_fn=aggregation_areas,
@@ -263,7 +331,7 @@ class FiatAdapter:
 
     def elevate_properties(
         self,
-        elevate: Elevate,
+        elevate: IElevate,
         ids: Optional[list[str]] = None,
     ):
         """Elevate properties by adjusting the "Ground Floor Height" column
@@ -278,7 +346,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = elevate.get_object_ids(self.fiat_model)
+        objectids = self.get_object_ids(elevate.attrs)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
@@ -291,7 +359,7 @@ class FiatAdapter:
             elev_ref = self.bfe["mode"]
             path_ref = self.bfe[elev_ref]
             # Use hydromt function
-            self.fiat_model.exposure.raise_ground_floor_height(
+            self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.attrs.elevation.value,
                 objectids=objectids,
                 height_reference=elev_ref,
@@ -301,7 +369,7 @@ class FiatAdapter:
 
         elif elevate.attrs.elevation.type == "datum":
             # Use hydromt function
-            self.fiat_model.exposure.raise_ground_floor_height(
+            self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.attrs.elevation.value,
                 objectids=objectids,
                 height_reference="datum",
@@ -309,7 +377,7 @@ class FiatAdapter:
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
+    def buyout_properties(self, buyout: IBuyout, ids: Optional[list[str]] = None):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
         zero in the FIAT exposure file.
 
@@ -323,37 +391,37 @@ class FiatAdapter:
         # Get columns that include max damage
         damage_cols = [
             c
-            for c in self.fiat_model.exposure.exposure_db.columns
+            for c in self.model.exposure.exposure_db.columns
             if "Max Potential Damage:" in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.non_building_names)
+        buildings_rows = ~self.model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # Get rows that are affected
-        objectids = buyout.get_object_ids(self.fiat_model)
+        objectids = self.get_object_ids(buyout.attrs)
         rows = (
-            self.fiat_model.exposure.exposure_db["Object ID"].isin(objectids)
+            self.model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
         )
 
         # If ids are given use that as an additional filter
         if ids:
-            rows = self.fiat_model.exposure.exposure_db["Object ID"].isin(ids) & rows
+            rows = self.model.exposure.exposure_db["Object ID"].isin(ids) & rows
 
         # Update columns using economic growth value
-        updated_max_pot_damage = self.fiat_model.exposure.exposure_db.copy()
+        updated_max_pot_damage = self.model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[rows, damage_cols] *= 0
 
         # update fiat model
-        self.fiat_model.exposure.update_max_potential_damage(
+        self.model.exposure.update_max_potential_damage(
             updated_max_potential_damages=updated_max_pot_damage
         )
 
     def floodproof_properties(
-        self, floodproof: FloodProof, ids: Optional[list[str]] = None
+        self, floodproof: IFloodProof, ids: Optional[list[str]] = None
     ):
         """Floodproof properties by creating new depth-damage functions and
         adding them in "Damage Function: {}" column in the FIAT exposure file.
@@ -367,14 +435,27 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = floodproof.get_object_ids(self.fiat_model)
+        objectids = self.get_object_ids(floodproof.attrs)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
         # Use hydromt function
-        self.fiat_model.exposure.truncate_damage_function(
+        self.model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.attrs.elevation.value,
             damage_function_types=["Structure", "Content"],
-            vulnerability=self.fiat_model.vulnerability,
+            vulnerability=self.model.vulnerability,
         )
+
+    def run(self):
+        fiat_exec = str(self.exec_path)
+        with cd(self.model_path):
+            with open(self.model_path.joinpath("fiat.log"), "a") as log_handler:
+                process = subprocess.run(
+                    f'"{fiat_exec}" run settings.toml',
+                    stdout=log_handler,
+                    check=True,
+                    shell=True,
+                )
+
+            return process.returncode
