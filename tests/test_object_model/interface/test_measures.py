@@ -7,11 +7,8 @@ from flood_adapt.object_model.interface.measures import (
     MeasureModel,
     SelectionType,
 )
-
 from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
     UnitfulLength,
-    UnitfulLengthRefValue,
     UnitfulVolume,
     UnitTypesLength,
     UnitTypesVolume,
@@ -199,7 +196,7 @@ class TestGreenInfrastructureModel:
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
             volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-        ) # No height or percent_area needed for total storage
+        )  # No height or percent_area needed for total storage
 
         # Assert
         assert green_infrastructure.name == "test_green_infrastructure"
@@ -221,7 +218,7 @@ class TestGreenInfrastructureModel:
             selection_type=SelectionType.polygon,
             volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
             height=UnitfulLength(value=1, units=UnitTypesLength.meters),
-        ) # No percent_area needed for water square
+        )  # No percent_area needed for water square
 
         # Assert
         assert green_infrastructure.name == "test_green_infrastructure"
@@ -229,7 +226,6 @@ class TestGreenInfrastructureModel:
         assert green_infrastructure.type == "water_square"
         assert green_infrastructure.polygon_file == "test_polygon_file"
         assert green_infrastructure.selection_type == "polygon"
-
 
     def test_green_infrastructure_model_no_aggregation_area_name(self):
         # Arrange

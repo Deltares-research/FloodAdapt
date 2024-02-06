@@ -10,7 +10,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
     UnitfulVolume,
-    UnitTypesLength,
     UnitTypesVolume,
 )
 
@@ -74,14 +73,14 @@ class HazardMeasureModel(MeasureModel):
         cls, polygon_file: Optional[str], values: Any
     ) -> Optional[str]:
         if (
-            values.get("selection_type") not in [SelectionType.aggregation_area, SelectionType.all]
+            values.get("selection_type")
+            not in [SelectionType.aggregation_area, SelectionType.all]
             and polygon_file is None
         ):
             raise ValueError(
                 "If `selection_type` is not 'aggregation_area' or 'all', then `polygon_file` needs to be set."
             )
         return polygon_file
-    
 
 
 class ImpactMeasureModel(MeasureModel):
@@ -163,11 +162,16 @@ class GreenInfrastructureModel(HazardMeasureModel):
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = None
 
-
     @validator("type", always=True)
     def validate_type(cls, type: HazardType, values: Any) -> HazardType:
-        if type not in [HazardType.water_square, HazardType.greening, HazardType.total_storage]:
-            raise ValueError("Type must be one of 'water_square', 'greening', or 'total_storage'")
+        if type not in [
+            HazardType.water_square,
+            HazardType.greening,
+            HazardType.total_storage,
+        ]:
+            raise ValueError(
+                "Type must be one of 'water_square', 'greening', or 'total_storage'"
+            )
         return type
 
     @validator("volume")
@@ -194,7 +198,10 @@ class GreenInfrastructureModel(HazardMeasureModel):
     def validate_percent_area(
         cls, percent_area: Optional[float], values: Any
     ) -> Optional[float]:
-        if values.get("type", "") in [HazardType.total_storage , HazardType.water_square]:
+        if values.get("type", "") in [
+            HazardType.total_storage,
+            HazardType.water_square,
+        ]:
             if percent_area is not None:
                 raise ValueError(
                     "Percent area cannot be set for total storage or water square type measures"
@@ -231,6 +238,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
                 "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
             )
         return aggregation_area_type
+
 
 class IMeasure(ABC):
     """This is a class for a FloodAdapt measure"""
