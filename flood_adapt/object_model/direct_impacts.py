@@ -162,7 +162,7 @@ class DirectImpacts:
         logging.info(f"Post-processing {self.adapter.name} model...")
         # Preprocess all impact model input
         start_time = time.time()
-        self.adapter.postprocess()
+        self.postprocess()
         end_time = time.time()
         print(
             f"{self.adapter.name} postprocessing took {str(round(end_time - start_time, 2))} seconds"
@@ -265,7 +265,7 @@ class DirectImpacts:
 
         self.adapter.close_model()
 
-    def postprocess_fiat(self):
+    def postprocess(self):
         # Postprocess the FIAT results
         # First move and rename fiat output csv
         fiat_results_path = self.impacts_path.joinpath(
