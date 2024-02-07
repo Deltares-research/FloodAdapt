@@ -5,6 +5,17 @@ filters:
 lightbox: auto
 ---
 
+There are three types of historical events a user can select: 
+
+* Historical hurricane 
+* Historical event with gauged water levels
+* Historical event without gauged water levels
+
+The input that a user will enter for each type of historical event is described below. 
+
+::: {.callout-note}
+When a site has a water level gauge, we recommend using the "Historical event with gauged water levels" option. The only time the "Historical event without gauged water levels" option is recommended is when there is no gauge at the site, or when the user would like to simulate the effects of a hurricane that occurred far offshore of the site
+:::
 
 ### Historical Hurricanes
 ::: {.callout-tip}
@@ -14,7 +25,11 @@ Don't feel like reading? No problem! Check out our video about how to add a hurr
 
 
 
-The historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical – Hurricane” option from the Events tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The default search radius around the project site is 100 miles. If a hurricane of interest does not appear by default, the user can increase the search radius to locate it. However, it is not recommended to use this option for a hurricane so far from the site because the hurricane track option performs best for hurricanes that passed close to the site. For distant hurricane tracks, it is recommended to use “Historical – forced by offshore wind and tide” (event type 2). 
+The historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the **Events** tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The user can see all hurricanes within a specified distance of the site, or between specified years. 
+
+::: {.callout-note}
+It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type. 
+:::
 
 ![**Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window**](../../_static/images/popup_hurricaneSelector.png){#fig-hurricaneSelector}
 

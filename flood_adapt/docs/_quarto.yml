@@ -86,7 +86,6 @@ website:
             - section: "Events"
               file: "4_user_guide/events/index.qmd"
               contents:
-                - "4_user_guide/events/general_info.qmd"
                 - "4_user_guide/events/historic_events.qmd"
                 - "4_user_guide/events/synthetic_events.qmd"
                 - "4_user_guide/events/probablistic_events.qmd"
