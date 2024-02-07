@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, root_validator
 
 
 class UnitTypesLength(str, Enum):
@@ -100,15 +100,26 @@ class UnitfulLength(ValueUnitPair):
             new_conversion = 3.28084
         elif new_units == "inch":
             new_conversion = 1.0 / 0.0254
-        elif self.units == "miles":
+        elif new_units == "miles":
             new_conversion = 1.0 / 1609.344
         else:
             ValueError("Invalid length units")
         return conversion * new_conversion * self.value
 
 
+class UnitfulHeight(UnitfulLength):
+    """A special type of length that is always positive and non-zero. Used for heights."""
+    value: float = Field(..., gt=0)
+
+    @root_validator(pre=True)
+    def convert_length_to_height(cls, obj):
+        if isinstance(obj, UnitfulLength):        
+            return UnitfulHeight(value=obj.value, units=obj.units)
+        return obj
+
+
 class UnitfulArea(ValueUnitPair):
-    value: float
+    value: float = Field(..., gt=0)
     units: UnitTypesArea
 
     def convert(self, new_units: UnitTypesArea) -> float:
@@ -127,7 +138,7 @@ class UnitfulArea(ValueUnitPair):
         # first, convert to meters
         if self.units == "cm2":
             conversion = 1.0 / 10000  # meters
-        if self.units == "mm2":
+        elif self.units == "mm2":
             conversion = 1.0 / 1000000  # meters
         elif self.units == "m2":
             conversion = 1.0  # meters
@@ -139,7 +150,7 @@ class UnitfulArea(ValueUnitPair):
         # second, convert to new units
         if new_units == "cm2":
             new_conversion = 10000.0
-        if new_units == "mm2":
+        elif new_units == "mm2":
             new_conversion = 1000000.0
         elif new_units == "m2":
             new_conversion = 1.0
@@ -267,7 +278,7 @@ class UnitfulIntensity(ValueUnitPair):
 
 
 class UnitfulVolume(ValueUnitPair):
-    value: float
+    value: float = Field(..., gt=0)
     units: UnitTypesVolume
 
     def convert(self, new_units: UnitTypesVolume) -> float:

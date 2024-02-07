@@ -8,6 +8,7 @@ from flood_adapt.object_model.interface.measures import (
     SelectionType,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulHeight,
     UnitfulLength,
     UnitfulVolume,
     UnitTypesLength,
@@ -44,7 +45,7 @@ class TestMeasureModel:
             MeasureModel(type=HazardType.floodwall)
 
         # Assert
-        assert "validation error for MeasureModel\nname\n  field required" in str(
+        assert "validation error for MeasureModel\nname\n  Field required" in str(
             excinfo.value
         )
 
@@ -54,7 +55,10 @@ class TestMeasureModel:
             MeasureModel(name="", type=HazardType.floodwall)
 
         # Assert
-        assert "Name cannot be empty" in str(excinfo.value)
+        assert (
+            "validation error for MeasureModel\nname\n  String should have at least 1 character "
+            in str(excinfo.value)
+        )
 
     def test_measure_model_invalid_type(self):
         # Arrange
@@ -64,9 +68,9 @@ class TestMeasureModel:
             )
 
         # Assert
-        assert "MeasureModel\ntype\n  value is not a valid enumeration member" in str(
-            excinfo.value
-        )
+        assert "validation errors for MeasureModel\ntype" in str(excinfo.value)
+        assert "[HazardType]]]\n  Input should be " in str(excinfo.value)
+        assert "[ImpactType]]]\n  Input should be " in str(excinfo.value)
 
 
 class TestHazardMeasureModel:
@@ -128,10 +132,7 @@ class TestHazardMeasureModel:
             )
 
         # Assert
-        assert (
-            "HazardMeasureModel\ntype\n  value is not a valid enumeration member"
-            in str(excinfo.value)
-        )
+        assert "HazardMeasureModel\ntype\n  Input should be " in str(excinfo.value)
 
     def test_hazard_measure_model_invalid_selection_type(self):
         # Arrange
@@ -145,9 +146,8 @@ class TestHazardMeasureModel:
             )
 
         # Assert
-        assert (
-            "HazardMeasureModel\nselection_type\n  value is not a valid enumeration member"
-            in str(excinfo.value)
+        assert "HazardMeasureModel\nselection_type\n  Input should be " in str(
+            excinfo.value
         )
 
 
@@ -163,7 +163,7 @@ class TestGreenInfrastructureModel:
             aggregation_area_name="test_aggregation_area_name",
             aggregation_area_type="test_aggregation_area_type",
             volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-            height=UnitfulLength(value=1, units=UnitTypesLength.meters),
+            height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
             percent_area=100.0,
         )
 
@@ -182,7 +182,7 @@ class TestGreenInfrastructureModel:
         assert green_infrastructure.volume == UnitfulVolume(
             value=1, units=UnitTypesVolume.m3
         )
-        assert green_infrastructure.height == UnitfulLength(
+        assert green_infrastructure.height == UnitfulHeight(
             value=1, units=UnitTypesLength.meters
         )
         assert green_infrastructure.percent_area == 100.0
@@ -217,7 +217,7 @@ class TestGreenInfrastructureModel:
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
             volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-            height=UnitfulLength(value=1, units=UnitTypesLength.meters),
+            height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
         )  # No percent_area needed for water square
 
         # Assert
@@ -238,7 +238,7 @@ class TestGreenInfrastructureModel:
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_type="test_aggregation_area_type",
                 volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
@@ -259,7 +259,7 @@ class TestGreenInfrastructureModel:
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
                 volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
@@ -281,13 +281,14 @@ class TestGreenInfrastructureModel:
                 aggregation_area_name="test_aggregation_area_name",
                 aggregation_area_type="test_aggregation_area_type",
                 volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
         # Assert
-        assert "GreenInfrastructureModel\ntype\n  Type must be one of " in str(
-            excinfo.value
+        assert (
+            "GreenInfrastructureModel\ntype\n  Value error, Type must be one of "
+            in str(excinfo.value)
         )
 
     @pytest.mark.parametrize(
@@ -295,66 +296,52 @@ class TestGreenInfrastructureModel:
         [
             (
                 None,
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 100.0,
-                "volume\n  none is not an allowed value",
-            ),
-            (
-                UnitfulVolume(value=0, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
-                100.0,
-                "Volume cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=-1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
-                100.0,
-                "Volume cannot be zero or negative",
+                "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
                 None,
                 100.0,
-                "Height must be a UnitfulLength",
+                "Height and percent_area needs to be set for greening type measures",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
                 UnitfulLength(value=0, units=UnitTypesLength.meters),
-                100.0,
-                "Height cannot be zero or negative",
+                None,
+                "height.value\n  Input should be greater than 0",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
                 UnitfulLength(value=-1, units=UnitTypesLength.meters),
-                100.0,
-                "Height cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
                 None,
-                "Percent area must be a float",
+                "height.value\n  Input should be greater than 0",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                None,
+                "Height and percent_area needs to be set for greening type measures",
+            ),
+            (
+                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 -1,
-                "Percent area must be between 0 and 100",
+                "percent_area\n  Input should be greater than or equal to 0",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 101,
-                "Percent area must be between 0 and 100",
+                "percent_area\n  Input should be less than or equal to 100",
             ),
         ],
         ids=[
             "volume_none",
-            "volume_zero",
-            "volume_negative",
             "height_none",
-            "height_zero",
-            "height_negative",
+            "unitfulLength_zero",  # You should still be able to set as a unitfull length. However, during the conversion to height, it should trigger the height validator
+            "unitfulLength_negative",  # You should still be able to set as a unitfull length. However, during the conversion to height, it should trigger the height validator
             "percent_area_none",
             "percent_area_negative",
             "percent_area_above_100",
@@ -392,37 +379,23 @@ class TestGreenInfrastructureModel:
                 None,
                 None,
                 None,
-                "volume\n  none is not an allowed value",
-            ),
-            (
-                UnitfulVolume(value=0, units=UnitTypesVolume.m3),
-                None,
-                None,
-                "Volume cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=-1, units=UnitTypesVolume.m3),
-                None,
-                None,
-                "Volume cannot be zero or negative",
+                "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 None,
-                "Height cannot be set for total storage type measures",
+                "Height and percent_area cannot be set for total storage type measures",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
                 None,
                 100,
-                "Percent area cannot be set for total storage or water square type measures",
+                "Height and percent_area cannot be set for total storage type measures",
             ),
         ],
         ids=[
             "volume_none",
-            "volume_zero",
-            "volume_negative",
             "height_set",
             "percent_area_set",
         ],
@@ -456,54 +429,26 @@ class TestGreenInfrastructureModel:
         [
             (
                 None,
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 None,
-                "volume\n  none is not an allowed value",
-            ),
-            (
-                UnitfulVolume(value=0, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
-                None,
-                "Volume cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=-1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
-                None,
-                "Volume cannot be zero or negative",
+                "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
                 None,
                 None,
-                "Height must be a UnitfulLength",
+                "Height needs to be set for water square type measures",
             ),
             (
                 UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=0, units=UnitTypesLength.meters),
-                None,
-                "Height cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=-1, units=UnitTypesLength.meters),
-                None,
-                "Height cannot be zero or negative",
-            ),
-            (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=1, units=UnitTypesLength.meters),
+                UnitfulHeight(value=1, units=UnitTypesLength.meters),
                 100,
-                "Percent area cannot be set for total storage or water square type measures",
+                "Percentage_area cannot be set for water square type measures",
             ),
         ],
         ids=[
             "volume_none",
-            "volume_zero",
-            "volume_negative",
             "height_none",
-            "height_zero",
-            "height_negative",
             "percent_area_set",
         ],
     )
