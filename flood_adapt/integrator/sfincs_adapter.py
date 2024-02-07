@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 from pathlib import Path
@@ -57,6 +58,7 @@ class SfincsAdapter:
         # Close the log file associated with the logger
         for handler in self.sfincs_logger.handlers:
             handler.close()
+        gc.collect()
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
