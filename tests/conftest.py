@@ -37,8 +37,9 @@ def remove_files_and_folders(path, file_structure):
     autouse=True, scope="session"
 )  # This fixture is only run once per session
 def updatedSVN():
+    config_path = Path(__file__).parent.parent / "config.toml"
     parse_config(
-        "config.toml"
+        config_path
     )  # Set the database root, system folder, based on the config file
     set_site_name("charleston_test")  # set the site name to the test database
     updateSVN_file_path = Path(__file__).parent / "updateSVN.py"

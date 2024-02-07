@@ -62,8 +62,15 @@ class Database(IDatabase):
         site_name : Union[str, None]
             site name (same as in the folder structure)
         """
-        config_file = Path(__file__).parent.parent / "config.toml"
-        parse_config(config_file)
+        try:
+            # see if all env vars are set already
+            os.environ["DATABASE_ROOT"]
+            os.environ["SITE_NAME"]
+            os.environ["SYSTEM_FOLDER"]
+        except KeyError:
+            # not all are set, so run parse_config with default values, and overwrite with provided values
+            config_file = Path(__file__).parent.parent / "config.toml"
+            parse_config(config_file)
 
         if database_path is not None:
             print(
