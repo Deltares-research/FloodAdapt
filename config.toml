@@ -1,3 +1,6 @@
-database_root="C:/Users/blom_lk/dev/Workspace_FloodAdapt/Database"
-system_folder="C:/Users/blom_lk/dev/Workspace_FloodAdapt/Database/system"
-site_name="charleston_test"
+# These are the default values for environment variables.
+# Use the functions in config.py to overwrite these at runtime.
+
+database_root="path/to/svn/database"    # Absolute path to the svn database root
+system_folder="path/to/system/folder"   # Absolute path to the system folder
+site_name="site_name"                   # Default site used in headless mode (only backend) by tests. This is overwritten if run through the GUI by the contents of flood_adapt_gui.toml.

@@ -215,8 +215,9 @@ def test_loadFile_validFiles(test_tomls):
 
 
 def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError) as e_info:
         Site.load_file("not_a_file.toml")
+    assert "No such file or directory: 'not_a_file.toml'" in str(e_info)
 
 
 def test_loadDict_validDict(test_dict):
@@ -245,9 +246,9 @@ def test_loadDict_invalidDatatypes_raiseValidationError(attr, attr_type, test_di
 @pytest.mark.parametrize("removed_key", get_required_attrs(SiteModel))
 def test_loadDict_missingRequiredAttrs_raiseValidationError(test_dict, removed_key):
     test_dict.pop(removed_key)
-    # Validation errors dont have an __eq__ method, so we cant use pytest.raises(ValidationError)
     with pytest.raises(Exception) as e_info:
         Site.load_dict(test_dict)
+    assert e_info.typename.lower() == "validationerror"
     assert removed_key in str(e_info)
     assert "missing" in str(e_info)
 
