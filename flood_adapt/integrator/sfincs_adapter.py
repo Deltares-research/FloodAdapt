@@ -43,11 +43,8 @@ class SfincsAdapter:
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        # Check if model root exists
-        # if validate_existence_root_folder(model_root):
-        #    self.model_root = model_root
-
         self.sfincs_logger = logging.getLogger(__name__)
+        self.sfincs_logger.handlers = []  # To ensure logging file path has reset
         self.sf_model = SfincsModel(
             root=model_root, mode="r+", logger=self.sfincs_logger
         )
