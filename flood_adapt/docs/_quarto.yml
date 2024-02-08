@@ -44,20 +44,25 @@ website:
             style="height: 40px;"
           />
         </a>
-  navbar:  # Create navigation bar on
-    logo: _static/logo.png   # Add _static folder and flood adapt logo to folder
-    search: true
-    pinned: true
-    right:
-      - icon: github
-        href: https://github.com/Deltares-research/FloodAdapt
+  #navbar:  # Create navigation bar on
+  #  logo: _static/logo.png   # Add _static folder and flood adapt logo to folder
+  #  search: true
+  #  pinned: true
+  #  right:
+  #    - icon: github
+  #      href: https://github.com/Deltares-research/FloodAdapt
+
 
   sidebar:
-    - title: "Home"
+    - title: "FLOOD ADAPT"
       border: true
       collapse-level: 1
       style: "docked"
       background: dark
+      search: true
+      bottom:
+        - icon: github
+          href: https://github.com/Deltares-research/FloodAdapt
 
       
       contents:

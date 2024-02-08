@@ -33,10 +33,44 @@ $navbar-hl: $links ;
 }
 
 // !TODO: try to remove scroll bar. Hidden !important removes whole scroll functionality
+
 .sidebar.collapse.collapse-horizontal.sidebar-navigation.docked.overflow-auto{
     overflow:hidden;
+    margin-top: -25px !important;
 }
 
+// Sidebar Title
+.sidebar-title {
+    color: white;
+    margin-left: 90px;
+    margin-top: 20px !important;
+    font-weight: bold;
+    font-size: 16px !important;
+    padding-top: 100px;
+    font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
+}
+.sidebar-header {
+    background-color: #2980b9;
+    height: 100px;
+}
+
+// scheme Toggle 
+.quarto-color-scheme-toggle {
+    /* Your positioning styles here */
+    position: relative; 
+    top: 10px; 
+    left: 190px; 
+    color:white;
+}
+
+// Search window
+.sidebar-search {
+    margin-left: 30px;
+}
+
+.sidebar-search .type-textbox {
+    width: 245px;
+}
 // !TODO: try to change the container to align with gray background
 .sidebar-menu-container{
     margin-right: 0px;
