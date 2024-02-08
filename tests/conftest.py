@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
-from flood_adapt.config import parse_config, set_site_name
 
 
 def get_file_structure(path: str) -> list:
@@ -38,13 +38,15 @@ def remove_files_and_folders(path, file_structure):
 )  # This fixture is only run once per session
 def updatedSVN():
     config_path = Path(__file__).parent.parent / "config.toml"
-    parse_config(
+    FloodAdapt_config.parse_config(
         config_path
     )  # Set the database root, system folder, based on the config file
-    set_site_name("charleston_test")  # set the site name to the test database
+    FloodAdapt_config.set_database_name(
+        "charleston_test"
+    )  # set the database name to the test database
     updateSVN_file_path = Path(__file__).parent / "updateSVN.py"
     subprocess.run(
-        [str(updateSVN_file_path), os.environ["DATABASE_ROOT"]],
+        [str(updateSVN_file_path), FloodAdapt_config.get_database_root()],
         shell=True,
         capture_output=True,
     )
@@ -64,10 +66,10 @@ def make_db_fixture(scope):
 
     @pytest.fixture(scope=scope)
     def _db_fixture():
-        database_path = os.environ["DATABASE_ROOT"]
-        site_name = os.environ["SITE_NAME"]
+        database_path = FloodAdapt_config.get_database_root()
+        database_name = FloodAdapt_config.get_database_name()
         file_structure = get_file_structure(database_path)
-        dbs = read_database(database_path, site_name)
+        dbs = read_database(database_path, database_name)
         yield dbs
         remove_files_and_folders(database_path, file_structure)
 

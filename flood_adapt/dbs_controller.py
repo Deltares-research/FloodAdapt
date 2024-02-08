@@ -14,7 +14,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.config import parse_config, set_database_root, set_site_name
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -49,56 +49,50 @@ class Database(IDatabase):
     def __init__(
         self,
         database_path: Union[str, os.PathLike, None] = None,
-        site_name: Union[str, None] = None,
+        database_name: Union[str, None] = None,
     ) -> None:
-        """Database is initialized with a path and a site name.
-        Default: config.toml in the root of the project
-        Alternate: from these variables
+        """
+        Initialize the DatabaseController object.
 
-        Optional parameters
+        Parameters
         ----------
-        database_path : Union[str, os.PathLike, None]
-            database path
-        site_name : Union[str, None]
-            site name (same as in the folder structure)
+        database_path : Union[str, os.PathLike, None], optional
+            The path to the database. If not provided, the default path specified in the config.toml file will be used.
+        database_name : Union[str, None], optional
+            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+
+        Raises
+        ------
+        KeyError
+            If the required variables are not set in the config.toml file.
+
+        Notes
+        -----
+        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
         try:
-            # see if all env vars are set already
-            os.environ["DATABASE_ROOT"]
-            os.environ["SITE_NAME"]
-            os.environ["SYSTEM_FOLDER"]
+            FloodAdapt_config.get_database_root()
+            FloodAdapt_config.get_database_name()
+            FloodAdapt_config.get_system_folder()
         except KeyError:
-            # not all are set, so run parse_config with default values, and overwrite with provided values
-            config_file = Path(__file__).parent.parent / "config.toml"
-            parse_config(config_file)
+            default_config = Path(__file__).parent.parent / "config.toml"
+            FloodAdapt_config.parse_config(default_config)
 
-        if database_path is not None:
-            print(
-                f"Database_path provided, using {database_path} instead of config.toml"
-            )
-            set_database_root(database_path)
-        else:
-            print(
-                f"No database_path provided, using config.toml: {os.environ['DATABASE_ROOT']}"
-            )
+        # Overwrite defaults with whatever the user provided
+        if any(
+            [
+                (database_path != FloodAdapt_config.get_database_root()),
+                (database_name != FloodAdapt_config.get_database_name()),
+            ]
+        ):
+            FloodAdapt_config.parse_user_input(database_path, None, database_name)
 
-        if site_name is not None:
-            print(f"site_name provided, using {site_name} instead of config.toml")
-            set_site_name(site_name)
-        else:
-            print(
-                f"No site_name provided, using config.toml: {os.environ['SITE_NAME']}"
-            )
+        database_path = FloodAdapt_config.get_database_root()
+        database_name = FloodAdapt_config.get_database_name()
 
-        self.input_path = (
-            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "input"
-        )
-        self.static_path = (
-            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "static"
-        )
-        self.output_path = (
-            Path(os.environ["DATABASE_ROOT"]) / os.environ["SITE_NAME"] / "output"
-        )
+        self.input_path = database_path / database_name / "input"
+        self.static_path = database_path / database_name / "static"
+        self.output_path = database_path / database_name / "output"
 
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
