@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import xarray as xr
 from numpy import matlib
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -272,7 +273,7 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
-        sfincs_exec = Path(os.environ["SYSTEM_FOLDER"]) / "sfincs" / "sfincs.exe"
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         # results_dir = self.database_input_path.parent.joinpath(
         #     "output", "results", self.name
@@ -290,7 +291,7 @@ class Hazard:
     def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
 
-        sfincs_exec = Path(os.environ["SYSTEM_FOLDER"]) / "sfincs" / "sfincs.exe"
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         simulation_path = self.simulation_paths_offshore[ii]
         with cd(simulation_path):
