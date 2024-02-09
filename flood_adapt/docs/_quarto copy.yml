@@ -47,22 +47,25 @@ website:
         </a> 
 
   navbar:  # Create navigation bar on
-    logo: _static/logo.png
     title: FloodAdapt manual
     pinned: true
     right:
       - icon: github
         url:  https://github.com/Deltares-research/FloodAdapt
-
-  sidebar:  
+      - icon: house-door-fill
+        url: http://localhost:4641/
+  sidebar: 
+    #logo: _static/logo.png
+    #title: FLOOD ADAPT 
     border: true
     collapse-level: 2
     style: "docked"
-    background: light
+    background: dark
     search: true
       
     contents:
-      - text: "HOME"
+      - title: HOME
+        text: "HOME"
         file: index.qmd
       - text: "INTRODUCTION"
         file: 1_introduction/index.qmd
