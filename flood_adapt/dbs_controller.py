@@ -118,10 +118,10 @@ class Database(IDatabase):
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
         model = SfincsAdapter(model_root=path_in, site=self.site)
-        boundary = model.get_model_boundary()
-        del model
 
-        return boundary
+        bnd = model.get_model_boundary()
+        del model
+        return bnd
 
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model"""
@@ -1580,7 +1580,6 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
-
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
