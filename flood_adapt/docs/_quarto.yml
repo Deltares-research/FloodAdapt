@@ -52,8 +52,8 @@ website:
     right:
       - icon: github
         url:  https://github.com/Deltares-research/FloodAdapt
-
-        
+      - icon: house-door-fill
+        url: http://localhost:4641/
   sidebar: 
     #logo: _static/logo.png
     #title: FLOOD ADAPT 
