@@ -61,31 +61,17 @@ class Database(IDatabase):
         database_name : Union[str, None], optional
             The name of the database. If not provided, the default name specified in the config.toml file will be used.
 
-        Raises
-        ------
-        KeyError
-            If the required variables are not set in the config.toml file.
-
         Notes
         -----
         For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-        try:
-            FloodAdapt_config.get_database_root()
-            FloodAdapt_config.get_database_name()
-            FloodAdapt_config.get_system_folder()
-        except KeyError:
-            default_config = Path(__file__).parent.parent / "config.toml"
-            FloodAdapt_config.parse_config(default_config)
+        default_config = Path(__file__).parent.parent / "config.toml"
+        FloodAdapt_config.parse_config(default_config, overwrite=False)
 
         # Overwrite defaults with whatever the user provided
-        if any(
-            [
-                (database_path != FloodAdapt_config.get_database_root()),
-                (database_name != FloodAdapt_config.get_database_name()),
-            ]
-        ):
-            FloodAdapt_config.parse_user_input(database_path, None, database_name)
+        FloodAdapt_config.parse_user_input(
+            database_root=database_path, database_name=database_name
+        )
 
         database_path = FloodAdapt_config.get_database_root()
         database_name = FloodAdapt_config.get_database_name()
