@@ -4,11 +4,12 @@
 # IMPORTANT: do not use backslashes in the path or the toml reader will fail
 # Use only forward slashes like in the examples
 
-# Absolute path to the svn database root
-DATABASE_ROOT="path/to/svn/database"
 
-# Absolute path to the system folder
-SYSTEM_FOLDER="path/to/system/folder"
+# Path to the svn database root
+DATABASE_ROOT="../Database"
 
-# Default database_name (containing the input, output and static folder) used in headless mode (only backend) by tests. This is overwritten if run through the GUI by the contents of flood_adapt_gui.toml.
-DATABASE_NAME="database_name"
+# Path to the system folder
+SYSTEM_FOLDER="../Database/system"
+
+# Default database_name (containing the input, output and static folder) used in headless mode (only backend) by tests.
+DATABASE_NAME="charleston_test"

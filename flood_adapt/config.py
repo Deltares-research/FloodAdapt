@@ -11,9 +11,10 @@ def set_database_root(database_root: Path) -> None:
     Args:
         database_root (str): The new root directory path.
     """
-    if not Path(database_root).is_dir():
-        raise ValueError(f"{database_root} is not a valid database root directory")
-    os.environ["DATABASE_ROOT"] = str(database_root)
+    abs_database_root = Path(database_root).resolve()
+    if not Path(abs_database_root).is_dir():
+        raise ValueError(f"{abs_database_root} is not a valid database root directory")
+    os.environ["DATABASE_ROOT"] = str(abs_database_root)
 
 
 def set_system_folder(system_folder: Path) -> None:
@@ -23,9 +24,10 @@ def set_system_folder(system_folder: Path) -> None:
     Args:
         system_folder (str): The new system folder path.
     """
-    if not Path(system_folder).is_dir():
-        raise ValueError(f"{system_folder} is not a valid system folder directory")
-    os.environ["SYSTEM_FOLDER"] = str(system_folder)
+    abs_system_folder = Path(system_folder).resolve()
+    if not Path(abs_system_folder).is_dir():
+        raise ValueError(f"{abs_system_folder} is not a valid system folder directory")
+    os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
 
 
 def set_database_name(database_name: str) -> None:
