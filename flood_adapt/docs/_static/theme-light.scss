@@ -24,53 +24,82 @@ $navbar-hl: $links ;
     border-color: $links;
     border: 1px solid $links;
 }
+
+// general navabat settings
+
+.navbar.navbar-expand-lg {
+    height: 120px ;
+    background-color: #2980b9;
+    width: 300px
+
+    //margin-left: 300px;
+}
+//.navbar-container.container-fluid {
+//    height: 50px ;
+//    background-color: #2980b9;
+//}
+
+//header.headroom.fixed-top {
+//    height: 5px ;
+//    background-color: #2980b9;
+//}
+
+// Navbar Title
+.navbar-title {
+    color: white;
+    font-weight: bold;
+    font-size: 18px !important;
+    position: absolute;
+    margin-left: 35px;
+    margin-top: -20px;
+    font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
+}
+
+.quarto-color-scheme-toggle:not(.alternate) .bi::before {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="rgba(255, 255, 255, 1)" class="bi bi-toggle-off" viewBox="0 0 16 16"><path d="M11 4a4 4 0 0 1 0 8H8a4.992 4.992 0 0 0 2-4 4.992 4.992 0 0 0-2-4h3zm-6 8a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM0 8a5 5 0 0 0 5 5h6a5 5 0 0 0 0-10H5a5 5 0 0 0-5 5z"/></svg>') !important;
+    position: absolute;
+    margin-top: -35px
+}
+
+.bi.bi-github {
+    color: white;
+    position: absolute;
+    margin-top: -55px;
+    margin-left: -20px
+}
+
+
 // general sidebar settings
 #quarto-sidebar {
-    margin: 0;
-    padding: 0;
+    margin-top: -30px;
     width: 300px;
     font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
 }
 
+.sidebar-logo.py-0.d-lg-inline.d-none {
+    width: 0px; /* Adjust the width as needed */
+    height: 0px; /* Maintain aspect ratio */
+  }
 // !TODO: try to remove scroll bar. Hidden !important removes whole scroll functionality
 
 .sidebar.collapse.collapse-horizontal.sidebar-navigation.docked.overflow-auto{
     overflow:hidden;
-    margin-top: -25px !important;
 }
 
-// Sidebar Title
-.sidebar-title {
-    color: white;
-    margin-left: 90px;
-    margin-top: 20px !important;
-    font-weight: bold;
-    font-size: 16px !important;
-    padding-top: 100px;
-    font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
-}
-.sidebar-header {
+.pt-lg-2.mt-2.text-left.sidebar-header.sidebar-header-stacked {
+    margin-top: -50px !important;
+    margin-left: -50px;
     background-color: #2980b9;
-    height: 100px;
-}
-
-// scheme Toggle 
-.quarto-color-scheme-toggle {
-    /* Your positioning styles here */
-    position: relative; 
-    top: 10px; 
-    left: 190px; 
-    color:white;
+    height: 100px;  
 }
 
 // Search window
-.sidebar-search {
-    margin-left: 30px;
+.type-textbox {
+    position: absolute;
+    margin-left: 30px !important;
+    margin-top: 60px !important;
 }
 
-.sidebar-search .type-textbox {
-    width: 245px;
-}
 // !TODO: try to change the container to align with gray background
 .sidebar-menu-container{
     margin-right: 0px;
@@ -121,13 +150,6 @@ $navbar-hl: $links ;
     margin-left: -20px;
 } 
 
-// Toggle Sections
-
-.collapse.list-unstyled.sidebar-section.sidebar-item-toggle.text-start{
-    width:100%;
-    padding: 5px;
-    margin-left: -20px;
-}
 // Style content 
 
 .content {
