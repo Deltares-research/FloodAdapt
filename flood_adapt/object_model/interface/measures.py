@@ -161,19 +161,6 @@ class GreenInfrastructureModel(HazardMeasureModel):
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = Field(None, ge=0, le=100)
 
-    @field_validator("type")
-    @classmethod
-    def validate_type(cls, type: HazardType) -> HazardType:
-        if type not in [
-            HazardType.water_square,
-            HazardType.greening,
-            HazardType.total_storage,
-        ]:
-            raise ValueError(
-                "Type must be one of 'water_square', 'greening', or 'total_storage'"
-            )
-        return type
-
     @model_validator(mode="after")
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
         if self.type == HazardType.total_storage:
@@ -192,11 +179,15 @@ class GreenInfrastructureModel(HazardMeasureModel):
                     "Height needs to be set for water square type measures"
                 )
             return self
-        elif not isinstance(self.height, UnitfulHeight) or not isinstance(
-            self.percent_area, float
-        ):
+        elif self.type == HazardType.greening:
+            if not isinstance(self.height, UnitfulHeight) or not isinstance(
+                self.percent_area, float):
+                raise ValueError(
+                    "Height and percent_area needs to be set for greening type measures"
+                )
+        else:
             raise ValueError(
-                "Height and percent_area needs to be set for greening type measures"
+                "Type must be one of 'water_square', 'greening', or 'total_storage'"
             )
         return self
 

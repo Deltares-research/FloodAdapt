@@ -287,7 +287,7 @@ class TestGreenInfrastructureModel:
 
         # Assert
         assert (
-            "GreenInfrastructureModel\ntype\n  Value error, Type must be one of "
+            "GreenInfrastructureModel\n  Value error, Type must be one of "
             in str(excinfo.value)
         )
 
