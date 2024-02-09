@@ -135,7 +135,7 @@ class TestUnitfulHeight:
         with pytest.raises(ValueError) as excinfo:
             UnitfulHeight(value=10, units="invalid_units")
         assert "UnitfulHeight\nunits\n  Input should be " in str(excinfo.value)
-        
+
 
 class TestUnitfulArea:
     def test_unitfulArea_convertM2ToCM2_correct(self):

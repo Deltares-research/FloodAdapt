@@ -109,11 +109,12 @@ class UnitfulLength(ValueUnitPair):
 
 class UnitfulHeight(UnitfulLength):
     """A special type of length that is always positive and non-zero. Used for heights."""
+
     value: float = Field(..., gt=0)
 
     @root_validator(pre=True)
     def convert_length_to_height(cls, obj):
-        if isinstance(obj, UnitfulLength):        
+        if isinstance(obj, UnitfulLength):
             return UnitfulHeight(value=obj.value, units=obj.units)
         return obj
 

@@ -286,9 +286,8 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert (
-            "GreenInfrastructureModel\n  Value error, Type must be one of "
-            in str(excinfo.value)
+        assert "GreenInfrastructureModel\n  Value error, Type must be one of " in str(
+            excinfo.value
         )
 
     @pytest.mark.parametrize(

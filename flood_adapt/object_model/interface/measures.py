@@ -181,7 +181,8 @@ class GreenInfrastructureModel(HazardMeasureModel):
             return self
         elif self.type == HazardType.greening:
             if not isinstance(self.height, UnitfulHeight) or not isinstance(
-                self.percent_area, float):
+                self.percent_area, float
+            ):
                 raise ValueError(
                     "Height and percent_area needs to be set for greening type measures"
                 )
