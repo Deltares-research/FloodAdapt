@@ -1570,7 +1570,6 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
-        # Use garbage collector to ensure file handles are properly cleaned up
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
