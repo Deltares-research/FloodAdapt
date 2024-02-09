@@ -60,11 +60,12 @@ class Database(IDatabase):
             The path to the database. If not provided, the default path specified in the config.toml file will be used.
         database_name : Union[str, None], optional
             The name of the database. If not provided, the default name specified in the config.toml file will be used.
-
         Notes
         -----
         For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
+
+        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
         default_config = Path(__file__).parent.parent / "config.toml"
         FloodAdapt_config.parse_config(default_config, overwrite=False)
 
