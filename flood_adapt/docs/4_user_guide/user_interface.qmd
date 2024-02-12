@@ -2,3 +2,5 @@
 title: 	User interface general features
 ---
 To be filled in when the general features are more finalized (e.g. view and help options)
+
+Test.
