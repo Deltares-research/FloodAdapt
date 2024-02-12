@@ -1,0 +1,10 @@
+---
+title: 	Getting Started
+---
+This section covers the following:
+
+* System requirements
+
+* Installation steps
+
+* FloodAdapt folder structure

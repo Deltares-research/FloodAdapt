@@ -1,4 +1,4 @@
 ---
-title: 	User interface general features
+title: 	User interface - overview
 ---
 To be filled in when the general features are more finalized (e.g. view and help options)
