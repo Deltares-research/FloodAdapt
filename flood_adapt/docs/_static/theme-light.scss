@@ -24,77 +24,72 @@ $navbar-hl: $links ;
     border-color: $links;
     border: 1px solid $links;
 }
-// general sidebar settings
-#quarto-sidebar {
-    margin: 0;
-    padding: 0;
-    width: 300px;
+
+// general navabat settings
+
+//.navbar-container.container-fluid {
+//    height: 50px ;
+//    background-color: #2980b9;
+//}
+
+//header.headroom.fixed-top {
+//    height: 5px ;
+//    background-color: #2980b9;
+//}
+
+// Navbar Title
+.navbar-title {
+    color: #080c80;
+    font-weight: bold;
+    font-size: 18px !important;
     font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
 }
 
-// !TODO: try to remove scroll bar. Hidden !important removes whole scroll functionality
-.sidebar.collapse.collapse-horizontal.sidebar-navigation.docked.overflow-auto{
-    overflow:hidden;
+
+// general sidebar settings
+#quarto-sidebar {
+    margin-top: -30px;
+    width: 300px;
 }
 
-// !TODO: try to change the container to align with gray background
-.sidebar-menu-container{
-    margin-right: 0px;
-}
+.navbar-logo{
+    width: 30px ; 
+    height: 40px ; 
+  }
 
-// Style 1st level Main Sections
-.sidebar-item-container:first-of-type {
-    color: #2980b9;
+  // Sidebar
+
+  // Style 1st level Main Sections
+
+.sidebar-item-container:first-of-type.h1{
+    color: $links;
     font-weight: bold;
     font-size: 16px;
     margin:15px;    
 }
 
-.sidebar-item-text.sidebar-link.active{
-    color:white;
-  }
-
-// Style 2nd level section background color
-.sidebar-section{
-    background:$highlight-section;
-    width:100%;
-    margin:0;
-    padding: 0;
-  }
-
-// Style 2nd level section font
-.collapse.list-unstyled.sidebar-section a{
-    color: black;
-    font-size: 15px;
-    font-weight: normal;
-} 
-
 // Style 2nd level selection 
 .collapse.list-unstyled.sidebar-section a:hover{
-    background-color:rgb(192, 192, 192);
+    background-color:rgb(226, 228, 238);
     width:100%;
     padding: 5px;
     margin-left: -20px;
 
 }
-
 .collapse.list-unstyled.sidebar-section.show a.active{
-    color: black;
     font-weight: bold;
-    background-color:rgb(177, 177, 177);
-    width:100%;
-    padding: 5px;
-    margin-left: -20px;
+    background-color:rgb(226, 228, 238);
 } 
 
-// Toggle Sections
-
-.collapse.list-unstyled.sidebar-section.sidebar-item-toggle.text-start{
-    width:100%;
-    padding: 5px;
-    margin-left: -20px;
+// !TODO: try to change the container to align with gray background
+.sidebar-menu-container{
+    margin-right: 0px;
+    margin-top: -20px
 }
+
+
 // Style content 
+
 
 .content {
     margin-left: 100px;
@@ -108,6 +103,4 @@ $navbar-hl: $links ;
     }
 
 //.sidebar-menu-container{
-//    position: relative;
-//    left: 30px;
-//}
+// }

@@ -1,0 +1,193 @@
+
+project:
+  type: website
+  output-dir: "_site"
+  render:
+    - "*.qmd"
+    - "*.ipynb"
+    - "!PDF_Documentation.qmd"
+  post-render:
+    - "examples/clear_notebooks.py"
+
+filters:
+   - include-code-files
+   - interlinks
+  #  - section-bibliographies
+
+interlinks:
+  sources:
+    python:
+      url: https://docs.python.org/3/
+    numpy:
+      url: https://numpy.org/doc/stable/
+
+metadata-files:
+  - api/_sidebar.yml
+
+number-sections: false
+
+website:
+  #title: "Flood Adapt"
+  page-navigation: true
+  favicon: _static/logo.png  # Add _static folder and flood adapt logo to folder
+  search:
+    location: navbar
+    limit: 5
+    type: textbox
+  back-to-top-navigation: true
+  page-footer:
+    left: |
+      Made possible by:
+        <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener">
+          <img
+            src="/_static/images/deltares-blue.svg"
+            alt="Deltares"
+            style="height: 40px;"
+          />
+        </a> 
+
+  navbar:  # Create navigation bar on
+    title: FloodAdapt manual
+    pinned: true
+    right:
+      - icon: github
+        url:  https://github.com/Deltares-research/FloodAdapt
+      - icon: house-door-fill
+        url: http://localhost:4641/
+  sidebar: 
+    #logo: _static/logo.png
+    #title: FLOOD ADAPT 
+    border: true
+    collapse-level: 2
+    style: "docked"
+    background: dark
+    search: true
+      
+    contents:
+      - title: HOME
+        text: "HOME"
+        file: index.qmd
+      - text: "INTRODUCTION"
+        file: 1_introduction/index.qmd
+      - section: "SETUP GUIDE"
+        file: 3_setup_guide/index.qmd
+        contents:
+          - "3_setup_guide/database.qmd"
+          - "3_setup_guide/gui.qmd"
+          - "3_setup_guide/risk_analysis.qmd"
+      - section: "INSTALLATION GUIDE"
+        file: 2_installation_guide/index.qmd
+        contents:
+          - "2_installation_guide/system_req.qmd"
+          - "2_installation_guide/software_req.qmd"
+          - "2_installation_guide/installation.qmd"
+          - "2_installation_guide/folder_struct.qmd"
+      - section: "USER GUIDE"
+        file: 4_user_guide/index.qmd # This contains text before sections start
+        contents:
+          - "4_user_guide/user_interface.qmd" #These two don't have subsections so just have one qmd file
+          - "4_user_guide/site_tab.qmd"
+          - section: "Events"
+            file: "4_user_guide/events/index.qmd"
+            contents:
+              - "4_user_guide/events/historic_events.qmd"
+              - "4_user_guide/events/synthetic_events.qmd"
+              - "4_user_guide/events/probablistic_events.qmd"
+          - section: "Projections"
+            file: "4_user_guide/projections/index.qmd"
+            contents:
+              - "4_user_guide/projections/slr.qmd"
+              - "4_user_guide/projections/precipitation.qmd"
+              - "4_user_guide/projections/economic.qmd"
+          - section: "Measures"
+            file: "4_user_guide/measures/index.qmd"
+            contents:
+              - "4_user_guide/measures/flood_walls.qmd"
+              - "4_user_guide/measures/pumps.qmd"
+              - "4_user_guide/measures/buyout.qmd"
+          - section: "Strategies"
+            file: "4_user_guide/strategy/index.qmd"
+            contents:
+              - "4_user_guide/strategy/index.qmd"
+          - section: "Scenarios"
+            contents:
+            - "4_user_guide/scenarios/index.qmd"
+          - section: "Quick View"
+            contents:
+            - "4_user_guide/quick_view/index.qmd"
+          - section: "Output"
+            contents:
+            - "4_user_guide/output/index.qmd"
+          - section: "Scenario Results" 
+            file: "4_user_guide/scenario_results/index.qmd"
+            contents:
+              - "4_user_guide/scenario_results/single_event.qmd"
+              - "4_user_guide/scenario_results/event_set.qmd"
+      - section: "UPDATE CFRSS"
+        file: "5_update_model/index.qmd"
+        contents:
+          - "5_update_model/aggregation_areas.qmd"
+          - "5_update_model/objects.qmd"
+          - "5_update_model/damage_functions.qmd"
+          - "5_update_model/dem.qmd"
+          - "5_update_model/settings.qmd"
+      - section: "DEMONSTRATION CFRSS"
+        file: "6_demo/index.qmd"
+        contents:
+          - "6_demo/king_tides.qmd"
+          - "6_demo/army_corps.qmd"
+          - "6_demo/measures_impact.qmd"
+      - section: "APPENDIX"
+        contents:
+          - section: "Appendix A Preparing an event set for risk analysis"
+            file: "7_appendix/appendix_a/index.qmd"
+            contents:
+              - "7_appendix/appendix_a/probabilistic.qmd"
+              - "7_appendix/appendix_a/overview_procedure.qmd"
+              - "7_appendix/appendix_a/flood_drivers.qmd"
+              - "7_appendix/appendix_a/selection_quantification.qmd"
+              - "7_appendix/appendix_a/additional_consideration.qmd"
+              - "7_appendix/appendix_a/references.qmd"
+          - section: "Appendix B Risk calculation in the CFRSS" 
+            file: "7_appendix/appendix_b/index.qmd"
+            contents:
+              - "7_appendix/appendix_b/probabilistic_hazard.qmd"
+              - "7_appendix/appendix_b/risk_calculation.qmd"
+          - section: "Appendix C Modelling chain and vertical datums"
+            contents:
+              - "7_appendix/appendix_c/index.qmd"
+          - section: "Appendix D Damage model input files"
+            file: "7_appendix/appendix_d/index.qmd"
+            contents:
+              - "7_appendix/appendix_d/damage_functions.qmd"
+              - "7_appendix/appendix_d/exposure_data.qmd"
+              - "7_appendix/appendix_d/config.qmd"
+          - section: "Appendix E Site configuration file - example"
+            contents:
+              - "7_appendix/appendix_e/index.qmd"
+          - section: "Appendix F Event input files - examples"
+            file: "7_appendix/appendix_f/index.qmd"
+            contents:
+              - "7_appendix/appendix_f/hurricanes.qmd"
+              - "7_appendix/appendix_f/wind_tides.qmd"
+              - "7_appendix/appendix_f/water_level.qmd"
+              - "7_appendix/appendix_f/synthetics.qmd"
+
+format:
+  html:
+    theme:
+      light: [cosmo, _static/theme-light.scss]
+      dark: [cosmo, _static/theme-dark.scss]
+    css: _static/styles.css
+    toc: true
+    toc-expand: false
+    page-layout: article
+    grid:
+      content-mode: standard
+
+# bibliography: references.bib
+# citeproc: false
+
+execute:
+  freeze: auto
+  cache: true

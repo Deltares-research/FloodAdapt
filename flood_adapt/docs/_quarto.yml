@@ -1,3 +1,4 @@
+
 project:
   type: website
   output-dir: "_site"
@@ -26,7 +27,7 @@ metadata-files:
 number-sections: false
 
 website:
-  title: "Flood Adapt"
+  #title: "Flood Adapt"
   page-navigation: true
   favicon: _static/logo.png  # Add _static folder and flood adapt logo to folder
   search:
@@ -43,22 +44,22 @@ website:
             alt="Deltares"
             style="height: 40px;"
           />
-        </a>
+        </a> 
+
   navbar:  # Create navigation bar on
-    logo: _static/logo.png   # Add _static folder and flood adapt logo to folder
-    search: true
+    logo: _static/logo.png
+    title: FloodAdapt manual
     pinned: true
     right:
       - icon: github
-        href: https://github.com/Deltares-research/FloodAdapt
+        url:  https://github.com/Deltares-research/FloodAdapt
 
-  sidebar:
-    - title: "Home"
-      border: true
-      collapse-level: 1
-      style: "docked"
-      background: dark
-
+  sidebar:  
+    border: true
+    collapse-level: 2
+    style: "docked"
+    background: light
+    search: true
       
       contents:
         - text: "HOME"
