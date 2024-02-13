@@ -48,7 +48,7 @@ website:
 
   navbar:  # Create navigation bar on
     logo: _static/logo.png
-    title: FloodAdapt manual
+    title: FloodAdapt 
     pinned: true
     right:
       - icon: github
@@ -56,7 +56,7 @@ website:
 
   sidebar:  
     border: true
-    collapse-level: 2
+    collapse-level: 1
     style: "docked"
     background: light
     search: true
