@@ -7,9 +7,9 @@ lightbox: auto
 
 There are three types of historical events a user can select: 
 
-* [Historical hurricane](historic_events_hurricane.qmd.qmd)
-* Historical event with gauged water levels
-* Historical event without gauged water levels
+* [Historical hurricane](historic_events_hurricane.qmd)
+* [Historical event with gauged water levels](historic_events_gauged.qmd)
+* [Historical event without gauged water levels](historic_events_ungauged.qmd)
 
 ::: {.callout-note}
 ## Which historical event should I choose?
@@ -89,5 +89,3 @@ The user has four options for entering wind for the event:
  
 
 
-Example for cross referencing to another section:
-[See the Synthetic event section](synthetic_events.qmd)

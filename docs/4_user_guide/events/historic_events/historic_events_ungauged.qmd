@@ -1,0 +1,7 @@
+---
+title: Historical event - without gauged water levels
+filters:
+  - lightbox
+lightbox: auto
+---
+

@@ -6,21 +6,31 @@ lightbox: auto
 ---
 
 
-In the event tab, a user can add different types of events. These can be either **historical** or **synthetic** events. It is also possible to select historical events and modify them to create what-if event scenarios. 
+In the event tab, a user can add different types of events. These can be either [**historical**](historic_events/index.qmd) or [**synthetic**](synthetic_events.qmd) events. It is also possible to select historical events and modify them to create what-if event scenarios. 
 
 There are three historical event types, which are described in the coming sections:
 
-* Historical hurricane 
-* Historical event with gauged water levels
-* Historical event without gauged water levels
+* [Historical hurricane](historic_events/historic_events_hurricane.qmd)
+* [Historical event with gauged water levels](historic_events/historic_events_gauged.qmd)
+* [Historical event without gauged water levels](historic_events/historic_events_ungauged.qmd)
 
  When the user selects **Add event** in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information. 
 
  ![**The four event types a user can select**](../../_static/images/eventTypeSelector.png){#fig-eventSelector}
  
- Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, which must be unique and cannot have any spaces or special characters in it (underscores are allowed). The user can also enter a description, which does not having any syntax restrictions. For example, an event name could be KingTideNov2021, and the long name could be King Tide - November 2021. 
+ Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event.
+ 
+::: {.callout-note}
+## Event names and descriptions
+Event names must be unique and cannot have any spaces or special characters (underscores are allowed). Event descriptions are optional and have no syntax restrictions. For example, an event name could be **KingTideNov2021**, and the long name could be **King Tide - November 2021**.
+:::
 
-All historic events require a start and stop time of the event. The format for the start and stop time is 'YYYY-MM-DD hh:mm:ss', where YYYY = four-digit year, MM = two digit month, DD = two-digit day, hh = two-digit hour, mm = two-digit minutes, and ss = two-digit seconds. The user can type in a date, or select a date from a drop-down calendar. 
+::: {.callout-note}
+## Event start and stop times
+The format for the start and stop time is 'YYYY-MM-DD hh:mm:ss', where YYYY = four-digit year, MM = two digit month, DD = two-digit day, hh = two-digit hour, mm = two-digit minutes, and ss = two-digit seconds. The user can type in a date, or select a date from a drop-down calendar.
+:::
+
+
 
 
 ![**Screenshot of the event window where the user enters the name, description, and dates of the historic event**](../../_static/images/event_name_date_entry.png){#fig-historicEvent_name_date}
