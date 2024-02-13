@@ -8,3 +8,13 @@ This section covers the following:
 * Installation steps
 
 * FloodAdapt folder structure
+
+FloddAdapt allows users – who do not need modelling skills - to evaluate flooding and impacts for scenarios they define, to help understand the community vulnerability now and in the future, and the effectiveness and benefits of adaptation options. These scenarios consist of events, projections, and strategies, which are all specified via the user interface. The process for specifying scenarios and viewing the results are described in this chapter. 
+There are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits (@fig-GUItabs).  Through the Scenarios tab the user will define and run scenarios. To define a scenario, the user must first define at least one event, projection, and strategy (a strategy is a combination of zero or more measures). The projection can be ‘current conditions’ and the strategy can be ‘no measures’, but they must be defined. @fig-GUItabs shows the tabs of the FloodAdapt user interface and indicates with orange fill which ones require input to simulate scenarios. The flow of information from one tab to another is indicated with arrows.
+
+![**Floddadapt**](../_static/images/GUI_Tabs.drawio.svg){#fig-GUItabs}
+
+This chapter begins with general user interface features, and then describes each of the eight tabs in detail in separate sub-sections.
+
+
+:::

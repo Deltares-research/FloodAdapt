@@ -1,5 +1,5 @@
 ---
-title: 	User interface - overview
+title: 	GUI features
 ---
 To be filled in when the general features are more finalized (e.g. view and help options)
 
