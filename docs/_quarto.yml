@@ -97,19 +97,14 @@ website:
           - section: "Scenarios"
             contents:
             - "4_user_guide/scenarios/index.qmd"
+          - section: "Output"
+            contents:
+            - "4_user_guide/output/index.qmd"
           - section: "Compare tabs"
             file: "4_user_guide/compare/index.qmd"
             contents:
             - "4_user_guide/compare/Compare_map.qmd"
             - "4_user_guide/compare/Compare_table.qmd"
-          - section: "Output"
-            contents:
-            - "4_user_guide/output/index.qmd"
-          - section: "Scenario Results" 
-            file: "4_user_guide/scenario_results/index.qmd"
-            contents:
-              - "4_user_guide/scenario_results/single_event.qmd"
-              - "4_user_guide/scenario_results/event_set.qmd"
       - section: "SETUP GUIDE"
         file: 3_setup_guide/index.qmd
         contents:
