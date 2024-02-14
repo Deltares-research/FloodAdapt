@@ -35,3 +35,17 @@ The format for the start and stop time is 'YYYY-MM-DD hh:mm:ss', where YYYY = fo
 
 ![**Screenshot of the event window where the user enters the name, description, and dates of the historic event**](../../_static/images/event_name_date_entry.png){#fig-historicEvent_name_date}
 
+## How are events modeled in FloodAdapt?
+FloodAdapt supports two hydrodynamic models:
+
+(1) An offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.
+
+(2) An overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge. 
+
+When a user selects a [historical hurricane](historic_events_hurricane.qmd), FloodAdapt will pull in wind and pressure data for the offshore model, calculate the nearshore water levels for the overland model, and then run the overland model with wind and rainfall (calculated based on track information), and any user-input river discharges. 
+
+When a user selects a [Historical event with gauged water levels](historic_events_gauged.qmd), only the overland model will be run, using the gauged water levels as input to the overland model. 
+
+When a user selects a [Historical event without gauged water levels](historic_events_ungauged.qmd), the offshore model will first be run using the wind and pressure data from **ADD SOURCE HERE**. The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values. 
+
+When a user selects a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the tide and surge information specified by the user. 
