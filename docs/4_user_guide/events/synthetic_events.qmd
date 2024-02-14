@@ -1,3 +1,17 @@
 ---
-title: Synthetic Events
+title: Synthetic events
+filters:
+  - lightbox
+lightbox: auto
 ---
+
+::: {.callout-tip}
+## Watch our video - add a synthetic event
+Don't feel like reading? No problem! Check out our video about how to add a synthetic event in FloodAdapt.
+**TO BE ADDED**
+:::
+
+
+
+
+

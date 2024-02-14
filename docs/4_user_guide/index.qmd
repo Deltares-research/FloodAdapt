@@ -26,7 +26,7 @@ Scenarios in FloodAdapt are defined as a combination of an event, a projection, 
   
 ::: {.callout-tip}
 ## Example user question
-**How would a floodwall would have held up in a recent hurricane if the track had made a worst-case landfall?**
+**How would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?**
 
 To answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event. 
 :::
