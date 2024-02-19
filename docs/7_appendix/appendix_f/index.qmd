@@ -1,3 +1,3 @@
 ---
-title: Appendix F	 Event input files – examples
+title: Event input files – examples
 ---

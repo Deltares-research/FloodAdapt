@@ -1,5 +1,5 @@
 ---
-title: Event selection and quantification of event probabilities
+title: Quantification of event probabilities
 ---
 
 # Why probabilistic computation techniques are needed

@@ -126,7 +126,7 @@ website:
           - "6_demo/measures_impact.qmd"
       - section: "Appendix"
         contents:
-          - section: "Appendix A Preparing an event set for risk analysis"
+          - section: "Preparing event set for risk analysis"
             file: "7_appendix/appendix_a/index.qmd"
             contents:
               - "7_appendix/appendix_a/probabilistic.qmd"
@@ -135,24 +135,20 @@ website:
               - "7_appendix/appendix_a/selection_quantification.qmd"
               - "7_appendix/appendix_a/additional_consideration.qmd"
               - "7_appendix/appendix_a/references.qmd"
-          - section: "Appendix B Risk calculation in the CFRSS" 
+          - section: "Risk calculation" 
             file: "7_appendix/appendix_b/index.qmd"
             contents:
               - "7_appendix/appendix_b/probabilistic_hazard.qmd"
               - "7_appendix/appendix_b/risk_calculation.qmd"
-          - section: "Appendix C Modelling chain and vertical datums"
-            contents:
-              - "7_appendix/appendix_c/index.qmd"
-          - section: "Appendix D Damage model input files"
+          - "7_appendix/appendix_c/index.qmd"
+          - section: "Damage model input files"
             file: "7_appendix/appendix_d/index.qmd"
             contents:
               - "7_appendix/appendix_d/damage_functions.qmd"
               - "7_appendix/appendix_d/exposure_data.qmd"
               - "7_appendix/appendix_d/config.qmd"
-          - section: "Appendix E Site configuration file - example"
-            contents:
-              - "7_appendix/appendix_e/index.qmd"
-          - section: "Appendix F Event input files - examples"
+          - "7_appendix/appendix_e/index.qmd"
+          - section: "Event input files - examples"
             file: "7_appendix/appendix_f/index.qmd"
             contents:
               - "7_appendix/appendix_f/hurricanes.qmd"
