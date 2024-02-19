@@ -85,9 +85,11 @@ $navbar-hl: $links ;
     margin-left: -20px;
 
 }
+
 .collapse.list-unstyled.sidebar-section.show a.active{
     font-weight: bold;
-    background-color:rgb(226, 228, 238);
+//    background-color:rgb(226, 228, 238);
+//    height: 220%
 } 
 
 // !TODO: try to change the container to align with gray background
