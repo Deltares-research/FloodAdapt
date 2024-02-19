@@ -95,16 +95,9 @@ website:
               - "4_user_guide/measures/flood_walls.qmd"
               - "4_user_guide/measures/pumps.qmd"
               - "4_user_guide/measures/buyout.qmd"
-          - section: "Strategies"
-            file: "4_user_guide/strategy/index.qmd"
-            contents:
-              - "4_user_guide/strategy/index.qmd"
-          - section: "Scenarios"
-            contents:
-            - "4_user_guide/scenarios/index.qmd"
-          - section: "Output"
-            contents:
-            - "4_user_guide/output/index.qmd"
+          - "4_user_guide/strategy/index.qmd"
+          - "4_user_guide/scenarios/index.qmd"
+          - "4_user_guide/output/index.qmd"
           - section: "Compare tabs"
             file: "4_user_guide/compare/index.qmd"
             contents:
