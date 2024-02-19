@@ -4,7 +4,7 @@
 $background: #212529;
 $highlight: #292e33;
 $highlight: #373a3c;
-$links: #0EBBF0;
+$links: #ffffffe7;
 $text: #ffffff;
 
 
@@ -41,6 +41,29 @@ $code-block-bg-alpha: -.8;
 
 .nav-tabs .nav-link i {
     // background-color: $links;
+}
+#quarto-sidebar {
+    background-color: $highlight
+}
+
+.navbar-title {
+    color: $text;
+    font-weight: bold;
+    font-size: 25px !important;
+    font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
+}
+.menu-text{
+    color: $text
+}
+
+.collapse.list-unstyled.sidebar-section a:hover{
+    background-color:rgb(92, 94, 107) !important;
+    width:100%;
+    padding: 5px;
+    margin-left: -20px;
+}
+sidebar-item-text sidebar-link a.active {
+    color:aqua !important
 }
 
 // .nav-tabs .nav-link {
