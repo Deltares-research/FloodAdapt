@@ -59,7 +59,6 @@ website:
     collapse-level: 1
     style: "docked"
     background: light
-    search: true
       
     contents:
       - text: "Home"

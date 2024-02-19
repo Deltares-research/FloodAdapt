@@ -63,7 +63,9 @@ $navbar-hl: $links ;
     font-weight: 550 !important;
     font-size: 22px !important
   }
-
+.sidebar-item-toggle.text-start:hover{
+    display: none !important;
+}
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
     /* Your styles for upper level menu items */
     font-size: 18px;
