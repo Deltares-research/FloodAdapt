@@ -61,7 +61,7 @@ $navbar-hl: $links ;
 .sidebar-item {
     /* Your styles for upper level menu items */
     font-weight: 550 !important;
-    font-size: 24px !important
+    font-size: 22px !important
   }
 
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
@@ -214,6 +214,69 @@ $navbar-hl: $links ;
     height: 270%;
 }
 
+#quarto-sidebar-section-10 .sidebar-item:nth-child(2) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(4) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(5) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(6) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:first-child a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(4) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(5) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(6) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
 // Style content 
 
 .content {
