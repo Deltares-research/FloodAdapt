@@ -70,6 +70,14 @@ $navbar-hl: $links ;
     font-weight: 200 !important;
   }
 // Style 2nd level selection 
+  .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
+    /* Your styles for upper level menu items */
+    font-size: 16px;
+    font-weight: 200 !important;
+
+  }
+
+
 .collapse.list-unstyled.sidebar-section a:hover{
     background-color:rgb(226, 228, 238);
     width:100%;
@@ -133,16 +141,14 @@ $navbar-hl: $links ;
     margin-left: -20px;
     height: 160%;
 }
-#quarto-sidebar-section-5 .sidebar-item:nth-child(2) {
-    padding-bottom: 15px;
-}
+
 #quarto-sidebar-section-5 .sidebar-item:nth-child(2) a:hover {
     /* Your hover styles */
     background-color: rgb(226, 228, 238);
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 120%;
 }
 #quarto-sidebar-section-5 .sidebar-item:nth-child(5) {
     padding-bottom: 5px;
@@ -214,36 +220,39 @@ $navbar-hl: $links ;
     height: 270%;
 }
 
+
 #quarto-sidebar-section-10 .sidebar-item:nth-child(2) {
-    padding-top: 15px;
+    padding-top: 10px;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(3) {
-    padding-top: 15px;
+    padding-top: 10px;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(4) {
-    padding-top: 15px;
+    padding-top: 10px;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(5) {
-    padding-top: 15px;
+    padding-top: 10px;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(6) {
-    padding-top: 15px;
+    padding-top: 10px;
 }
+
 #quarto-sidebar-section-10 .sidebar-item:first-child a:hover {
     /* Your hover styles */
     background-color: rgb(226, 228, 238);
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 170%;
+    height: 140%;
 }
+
 #quarto-sidebar-section-10 .sidebar-item:nth-child(2) a:hover {
     /* Your hover styles */
     background-color: rgb(226, 228, 238);
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 170%;
+    height: 140%;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(3) a:hover {
     /* Your hover styles */
@@ -251,7 +260,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 170%;
+    height: 140%;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(4) a:hover {
     /* Your hover styles */
@@ -259,7 +268,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 170%;
+    height: 140%;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(5) a:hover {
     /* Your hover styles */
@@ -267,7 +276,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 170%;
+    height: 140%;
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(6) a:hover {
     /* Your hover styles */
@@ -275,7 +284,205 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
+    height: 140%;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:first-child {
+    padding-top: 5px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(2) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(3) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(4) {
+    padding-top: 20px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(5) {
+    padding-top: 20px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(6) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(1) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:nth-child(5) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:nth-child(6) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
     height: 170%;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(4) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 230%;
+}
+
+#quarto-sidebar-section-12 .sidebar-item:nth-child(1) {
+    padding-top: 5px;
+}
+#quarto-sidebar-section-12 .sidebar-item:nth-child(2) {
+    padding-top: 10px;
+}
+#quarto-sidebar-section-12 .sidebar-item:nth-child(1) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height:170%;
+}
+#quarto-sidebar-section-12 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+
+#quarto-sidebar-section-13 .sidebar-item:nth-child(1) {
+    padding-top: 10px;
+}
+#quarto-sidebar-section-13 .sidebar-item:nth-child(1) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-13 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(1) {
+    padding-top: 10px;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(2) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(3) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(1) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+#quarto-sidebar-section-14 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+#quarto-sidebar-section-15 .sidebar-item:nth-child(1) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(1) {
+    padding-top: 5px;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(2) {
+    padding-top: 0px;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(3) {
+    padding-top: 10px;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(4) {
+    padding-top: 10px;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(1) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 170%;
+}
+#quarto-sidebar-section-16 .sidebar-item:nth-child(4) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 100%;
+}
+
+// Container size
+.collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
+    height: 25px
 }
 // Style content 
 
