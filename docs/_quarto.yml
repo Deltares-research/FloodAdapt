@@ -62,11 +62,11 @@ website:
     search: true
       
     contents:
-      - text: "HOME"
+      - text: "Home"
         file: index.qmd
-      - text: "INTRODUCTION"
+      - text: "Introduction"
         file: 1_introduction/index.qmd
-      - section: "USER GUIDE"
+      - section: "User Guide"
         file: 4_user_guide/index.qmd # This contains text before sections start
         contents:
           - "4_user_guide/getting_started.qmd" #Moving content from the old 'installation' section into here
@@ -110,13 +110,13 @@ website:
             contents:
             - "4_user_guide/compare/Compare_map.qmd"
             - "4_user_guide/compare/Compare_table.qmd"
-      - section: "SETUP GUIDE"
+      - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
         contents:
           - "3_setup_guide/database.qmd"
           - "3_setup_guide/gui.qmd"
           - "3_setup_guide/risk_analysis.qmd"
-      - section: "UPDATING FloodAdapt"
+      - section: "Updating FloodAdapt"
         file: "5_update_model/index.qmd"
         contents:
           - "5_update_model/aggregation_areas.qmd"
@@ -124,13 +124,13 @@ website:
           - "5_update_model/damage_functions.qmd"
           - "5_update_model/dem.qmd"
           - "5_update_model/settings.qmd"
-      - section: "EXAMPLE USE CASE"
+      - section: "Example Use Case"
         file: "6_demo/index.qmd"
         contents:
           - "6_demo/king_tides.qmd"
           - "6_demo/army_corps.qmd"
           - "6_demo/measures_impact.qmd"
-      - section: "APPENDIX"
+      - section: "Appendix"
         contents:
           - section: "Appendix A Preparing an event set for risk analysis"
             file: "7_appendix/appendix_a/index.qmd"

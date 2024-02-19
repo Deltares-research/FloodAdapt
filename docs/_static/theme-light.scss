@@ -41,7 +41,7 @@ $navbar-hl: $links ;
 .navbar-title {
     color: #080c80;
     font-weight: bold;
-    font-size: 18px !important;
+    font-size: 25px !important;
     font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
 }
 
@@ -53,21 +53,22 @@ $navbar-hl: $links ;
 }
 
 .navbar-logo{
-    width: 30px ; 
-    height: 40px ; 
+    width: 50px ; 
+    height: 60px ; 
   }
 
   // Sidebar
+.sidebar-item {
+    /* Your styles for upper level menu items */
+    font-weight: 550 !important;
+    font-size: 24px !important
+  }
 
-  // Style 1st level Main Sections
-
-.sidebar-item-container:first-of-type.h1{
-    color: $links;
-    font-weight: bold;
-    font-size: 16px;
-    margin:15px;    
-}
-
+.collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
+    /* Your styles for upper level menu items */
+    font-size: 18px;
+    font-weight: 200 !important;
+  }
 // Style 2nd level selection 
 .collapse.list-unstyled.sidebar-section a:hover{
     background-color:rgb(226, 228, 238);
@@ -84,12 +85,76 @@ $navbar-hl: $links ;
 // !TODO: try to change the container to align with gray background
 .sidebar-menu-container{
     margin-right: 0px;
-    margin-top: -20px
+    margin-top: -20px;
+}
+.sidebar-item-container{
+    height: 30px
 }
 
+// Refining section by section
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) {
+    padding-bottom: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 160%;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(3) {
+    padding-top: 10px;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:nth-child(5) {
+    padding-bottom: 15px;
+}
+
+#quarto-sidebar-section-11 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 160%;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(5) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 160%;
+}
+#quarto-sidebar-section-12 .sidebar-item {
+    padding-top: 35px;
+  }
+#quarto-sidebar-section-12 .sidebar-item:nth-child(1) {
+    padding-top: 0px;
+}
+
+#quarto-sidebar-section-12 .sidebar-item:nth-child(3) {
+    padding-top: 50px;
+}
+#quarto-sidebar-section-12 .sidebar-item:first-child a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 220%;
+}
+#quarto-sidebar-section-12 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 270%;
+}
 
 // Style content 
-
 
 .content {
     margin-left: 100px;
