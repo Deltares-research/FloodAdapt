@@ -1,11 +1,26 @@
 ---
 title: 	Getting Started
 ---
-This section covers the following:
+This section covers [system requirements](#system-requirements) for running FloodAdapt, initial [installation steps](#installation-steps), and the [folder structure of FloodAdapt](#floodadapt-folder-structure). 
 
-* System requirements
 
-* Installation steps
+## System requirements
+In order to run FloodAdapt, the following are required:
 
-* FloodAdapt folder structure
+* Your computer must be running a Windows operating system. 
 
+* The first time the FloodAdapt application is opened must be by a user with administrative rights
+
+* The computer must have access to the internet
+
+* At least 2 GB of storage for the FloodAdapt system files and the underlying database
+
+* Approximately 150 MB of storage for each user-generated scenario 
+
+## Installation steps
+The FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon. 
+
+The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without adminstrator rights and will still function properly. 
+
+## FloodAdapt folder structure
+The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored. 
