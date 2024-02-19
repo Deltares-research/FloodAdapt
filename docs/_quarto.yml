@@ -120,8 +120,10 @@ website:
       - section: "Example Use Case"
         file: "6_demo/index.qmd"
         contents:
-          - "6_demo/king_tides.qmd"
-          - "6_demo/army_corps.qmd"
+          - text: "King Tides: Challenges Sea Level Rise"
+            file: "6_demo/king_tides.qmd"
+          - text: "Surge-protection plan for Charleston"
+            file: "6_demo/army_corps.qmd"
           - "6_demo/measures_impact.qmd"
       - section: "Appendix"
         contents:
