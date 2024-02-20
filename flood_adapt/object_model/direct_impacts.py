@@ -145,6 +145,7 @@ class DirectImpacts:
         logging.info("Post-processing impact models...")
         # Preprocess all impact model input
         self.postprocess_fiat()
+        logging.info("Impact models post-processing complete!")
 
     def preprocess_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
@@ -307,6 +308,8 @@ class DirectImpacts:
         # Create a roads spatial file
         if self.site_info.attrs.fiat.roads_file_name:
             self._create_roads(fiat_results_df)
+
+        logging.info("Post-processing complete!")
 
         # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder

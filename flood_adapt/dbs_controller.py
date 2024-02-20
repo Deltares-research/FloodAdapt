@@ -135,25 +135,31 @@ class Database(IDatabase):
         )
         return gdf
 
-    def get_svi_map(self) -> gpd.GeoDataFrame:
-        """Get the geospatial social vulnerability index (SVI) data.
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
+        """Get a map from the static folder
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the map relative to the static folder
 
         Returns
         -------
         gpd.GeoDataFrame
-            SVI per aggregation area
+            GeoDataFrame with the map in crs 4326
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file is not found
         """
-        if self.site.attrs.fiat.svi:
-            svi_map = gpd.read_file(
-                self.input_path.parent
-                / "static"
-                / "site"
-                / self.site.attrs.fiat.svi.geom,
-                engine="pyogrio",
-            ).to_crs(4326)
-        else:
-            svi_map = None
-        return svi_map
+        # Read the map
+        full_path = self.static_path / path
+        if full_path.is_file():
+            return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
+
+        # If the file is not found, throw an error
+        raise FileNotFoundError(f"File {full_path} not found")
 
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")

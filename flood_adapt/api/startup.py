@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Union
 
 from geopandas import GeoDataFrame
@@ -63,7 +64,8 @@ def get_model_boundary(database: IDatabase) -> GeoDataFrame:
     return database.get_model_boundary()
 
 
-def get_svi_map(database: IDatabase) -> GeoDataFrame:
+@staticmethod
+def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
     """Gets the SVI map that are used in Fiat
 
     Parameters
@@ -73,9 +75,36 @@ def get_svi_map(database: IDatabase) -> GeoDataFrame:
     Returns
     -------
     GeoDataFrame
-        GeoDataFrames with the SVI per area
+        GeoDataFrames with the SVI map, None if not available
     """
-    return database.get_svi_map()
+    try:
+        return database.get_static_map(database.site.attrs.fiat.svi.geom)
+    except Exception:
+        return None
+
+
+@staticmethod
+def get_static_map(
+    database: IDatabase, path: Union[str, Path]
+) -> Union[GeoDataFrame, None]:
+    """Gets a static map from the database
+
+    Parameters
+    ----------
+    database : IDatabase
+        database object
+    path : Union[str, Path]
+        path to the static map
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        GeoDataFrame with the static map
+    """
+    try:
+        return database.get_static_map(path)
+    except Exception:
+        return None
 
 
 def get_buildings(database: IDatabase) -> GeoDataFrame:

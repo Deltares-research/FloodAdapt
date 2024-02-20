@@ -88,6 +88,19 @@ class MapboxLayersModel(BaseModel):
     damage_decimals: Optional[int] = 0
 
 
+class VisualizationLayersModel(BaseModel):
+    """class describing the configuration of the layers you might want to visualize in the gui"""
+
+    default_bin_number: int
+    default_colors: list[str]
+    layer_names: list[str]
+    layer_long_names: list[str]
+    layer_paths: list[str]
+    field_names: list[str]
+    bins: Optional[list[list[float]]] = []
+    colors: Optional[list[list[str]]] = []
+
+
 class GuiModel(BaseModel):
     """class describing the accepted input for the variable gui in Site"""
 
@@ -102,6 +115,7 @@ class GuiModel(BaseModel):
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
     mapbox_layers: MapboxLayersModel
+    visualization_layers: VisualizationLayersModel
 
 
 class RiskModel(BaseModel):
