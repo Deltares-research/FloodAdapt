@@ -29,9 +29,12 @@ def set_database_root(database_root: Path, overwrite: bool = True) -> None:
     if not Path(abs_database_root).is_dir():
         raise ValueError(f"{abs_database_root} is not a valid database root directory")
 
-    if get_database_root() is None or overwrite:
+    if get_database_root() is None:
         os.environ["DATABASE_ROOT"] = str(abs_database_root)
         print(f"database_root set: {abs_database_root}")
+    elif overwrite:
+        print(f"database_root overwritten: {abs_database_root}")
+        os.environ["DATABASE_ROOT"] = str(abs_database_root)
 
 
 def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
@@ -58,9 +61,12 @@ def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
     if not Path(abs_system_folder).is_dir():
         raise ValueError(f"{abs_system_folder} is not a valid system folder directory")
 
-    if get_system_folder() is None or overwrite:
+    if get_system_folder() is None:
         os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
         print(f"system_folder set: {abs_system_folder}")
+    elif overwrite:
+        print(f"system_folder overwritten: {abs_system_folder}")
+        os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
 
 
 def set_database_name(database_name: str, overwrite: bool = True) -> None:
@@ -93,9 +99,12 @@ def set_database_name(database_name: str, overwrite: bool = True) -> None:
     if not full_database_path.is_dir():
         raise ValueError(f"{full_database_path} is not a valid directory\n")
 
-    if get_database_name() is None or overwrite:
+    if get_database_name() is None:
         os.environ["DATABASE_NAME"] = str(database_name)
         print(f"database_name set: {database_name}")
+    elif overwrite:
+        print(f"database_name overwritten: {database_name}")
+        os.environ["DATABASE_NAME"] = str(database_name)
 
 
 def get_database_root() -> Union[Path, None]:
@@ -188,8 +197,6 @@ def parse_config(config_path: Path, overwrite: bool = True) -> dict:
 
         if overwrite:
             print(f"Configuration loaded from {config_path}")
-        else:
-            print(f"Uninitialized variables set from {config_path}")
 
     except ValueError as e:
         full_error = f"""
@@ -234,6 +241,9 @@ def parse_user_input(
     # Set database_name if given
     if database_name is not None:
         set_database_name(database_name, overwrite=overwrite)
+
+    if any(val is not None for val in [database_root, system_folder, database_name]):
+        print("Parsed user input successfully")
 
 
 def main() -> None:
