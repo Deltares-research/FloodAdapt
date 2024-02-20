@@ -314,7 +314,6 @@ class SfincsAdapter:
         # HydroMT function: get geodataframe from filename
         if (
             green_infrastructure.selection_type == "polygon"
-            or green_infrastructure.selection_type == "import_area"
         ):
             polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
         elif green_infrastructure.selection_type == "aggregation_area":
