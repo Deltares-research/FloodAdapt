@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 from typing import Union
 
 from geopandas import GeoDataFrame
 
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.database import IDatabase
-from pathlib import Path
+
 # upon start up of FloodAdapt
 
 
