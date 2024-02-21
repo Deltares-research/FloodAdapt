@@ -1,5 +1,4 @@
-import os
-import shutil
+import gc
 import subprocess
 from pathlib import Path
 
@@ -7,49 +6,6 @@ import pytest
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
-
-
-def get_file_structure(path: str) -> list:
-    """Get the file structure of a directory and store it in a list"""
-    file_structure = []
-
-    # Walk through the directory
-    for root, dirs, files in os.walk(path):
-        relative_path = os.path.relpath(root, path)
-        file_structure.append(relative_path)
-    return file_structure
-
-
-def remove_files_and_folders(path, file_structure):
-    """Remove all files and folders that are not present in the file structure"""
-    # Walk through the directory
-    for root, dirs, files in os.walk(path):
-        relative_path = os.path.relpath(root, path)
-        # If the relative path is not in the file structure, remove it
-        if relative_path not in file_structure:
-            try:
-                shutil.rmtree(root)
-            except PermissionError:
-                print(f"PermissionError: {root}")
-
-
-@pytest.fixture(
-    autouse=True, scope="session"
-)  # This fixture is only run once per session
-def updatedSVN():
-    config_path = Path(__file__).parent.parent / "config.toml"
-    FloodAdapt_config.parse_config(
-        config_path
-    )  # Set the database root, system folder, based on the config file
-    FloodAdapt_config.set_database_name(
-        "charleston_test"
-    )  # set the database name to the test database
-    updateSVN_file_path = Path(__file__).parent / "updateSVN.py"
-    subprocess.run(
-        [str(updateSVN_file_path), FloodAdapt_config.get_database_root()],
-        shell=True,
-        capture_output=True,
-    )
 
 
 def make_db_fixture(scope):
@@ -61,17 +17,54 @@ def make_db_fixture(scope):
         3) Clean the database
     Scope can be one of the following: "function", "class", "module", "package", "session"
     """
+    try:
+        subprocess.run(["svn", "--version"], capture_output=True)
+    except Exception:
+        print(
+            """
+            Make sure to have the svn command line tools installed
+            In case you have not already installed the TortoiseSVN, you can install the command line tools by following the steps below:
+            In case you have already installed the TortoiseSVN and wondering how to upgrade to command line tools, here are the steps...
+            Go to Windows Control Panel → Program and Features (Windows 7+)
+            Locate TortoiseSVN and click on it.
+            Select 'Change' from the options available.
+            Click 'Next'
+            Click 'Modify'
+            Enable 'Command line client tools'
+            Click 'Next'
+            Click 'Install'
+            Click 'Finish'
+            """
+        )
+        exit(1)
+
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
     def _db_fixture():
+        config_path = Path(__file__).parent.parent / "config.toml"
+        FloodAdapt_config.parse_config(config_path)
+        FloodAdapt_config.set_database_name("charleston_test")
+
         database_path = FloodAdapt_config.get_database_root()
         database_name = FloodAdapt_config.get_database_name()
-        file_structure = get_file_structure(database_path)
+
+        # Recursive revert to last revision
+        subprocess.run(
+            ["svn", "revert", "-R", database_path / database_name], capture_output=True
+        )
+
         dbs = read_database(database_path, database_name)
         yield dbs
-        remove_files_and_folders(database_path, file_structure)
+
+        # Close all dangling connections
+        gc.collect()
+
+        # Recursive revert to last revision
+        subprocess.run(
+            ["svn", "revert", "-R", database_path / database_name], capture_output=True
+        )
 
     return _db_fixture
 
