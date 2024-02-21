@@ -14,6 +14,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -45,22 +46,42 @@ class Database(IDatabase):
     input_path: Path
     site: ISite
 
-    def __init__(self, database_path: Union[str, os.PathLike], site_name: str) -> None:
-        """Database is initialized with a path and a site name
+    def __init__(
+        self,
+        database_path: Union[str, os.PathLike, None] = None,
+        database_name: Union[str, None] = None,
+    ) -> None:
+        """
+        Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike]
-            database path
-        site_name : str
-            site name (same as in the folder structure)
+        database_path : Union[str, os.PathLike, None], optional
+            The path to the database. If not provided, the default path specified in the config.toml file will be used.
+        database_name : Union[str, None], optional
+            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+        Notes
+        -----
+        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-        self.input_path = Path(database_path) / site_name / "input"
-        self.static_path = Path(database_path) / site_name / "static"
-        self.output_path = Path(database_path) / site_name / "output"
-        self.site = Site.load_file(
-            Path(database_path) / site_name / "static" / "site" / "site.toml"
+
+        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
+        default_config = Path(__file__).parent.parent / "config.toml"
+        FloodAdapt_config.parse_config(default_config, overwrite=False)
+
+        # Overwrite defaults with whatever the user provided
+        FloodAdapt_config.parse_user_input(
+            database_root=database_path, database_name=database_name
         )
+
+        database_path = FloodAdapt_config.get_database_root()
+        database_name = FloodAdapt_config.get_database_name()
+
+        self.input_path = database_path / database_name / "input"
+        self.static_path = database_path / database_name / "static"
+        self.output_path = database_path / database_name / "output"
+
+        self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
 
     # General methods
@@ -92,23 +113,12 @@ class Database(IDatabase):
 
     def get_model_boundary(self) -> GeoDataFrame:
         """Get the model boundary from the SFINCS model"""
-        # TODO: this should be a Interface class ModelAdapter.
-        # All models should implement their own Adapters, which should inherit from ModelAdapter
-        # Which declares all functions (so no implementation) required to run floodadapt and the gui.
-
-        # the class SfincsAdapter(ModelAdapter) should have the implementation for the functions declared in ModelAdapter
-        # and then we should have a ModelFactory that returns the correct model based on the site config
-        # instead of hard coding
-        #   model = SfincsAdapter()
-        # we have
-        #   model = ModelFactory.get_model(site))
-        # then, we can call model.get_model_boundary() without knowing which model it is and everything should work
-        # NOTE: this is not only appliccable to this function, but to all/most the functions in this class.
         base_path = self.input_path.parent
         path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
         )
         model = SfincsAdapter(model_root=path_in, site=self.site)
+
         bnd = model.get_model_boundary()
         del model
         return bnd

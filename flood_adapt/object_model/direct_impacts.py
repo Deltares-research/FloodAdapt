@@ -16,6 +16,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -260,9 +261,9 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        fiat_exec = str(
-            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
-        )
+
+        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(

@@ -114,7 +114,7 @@ class FiatAdapter:
         return map_fn
 
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = None
+        self, economic_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement economic growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
@@ -157,7 +157,7 @@ class FiatAdapter:
         )
 
     def apply_population_growth_existing(
-        self, population_growth: float, ids: Optional[list[str]] = None
+        self, population_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement population growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
@@ -264,7 +264,7 @@ class FiatAdapter:
     def elevate_properties(
         self,
         elevate: Elevate,
-        ids: Optional[list[str]] = None,
+        ids: Optional[list[str]] = [],
     ):
         """Elevate properties by adjusting the "Ground Floor Height" column
         in the FIAT exposure file.
@@ -309,7 +309,7 @@ class FiatAdapter:
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
+    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = []):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
         zero in the FIAT exposure file.
 
@@ -353,7 +353,7 @@ class FiatAdapter:
         )
 
     def floodproof_properties(
-        self, floodproof: FloodProof, ids: Optional[list[str]] = None
+        self, floodproof: FloodProof, ids: Optional[list[str]] = []
     ):
         """Floodproof properties by creating new depth-damage functions and
         adding them in "Damage Function: {}" column in the FIAT exposure file.
