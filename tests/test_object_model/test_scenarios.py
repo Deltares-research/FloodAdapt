@@ -112,40 +112,46 @@ def test_scs_rainfall(test_db):
 class Test_scenario_run:
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class):
-        test_scenario_copy = (
+        test_scenario_toml = (
             test_db_class.input_path
             / "scenarios"
             / "current_extreme12ft_no_measures"
             / "current_extreme12ft_no_measures.toml"
         )
-        test_scenario_to_run_path = (
+        test_scenario_toml_run_path = (
             test_db_class.input_path
             / "scenarios"
             / "test_run_scenario"
             / "test_run_scenario.toml"
         )
 
-        test_scenario_copy = Scenario.load_file(test_scenario_copy)
-        assert test_scenario_copy.has_run is False
-
-        test_scenario_copy.save(test_scenario_to_run_path)
-        test_scenario_to_run = Scenario.load_file(test_scenario_to_run_path)
+        test_scenario_copy = Scenario.load_file(test_scenario_toml)
+        test_scenario_copy.save(test_scenario_toml_run_path)
+        test_scenario_to_run = Scenario.load_file(test_scenario_toml_run_path)
 
         test_scenario_to_run.run()
 
         return test_scenario_copy, test_scenario_to_run
 
     def test_run_notRunYet(self, test_scenario_before_after_run):
-        before_run, after_run = test_scenario_before_after_run
+        before_run, _ = test_scenario_before_after_run
 
-        assert before_run.has_run is False
+        assert before_run.direct_impacts.hazard.has_run is False
         assert before_run.direct_impacts.hazard.event_list[0].results is None
         assert before_run.direct_impacts.impact_strategy.results is None
         assert before_run.direct_impacts.socio_economic_change.results is None
         assert before_run.direct_impacts.results is None
-        assert before_run.direct_impacts.hazard.has_run is False
 
-    def test_infographic(test_db):
+    def test_run_hasRun(self, test_scenario_before_after_run):
+        _, after_run = test_scenario_before_after_run
+
+        assert after_run.direct_impacts.hazard.has_run is True
+        assert after_run.direct_impacts.hazard.event_list[0].results is not None
+        assert after_run.direct_impacts.impact_strategy.results is not None
+        assert after_run.direct_impacts.socio_economic_change.results is not None
+        assert after_run.direct_impacts.results is not None
+
+    def test_infographic(self, test_db):
         test_toml = (
             test_db.input_path
             / "scenarios"

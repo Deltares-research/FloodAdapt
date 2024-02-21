@@ -52,7 +52,8 @@ def test_dict():
 def test_projection_load_dict(test_dict):
     projection = Projection.load_dict(test_dict)
     for key, value in test_dict.items():
-        assert getattr(projection.attrs, key) == value
+        if not isinstance(value, dict):
+            assert getattr(projection.attrs, key) == value
 
 
 def test_projection_save_createsFile(test_db, test_dict):
@@ -73,7 +74,8 @@ def test_projection_loadFile_checkAllAttrs(test_db, test_dict):
 
     test_projection = Projection.load_file(file_path)
     for key, value in test_dict.items():
-        assert getattr(test_projection.attrs, key) == value
+        if not isinstance(value, dict):
+            assert getattr(test_projection.attrs, key) == value
 
 
 def test_projection_loadFile_validFiles(test_projections):

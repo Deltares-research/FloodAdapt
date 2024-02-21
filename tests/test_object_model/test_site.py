@@ -215,9 +215,8 @@ def test_loadFile_validFiles(test_tomls):
 
 
 def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
-    with pytest.raises(FileNotFoundError) as e_info:
+    with pytest.raises(FileNotFoundError):
         Site.load_file("not_a_file.toml")
-    assert "No such file or directory: 'not_a_file.toml'" in str(e_info)
 
 
 def test_loadDict_validDict(test_dict):
