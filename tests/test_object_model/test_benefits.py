@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import tomli
 
-from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.benefit import Benefit
 
 test_database = Path().absolute() / "tests" / "test_database"
