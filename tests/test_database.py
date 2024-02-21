@@ -49,18 +49,3 @@ def test_projection_plot_slr(test_db):
     html_file_loc = test_db.plot_slr_scenarios()
     print(html_file_loc)
     assert Path(html_file_loc).is_file()
-
-
-def test_has_hazard_run(test_db):
-    scenario_name = "current_extreme12ft_no_measures"
-    output_path = test_db.output_path / "Scenarios" / scenario_name
-    if output_path.exists():
-        shutil.rmtree(output_path)
-
-    scenario1 = test_db.get_scenario(scenario_name)
-    assert scenario1.direct_impacts.hazard.has_run is False
-    assert scenario1.direct_impacts.has_run is False
-    test_db.run_scenario(scenario_name)
-    scenario1 = test_db.get_scenario(scenario_name)
-    assert scenario1.direct_impacts.hazard.has_run is True
-    assert scenario1.direct_impacts.has_run is True

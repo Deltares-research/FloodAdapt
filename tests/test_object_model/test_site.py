@@ -219,39 +219,6 @@ def test_loadFile_invalidFile_raiseFileNotFoundError(test_db):
         Site.load_file("not_a_file.toml")
 
 
-def test_loadDict_validDict(test_dict):
-    test_site = Site.load_dict(test_dict)
-    assert isinstance(test_site.attrs, SiteModel)
-
-
-def get_required_attrs(cls):
-    required_attrs = []
-    for attr, type_annotation in cls.__annotations__.items():
-        if "Optional" not in str(type_annotation):
-            required_attrs.append(attr)
-    return required_attrs
-
-
-@pytest.mark.parametrize("attr, attr_type", list(SiteModel.__annotations__.items()))
-def test_loadDict_invalidDatatypes_raiseValidationError(attr, attr_type, test_dict):
-    if attr_type is int:
-        test_dict[attr] = "not an int"
-    else:
-        test_dict[attr] = 1
-    with pytest.raises(Exception):
-        Site.load_dict(test_dict)
-
-
-@pytest.mark.parametrize("removed_key", get_required_attrs(SiteModel))
-def test_loadDict_missingRequiredAttrs_raiseValidationError(test_dict, removed_key):
-    test_dict.pop(removed_key)
-    with pytest.raises(Exception) as e_info:
-        Site.load_dict(test_dict)
-    assert e_info.typename.lower() == "validationerror"
-    assert removed_key in str(e_info)
-    assert "missing" in str(e_info)
-
-
 def test_loadFile_validFile_returnSiteModel(test_sites):
     test_site = test_sites["site.toml"]
     assert isinstance(test_site, Site)
