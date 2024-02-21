@@ -191,9 +191,9 @@ class Obs_pointModel(BaseModel):
 
     name: Union[int, str]
     description: Optional[str] = ""
-    ID: Optional[
-        int
-    ] = None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
+    ID: Optional[int] = (
+        None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
+    )
     lat: float
     lon: float
 
@@ -242,9 +242,9 @@ class SiteModel(BaseModel):
     obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
-    standard_objects: Optional[
-        StandardObjectModel
-    ] = StandardObjectModel()  # optional for the US to use standard objects
+    standard_objects: Optional[StandardObjectModel] = (
+        StandardObjectModel()
+    )  # optional for the US to use standard objects
 
 
 class ISite(ABC):
