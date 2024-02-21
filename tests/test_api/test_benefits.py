@@ -111,7 +111,8 @@ def test_benefit(test_db):
         for aggr_type in aggrs.keys():
             aggr = aggrs[aggr_type]
             # Generate random distribution of damage per aggregation area
-            dmgs = np.random.random(len(aggr))
+            rng = np.random.default_rng(seed=2024)
+            dmgs = rng.random(len(aggr))
             dmgs = dmgs / dmgs.sum() * damages_dummy[name]
 
             dict0 = {
