@@ -72,7 +72,7 @@ def test_hazard_load(test_db, test_scenarios):
     assert isinstance(hazard.event_list[0].attrs.tide, TideModel)
 
 
-def test_scs_rainfall(test_db):
+def test_scs_rainfall(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.init_object_model()
