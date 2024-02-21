@@ -8,7 +8,7 @@ import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
 
 
-def make_db_fixture(scope):
+def make_db_fixture(scope, revert=True):
     """
     This fixture is used for testing in general.
     It functions as follows:
@@ -42,7 +42,7 @@ def make_db_fixture(scope):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture():
+    def _db_fixture(revert=revert):
         config_path = Path(__file__).parent.parent / "config.toml"
         FloodAdapt_config.parse_config(config_path)
         FloodAdapt_config.set_database_name("charleston_test")
@@ -51,9 +51,11 @@ def make_db_fixture(scope):
         database_name = FloodAdapt_config.get_database_name()
 
         # Recursive revert to last revision
-        subprocess.run(
-            ["svn", "revert", "-R", database_path / database_name], capture_output=True
-        )
+        if revert:
+            subprocess.run(
+                ["svn", "revert", "-R", database_path / database_name],
+                capture_output=True,
+            )
 
         dbs = read_database(database_path, database_name)
         yield dbs
@@ -62,9 +64,11 @@ def make_db_fixture(scope):
         gc.collect()
 
         # Recursive revert to last revision
-        subprocess.run(
-            ["svn", "revert", "-R", database_path / database_name], capture_output=True
-        )
+        if revert:
+            subprocess.run(
+                ["svn", "revert", "-R", database_path / database_name],
+                capture_output=True,
+            )
 
     return _db_fixture
 
@@ -73,8 +77,17 @@ def make_db_fixture(scope):
 # the fixture name needs to be passed as an argument to the test function.
 # the first line of your test needs to initialize the yielded variables:
 # 'dbs = _db_fixture'
+
 test_db = make_db_fixture("function")
 test_db_class = make_db_fixture("class")
 test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
+
+# NOTE: while developing, it is useful to have a fixture that does not revert the database to debug
+# Should not be used in tests that are completed and pushed to the repository
+test_db_no_revert = make_db_fixture("function", revert=False)
+test_db_class_no_revert = make_db_fixture("class", revert=False)
+test_db_module_no_revert = make_db_fixture("module", revert=False)
+test_db_package_no_revert = make_db_fixture("package", revert=False)
+test_db_session_no_revert = make_db_fixture("session", revert=False)
