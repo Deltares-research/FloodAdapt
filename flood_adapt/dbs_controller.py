@@ -13,6 +13,7 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
@@ -122,6 +123,17 @@ class Database(IDatabase):
         bnd = model.get_model_boundary()
         del model
         return bnd
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get the model grid from the SFINCS model"""
+        sfincs_path = self.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.overland_model
+        )
+        model = SfincsAdapter(model_root=sfincs_path, site=self.site)
+
+        grid = model.get_model_grid()
+        del model
+        return grid
 
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model"""

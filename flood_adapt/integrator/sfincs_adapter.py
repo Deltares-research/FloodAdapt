@@ -12,6 +12,7 @@ import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
@@ -495,6 +496,10 @@ class SfincsAdapter:
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get bounding box from model"""
         return self.sf_model.region
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get grid from model"""
+        return self.sf_model.quadtree
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
