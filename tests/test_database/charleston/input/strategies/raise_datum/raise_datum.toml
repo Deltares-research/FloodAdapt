@@ -1,3 +1,0 @@
-name = "raise_datum"
-description = "raise_datum"
-measures = [ "raise_property_aggregation_area_datum"]

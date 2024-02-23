@@ -1,7 +1,0 @@
-name = "seawall"
-description = "seawall"
-type = "floodwall"
-selection_type = "polygon"
-polygon_file = "seawall.geojson"
-elevation.value = 12
-elevation.units = "feet"

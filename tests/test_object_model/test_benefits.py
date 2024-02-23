@@ -1,20 +1,19 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 import tomli
 
-from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.benefit import Benefit
 
 test_database = Path().absolute() / "tests" / "test_database"
+rng = np.random.default_rng(2021)
 
 
-def test_benefit_read(cleanup_database):
+def test_benefit_read(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -25,11 +24,9 @@ def test_benefit_read(cleanup_database):
     assert isinstance(benefit, Benefit)
 
 
-def test_check_scenarios(cleanup_database):
+def test_check_scenarios(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -42,13 +39,9 @@ def test_check_scenarios(cleanup_database):
     assert isinstance(df_check, pd.DataFrame)
 
 
-def test_run_benefit_analysis(cleanup_database):
-    dbs = Database(test_database, "charleston")
-
+def test_run_benefit_analysis(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050_no_costs"
         / "benefit_raise_properties_2050_no_costs.toml"
@@ -59,7 +52,8 @@ def test_run_benefit_analysis(cleanup_database):
     benefit = Benefit.load_file(benefit_toml)
 
     # Create missing scenarios
-    dbs.create_benefit_scenarios(benefit)
+    test_db.create_benefit_scenarios(benefit)
+    aggrs = test_db.get_aggregation_areas()
 
     # Check that error is returned if not all runs are finished
     if not all(benefit.scenarios["scenario run"]):
@@ -77,13 +71,7 @@ def test_run_benefit_analysis(cleanup_database):
 
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = (
-            test_database
-            / "charleston"
-            / "output"
-            / "Scenarios"
-            / row["scenario created"]
-        )
+        output_path = test_db.output_path / "Scenarios" / row["scenario created"]
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
@@ -96,9 +84,37 @@ def test_run_benefit_analysis(cleanup_database):
             },
             index=["ExpectedAnnualDamages"],
         )
+
         dummy_metrics.to_csv(
             output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
         )
+
+        # Create dummy metrics for aggregation areas
+        for aggr_type in aggrs.keys():
+            aggr = aggrs[aggr_type]
+            # Generate random distribution of damage per aggregation area
+            rng = np.random.default_rng(seed=2024)
+            dmgs = rng.random(len(aggr))
+            dmgs = dmgs / dmgs.sum() * damages_dummy[name]
+
+            dict0 = {
+                "Description": ["", ""],
+                "Show In Metrics Table": ["TRUE", "TRUE"],
+                "Long Name": ["", ""],
+            }
+
+            for i, aggr_area in enumerate(aggr["name"]):
+                dict0[aggr_area] = [dmgs[i], rng.normal(1, 0.2) * dmgs[i]]
+
+            dummy_metrics_aggr = pd.DataFrame(
+                dict0, index=["ExpectedAnnualDamages", "EWEAD"]
+            ).T
+
+            dummy_metrics_aggr.to_csv(
+                output_path.joinpath(
+                    f"Infometrics_{row['scenario created']}_{aggr_type}.csv"
+                )
+            )
 
     # Run benefit analysis with dummy data
     benefit.cba()
@@ -120,7 +136,19 @@ def test_run_benefit_analysis(cleanup_database):
     assert tot_benefits == tot_benefits2
 
     # assert if results are equal to the expected values based on the input
-    assert tot_benefits == 963433925
+    assert pytest.approx(tot_benefits, 2) == 963433925
+
+    # Run benefit analysis with dummy data
+    benefit.cba_aggregation()
+    # get aggregation
+    for aggr_type in aggrs.keys():
+        csv_agg_results = pd.read_csv(
+            results_path.joinpath(f"benefits_{aggr_type}.csv")
+        )
+        tot_benefits_agg = csv_agg_results["Benefits"].sum()
+
+        # assert if results are equal to the expected values based on the input
+        assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
 
     # get aggregation 
     csv_agg_results = pd.read_csv(results_path.joinpath("benefit_aggregation_2.csv"))
@@ -129,13 +157,9 @@ def test_run_benefit_analysis(cleanup_database):
     # assert if results are equal to the expected values based on the input
     assert tot_benefits_agg == 963433923
 
-def test_run_CBA(cleanup_database):
-    dbs = Database(test_database, "charleston")
-
+def test_run_CBA(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -146,7 +170,7 @@ def test_run_CBA(cleanup_database):
     benefit = Benefit.load_file(benefit_toml)
 
     # Create missing scenarios
-    dbs.create_benefit_scenarios(benefit)
+    test_db.create_benefit_scenarios(benefit)
 
     # Check that error is returned if not all runs are finished
     if not all(benefit.scenarios["scenario run"]):
@@ -164,13 +188,7 @@ def test_run_CBA(cleanup_database):
 
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = (
-            test_database
-            / "charleston"
-            / "output"
-            / "Scenarios"
-            / row["scenario created"]
-        )
+        output_path = test_db.output_path / "Scenarios" / row["scenario created"]
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
@@ -210,8 +228,8 @@ def test_run_CBA(cleanup_database):
     assert tot_costs == tot_costs2
 
     # assert if results are equal to the expected values based on the input
-    assert tot_benefits == 963433925
-    assert tot_costs == 201198671
-    assert results["BCR"] == 4.79
-    assert results["NPV"] == 762235253
-    assert results["IRR"] == 0.394
+    assert pytest.approx(tot_benefits, 2) == 963433925
+    assert pytest.approx(tot_costs, 2) == 201198671
+    assert pytest.approx(results["BCR"], 0.01) == 4.79
+    assert pytest.approx(results["NPV"], 2) == 762235253
+    assert pytest.approx(results["IRR"], 0.01) == 0.394

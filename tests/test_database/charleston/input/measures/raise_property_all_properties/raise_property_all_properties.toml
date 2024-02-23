@@ -1,8 +1,0 @@
-name = "raise_property_all_properties"
-description = "raise_property_all_properties"
-type = "elevate_properties"
-elevation.value = 1
-elevation.units = "feet"
-elevation.type = "datum"
-selection_type = "all"
-property_type = "ALL"

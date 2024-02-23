@@ -1,8 +1,10 @@
+import gc
 import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
 
+import geopandas as gpd
 import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
@@ -41,11 +43,8 @@ class SfincsAdapter:
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        # Check if model root exists
-        # if validate_existence_root_folder(model_root):
-        #    self.model_root = model_root
-
         self.sfincs_logger = logging.getLogger(__name__)
+        self.sfincs_logger.handlers = []  # To ensure logging file path has reset
         self.sf_model = SfincsModel(
             root=model_root, mode="r+", logger=self.sfincs_logger
         )
@@ -56,6 +55,8 @@ class SfincsAdapter:
         # Close the log file associated with the logger
         for handler in self.sfincs_logger.handlers:
             handler.close()
+        # Use garbage collector to ensure file handles are properly cleaned up
+        gc.collect()
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
@@ -242,13 +243,13 @@ class SfincsAdapter:
             gdf_locs.crs = self.sf_model.crs
 
             if len(list_df.columns) != len(gdf_locs):
-                raise ValueError(
-                    "Number of rivers in site.toml and SFINCS template model not compatible"
-                )
                 logging.error(
                     """The number of rivers of the site.toml does not match the
                               number of rivers in the SFINCS model. Please check the number
                               of coordinates in the SFINCS *.src file."""
+                )
+                raise ValueError(
+                    "Number of rivers in site.toml and SFINCS template model not compatible"
                 )
 
             # Test order of rivers is the same in the site file as in the SFICNS model
@@ -257,14 +258,14 @@ class SfincsAdapter:
                     np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
                     and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
                 ):
-                    raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
-                    )
                     logging.error(
                         """The location and/or order of rivers in the site.toml does not match the
                                 locations and/or order of rivers in the SFINCS model. Please check the
                                 coordinates and their order in the SFINCS *.src file and ensure they are
                                 consistent with the coordinates and order orf rivers in the site.toml file."""
+                    )
+                    raise ValueError(
+                        "River coordinates in site.toml and SFINCS template model not compatible"
                     )
                     break
 
@@ -311,15 +312,41 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        if green_infrastructure.selection_type == "polygon":
+            polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+        elif green_infrastructure.selection_type == "aggregation_area":
+            # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
+            # Loop through available aggregation area types
+            for aggr_dict in self.site.attrs.fiat.aggregation:
+                # check which one is used in measure
+                if not aggr_dict.name == green_infrastructure.aggregation_area_type:
+                    continue
+                # load geodataframe
+                aggr_areas = gpd.read_file(
+                    measure_path.parents[2] / "static" / "site" / aggr_dict.file,
+                    engine="pyogrio",
+                ).to_crs(4326)
+                # keep only aggregation area chosen
+                polygon_file = aggr_areas.loc[
+                    aggr_areas[aggr_dict.field_name]
+                    == green_infrastructure.aggregation_area_name,
+                    ["geometry"],
+                ].reset_index(drop=True)
+        else:
+            raise ValueError(
+                f"The selection type: {green_infrastructure.selection_type} is not valid"
+            )
+
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
             polygon_file,
             geom=self.sf_model.region,
             crs=self.sf_model.crs,
         )
 
-        # Determine volume capacity of green infrastructure
+        # Make sure no multipolygons are there
+        gdf_green_infra = gdf_green_infra.explode()
 
+        # Determine volume capacity of green infrastructure
         if green_infrastructure.height.value != 0.0:
             height = (
                 green_infrastructure.height.convert(UnitTypesLength("meters"))
@@ -399,13 +426,77 @@ class SfincsAdapter:
     def turn_off_bnd_press_correction(self):
         self.sf_model.set_config("pavbnd", -9999)
 
+    def add_obs_points(self):
+        """add observation points provided in the site toml to SFINCS model"""
+
+        if self.site.attrs.obs_point is not None:
+            obs_points = self.site.attrs.obs_point
+            names = []
+            lat = []
+            lon = []
+            for pt in obs_points:
+                names.append(pt.name)
+                lat.append(pt.lat)
+                lon.append(pt.lon)
+
+            # create GeoDataFrame from obs_points in site file
+            df = pd.DataFrame({"name": names})
+            gdf = gpd.GeoDataFrame(
+                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            )
+
+            # Add locations to SFINCS file
+            self.sf_model.setup_observation_points(locations=gdf, merge=False)
+
     def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entre simulation"""
+        """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         return zsmax
 
-    def write_geotiff(self, demfile: Path, floodmap_fn: Path):
+    def read_zs_points(self):
+        """Read water level (zs) timeseries at observation points
+        Names are allocated from the site.toml.
+        See also add_obs_points() above
+        """
+
+        self.sf_model.read_results()
+        da = self.sf_model.results["point_zs"]
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+
+        # get station names from site.toml
+        if self.site.attrs.obs_point is not None:
+            names = []
+            descriptions = []
+            obs_points = self.site.attrs.obs_point
+            for pt in obs_points:
+                names.append(pt.name)
+                descriptions.append(pt.description)
+
+        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
+        gdf = gpd.GeoDataFrame(
+            pt_df,
+            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
+            crs=self.sf_model.crs,
+        )
+        return df, gdf
+
+    def get_mask(self):
+        """Get mask with inactive cells from model"""
+        mask = self.sf_model.grid["msk"]
+        return mask
+
+    def get_bedlevel(self):
+        """Get bed level from model"""
+        self.sf_model.read_results()
+        zb = self.sf_model.results["zb"]
+        return zb
+
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
+        """Get bounding box from model"""
+        return self.sf_model.region
+
+    def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
 
         demfile_units = self.site.attrs.dem.units
@@ -413,9 +504,6 @@ class SfincsAdapter:
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # read model results
-        zsmax = self.read_zsmax()
 
         # determine conversion factor for output floodmap
         floodmap_units = self.site.attrs.sfincs.floodmap_units
@@ -427,14 +515,11 @@ class SfincsAdapter:
             zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
-            floodmap_fn=floodmap_fn,
+            floodmap_fn=str(floodmap_fn),
         )
 
-    def write_risk_geotiff(
-        self, zs_max_rp: xr.Dataset, demfile: Path, floodmap_fn: Path
-    ):
+    def downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
-
         demfile_units = self.site.attrs.dem.units
         dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
             UnitTypesLength("meters")
@@ -447,9 +532,9 @@ class SfincsAdapter:
             value=1.0, units=UnitTypesLength("meters")
         ).convert(floodmap_units)
 
-        utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zs_max_rp,
+        hmax = utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
             dep=floodmap_conversion * dem,
             hmin=0.01,
-            floodmap_fn=floodmap_fn,
         )
+        return hmax

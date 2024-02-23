@@ -16,14 +16,9 @@ from flood_adapt.object_model.strategy import Strategy
 test_database = Path().absolute() / "tests" / "test_database"
 
 
-def test_strategy_comb_read(cleanup_database):
+def test_strategy_comb_read(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "strategy_comb"
-        / "strategy_comb.toml"
+        test_db.input_path / "strategies" / "strategy_comb" / "strategy_comb.toml"
     )
     assert test_toml.is_file()
 
@@ -48,15 +43,8 @@ def test_strategy_comb_read(cleanup_database):
     assert isinstance(strategy.get_hazard_strategy().measures[0], FloodWall)
 
 
-def test_strategy_no_measures(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "no_measures"
-        / "no_measures.toml"
-    )
+def test_strategy_no_measures(test_db):
+    test_toml = test_db.input_path / "strategies" / "no_measures" / "no_measures.toml"
     assert test_toml.is_file()
 
     strategy = Strategy.load_file(test_toml)
@@ -67,11 +55,9 @@ def test_strategy_no_measures(cleanup_database):
     assert len(strategy.get_impact_strategy().measures) == 0
 
 
-def test_elevate_comb_correct(cleanup_database):
+def test_elevate_comb_correct(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "strategies"
         / "elevate_comb_correct"
         / "elevate_comb_correct.toml"
@@ -87,15 +73,8 @@ def test_elevate_comb_correct(cleanup_database):
     assert isinstance(strategy.get_impact_strategy().measures[1], Elevate)
 
 
-def test_green_infra(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "greeninfra"
-        / "greeninfra.toml"
-    )
+def test_green_infra(test_db):
+    test_toml = test_db.input_path / "strategies" / "greeninfra" / "greeninfra.toml"
     assert test_toml.is_file()
 
     strategy = Strategy.load_file(test_toml)

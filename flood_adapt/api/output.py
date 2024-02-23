@@ -35,12 +35,46 @@ def get_fiat_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     return database.get_fiat_footprints(name)
 
 
-def get_aggregation(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
     return database.get_aggregation(name)
 
 
 def get_roads(name: str, database: IDatabase) -> gpd.GeoDataFrame:
     return database.get_roads(name)
+
+
+def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+    """Return the HTML strings of the water level timeseries for the given scenario.
+
+    Parameters
+    ----------
+    name : str
+        The name of the scenario.
+    database : IDatabase
+        The database object.
+
+    Returns
+    -------
+    str
+        The HTML strings of the water level timeseries
+    """
+    # Get the direct_impacts objects from the scenario
+    hazard = database.get_scenario(name).direct_impacts.hazard
+
+    # Check if the scenario has run
+    if not hazard.sfincs_has_run_check():
+        raise ValueError(
+            f"Scenario {name} has not been run. Please run the scenario first."
+        )
+
+    output_path = Path(database.output_path).joinpath("Scenarios", hazard.name)
+    gdf = database.get_obs_points()
+    gdf["html"] = [
+        str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
+        for station in gdf.name
+    ]
+
+    return gdf
 
 
 def get_infographic(name: str, database: IDatabase) -> str:

@@ -1,5 +1,0 @@
-name = "current_extreme12ft_raise_datum"
-description = "current_extreme12ft_raise_datum"
-event = "extreme12ft"
-projection = "current"
-strategy = "raise_datum"

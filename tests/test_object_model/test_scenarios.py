@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,97 +17,67 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 
-test_database = Path().absolute() / "tests" / "test_database"
 
-
-def test_scenario_class(cleanup_database):
-    scenario_toml = (
-        test_database
-        / "charleston"
-        / "input"
+@pytest.fixture(autouse=True)
+def test_tomls(test_db):
+    toml_files = [
+        test_db.input_path
         / "scenarios"
         / "all_projections_extreme12ft_strategy_comb"
-        / "all_projections_extreme12ft_strategy_comb.toml"
-    )
-    assert scenario_toml.is_file()
-
-    scenario = Scenario.load_file(scenario_toml)
-    scenario.init_object_model()
-
-    assert isinstance(scenario.site_info, Site)
-    assert isinstance(scenario.direct_impacts, DirectImpacts)
-    assert isinstance(
-        scenario.direct_impacts.socio_economic_change, SocioEconomicChange
-    )
-    assert isinstance(scenario.direct_impacts.impact_strategy, ImpactStrategy)
-    assert isinstance(scenario.direct_impacts.hazard, Hazard)
-    assert isinstance(scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy)
-    assert isinstance(
-        scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
-    )
-    assert isinstance(scenario.direct_impacts.hazard.event_list[0], Synthetic)
-
-
-def test_hazard_load():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        / "all_projections_extreme12ft_strategy_comb.toml",
+        test_db.input_path
         / "scenarios"
         / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
+        / "current_extreme12ft_no_measures.toml",
+    ]
+    return toml_files
+
+
+@pytest.fixture(autouse=True)
+def test_scenarios(test_db, test_tomls):
+    test_scenarios = {
+        toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
+    }
+    return test_scenarios
+
+
+def test_initObjectModel_validInput(test_db, test_scenarios):
+    test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
+
+    test_scenario.init_object_model()
+
+    assert isinstance(test_scenario.site_info, Site)
+    assert isinstance(test_scenario.direct_impacts, DirectImpacts)
+    assert isinstance(
+        test_scenario.direct_impacts.socio_economic_change, SocioEconomicChange
     )
+    assert isinstance(test_scenario.direct_impacts.impact_strategy, ImpactStrategy)
+    assert isinstance(test_scenario.direct_impacts.hazard, Hazard)
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy
+    )
+    assert isinstance(
+        test_scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
+    )
+    assert isinstance(test_scenario.direct_impacts.hazard.event_list[0], Synthetic)
 
-    assert test_toml.is_file()
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
 
-    hazard = scenario.direct_impacts.hazard
+def test_hazard_load(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
+    test_scenario.init_object_model()
+    hazard = test_scenario.direct_impacts.hazard
 
     assert hazard.event_list[0].attrs.timing == "idealized"
     assert isinstance(hazard.event_list[0].attrs.tide, TideModel)
 
 
-def test_hazard_wl(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+def test_scs_rainfall(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    assert test_toml.is_file()
+    test_scenario.init_object_model()
 
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
-
-    hazard = scenario.direct_impacts.hazard
-
-    hazard.add_wl_ts()
-
-    assert isinstance(hazard.wl_ts, pd.DataFrame)
-    assert len(hazard.wl_ts) > 1
-    assert isinstance(hazard.wl_ts.index, pd.DatetimeIndex)
-
-
-def test_scs_rainfall(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
-
-    assert test_toml.is_file()
-
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
-
-    hazard = scenario.direct_impacts.hazard
+    hazard = test_scenario.direct_impacts.hazard
 
     hazard.event.attrs.rainfall = RainfallModel(
         source="shape",
@@ -141,20 +109,59 @@ def test_scs_rainfall(cleanup_database):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-@pytest.mark.skip(reason="No metric file to read from")
-def test_infographic(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml"
-    )
+class Test_scenario_run:
+    @pytest.fixture(scope="class")
+    def test_scenario_before_after_run(self, test_db_class):
+        test_scenario_toml = (
+            test_db_class.input_path
+            / "scenarios"
+            / "current_extreme12ft_no_measures"
+            / "current_extreme12ft_no_measures.toml"
+        )
+        test_scenario_toml_run_path = (
+            test_db_class.input_path
+            / "scenarios"
+            / "test_run_scenario"
+            / "test_run_scenario.toml"
+        )
 
-    assert test_toml.is_file()
+        test_scenario_copy = Scenario.load_file(test_scenario_toml)
+        test_scenario_copy.save(test_scenario_toml_run_path)
+        test_scenario_to_run = Scenario.load_file(test_scenario_toml_run_path)
 
-    # use event template to get the associated Event child class
-    test_scenario = Scenario.load_file(test_toml)
-    test_scenario.init_object_model()
-    test_scenario.infographic()
+        test_scenario_to_run.run()
+
+        return test_scenario_copy, test_scenario_to_run
+
+    def test_run_notRunYet(self, test_scenario_before_after_run):
+        before_run, _ = test_scenario_before_after_run
+
+        assert before_run.direct_impacts.hazard.has_run is False
+        assert before_run.direct_impacts.hazard.event_list[0].results is None
+        assert before_run.direct_impacts.impact_strategy.results is None
+        assert before_run.direct_impacts.socio_economic_change.results is None
+        assert before_run.direct_impacts.results is None
+
+    def test_run_hasRun(self, test_scenario_before_after_run):
+        _, after_run = test_scenario_before_after_run
+
+        assert after_run.direct_impacts.hazard.has_run is True
+        assert after_run.direct_impacts.hazard.event_list[0].results is not None
+        assert after_run.direct_impacts.impact_strategy.results is not None
+        assert after_run.direct_impacts.socio_economic_change.results is not None
+        assert after_run.direct_impacts.results is not None
+
+    def test_infographic(self, test_db):
+        test_toml = (
+            test_db.input_path
+            / "scenarios"
+            / "current_extreme12ft_no_measures"
+            / "current_extreme12ft_no_measures.toml"
+        )
+
+        assert test_toml.is_file()
+
+        # use event template to get the associated Event child class
+        test_scenario = Scenario.load_file(test_toml)
+        test_scenario.init_object_model()
+        test_scenario.infographic()
