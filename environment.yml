@@ -14,7 +14,7 @@ dependencies:
     - cht-observations
     - git+https://github.com/Deltares/hydromt_fiat.git
     - git+https://github.com/Deltares/fiat_toolbox.git
-    - git+https://github.com/Deltares/hydromt_sfincs.git
+    - git+https://github.com/Deltares/hydromt_sfincs.git@v2/quadtree
     - git+https://github.com/Deltares/cht_cyclones.git
   - black
   - typos
