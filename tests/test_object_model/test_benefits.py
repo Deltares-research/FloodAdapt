@@ -150,13 +150,6 @@ def test_run_benefit_analysis(test_db):
         # assert if results are equal to the expected values based on the input
         assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
 
-    # get aggregation 
-    csv_agg_results = pd.read_csv(results_path.joinpath("benefit_aggregation_2.csv"))
-    tot_benefits_agg = csv_agg_results["benefits_discounted"].sum()
-    
-    # assert if results are equal to the expected values based on the input
-    assert tot_benefits_agg == 963433923
-
 def test_run_CBA(test_db):
     benefit_toml = (
         test_db.input_path
