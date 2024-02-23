@@ -2,8 +2,6 @@ import os
 import shutil
 from pathlib import Path
 from typing import Any, Union
-import glob 
-import tempfile
 
 import geopandas as gpd
 import numpy as np
