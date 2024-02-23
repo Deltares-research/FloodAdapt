@@ -125,7 +125,13 @@ class Database(IDatabase):
         return bnd
 
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get the model grid from the SFINCS model"""
+        """Get the model grid from the SFINCS model
+
+        Returns
+        -------
+        QuadtreeGrid
+            The model grid
+        """
         sfincs_path = self.static_path.joinpath(
             "templates", self.site.attrs.sfincs.overland_model
         )

@@ -498,7 +498,13 @@ class SfincsAdapter:
         return self.sf_model.region
 
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get grid from model"""
+        """Get grid from model
+
+        Returns
+        -------
+        QuadtreeGrid
+            QuadtreeGrid with the model grid
+        """
         return self.sf_model.quadtree
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):

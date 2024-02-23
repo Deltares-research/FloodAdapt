@@ -66,6 +66,17 @@ def get_model_boundary(database: IDatabase) -> GeoDataFrame:
 
 
 def get_model_grid(database: IDatabase) -> QuadtreeGrid:
+    """Gets the model grid that is used in SFINCS
+
+    Parameters
+    ----------
+    database : IDatabase
+
+    Returns
+    -------
+    QuadtreeGrid
+        QuadtreeGrid with the model grid
+    """
     return database.get_model_grid()
 
 
