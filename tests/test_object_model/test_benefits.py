@@ -150,6 +150,7 @@ def test_run_benefit_analysis(test_db):
         # assert if results are equal to the expected values based on the input
         assert pytest.approx(tot_benefits_agg, 2) == tot_benefits
 
+
 def test_run_CBA(test_db):
     benefit_toml = (
         test_db.input_path
