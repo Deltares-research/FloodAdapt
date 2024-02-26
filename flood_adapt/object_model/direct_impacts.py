@@ -6,12 +6,17 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import tomli
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_write_metrics_file import MetricsFileWriter
+from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
+    ExceedanceProbabilityCalculator,
+)
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -70,8 +75,8 @@ class DirectImpacts:
         """
         log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():
-            with open(log_file) as f:
-                if "All done!" in f.read():
+            with open(log_file, "r", encoding="cp1252") as f:
+                if "Geom calculation are done!" in f.read():
                     return True
                 else:
                     return False
@@ -141,6 +146,7 @@ class DirectImpacts:
         logging.info("Post-processing impact models...")
         # Preprocess all impact model input
         self.postprocess_fiat()
+        logging.info("Impact models post-processing complete!")
 
     def preprocess_fiat(self):
         """Updates FIAT model based on scenario information and then runs the FIAT model"""
@@ -189,12 +195,33 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
+            dem = (
+                self.database_input_path.parent
+                / "static"
+                / "dem"
+                / self.site_info.attrs.dem.filename
+            )
+            aggregation_areas = [
+                self.database_input_path.parent / "static" / "site" / aggr.file
+                for aggr in self.site_info.attrs.fiat.aggregation
+            ]
+            attribute_names = [
+                aggr.field_name for aggr in self.site_info.attrs.fiat.aggregation
+            ]
+            label_names = [
+                f"Aggregation Label: {aggr.name}"
+                for aggr in self.site_info.attrs.fiat.aggregation
+            ]
 
             fa.apply_population_growth_new(
                 population_growth=self.socio_economic_change.attrs.population_growth_new,
                 ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
                 elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
                 area_path=area_path,
+                ground_elevation=dem,
+                aggregation_areas=aggregation_areas,
+                attribute_names=attribute_names,
+                label_names=label_names,
             )
 
         # Last apply population growth to existing objects
@@ -234,9 +261,9 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        fiat_exec = str(
-            self.database_input_path.parents[2] / "system" / "fiat" / "fiat.exe"
-        )
+
+        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
@@ -255,6 +282,10 @@ class DirectImpacts:
             f"Impacts_detailed_{self.name}.csv"
         )
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
+
+        # Add exceedance probability if needed (only for risk)
+        if self.hazard.event_mode == "risk":
+            fiat_results_df = self._add_exeedance_probability(fiat_results_path)
 
         # Get the results dataframe
         fiat_results_df = pd.read_csv(fiat_results_path)
@@ -278,6 +309,8 @@ class DirectImpacts:
         # Create a roads spatial file
         if self.site_info.attrs.fiat.roads_file_name:
             self._create_roads(fiat_results_df)
+
+        logging.info("Post-processing complete!")
 
         # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder
@@ -338,6 +371,7 @@ class DirectImpacts:
                 damage_column_pattern="TotalDamageRP{rp}",
             )
             # Calculate equity
+            # TODO gamma in configuration file?
             gamma = 1.2  # elasticity
             df_equity = equity.equity_calculation(gamma)
             # Merge with metrics tables and resave
@@ -349,14 +383,20 @@ class DirectImpacts:
             )
             del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
             metrics_new = metrics_new.set_index(metrics_new.columns[0])
-            metrics_new.loc["Description", ["EW", "EWCEAD"]] = [
+            metrics_new.loc["Description", ["EW", "EWEAD", "EWCEAD"]] = [
                 "Equity weight",
-                "Equity weighted certainty equivalent expected annual damage",
+                "Equity weighted  expected annual damage",
+                "Equity weighted certainty equivalent  annual damage",
             ]
-            metrics_new.loc["Show In Metrics Table", ["EW", "EWCEAD"]] = [True, True]
-            metrics_new.loc["Long Name", ["EW", "EWCEAD"]] = [
+            metrics_new.loc["Show In Metrics Table", ["EW", "EWEAD", "EWCEAD"]] = [
+                True,
+                True,
+                True,
+            ]
+            metrics_new.loc["Long Name", ["EW", "EWEAD", "EWCEAD"]] = [
                 "Equity weight",
-                "Equity weighted certainty equivalent expected annual damage",
+                "Equity weighted  expected annual damage",
+                "Equity weighted certainty equivalent  annual damage",
             ]
             metrics_new.index.name = None
             metrics_new.to_csv(file)
@@ -432,6 +472,39 @@ class DirectImpacts:
         PointsToFootprints.write_footprint_file(
             footprints, fiat_results_df, outpath, extra_footprints=new_development_area
         )
+
+    def _add_exeedance_probability(self, fiat_results_path):
+        """Adds exceedance probability to the fiat results dataframe
+
+        Parameters
+        ----------
+        fiat_results_path : str
+            Path to the fiat results csv file
+
+        Returns
+        -------
+        pandas.DataFrame
+            FIAT results dataframe with exceedance probability added"""
+
+        # Get config path
+        config_path = self.database_input_path.parent.joinpath(
+            "static", "templates", "infometrics", "metrics_additional_risk_configs.toml"
+        )
+        with open(config_path, mode="rb") as fp:
+            config = tomli.load(fp)["flood_exceedance"]
+
+        # Check whether all configs are present
+        if not all(key in config for key in ["column", "threshold", "period"]):
+            raise ValueError("Not all required keys are present in the config file.")
+
+        # Get the exceedance probability
+        fiat_results_df = ExceedanceProbabilityCalculator(
+            config["column"]
+        ).append_to_file(
+            fiat_results_path, fiat_results_path, config["threshold"], config["period"]
+        )
+
+        return fiat_results_df
 
     def _create_infometrics(self, fiat_results_df) -> Path:
         # Get the metrics configuration

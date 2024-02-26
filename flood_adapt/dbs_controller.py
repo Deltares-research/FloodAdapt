@@ -14,6 +14,7 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -45,22 +46,42 @@ class Database(IDatabase):
     input_path: Path
     site: ISite
 
-    def __init__(self, database_path: Union[str, os.PathLike], site_name: str) -> None:
-        """Database is initialized with a path and a site name
+    def __init__(
+        self,
+        database_path: Union[str, os.PathLike, None] = None,
+        database_name: Union[str, None] = None,
+    ) -> None:
+        """
+        Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike]
-            database path
-        site_name : str
-            site name (same as in the folder structure)
+        database_path : Union[str, os.PathLike, None], optional
+            The path to the database. If not provided, the default path specified in the config.toml file will be used.
+        database_name : Union[str, None], optional
+            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+        Notes
+        -----
+        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-        self.input_path = Path(database_path) / site_name / "input"
-        self.static_path = Path(database_path) / site_name / "static"
-        self.output_path = Path(database_path) / site_name / "output"
-        self.site = Site.load_file(
-            Path(database_path) / site_name / "static" / "site" / "site.toml"
+
+        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
+        default_config = Path(__file__).parent.parent / "config.toml"
+        FloodAdapt_config.parse_config(default_config, overwrite=False)
+
+        # Overwrite defaults with whatever the user provided
+        FloodAdapt_config.parse_user_input(
+            database_root=database_path, database_name=database_name
         )
+
+        database_path = FloodAdapt_config.get_database_root()
+        database_name = FloodAdapt_config.get_database_name()
+
+        self.input_path = database_path / database_name / "input"
+        self.static_path = database_path / database_name / "static"
+        self.output_path = database_path / database_name / "output"
+
+        self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
 
     # General methods
@@ -90,25 +111,65 @@ class Database(IDatabase):
 
         return aggregation_areas
 
-    def get_svi_map(self) -> gpd.GeoDataFrame:
-        """Get the geospatial social vulnerability index (SVI) data.
+    def get_model_boundary(self) -> GeoDataFrame:
+        """Get the model boundary from the SFINCS model"""
+        base_path = self.input_path.parent
+        path_in = base_path.joinpath(
+            "static", "templates", self.site.attrs.sfincs.overland_model
+        )
+        model = SfincsAdapter(model_root=path_in, site=self.site)
+
+        bnd = model.get_model_boundary()
+        del model
+        return bnd
+
+    def get_obs_points(self) -> GeoDataFrame:
+        """Get the observation points from the flood hazard model"""
+        if self.site.attrs.obs_point is not None:
+            obs_points = self.site.attrs.obs_point
+            names = []
+            descriptions = []
+            lat = []
+            lon = []
+            for pt in obs_points:
+                names.append(pt.name)
+                descriptions.append(pt.description)
+                lat.append(pt.lat)
+                lon.append(pt.lon)
+
+        # create GeoDataFrame from obs_points in site file
+        df = pd.DataFrame({"name": names, "description": descriptions})
+        # TODO: make crs flexible and add this as a parameter to site.toml?
+        gdf = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+        )
+        return gdf
+
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
+        """Get a map from the static folder
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the map relative to the static folder
 
         Returns
         -------
         gpd.GeoDataFrame
-            SVI per aggregation area
+            GeoDataFrame with the map in crs 4326
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file is not found
         """
-        if self.site.attrs.fiat.svi:
-            svi_map = gpd.read_file(
-                self.input_path.parent
-                / "static"
-                / "site"
-                / self.site.attrs.fiat.svi.geom,
-                engine="pyogrio",
-            ).to_crs(4326)
-        else:
-            svi_map = None
-        return svi_map
+        # Read the map
+        full_path = self.static_path / path
+        if full_path.is_file():
+            return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
+
+        # If the file is not found, throw an error
+        raise FileNotFoundError(f"File {full_path} not found")
 
     def get_slr_scn_names(self) -> list:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
@@ -1525,7 +1586,6 @@ class Database(IDatabase):
                 f"RP_{return_period:04d}_maps.nc",
             )
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
-
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
@@ -1556,8 +1616,8 @@ class Database(IDatabase):
 
         Returns
         -------
-        _type_
-            _description_
+        dict[GeoDataFrame]
+            dictionary with aggregated damages per aggregation type
         """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
@@ -1565,6 +1625,31 @@ class Database(IDatabase):
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
             label = aggr_area.stem.split(f"{scenario_name}_")[-1]
+            gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
+            gdfs[label] = gdfs[label].to_crs(4326)
+        return gdfs
+
+    def get_aggregation_benefits(self, benefit_name: str) -> dict[GeoDataFrame]:
+        """Gets a dictionary with the aggregated benefits as geodataframes
+
+        Parameters
+        ----------
+        benefit_name : str
+            name of the benefit analysis
+
+        Returns
+        -------
+        dict[GeoDataFrame]
+            dictionary with aggregated benefits per aggregation type
+        """
+        out_path = self.input_path.parent.joinpath(
+            "output",
+            "Benefits",
+            benefit_name,
+        )
+        gdfs = {}
+        for aggr_area in out_path.glob("benefits_*.gpkg"):
+            label = aggr_area.stem.split("benefits_")[-1]
             gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs

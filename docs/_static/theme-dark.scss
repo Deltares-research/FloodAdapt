@@ -4,15 +4,16 @@
 $background: #212529;
 $highlight: #292e33;
 $highlight: #373a3c;
-$links: #ffffffe7;
+$links: #080c80;
 $text: #ffffff;
 
 
 $body-bg: $background;
 $body-color: $text;
-$link-color: $links;
+$link-color: rgb(62, 200, 255);
+$navbar-hl: rgb(62, 200, 255) ;
 $navbar-bg: $highlight;
-$navbar-hl: $links ;
+
 
 // Code blocks
 $code-block-bg-alpha: -.8;
@@ -35,8 +36,9 @@ $code-block-bg-alpha: -.8;
 }
 
 .nav-tabs .nav-link:hover {
-    background-color: $links;
-    border-color: $links;
+    background-color: rgb(62, 200, 255) !important;
+    border-color: rgb(62, 200, 255);
+    border: 1px solid rgb(62, 200, 255);
 }
 
 .nav-tabs .nav-link i {
@@ -52,7 +54,8 @@ $code-block-bg-alpha: -.8;
     font-size: 25px !important;
     font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
 }
-.menu-text{
+
+.sidebar-item-text.sidebar-link{
     color: $text
 }
 
@@ -62,9 +65,11 @@ $code-block-bg-alpha: -.8;
     padding: 5px;
     margin-left: -20px;
 }
-sidebar-item-text sidebar-link a.active {
-    color:aqua !important
-}
+
+
+//    background-color:rgb(226, 228, 238);
+//    height: 220%
+
 
 // .nav-tabs .nav-link {
 //     // background-color: rgb(0, 0, 0);

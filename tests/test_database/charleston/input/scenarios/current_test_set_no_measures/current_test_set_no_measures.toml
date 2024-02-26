@@ -1,5 +1,0 @@
-name = "current_test_set_no_measures"
-description = "current_test_set_no_measures"
-event = "test_set"
-projection = "current"
-strategy = "no_measures"

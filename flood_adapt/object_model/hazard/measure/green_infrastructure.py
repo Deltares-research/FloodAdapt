@@ -22,7 +22,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage"""
 
     attrs: GreenInfrastructureModel
-    database_input_path: Union[str, os.PathLike]
+    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
@@ -38,7 +38,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IGreenInfrastructure:
         """create Green Infrastructure from object, e.g. when initialized from GUI"""
 

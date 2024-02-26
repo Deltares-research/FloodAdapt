@@ -2,9 +2,8 @@ import os
 import shutil
 from pathlib import Path
 from typing import Any, Union
-import glob 
-import tempfile
 
+import geopandas as gpd
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
@@ -34,11 +33,13 @@ class Benefit(IBenefit):
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()
-        # Get monetary units
-        site_obj = Site.load_file(
+        # Get site config
+        self.site_toml_path = (
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
-        self.unit = site_obj.attrs.fiat.damage_unit
+        self.site_info = Site.load_file(self.site_toml_path)
+        # Get monetary units
+        self.unit = self.site_info.attrs.fiat.damage_unit
 
     def has_run_check(self):
         """Check if the benefit assessment has already been run"""
@@ -140,8 +141,104 @@ class Benefit(IBenefit):
             )
         # Run the cost-benefit analysis
         self.cba()
+        # Run aggregation benefits
+        self.cba_aggregation()
         # Updates results
         self.has_run_check()
+
+    @staticmethod
+    def _calc_benefits(
+        years: list[int, int],
+        risk_no_measures: list[float, float],
+        risk_with_strategy: list[float, float],
+        discount_rate: float,
+    ) -> pd.DataFrame:
+        """Calculates per year benefits and discounted benefits
+
+        Parameters
+        ----------
+        years : list[int, int]
+            the current and future year for the analysis
+        risk_no_measures : list[float, float]
+            the current and future risk value without any measures
+        risk_with_strategy : list[float, float]
+            the current and future risk value with the strategy under investigation
+        discount_rate : float
+            the yearly discount rate used to calculated the total benefit
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe containing the time-series of risks and benefits per year
+        """
+        benefits = pd.DataFrame(
+            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
+            index=np.arange(years[0], years[1] + 1),
+        )
+        benefits.index.names = ["year"]
+
+        # Fill in dataframe
+        for strat, risk in zip(
+            ["no_measures", "with_strategy"], [risk_no_measures, risk_with_strategy]
+        ):
+            benefits.loc[years[0], f"risk_{strat}"] = risk[0]
+            benefits.loc[years[1], f"risk_{strat}"] = risk[1]
+
+        # Assume linear trend between current and future
+        benefits = benefits.interpolate(method="linear")
+
+        # Calculate benefits
+        benefits["benefits"] = (
+            benefits["risk_no_measures"] - benefits["risk_with_strategy"]
+        )
+        # Calculate discounted benefits using the provided discount rate
+        benefits["benefits_discounted"] = benefits["benefits"] / (
+            1 + discount_rate
+        ) ** (benefits.index - benefits.index[0])
+
+        return benefits
+
+    @staticmethod
+    def _calc_costs(
+        benefits: pd.DataFrame,
+        implementation_cost: float,
+        annual_maint_cost: float,
+        discount_rate: float,
+    ) -> pd.DataFrame:
+        """Calculates per year costs and discounted costs
+
+        Parameters
+        ----------
+        benefits : pd.DataFrame
+            a time series of benefits per year (produced with __calc_benefits method)
+        implementation_cost : float
+            initial costs of implementing the adaptation strategy
+        annual_maint_cost : float
+            annual maintenance cost of the adaptation  strategy
+        discount_rate : float
+            yearly discount rate
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe containing the time-series of benefits, costs and profits per year
+        """
+        benefits = benefits.copy()
+        benefits["costs"] = np.nan
+        # implementations costs at current year and maintenance from year 1
+        benefits.loc[benefits.index[0], "costs"] = implementation_cost
+        benefits.loc[benefits.index[1:], "costs"] = annual_maint_cost
+        benefits["costs_discounted"] = benefits["costs"] / (1 + discount_rate) ** (
+            benefits.index - benefits.index[0]
+        )
+
+        # Benefit to Cost Ratio
+        benefits["profits"] = benefits["benefits"] - benefits["costs"]
+        benefits["profits_discounted"] = benefits["profits"] / (1 + discount_rate) ** (
+            benefits.index - benefits.index[0]
+        )
+
+        return benefits
 
     def cba(self):
         """Cost-benefit analysis"""
@@ -150,47 +247,41 @@ class Benefit(IBenefit):
         scenarios["EAD"] = None
 
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
-        
+
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
             scn_name = scenario["scenario created"]
-            collective_fn = results_path.joinpath(scn_name, f"Infometrics_{scn_name}.csv")
-            collective_metrics = MetricsFileReader(collective_fn,).read_metrics_from_file()
-            
+            collective_fn = results_path.joinpath(
+                scn_name, f"Infometrics_{scn_name}.csv"
+            )
+            collective_metrics = MetricsFileReader(
+                collective_fn,
+            ).read_metrics_from_file()
+
             # Fill scenarios EAD column with values from metrics
             scenarios.loc[index, "EAD"] = float(
-                collective_metrics["Value"]["ExpectedAnnualDamages"] 
+                collective_metrics["Value"]["ExpectedAnnualDamages"]
             )
 
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
 
-        # Prepare dataframe 
-        cba = pd.DataFrame(
-            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
-            index=np.arange(year_start, year_end + 1),
-        )
-        cba.index.names = ["year"]
-
-        # Fill in dataframe 
-        for strat in ["no_measures", "with_strategy"]:
-            cba.loc[year_start, f"risk_{strat}"] = scenarios.loc[
-                f"current_{strat}", "EAD"
-            ]
-            cba.loc[year_end, f"risk_{strat}"] = scenarios.loc[f"future_{strat}", "EAD"]
-
-        # Assume linear trend between current and future
-        cba = cba.interpolate(method="linear")
-        
         # Calculate benefits
-        cba["benefits"] = cba["risk_no_measures"] - cba["risk_with_strategy"]
-        # Calculate discounted benefits using the provided discount rate
-        cba["benefits_discounted"] = cba["benefits"] / (
-            1 + self.attrs.discount_rate
-        ) ** (cba.index - cba.index[0])
-        cba = cba.round(0)  # Round results
+        cba = Benefit._calc_benefits(
+            years=[year_start, year_end],
+            risk_no_measures=[
+                scenarios.loc["current_no_measures", "EAD"],
+                scenarios.loc["future_no_measures", "EAD"],
+            ],
+            risk_with_strategy=[
+                scenarios.loc["current_with_strategy", "EAD"],
+                scenarios.loc["future_with_strategy", "EAD"],
+            ],
+            discount_rate=self.attrs.discount_rate,
+        )
 
+        # Save indicators in dictionary
         results = {}
         # Get net present value of benefits
         results["benefits"] = cba["benefits_discounted"].sum()
@@ -200,28 +291,20 @@ class Benefit(IBenefit):
             self.attrs.annual_maint_cost is not None
         )
         if cost_calc:
-            cba["costs"] = np.nan
-            # implementations costs at current year and maintenance from year 1
-            cba.loc[year_start, "costs"] = self.attrs.implementation_cost
-            cba.loc[cba.index[1:], "costs"] = self.attrs.annual_maint_cost
-            cba["costs_discounted"] = cba["costs"] / (1 + self.attrs.discount_rate) ** (
-                cba.index - cba.index[0]
+            cba = Benefit._calc_costs(
+                benefits=cba,
+                implementation_cost=self.attrs.implementation_cost,
+                annual_maint_cost=self.attrs.annual_maint_cost,
+                discount_rate=self.attrs.discount_rate,
             )
-            cba = cba.round(0)  # Round results
+            # Calculate costs
             results["costs"] = cba["costs_discounted"].sum()
-
-            results["BCR"] = np.round(
-                results["benefits"] / results["costs"], 2
-            )  # Benefit to Cost Ratio
-            cba["profits"] = cba["benefits"] - cba["costs"]
-            cba["profits_discounted"] = cba["profits"] / (
-                1 + self.attrs.discount_rate
-            ) ** (cba.index - cba.index[0])
-            cba = cba.round(0)  # Round results
+            # Benefit to Cost Ratio
+            results["BCR"] = np.round(results["benefits"] / results["costs"], 2)
+            # Net present value
             results["NPV"] = cba["profits_discounted"].sum()
-            results["IRR"] = np.round(
-                npf.irr(cba["profits"]), 3
-            )  #  Internal Rate of Return
+            # Internal Rate of Return
+            results["IRR"] = np.round(npf.irr(cba["profits"]), 3)
 
         # Save results
         # If path for results does not yet exist, make it
@@ -243,130 +326,109 @@ class Benefit(IBenefit):
         # Make html
         self._make_html(cba)
 
-        # Run aggregation benefits
-        self.cba_aggregation(results_path, year_start, year_end)
-
-    def cba_aggregation(self, results_path, year_start, year_end):
+    def cba_aggregation(self):
         """Zonal Benefits per aggregation"""
-        
+        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        # Get years of interest
+        year_start = self.attrs.current_situation.year
+        year_end = self.attrs.future_year
+
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
-        temp_dir = tempfile.mkdtemp()
 
-        #agg_results_path  = Path(os.path.abspath("")) / "tests" / "test_database" / "charleston" / "output" / "Benefits" 
-        count2= 0
-        
-        # Get metrics per scenario
-        for index, scenario in scenarios.iterrows():
-            scn_name = scenario["scenario created"]
-            aggregation_fn = glob.glob(str(results_path.joinpath(scn_name, f"Infometrics_{scn_name}_*")))
+        # Read in the names of the aggregation area types
+        aggregations = [aggr.name for aggr in self.site_info.attrs.fiat.aggregation]
 
-            # Get metrics per scenario and per aggregation
-            aggregation_metrics = []
-            aggregation_metrics_zones = []
-            nested_df={}
-            for i in aggregation_fn:
-                aggregated_metrics = MetricsFileReader(i,).read_aggregated_metric_from_file("ExpectedAnnualDamages")[2:]
-                aggregated_metrics= aggregated_metrics.loc[aggregated_metrics.index.dropna()]
-                EAD = aggregated_metrics.astype(float).to_numpy()
-                zones = aggregated_metrics.index
-                aggregation_metrics.append(EAD)
-                aggregation_metrics_zones.append(zones)
-            count = 0
-            for idx, arr in enumerate(aggregation_metrics):
-                df = pd.DataFrame({f"{Path(aggregation_fn[count]).name}": arr})
-                df = df.set_index(aggregation_metrics_zones[count])
-                nested_df[f"{Path(aggregation_fn[count]).name}"] = df
-                count = count + 1
-            aggregation_metrics_list=[]
-            agg_scenarios_dic = {}
-            count = 0
-            
-            # Create scenario dictionary with dataframes for each aggregation zone
-            for key, value in nested_df.items():
-                df_transpose = value.transpose()
-                column_names = df_transpose.columns
-                aggregation_metrics_list.append(df_transpose) 
-                agg_scenarios = pd.concat([scenarios,pd.DataFrame(columns=column_names)]) 
-                agg_scenarios_dic[f"{Path(aggregation_fn[count]).name}"] = agg_scenarios    
-                count = count + 1                  
+        # Check if equity information is available to define variables to use
+        vars = []
+        for i, aggr_name in enumerate(aggregations):
+            if self.site_info.attrs.fiat.aggregation[i].equity is not None:
+                vars.append(["EAD", "EWEAD"])
+            else:
+                vars.append(["EAD"])
 
-            # write aggregation dataframes to temporary csv
-            count = 0
-            for key,value in agg_scenarios_dic.items():
-                df = value
-                df.reset_index()
-                df.iloc[count2,5:] = df.iloc[count2,5:].fillna(aggregation_metrics_list[count].iloc[0,0:])      
-                count3 = count % len(aggregation_fn)         
-                if pd.notna(df.iloc[0,5]):
-                    df.to_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv")) # Create csv file of first dataframe 
-                else:
-                    old_df = pd.read_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv"), index_col='Unnamed: 0') # Open already existing dataframe 
-                    df_update = old_df.combine_first(df) # append new EAD per scenario and zone to existing dataframe
-                    df_update.to_csv(os.path.join(temp_dir, f"aggregation_{count3}.csv")) # Overwrite old dataframe with appended EAD 
-                count += 1
-            count2 +=1 
+        # Define which names are used in the metric tables
+        var_metric = {"EAD": "ExpectedAnnualDamages", "EWEAD": "EWEAD"}
 
-        # Create list of dataframes of EAD per Aggregation zone 
-        pre_aggregation_scenarios_EAD = []
-        for i in range(len(aggregation_fn)):
-             df= pd.read_csv(os.path.join(temp_dir, f"aggregation_{i}.csv"), index_col='Unnamed: 0')
-             pre_aggregation_scenarios_EAD.append(df)   
-        
-        # Drop unneccessary columns per dataframe and only keep zones 
-        aggregation_scenarios_EAD = []
-        count = 0
-        for i in pre_aggregation_scenarios_EAD:
-            zones = '|'.join(aggregation_metrics_zones[count])
-            df2 =  i[i.columns[i.columns.str.contains(zones)]]
-            aggregation_scenarios_EAD.append(df2)
-            count += 1
+        # Prepare dictionary to save values
+        risk = {}
 
-        # Fill in dataframe aggregation and create benefits per layer
-        aggregation_benefits = []
-        aggregation_benefits_single_aggregation = pd.DataFrame(columns=["zone", "benefits_discounted"])  # Initialize a DataFrame
-        
-        for idx_i, i in enumerate(aggregation_scenarios_EAD):   # iterate through aggregation dataframes
-            current_column = 0
-            data = []
-            for zone, values in i.iteritems(): # iterate through aggregation zones
-                while current_column < i.shape[1]:
-                    cba_agg = pd.DataFrame(
-                    data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
-                    index=np.arange(year_start, year_end + 1),
+        # Fill in the dictionary
+        for i, aggr_name in enumerate(aggregations):
+            risk[aggr_name] = {}
+            values = {}
+            for var in vars[i]:
+                values[var] = []
+            for index, scenario in scenarios.iterrows():
+                scn_name = scenario["scenario created"]
+                # Get available aggregation levels
+                aggregation_fn = results_path.joinpath(
+                    scn_name, f"Infometrics_{scn_name}_{aggr_name}.csv"
+                )
+                for var in vars[i]:
+                    # Get metrics per scenario and per aggregation
+                    aggregated_metrics = MetricsFileReader(
+                        aggregation_fn,
+                    ).read_aggregated_metric_from_file(var_metric[var])[2:]
+                    aggregated_metrics = aggregated_metrics.loc[
+                        aggregated_metrics.index.dropna()
+                    ]
+                    aggregated_metrics.name = scenario.name
+                    values[var].append(aggregated_metrics)
+
+            # Combine values in a single dataframe
+            for var in vars[i]:
+                risk[aggr_name][var] = pd.DataFrame(values[var]).T.astype(float)
+
+        var_output = {"EAD": "Benefits", "EWEAD": "Equity Weighted Benefits"}
+
+        # Calculate benefits
+        benefits = {}
+        for i, aggr_name in enumerate(aggregations):
+            benefits[aggr_name] = pd.DataFrame()
+            benefits[aggr_name].index = risk[aggr_name]["EAD"].index
+            for var in vars[i]:
+                for index, row in risk[aggr_name][var].iterrows():
+                    cba = Benefit._calc_benefits(
+                        years=[year_start, year_end],
+                        risk_no_measures=[
+                            row["current_no_measures"],
+                            row["future_no_measures"],
+                        ],
+                        risk_with_strategy=[
+                            row["current_with_strategy"],
+                            row["future_with_strategy"],
+                        ],
+                        discount_rate=self.attrs.discount_rate,
                     )
-                    cba_agg.index.names = ["year"]
-                    for strat in ["no_measures", "with_strategy"]: # iterate through scenario and fill values in cba dataframe
-                            cba_agg.loc[year_start, f"risk_{strat}"] = i.iloc[i.index.get_loc(
-                                f"current_{strat}"), current_column
-                            ]
-                            cba_agg.loc[year_end, f"risk_{strat}"] =  i.iloc[i.index.get_loc(f"future_{strat}"), current_column]
-                    cba_agg = cba_agg.interpolate(method="linear") # interpolate values
-                    cba_agg["benefits"] = cba_agg["risk_no_measures"] - cba_agg["risk_with_strategy"]
-                    cba_agg["benefits_discounted"] = cba_agg["benefits"] / (
-                        1 + self.attrs.discount_rate
-                    ) ** (cba_agg.index - cba_agg.index[0])
-                    cba_agg = cba_agg.round(0)  # Round results
-                    benefits_agg = cba_agg["benefits_discounted"].sum() # Get discounted benefits per zone within aggregation layer
-                    zone_name= i.columns[current_column]
-                    data.append({"zone": zone_name, "benefits_discounted": benefits_agg})  # Save benefits per zone within aggregation layer              
-                    current_column = current_column + 1
-            aggregation_benefits_single_aggregation = pd.DataFrame(data) # Create dataframe for aggregation layer with benefit per zone
-            aggregation_benefits_single_aggregation.set_index(aggregation_benefits_single_aggregation.columns[0], drop=True, inplace=True)
-            aggregation_benefits.append(aggregation_benefits_single_aggregation) # Append benefits dataframes per Aggregation layer 
+                    benefits[aggr_name].loc[row.name, var_output[var]] = cba[
+                        "benefits_discounted"
+                    ].sum()
 
-        # Save benefits per aggregation area 
-        for idx, df in enumerate(aggregation_benefits):
-            file_name = Path(aggregation_fn[idx]).name
-            csv_filename = os.path.join(self.results_path, file_name.split(scn_name)[-1])  
-            df.to_csv(csv_filename, index=True)
+        # Save benefits per aggregation area (csv and gpkg)
+        for i, aggr_name in enumerate(aggregations):
+            csv_filename = self.results_path.joinpath(f"benefits_{aggr_name}.csv")
+            benefits[aggr_name].to_csv(csv_filename, index=True)
 
-        # Remove temp files
-        if os.path.exists(temp_dir):
-            for file_name in os.listdir(temp_dir):
-                file_path = os.path.join(temp_dir, file_name)
-                os.remove(file_path)
-            os.rmdir(temp_dir)
+            # Load aggregation areas
+            ind = [
+                i
+                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
+                if n.name == aggr_name
+            ][0]
+            aggr_areas_path = self.site_toml_path.parent.joinpath(
+                self.site_info.attrs.fiat.aggregation[ind].file
+            )
+
+            aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
+            # Define output path
+            outpath = self.results_path.joinpath(f"benefits_{aggr_name}.gpkg")
+            # Save file
+            aggr_areas = aggr_areas.join(
+                benefits[aggr_name],
+                on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+            )
+            aggr_areas.to_file(outpath, driver="GPKG")
 
     def _make_html(self, cba):
         "Make an html with the time-series of the benefits and discounted benefits"
@@ -406,16 +468,6 @@ class Benefit(IBenefit):
                 name="Discounted benefits",
             ),
         )
-        # fig.add_trace(
-        #     go.Scatter(
-        #         x=cba2.index,
-        #         y=cba2["benefits_discounted"],
-        #         mode="markers",
-        #         marker_size=10,
-        #         marker_color="rgba(35,150,29,1)",
-        #         name="Calculated discounted benefits",
-        #     )
-        # )
 
         fig.add_trace(
             go.Scatter(

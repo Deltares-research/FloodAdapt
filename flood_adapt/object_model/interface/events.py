@@ -71,49 +71,49 @@ class ShapeType(str, Enum):
 class WindModel(BaseModel):
     source: WindSource
     # constant
-    constant_speed: Optional[UnitfulVelocity]
-    constant_direction: Optional[UnitfulDirection]
+    constant_speed: Optional[UnitfulVelocity] = None
+    constant_direction: Optional[UnitfulDirection] = None
     # timeseries
-    timeseries_file: Optional[str]
+    timeseries_file: Optional[str] = None
 
 
 class RainfallModel(BaseModel):
     source: RainfallSource
     increase: Optional[float] = 0.0
     # constant
-    constant_intensity: Optional[UnitfulIntensity]
+    constant_intensity: Optional[UnitfulIntensity] = None
     # timeseries
-    timeseries_file: Optional[str]
+    timeseries_file: Optional[str] = None
     # shape
-    shape_type: Optional[ShapeType]
-    cumulative: Optional[UnitfulLength]
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_start_time: Optional[float]
-    shape_end_time: Optional[float]
+    shape_type: Optional[ShapeType] = None
+    cumulative: Optional[UnitfulLength] = None
+    shape_duration: Optional[float] = None
+    shape_peak_time: Optional[float] = None
+    shape_start_time: Optional[float] = None
+    shape_end_time: Optional[float] = None
 
 
 class RiverModel(BaseModel):
-    source: Optional[RiverSource]
+    source: Optional[RiverSource] = None
     # constant
-    constant_discharge: Optional[UnitfulDischarge]
+    constant_discharge: Optional[UnitfulDischarge] = None
     # timeseries
-    timeseries_file: Optional[str]
+    timeseries_file: Optional[str] = None
     # shape
-    shape_type: Optional[ShapeType]
-    base_discharge: Optional[UnitfulDischarge]
-    shape_peak: Optional[UnitfulDischarge]
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_start_time: Optional[float]
-    shape_end_time: Optional[float]
+    shape_type: Optional[ShapeType] = None
+    base_discharge: Optional[UnitfulDischarge] = None
+    shape_peak: Optional[UnitfulDischarge] = None
+    shape_duration: Optional[float] = None
+    shape_peak_time: Optional[float] = None
+    shape_start_time: Optional[float] = None
+    shape_end_time: Optional[float] = None
 
 
 class TimeModel(BaseModel):
     """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
 
-    duration_before_t0: Optional[float]
-    duration_after_t0: Optional[float]
+    duration_before_t0: Optional[float] = None
+    duration_after_t0: Optional[float] = None
     start_time: Optional[str] = "20200101 000000"
     end_time: Optional[str] = "20200103 000000"
 
@@ -128,8 +128,8 @@ class TideModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
 
     source: TideSource
-    harmonic_amplitude: Optional[UnitfulLength]
-    timeseries_file: Optional[str]
+    harmonic_amplitude: Optional[UnitfulLength] = None
+    timeseries_file: Optional[str] = None
 
 
 class SurgeSource(str, Enum):
@@ -142,9 +142,9 @@ class SurgeModel(BaseModel):
 
     source: SurgeSource
     shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float]
-    shape_peak_time: Optional[float]
-    shape_peak: Optional[UnitfulLength]
+    shape_duration: Optional[float] = None
+    shape_peak_time: Optional[float] = None
+    shape_peak: Optional[UnitfulLength] = None
 
 
 class TranslationModel(BaseModel):
@@ -183,8 +183,8 @@ class EventSetModel(
     name: str
     description: Optional[str] = ""
     mode: Mode
-    subevent_name: Optional[list[str]]
-    frequency: Optional[list[float]]
+    subevent_name: Optional[list[str]] = []
+    frequency: Optional[list[float]] = []
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event

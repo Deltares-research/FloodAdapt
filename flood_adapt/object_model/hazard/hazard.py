@@ -7,12 +7,19 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import xarray as xr
+from numpy import matlib
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.eventset import EventSet
+from flood_adapt.object_model.hazard.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
@@ -220,24 +227,6 @@ class Hazard:
 
     # no write function is needed since this is only used internally
 
-    def add_wl_ts(self):
-        """adds total water level timeseries to hazard object"""
-        # generating total time series made of tide, slr and water level offset,
-        # only for Synthetic and historical from nearshore
-        for ii, event in enumerate(self.event_list):
-            if self.event.attrs.template == "Synthetic":
-                self.event.add_tide_and_surge_ts()
-                self.wl_ts = self.event.tide_surge_ts
-            elif self.event.attrs.template == "Historical_nearshore":
-                self.wl_ts = self.event.tide_surge_ts
-            # In both cases add SLR
-            self.wl_ts[1] = self.wl_ts[
-                1
-            ] + self.physical_projection.attrs.sea_level_rise.convert(
-                self.site.attrs.gui.default_length_units
-            )
-        return self
-
     @staticmethod
     def get_event_object(event_path):
         mode = Event.get_mode(event_path)
@@ -284,10 +273,8 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
-        sfincs_exec = (
-            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
-        )
         # results_dir = self.database_input_path.parent.joinpath(
         #     "output", "results", self.name
         # )
@@ -301,18 +288,16 @@ class Hazard:
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
 
-    def run_sfincs_offshore(self):
+    def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
 
-        sfincs_exec = (
-            self.database_input_path.parents[2] / "system" / "sfincs" / "sfincs.exe"
-        )
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
-        for simulation_path in self.simulation_paths_offshore:
-            with cd(simulation_path):
-                sfincs_log = "sfincs.log"
-                with open(sfincs_log, "w") as log_handler:
-                    subprocess.run(sfincs_exec, stdout=log_handler)
+        simulation_path = self.simulation_paths_offshore[ii]
+        with cd(simulation_path):
+            sfincs_log = "sfincs.log"
+            with open(sfincs_log, "w") as log_handler:
+                subprocess.run(sfincs_exec, stdout=log_handler)
 
     def preprocess_sfincs(
         self,
@@ -358,16 +343,34 @@ class Hazard:
 
             # Generate and change water level boundary condition
             template = self.event.attrs.template
+
             if template == "Synthetic" or template == "Historical_nearshore":
                 # generate hazard water level bc incl SLR (in the offshore model these are already included)
                 # returning wl referenced to MSL
-                self.add_wl_ts()
+                if self.event.attrs.template == "Synthetic":
+                    self.event.add_tide_and_surge_ts()
+                    # add water level offset due to historic SLR for synthetic event
+                    wl_ts = (
+                        self.event.tide_surge_ts
+                        + self.site.attrs.slr.vertical_offset.convert(
+                            self.site.attrs.gui.default_length_units
+                        )
+                    )
+                elif self.event.attrs.template == "Historical_nearshore":
+                    # water level offset due to historic SLR already included in observations
+                    wl_ts = self.event.tide_surge_ts
+                # In both cases (Synthetic and Historical nearshore) add SLR
+                wl_ts[1] = wl_ts[
+                    1
+                ] + self.physical_projection.attrs.sea_level_rise.convert(
+                    self.site.attrs.gui.default_length_units
+                )
                 # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
                 gui_units = UnitfulLength(
                     value=1.0, units=self.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
-                self.wl_ts = conversion_factor * self.wl_ts
+                self.wl_ts = conversion_factor * wl_ts
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
@@ -375,7 +378,7 @@ class Hazard:
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
                 logging.info("Running offshore model...")
-                self.run_sfincs_offshore()
+                self.run_sfincs_offshore(ii=ii)
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
 
@@ -556,6 +559,10 @@ class Hazard:
                             measure_path=measure_path,
                         )
 
+            # add observation points from site.toml
+            model.add_obs_points()
+            logging.info("Adding observation points to the overland flood model...")
+
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
@@ -580,7 +587,15 @@ class Hazard:
         path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        event_dir = self.database_input_path / "events" / self.event.attrs.name
+        if self.event_mode == Mode.risk:
+            event_dir = (
+                self.database_input_path
+                / "events"
+                / self.event_set.attrs.name
+                / self.event.attrs.name
+            )
+        else:
+            event_dir = self.database_input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
@@ -613,20 +628,31 @@ class Hazard:
         elif self.event.attrs.template == "Historical_hurricane":
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
+            if event_dir.joinpath(spw_name).is_file():
+                logging.info("Using existing hurricane meteo data.")
+                # copy spw file from event directory to offshore model folder
+                shutil.copy2(
+                    event_dir.joinpath(spw_name),
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                )
+            else:
+                logging.info(
+                    "Generating meteo input to the model from the hurricane track..."
+                )
+                offshore_model.add_spw_forcing(
+                    historical_hurricane=self.event,
+                    database_path=base_path,
+                    model_dir=self.simulation_paths_offshore[ii],
+                )
+                # save created spw file in the event directory
+                shutil.copy2(
+                    self.simulation_paths_offshore[ii].joinpath(spw_name),
+                    event_dir.joinpath(spw_name),
+                )
+                logging.info("Finished generating meteo data from hurricane track.")
 
         # write sfincs model in output destination
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
-
-        if self.event.attrs.template == "Historical_hurricane":
-            logging.info(
-                "Generating meteo input to the model from the hurricane track..."
-            )
-            offshore_model.add_spw_forcing(
-                historical_hurricane=self.event,
-                database_path=base_path,
-                model_dir=self.simulation_paths_offshore[ii],
-            )
-            logging.info("Finished generating meteo data from hurricane track.")
 
         del offshore_model
 
@@ -645,6 +671,7 @@ class Hazard:
         if self._mode == Mode.single_event:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
+            self.plot_wl_obs()
             # Copy SFINCS output map to main folder
             # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
             # shutil.copyfile(
@@ -655,6 +682,102 @@ class Hazard:
             # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
 
+    def plot_wl_obs(self):
+        """Plot water levels at SFINCS observation points as html
+        Only for single event scenarios
+        """
+        for sim_path in self.simulation_paths:
+            # read SFINCS model
+            model = SfincsAdapter(model_root=sim_path, site=self.site)
+
+            df, gdf = model.read_zs_points()
+
+            del model
+
+            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
+
+            conversion_factor = UnitfulLength(
+                value=1.0, units=UnitTypesLength("meters")
+            ).convert(gui_units)
+
+            for ii, col in enumerate(df.columns):
+                # Plot actual thing
+                fig = px.line(
+                    df[col] * conversion_factor
+                    + self.site.attrs.water_level.localdatum.height.convert(
+                        gui_units
+                    )  # convert to reference datum for plotting
+                )
+
+                # plot reference water levels
+                fig.add_hline(
+                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#000000",
+                    annotation_text="MSL",
+                    annotation_position="bottom right",
+                )
+                if self.site.attrs.water_level.other:
+                    for wl_ref in self.site.attrs.water_level.other:
+                        fig.add_hline(
+                            y=wl_ref.height.convert(gui_units),
+                            line_dash="dash",
+                            line_color="#3ec97c",
+                            annotation_text=wl_ref.name,
+                            annotation_position="bottom right",
+                        )
+
+                fig.update_layout(
+                    autosize=False,
+                    height=100 * 2,
+                    width=280 * 2,
+                    margin={"r": 0, "l": 0, "b": 0, "t": 20},
+                    font={"size": 10, "color": "black", "family": "Arial"},
+                    title={
+                        "text": gdf.iloc[ii]["Description"],
+                        "font": {"size": 12, "color": "black", "family": "Arial"},
+                        "x": 0.5,
+                        "xanchor": "center",
+                    },
+                    xaxis_title="Time",
+                    yaxis_title=f"Water level [{gui_units}]",
+                    yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    showlegend=False,
+                )
+
+                # check if event is historic
+                if self.event.attrs.timing == "historical":
+                    # check if observation station has a tide gauge ID
+                    # if yes to both download tide gauge data and add to plot
+                    if isinstance(self.site.attrs.obs_point[ii].ID, int):
+                        df_gauge = HistoricalNearshore.download_wl_data(
+                            station_id=self.site.attrs.obs_point[ii].ID,
+                            start_time_str=self.event.attrs.time.start_time,
+                            stop_time_str=self.event.attrs.time.end_time,
+                            units=UnitTypesLength(gui_units),
+                        )
+
+                        fig.add_trace(
+                            go.Scatter(
+                                x=pd.DatetimeIndex(df_gauge.index),
+                                y=df_gauge[1]
+                                + self.site.attrs.water_level.msl.height.convert(
+                                    gui_units
+                                ),
+                                line_color="#ea6404",
+                            )
+                        )
+                        fig["data"][0]["name"] = "model"
+                        fig["data"][1]["name"] = "measurement"
+                        fig.update_layout(showlegend=True)
+
+                # write html to results folder
+                station_name = gdf.iloc[ii]["Name"]
+                fig.write_html(
+                    sim_path.parent.parent.joinpath(f"{station_name}_timeseries.html")
+                )
+
     def write_floodmap_geotiff(self):
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
@@ -664,8 +787,13 @@ class Hazard:
             demfile = self.database_input_path.parent.joinpath(
                 "static", "dem", self.site.attrs.dem.filename
             )
+
+            # read max. water level
+            zsmax = model.read_zsmax()
+
             # writing the geotiff to the scenario results folder
             model.write_geotiff(
+                zsmax,
                 demfile=demfile,
                 floodmap_fn=sim_path.parent.parent.joinpath(
                     f"FloodMap_{self.name}.tif"
@@ -684,6 +812,14 @@ class Hazard:
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
+        """calculates flood risk maps from a set of (currently) SFINCS water level outputs,
+        using linear interpolation, would be nice to make it more widely applicable and
+        move the loading of the SFINCS results to self.postprocess_sfincs()
+        generates return period water level maps in netcdf format to be used by FIAT
+        generates return period water depth maps in geotiff format as product for users
+        TODO: make this robust and more efficient for bigger datasets
+        """
+
         floodmap_rp = self.site.attrs.risk.return_periods
 
         frequencies = self.event_set.attrs.frequency
@@ -696,14 +832,25 @@ class Hazard:
                 if event.attrs.template == "Historical_hurricane":
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
+        dummymodel = SfincsAdapter(
+            model_root=str(self.simulation_paths[0]), site=self.site
+        )
+        mask = dummymodel.get_mask().stack(z=("x", "y"))
+        zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
+        del dummymodel
+
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
             sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
-            zs_maps.append(zsmax.stack(z=("x", "y")))
+            zs_stacked = zsmax.stack(z=("x", "y"))
+            # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
+            zs_stacked = xr.where(np.isnan(zs_stacked), zb, zs_stacked)
+            zs_maps.append(zs_stacked)
 
             del sim
+
         # Create RP flood maps
 
         # 1a: make a table of all water levels and associated frequencies
@@ -732,68 +879,30 @@ class Hazard:
         # The resulting T-year water depths for all grids combined form the T-year hazard map
         rp_da = xr.DataArray(rp_zs, dims=zs.dims)
 
-        no_data_value = -999  # in SFINCS
-        sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
+        # no_data_value = -999  # in SFINCS
+        # sorted_zs = xr.where(sorted_zs == no_data_value, np.nan, sorted_zs)
 
-        h = np.where(
-            np.all(np.isnan(sorted_zs), axis=0), np.nan, 0
-        )  # do not calculate for cells with no data value
-        valid_cells = np.where(~np.isnan(h))[0]
+        valid_cells = np.where(mask == 1)[
+            0
+        ]  # only loop over cells where model is not masked
+        h = matlib.repmat(
+            np.copy(zb), len(floodmap_rp), 1
+        )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
-        zs_rp_maps = []
+        logging.info("Calculating flood risk maps, this may take some time...")
+        for jj in valid_cells:  # looping over all non-masked cells.
+            # linear interpolation for all return periods to evaluate
+            h[:, jj] = np.interp(
+                np.log10(floodmap_rp),
+                np.log10(rp_da[::-1, jj]),
+                sorted_zs[::-1, jj],
+                left=0,
+            )
 
-        for rp in floodmap_rp:
-            logging.info(f"Evaluating {rp}-year return period...")
-            if rp <= rp_da.max() and rp >= rp_da.min():
-                # using lower threshold
-                # TODO: improve speed
-                for jj in valid_cells:
-                    h[jj] = np.interp(
-                        np.log10(rp),
-                        np.log10(rp_da[::-1, jj]),
-                        sorted_zs[::-1, jj],
-                        left=0,
-                    )
-
-                    # ToDo: decide on interpolation: lower threshold, linear, upper threshold (most risk averse/conservative),
-                    #  now interpolating
-
-                    # h[valid_cells] = np.nanmax(np.where(rp - rp_da[:, valid_cells] > 0, sorted_zs[:, valid_cells], 0),
-                    #                            axis=0)
-
-                    # Code to reuse to speed things up
-                    # rp_array = matlib.repmat(hist_inun.rp, hist_inun.shape[1], 1)
-                    # rp_da = xr.DataArray(rp_array.transpose(), coords=hist_inun.coords, dims=hist_inun.dims)
-                    #
-                    # diff_da = np.subtract(rp_da, matlib.repmat(pl_tile.mrp[use_ind], hist_inun.rp.size, 1))
-                    # diff_da = xr.where(diff_da < 0, np.nan, diff_da)
-                    # index2 = diff_da.argmin(dim='rp', skipna='True')
-                    #
-                    # inun_low = hist_inun[index2 - 1, :]
-                    # inun_up = hist_inun[index2, :]
-                    # regress_slope = (inun_up - inun_low) / (inun_up.rp - inun_low.rp)
-                    #
-                    # pl_height[use_ind] = inun_low.drop('rp') + regress_slope * (pl_tile.mrp[use_ind] - inun_low.rp)
-
-            elif rp > rp_da.max():
-                logging.warning(
-                    f"{rp}-year RP larger than maximum return period in the event ensemble, which is {int(rp_da.max())}. Using max. water levels across all events"
-                )
-                h[valid_cells] = sorted_zs[0, valid_cells]
-
-            elif rp < rp_da.min():
-                # ToDo: only valid if no area is below MSL
-                h[valid_cells] = 0
-                logging.warning(
-                    f"{rp}-year RP smaller than minimum return period in the event ensemble, which is {int(rp_da.min())} years. Setting water levels to zero for RP {rp}-years"
-                )
-
-            zs_rp_da = xr.DataArray(data=h, coords={"z": zs["z"]})
-            zs_rp_maps.append(zs_rp_da.unstack())
-
+        for ii, rp in enumerate(floodmap_rp):
             # #create single nc
             zs_rp_single = xr.DataArray(
-                data=h, coords={"z": zs["z"]}, attrs={"units": "meters"}
+                data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
             ).unstack()
             zs_rp_single = zs_rp_single.rio.write_crs(
                 zsmax.raster.crs
@@ -803,38 +912,24 @@ class Hazard:
                 f"RP_{rp:04d}_maps.nc"
             )
             zs_rp_single.to_netcdf(fn_rp)
-            # fn_rp_result = self.results_dir.joinpath(
-            #     # "RP_" + str(rp) + "_maps.nc"
-            #     "RP_"
-            #     + "{:04d}".format(rp)
-            #     + "_maps.nc"
-            # )
-            # zs_rp_single.to_netcdf(fn_rp_result)
 
-            # # write geotiff
-            # model = SfincsAdapter(
-            #     model_root=str(self.simulation_paths[0]), site=self.site
-            # )
-            # # dem file for high resolution flood depth map
-            # demfile = self.database_input_path.parent.joinpath(
-            #     "static", "dem", self.site.attrs.dem.filename
-            # )
-            # # writing the geotiff to the scenario results folder
-            # model.write_risk_geotiff(
-            #     zs_max_rp=zs_rp_single,
-            #     demfile=demfile,
-            #     floodmap_fn=self.simulation_paths[0].parent.parent.joinpath(
-            #         f"{self.name}_floodmap_{rp:04d}.tif"
-            #     ),
-            # )
-
-        # this component is only required in case only one netcdf with multiple hazard maps is needed
-        # write netcdf with water level, add new dimension for rp
-        # zs_rp = xr.concat(zs_rp_maps, pd.Index(floodmap_rp, name="rp"))
-        # zs_rp = zs_rp.rio.write_crs(zsmax.raster.crs, inplace=True)
-        # zs_rp = zs_rp.to_dataset(name="risk_map")
-        # fn_rp = self.simulation_paths[0].parent.parent.joinpath("multiple_rp.nc")
-        # zs_rp.to_netcdf(fn_rp)
+            # write geotiff
+            # dem file for high resolution flood depth map
+            demfile = self.database_input_path.parent.joinpath(
+                "static", "dem", self.site.attrs.dem.filename
+            )
+            # writing the geotiff to the scenario results folder
+            dummymodel = SfincsAdapter(
+                model_root=str(self.simulation_paths[0]), site=self.site
+            )
+            dummymodel.write_geotiff(
+                zs_rp_single.to_array().squeeze().transpose(),
+                demfile=demfile,
+                floodmap_fn=self.simulation_paths[0].parent.parent.parent.joinpath(
+                    f"RP_{rp:04d}_maps.tif"
+                ),
+            )
+            del dummymodel
 
     def calculate_floodfrequency_map(self):
         raise NotImplementedError

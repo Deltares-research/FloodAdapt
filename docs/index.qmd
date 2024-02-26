@@ -23,7 +23,7 @@ third level : ### Heading
 
 ## Fonts
 
-**bold**: ** word ** (remove tab spaces betweenw asteriks and word)
+**bold**: ** word ** (remove tab spaces betweenw asterisk and word)
 
 *italic*:  * this will be italic when tab space removed *
 
@@ -35,7 +35,7 @@ E.g I write and want to continue in the next line.
 If I only press enter to continue in the next line as I did now this will not show.  
 -> I have to add 2 spaces after **line.**
 
-Let's see what happends when I add the 2 tabs: 
+Let's see what happens when I add the 2 tabs: 
 
 I to continue in the next **line.**  
 If I only press enter to continue in the next line as I did now this will not show. 
@@ -81,7 +81,7 @@ add a URL and give it a name a
 
 ## Figures
 
-add a figure and give it a name add #fig..to corss-reference.  Just included here for demonstration purposes): 
+add a figure and give it a name add #fig..to cross-reference.  Just included here for demonstration purposes): 
 
 First an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}
 
