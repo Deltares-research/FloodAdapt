@@ -8,14 +8,27 @@ import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
 
 
-def make_db_fixture(scope, revert=True):
+def make_db_fixture(scope, clean=True):
     """
     This fixture is used for testing in general.
     It functions as follows:
         1) Setup database controller
         2) Perform all tests in scope
-        3) Clean the database
+        3) Optionally clean the database
     Scope can be one of the following: "function", "class", "module", "package", "session"
+
+    Parameters
+    ----------
+    scope : str
+        The scope of the fixture (e.g., "function", "class", "module", "package", "session")
+    clean : bool, optional (default is True)
+        Whether to clean the database after all tests in the scope have run.
+        Clean means cleaning the contents of versioned files, and deleting unversioned files and folders after the tests
+
+    Returns
+    -------
+    _db_fixture : pytest.fixture
+        The database fixture
     """
     try:
         subprocess.run(["svn", "--version"], capture_output=True)
@@ -42,7 +55,7 @@ def make_db_fixture(scope, revert=True):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture(revert=revert):
+    def _db_fixture(clean=clean):
         config_path = Path(__file__).parent.parent / "config.toml"
         FloodAdapt_config.parse_config(config_path)
         FloodAdapt_config.set_database_name("charleston_test")
@@ -50,23 +63,24 @@ def make_db_fixture(scope, revert=True):
         database_path = FloodAdapt_config.get_database_root()
         database_name = FloodAdapt_config.get_database_name()
 
-        # Recursive revert to last revision
-        if revert:
-            subprocess.run(
-                ["svn", "revert", "-R", database_path / database_name],
-                capture_output=True,
-            )
-
         dbs = read_database(database_path, database_name)
         yield dbs
 
         # Close all dangling connections
         gc.collect()
 
-        # Recursive revert to last revision
-        if revert:
+        if clean:
             subprocess.run(
                 ["svn", "revert", "-R", database_path / database_name],
+                capture_output=True,
+            )
+            subprocess.run(
+                [
+                    "svn",
+                    "cleanup",
+                    "--remove-unversioned",
+                    database_path / database_name,
+                ],
                 capture_output=True,
             )
 
@@ -76,7 +90,7 @@ def make_db_fixture(scope, revert=True):
 # NOTE: to access the contents the fixtures in the test functions,
 # the fixture name needs to be passed as an argument to the test function.
 # the first line of your test needs to initialize the yielded variables:
-# 'dbs = _db_fixture'
+# 'dbs = test_db_...'
 
 test_db = make_db_fixture("function")
 test_db_class = make_db_fixture("class")
@@ -84,10 +98,10 @@ test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
 
-# NOTE: while developing, it is useful to have a fixture that does not revert the database to debug
+# NOTE: while developing, it is useful to have a fixture that does not clean the database to debug
 # Should not be used in tests that are completed and pushed to the repository
-test_db_no_revert = make_db_fixture("function", revert=False)
-test_db_class_no_revert = make_db_fixture("class", revert=False)
-test_db_module_no_revert = make_db_fixture("module", revert=False)
-test_db_package_no_revert = make_db_fixture("package", revert=False)
-test_db_session_no_revert = make_db_fixture("session", revert=False)
+test_db_no_clean = make_db_fixture("function", clean=False)
+test_db_class_no_clean = make_db_fixture("class", clean=False)
+test_db_module_no_clean = make_db_fixture("module", clean=False)
+test_db_package_no_clean = make_db_fixture("package", clean=False)
+test_db_session_no_clean = make_db_fixture("session", clean=False)
