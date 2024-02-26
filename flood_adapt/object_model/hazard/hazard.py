@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Union
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -144,12 +144,12 @@ class Hazard:
         """
         self._get_flood_map_path()
 
-        has_run = False
+        # Iterate to all needed flood map files to check if they exists
+        checks = []
+        for map in self.flood_map_path:
+            checks.append(map.exists())
 
-        if self.flood_map_path:
-            has_run = True
-
-        return has_run
+        return all(checks)
 
     def sfincs_has_run_check(self) -> bool:
         """checks if the hazard has been already run"""
@@ -692,13 +692,14 @@ class Hazard:
         """_summary_"""
         results_path = self.results_dir
         mode = self.event_mode
-        map_fn: List[Union[str, Path]] = []
 
         if mode == Mode.single_event:
-            map_fn = list(results_path.glob("max_water_level_map.nc"))
+            map_fn = [results_path.joinpath("max_water_level_map.nc")]
 
         elif mode == Mode.risk:
-            map_fn = list(results_path.glob("RP_*.nc"))
+            map_fn = []
+            for rp in self.site.attrs.risk.return_periods:
+                map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
         self.flood_map_path = map_fn
 
