@@ -346,16 +346,9 @@ class SfincsAdapter:
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 
-        # Determine volume capacity of green infrastructure
-        if green_infrastructure.height.value != 0.0:
-            height = (
-                green_infrastructure.height.convert(UnitTypesLength("meters"))
-                * green_infrastructure.percent_area
-            )
-            volume = None
-        elif green_infrastructure.volume.value != 0.0:
-            height = None
-            volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
+        # Volume is always already calculated and is converted to m3 for SFINCS
+        height = None
+        volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
