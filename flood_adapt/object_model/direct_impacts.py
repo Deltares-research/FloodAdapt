@@ -330,7 +330,10 @@ class DirectImpacts:
 
         # If site config is set to not keep FIAT simulation, then delete folder
         if not self.site_info.attrs.fiat.save_simulation:
-            shutil.rmtree(self.fiat_path)
+            try:
+                shutil.rmtree(self.fiat_path)
+            except OSError as e_info:
+                logging.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
 
     def _create_roads(self, fiat_results_df):
         logging.info("Saving road impacts...")

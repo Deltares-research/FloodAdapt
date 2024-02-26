@@ -272,8 +272,8 @@ class Hazard:
             if os.path.exists(sim_path):
                 try:
                     shutil.rmtree(sim_path)
-                except WindowsError:
-                    pass
+                except OSError as e_info:
+                    logging.warning(f"{e_info}\nCould not delete {sim_path}.")
 
     def run_sfincs(self):
         # Run new model(s)
