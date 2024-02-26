@@ -2,11 +2,8 @@
 name: Build Documentation
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
+  schedule:
+    - cron: '0 20 * * 1'
 jobs:
   docs:
     defaults:
@@ -42,7 +39,6 @@ jobs:
         run: |
           pip install tomli
           mamba env create --file=environment_docs.yml --force
-#          mamba run -n floodadapt_docs pip install -e .
 
       - name: Setup quarto
         run: |
