@@ -17,6 +17,10 @@ In order to run FloodAdapt, the following are required:
 
 * Approximately 150 MB of storage for each user-generated scenario 
 
+::: {.callout-warning}
+Be sure to save the FloodAdapt folder in a high-level directory. For example: D:\\\ FloodAdapt. This is because Windows has a 260-character path-name limit, and FloodAdapt includes user-selected scenario names in both folder and file names, which can lead to exceedance of the limit. Placing the FloodAdapt folder in a high-level directory will reduce the likelihood of this happening.  
+:::
+
 ## Installation steps
 The FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon. 
 
