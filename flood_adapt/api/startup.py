@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union
 
 from geopandas import GeoDataFrame
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.database import IDatabase
@@ -62,6 +63,21 @@ def get_obs_points(database: IDatabase) -> GeoDataFrame:
 
 def get_model_boundary(database: IDatabase) -> GeoDataFrame:
     return database.get_model_boundary()
+
+
+def get_model_grid(database: IDatabase) -> QuadtreeGrid:
+    """Gets the model grid that is used in SFINCS
+
+    Parameters
+    ----------
+    database : IDatabase
+
+    Returns
+    -------
+    QuadtreeGrid
+        QuadtreeGrid with the model grid
+    """
+    return database.get_model_grid()
 
 
 @staticmethod
