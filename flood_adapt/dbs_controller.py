@@ -1551,32 +1551,33 @@ class Database(IDatabase):
         scenario_name: str,
         return_period: int = None,
     ) -> np.array:
-        """returns an array with the maximum water levels of the SFINCS simulation
+        """Returns an array with the maximum water levels during an event
 
         Parameters
         ----------
         scenario_name : str
             name of scenario
+        return_period : int, optional
+            return period in years, by default None
 
         Returns
         -------
-        _type_
-            _description_
+        np.array
+            2D map of maximum water levels
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            model_path = self.input_path.parent.joinpath(
+            map_path = self.input_path.parent.joinpath(
                 "output",
                 "Scenarios",
                 scenario_name,
                 "Flooding",
-                "simulations",
-                self.site.attrs.sfincs.overland_model,
+                "max_water_level_map.nc",
             )
-            model = SfincsAdapter(model_root=model_path, site=self.site)
+            map = xr.open_dataarray(map_path)
 
-            zsmax = model.read_zsmax().to_numpy()
-            del model
+            zsmax = map.to_numpy()
+
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
@@ -1589,6 +1590,18 @@ class Database(IDatabase):
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+        """Return a geodataframe of the impacts at the footprint level.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        GeoDataFrame
+            impacts at footprint level
+        """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
         )
@@ -1598,6 +1611,18 @@ class Database(IDatabase):
         return gdf
 
     def get_roads(self, scenario_name: str) -> GeoDataFrame:
+        """Return a geodataframe of the impacts at roads.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        GeoDataFrame
+            Impacts at roads
+        """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
         )
@@ -1709,7 +1734,7 @@ class Database(IDatabase):
                     "output", "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
-                    scn.direct_impacts.hazard.sfincs_has_run_check()
+                    scn.direct_impacts.hazard.has_run_check()
                 ):  # only copy results if the hazard model has actually finished
                     shutil.copytree(path_0, path_new, dirs_exist_ok=True)
                     print(
