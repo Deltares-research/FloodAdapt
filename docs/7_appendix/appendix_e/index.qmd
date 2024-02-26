@@ -1,0 +1,3 @@
+---
+title: Site configuration file – example
+---

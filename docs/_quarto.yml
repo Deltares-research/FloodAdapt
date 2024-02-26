@@ -1,0 +1,177 @@
+
+project:
+  type: website
+  output-dir: "_site"
+  render:
+    - "*.qmd"
+    - "*.ipynb"
+    - "!PDF_Documentation.qmd"
+  post-render:
+    - "examples/clear_notebooks.py"
+
+filters:
+   - include-code-files
+   - interlinks
+  #  - section-bibliographies
+
+interlinks:
+  sources:
+    python:
+      url: https://docs.python.org/3/
+    numpy:
+      url: https://numpy.org/doc/stable/
+
+metadata-files:
+  - api/_sidebar.yml
+
+number-sections: false
+
+website:
+  #title: "Flood Adapt"
+  page-navigation: true
+  favicon: _static/logo.png  # Add _static folder and flood adapt logo to folder
+  search:
+    location: navbar
+    limit: 5
+    type: textbox
+  back-to-top-navigation: true
+  page-footer:
+    left: |
+      Made possible by:
+        <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener">
+          <img
+            src="/_static/images/deltares-blue.svg"
+            alt="Deltares"
+            style="height: 40px;"
+          />
+        </a> 
+
+  navbar:  # Create navigation bar on
+    logo: _static/logo.png
+    title: FloodAdapt 
+    pinned: true
+    right:
+      - icon: github
+        url:  https://github.com/Deltares-research/FloodAdapt
+
+  sidebar:  
+    border: true
+    collapse-level: 1
+    style: "docked"
+    background: light
+    search: true
+      
+    contents:
+      - text: "Home"
+        file: index.qmd
+      - text: "Introduction"
+        file: 1_introduction/index.qmd
+      - section: "User Guide"
+        file: 4_user_guide/index.qmd # This contains text before sections start
+        contents:
+          - "4_user_guide/getting_started.qmd" #Moving content from the old 'installation' section into here
+          - "4_user_guide/user_interface.qmd" #These two don't have subsections so just have one qmd file
+          - "4_user_guide/site_tab.qmd"
+          - section: "Events"
+            file: "4_user_guide/events/index.qmd"
+            contents:
+              - section: "Historic Events"
+                file: "4_user_guide/events/historic_events/index.qmd"
+                contents:
+                  - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"
+                  - "4_user_guide/events/historic_events/historic_events_gauged.qmd"
+                  - "4_user_guide/events/historic_events/historic_events_ungauged.qmd"
+              - "4_user_guide/events/synthetic_events.qmd"
+              - "4_user_guide/events/probablistic_events.qmd"
+          - section: "Projections"
+            file: "4_user_guide/projections/index.qmd"
+            contents:
+              - "4_user_guide/projections/slr.qmd"
+              - "4_user_guide/projections/precipitation.qmd"
+              - "4_user_guide/projections/economic.qmd"
+          - section: "Measures"
+            file: "4_user_guide/measures/index.qmd"
+            contents:
+              - "4_user_guide/measures/flood_walls.qmd"
+              - "4_user_guide/measures/pumps.qmd"
+              - "4_user_guide/measures/buyout.qmd"
+          - "4_user_guide/strategy/index.qmd"
+          - "4_user_guide/scenarios/index.qmd"
+          - "4_user_guide/output/index.qmd"
+          - section: "Compare tabs"
+            file: "4_user_guide/compare/index.qmd"
+            contents:
+            - "4_user_guide/compare/Compare_map.qmd"
+            - "4_user_guide/compare/Compare_table.qmd"
+      - section: "Setup Guide"
+        file: 3_setup_guide/index.qmd
+        contents:
+          - "3_setup_guide/database.qmd"
+          - "3_setup_guide/gui.qmd"
+          - "3_setup_guide/risk_analysis.qmd"
+      - section: "Updating FloodAdapt"
+        file: "5_update_model/index.qmd"
+        contents:
+          - "5_update_model/aggregation_areas.qmd"
+          - "5_update_model/objects.qmd"
+          - "5_update_model/damage_functions.qmd"
+          - "5_update_model/dem.qmd"
+          - "5_update_model/settings.qmd"
+      - section: "Example Use Case"
+        file: "6_demo/index.qmd"
+        contents:
+          - text: "King Tides: Challenges Sea Level Rise"
+            file: "6_demo/king_tides.qmd"
+          - text: "Surge-protection plan for Charleston"
+            file: "6_demo/army_corps.qmd"
+          - "6_demo/measures_impact.qmd"
+      - section: "Appendix"
+        contents:
+          - section: "Preparing event set for risk analysis"
+            file: "7_appendix/appendix_a/index.qmd"
+            contents:
+              - "7_appendix/appendix_a/probabilistic.qmd"
+              - "7_appendix/appendix_a/overview_procedure.qmd"
+              - "7_appendix/appendix_a/flood_drivers.qmd"
+              - "7_appendix/appendix_a/selection_quantification.qmd"
+              - "7_appendix/appendix_a/additional_consideration.qmd"
+              - "7_appendix/appendix_a/references.qmd"
+          - section: "Risk calculation" 
+            file: "7_appendix/appendix_b/index.qmd"
+            contents:
+              - "7_appendix/appendix_b/probabilistic_hazard.qmd"
+              - "7_appendix/appendix_b/risk_calculation.qmd"
+          - "7_appendix/appendix_c/index.qmd"
+          - section: "Damage model input files"
+            file: "7_appendix/appendix_d/index.qmd"
+            contents:
+              - "7_appendix/appendix_d/damage_functions.qmd"
+              - "7_appendix/appendix_d/exposure_data.qmd"
+              - "7_appendix/appendix_d/config.qmd"
+          - "7_appendix/appendix_e/index.qmd"
+          - section: "Event input files - examples"
+            file: "7_appendix/appendix_f/index.qmd"
+            contents:
+              - "7_appendix/appendix_f/hurricanes.qmd"
+              - "7_appendix/appendix_f/wind_tides.qmd"
+              - "7_appendix/appendix_f/water_level.qmd"
+              - "7_appendix/appendix_f/synthetics.qmd"
+
+format:
+  html:
+    theme:
+      light: [cosmo, _static/theme-light.scss]
+      dark: [cosmo, _static/theme-dark.scss]
+    css: _static/styles.css
+    toc: true
+    toc-expand: false
+    page-layout: article
+    grid:
+      content-mode: standard
+
+# bibliography: references.bib
+# citeproc: false
+
+execute:
+  freeze: auto
+  cache: true
