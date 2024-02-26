@@ -120,9 +120,7 @@ def test_run_benefit_analysis(test_db):
     benefit.cba()
 
     # Read results
-    results_path = (
-        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
-    )
+    results_path = test_db.output_path / "Benefits" / benefit.attrs.name
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 
@@ -203,9 +201,7 @@ def test_run_CBA(test_db):
     benefit.cba()
 
     # Read results
-    results_path = (
-        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
-    )
+    results_path = test_db.output_path / "Benefits" / benefit.attrs.name
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 

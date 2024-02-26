@@ -71,12 +71,9 @@ class Hazard:
         self.site = Site.load_file(
             database_input_path.parent / "static" / "site" / "site.toml"
         )
-
         self.set_simulation_paths()
 
-        self._set_sfincs_map_path(mode=self.event_mode)
-
-        self.has_run = self.sfincs_has_run_check()
+        self.has_run = self.has_run_check()
 
     @property
     def event_mode(self) -> Mode:
@@ -85,13 +82,6 @@ class Hazard:
     @event_mode.setter
     def event_mode(self, mode: Mode) -> None:
         self._mode = mode
-
-    def _set_sfincs_map_path(self, mode: Mode) -> None:
-        if mode == Mode.single_event:
-            [self.sfincs_map_path] = self.simulation_paths
-
-        elif mode == Mode.risk:
-            self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
@@ -143,6 +133,23 @@ class Hazard:
                         self.site.attrs.sfincs.offshore_model,
                     )
                 )
+
+    def has_run_check(self) -> bool:
+        """_summary_
+
+        Returns
+        -------
+        bool
+            _description_
+        """
+        self._get_flood_map_path()
+
+        # Iterate to all needed flood map files to check if they exists
+        checks = []
+        for map in self.flood_map_path:
+            checks.append(map.exists())
+
+        return all(checks)
 
     def sfincs_has_run_check(self) -> bool:
         """checks if the hazard has been already run"""
@@ -259,17 +266,14 @@ class Hazard:
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
-        # WITHOUT A SFINCS FOLDER WE CANNOT READ sfincs_map.nc ANYMORE
         # remove simulation folders
-        # if not self.site.attrs.sfincs.save_simulation:
-        #     for simulation_path in self.simulation_paths:
-        #         if os.path.exists(simulation_path.parent):
-        #             try:
-        #                 shutil.rmtree(
-        #                     simulation_path.parent
-        #                 )  # TODO cannot remove simulation because hydromt log file is still being used
-        #             except WindowsError:
-        #                 pass
+        if not self.site.attrs.sfincs.save_simulation:
+            sim_path = self.results_dir.joinpath("simulations")
+            if os.path.exists(sim_path):
+                try:
+                    shutil.rmtree(sim_path)
+                except OSError as e_info:
+                    logging.warning(f"{e_info}\nCould not delete {sim_path}.")
 
     def run_sfincs(self):
         # Run new model(s)
@@ -668,19 +672,43 @@ class Hazard:
         del offshore_model
 
     def postprocess_sfincs(self):
+        if not self.sfincs_has_run_check():
+            raise RuntimeError("SFINCS was not run successfully!")
         if self._mode == Mode.single_event:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
+            # Write watel-level time-series
             self.plot_wl_obs()
-            # Copy SFINCS output map to main folder
-            # self.sfincs_map_path = self.results_dir.joinpath(f"floodmap_{self.name}.nc")
-            # shutil.copyfile(
-            #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
-            # )
+            # Write max water-level netcdf
+            self.write_water_level_map()
         elif self._mode == Mode.risk:
+            # Write max water-level netcdfs per return period
             self.calculate_rp_floodmaps()
-            # self.sfincs_map_path = []
-            # self.calculate_floodfrequency_map()
+
+        # Save flood map paths in object
+        self._get_flood_map_path()
+
+    def _get_flood_map_path(self):
+        """_summary_"""
+        results_path = self.results_dir
+        mode = self.event_mode
+
+        if mode == Mode.single_event:
+            map_fn = [results_path.joinpath("max_water_level_map.nc")]
+
+        elif mode == Mode.risk:
+            map_fn = []
+            for rp in self.site.attrs.risk.return_periods:
+                map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
+
+        self.flood_map_path = map_fn
+
+    def write_water_level_map(self):
+        """Reads simulation results from SFINCS and saves a netcdf with the maximum water levels"""
+        # read SFINCS model
+        model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
+        zsmax = model.read_zsmax()
+        zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
 
     def plot_wl_obs(self):
         """Plot water levels at SFINCS observation points as html

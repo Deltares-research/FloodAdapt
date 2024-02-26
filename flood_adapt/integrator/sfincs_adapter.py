@@ -12,6 +12,7 @@ import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
@@ -346,16 +347,9 @@ class SfincsAdapter:
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 
-        # Determine volume capacity of green infrastructure
-        if green_infrastructure.height.value != 0.0:
-            height = (
-                green_infrastructure.height.convert(UnitTypesLength("meters"))
-                * green_infrastructure.percent_area
-            )
-            volume = None
-        elif green_infrastructure.volume.value != 0.0:
-            height = None
-            volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
+        # Volume is always already calculated and is converted to m3 for SFINCS
+        height = None
+        volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
@@ -452,6 +446,7 @@ class SfincsAdapter:
         """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        zsmax.attrs["units"] = "m"
         return zsmax
 
     def read_zs_points(self):
@@ -495,6 +490,16 @@ class SfincsAdapter:
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get bounding box from model"""
         return self.sf_model.region
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get grid from model
+
+        Returns
+        -------
+        QuadtreeGrid
+            QuadtreeGrid with the model grid
+        """
+        return self.sf_model.quadtree
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
