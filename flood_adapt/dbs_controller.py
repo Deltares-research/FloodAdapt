@@ -85,6 +85,12 @@ class Database(IDatabase):
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
 
+        # Get the static sfincs model
+        sfincs_path = self.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.overland_model
+        )
+        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self.site)
+
     # General methods
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
@@ -114,14 +120,7 @@ class Database(IDatabase):
 
     def get_model_boundary(self) -> GeoDataFrame:
         """Get the model boundary from the SFINCS model"""
-        base_path = self.input_path.parent
-        path_in = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.overland_model
-        )
-        model = SfincsAdapter(model_root=path_in, site=self.site)
-
-        bnd = model.get_model_boundary()
-        del model
+        bnd = self.static_sfincs_model.get_model_boundary()
         return bnd
 
     def get_model_grid(self) -> QuadtreeGrid:
@@ -132,13 +131,7 @@ class Database(IDatabase):
         QuadtreeGrid
             The model grid
         """
-        sfincs_path = self.static_path.joinpath(
-            "templates", self.site.attrs.sfincs.overland_model
-        )
-        model = SfincsAdapter(model_root=sfincs_path, site=self.site)
-
-        grid = model.get_model_grid()
-        del model
+        grid = self.static_sfincs_model.get_model_grid()
         return grid
 
     def get_obs_points(self) -> GeoDataFrame:
