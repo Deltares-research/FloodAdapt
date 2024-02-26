@@ -25,7 +25,7 @@ When the user selects the “Historical event - using gauged water levels” opt
 
 ::: {.callout-note}
 ## What do we mean: Water levels, tide, and surge
-In this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind. 
+In this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.
 :::
 
 If the user wants to download water levels automatically from gauge data they should:
@@ -47,9 +47,9 @@ The user has four options for entering the rainfall for the event:
 
 **None** - Selecting this option means that no rainfall will be included in the calculation. This is the **default** option.
 
-**Constant** - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.  
+**Constant** - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.
 
-**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first colunn must provide the date and time, and the second column the rainfall intensity in <span style="color:red;"><WHICH UNITS?></span>. 
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in <span style="color:red;"><WHICH UNITS?></span>.
 
 **Map** - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>.
 
@@ -61,25 +61,21 @@ When a user inputs rain data as timeseries or uses the Map option, they have the
 ## Wind
 ::: {.callout-note}
 ## What role does wind play when water levels were measured?
-The largest effect of wind on flooding is the surge it causes in the water levels. For gauged events, this effect is already included in the meausured water levels. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored. 
+The largest effect of wind on flooding is the surge it causes in the water levels. For gauged events, this effect is already included in the meausured water levels. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.
 :::
 The user has four options for entering wind for the event:
 
 **None** - Selecting none means no wind will be included in the calculation. This is the **default** option.
 
-**Constant** - For a constant wind speed, the user is asked to enter the wind speed and wind direction. 
+**Constant** - For a constant wind speed, the user is asked to enter the wind speed and wind direction.
 
-**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first colunn must provide the date and time, and the second column the wind speed in <span style="color:red;"><WHICH UNITS?></span>.
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in <span style="color:red;"><WHICH UNITS?></span>.
 
-**Map** - The map option downloads spatially and temporally varying wind at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span> 
+**Map** - The map option downloads spatially and temporally varying wind at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>
 
 ## River discharge
-The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries. 
+The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.
 
-**Constant** - This is the **default** option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.   
+**Constant** - This is the **default** option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.
 
-**Timeseries** - For a river discharge timeseries, the user must import a two-column CSV file. The first colunn must provide the date and time, and the second column the river discharge in <span style="color:red;"><WHICH UNITS?></span>.
-
-
-
-
+**Timeseries** - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in <span style="color:red;"><WHICH UNITS?></span>.
