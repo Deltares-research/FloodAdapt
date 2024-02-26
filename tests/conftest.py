@@ -10,13 +10,22 @@ from flood_adapt.api.startup import read_database
 
 def make_db_fixture(scope, clean=True):
     """
-    This fixture is used for testing in general.
-    It functions as follows:
-        1) Setup database controller
-        2) Perform all tests in scope
-        3) Optionally clean the database
-    Scope can be one of the following: "function", "class", "module", "package", "session"
+    This generates a fixture that is used for testing in general.
+    All fixtures function as follows:
+        1) Update the database to the latest revision
+        2) Initialize database controller
+        3) Perform all tests in scope
+        4) Optionally clean the database
 
+    Usage
+    ----------
+    To access the fixture in a test , you need to:
+        1) pass the fixture name as an argument to the test function
+        2) directly use as a the database object:
+            def test_some_test(test_db):
+                something = test_db.get_something()
+                some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                assert ...
     Parameters
     ----------
     scope : str
@@ -28,7 +37,7 @@ def make_db_fixture(scope, clean=True):
     Returns
     -------
     _db_fixture : pytest.fixture
-        The database fixture
+        The database fixture used for testing
     """
     try:
         subprocess.run(["svn", "--version"], capture_output=True)
@@ -54,26 +63,36 @@ def make_db_fixture(scope, clean=True):
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
+    config_path = Path(__file__).parent.parent / "config.toml"
+    FloodAdapt_config.parse_config(config_path)
+    FloodAdapt_config.set_database_name("charleston_test")
+
+    database_path = FloodAdapt_config.get_database_root()
+    database_name = FloodAdapt_config.get_database_name()
+
     @pytest.fixture(scope=scope)
     def _db_fixture(clean=clean):
-        config_path = Path(__file__).parent.parent / "config.toml"
-        FloodAdapt_config.parse_config(config_path)
-        FloodAdapt_config.set_database_name("charleston_test")
-
-        database_path = FloodAdapt_config.get_database_root()
-        database_name = FloodAdapt_config.get_database_name()
-
+        # Update the database to the latest revision
+        subprocess.run(
+            ["svn", "update", database_path / database_name],
+            capture_output=True,
+        )
+        # Initialize database controller
         dbs = read_database(database_path, database_name)
+
+        # Perform all tests in scope
         yield dbs
 
         # Close all dangling connections
         gc.collect()
 
         if clean:
+            # Reset versioned files to the latest revision
             subprocess.run(
                 ["svn", "revert", "-R", database_path / database_name],
                 capture_output=True,
             )
+            # Delete unversioned files and folders
             subprocess.run(
                 [
                     "svn",
