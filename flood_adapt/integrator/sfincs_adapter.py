@@ -446,6 +446,7 @@ class SfincsAdapter:
         """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        zsmax.attrs["units"] = "m"
         return zsmax
 
     def read_zs_points(self):
