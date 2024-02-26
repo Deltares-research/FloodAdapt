@@ -42,7 +42,7 @@ jobs:
         run: |
           pip install tomli
           mamba env create --file=environment_docs.yml --force
-          mamba run -n floodadapt_docs pip install -e .
+#          mamba run -n floodadapt_docs pip install -e .
 
       - name: Setup quarto
         run: |
