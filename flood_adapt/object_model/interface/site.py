@@ -42,7 +42,7 @@ class SfincsModel(BaseModel):
     overland_model: str
     ambient_air_pressure: float
     floodmap_units: UnitTypesLength
-    save_simulation: bool
+    save_simulation: Optional[bool] = False
 
 
 class VerticalReferenceModel(BaseModel):
