@@ -30,7 +30,6 @@ $navbar-hl: $links ;
     color: #080c80;
     font-weight: bold;
     font-size: 22px !important;
-    font-size: 22px !important;
     font-family:  Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
 }
 
@@ -38,7 +37,6 @@ $navbar-hl: $links ;
 // general sidebar settings
 #quarto-sidebar {
     margin-top: -30px;
-    width: 230px;
     width: 230px;
 }
 
@@ -57,20 +55,17 @@ $navbar-hl: $links ;
 }
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
     font-size: 15px;
-    font-size: 15px;
     font-weight: 200 !important;
   }
   
 // Style 2nd level selection 
   .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
     font-size: 13px;
-    font-size: 13px;
     font-weight: 200 !important;
   }
 
 // Style 3rd level selection 
 .collapse.list-unstyled.sidebar-section.depth3 .sidebar-item .sidebar-item-container {
-    font-size: 11px;
     font-size: 11px;
     font-weight: 200 !important;
   }
@@ -241,7 +236,6 @@ $navbar-hl: $links ;
     padding: 5px;
     margin-left: -20px;
     height: 130%;
-    height: 130%;
 }
 #quarto-sidebar-section-8 .sidebar-item:nth-child(5) a:hover {
     /* Your hover styles */
@@ -249,7 +243,6 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 190%;
     height: 190%;
 }
 
@@ -293,7 +286,6 @@ $navbar-hl: $links ;
 #quarto-sidebar-section-10 .sidebar-item:nth-child(6) {
     padding-top: 10px;
 }
-
 #quarto-sidebar-section-10 .sidebar-item:first-child a:hover {
     /* Your hover styles */
     background-color: rgb(226, 228, 238);
@@ -341,7 +333,6 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 130%;
     height: 130%;
 }
 #quarto-sidebar-section-11 .sidebar-item:first-child {
@@ -471,7 +462,6 @@ $navbar-hl: $links ;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(1) {
     padding-top: 5px;
-    padding-top: 5px;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(2) {
     padding-top: 0px;
@@ -480,7 +470,6 @@ $navbar-hl: $links ;
     padding-top: 10px;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(4) {
-    padding-top: 30px;
     padding-top: 30px;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(1) a:hover {
@@ -498,7 +487,6 @@ $navbar-hl: $links ;
     padding: 5px;
     margin-left: -20px;
     height: 160%;
-    height: 160%;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(3) a:hover {
     /* Your hover styles */
@@ -506,7 +494,6 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 220%;
     height: 220%;
 }
 #quarto-sidebar-section-14 .sidebar-item:nth-child(4) a:hover {
