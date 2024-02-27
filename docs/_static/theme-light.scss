@@ -56,7 +56,9 @@ $navbar-hl: $links ;
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
     font-size: 15px;
     font-weight: 200 !important;
+
   }
+  
 // Style 2nd level selection 
   .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
     font-size: 13px;
@@ -93,6 +95,13 @@ $navbar-hl: $links ;
 }
 
 // Refining section by section
+#quarto-sidebar-section-1 .sidebar-item-container {
+    height: 20px !important;
+  }
+
+#quarto-sidebar-section-2 .sidebar-item-container {
+    height: 20px !important;
+  }
 
 #quarto-sidebar-section-3 .sidebar-item:nth-child(2) {
     padding-bottom: 15px;
@@ -106,7 +115,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-3 .sidebar-item:nth-child(3) a:hover {
     /* Your hover styles */
@@ -114,9 +123,13 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-4 .sidebar-item:nth-child(2) {
+    padding-bottom: 15px;
+}
+
+#quarto-sidebar-section-4 .sidebar-item:nth-child(3) {
     padding-bottom: 15px;
 }
 #quarto-sidebar-section-4 .sidebar-item:nth-child(2) a:hover {
@@ -125,7 +138,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-4 .sidebar-item:nth-child(3) a:hover {
     /* Your hover styles */
@@ -133,13 +146,10 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-5 .sidebar-item:nth-child(3) {
-    padding-bottom: 5px;
-}
-#quarto-sidebar-section-5 .sidebar-item:nth-child(5) {
-    padding-bottom: 5px;
+    padding-bottom: 15px;
 }
 #quarto-sidebar-section-5 .sidebar-item:nth-child(2) a:hover {
     /* Your hover styles */
@@ -155,7 +165,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-5 .sidebar-item:nth-child(5) a:hover {
     /* Your hover styles */
@@ -165,14 +175,20 @@ $navbar-hl: $links ;
     margin-left: -20px;
     height: 160%;
 }
+#quarto-sidebar-section-6 .sidebar-item-container {
+    height: 20px !important;
+    }
 #quarto-sidebar-section-6 .sidebar-item:nth-child(2) a:hover {
     /* Your hover styles */
     background-color: rgb(226, 228, 238);
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
+#quarto-sidebar-section-7 .sidebar-item-container {
+    height: 20px !important;
+  }
 #quarto-sidebar-section-7 .sidebar-item:nth-child(3) {
     padding-bottom: 5px;
 }
@@ -193,7 +209,7 @@ $navbar-hl: $links ;
     width: 100%;
     padding: 5px;
     margin-left: -20px;
-    height: 160%;
+    height: 190%;
 }
 #quarto-sidebar-section-8 .sidebar-item:nth-child(3) {
     padding-top: 10px;
