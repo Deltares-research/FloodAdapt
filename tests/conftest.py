@@ -57,7 +57,7 @@ def make_db_fixture(scope, clean=True):
     @pytest.fixture(scope=scope)
     def _db_fixture(clean=clean):
         config_path = Path(__file__).parent.parent / "config.toml"
-        FloodAdapt_config.parse_config(config_path)
+        FloodAdapt_config.load_config(config_path)
         FloodAdapt_config.set_database_name("charleston_test")
 
         database_path = FloodAdapt_config.get_database_root()

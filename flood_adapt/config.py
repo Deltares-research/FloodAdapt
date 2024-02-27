@@ -29,9 +29,13 @@ def set_database_root(database_root: Path, overwrite: bool = True) -> None:
     if not Path(abs_database_root).is_dir():
         raise ValueError(f"{abs_database_root} is not a valid database root directory")
 
+    if abs_database_root == get_database_root():
+        return
+
     if get_database_root() is None:
         os.environ["DATABASE_ROOT"] = str(abs_database_root)
         print(f"database_root set: {abs_database_root}")
+
     elif overwrite:
         print(f"database_root overwritten: {abs_database_root}")
         os.environ["DATABASE_ROOT"] = str(abs_database_root)
@@ -61,9 +65,13 @@ def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
     if not Path(abs_system_folder).is_dir():
         raise ValueError(f"{abs_system_folder} is not a valid system folder directory")
 
+    if abs_system_folder == get_system_folder():
+        return
+
     if get_system_folder() is None:
         os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
         print(f"system_folder set: {abs_system_folder}")
+
     elif overwrite:
         print(f"system_folder overwritten: {abs_system_folder}")
         os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
@@ -98,6 +106,8 @@ def set_database_name(database_name: str, overwrite: bool = True) -> None:
     full_database_path = Path(db_root, database_name)
     if not full_database_path.is_dir():
         raise ValueError(f"{full_database_path} is not a valid directory\n")
+    if full_database_path == get_database_name():
+        return
 
     if get_database_name() is None:
         os.environ["DATABASE_NAME"] = str(database_name)
@@ -153,7 +163,7 @@ def get_database_name() -> Union[str, None]:
         return None
 
 
-def parse_config(config_path: Path, overwrite: bool = True) -> dict:
+def load_config(config_path: Path, overwrite: bool = True) -> dict:
     """
     Parse the configuration file and return the parsed configuration dictionary.
 
@@ -178,6 +188,7 @@ def parse_config(config_path: Path, overwrite: bool = True) -> dict:
         config = tomli.load(f)
 
     config_base_dir = config_path.parent
+    old = [get_database_root(), get_system_folder(), get_database_name()]
 
     try:
         # Parse the config file
@@ -195,7 +206,8 @@ def parse_config(config_path: Path, overwrite: bool = True) -> dict:
             raise ValueError(f"DATABASE_NAME not found in {config_path}")
         set_database_name(config["DATABASE_NAME"], overwrite=overwrite)
 
-        if overwrite:
+        new = [get_database_root(), get_system_folder(), get_database_name()]
+        if old != new:
             print(f"Configuration loaded from {config_path}")
 
     except ValueError as e:
@@ -209,7 +221,7 @@ def parse_config(config_path: Path, overwrite: bool = True) -> dict:
     return config
 
 
-def parse_user_input(
+def update_config(
     database_root=None, system_folder=None, database_name=None, overwrite=True
 ) -> None:
     """
@@ -230,6 +242,8 @@ def parse_user_input(
     -------
     None
     """
+    old = [get_database_root(), get_system_folder(), get_database_name()]
+
     # Set database_root if given
     if database_root is not None:
         set_database_root(database_root, overwrite=overwrite)
@@ -242,7 +256,8 @@ def parse_user_input(
     if database_name is not None:
         set_database_name(database_name, overwrite=overwrite)
 
-    if any(val is not None for val in [database_root, system_folder, database_name]):
+    new = [get_database_root(), get_system_folder(), get_database_name()]
+    if old != new:
         print("Parsed user input successfully")
 
 
@@ -252,7 +267,7 @@ def main() -> None:
 
     # Get the path to the config.toml file
     config_path = config_dir / "config.toml"
-    parse_config(config_path)
+    load_config(config_path)
 
 
 if __name__ == "__main__":
