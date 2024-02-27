@@ -2,8 +2,11 @@
 name: Build Documentation
 
 on:
-  schedule:
-    - cron: '0 20 * * 1'
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    
 jobs:
   docs:
     defaults:
@@ -13,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest" ] #, "macos-latest", "windows-latest"]
-        python-version: ["3.11"] # fix tests to support older versions
+        os: ["ubuntu-latest" ] 
+        python-version: ["3.11"] 
         include:
           - os: ubuntu-latest
             label: linux-64
