@@ -60,7 +60,7 @@ def test_synthetic_event(test_db, test_dict):
     event = api_events.create_synthetic_event(test_dict)
     # If the name is not used before the measure is save in the database
     api_events.save_event_toml(event, test_db)
-    test_db.get_events()
+    test_db.events.list_objects()
 
     # Try to delete a measure which is already used in a scenario
     # with pytest.raises(ValueError):
@@ -68,4 +68,4 @@ def test_synthetic_event(test_db, test_dict):
 
     # If user presses delete event the measure is deleted
     api_events.delete_event("test1", test_db)
-    test_db.get_events()
+    test_db.events.list_objects()

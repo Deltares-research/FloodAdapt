@@ -1,93 +1,82 @@
+import os
+import shutil
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
 
 
-class SomeDummyMeasure:
-    def __init__(self):
-        self.attrs = {}
-        self.attrs["name"] = "some_measure_name"
-        self.attrs["description"] = "some_description"
-        self.attrs["type"] = "some_type"
-        self.attrs["lock_count"] = 0
+# Fixture that makes a copy of the measure file to avoid modifying the original
+@pytest.fixture
+def copy_measure_file(test_db):
 
-        self.database_input_path = Path("some_fake_path")
+    # Make a copy of the file and rename to avoid modifying the original
+    measures_path = test_db.input_path.joinpath("measures")
+    shutil.copytree(measures_path.joinpath("raise_property_polygon"), measures_path.joinpath("raise_property_polygon_copy"))
+    os.rename(measures_path.joinpath("raise_property_polygon_copy").joinpath("raise_property_polygon.toml"), measures_path.joinpath("raise_property_polygon_copy").joinpath("raise_property_polygon_copy.toml"))
+    if measures_path.joinpath("raise_property_polygon").joinpath("raise_property_polygon.geojson").exists():
+        os.rename(measures_path.joinpath("raise_property_polygon_copy").joinpath("raise_property_polygon.geojson"), measures_path.joinpath("raise_property_polygon_copy").joinpath("raise_property_polygon_copy.geojson"))
+    
+    # Change the name in the copy
+    measure_file = measures_path.joinpath("raise_property_polygon_copy").joinpath("raise_property_polygon_copy.toml")
+    with open(measure_file, "r") as file:
+        data = file.read()
+    data = data.replace("raise_property_polygon", "raise_property_polygon_copy")
+    with open(measure_file, "w") as file:
+        file.write(data)
 
-class AnotherDummyMeasure:
-    def __init__(self):
-        self.attrs = {}
-        self.attrs["name"] = "another_measure_name"
-        self.attrs["description"] = "another_description"
-        self.attrs["type"] = "another_type"
-        self.attrs["lock_count"] = 0
+    # Yield the test_db
+    yield test_db
 
-        self.database_input_path = Path("another_fake_path")
+    # Remove the copy
+    shutil.rmtree(measures_path.joinpath("raise_property_polygon_copy"))
+
 
 class TestDbsMeasure:
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        mock_database_object = Mock()
-        mock_database_object.input_path = Path("some_fake_path")
-
-        self.dbs_measure = DbsMeasure(mock_database_object)
-
-        # Mock the MeasureFactory.get_measure_object method
-        dummy_measure = SomeDummyMeasure()
-        another_dummy_measure = AnotherDummyMeasure()
-
-        def side_effect(arg):
-            # Input for the side_effect is the measure name
-            if str(arg) == 'some_fake_path\\measures\\some_measure_name\\some_measure_name.toml':
-                return dummy_measure
-            elif str(arg) == 'some_fake_path\\measures\\some_measure_name\\another_measure_name.toml':
-                return another_dummy_measure
-            else:
-                raise FileNotFoundError("File not found")
-
-        # Set up the mock iterdir function
-        mock_path1 = MagicMock(spec=Path)
-        mock_path2 = MagicMock(spec=Path)
-
-        # Set the st_mtime attribute and other necessary attributes
-        mock_path1.st_mtime = 1234567890
-        mock_path1.name = 'some_measure_name'
-        mock_path2.st_mtime = 1234567891
-        mock_path2.name = 'another_measure_name'
-
-        # Set up the mock iterdir function
-        mock_iterdir_return_value = [mock_path1, mock_path2]
-
-        # Patch the iterdir method on the input_path object and the get_measure_object function
-        with patch.object(Path, 'iterdir', return_value=mock_iterdir_return_value), \
-            patch("flood_adapt.dbs_classes.dbs_measure.MeasureFactory.get_measure_object", side_effect=side_effect) as mock_factory:
-            # Now when you call Path in the module, it will return the mock Path object
-            # And when you call iterdir on the mock Path object, it will return the list of paths
-            # Also, when you call get_measure_object, it will call side_effect with its arguments and return its result
-            yield mock_factory
-
-    def test_get_object_file_found(self, setup):
+    def test_getObject_fileFound(self, copy_measure_file):
         # Arrange
-        mock_measure_factory = setup
-
         # Act
-        measure = self.dbs_measure.get("some_measure_name")
+        measure = copy_measure_file.measures.get("raise_property_polygon")
 
         # Assert
-        assert measure.attrs["name"] == "some_measure_name"
-        mock_measure_factory.assert_called_once_with(
-            Path("some_fake_path/measures/some_measure_name/some_measure_name.toml")
-        )
+        assert measure.attrs.name == "raise_property_polygon"
+        assert measure.attrs.description == "raise_property_polygon"
+        assert measure.attrs.type == "elevate_properties"
+        assert measure.attrs.polygon_file == "raise_property_polygon.geojson"
+        assert measure.attrs.selection_type == "polygon"
 
-    def test_list_objects(self, setup):
+    def test_getObject_fileNotFound(self, test_db):
+        # Arrange
+        # Act / Assert
+        with pytest.raises(FileNotFoundError):
+            test_db.measures.get("not_found")
+    
+    def test_listObjects(self, test_db):
+        # Arrange
         # Act
-        objects = self.dbs_measure.list_objects()
+        measures = test_db.measures.list_objects()
 
         # Assert
-        assert objects["name"] == ["some_measure_name", "another_measure_name"]
-        assert objects["description"] == ["some_description", "another_description"]
-        assert objects["objects"][0].attrs["name"] == "some_measure_name"
-        assert objects["objects"][1].attrs["name"] == "another_measure_name"
-        setup.assert_called_once()
+        # Not going to test the actual values, just that the keys are present
+        # Otherwise, we would be testing the content of the database
+        assert 'path'in measures
+        assert 'name' in measures
+        assert 'last_modification_date' in measures
+        assert 'description' in measures
+        assert 'objects' in measures
+        assert 'geometry' in measures
+
+    def test_setLock(self, copy_measure_file):
+        # Arrange
+        # Make a copy of the file to avoid modifying the original
+        measures_path = copy_measure_file.input_path.joinpath("measures")
+
+        # Act
+        copy_measure_file.measures.set_lock(name = "raise_property_polygon_copy")
+
+        # Assert
+        assert measures_path.joinpath("raise_property_polygon_copy").joinpath("lock").exists()
+    
+

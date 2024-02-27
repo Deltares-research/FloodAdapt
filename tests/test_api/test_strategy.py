@@ -44,7 +44,7 @@ def test_strategy(test_db):
     strategy = api_strategies.create_strategy(test_dict, test_db)
     # If the name is not used before the measure is save in the database
     api_strategies.save_strategy(strategy, test_db)
-    test_db.get_strategies()
+    test_db.strategies.list_objects()
 
     # Try to delete a measure which is already used in a scenario
     # with pytest.raises(ValueError):
@@ -52,4 +52,4 @@ def test_strategy(test_db):
 
     # If user presses delete strategy the measure is deleted
     api_strategies.delete_strategy("test_strat_1", test_db)
-    test_db.get_strategies()
+    test_db.strategies.list_objects()

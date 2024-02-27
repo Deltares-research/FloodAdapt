@@ -174,7 +174,7 @@ class DbsScenario(DbsTemplate):
         used_in_benefit = [
             benefit.attrs.name
             for benefit in benefits
-            for scenario in self.check_benefit_scenarios(benefit)[
+            for scenario in benefit.check_scenarios()[
                 "scenario created"
             ].to_list()
             if name == scenario

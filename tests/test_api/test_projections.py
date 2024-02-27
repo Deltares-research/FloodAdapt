@@ -32,7 +32,7 @@ def test_projection(test_db):
     projection = api_projections.create_projection(test_dict)
     # If the name is not used before the measure is save in the database
     api_projections.save_projection(projection, test_db)
-    test_db.get_projections()
+    test_db.projections.list_objects()
 
     # Try to delete a measure which is already used in a scenario
     # with pytest.raises(ValueError):
@@ -40,4 +40,4 @@ def test_projection(test_db):
 
     # If user presses delete projection the measure is deleted
     api_projections.delete_projection("test_proj_1", test_db)
-    test_db.get_projections()
+    test_db.projections.list_objects()
