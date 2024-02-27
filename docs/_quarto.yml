@@ -44,23 +44,23 @@ website:
             alt="Deltares"
             style="height: 40px;"
           />
-        </a> 
+        </a>
 
   navbar:  # Create navigation bar on
     logo: _static/logo.png
-    title: FloodAdapt 
+    title: FloodAdapt
     pinned: true
     right:
       - icon: github
         url:  https://github.com/Deltares-research/FloodAdapt
 
-  sidebar:  
+  sidebar:
     border: true
     collapse-level: 1
     style: "docked"
     background: light
     search: true
-      
+
     contents:
       - text: "Home"
         file: index.qmd
@@ -82,7 +82,7 @@ website:
                   - "4_user_guide/events/historic_events/historic_events_gauged.qmd"
                   - "4_user_guide/events/historic_events/historic_events_ungauged.qmd"
               - "4_user_guide/events/synthetic_events.qmd"
-              - "4_user_guide/events/probablistic_events.qmd"
+              - "4_user_guide/events/probabilistic_events.qmd"
           - section: "Projections"
             file: "4_user_guide/projections/index.qmd"
             contents:
@@ -136,7 +136,7 @@ website:
               - "7_appendix/appendix_a/selection_quantification.qmd"
               - "7_appendix/appendix_a/additional_consideration.qmd"
               - "7_appendix/appendix_a/references.qmd"
-          - section: "Risk calculation" 
+          - section: "Risk calculation"
             file: "7_appendix/appendix_b/index.qmd"
             contents:
               - "7_appendix/appendix_b/probabilistic_hazard.qmd"

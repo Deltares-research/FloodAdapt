@@ -1,7 +1,8 @@
 """Creating the API Reference for Flood Adapt with the help of quartodoc."""
-import yaml
+
 from pathlib import Path
 
+import yaml
 from quartodoc import (
     Builder,
     blueprint,
