@@ -114,7 +114,7 @@ def edit_event(event: IEvent, database: IDatabase) -> None:
 
 
 def delete_event(name: str, database: IDatabase) -> None:
-    database.event.delete(name)
+    database.events.delete(name)
 
 
 def copy_event(

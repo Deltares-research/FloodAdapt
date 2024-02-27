@@ -1,5 +1,6 @@
 import shutil
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Union
 
@@ -13,6 +14,7 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
 ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+
 
 
 class DbsTemplate(AbstractDatabaseElement):
@@ -208,14 +210,17 @@ class DbsTemplate(AbstractDatabaseElement):
                 shutil.copy(file, dest / file.name)
 
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database.
+        """Saves an object in the database. This only saves the toml file. If the object has a geometry, the geometry
+        file should be saved separately.
 
         Parameters
         ----------
         object_model : ObjectModel
             object to be saved in the database
-        overwrite : bool, optional
-            whether to overwrite the object if it already exists in the database, by default False
+        overwrite : OverwriteMode, optional
+            whether to overwrite the object if it already exists in the 
+            database and if so, whether everything, only the toml or only 
+            the geojson should be overwritten, by default OverwriteMode.NO_OVERWRITE
 
         Raises
         ------
@@ -224,7 +229,7 @@ class DbsTemplate(AbstractDatabaseElement):
         """
         # If you want to overwrite the object, and the object already exists, first delete it
         if overwrite and object_model.attrs.name in self.list_objects()["name"]:
-            self.delete(object_model.attrs.name)
+            self.delete(object_model.attrs.name, only_toml=True)
 
         # If you don't want to overwrite, check if name is already in use
         names = self.list_objects()["name"]
@@ -260,7 +265,7 @@ class DbsTemplate(AbstractDatabaseElement):
 
         # Check if it is possible to delete the object by saving with overwrite. This then
         # also covers checking whether the object is a standard object, is already used in
-        # a higher level object of is locked. If any of these are the case, it cannot be deleted.
+        # a higher level object or is locked. If any of these are the case, it cannot be deleted.
         self.save(object_model, overwrite=True)
 
     def delete(self, name: str):
@@ -294,9 +299,10 @@ class DbsTemplate(AbstractDatabaseElement):
             raise ValueError(
                 f"'{name}' measure cannot be deleted since it is already used in: {', '.join(used_in)}"
             )
-        else:
-            path = self._path / name
-            shutil.rmtree(path, ignore_errors=True)
+        
+        # Once all checks are passed, delete the object
+        path = self._path / name
+        shutil.rmtree(path, ignore_errors=True)
 
     def _check_standard_objects(self, name: str):
         """Checks if an object is a standard object.
