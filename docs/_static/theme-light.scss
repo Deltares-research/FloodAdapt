@@ -25,18 +25,6 @@ $navbar-hl: $links ;
     border: 1px solid $links;
 }
 
-// general navabat settings
-
-//.navbar-container.container-fluid {
-//    height: 50px ;
-//    background-color: #2980b9;
-//}
-
-//header.headroom.fixed-top {
-//    height: 5px ;
-//    background-color: #2980b9;
-//}
-
 // Navbar Title
 .navbar-title {
     color: #080c80;
@@ -59,7 +47,6 @@ $navbar-hl: $links ;
 
   // Sidebar
 .sidebar-item {
-    /* Your styles for upper level menu items */
     font-weight: 550 !important;
     font-size: 22px !important
   }
@@ -67,13 +54,11 @@ $navbar-hl: $links ;
     display: none !important;
 }
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
-    /* Your styles for upper level menu items */
     font-size: 19px;
     font-weight: 200 !important;
   }
 // Style 2nd level selection 
   .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
-    /* Your styles for upper level menu items */
     font-size: 17px;
     font-weight: 200 !important;
 
@@ -81,7 +66,6 @@ $navbar-hl: $links ;
 
 // Style 3rd level selection 
 .collapse.list-unstyled.sidebar-section.depth3 .sidebar-item .sidebar-item-container {
-    /* Your styles for upper level menu items */
     font-size: 15px;
     font-weight: 200 !important;
 
@@ -100,7 +84,6 @@ $navbar-hl: $links ;
 //    height: 220%
 } 
 
-// !TODO: try to change the container to align with gray background
 .sidebar-menu-container{
     margin-right: 0px;
     margin-top: -20px;
@@ -116,6 +99,22 @@ $navbar-hl: $links ;
 }
 #quarto-sidebar-section-3 .sidebar-item:nth-child(3) {
     padding-bottom: 15px;
+}
+#quarto-sidebar-section-3 .sidebar-item:nth-child(2) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 160%;
+}
+#quarto-sidebar-section-3 .sidebar-item:nth-child(3) a:hover {
+    /* Your hover styles */
+    background-color: rgb(226, 228, 238);
+    width: 100%;
+    padding: 5px;
+    margin-left: -20px;
+    height: 160%;
 }
 #quarto-sidebar-section-4 .sidebar-item:nth-child(2) {
     padding-bottom: 15px;
