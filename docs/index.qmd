@@ -10,14 +10,14 @@ but you can check all formatting here:
 
 https://quarto.org/docs/authoring/markdown-basics.html
 
-## Generate tables 
+## Generate tables
 https://tablesgenerator.com/markdown_tables
 
 ## Headings
 
-first level : # Heading  
-second level : ## Heading  
-third level : ### Heading 
+first level : # Heading
+second level : ## Heading
+third level : ### Heading
 
 ...
 
@@ -30,15 +30,15 @@ third level : ### Heading
 ## Paragraphs
 If you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.
 
-E.g I write and want to continue in the next line.  
- 
-If I only press enter to continue in the next line as I did now this will not show.  
+E.g I write and want to continue in the next line.
+
+If I only press enter to continue in the next line as I did now this will not show.
 -> I have to add 2 spaces after **line.**
 
-Let's see what happens when I add the 2 tabs: 
+Let's see what happens when I add the 2 tabs:
 
-I to continue in the next **line.**  
-If I only press enter to continue in the next line as I did now this will not show. 
+I to continue in the next **line.**
+If I only press enter to continue in the next line as I did now this will not show.
 
 ## Additional options
 
@@ -50,17 +50,17 @@ Example 1: `conda install jupyter`  : Use ` (grave accent) before and after your
 Example 2:
     something: just indent one time. for scrolling do the same just write a longer text (see below)
 
-    something really long that will needs scrolling so I will just continue writing until the scrolling bar appears.  
+    something really long that will needs scrolling so I will just continue writing until the scrolling bar appears.
 
 ### Bullet Points
-Just write numbers below one another and use Indentation for the levels. 
+Just write numbers below one another and use Indentation for the levels.
 
 1. Merry
 2. Christmas
 3. Kathryn
     i) and a new year too
 
-Use the asteriks for your first level. For the second level in the row below add an indentation and a + per entry. 
+Use the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.
 
 * Merry  (* Merry)
     + Christmas   (+ Christmas)
@@ -68,7 +68,7 @@ Use the asteriks for your first level. For the second level in the row below add
 
 ## URLs
 
-add a URL and give it a name a 
+add a URL and give it a name a
 
 [here comes the name] (here comes the URL)
 
@@ -81,11 +81,11 @@ add a URL and give it a name a
 
 ## Figures
 
-add a figure and give it a name add #fig..to cross-reference.  Just included here for demonstration purposes): 
+add a figure and give it a name add #fig..to cross-reference.  Just included here for demonstration purposes):
 
 First an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}
 
-add "fig-" before the label name to be able to cross reference. 
+add "fig-" before the label name to be able to cross reference.
 
 ![Floodadapt](../_static/logo.png){#fig-logo width=200px height=200px}
 
@@ -94,11 +94,11 @@ I want to reference the @fig-logo.
 
 ## Note/ Warning Blocks
 
-Create info blocks within your test.  
+Create info blocks within your test.
 
-Just use this header (remove quotation mark):  
+Just use this header (remove quotation mark):
 "::: {.callout-tip}"
-write here the Note. and end with the following footer. 
+write here the Note. and end with the following footer.
 ":::"
 
 **Example:**
@@ -120,18 +120,17 @@ Create a warning .
 
 ## Cross Reference
 Cross reference to another page or figure:
-(remove quotation marks) 
+(remove quotation marks)
 
 "[Write here the text wou want to see]"("add the reference")
- 
+
 ### Cross reference page
-"[Setup Guide]"(/3_setup_guide/index.qmd)"  
+"[Setup Guide]"(/3_setup_guide/index.qmd)"
 Here I use the reference to the [Setup Guide](/3_setup_guide/index.qmd)
 
 ### Cross reference Figure
-use the @ before the logo Reference and use the name you gave it as reference above:  
+use the @ before the logo Reference and use the name you gave it as reference above:
 @ fig-logo (remove space)
 
 Example:
 @fig-logo
-
