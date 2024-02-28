@@ -1746,8 +1746,13 @@ class Database(IDatabase):
                 )
                 if (
                     scn.direct_impacts.hazard.has_run_check()
-                ):  # only copy results if the hazard model has actually finished
-                    shutil.copytree(path_0, path_new, dirs_exist_ok=True)
+                ):  # only copy results if the hazard model has actually finished and skip simulation folders
+                    shutil.copytree(
+                        path_0,
+                        path_new,
+                        dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("simulations"),
+                    )
                     print(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
