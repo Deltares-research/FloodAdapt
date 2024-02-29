@@ -187,7 +187,7 @@ def test_download_wl_timeseries(test_db):
         station_id, start_time_str, stop_time_str, units="feet"
     )
 
-    assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
+    assert wl_df.index[0] == datetime.strptime(start_time_str, Defaults._DATETIME_FORMAT)
     assert wl_df.iloc[:, 0].dtypes == "float64"
 
 

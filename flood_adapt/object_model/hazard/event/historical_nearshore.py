@@ -9,15 +9,12 @@ import tomli
 import tomli_w
 
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.interface.events import (
-    HistoricalNearshoreModel,
-    IHistoricalNearshore,
-)
+from flood_adapt.object_model.interface.events import NearshoreEventModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 
-class HistoricalNearshore(Event, IHistoricalNearshore):
-    attrs = HistoricalNearshoreModel
+class Nearshore(Event):
+    attrs = NearshoreEventModel
     tide_surge_ts: pd.DataFrame
 
     @staticmethod
@@ -83,8 +80,8 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         pd.DataFrame
             Dataframe with time as index and waterlevel as first column.
         """
-        start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
-        stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
+        start_time = datetime.strptime(start_time_str, Defaults._DATETIME_FORMAT)
+        stop_time = datetime.strptime(stop_time_str, Defaults._DATETIME_FORMAT)
         # Get NOAA data
         source = cht_station.source("noaa_coops")
         df = source.get_data(station_id, start_time, stop_time)

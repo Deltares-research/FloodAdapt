@@ -9,21 +9,18 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from shapely.affinity import translate
 
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.interface.events import (
-    HistoricalHurricaneModel,
-    IHistoricalHurricane,
-)
+from flood_adapt.object_model.interface.events import HurricaneEventModel
 from flood_adapt.object_model.site import Site
 
 
-class HistoricalHurricane(Event, IHistoricalHurricane):
+class Hurricane(Event):
     """HistoricalHurricane class object for storing historical
     hurricane data in a standardized format for use in flood_adapt
 
     Attributes
     ----------
-    attrs : HistoricalHurricaneModel
-        HistoricalHurricaneModel object
+    attrs : HurricaneEventModel
+        HurricaneEventModel object
     Methods
     -------
     load_file(filepath)
@@ -34,7 +31,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         Saving event toml
     """
 
-    attrs = HistoricalHurricaneModel
+    attrs = HurricaneEventModel
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -52,12 +49,12 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         """
 
         # load toml file
-        obj = HistoricalHurricane()
+        obj = Hurricane()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
 
         # load toml into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(toml)
+        obj.attrs = Hurricane.parse_obj(toml)
 
         # return object
         return obj
@@ -78,10 +75,10 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         """
 
         # Initialize object
-        obj = HistoricalHurricane()
+        obj = Hurricane()
 
         # load data into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(data)
+        obj.attrs = Hurricane.parse_obj(data)
 
         # return object
         return obj

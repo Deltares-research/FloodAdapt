@@ -396,10 +396,10 @@ class Database(IDatabase):
             temp_event = EventFactory.get_event(event["template"]).load_dict(event)
             if (
                 temp_event.attrs.rainfall.source == "shape"
-                and temp_event.attrs.rainfall.shape_type == "scs"
+                and temp_event.attrs.rainfall.shape_type == ShapeType.SCS
             ):
                 scsfile = self.input_path.parent.joinpath(
-                    "static", "scs", self.site.attrs.scs.file
+                    "static", ShapeType.SCS, self.site.attrs.scs.file
                 )
                 if scsfile.is_file() is False:
                     ValueError(

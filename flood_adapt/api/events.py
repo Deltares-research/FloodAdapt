@@ -48,7 +48,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     Synthetic
         Synthetic event object
     """
-    return EventFactory.get_event("Synthetic").load_dict(attrs)
+    return EventFactory.get_event(Template.SYNTHETIC).load_dict(attrs)
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:

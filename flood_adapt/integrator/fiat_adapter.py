@@ -66,8 +66,8 @@ class FiatAdapter:
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = self._get_sfincs_map_path(hazard)
         map_type = hazard.site.attrs.fiat.floodmap_type
-        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
-        is_risk = hazard.event_mode == Mode.risk
+        var = "zsmax" if hazard.event_mode == Mode.RISK else "risk_maps"
+        is_risk = hazard.event_mode == Mode.RISK
 
         # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
@@ -101,10 +101,10 @@ class FiatAdapter:
         mode = hazard.event_mode
         map_fn: List[Union[str, Path]] = []
 
-        if mode == Mode.single_event:
+        if mode == Mode.SINGLE_EVENT:
             map_fn.append(sim_path.joinpath("sfincs_map.nc"))
 
-        elif mode == Mode.risk:
+        elif mode == Mode.RISK:
             # check for netcdf
             map_fn.extend(
                 sim_path.joinpath(file)

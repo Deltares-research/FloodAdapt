@@ -22,7 +22,12 @@ from flood_adapt.object_model.hazard.event.historical_nearshore import (
 )
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.interface.events import (
+    Mode,
+    ShapeType,
+    Timing,
+    WindSource,
+)
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -87,14 +92,14 @@ class Hazard:
         self._mode = mode
 
     def _set_sfincs_map_path(self, mode: Mode) -> None:
-        if mode == Mode.single_event:
+        if mode == Mode.SINGLE_EVENT:
             [self.sfincs_map_path] = self.simulation_paths
 
-        elif mode == Mode.risk:
+        elif mode == Mode.RISK:
             self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
-        if self._mode == Mode.single_event:
+        if self._mode == Mode.SINGLE_EVENT:
             self.simulation_paths = [
                 self.database_input_path.parent.joinpath(
                     "output",
@@ -116,7 +121,7 @@ class Hazard:
                     self.site.attrs.sfincs.offshore_model,
                 )
             ]
-        elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
+        elif self._mode == Mode.RISK:  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
@@ -181,11 +186,11 @@ class Hazard:
         self.event_mode = Event.get_mode(event_set_path)
         self.event_set = EventSet.load_file(event_set_path)
 
-        if self._mode == Mode.single_event:
+        if self._mode == Mode.SINGLE_EVENT:
             self.event_set.event_paths = [event_set_path]
             self.probabilities = [1]
 
-        elif self._mode == Mode.risk:
+        elif self._mode == Mode.RISK:
             self.event_set.event_paths = []
             subevents = self.event_set.attrs.subevent_name
 
@@ -230,17 +235,18 @@ class Hazard:
     @staticmethod
     def get_event_object(event_path):
         mode = Event.get_mode(event_path)
-        if mode == Mode.single_event:
+        if mode == Mode.SINGLE_EVENT:
             # parse event config file to get event template
             template = Event.get_template(event_path)
             # use event template to get the associated event child class
             return EventFactory.get_event(template).load_file(event_path)
-        elif mode == Mode.risk:
+        elif mode == Mode.RISK:
             return EventSet.load_file(event_path)
 
     def preprocess_models(self):
         logging.info("Preparing hazard models...")
         # Preprocess all hazard model input
+
         self.preprocess_sfincs()
         # add other models here
 
@@ -309,6 +315,7 @@ class Hazard:
 
         for ii, event in enumerate(self.event_list):
             self.event = event  # set current event to ii-th event in event set
+
             event_dir = self.event_set.event_paths[ii].parent
 
             # Check if path_out exists and remove if it does because hydromt does not like if there is already an existing model
@@ -467,7 +474,7 @@ class Hazard:
                     logging.info(
                         "Adding rainfall shape timeseries to the overland flood model..."
                     )
-                    if self.event.attrs.rainfall.shape_type == "scs":
+                    if self.event.attrs.rainfall.shape_type == ShapeType.SCS:
                         scsfile = self.database_input_path.parent.joinpath(
                             "static", "scs", self.site.attrs.scs.file
                         )
@@ -497,7 +504,7 @@ class Hazard:
                 conversion_factor_wind = gui_units_wind.convert(
                     UnitTypesVelocity("m/s")
                 )
-                if self.event.attrs.wind.source == "map":
+                if self.event.attrs.wind.source == WindSource.MAP:
                     logging.info(
                         "Adding gridded wind field to the overland flood model..."
                     )
@@ -587,7 +594,7 @@ class Hazard:
         path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        if self.event_mode == Mode.risk:
+        if self.event_mode == Mode.RISK:
             event_dir = (
                 self.database_input_path
                 / "events"
@@ -668,7 +675,7 @@ class Hazard:
         del offshore_model
 
     def postprocess_sfincs(self):
-        if self._mode == Mode.single_event:
+        if self._mode == Mode.SINGLE_EVENT:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
             self.plot_wl_obs()
@@ -677,7 +684,7 @@ class Hazard:
             # shutil.copyfile(
             #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
             # )
-        elif self._mode == Mode.risk:
+        elif self._mode == Mode.RISK:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
@@ -747,7 +754,7 @@ class Hazard:
                 )
 
                 # check if event is historic
-                if self.event.attrs.timing == "historical":
+                if self.event.attrs.timing == Timing.HISTORICAL:
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
                     if isinstance(self.site.attrs.obs_point[ii].ID, int):

@@ -7,6 +7,7 @@ from flood_adapt.object_model.hazard.event.historical_nearshore import (
 )
 from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+from flood_adapt.object_model.interface.events import Template
 
 
 class EventFactory:
@@ -19,7 +20,7 @@ class EventFactory:
     """
 
     @staticmethod
-    def get_event(template: str) -> Event:
+    def get_event(template: Template) -> Event:
         """Returns event object based on template name
 
         Parameters
@@ -34,11 +35,11 @@ class EventFactory:
         """
 
         # Check template name and return object
-        if template == "Synthetic":
+        if template == Template.SYNTHETIC:
             return Synthetic()
-        elif template == "Historical_hurricane":
-            return HistoricalHurricane()
-        elif template == "Historical_offshore":
-            return HistoricalOffshore()
-        elif template == "Historical_nearshore":
-            return HistoricalNearshore()
+        elif template == Template.HURRICANE:
+            return Hurricane()
+        elif template == Template.OFFSHORE:
+            return Offshore()
+        elif template == Template.NEARSHORE:
+            return Nearshore()

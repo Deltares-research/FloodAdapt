@@ -7,13 +7,12 @@ import tomli_w
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
-    HistoricalOffshoreModel,
-    IHistoricalOffshore,
+    OffShoreEventModel,
 )
 
 
-class HistoricalOffshore(Event, IHistoricalOffshore):
-    attrs = HistoricalOffshoreModel
+class Offshore(Event):
+    attrs = OffShoreEventModel
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):

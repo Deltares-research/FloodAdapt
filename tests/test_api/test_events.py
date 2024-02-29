@@ -31,7 +31,7 @@ def test_dict():
         },
         "surge": {
             "source": "shape",
-            "shape_type": "gaussian",
+            "shape_type": ShapeType.GAUSSIAN,
             "shape_duration": 24,
             "shape_peak_time": 0,
             "shape_peak": {"value": 9.22, "units": "feet"},
