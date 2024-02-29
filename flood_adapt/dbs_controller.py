@@ -15,7 +15,6 @@ from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -49,18 +48,18 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Union[str, None] = None,
+        database_path: Union[str, os.PathLike],
+        database_name: str,
     ) -> None:
         """
         Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike, None], optional
-            The path to the database. If not provided, the default path specified in the config.toml file will be used.
-        database_name : Union[str, None], optional
-            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+        database_path : Union[str, os.PathLike]
+            The path to the database root
+        database_name : str
+            The name of the database.
         Notes
         """
         self.input_path = Path(database_path / database_name / "input")

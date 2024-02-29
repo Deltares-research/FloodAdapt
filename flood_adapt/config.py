@@ -253,12 +253,7 @@ def parse_user_input(
 
 
 def main() -> None:
-    # Get the directory that contains the config.toml file (e.g. the one above this one)
-    config_dir = Path(__file__).parent.parent
-
-    # Get the path to the config.toml file
-    config_path = config_dir / "config.toml"
-    parse_config(config_path)
+    pass
 
 
 if __name__ == "__main__":

@@ -63,9 +63,16 @@ def make_db_fixture(scope, clean=True):
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
-    config_path = Path(__file__).parent.parent / "config.toml"
-    FloodAdapt_config.parse_config(config_path)
-    FloodAdapt_config.set_database_name("charleston_test")
+    # Set required environment variables to run FloodAdapt
+    database_root = str(Path(__file__).parent.parent.parent / "Database")
+    system_folder = str(database_root / "system")
+    database_name = "charleston_test"
+
+    FloodAdapt_config.parse_user_input(
+        database_root=database_root,
+        system_folder=system_folder,
+        database_name=database_name,
+    )
 
     database_path = FloodAdapt_config.get_database_root()
     database_name = FloodAdapt_config.get_database_name()
