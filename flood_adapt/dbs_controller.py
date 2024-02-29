@@ -62,25 +62,10 @@ class Database(IDatabase):
         database_name : Union[str, None], optional
             The name of the database. If not provided, the default name specified in the config.toml file will be used.
         Notes
-        -----
-        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-
-        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
-        default_config = Path(__file__).parent.parent / "config.toml"
-        FloodAdapt_config.parse_config(default_config, overwrite=False)
-
-        # Overwrite defaults with whatever the user provided
-        FloodAdapt_config.parse_user_input(
-            database_root=database_path, database_name=database_name
-        )
-
-        database_path = FloodAdapt_config.get_database_root()
-        database_name = FloodAdapt_config.get_database_name()
-
-        self.input_path = database_path / database_name / "input"
-        self.static_path = database_path / database_name / "static"
-        self.output_path = database_path / database_name / "output"
+        self.input_path = Path(database_path / database_name / "input")
+        self.static_path = Path(database_path / database_name / "static")
+        self.output_path = Path(database_path / database_name / "output")
 
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
