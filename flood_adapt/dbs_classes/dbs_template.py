@@ -342,10 +342,9 @@ class DbsTemplate(AbstractDatabaseElement):
         dict[str, Any]
             Includes 'path' and 'last_modification_date' info
         """
-        paths = [
-            Path(path / f"{path.name}.toml")
-            for path in list((self.input_path / self._folder_name).iterdir())
-        ]
+        base_path = self.input_path / self._folder_name
+        directories = list(base_path.iterdir())
+        paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]

@@ -23,7 +23,7 @@ def get_measures(database: IDatabase) -> dict[str, Any]:
 
 
 def get_measure(name: str, database: IDatabase) -> IMeasure:
-    return database.measures.get()(name)
+    return database.measures.get(name)
 
 
 def create_measure(

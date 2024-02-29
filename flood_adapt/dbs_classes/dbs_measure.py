@@ -50,12 +50,25 @@ class DbsMeasure(DbsTemplate):
         for path, obj in zip(measures["path"], objects):
             # If polygon is used read the polygon file
             if obj.attrs.polygon_file:
+                file_path = path.parent.joinpath(obj.attrs.polygon_file)
+                if not file_path.exists():
+                    raise FileNotFoundError(
+                        f"Polygon file {obj.attrs.polygon_file} for measure {obj.attrs.name} does not exist."
+                    )
                 geometries.append(
-                    gpd.read_file(path.parent.joinpath(obj.attrs.polygon_file))
+                    gpd.read_file(file_path)
                 )
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
+                if obj.attrs.aggregation_area_type not in self._database.aggr_areas:
+                    raise ValueError(
+                        f"Aggregation area type {obj.attrs.aggregation_area_type} for measure {obj.attrs.name} does not exist."
+                    )
                 gdf = self._database.aggr_areas[obj.attrs.aggregation_area_type]
+                if obj.attrs.aggregation_area_name not in gdf["name"].values:
+                    raise ValueError(
+                        f"Aggregation area name {obj.attrs.aggregation_area_name} for measure {obj.attrs.name} does not exist."
+                    )
                 geometries.append(
                     gdf.loc[gdf["name"] == obj.attrs.aggregation_area_name, :]
                 )
