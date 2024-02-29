@@ -7,11 +7,11 @@ from flood_adapt.object_model.strategy import Strategy
 
 def get_strategies(database: IDatabase) -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
-    return database.get_strategies()
+    return database.strategies.list_objects()
 
 
 def get_strategy(name: str, database: IDatabase) -> IStrategy:
-    return database.get_strategy(name)
+    return database.strategies.get(name)
 
 
 def create_strategy(attrs: dict[str, Any], database: IDatabase) -> IStrategy:
@@ -19,8 +19,8 @@ def create_strategy(attrs: dict[str, Any], database: IDatabase) -> IStrategy:
 
 
 def save_strategy(strategy: IStrategy, database: IDatabase) -> None:
-    database.save_strategy(strategy)
+    database.strategies.save(strategy)
 
 
 def delete_strategy(name: str, database: IDatabase) -> None:
-    database.delete_strategy(name)
+    database.strategies.delete(name)
