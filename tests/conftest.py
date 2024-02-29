@@ -65,7 +65,7 @@ def make_db_fixture(scope, clean=True):
 
     # Set required environment variables to run FloodAdapt
     database_root = str(Path(__file__).parent.parent.parent / "Database")
-    system_folder = str(database_root / "system")
+    system_folder = f"{database_root}/system"
     database_name = "charleston_test"
 
     FloodAdapt_config.parse_user_input(
