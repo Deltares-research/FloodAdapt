@@ -1,3 +1,21 @@
 ---
 title: 	Measures
+filters:
+  - lightbox
+lightbox: auto
 ---
+FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:
+
+* [Hydraulic measures](hydraulic.qmd) - floodwalls, levees, pumps
+* [Urban green infrastructure](green_infra.qmd)
+* [Building-level measures](buildings.qmd) - building elevation, floodproofing, and buyouts
+
+![**Measures that FloodAdapt can simulate: floodwalls, levees, pumps, urban green infrastructure, floodproofing, buyouts, and elevating buildings**](../../_static/images/measures.png){#fig-measures}
+
+Click the following links to learn more about how measures can be specified in FloodAdapt, and how they are represented in the modeling. 
+
+[Hydraulic measures](hydraulic.qmd)
+
+[Urban green infrastructure](green_infra.qmd)
+
+[Building-level measures](buildings.qmd)

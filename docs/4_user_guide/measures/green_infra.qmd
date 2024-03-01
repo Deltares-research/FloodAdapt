@@ -1,0 +1,6 @@
+---
+title: 	Urban green infrastructure
+filters:
+  - lightbox
+lightbox: auto
+---
