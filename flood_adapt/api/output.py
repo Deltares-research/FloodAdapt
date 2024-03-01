@@ -96,7 +96,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
     impact = database.get_scenario(name).direct_impacts
 
     # Check if the scenario has run
-    if not impact.fiat_has_run_check():
+    if not impact.has_run_check():
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )

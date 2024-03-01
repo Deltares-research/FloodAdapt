@@ -91,7 +91,12 @@ $navbar-hl: $links ;
 }
 
 // Refining section by section
-
+#quarto-sidebar-section-1 .sidebar-item-container {
+    height: 20px !important;
+  }
+#quarto-sidebar-section-2 .sidebar-item-container {
+    height: 20px !important;
+  }
 #quarto-sidebar-section-3 .sidebar-item:nth-child(2) {
     padding-bottom: 15px;
 }
@@ -122,6 +127,9 @@ $navbar-hl: $links ;
 }
 #quarto-sidebar-section-8 .sidebar-item:nth-child(5) {
     padding-bottom: 15px;
+}
+#quarto-sidebar-section-8 .sidebar-item:nth-child(1) a:hover {
+    width: 105%;
 }
 #quarto-sidebar-section-8 .sidebar-item:nth-child(1) a:hover {
     width: 105%;
