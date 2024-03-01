@@ -4,8 +4,10 @@ title: Measures and their impact
 
 
 
-# What measures can we take to mitigate and protect ourselves?
+## Exploring measures
 
-# How do measures reduce flood risk when considering the full range of events that affect the City?
+## Evaluating measures
+### Reduced impacts
+### Risk-reduction benefits
+### Effectiveness under future conditions
 
-# How well will these measures hold up under sea level rise?

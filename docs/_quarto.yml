@@ -62,8 +62,8 @@ website:
     search: true
 
     contents:
-      - text: "Home"
-        file: index.qmd
+      #- text: "Home"
+      #  file: index.qmd
       - text: "Introduction"
         file: 1_introduction/index.qmd
       - section: "User Guide"
@@ -103,6 +103,7 @@ website:
             contents:
             - "4_user_guide/compare/Compare_map.qmd"
             - "4_user_guide/compare/Compare_table.qmd"
+          - "4_user_guide/benefits.qmd"
       - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
         contents:
@@ -117,45 +118,45 @@ website:
           - "5_update_model/damage_functions.qmd"
           - "5_update_model/dem.qmd"
           - "5_update_model/settings.qmd"
-      - section: "Example Use Case"
+      - section: "Example Use Cases"
         file: "6_demo/index.qmd"
         contents:
-          - text: "King Tides: Challenges Sea Level Rise"
+          - text: "King Tides with Sea Level Rise"
             file: "6_demo/king_tides.qmd"
-          - text: "Surge-protection plan for Charleston"
+          - text: "Beyond a Floodwall"
             file: "6_demo/army_corps.qmd"
           - "6_demo/measures_impact.qmd"
-      - section: "Appendix"
-        contents:
-          - section: "Preparing event set for risk analysis"
-            file: "7_appendix/appendix_a/index.qmd"
-            contents:
-              - "7_appendix/appendix_a/probabilistic.qmd"
-              - "7_appendix/appendix_a/overview_procedure.qmd"
-              - "7_appendix/appendix_a/flood_drivers.qmd"
-              - "7_appendix/appendix_a/selection_quantification.qmd"
-              - "7_appendix/appendix_a/additional_consideration.qmd"
-              - "7_appendix/appendix_a/references.qmd"
-          - section: "Risk calculation"
-            file: "7_appendix/appendix_b/index.qmd"
-            contents:
-              - "7_appendix/appendix_b/probabilistic_hazard.qmd"
-              - "7_appendix/appendix_b/risk_calculation.qmd"
-          - "7_appendix/appendix_c/index.qmd"
-          - section: "Damage model input files"
-            file: "7_appendix/appendix_d/index.qmd"
-            contents:
-              - "7_appendix/appendix_d/damage_functions.qmd"
-              - "7_appendix/appendix_d/exposure_data.qmd"
-              - "7_appendix/appendix_d/config.qmd"
-          - "7_appendix/appendix_e/index.qmd"
-          - section: "Event input files - examples"
-            file: "7_appendix/appendix_f/index.qmd"
-            contents:
-              - "7_appendix/appendix_f/hurricanes.qmd"
-              - "7_appendix/appendix_f/wind_tides.qmd"
-              - "7_appendix/appendix_f/water_level.qmd"
-              - "7_appendix/appendix_f/synthetics.qmd"
+      #- section: "Appendix"
+       # contents:
+       #   - section: "Preparing event set for risk analysis"
+       #     file: "7_appendix/appendix_a/index.qmd"
+       #     contents:
+       #       - "7_appendix/appendix_a/probabilistic.qmd"
+       #       - "7_appendix/appendix_a/overview_procedure.qmd"
+       #       - "7_appendix/appendix_a/flood_drivers.qmd"
+       #       - "7_appendix/appendix_a/selection_quantification.qmd"
+       #       - "7_appendix/appendix_a/additional_consideration.qmd"
+       #       - "7_appendix/appendix_a/references.qmd"
+       #   - section: "Risk calculation"
+       #     file: "7_appendix/appendix_b/index.qmd"
+       #     contents:
+       #       - "7_appendix/appendix_b/probabilistic_hazard.qmd"
+       #       - "7_appendix/appendix_b/risk_calculation.qmd"
+       #   - "7_appendix/appendix_c/index.qmd"
+       #   - section: "Damage model input files"
+       #     file: "7_appendix/appendix_d/index.qmd"
+       #     contents:
+       #       - "7_appendix/appendix_d/damage_functions.qmd"
+       #       - "7_appendix/appendix_d/exposure_data.qmd"
+       #       - "7_appendix/appendix_d/config.qmd"
+       #   - "7_appendix/appendix_e/index.qmd"
+       #   - section: "Event input files - examples"
+       #     file: "7_appendix/appendix_f/index.qmd"
+       #     contents:
+       #       - "7_appendix/appendix_f/hurricanes.qmd"
+       #       - "7_appendix/appendix_f/wind_tides.qmd"
+       #       - "7_appendix/appendix_f/water_level.qmd"
+       #       - "7_appendix/appendix_f/synthetics.qmd"
 
 format:
   html:
