@@ -1,0 +1,81 @@
+---
+title: Historical event with gauged water levels
+filters:
+  - lightbox
+lightbox: auto
+---
+
+::: {.callout-tip}
+## Watch our video - historical event using gauged water levels
+Don't feel like reading? No problem! Check out our video about how to add a historical (gauged) event in FloodAdapt.
+{{< video hhttps://www.youtube.com/watch?v=Tq136q3Ke4o >}}
+:::
+
+When the user selects the “Historical event - using gauged water levels” option from the **Events** tab, they will see the event template window shown in @fig-gaugedWindow. This window allows the user to input the historic time series for:
+
+(1) [Water levels (surge + tide)](#water-levels)
+(2) [Rainfall](#rainfall)
+(3) [Wind](#wind)
+(4) [River discharge](#river-discharge)
+
+![**Event template window for a historic event with gauged water levels.**](../../../_static/images/popup_gaugedEventWindow2.png){#fig-gaugedWindow}
+
+
+## Water levels
+
+::: {.callout-note}
+## What do we mean: Water levels, tide, and surge
+In this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.
+:::
+
+If the user wants to download water levels automatically from gauge data they should:
+
+1. Select a start and stop time for the event
+2. Click the button "Download Observed Water Levels"
+
+The plot window will then show the time series of the water levels over the duration specified by the start and stop time (see example in @fig-gaugedWindow).
+
+ Alternatively, a user can import a water level time series.
+
+::: {.callout-note}
+## Required format for imported water level time series
+The water level time series should be a two-column csv. The first column contains the date and time, and the second column contains the water level. **NEED TO SAY SOMETHING ABOUT UNITS ANDN REFERENCE LEVELS HERE**
+:::
+
+## Rainfall
+The user has four options for entering the rainfall for the event:
+
+**None** - Selecting this option means that no rainfall will be included in the calculation. This is the **default** option.
+
+**Constant** - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.
+
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in <span style="color:red;"><WHICH UNITS?></span>.
+
+**Map** - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>.
+
+::: {.callout-note}
+## Rainfall magnifier with the Timeseries and Map options
+When a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like "what would have happened if the rainfall during that high tide would have been twice as intense?"
+:::
+
+## Wind
+::: {.callout-note}
+## What role does wind play when water levels were measured?
+The largest effect of wind on flooding is the surge it causes in the water levels. For gauged events, this effect is already included in the meausured water levels. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.
+:::
+The user has four options for entering wind for the event:
+
+**None** - Selecting none means no wind will be included in the calculation. This is the **default** option.
+
+**Constant** - For a constant wind speed, the user is asked to enter the wind speed and wind direction.
+
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in <span style="color:red;"><WHICH UNITS?></span>.
+
+**Map** - The map option downloads spatially and temporally varying wind at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>
+
+## River discharge
+The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.
+
+**Constant** - This is the **default** option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.
+
+**Timeseries** - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in <span style="color:red;"><WHICH UNITS?></span>.

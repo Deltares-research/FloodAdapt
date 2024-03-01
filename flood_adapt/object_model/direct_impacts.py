@@ -63,9 +63,22 @@ class DirectImpacts:
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.fiat_path = self.impacts_path.joinpath("fiat_model")
-        self.has_run = self.fiat_has_run_check()
+        self.has_run = self.has_run_check()
 
-    def fiat_has_run_check(self):
+    def has_run_check(self) -> bool:
+        """Checks if the direct impact has been run.
+
+        Returns
+        -------
+        bool
+            _description_
+        """
+
+        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
+
+        return check
+
+    def fiat_has_run_check(self) -> bool:
         """Checks if fiat has run as expected
 
         Returns
@@ -261,7 +274,13 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
         fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
 
         with cd(self.fiat_path):
@@ -277,6 +296,9 @@ class DirectImpacts:
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
+        if not self.fiat_has_run_check():
+            raise RuntimeError("Delft-FIAT did not run successfully!")
+
         # First move and rename fiat output csv
         fiat_results_path = self.impacts_path.joinpath(
             f"Impacts_detailed_{self.name}.csv"
@@ -312,10 +334,12 @@ class DirectImpacts:
 
         logging.info("Post-processing complete!")
 
-        # TODO add this when hydromt logger issue solution has been merged
         # If site config is set to not keep FIAT simulation, then delete folder
-        # if not self.site_info.attrs.fiat.save_simulation:
-        # shutil.rmtree(self.fiat_path)
+        if not self.site_info.attrs.fiat.save_simulation:
+            try:
+                shutil.rmtree(self.fiat_path)
+            except OSError as e_info:
+                logging.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
 
     def _create_roads(self, fiat_results_df):
         logging.info("Saving road impacts...")

@@ -1,0 +1,17 @@
+---
+title: Quantification of event probabilities
+---
+
+# Why probabilistic computation techniques are needed
+
+# Examples of probabilistic computation techniques 
+
+## Numerical integration
+
+## Monte Carlo Simulations (MCS)
+
+## Selected events and associated event probabilities 
+
+## Considerations in selecting the probabilistic computation method and associated parameters
+
+# Application with the CFRSS

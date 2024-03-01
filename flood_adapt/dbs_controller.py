@@ -13,8 +13,8 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -48,41 +48,32 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Union[str, None] = None,
+        database_path: Union[str, os.PathLike],
+        database_name: str,
     ) -> None:
         """
         Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike, None], optional
-            The path to the database. If not provided, the default path specified in the config.toml file will be used.
-        database_name : Union[str, None], optional
-            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+        database_path : Union[str, os.PathLike]
+            The path to the database root
+        database_name : str
+            The name of the database.
         Notes
-        -----
-        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-
-        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
-        default_config = Path(__file__).parent.parent / "config.toml"
-        FloodAdapt_config.parse_config(default_config, overwrite=False)
-
-        # Overwrite defaults with whatever the user provided
-        FloodAdapt_config.parse_user_input(
-            database_root=database_path, database_name=database_name
-        )
-
-        database_path = FloodAdapt_config.get_database_root()
-        database_name = FloodAdapt_config.get_database_name()
-
-        self.input_path = database_path / database_name / "input"
-        self.static_path = database_path / database_name / "static"
-        self.output_path = database_path / database_name / "output"
+        self.input_path = Path(database_path / database_name / "input")
+        self.static_path = Path(database_path / database_name / "static")
+        self.output_path = Path(database_path / database_name / "output")
 
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
+
+        # Get the static sfincs model
+        sfincs_path = self.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.overland_model
+        )
+        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self.site)
 
     # General methods
     def get_aggregation_areas(self) -> dict:
@@ -113,15 +104,19 @@ class Database(IDatabase):
 
     def get_model_boundary(self) -> GeoDataFrame:
         """Get the model boundary from the SFINCS model"""
-        base_path = self.input_path.parent
-        path_in = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.overland_model
-        )
-        model = SfincsAdapter(model_root=path_in, site=self.site)
-
-        bnd = model.get_model_boundary()
-        del model
+        bnd = self.static_sfincs_model.get_model_boundary()
         return bnd
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get the model grid from the SFINCS model
+
+        Returns
+        -------
+        QuadtreeGrid
+            The model grid
+        """
+        grid = self.static_sfincs_model.get_model_grid()
+        return grid
 
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model"""
@@ -1561,32 +1556,33 @@ class Database(IDatabase):
         scenario_name: str,
         return_period: int = None,
     ) -> np.array:
-        """returns an array with the maximum water levels of the SFINCS simulation
+        """Returns an array with the maximum water levels during an event
 
         Parameters
         ----------
         scenario_name : str
             name of scenario
+        return_period : int, optional
+            return period in years, by default None
 
         Returns
         -------
-        _type_
-            _description_
+        np.array
+            2D map of maximum water levels
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            model_path = self.input_path.parent.joinpath(
+            map_path = self.input_path.parent.joinpath(
                 "output",
                 "Scenarios",
                 scenario_name,
                 "Flooding",
-                "simulations",
-                self.site.attrs.sfincs.overland_model,
+                "max_water_level_map.nc",
             )
-            model = SfincsAdapter(model_root=model_path, site=self.site)
+            map = xr.open_dataarray(map_path)
 
-            zsmax = model.read_zsmax().to_numpy()
-            del model
+            zsmax = map.to_numpy()
+
         else:
             file_path = self.input_path.parent.joinpath(
                 "output",
@@ -1599,6 +1595,18 @@ class Database(IDatabase):
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+        """Return a geodataframe of the impacts at the footprint level.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        GeoDataFrame
+            impacts at footprint level
+        """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
         )
@@ -1608,6 +1616,18 @@ class Database(IDatabase):
         return gdf
 
     def get_roads(self, scenario_name: str) -> GeoDataFrame:
+        """Return a geodataframe of the impacts at roads.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of scenario
+
+        Returns
+        -------
+        GeoDataFrame
+            Impacts at roads
+        """
         out_path = self.input_path.parent.joinpath(
             "output", "Scenarios", scenario_name, "Impacts"
         )
@@ -1719,9 +1739,14 @@ class Database(IDatabase):
                     "output", "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
-                    scn.direct_impacts.hazard.sfincs_has_run_check()
-                ):  # only copy results if the hazard model has actually finished
-                    shutil.copytree(path_0, path_new, dirs_exist_ok=True)
+                    scn.direct_impacts.hazard.has_run_check()
+                ):  # only copy results if the hazard model has actually finished and skip simulation folders
+                    shutil.copytree(
+                        path_0,
+                        path_new,
+                        dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("simulations"),
+                    )
                     print(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )

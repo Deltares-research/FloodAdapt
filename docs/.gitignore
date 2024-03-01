@@ -1,0 +1,9 @@
+/.quarto/
+/_freeze/
+/_inv/
+/_site/
+/api/*
+!api/.gitkeep
+*.jupyter_cache/
+objects.json
+
