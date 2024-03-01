@@ -77,163 +77,65 @@
     "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text wou want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
   },
   {
-    "objectID": "7_appendix/appendix_f/wind_tides.html",
-    "href": "7_appendix/appendix_f/wind_tides.html",
-    "title": "Historical – forced by offshore wind and tide",
+    "objectID": "6_demo/measures_impact.html#evaluating-measures",
+    "href": "6_demo/measures_impact.html#evaluating-measures",
+    "title": "Measures and their impact",
+    "section": "Evaluating measures",
+    "text": "Evaluating measures\n\nReduced impacts\n\n\nRisk-reduction benefits\n\n\nEffectiveness under future conditions"
+  },
+  {
+    "objectID": "6_demo/index.html",
+    "href": "6_demo/index.html",
+    "title": "Demonstrating the use of FloodAdapt",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "7_appendix/appendix_f/synthetics.html",
-    "href": "7_appendix/appendix_f/synthetics.html",
-    "title": "Synthetics",
+    "objectID": "5_update_model/settings.html",
+    "href": "5_update_model/settings.html",
+    "title": "Updating settings for running probabilistic scenarios",
+    "section": "",
+    "text": "Updating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "5_update_model/index.html",
+    "href": "5_update_model/index.html",
+    "title": "Updating the CFRSS",
+    "section": "",
+    "text": "I put some text here. Will it show?\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "5_update_model/damage_functions.html",
+    "href": "5_update_model/damage_functions.html",
+    "title": "Updating damage functions",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "7_appendix/appendix_f/hurricanes.html",
-    "href": "7_appendix/appendix_f/hurricanes.html",
-    "title": "Historical Hurricanes",
+    "objectID": "4_user_guide/user_interface.html",
+    "href": "4_user_guide/user_interface.html",
+    "title": "GUI features",
+    "section": "",
+    "text": "To be filled in when the general features are more finalized (e.g. view and help options)\nTest.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/site_tab.html",
+    "href": "4_user_guide/site_tab.html",
+    "title": "Site tab",
+    "section": "",
+    "text": "Don’t feel like reading? No problem! Check out our video about the FloodAdapt site tab:\n\nThe user interface opens by default to the Site tab, shown for the example of Charleston, South Carolina in Figure 1. The site tab shows the aggregation areas that have been defined for the site. If more than one type of aggregation area has been defined, the user can select which one they want to view from the drop-down box ‘Aggregation Areas Type’. Examples of aggregation area types are census blocks, neighborhoods, or zip codes. The ‘Aggregation Areas’ box populates with the different areas for the selected aggregation type. The user can hover over an area and see the name of that area. Similarly, they can select an area of the ‘Aggregation Areas’ list and that area will become highlighted on the map.\n\n\n\nFigure 1: The site tab, shown here for the example of Charleston, South Carolina\n\n\nThe site tab also shows the extent of the flood model. This can be substantially larger than the area of interest. If a user zooms out they can see the extent of the area, as show in Figure 2\n\n\n\nFigure 2: The site tab, zoomed out to show the full flood model extent (in red)\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/scenario_results/single_event.html",
+    "href": "4_user_guide/scenario_results/single_event.html",
+    "title": "Single-event scenario output",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "7_appendix/appendix_d/index.html",
-    "href": "7_appendix/appendix_d/index.html",
-    "title": "Damage model input files",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_d/damage_functions.html",
-    "href": "7_appendix/appendix_d/damage_functions.html",
-    "title": "Damage Functions",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_c/index.html",
-    "href": "7_appendix/appendix_c/index.html",
-    "title": "Modelling chain and vertical datums",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_b/probabilistic_hazard.html",
-    "href": "7_appendix/appendix_b/probabilistic_hazard.html",
-    "title": "Probabilistic hazard and damage maps",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/selection_quantification.html#numerical-integration",
-    "href": "7_appendix/appendix_a/selection_quantification.html#numerical-integration",
-    "title": "Quantification of event probabilities",
-    "section": "Numerical integration",
-    "text": "Numerical integration"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/selection_quantification.html#monte-carlo-simulations-mcs",
-    "href": "7_appendix/appendix_a/selection_quantification.html#monte-carlo-simulations-mcs",
-    "title": "Quantification of event probabilities",
-    "section": "Monte Carlo Simulations (MCS)",
-    "text": "Monte Carlo Simulations (MCS)"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/selection_quantification.html#selected-events-and-associated-event-probabilities",
-    "href": "7_appendix/appendix_a/selection_quantification.html#selected-events-and-associated-event-probabilities",
-    "title": "Quantification of event probabilities",
-    "section": "Selected events and associated event probabilities",
-    "text": "Selected events and associated event probabilities"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/selection_quantification.html#considerations-in-selecting-the-probabilistic-computation-method-and-associated-parameters",
-    "href": "7_appendix/appendix_a/selection_quantification.html#considerations-in-selecting-the-probabilistic-computation-method-and-associated-parameters",
-    "title": "Quantification of event probabilities",
-    "section": "Considerations in selecting the probabilistic computation method and associated parameters",
-    "text": "Considerations in selecting the probabilistic computation method and associated parameters"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/probabilistic.html",
-    "href": "7_appendix/appendix_a/probabilistic.html",
-    "title": "Intended Use",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/index.html",
-    "href": "7_appendix/appendix_a/index.html",
-    "title": "Preparing an event set for risk analysis",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/additional_consideration.html",
-    "href": "7_appendix/appendix_a/additional_consideration.html",
-    "title": "Additional Considerations",
-    "section": "",
-    "text": "Hurricanes\n\n\nPaired observations\n\n\nTemporal variations\n\n\nSpatial variations\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "6_demo/king_tides.html",
-    "href": "6_demo/king_tides.html",
-    "title": "King tides are already a problem – how will that look with sea level rise?",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "6_demo/army_corps.html",
-    "href": "6_demo/army_corps.html",
-    "title": "The Army Corps has a surge-protection plan for the peninsula – what about the rest of Charleston?",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "5_update_model/objects.html",
-    "href": "5_update_model/objects.html",
-    "title": "Adding / updating objects in the exposure data",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "5_update_model/dem.html",
-    "href": "5_update_model/dem.html",
-    "title": "Updating the DEM",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "5_update_model/aggregation_areas.html",
-    "href": "5_update_model/aggregation_areas.html",
-    "title": "Adding new aggregation areas",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/strategy/index.html",
-    "href": "4_user_guide/strategy/index.html",
-    "title": "Strategies",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/scenarios/index.html",
-    "href": "4_user_guide/scenarios/index.html",
-    "title": "Scenarios",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/scenario_results/index.html",
-    "href": "4_user_guide/scenario_results/index.html",
-    "title": "Scenario results",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/projections/slr.html",
-    "href": "4_user_guide/projections/slr.html",
-    "title": "Sea level rise",
+    "objectID": "4_user_guide/scenario_results/event_set.html",
+    "href": "4_user_guide/scenario_results/event_set.html",
+    "title": "Event-set (probabilistic risk) scenario output",
     "section": "",
     "text": "Back to top"
   },
@@ -242,7 +144,7 @@
     "href": "4_user_guide/projections/index.html",
     "title": "Projections",
     "section": "",
-    "text": "Back to top"
+    "text": "FloodAdapt can simulate future climate and socio-economic conditions.\n\n\n\nFigure 1: Projections about the future that FloodAdapt can simulate: sea level rise, increased tropical storm frequencies, precipitation changes, population growth, and economic growth\n\n\nClick the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling.\nClimate projections\nSocio-economic projections\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/output/index.html",
@@ -252,16 +154,16 @@
     "text": "Hello\n\n\n\n Back to top"
   },
   {
-    "objectID": "4_user_guide/measures/index.html",
-    "href": "4_user_guide/measures/index.html",
-    "title": "Measures",
+    "objectID": "4_user_guide/measures/hydraulic.html",
+    "href": "4_user_guide/measures/hydraulic.html",
+    "title": "Hydraulic measures",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/measures/buyout.html",
-    "href": "4_user_guide/measures/buyout.html",
-    "title": "Raise property, buyout, and floodproofing",
+    "objectID": "4_user_guide/measures/buildings.html",
+    "href": "4_user_guide/measures/buildings.html",
+    "title": "Building-level measures",
     "section": "",
     "text": "Back to top"
   },
@@ -291,7 +193,7 @@
     "href": "4_user_guide/getting_started.html#floodadapt-folder-structure",
     "title": "Getting Started",
     "section": "FloodAdapt folder structure",
-    "text": "FloodAdapt folder structure\nThe FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.\nFigure 1 shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: System, FloodAdapt_gui and Database. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file floodadapt_gui.exe that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: Input, Output, and Static. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created.\nThe Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface.\n\n\n\nFigure 1: Folder structure of FloodAdapt."
+    "text": "FloodAdapt folder structure\nThe FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.\nFigure 1 shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: System, FloodAdapt_gui and Database. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file floodadapt_gui.exe that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: Input, Output, and Static. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created.\nThe Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface. The user may want to access this folder to create their own visualization in third party software, such as ArcGIS.\n\n\n\nFigure 1: Folder structure of FloodAdapt."
   },
   {
     "objectID": "4_user_guide/events/probabilistic_events.html",
@@ -336,67 +238,74 @@
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/arc_gis/index.html",
-    "href": "4_user_guide/arc_gis/index.html",
-    "title": "ArcGis",
+    "objectID": "4_user_guide/benefits.html",
+    "href": "4_user_guide/benefits.html",
+    "title": "Benefits",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "3_setup_guide/index.html",
-    "href": "3_setup_guide/index.html",
-    "title": "Setup Guide",
+    "objectID": "3_setup_guide/risk_analysis.html",
+    "href": "3_setup_guide/risk_analysis.html",
+    "title": "Set-up for probabilistic risk analysis",
     "section": "",
-    "text": "Heading 1\nHere is some content.\n…\n\n\n\n\n Back to top"
+    "text": "Back to top"
   },
   {
-    "objectID": "3_setup_guide/database.html",
-    "href": "3_setup_guide/database.html",
-    "title": "Building the database",
+    "objectID": "3_setup_guide/gui.html",
+    "href": "3_setup_guide/gui.html",
+    "title": "Settings to start the GUI",
     "section": "",
-    "text": "Im testing\n\n\n\n Back to top"
+    "text": "Back to top"
   },
   {
-    "objectID": "2_installation_guide/software_req.html",
-    "href": "2_installation_guide/software_req.html",
+    "objectID": "2_installation_guide/system_req.html",
+    "href": "2_installation_guide/system_req.html",
     "title": "CFRSS system requirements",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "2_installation_guide/index.html",
-    "href": "2_installation_guide/index.html",
-    "title": "Getting started with FloodAdapt",
+    "objectID": "2_installation_guide/installation.html",
+    "href": "2_installation_guide/installation.html",
+    "title": "Installation steps",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "1_introduction/terminology.html",
-    "href": "1_introduction/terminology.html",
-    "title": "Terminology",
+    "objectID": "2_installation_guide/folder_struct.html",
+    "href": "2_installation_guide/folder_struct.html",
+    "title": "Folder Structure",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "1_introduction/overview_floodadapt.html",
-    "href": "1_introduction/overview_floodadapt.html",
-    "title": "Overview of FloodAdapt",
+    "objectID": "1_introduction/reader_guidance.html",
+    "href": "1_introduction/reader_guidance.html",
+    "title": "Reader Guidance",
     "section": "",
-    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software\n\n\n\n\n\n Back to top"
+    "text": "FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 1 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\nThe Installation Guide helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt.\nThe User Guide walks the user through all the functionality of FloodAdapt.\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nChapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.\n\n\n\nFigure 1: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "1_introduction/intended_use.html",
+    "href": "1_introduction/intended_use.html",
+    "title": "Intended use of FloodAdapt",
+    "section": "",
+    "text": "FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.\n\n\n\n Back to top"
   },
   {
     "objectID": "1_introduction/index.html",
     "href": "1_introduction/index.html",
     "title": "Introduction",
     "section": "",
-    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
+    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
   },
   {
     "objectID": "1_introduction/index.html#overview",
     "href": "1_introduction/index.html#overview",
     "title": "Introduction",
-    "section": "",
-    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
+    "section": "Overview",
+    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
   },
   {
     "objectID": "1_introduction/index.html#intended-uses-of-floodadapt",
@@ -410,54 +319,54 @@
     "href": "1_introduction/index.html#reader-guidance",
     "title": "Introduction",
     "section": "Reader Guidance",
-    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 2 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\nThe Installation Guide helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt.\nThe User Guide walks the user through all the functionality of FloodAdapt.\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nThe Demonstration of FloodAdapt helps the reader understand how FloodAdapt can support adaptation and resilience planning.\nThe section on Preparing a probabilistic event set provides a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt.\n\n\n\nFigure 2: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section"
+    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 2 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe User Guide is for users of FloodAdapt. It provides information on how to get started with FloodAdapt, and describes all the FloodAdapt functionalities.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\n\n\n\n\n\n\nSetup Guide - special topic: Probabilistic event sets for risk analysis\n\n\n\nThe Setup guide includes guidance on preparing a probabilistic event set for risk analysis - this part of the setup requires a background in statistics and probability.\n\n\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nThe Demonstration of FloodAdapt illustrates use cases that can help the reader understand how FloodAdapt can support adaptation and resilience planning.\n\n\n\nFigure 2: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section"
   },
   {
-    "objectID": "1_introduction/intended_use.html",
-    "href": "1_introduction/intended_use.html",
-    "title": "Intended use of FloodAdapt",
+    "objectID": "1_introduction/overview_floodadapt.html",
+    "href": "1_introduction/overview_floodadapt.html",
+    "title": "Overview of FloodAdapt",
     "section": "",
-    "text": "FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.\n\n\n\n Back to top"
+    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software\n\n\n\n\n\n Back to top"
   },
   {
-    "objectID": "1_introduction/reader_guidance.html",
-    "href": "1_introduction/reader_guidance.html",
-    "title": "Reader Guidance",
-    "section": "",
-    "text": "FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 1 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\nThe Installation Guide helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt.\nThe User Guide walks the user through all the functionality of FloodAdapt.\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nChapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.\n\n\n\nFigure 1: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "2_installation_guide/folder_struct.html",
-    "href": "2_installation_guide/folder_struct.html",
-    "title": "Folder Structure",
+    "objectID": "1_introduction/terminology.html",
+    "href": "1_introduction/terminology.html",
+    "title": "Terminology",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "2_installation_guide/installation.html",
-    "href": "2_installation_guide/installation.html",
-    "title": "Installation steps",
+    "objectID": "2_installation_guide/index.html",
+    "href": "2_installation_guide/index.html",
+    "title": "Getting started with FloodAdapt",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "2_installation_guide/system_req.html",
-    "href": "2_installation_guide/system_req.html",
+    "objectID": "2_installation_guide/software_req.html",
+    "href": "2_installation_guide/software_req.html",
     "title": "CFRSS system requirements",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "3_setup_guide/gui.html",
-    "href": "3_setup_guide/gui.html",
-    "title": "Settings to start the GUI",
+    "objectID": "3_setup_guide/database.html",
+    "href": "3_setup_guide/database.html",
+    "title": "Building the database",
     "section": "",
-    "text": "Back to top"
+    "text": "Im testing\n\n\n\n Back to top"
   },
   {
-    "objectID": "3_setup_guide/risk_analysis.html",
-    "href": "3_setup_guide/risk_analysis.html",
-    "title": "Set-up for probabilistic risk analysis",
+    "objectID": "3_setup_guide/index.html",
+    "href": "3_setup_guide/index.html",
+    "title": "Setup Guide",
+    "section": "",
+    "text": "Heading 1\nHere is some content.\n…\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/arc_gis/index.html",
+    "href": "4_user_guide/arc_gis/index.html",
+    "title": "ArcGis",
     "section": "",
     "text": "Back to top"
   },
@@ -599,7 +508,7 @@
     "href": "4_user_guide/index.html",
     "title": "FloodAdapt User Guide",
     "section": "",
-    "text": "FloddAdapt allows users to evaluate flooding and impacts for scenarios they define, to help understand community vulnerability now and in the future, and the effectiveness and benefits of adaptation options.\nThis user guide covers the installation and use of FloodAdapt. Below we highlight the information that you can find in this guide."
+    "text": "Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios, to support your understanding of community vulnerability now and in the future, and the effectiveness and benefits of adaptation options.\nThis user guide covers both the installation and use of FloodAdapt. Below we highlight the information that you can find in this guide."
   },
   {
     "objectID": "4_user_guide/index.html#structure-of-the-user-guide",
@@ -613,187 +522,131 @@
     "href": "4_user_guide/index.html#overview-of-the-floodadapt-gui",
     "title": "FloodAdapt User Guide",
     "section": "Overview of the FloodAdapt GUI",
-    "text": "Overview of the FloodAdapt GUI\nThe FloodAdapt GUI supports the creation, running, visualization, and comparison of scenarios.\n\n\n\n\n\n\nWhat is a scenario in FloodAdapt?\n\n\n\nScenarios in FloodAdapt are defined as a combination of an event, a projection, and a strategy, all of which are specified via the user interface.\n\n\nScenarios are used to answer user questions about how flooding and impacts are or will change with adaptation measures and under future conditions.\n\n\n\n\n\n\nExample user question\n\n\n\nHow would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?\nTo answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event.\n\n\nThe user guide describes how to specify events, projections, and strategies and how to view and compare scenario results.\nThere are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits. Figure 1 presents the tabs of the user interface and highlights the information needed to run and view results.\n\nThe Site tab is an informative tab where the user is not required to input any information.\nThe Events, Projections, Measures, and Strategy tabs are input tabs where the user will specify the ‘ingredients’ for their scenarios.\nThe Scenarios tab is a management tab, where the user can specify and run scenarios.\n\n\n\n\n\n\n\nRunning a scenario calls the SFINCS and Delft-FIAT models to start the simulations for the specified scenarios.\n\n\n\n\n\n\nFigure 1: Tabs of the FloodAdapt user interface. Orange fill indicates required user input, and the arrows show the flow of information from one tab to another\n\n\n\nThe Output tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.\nThe user can compare scenarios spatially (map comparison) in the Compare - map tab and can compare scenarios based on their tabulated metrics in the Compare - table tab."
+    "text": "Overview of the FloodAdapt GUI\nThe FloodAdapt GUI supports the creation, running, visualization, and comparison of scenarios.\n\n\n\n\n\n\nWhat is a scenario in FloodAdapt?\n\n\n\nScenarios in FloodAdapt are defined as a combination of an event, a projection, and a strategy, all of which are specified via the user interface.\n\n\nScenarios are used to answer user questions about how flooding and impacts are or will change with adaptation measures and under future conditions.\n\n\n\n\n\n\nExample user question\n\n\n\nHow would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?\nTo answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event.\n\n\nThe user guide describes how to specify events, projections, and strategies and how to view and compare scenario results.\nThere are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits. Figure 1 presents the tabs of the user interface and highlights the information needed to run and view results.\n\nThe Site tab is an informative tab where the user is not required to input any information.\nThe Events, Projections, Measures, and Strategy tabs are input tabs where the user will specify the ‘ingredients’ for their scenarios.\nThe Scenarios tab is a management tab, where the user can specify and run scenarios.\n\n\n\n\n\n\n\nRunning a scenario calls the SFINCS and Delft-FIAT models to start the simulations for the specified scenarios.\n\n\n\n\n\n\nFigure 1: Tabs of the FloodAdapt user interface. Orange fill indicates required user input, and the arrows show the flow of information from one tab to another\n\n\n\nThe Output tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.\nThe user can compare scenarios spatially (map comparison) in the Compare - map tab and can compare scenarios based on their tabulated metrics in the Compare - table tab.\nThe user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the Benefits tab."
   },
   {
-    "objectID": "4_user_guide/measures/flood_walls.html",
-    "href": "4_user_guide/measures/flood_walls.html",
-    "title": "Flood walls and levees",
+    "objectID": "4_user_guide/measures/green_infra.html",
+    "href": "4_user_guide/measures/green_infra.html",
+    "title": "Urban green infrastructure",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/measures/pumps.html",
-    "href": "4_user_guide/measures/pumps.html",
-    "title": "Pumps",
+    "objectID": "4_user_guide/measures/index.html",
+    "href": "4_user_guide/measures/index.html",
+    "title": "Measures",
+    "section": "",
+    "text": "FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:\n\nHydraulic measures - floodwalls, levees, pumps\nUrban green infrastructure\nBuilding-level measures - building elevation, floodproofing, and buyouts\n\n\n\n\nFigure 1: Measures that FloodAdapt can simulate: floodwalls, levees, pumps, urban green infrastructure, floodproofing, buyouts, and elevating buildings\n\n\nClick the following links to learn more about how measures can be specified in FloodAdapt, and how they are represented in the modeling.\nHydraulic measures\nUrban green infrastructure\nBuilding-level measures\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html",
+    "href": "4_user_guide/projections/climate.html",
+    "title": "Climate projections",
+    "section": "",
+    "text": "This section will describe how future projections of sea level rise, precipitation and tropical storm frequencies are specified and implemented in FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#sea-level-rise",
+    "href": "4_user_guide/projections/climate.html#sea-level-rise",
+    "title": "Climate projections",
+    "section": "Sea level rise",
+    "text": "Sea level rise\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#increase-precipitation",
+    "href": "4_user_guide/projections/climate.html#increase-precipitation",
+    "title": "Climate projections",
+    "section": "Increase precipitation",
+    "text": "Increase precipitation\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#increased-storm-frequency",
+    "href": "4_user_guide/projections/climate.html#increased-storm-frequency",
+    "title": "Climate projections",
+    "section": "Increased storm frequency",
+    "text": "Increased storm frequency\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html",
+    "href": "4_user_guide/projections/socioEconomic.html",
+    "title": "Socio-economic projections",
+    "section": "",
+    "text": "This section will describe how future projections of population in existing built area, population growth in new development areas and economic growth are specified and implemented in FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
+    "href": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
+    "title": "Socio-economic projections",
+    "section": "Population growth - existing built area",
+    "text": "Population growth - existing built area\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
+    "href": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
+    "title": "Socio-economic projections",
+    "section": "Population growth - new development areas",
+    "text": "Population growth - new development areas\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#economic-growth",
+    "href": "4_user_guide/projections/socioEconomic.html#economic-growth",
+    "title": "Socio-economic projections",
+    "section": "Economic growth",
+    "text": "Economic growth\nComing soon"
+  },
+  {
+    "objectID": "4_user_guide/scenario_results/index.html",
+    "href": "4_user_guide/scenario_results/index.html",
+    "title": "Scenario results",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/projections/economic.html",
-    "href": "4_user_guide/projections/economic.html",
-    "title": "Economic growth and population growth",
+    "objectID": "4_user_guide/scenarios/index.html",
+    "href": "4_user_guide/scenarios/index.html",
+    "title": "Scenarios",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/projections/precipitation.html",
-    "href": "4_user_guide/projections/precipitation.html",
-    "title": "Increased precipitation and increased storm frequency",
+    "objectID": "4_user_guide/strategy/index.html",
+    "href": "4_user_guide/strategy/index.html",
+    "title": "Strategies",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/scenario_results/event_set.html",
-    "href": "4_user_guide/scenario_results/event_set.html",
-    "title": "Event-set (probabilistic risk) scenario output",
+    "objectID": "5_update_model/aggregation_areas.html",
+    "href": "5_update_model/aggregation_areas.html",
+    "title": "Adding new aggregation areas",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/scenario_results/single_event.html",
-    "href": "4_user_guide/scenario_results/single_event.html",
-    "title": "Single-event scenario output",
+    "objectID": "5_update_model/dem.html",
+    "href": "5_update_model/dem.html",
+    "title": "Updating the DEM",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/site_tab.html",
-    "href": "4_user_guide/site_tab.html",
-    "title": "Site tab",
-    "section": "",
-    "text": "Don’t feel like reading? No problem! Check out our video about the FloodAdapt site tab:\n\nThe user interface opens by default to the Site tab, shown for the example of Charleston, South Carolina in Figure 1. The site tab shows the aggregation areas that have been defined for the site. If more than one type of aggregation area has been defined, the user can select which one they want to view from the drop-down box ‘Aggregation Areas Type’. Examples of aggregation area types are census blocks, neighborhoods, or zip codes. The ‘Aggregation Areas’ box populates with the different areas for the selected aggregation type. The user can hover over an area and see the name of that area. Similarly, they can select an area of the ‘Aggregation Areas’ list and that area will become highlighted on the map.\n\n\n\nFigure 1: The site tab, shown here for the example of Charleston, South Carolina\n\n\nThe site tab also shows the extent of the flood model. This can be substantially larger than the area of interest. If a user zooms out they can see the extent of the area, as show in Figure 2\n\n\n\nFigure 2: The site tab, zoomed out to show the full flood model extent (in red)\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/user_interface.html",
-    "href": "4_user_guide/user_interface.html",
-    "title": "GUI features",
-    "section": "",
-    "text": "To be filled in when the general features are more finalized (e.g. view and help options)\nTest.\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "5_update_model/damage_functions.html",
-    "href": "5_update_model/damage_functions.html",
-    "title": "Updating damage functions",
+    "objectID": "5_update_model/objects.html",
+    "href": "5_update_model/objects.html",
+    "title": "Adding / updating objects in the exposure data",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "5_update_model/index.html",
-    "href": "5_update_model/index.html",
-    "title": "Updating the CFRSS",
-    "section": "",
-    "text": "I put some text here. Will it show?\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "5_update_model/settings.html",
-    "href": "5_update_model/settings.html",
-    "title": "Updating settings for running probabilistic scenarios",
-    "section": "",
-    "text": "Updating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "6_demo/index.html",
-    "href": "6_demo/index.html",
-    "title": "Demonstration of the CFRSS",
+    "objectID": "6_demo/army_corps.html",
+    "href": "6_demo/army_corps.html",
+    "title": "The Army Corps has a surge-protection plan for the peninsula – what about the rest of Charleston?",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "6_demo/measures_impact.html",
-    "href": "6_demo/measures_impact.html",
-    "title": "Measures and their impact",
-    "section": "",
-    "text": "What measures can we take to mitigate and protect ourselves?\n\n\nHow do measures reduce flood risk when considering the full range of events that affect the City?\n\n\nHow well will these measures hold up under sea level rise?\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/flood_drivers.html#data-gathering-and-validation",
-    "href": "7_appendix/appendix_a/flood_drivers.html#data-gathering-and-validation",
-    "title": "Flood drivers and flood event variables",
-    "section": "Data gathering and validation",
-    "text": "Data gathering and validation"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/flood_drivers.html#dealing-with-non-stationarities",
-    "href": "7_appendix/appendix_a/flood_drivers.html#dealing-with-non-stationarities",
-    "title": "Flood drivers and flood event variables",
-    "section": "Dealing with non-stationarities",
-    "text": "Dealing with non-stationarities"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/flood_drivers.html#extreme-value-analysis",
-    "href": "7_appendix/appendix_a/flood_drivers.html#extreme-value-analysis",
-    "title": "Flood drivers and flood event variables",
-    "section": "Extreme value analysis",
-    "text": "Extreme value analysis"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/flood_drivers.html#combining-statistics-of-extreme-events-and-average-conditions",
-    "href": "7_appendix/appendix_a/flood_drivers.html#combining-statistics-of-extreme-events-and-average-conditions",
-    "title": "Flood drivers and flood event variables",
-    "section": "Combining statistics of extreme events and average conditions",
-    "text": "Combining statistics of extreme events and average conditions"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/overview_procedure.html",
-    "href": "7_appendix/appendix_a/overview_procedure.html",
-    "title": "Overview of the procedure",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_a/references.html",
-    "href": "7_appendix/appendix_a/references.html",
-    "title": "References",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_b/index.html",
-    "href": "7_appendix/appendix_b/index.html",
-    "title": "Risk calculation in the CFRSS",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_b/risk_calculation.html",
-    "href": "7_appendix/appendix_b/risk_calculation.html",
-    "title": "Risk calculation",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_d/config.html",
-    "href": "7_appendix/appendix_d/config.html",
-    "title": "Base configuration file",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_d/exposure_data.html",
-    "href": "7_appendix/appendix_d/exposure_data.html",
-    "title": "Exposure data",
-    "section": "",
-    "text": "Exposure data\n\n\nDescription of the exposure data fields\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_e/index.html",
-    "href": "7_appendix/appendix_e/index.html",
-    "title": "Site configuration file – example",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_f/index.html",
-    "href": "7_appendix/appendix_f/index.html",
-    "title": "Event input files – examples",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "7_appendix/appendix_f/water_level.html",
-    "href": "7_appendix/appendix_f/water_level.html",
-    "title": "Historical – forced by observed nearshore water levels",
+    "objectID": "6_demo/king_tides.html",
+    "href": "6_demo/king_tides.html",
+    "title": "King tides are already a problem – how will that look with sea level rise?",
     "section": "",
     "text": "Back to top"
   },

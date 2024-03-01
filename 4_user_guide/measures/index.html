@@ -29,8 +29,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../4_user_guide/measures/flood_walls.html" rel="next">
-<link href="../../4_user_guide/projections/economic.html" rel="prev">
+<link href="../../4_user_guide/measures/hydraulic.html" rel="next">
+<link href="../../4_user_guide/projections/socioEconomic.html" rel="prev">
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -126,12 +129,6 @@ ul.task-list li input[type="checkbox"] {
         </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Home</span></a>
-  </div>
-</li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../1_introduction/index.html" class="sidebar-item-text sidebar-link">
@@ -228,20 +225,14 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/projections/slr.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Sea level rise</span></a>
+  <a href="../../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Climate projections</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/projections/precipitation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Increased precipitation and increased storm frequency</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/projections/economic.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Economic growth and population growth</span></a>
+  <a href="../../4_user_guide/projections/socioEconomic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Socio-economic projections</span></a>
   </div>
 </li>
       </ul>
@@ -257,20 +248,20 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/flood_walls.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Flood walls and levees</span></a>
+  <a href="../../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hydraulic measures</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/pumps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Pumps</span></a>
+  <a href="../../4_user_guide/measures/green_infra.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Urban green infrastructure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/buyout.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Raise property, buyout, and floodproofing</span></a>
+  <a href="../../4_user_guide/measures/buildings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Building-level measures</span></a>
   </div>
 </li>
       </ul>
@@ -316,6 +307,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../4_user_guide/benefits.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Benefits</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -391,7 +388,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../6_demo/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Example Use Case</span></a>
+ <span class="menu-text">Example Use Cases</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -400,13 +397,13 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../6_demo/king_tides.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">King Tides: Challenges Sea Level Rise</span></a>
+ <span class="menu-text">King Tides with Sea Level Rise</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../6_demo/army_corps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Surge-protection plan for Charleston</span></a>
+ <span class="menu-text">Beyond a Floodwall</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -415,163 +412,6 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Measures and their impact</span></a>
   </div>
 </li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" aria-expanded="false">
- <span class="menu-text">Appendix</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../7_appendix/appendix_a/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Preparing event set for risk analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/probabilistic.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Intended Use</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/overview_procedure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Overview of the procedure</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/flood_drivers.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Flood drivers and flood event variables</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/selection_quantification.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Quantification of event probabilities</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/additional_consideration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Additional Considerations</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_a/references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">References</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../7_appendix/appendix_b/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Risk calculation</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_b/probabilistic_hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Probabilistic hazard and damage maps</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_b/risk_calculation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Risk calculation</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_c/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Modelling chain and vertical datums</span></a>
-  </div>
-</li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../7_appendix/appendix_d/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Damage model input files</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_d/damage_functions.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Damage Functions</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_d/exposure_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exposure data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_d/config.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Base configuration file</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_e/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Site configuration file – example</span></a>
-  </div>
-</li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../7_appendix/appendix_f/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Event input files - examples</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_f/hurricanes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical Hurricanes</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_f/wind_tides.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical – forced by offshore wind and tide</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_f/water_level.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historical – forced by observed nearshore water levels</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../7_appendix/appendix_f/synthetics.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Synthetics</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
       </ul>
   </li>
     </ul>
@@ -602,6 +442,22 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<p>FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:</p>
+<ul>
+<li><a href="../../4_user_guide/measures/hydraulic.html">Hydraulic measures</a> - floodwalls, levees, pumps</li>
+<li><a href="../../4_user_guide/measures/green_infra.html">Urban green infrastructure</a></li>
+<li><a href="../../4_user_guide/measures/buildings.html">Building-level measures</a> - building elevation, floodproofing, and buyouts</li>
+</ul>
+<div id="fig-measures" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measures.png" class="lightbox" title="Measures that FloodAdapt can simulate: floodwalls, levees, pumps, urban green infrastructure, floodproofing, buyouts, and elevating buildings" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/measures.png" class="img-fluid figure-img"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Measures that FloodAdapt can simulate: floodwalls, levees, pumps, urban green infrastructure, floodproofing, buyouts, and elevating buildings</strong></figcaption>
+</figure>
+</div>
+<p>Click the following links to learn more about how measures can be specified in FloodAdapt, and how they are represented in the modeling.</p>
+<p><a href="../../4_user_guide/measures/hydraulic.html">Hydraulic measures</a></p>
+<p><a href="../../4_user_guide/measures/green_infra.html">Urban green infrastructure</a></p>
+<p><a href="../../4_user_guide/measures/buildings.html">Building-level measures</a></p>
 
 
 
@@ -956,13 +812,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../4_user_guide/projections/economic.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Economic growth and population growth</span>
+      <a href="../../4_user_guide/projections/socioEconomic.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Socio-economic projections</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../4_user_guide/measures/flood_walls.html" class="pagination-link">
-        <span class="nav-page-text">Flood walls and levees</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../4_user_guide/measures/hydraulic.html" class="pagination-link">
+        <span class="nav-page-text">Hydraulic measures</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -978,6 +834,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":true,"openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});</script>
 
 
 
