@@ -274,7 +274,13 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
         fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
 
         with cd(self.fiat_path):

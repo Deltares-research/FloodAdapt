@@ -25,6 +25,8 @@ def set_database_root(database_root: Path, overwrite: bool = True) -> None:
     ValueError
         If the provided database root is not a valid directory.
     """
+    if database_root == get_database_root():
+        return
     abs_database_root = Path(database_root).resolve()
     if not Path(abs_database_root).is_dir():
         raise ValueError(f"{abs_database_root} is not a valid database root directory")
@@ -57,6 +59,8 @@ def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
     ValueError
         If the provided system folder is not a valid directory.
     """
+    if system_folder == get_system_folder():
+        return
     abs_system_folder = Path(system_folder).resolve()
     if not Path(abs_system_folder).is_dir():
         raise ValueError(f"{abs_system_folder} is not a valid system folder directory")
@@ -89,6 +93,8 @@ def set_database_name(database_name: str, overwrite: bool = True) -> None:
     ValueError
         If DATABASE_ROOT is not set or if the provided database_name is not a valid directory in DATABASE_ROOT.
     """
+    if database_name == get_database_name():
+        return
     db_root = get_database_root()
     if db_root is None:
         raise ValueError(
@@ -247,12 +253,7 @@ def parse_user_input(
 
 
 def main() -> None:
-    # Get the directory that contains the config.toml file (e.g. the one above this one)
-    config_dir = Path(__file__).parent.parent
-
-    # Get the path to the config.toml file
-    config_path = config_dir / "config.toml"
-    parse_config(config_path)
+    pass
 
 
 if __name__ == "__main__":

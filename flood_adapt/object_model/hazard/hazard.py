@@ -277,6 +277,14 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
+
         sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         # results_dir = self.database_input_path.parent.joinpath(
@@ -294,7 +302,13 @@ class Hazard:
 
     def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
-
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
         sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         simulation_path = self.simulation_paths_offshore[ii]

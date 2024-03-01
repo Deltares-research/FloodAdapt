@@ -15,7 +15,6 @@ from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
@@ -49,38 +48,23 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Union[str, None] = None,
+        database_path: Union[str, os.PathLike],
+        database_name: str,
     ) -> None:
         """
         Initialize the DatabaseController object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike, None], optional
-            The path to the database. If not provided, the default path specified in the config.toml file will be used.
-        database_name : Union[str, None], optional
-            The name of the database. If not provided, the default name specified in the config.toml file will be used.
+        database_path : Union[str, os.PathLike]
+            The path to the database root
+        database_name : str
+            The name of the database.
         Notes
-        -----
-        For use in external packages: call `parse_config` on a custom config.toml file before creating an instance of this class.
         """
-
-        # Call parse_config with overwrite=False to set the default values for all uninitialized variables
-        default_config = Path(__file__).parent.parent / "config.toml"
-        FloodAdapt_config.parse_config(default_config, overwrite=False)
-
-        # Overwrite defaults with whatever the user provided
-        FloodAdapt_config.parse_user_input(
-            database_root=database_path, database_name=database_name
-        )
-
-        database_path = FloodAdapt_config.get_database_root()
-        database_name = FloodAdapt_config.get_database_name()
-
-        self.input_path = database_path / database_name / "input"
-        self.static_path = database_path / database_name / "static"
-        self.output_path = database_path / database_name / "output"
+        self.input_path = Path(database_path / database_name / "input")
+        self.static_path = Path(database_path / database_name / "static")
+        self.output_path = Path(database_path / database_name / "output")
 
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()
