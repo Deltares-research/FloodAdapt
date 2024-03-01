@@ -1,3 +1,15 @@
 ---
-title: Projections
+title: 	Projections
+filters:
+  - lightbox
+lightbox: auto
 ---
+FloodAdapt can simulate future climate and socio-economic conditions.
+
+![**Projections about the future that FloodAdapt can simulate: sea level rise, increased tropical storm frequencies, precipitation changes, population growth, and economic growth**](../../_static/images/projections.png){#fig-projections}
+
+Click the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling. 
+
+[Climate projections](climate.qmd)
+
+[Socio-economic projections](socioEconomic.qmd)
