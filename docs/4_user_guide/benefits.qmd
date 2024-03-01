@@ -1,0 +1,6 @@
+---
+title: 	Benefits
+filters:
+  - lightbox
+lightbox: auto
+---
