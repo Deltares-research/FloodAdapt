@@ -1,8 +1,0 @@
----
-title: Exposure data
----
-
-
-# Exposure data 
-
-# Description of the exposure data fields
