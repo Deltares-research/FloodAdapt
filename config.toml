@@ -12,4 +12,4 @@ DATABASE_ROOT="../Database"
 SYSTEM_FOLDER="../Database/system"
 
 # Default database_name (containing the input, output and static folder) used in headless mode (only backend) by tests.
-DATABASE_NAME="charleston_test"
+DATABASE_NAME="charleston_full_20240207"
