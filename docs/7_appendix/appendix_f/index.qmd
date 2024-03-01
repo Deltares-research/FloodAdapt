@@ -1,3 +1,0 @@
----
-title: Event input files – examples
----
