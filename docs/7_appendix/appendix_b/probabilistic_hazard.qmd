@@ -1,3 +1,0 @@
----
-title:	Probabilistic hazard and damage maps
----

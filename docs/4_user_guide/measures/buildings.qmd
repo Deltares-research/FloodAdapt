@@ -1,0 +1,6 @@
+---
+title: 	Building-level measures
+filters:
+  - lightbox
+lightbox: auto
+---
