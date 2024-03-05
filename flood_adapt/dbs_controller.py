@@ -878,7 +878,10 @@ class Database(IDatabase):
             )
         else:
             event.save(
-                self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
             )
 
     def delete_event(self, name: str):
@@ -1241,7 +1244,7 @@ class Database(IDatabase):
             object of one of the scenario types (e.g., IScenario)
         """
         name = scenario.attrs.name
-        
+
         # Get all the benefits
         benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
 
