@@ -691,13 +691,33 @@ class Database(IDatabase):
         measure : IMeasure
             object of one of the measure types (e.g., IElevate)
         """
-        # TODO should you be able to edit a measure that is already used in a strategy?
-        measure.save(
-            self.input_path
-            / "measures"
-            / measure.attrs.name
-            / f"{measure.attrs.name}.toml"
-        )
+        name = measure.attrs.name
+        # Get all the strategies
+        strategies = [
+            Strategy.load_file(path) for path in self.get_strategies()["path"]
+        ]
+
+        # Check if measure is used in a strategy
+        used_in_strategy = [
+            strategy.attrs.name
+            for strategy in strategies
+            for measure in strategy.attrs.measures
+            if name == measure
+        ]
+
+        # If measure is used in a strategy, raise error
+        if used_in_strategy:
+            text = "strategy" if len(strategies) == 1 else "strategies"
+            raise ValueError(
+                f"'{name}' measure cannot be edited since it is already used in {text}: {', '.join(used_in_strategy)}"
+            )
+        else:
+            measure.save(
+                self.input_path
+                / "measures"
+                / measure.attrs.name
+                / f"{measure.attrs.name}.toml"
+            )
 
     def delete_measure(self, name: str):
         """Deletes an already existing measure in the database.
@@ -831,10 +851,38 @@ class Database(IDatabase):
         event : IEvent
             object of the event
         """
-        # TODO should you be able to edit a measure that is already used in a hazard?
-        event.save(
-            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
-        )
+        name = event.attrs.name
+
+        # Check if event is a standard event
+        if self.site.attrs.standard_objects.events:
+            if name in self.site.attrs.standard_objects.events:
+                raise ValueError(
+                    f"'{name}' event cannot be deleted since it is a standard event."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if event is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.event
+        ]
+
+        # If event is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' event cannot be edited since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
 
     def delete_event(self, name: str):
         """Deletes an already existing event in the database.
@@ -955,12 +1003,38 @@ class Database(IDatabase):
         projection : IProjection
             object of one of the projection types (e.g., IElevate)
         """
-        projection.save(
-            self.input_path
-            / "projections"
-            / projection.attrs.name
-            / f"{projection.attrs.name}.toml"
-        )
+        name = projection.attrs.name
+
+        # Check if projection is a standard projection
+        if self.site.attrs.standard_objects.projections:
+            if name in self.site.attrs.standard_objects.projections:
+                raise ValueError(
+                    f"'{name}' projection cannot be deleted since it is a standard projection."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if projection is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.projection
+        ]
+
+        # If projection is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' projection cannot be edited since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            projection.save(
+                self.input_path
+                / "projections"
+                / projection.attrs.name
+                / f"{projection.attrs.name}.toml"
+            )
 
     def delete_projection(self, name: str):
         """Deletes an already existing projection in the database.
@@ -1169,12 +1243,34 @@ class Database(IDatabase):
         scenario : IScenario
             object of one of the scenario types (e.g., IScenario)
         """
-        scenario.save(
-            self.input_path
-            / "scenarios"
-            / scenario.attrs.name
-            / f"{scenario.attrs.name}.toml"
-        )
+        name = scenario.attrs.name
+
+        # Get all the benefits
+        benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
+
+        # Check in which benefits this scenario is used
+        used_in_benefit = [
+            benefit.attrs.name
+            for benefit in benefits
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
+            if name == scenario
+        ]
+
+        # If scenario is used in a benefit, raise error
+        if used_in_benefit:
+            text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
+            raise ValueError(
+                f"'{name}' scenario cannot be edited since it is already used in {text}: {', '.join(used_in_benefit)}"
+            )
+        else:
+            scenario.save(
+                self.input_path
+                / "scenarios"
+                / scenario.attrs.name
+                / f"{scenario.attrs.name}.toml"
+            )
 
     def delete_scenario(self, name: str):
         """Deletes an already existing scenario in the database.
