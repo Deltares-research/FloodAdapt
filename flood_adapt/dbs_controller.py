@@ -955,7 +955,7 @@ class Database(IDatabase):
                 f.write(gdf.to_crs(4326).to_json(drop_id=True))
 
         # Save the projection toml file
-        projection.save(projection_path / "new_development_area.geojson")
+        projection.save(projection_path / f"{projection.attrs.name}.toml")
 
     def edit_projection(self, projection: IProjection):
         """Edits an already existing projection in the database.
