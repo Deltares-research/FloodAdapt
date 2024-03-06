@@ -171,6 +171,39 @@ class Database(IDatabase):
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
+    def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
+        """Return a table with different types of green infrastructure measures and their infiltration depths.
+        This is read by a csv file in the database.
+
+        Returns
+        -------
+        pd.DataFrame
+            Table with values
+        """
+        # Read file from database
+        df = pd.read_csv(
+            self.input_path.parent.joinpath(
+                "static", "green_infra_table", "green_infra_lookup_table.csv"
+            )
+        )
+
+        # Get column with values
+        val_name = "Infiltration depth"
+        col_name = [name for name in df.columns if val_name in name][0]
+        if not col_name:
+            raise KeyError(f"A column with a name containing {val_name} was not found!")
+
+        # Get list of types per measure
+        df["types"] = [
+            [x.strip() for x in row["types"].split(",")] for i, row in df.iterrows()
+        ]
+
+        # Show specific values based on measure type
+        inds = [i for i, row in df.iterrows() if measure_type in row["types"]]
+        df = df.drop(columns="types").iloc[inds, :]
+
+        return df
+
     def interp_slr(self, slr_scenario: str, year: float) -> float:
         """interpolating SLR value and referencing it to the SLR reference year from the site toml
 
