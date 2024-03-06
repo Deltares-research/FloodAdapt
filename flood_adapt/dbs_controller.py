@@ -951,7 +951,9 @@ class Database(IDatabase):
 
             # New destination path to the shapefile
             dst_path = projection_path / f"{projection.attrs.name}.geojson"
-            projection.attrs.socio_economic_change.new_development_shapefile = f"{projection.attrs.name}.geojson"
+            projection.attrs.socio_economic_change.new_development_shapefile = (
+                f"{projection.attrs.name}.geojson"
+            )
 
             # Read the shapefile and save it as a geojson
             gdf = gpd.read_file(src_file, engine="pyogrio")
