@@ -944,12 +944,16 @@ class Database(IDatabase):
 
         # Handle user uploaded shapefile
         if projection.attrs.socio_economic_change.new_development_shapefile is not None:
+            # Original path to the shapefile
             src_file = Path(
                 projection.attrs.socio_economic_change.new_development_shapefile
             )
 
-            dst_path = projection_path / "new_development_area.geojson"
+            # New destination path to the shapefile
+            dst_path = projection_path / f"{projection.attrs.name}.geojson"
+            projection.attrs.socio_economic_change.new_development_shapefile = f"{projection.attrs.name}.geojson"
 
+            # Read the shapefile and save it as a geojson
             gdf = gpd.read_file(src_file, engine="pyogrio")
             with open(dst_path, "w") as f:
                 f.write(gdf.to_crs(4326).to_json(drop_id=True))
