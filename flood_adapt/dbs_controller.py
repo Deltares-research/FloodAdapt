@@ -986,14 +986,30 @@ class Database(IDatabase):
             raise ValueError(
                 f"'{projection.attrs.name}' name is already used by another projection. Choose a different name"
             )
-        else:
-            (self.input_path / "projections" / projection.attrs.name).mkdir()
-            projection.save(
-                self.input_path
-                / "projections"
-                / projection.attrs.name
-                / f"{projection.attrs.name}.toml"
+
+        projection_path = Path(self.input_path / "projections" / projection.attrs.name)
+        os.mkdir(projection_path)
+
+        # Handle user uploaded shapefile
+        if projection.attrs.socio_economic_change.new_development_shapefile is not None:
+            # Original path to the shapefile
+            src_file = Path(
+                projection.attrs.socio_economic_change.new_development_shapefile
             )
+
+            # New destination path to the shapefile
+            dst_path = projection_path / f"{projection.attrs.name}.geojson"
+            projection.attrs.socio_economic_change.new_development_shapefile = (
+                f"{projection.attrs.name}.geojson"
+            )
+
+            # Read the shapefile and save it as a geojson
+            gdf = gpd.read_file(src_file, engine="pyogrio")
+            with open(dst_path, "w") as f:
+                f.write(gdf.to_crs(4326).to_json(drop_id=True))
+
+        # Save the projection toml file
+        projection.save(projection_path / f"{projection.attrs.name}.toml")
 
     def edit_projection(self, projection: IProjection):
         """Edits an already existing projection in the database.
