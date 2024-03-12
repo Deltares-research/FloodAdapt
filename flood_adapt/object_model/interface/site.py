@@ -91,6 +91,7 @@ class MapboxLayersModel(BaseModel):
 class VisualizationLayersModel(BaseModel):
     """class describing the configuration of the layers you might want to visualize in the gui"""
 
+    buildings_min_zoom_level: Optional[int] = 13
     default_bin_number: int
     default_colors: list[str]
     layer_names: list[str]

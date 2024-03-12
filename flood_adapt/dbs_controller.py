@@ -665,7 +665,8 @@ class Database(IDatabase):
         fm.read()
         types = fm.exposure.get_primary_object_type()
         for name in self.site.attrs.fiat.non_building_names:
-            types.remove(name)
+            if name in types:
+                types.remove(name)
         # Add "all" type for using as identifier
         types.append("all")
         return types
