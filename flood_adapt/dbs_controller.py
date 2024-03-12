@@ -171,6 +171,39 @@ class Database(IDatabase):
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
+    def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
+        """Return a table with different types of green infrastructure measures and their infiltration depths.
+        This is read by a csv file in the database.
+
+        Returns
+        -------
+        pd.DataFrame
+            Table with values
+        """
+        # Read file from database
+        df = pd.read_csv(
+            self.input_path.parent.joinpath(
+                "static", "green_infra_table", "green_infra_lookup_table.csv"
+            )
+        )
+
+        # Get column with values
+        val_name = "Infiltration depth"
+        col_name = [name for name in df.columns if val_name in name][0]
+        if not col_name:
+            raise KeyError(f"A column with a name containing {val_name} was not found!")
+
+        # Get list of types per measure
+        df["types"] = [
+            [x.strip() for x in row["types"].split(",")] for i, row in df.iterrows()
+        ]
+
+        # Show specific values based on measure type
+        inds = [i for i, row in df.iterrows() if measure_type in row["types"]]
+        df = df.drop(columns="types").iloc[inds, :]
+
+        return df
+
     def interp_slr(self, slr_scenario: str, year: float) -> float:
         """interpolating SLR value and referencing it to the SLR reference year from the site toml
 
@@ -692,13 +725,33 @@ class Database(IDatabase):
         measure : IMeasure
             object of one of the measure types (e.g., IElevate)
         """
-        # TODO should you be able to edit a measure that is already used in a strategy?
-        measure.save(
-            self.input_path
-            / "measures"
-            / measure.attrs.name
-            / f"{measure.attrs.name}.toml"
-        )
+        name = measure.attrs.name
+        # Get all the strategies
+        strategies = [
+            Strategy.load_file(path) for path in self.get_strategies()["path"]
+        ]
+
+        # Check if measure is used in a strategy
+        used_in_strategy = [
+            strategy.attrs.name
+            for strategy in strategies
+            for measure in strategy.attrs.measures
+            if name == measure
+        ]
+
+        # If measure is used in a strategy, raise error
+        if used_in_strategy:
+            text = "strategy" if len(strategies) == 1 else "strategies"
+            raise ValueError(
+                f"'{name}' measure cannot be edited since it is already used in {text}: {', '.join(used_in_strategy)}"
+            )
+        else:
+            measure.save(
+                self.input_path
+                / "measures"
+                / measure.attrs.name
+                / f"{measure.attrs.name}.toml"
+            )
 
     def delete_measure(self, name: str):
         """Deletes an already existing measure in the database.
@@ -832,10 +885,38 @@ class Database(IDatabase):
         event : IEvent
             object of the event
         """
-        # TODO should you be able to edit a measure that is already used in a hazard?
-        event.save(
-            self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
-        )
+        name = event.attrs.name
+
+        # Check if event is a standard event
+        if self.site.attrs.standard_objects.events:
+            if name in self.site.attrs.standard_objects.events:
+                raise ValueError(
+                    f"'{name}' event cannot be deleted since it is a standard event."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if event is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.event
+        ]
+
+        # If event is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' event cannot be edited since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            event.save(
+                self.input_path
+                / "events"
+                / event.attrs.name
+                / f"{event.attrs.name}.toml"
+            )
 
     def delete_event(self, name: str):
         """Deletes an already existing event in the database.
@@ -939,14 +1020,30 @@ class Database(IDatabase):
             raise ValueError(
                 f"'{projection.attrs.name}' name is already used by another projection. Choose a different name"
             )
-        else:
-            (self.input_path / "projections" / projection.attrs.name).mkdir()
-            projection.save(
-                self.input_path
-                / "projections"
-                / projection.attrs.name
-                / f"{projection.attrs.name}.toml"
+
+        projection_path = Path(self.input_path / "projections" / projection.attrs.name)
+        os.mkdir(projection_path)
+
+        # Handle user uploaded shapefile
+        if projection.attrs.socio_economic_change.new_development_shapefile is not None:
+            # Original path to the shapefile
+            src_file = Path(
+                projection.attrs.socio_economic_change.new_development_shapefile
             )
+
+            # New destination path to the shapefile
+            dst_path = projection_path / f"{projection.attrs.name}.geojson"
+            projection.attrs.socio_economic_change.new_development_shapefile = (
+                f"{projection.attrs.name}.geojson"
+            )
+
+            # Read the shapefile and save it as a geojson
+            gdf = gpd.read_file(src_file, engine="pyogrio")
+            with open(dst_path, "w") as f:
+                f.write(gdf.to_crs(4326).to_json(drop_id=True))
+
+        # Save the projection toml file
+        projection.save(projection_path / f"{projection.attrs.name}.toml")
 
     def edit_projection(self, projection: IProjection):
         """Edits an already existing projection in the database.
@@ -956,12 +1053,38 @@ class Database(IDatabase):
         projection : IProjection
             object of one of the projection types (e.g., IElevate)
         """
-        projection.save(
-            self.input_path
-            / "projections"
-            / projection.attrs.name
-            / f"{projection.attrs.name}.toml"
-        )
+        name = projection.attrs.name
+
+        # Check if projection is a standard projection
+        if self.site.attrs.standard_objects.projections:
+            if name in self.site.attrs.standard_objects.projections:
+                raise ValueError(
+                    f"'{name}' projection cannot be deleted since it is a standard projection."
+                )
+
+        # Get all the scenarios
+        scenarios = [Scenario.load_file(path) for path in self.get_scenarios()["path"]]
+
+        # Check if projection is used in a scenario
+        used_in_scenario = [
+            scenario.attrs.name
+            for scenario in scenarios
+            if name == scenario.attrs.projection
+        ]
+
+        # If projection is used in a scenario, raise error
+        if used_in_scenario:
+            text = "scenario" if len(used_in_scenario) == 1 else "scenarios"
+            raise ValueError(
+                f"'{name}' projection cannot be edited since it is already used in {text}: {', '.join(used_in_scenario)}"
+            )
+        else:
+            projection.save(
+                self.input_path
+                / "projections"
+                / projection.attrs.name
+                / f"{projection.attrs.name}.toml"
+            )
 
     def delete_projection(self, name: str):
         """Deletes an already existing projection in the database.
@@ -1170,12 +1293,34 @@ class Database(IDatabase):
         scenario : IScenario
             object of one of the scenario types (e.g., IScenario)
         """
-        scenario.save(
-            self.input_path
-            / "scenarios"
-            / scenario.attrs.name
-            / f"{scenario.attrs.name}.toml"
-        )
+        name = scenario.attrs.name
+
+        # Get all the benefits
+        benefits = [Benefit.load_file(path) for path in self.get_benefits()["path"]]
+
+        # Check in which benefits this scenario is used
+        used_in_benefit = [
+            benefit.attrs.name
+            for benefit in benefits
+            for scenario in self.check_benefit_scenarios(benefit)[
+                "scenario created"
+            ].to_list()
+            if name == scenario
+        ]
+
+        # If scenario is used in a benefit, raise error
+        if used_in_benefit:
+            text = "benefit" if len(used_in_benefit) == 1 else "Benefits"
+            raise ValueError(
+                f"'{name}' scenario cannot be edited since it is already used in {text}: {', '.join(used_in_benefit)}"
+            )
+        else:
+            scenario.save(
+                self.input_path
+                / "scenarios"
+                / scenario.attrs.name
+                / f"{scenario.attrs.name}.toml"
+            )
 
     def delete_scenario(self, name: str):
         """Deletes an already existing scenario in the database.
@@ -1749,10 +1894,28 @@ class Database(IDatabase):
         ----------
         scenario_name : Union[str, list[str]]
             name(s) of the scenarios to run.
+
+        Raises
+        ------
+        RuntimeError
+            If an error occurs while running one of the scenarios
         """
         if not isinstance(scenario_name, list):
             scenario_name = [scenario_name]
+
+        errors = []
         for scn in scenario_name:
-            self.has_run_hazard(scn)
-            scenario = self.get_scenario(scn)
-            scenario.run()
+            try:
+                self.has_run_hazard(scn)
+                scenario = self.get_scenario(scn)
+                scenario.run()
+            except RuntimeError as e:
+                if "SFINCS model failed to run." in str(e):
+                    errors.append(str(scn))
+
+        if errors:
+            raise RuntimeError(
+                "SFincs model failed to run for the following scenarios: "
+                + ", ".join(errors)
+                + ". Check the logs for more information."
+            )

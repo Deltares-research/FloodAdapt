@@ -287,15 +287,32 @@ class Hazard:
 
         sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
-        # results_dir = self.database_input_path.parent.joinpath(
-        #     "output", "results", self.name
-        # )
+        run_success = True
         for simulation_path in self.simulation_paths:
             with cd(simulation_path):
                 sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
                 with open(sfincs_log, "a") as log_handler:
-                    subprocess.run(sfincs_exec, stdout=log_handler)
+                    return_code = subprocess.run(sfincs_exec, stdout=log_handler)
+                    if return_code.returncode != 0:
+                        run_success = False
+                        break
+
+        if not run_success:
+            # Remove all files in the simulation folder except for the log files
+            for simulation_path in self.simulation_paths:
+                for subdir, _, files in os.walk(simulation_path):
+                    for file in files:
+                        if not file.endswith(".log"):
+                            os.remove(os.path.join(subdir, file))
+
+            # Remove all empty directories in the simulation folder (so only folders with log files remain)
+            for simulation_path in self.simulation_paths:
+                for subdir, _, files in os.walk(simulation_path):
+                    if not files:
+                        os.rmdir(subdir)
+
+            raise RuntimeError("SFINCS model failed to run.")
 
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
