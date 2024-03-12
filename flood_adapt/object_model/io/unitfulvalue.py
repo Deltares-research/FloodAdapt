@@ -81,14 +81,14 @@ class UnitfulLength(ValueUnitPair):
             conversion = 1.0 / 1000  # meters
         elif self.units == "meters":
             conversion = 1.0  # meters
-        elif self.units == "feet":
+        elif self.units in ["feet", "ft"]:
             conversion = 1.0 / 3.28084  # meters
         elif self.units == "inch":
             conversion = 0.0254  # meters
         elif self.units == "miles":
             conversion = 1609.344  # meters
         else:
-            ValueError("Invalid length units")
+            raise ValueError("Invalid length units")
         # second, convert to new units
         if new_units == "centimeters":
             new_conversion = 100.0
@@ -96,14 +96,14 @@ class UnitfulLength(ValueUnitPair):
             new_conversion = 1000.0
         elif new_units == "meters":
             new_conversion = 1.0
-        elif new_units == "feet":
+        elif new_units in ["feet", "ft"]:
             new_conversion = 3.28084
         elif new_units == "inch":
             new_conversion = 1.0 / 0.0254
         elif new_units == "miles":
             new_conversion = 1.0 / 1609.344
         else:
-            ValueError("Invalid length units")
+            raise ValueError("Invalid length units")
         return conversion * new_conversion * self.value
 
 
