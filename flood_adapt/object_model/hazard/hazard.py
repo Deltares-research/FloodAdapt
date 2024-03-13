@@ -904,8 +904,6 @@ class Hazard:
             sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
-            # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-            zs_stacked = xr.where(np.isnan(zs_stacked), zb, zs_stacked)
             zs_maps.append(zs_stacked)
 
             del sim
@@ -914,6 +912,11 @@ class Hazard:
 
         # 1a: make a table of all water levels and associated frequencies
         zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
+        # Get the indices of columns with all NaN values
+        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
+        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
+        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        # Get table of frequencies
         freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
 
         # 1b: sort water levels in descending order and include the frequencies in the sorting process
@@ -957,6 +960,16 @@ class Hazard:
                 sorted_zs[::-1, jj],
                 left=0,
             )
+
+        # Re-fill locations that had nan water level for all simulations with nans
+        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
+
+        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
+        diff = h - np.tile(zb, (h.shape[0], 1))
+        dry = (
+            diff < 10e-10
+        )  # here we use a small number instead of zero for rounding errors
+        h[dry] = np.nan
 
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc
