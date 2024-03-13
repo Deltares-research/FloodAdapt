@@ -740,6 +740,7 @@ class Hazard:
         model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
         zsmax = model.read_zsmax()
         zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
+        del model
 
     def plot_wl_obs(self):
         """Plot water levels at SFINCS observation points as html
