@@ -287,15 +287,32 @@ class Hazard:
 
         sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
-        # results_dir = self.database_input_path.parent.joinpath(
-        #     "output", "results", self.name
-        # )
+        run_success = True
         for simulation_path in self.simulation_paths:
             with cd(simulation_path):
                 sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
                 with open(sfincs_log, "a") as log_handler:
-                    subprocess.run(sfincs_exec, stdout=log_handler)
+                    return_code = subprocess.run(sfincs_exec, stdout=log_handler)
+                    if return_code.returncode != 0:
+                        run_success = False
+                        break
+
+        if not run_success:
+            # Remove all files in the simulation folder except for the log files
+            for simulation_path in self.simulation_paths:
+                for subdir, _, files in os.walk(simulation_path):
+                    for file in files:
+                        if not file.endswith(".log"):
+                            os.remove(os.path.join(subdir, file))
+
+            # Remove all empty directories in the simulation folder (so only folders with log files remain)
+            for simulation_path in self.simulation_paths:
+                for subdir, _, files in os.walk(simulation_path):
+                    if not files:
+                        os.rmdir(subdir)
+
+            raise RuntimeError("SFINCS model failed to run.")
 
         # Indicator that hazard has run
         self.__setattr__("has_run", True)
@@ -723,6 +740,7 @@ class Hazard:
         model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
         zsmax = model.read_zsmax()
         zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
+        del model
 
     def plot_wl_obs(self):
         """Plot water levels at SFINCS observation points as html
@@ -887,8 +905,6 @@ class Hazard:
             sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
-            # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
-            zs_stacked = xr.where(np.isnan(zs_stacked), zb, zs_stacked)
             zs_maps.append(zs_stacked)
 
             del sim
@@ -897,6 +913,11 @@ class Hazard:
 
         # 1a: make a table of all water levels and associated frequencies
         zs = xr.concat(zs_maps, pd.Index(frequencies, name="frequency"))
+        # Get the indices of columns with all NaN values
+        nan_cells = np.where(np.all(np.isnan(zs), axis=0))[0]
+        # fill nan values with minimum bed levels in each grid cell, np.interp cannot ignore nan values
+        zs = xr.where(np.isnan(zs), np.tile(zb, (zs.shape[0], 1)), zs)
+        # Get table of frequencies
         freq = np.tile(frequencies, (zs.shape[1], 1)).transpose()
 
         # 1b: sort water levels in descending order and include the frequencies in the sorting process
@@ -940,6 +961,16 @@ class Hazard:
                 sorted_zs[::-1, jj],
                 left=0,
             )
+
+        # Re-fill locations that had nan water level for all simulations with nans
+        h[:, nan_cells] = np.full(h[:, nan_cells].shape, np.nan)
+
+        # If a cell has the same water-level as the bed elevation it should be dry (turn to nan)
+        diff = h - np.tile(zb, (h.shape[0], 1))
+        dry = (
+            diff < 10e-10
+        )  # here we use a small number instead of zero for rounding errors
+        h[dry] = np.nan
 
         for ii, rp in enumerate(floodmap_rp):
             # #create single nc

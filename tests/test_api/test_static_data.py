@@ -8,7 +8,6 @@ def test_buildings(test_db):
 
 
 def test_aggr_areas(test_db):
-
     aggr_areas = api_startup.get_aggregation_areas(test_db)
 
     assert isinstance(aggr_areas, dict)

@@ -70,15 +70,24 @@ class SlrModel(BaseModel):
     relative_to_year: int
 
 
+class DamageType(str, Enum):
+    """class describing the accepted input for the variable footprints_dmg_type"""
+
+    absolute = "absolute"
+    relative = "relative"
+
+
 class MapboxLayersModel(BaseModel):
     """class describing the configuration of the mapbox layers in the gui"""
 
+    buildings_min_zoom_level: int = 13
     flood_map_depth_min: float
     flood_map_zbmax: float
     flood_map_bins: list[float]
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
+    footprints_dmg_type: DamageType = "absolute"
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
     svi_bins: Optional[list[float]] = []

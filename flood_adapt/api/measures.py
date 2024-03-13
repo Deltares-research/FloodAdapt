@@ -1,6 +1,7 @@
 from typing import Any
 
 import geopandas as gpd
+import pandas as pd
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -91,3 +92,7 @@ def calculate_volume(
     return GreenInfrastructure.calculate_volume(
         area=area, height=height, percent_area=percent_area
     )
+
+
+def get_green_infra_table(database: IDatabase, measure_type: str) -> pd.DataFrame:
+    return database.get_green_infra_table(measure_type)
