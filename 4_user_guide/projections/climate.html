@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -422,8 +425,14 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#sea-level-rise" id="toc-sea-level-rise" class="nav-link active" data-scroll-target="#sea-level-rise">Sea level rise</a></li>
-  <li><a href="#increase-precipitation" id="toc-increase-precipitation" class="nav-link" data-scroll-target="#increase-precipitation">Increase precipitation</a></li>
-  <li><a href="#increased-storm-frequency" id="toc-increased-storm-frequency" class="nav-link" data-scroll-target="#increased-storm-frequency">Increased storm frequency</a></li>
+  <li><a href="#increased-precipitation" id="toc-increased-precipitation" class="nav-link" data-scroll-target="#increased-precipitation">Increased precipitation</a>
+  <ul class="collapse">
+  <li><a href="#why-is-this-only-for-probabilistic-event-sets" id="toc-why-is-this-only-for-probabilistic-event-sets" class="nav-link" data-scroll-target="#why-is-this-only-for-probabilistic-event-sets">Why is this only for probabilistic event sets?</a></li>
+  </ul></li>
+  <li><a href="#increased-storm-frequency" id="toc-increased-storm-frequency" class="nav-link" data-scroll-target="#increased-storm-frequency">Increased storm frequency</a>
+  <ul class="collapse">
+  <li><a href="#why-is-this-only-for-probabilistic-event-sets-1" id="toc-why-is-this-only-for-probabilistic-event-sets-1" class="nav-link" data-scroll-target="#why-is-this-only-for-probabilistic-event-sets-1">Why is this only for probabilistic event sets?</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -448,19 +457,124 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <p>This section will describe how future projections of <a href="#sea-level-rise">sea level rise</a>, <a href="#increase-precipitation">precipitation</a> and <a href="#increased-storm-frequency">tropical storm frequencies</a> are specified and implemented in FloodAdapt.</p>
+<div id="fig-projectionsClimate" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/projections_climate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes"><img src="../../_static/images/projections_climate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes</strong></figcaption>
+</figure>
+</div>
 <section id="sea-level-rise" class="level2">
 <h2 class="anchored" data-anchor-id="sea-level-rise">Sea level rise</h2>
-<p>Coming soon</p>
+<p>There are two ways to specify sea level rise in the projections window: <strong><em>manually</em></strong> and <strong><em>from scenario</em></strong>.</p>
+<p>If you select <strong><em>manually</em></strong>, you can type a number in the “Sea Level Rise” (see <a href="#fig-projectionsSLR_manual">Figure&nbsp;2</a>). You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.</p>
+<div id="fig-projectionsSLR_manual" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/projections_SLR_manual.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Manually entering a sea level rise projection"><img src="../../_static/images/projections_SLR_manual.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>Manually entering a sea level rise projection</strong></figcaption>
+</figure>
+</div>
+<p>If you select <strong><em>from scenario</em></strong>, a dropdown box will appear from which you can select the sea level rise scenario you want to use (see <a href="#fig-projectionsSLR">Figure&nbsp;3</a>). These options are configurable and are specified at system setup. Once you select a scenario, you specify a year and FloodAdapt will automatically calculate the sea level rise for that year, using the selected sea level rise scenario. You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.</p>
+<div id="fig-projectionsSLR" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/projections_SLR.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Using a sea level rise scenario and a year to enter a sea level rise projection"><img src="../../_static/images/projections_SLR.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>Using a sea level rise scenario and a year to enter a sea level rise projection</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Sea level rise - since when?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Sea level rise scenarios have a starting point where sea level rise is zero (often, but not necessarily, starting at the year 2000). FloodAdapt corrects for this, using the ‘current year’, which is specified at system setup. So when a user chooses the “from scenario” option to input a sea level rise projection for a future year, the sea level rise that is shown in the projections window is relative to the current year. This is done by subtracting the projected rise between the starting point and the current year, for each sea level rise scenario.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How is the sea level rise projection represented in the modeling?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When a user runs a scenario with a sea level rise projection, the sea level rise is added to the flood model’s coastal boundary condition. FloodAdapt treats this addition differently depending on the type of event. For a <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html">recent event using gauged water levels</a>, the sea level rise in the current year relative to mean sea level is already represented in the measured water levels, so only the relative rise between the current year and future year is added. For a <a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html">recent event without gauged water levels</a> and for a <a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html">historical hurricane</a>, the offshore model calculates the nearshore coastal water levels relative to mean sea level. To correct for the sea level rise in the current year relative to mean sea level, an ‘offset’ is added which is specified at system set-up. On top of this, the relative sea level rise between the current year and the future year is added to represent the future conditions.</p>
+</div>
+</div>
 </section>
-<section id="increase-precipitation" class="level2">
-<h2 class="anchored" data-anchor-id="increase-precipitation">Increase precipitation</h2>
-<p>Coming soon</p>
+<section id="increased-precipitation" class="level2">
+<h2 class="anchored" data-anchor-id="increased-precipitation">Increased precipitation</h2>
+<p>An increase in precipitation is given as a percentage in the projections window (see <a href="#fig-projectionsPrecip">Figure&nbsp;5</a>). You can give the projection a name and (optionally) a description and click “OK” and the projection will be added in the projections tab.</p>
+<section id="why-is-this-only-for-probabilistic-event-sets" class="level3">
+<h3 class="anchored" data-anchor-id="why-is-this-only-for-probabilistic-event-sets">Why is this only for probabilistic event sets?</h3>
+<p>In the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a ‘what-if’ scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html#rainfall-magnifier-with-the-timeseries-and-map-options">historical event</a>, or with complete flexibility in defining rainfall for a <a href="../../4_user_guide/events/synthetic_events.html">synthetic event</a>). For <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event sets</a>, the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What happens if I choose this projection for a single event scenario?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you choose a projection of increased precipitation for a single event, it will work exactly as expected, and is identical to the precipitation magnifier option when you define your event. If you prefer to specify the increased precipitation via the projections tab instead of as a precipitation magnifier in the event tab, that is completely fine! Just be careful not to choose both, or the increase will be applied twice.</p>
+</div>
+</div>
+<div id="fig-projectionsPrecip" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/projections_precip.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Entering increased precipitation as a percentage increase"><img src="../../_static/images/projections_precip.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;4: <strong>Entering increased precipitation as a percentage increase</strong></figcaption>
+</figure>
+</div>
+</section>
 </section>
 <section id="increased-storm-frequency" class="level2">
 <h2 class="anchored" data-anchor-id="increased-storm-frequency">Increased storm frequency</h2>
-<p>Coming soon</p>
+<p>An increase in storm frequency is given as a percentage in the projections window (see <a href="#fig-projectionsPrecip">Figure&nbsp;5</a>). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example - increased storm frequency
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.22, or once in about 45 years.</p>
+</div>
+</div>
+<section id="why-is-this-only-for-probabilistic-event-sets-1" class="level3">
+<h3 class="anchored" data-anchor-id="why-is-this-only-for-probabilistic-event-sets-1">Why is this only for probabilistic event sets?</h3>
+<p>The change in storm frequency will only affect the frequency of the storm. This frequency is used in the derivation of return period flood maps and the calculation of expected annual damages. For a single event, this frequency is not used.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What happens if I choose this projection for a single event scenario?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won’t do any harm, but it won’t have any effect on the resulting event-scenario flood and impact results.</p>
+</div>
+</div>
+<div id="fig-projectionsPrecip" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/projections_stormFreq.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Entering increased storm frequency as a percentage increase"><img src="../../_static/images/projections_stormFreq.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;5: <strong>Entering increased storm frequency as a percentage increase</strong></figcaption>
+</figure>
+</div>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -836,6 +950,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","descPosition":"bottom","openEffect":"zoom","loop":true,"closeEffect":"zoom"});</script>
 
 
 
