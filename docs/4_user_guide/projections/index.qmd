@@ -12,7 +12,7 @@ On the Projections Tab in FloodAdapt, click 'Add Projection' to open the project
 
 ![**Projections window on the Projections tab in FloodAdapt**](../../_static/images/Projection_window.png){#fig-projectionWindow}
 
-In this window you can specify a [climate projection](climate.qmd), a [socio-economic projection](socioEconomic.qmd), or a combintaion (for example: 10% population growth with 1 foot of SLR). 
+In this window you can specify a [climate projection](climate.qmd), a [socio-economic projection](socioEconomic.qmd), or a combination (for example: 10% population growth with 1 foot of SLR). 
 
 Click the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling. 
 
