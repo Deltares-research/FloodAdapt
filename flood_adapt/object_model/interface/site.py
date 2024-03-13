@@ -94,6 +94,7 @@ class MapboxLayersModel(BaseModel):
     svi_colors: Optional[list[str]] = []
     benefits_bins: list[float]
     benefits_colors: list[str]
+    benefits_threshold: float
     damage_decimals: Optional[int] = 0
 
 
