@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 from pathlib import Path
@@ -151,3 +152,7 @@ class Scenario(IScenario):
         for handler in handlers:
             handler.close()
             root_logger.removeHandler(handler)
+
+        # Use garbage collector to ensure file handles are properly cleaned up
+        gc.collect()
+        logging.shutdown()
