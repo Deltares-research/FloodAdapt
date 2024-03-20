@@ -1,9 +1,91 @@
+import math
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
-class UnitTypesLength(str, Enum):
+class Unit(str, Enum):
+    """
+    Represents a unit of measurement.
+    """
+
+    pass
+
+
+class ValueUnitPair(BaseModel):
+    """
+    Represents a value with associated units.
+
+    Attributes:
+        value (float): The numerical value.
+        units (Unit): The units of the value.
+    """
+
+    value: float
+    units: Unit
+
+    def __init__(self, value: float, units: Unit, **data):
+        super().__init__(value=value, units=units, **data)
+
+    def convert(self, new_units: Unit) -> "ValueUnitPair":
+        raise NotImplementedError
+
+    def __str__(self):
+        return f"{self.value} {self.units.value}"
+
+    def __sub__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return type(self)(self.value - other.convert(self.units).value, self.units)
+
+    def __add__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return type(self)(self.value + other.convert(self.units).value, self.units)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return math.isclose(
+            self.value, other.convert(self.units).value, rel_tol=1e-2
+        )  # 1% relative tolerance for equality. So 1.0 == 1.01 evaluates to True
+
+    def __lt__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return self.value < other.convert(self.units).value
+
+    def __gt__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return self.value > other.convert(self.units).value
+
+    def __ge__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return (self > other) or (self == other)
+
+    def __le__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return (self < other) or (self == other)
+
+
+class UnitTypesLength(Unit):
     meters = "meters"
     centimeters = "centimeters"
     millimeters = "millimeters"
@@ -12,49 +94,48 @@ class UnitTypesLength(str, Enum):
     miles = "miles"
 
 
-class UnitTypesArea(str, Enum):
+class UnitTypesArea(Unit):
     m2 = "m2"
     cm2 = "cm2"
     mm2 = "mm2"
     sf = "sf"
 
 
-class UnitTypesVolume(str, Enum):
+class UnitTypesVolume(Unit):
     m3 = "m3"
     cf = "cf"
 
 
-class UnitTypesVelocity(str, Enum):
-    meters = "m/s"
+class UnitTypesVelocity(Unit):
+    mps = "m/s"
     knots = "knots"
     mph = "mph"
 
 
-class UnitTypesDirection(str, Enum):
+class UnitTypesDirection(Unit):
     degrees = "deg N"
 
 
-class UnitTypesDischarge(str, Enum):
+class UnitTypesTime(Unit):
+    seconds = "seconds"
+    minutes = "minutes"
+    hours = "hours"
+    days = "days"
+
+
+class UnitTypesDischarge(Unit):
     cfs = "cfs"
     cms = "m3/s"
 
 
-class UnitTypesIntensity(str, Enum):
-    inch = "inch/hr"
-    mm = "mm/hr"
+class UnitTypesIntensity(Unit):
+    inch_hr = "inch/hr"
+    mm_hr = "mm/hr"
 
 
 class VerticalReference(str, Enum):
     floodmap = "floodmap"
     datum = "datum"
-
-
-class ValueUnitPair(BaseModel):
-    value: float
-    units: str
-
-    def __str__(self):
-        return f"{self.value} {self.units}"
 
 
 class UnitfulLength(ValueUnitPair):
@@ -75,36 +156,47 @@ class UnitfulLength(ValueUnitPair):
             converted value
         """
         # first, convert to meters
-        if self.units == "centimeters":
-            conversion = 1.0 / 100  # meters
-        if self.units == "millimeters":
-            conversion = 1.0 / 1000  # meters
-        elif self.units == "meters":
+        if self.units == UnitTypesLength.meters:
             conversion = 1.0  # meters
-        elif self.units == "feet":
+        elif self.units == UnitTypesLength.centimeters:
+            conversion = 1.0 / 100  # meters
+        elif self.units == UnitTypesLength.millimeters:
+            conversion = 1.0 / 1000  # meters
+        elif self.units == UnitTypesLength.feet:
             conversion = 1.0 / 3.28084  # meters
-        elif self.units == "inch":
+        elif self.units == UnitTypesLength.inch:
             conversion = 0.0254  # meters
-        elif self.units == "miles":
+        elif self.units == UnitTypesLength.miles:
             conversion = 1609.344  # meters
         else:
-            ValueError("Invalid length units")
+            raise TypeError("Invalid length units")
         # second, convert to new units
-        if new_units == "centimeters":
+        if new_units == UnitTypesLength.centimeters:
             new_conversion = 100.0
-        if new_units == "millimeters":
+        elif new_units == UnitTypesLength.millimeters:
             new_conversion = 1000.0
-        elif new_units == "meters":
+        elif new_units == UnitTypesLength.meters:
             new_conversion = 1.0
-        elif new_units == "feet":
+        elif new_units == UnitTypesLength.feet:
             new_conversion = 3.28084
-        elif new_units == "inch":
+        elif new_units == UnitTypesLength.inch:
             new_conversion = 1.0 / 0.0254
-        elif self.units == "miles":
+        elif new_units == UnitTypesLength.miles:
             new_conversion = 1.0 / 1609.344
         else:
-            ValueError("Invalid length units")
-        return conversion * new_conversion * self.value
+            raise TypeError("Invalid length units")
+        return UnitfulLength(conversion * new_conversion * self.value, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def length_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Length cannot be negative: {value}")
+        return value
+
+
+class UnitfulLengthRefValue(UnitfulLength):
+    type: VerticalReference
 
 
 class UnitfulArea(ValueUnitPair):
@@ -125,29 +217,36 @@ class UnitfulArea(ValueUnitPair):
             converted value
         """
         # first, convert to meters
-        if self.units == "cm2":
+        if self.units == UnitTypesArea.cm2:
             conversion = 1.0 / 10000  # meters
-        if self.units == "mm2":
+        elif self.units == UnitTypesArea.mm2:
             conversion = 1.0 / 1000000  # meters
-        elif self.units == "m2":
+        elif self.units == UnitTypesArea.m2:
             conversion = 1.0  # meters
-        elif self.units == "sf":
+        elif self.units == UnitTypesArea.sf:
             conversion = 1.0 / 10.764  # meters
         else:
-            conversion = 1.0
+            raise TypeError("Invalid area units")
 
         # second, convert to new units
-        if new_units == "cm2":
+        if new_units == UnitTypesArea.cm2:
             new_conversion = 10000.0
-        if new_units == "mm2":
+        elif new_units == UnitTypesArea.mm2:
             new_conversion = 1000000.0
-        elif new_units == "m2":
+        elif new_units == UnitTypesArea.m2:
             new_conversion = 1.0
-        elif new_units == "sf":
+        elif new_units == UnitTypesArea.sf:
             new_conversion = 10.764
         else:
-            new_conversion = 1
-        return conversion * new_conversion * self.value
+            raise TypeError("Invalid area units")
+        return UnitfulArea(conversion * new_conversion * self.value, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def area_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Area cannot be negative: {value}")
+        return value
 
 
 class UnitfulVelocity(ValueUnitPair):
@@ -168,33 +267,45 @@ class UnitfulVelocity(ValueUnitPair):
             converted value
         """
         # first, convert to meters/second
-        if self.units == "knots":
+        if self.units == UnitTypesVelocity.knots:
             conversion = 1.0 / 1.943844  # m/s
-        elif self.units == "m/s":
+        elif self.units == UnitTypesVelocity.mps:
             conversion = 1
-        elif self.units == "mph":
+        elif self.units == UnitTypesVelocity.mph:
             conversion = 0.44704
         else:
-            ValueError("Invalid velocity units")
+            raise TypeError("Invalid velocity units")
         # second, convert to new units
-        if new_units == "knots":
+        if new_units == UnitTypesVelocity.knots:
             new_conversion = 1.943844
-        elif new_units == "m/s":
+        elif new_units == UnitTypesVelocity.mps:
             new_conversion = 1.0
-        elif new_units == "mph":
+        elif new_units == UnitTypesVelocity.mph:
             new_conversion = 2.236936
         else:
-            ValueError("Invalid velocity units")
-        return conversion * new_conversion * self.value
+            raise TypeError("Invalid velocity units")
+        return UnitfulVelocity(conversion * new_conversion * self.value, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def velocity_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Velocity cannot be negative: {value}")
+        return value
 
 
 class UnitfulDirection(ValueUnitPair):
     value: float
     units: UnitTypesDirection
 
-
-class UnitfulLengthRefValue(UnitfulLength):
-    type: VerticalReference
+    @field_validator("value")
+    @classmethod
+    def direction_must_be_between_0_360(cls, value: float):
+        if not (0 <= value <= 360):
+            raise ValueError(
+                f"Direction must be in degrees, between 0 and 360: {value}"
+            )
+        return value
 
 
 class UnitfulDischarge(ValueUnitPair):
@@ -215,55 +326,58 @@ class UnitfulDischarge(ValueUnitPair):
             converted value
         """
         # first, convert to meters/second
-        if self.units == "cfs":  # cubic feet per second
+        if self.units == UnitTypesDischarge.cfs:  # cubic feet per second
             conversion = 0.02832  # m3/s
-        elif self.units == "m3/s":
+        elif self.units == UnitTypesDischarge.cms:
             conversion = 1
         else:
-            ValueError("Invalid discharg units")
+            raise TypeError("Invalid discharg units")
         # second, convert to new units
-        if new_units == "cfs":
+        if new_units == UnitTypesDischarge.cfs:
             new_conversion = 1.0 / 0.02832
-        elif new_units == "m3/s":
+        elif new_units == UnitTypesDischarge.cms:
             new_conversion = 1.0
         else:
-            ValueError("Invalid discharg units")
+            raise TypeError("Invalid discharge units")
 
-        return conversion * new_conversion * self.value
+        return UnitfulDischarge(conversion * new_conversion * self.value, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def discharge_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Discharge cannot be negative: {value}")
+        return value
 
 
 class UnitfulIntensity(ValueUnitPair):
     value: float
     units: UnitTypesIntensity
 
-    def convert(self, new_units: UnitTypesIntensity) -> float:
-        """converts given rainfall intensity to different units
+    def convert(self, new_units: UnitTypesIntensity) -> "UnitfulIntensity":
+        conversion_factors = {
+            UnitTypesIntensity.inch_hr: {
+                UnitTypesIntensity.inch_hr: 1.0,
+                UnitTypesIntensity.mm_hr: 25.39544832,
+            },
+            UnitTypesIntensity.mm_hr: {
+                UnitTypesIntensity.inch_hr: 1.0 / 25.39544832,
+                UnitTypesIntensity.mm_hr: 1.0,
+            },
+        }
 
-        Parameters
-        ----------
-        new_units : UnitTypesIntensity
-            units to be converted to
+        if self.units not in conversion_factors or new_units not in conversion_factors:
+            raise TypeError("Invalid time units")
 
-        Returns
-        -------
-        float
-            converted value
-        """
-        # first, convert to meters/second
-        if self.units == "inch/hr":  # cubic feet per second
-            conversion = 25.4  # mm/hr
-        elif self.units == "mm/hr":
-            conversion = 1.0
-        else:
-            ValueError("Invalid rainfall intensity units")
-        # second, convert to new units
-        if new_units == "inch/hr":
-            new_conversion = 1.0 / 25.4
-        elif new_units == "mm/hr":
-            new_conversion = 1.0
-        else:
-            ValueError("Invalid rainfall intensity units")
-        return conversion * new_conversion * self.value
+        conversion_factor = conversion_factors[self.units][new_units]
+        return UnitfulIntensity(self.value * conversion_factor, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def intensity_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Intensity cannot be negative: {value}")
+        return value
 
 
 class UnitfulVolume(ValueUnitPair):
@@ -284,13 +398,71 @@ class UnitfulVolume(ValueUnitPair):
             converted value
         """
         # first, convert to m3
-        if self.units == "cf":  # cubic feet
+        if self.units == UnitTypesVolume.cf:  # cubic feet
             conversion = 0.02831685  # m3
-        elif self.units == "m3":
+        elif self.units == UnitTypesVolume.m3:
             conversion = 1.0
         # second, convert to new units
-        if new_units == "cf":
+        if new_units == UnitTypesVolume.cf:
             new_conversion = 1.0 / 0.02831685
-        elif new_units == "m3":
+        elif new_units == UnitTypesVolume.m3:
             new_conversion = 1.0
-        return conversion * new_conversion * self.value
+        return UnitfulVolume(conversion * new_conversion * self.value, new_units)
+
+    @field_validator("value")
+    @classmethod
+    def volume_cannot_be_negative(cls, value: float):
+        if value < 0:
+            raise ValueError(f"Volume cannot be negative: {value}")
+        return value
+
+
+class UnitfulTime(ValueUnitPair):
+    value: float
+    units: UnitTypesTime
+
+    def convert(self, new_units: UnitTypesTime) -> "UnitfulTime":
+        """converts given time to different units
+
+        Parameters
+        ----------
+        new_units : UnitTypesTime
+            units to be converted to
+
+        Returns
+        -------
+        float
+            converted value
+        """
+        conversion_factors = {
+            UnitTypesTime.days: {
+                UnitTypesTime.days: 1.0,
+                UnitTypesTime.hours: 24.0,
+                UnitTypesTime.minutes: 24.0 * 60.0,
+                UnitTypesTime.seconds: 24.0 * 60.0 * 60.0,
+            },
+            UnitTypesTime.hours: {
+                UnitTypesTime.days: 1.0 / 24.0,
+                UnitTypesTime.hours: 1.0,
+                UnitTypesTime.minutes: 60.0,
+                UnitTypesTime.seconds: 60.0 * 60.0,
+            },
+            UnitTypesTime.minutes: {
+                UnitTypesTime.days: 1.0 / (24.0 * 60.0),
+                UnitTypesTime.hours: 1.0 / 60.0,
+                UnitTypesTime.minutes: 1.0,
+                UnitTypesTime.seconds: 60.0,
+            },
+            UnitTypesTime.seconds: {
+                UnitTypesTime.days: 1.0 / (24.0 * 60.0 * 60.0),
+                UnitTypesTime.hours: 1.0 / (60.0 * 60.0),
+                UnitTypesTime.minutes: 1.0 / 60.0,
+                UnitTypesTime.seconds: 1.0,
+            },
+        }
+
+        if self.units not in conversion_factors or new_units not in conversion_factors:
+            raise TypeError("Invalid time units")
+
+        conversion_factor = conversion_factors[self.units][new_units]
+        return UnitfulTime(self.value * conversion_factor, new_units)

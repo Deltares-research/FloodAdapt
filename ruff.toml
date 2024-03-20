@@ -1,3 +1,4 @@
+[lint]
 select = ["E", "F", "NPY", "PD", "C4", "I"]
 ignore = ["PD013", "PD010", "E501","PD901","E741"]
-fixable = ["I"]
+fixable = ["ALL"]
