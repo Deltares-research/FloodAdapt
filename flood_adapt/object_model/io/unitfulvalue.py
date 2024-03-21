@@ -84,6 +84,41 @@ class ValueUnitPair(BaseModel):
             )
         return (self < other) or (self == other)
 
+    def __ne__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+        return not (self == other)
+
+    def __mul__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            return type(self)(self.value / other, self.units)
+        else:
+            raise TypeError(
+                f"Cannot multiply self: {type(self).__name__} with other: {type(other).__name__}. Only int and float are allowed."
+            )
+
+    def __div__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            return type(self)(self.value / other, self.units)
+        elif isinstance(other, type(self)):
+            return self.value / other.convert(self.units).value
+        else:
+            raise TypeError(
+                f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
+            )
+
+    def __truediv__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            return type(self)(self.value / other, self.units)
+        elif isinstance(other, type(self)):
+            return self.value / other.convert(self.units).value
+        else:
+            raise TypeError(
+                f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
+            )
+
 
 class UnitTypesLength(Unit):
     meters = "meters"

@@ -1,13 +1,12 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Protocol, Union
 
 import numpy as np
 import tomli
 import tomli_w
-from pydantic import BaseModel, model_validator
 
-from flood_adapt.object_model.interface.events import ShapeType
+from flood_adapt.object_model.interface.events import ShapeType, TimeseriesModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulTime,
@@ -16,22 +15,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-class TimeseriesModel(BaseModel):
-    shape_type: ShapeType
-    start_time: UnitfulTime
-    end_time: UnitfulTime
-    peak_intensity: UnitfulIntensity
-
-    @model_validator(mode="after")
-    def validate_timeseries_model(self):
-        if self.start_time > self.end_time:
-            raise ValueError(
-                f"Timeseries start stime cannot be later than its end time: {self.start_time}, {self.end_time}"
-            )
-        return self
-
-
-class ITimeseriesCalculationStrategy(ABC):
+class ITimeseriesCalculationStrategy(Protocol):
     @abstractmethod
     def calculate(self, attrs: TimeseriesModel) -> np.ndarray: ...
 
@@ -192,7 +176,6 @@ class Timeseries(ITimeseries):
             raise ValueError(f"Unsupported shape type: {self.attrs.shape_type}")
         return strategy.calculate(self.attrs, time_step)
 
-    @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
         """create timeseries from toml file"""
         obj = Timeseries()
@@ -201,7 +184,6 @@ class Timeseries(ITimeseries):
         obj.attrs = TimeseriesModel.model_validate(toml)
         return obj
 
-    @staticmethod
     def save(self, filepath: Union[str, os.PathLike]):
         """saving timeseries toml
 
@@ -211,9 +193,8 @@ class Timeseries(ITimeseries):
             path to the location where file will be saved
         """
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    @staticmethod
     def load_dict(data: dict[str, Any]):
         """create timeseries from object, e.g. when initialized from GUI"""
         obj = Timeseries()
@@ -323,6 +304,7 @@ class CompositeTimeseries:
 
     def plot(self) -> None:
         import matplotlib.pyplot as plt
+
         _start_time = self.start_time.convert(UnitTypesTime.seconds)
         _end_time = self.end_time.convert(UnitTypesTime.seconds)
 
