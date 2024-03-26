@@ -17,6 +17,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulVolume,
     UnitTypesDischarge,
     UnitTypesLength,
+    UnitTypesTime,
 )
 
 
@@ -31,11 +32,14 @@ class Constants(Enum):
 
 
 # move to toml file
-class Defaults(Enum):
-    _DATETIME_FORMAT = "%Y%m%d %H%M%S"
-    _START_TIME = "20200101 000000"
-    _END_TIME = "20200103 000000"
-    _TIMESTEP = 600
+class DefaultsStr(str, Enum):
+    _DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    _START_TIME = "2020-01-01 00:00:00"
+    _END_TIME = "2020-01-03 00:00:00"
+
+
+class DefaultsInt(Enum):
+    _TIMESTEP = UnitfulTime(600, UnitTypesTime.seconds)
 
 
 # Enums
@@ -87,8 +91,10 @@ class TimeseriesModel(BaseModel):
     end_time: UnitfulTime
 
     # Either one of these must be set
-    peak_intensity: Optional[Union[UnitfulIntensity, UnitfulDischarge]] = None
-    cumulative: Optional[Union[UnitfulLength, UnitfulVolume]] = None
+    peak_intensity: Optional[
+        Union[UnitfulIntensity, UnitfulDischarge, UnitfulLength]
+    ] = None
+    cumulative: Optional[Union[UnitfulLength, UnitfulVolume, UnitfulLength]] = None
 
     # Only required for ShapeType.scs
     csv_file_path: Optional[Union[str, Path]] = None
@@ -151,12 +157,8 @@ class WindModel(BaseModel):
         elif self.source == WindSource.constant:
             if self.constant_speed is None:
                 raise ValueError("Constant speed must be set when source is constant")
-            elif self.constant_speed < 0:
-                raise ValueError("Constant speed must be positive")
-            elif self.constant_direction is None:
-                raise ValueError(
-                    "Constant direction must be set when source is constant"
-                )
+            if self.constant_direction is None:
+                raise ValueError("Constant speed must be set when source is constant")
         return self
 
 
@@ -207,18 +209,30 @@ class TimeModel(BaseModel):
     timing: Timing
     duration_before_t0: UnitfulTime
     duration_after_t0: UnitfulTime
-    start_time: Optional[str] = Defaults._START_TIME
-    end_time: Optional[str] = Defaults._END_TIME
+    start_time: Optional[str] = DefaultsStr._START_TIME
+    end_time: Optional[str] = DefaultsStr._END_TIME
+
+    @field_validator("start_time", "end_time")
+    @classmethod
+    def validate_time_format(cls, value):
+        try:
+            print(value, DefaultsStr._DATETIME_FORMAT.value)
+            datetime.strptime(value, DefaultsStr._DATETIME_FORMAT.value)
+        except ValueError:
+            raise ValueError(
+                f"Time must be in format {DefaultsStr._DATETIME_FORMAT.value}. Got {value}"
+            )
+        return value
 
     @model_validator(mode="after")
     def validate_timeModel(self):
-        if self.duration_before_t0 < 0:
+        if self.duration_before_t0.value < 0:
             raise ValueError("Duration before T0 must be positive")
-        elif self.duration_after_t0 < 0:
+        elif self.duration_after_t0.value < 0:
             raise ValueError("Duration after T0 must be positive")
-        elif datetime.datetime.strptime(
-            self.start_time, Defaults._DATETIME_FORMAT
-        ) > datetime.datetime.strptime(self.end_time, Defaults._DATETIME_FORMAT):
+        elif datetime.strptime(
+            self.start_time, DefaultsStr._DATETIME_FORMAT.value
+        ) > datetime.strptime(self.end_time, DefaultsStr._DATETIME_FORMAT.value):
             raise ValueError("Start time must be before end time")
 
         return self
@@ -286,19 +300,19 @@ class HurricaneModel(BaseModel):
 class OverlandModel(BaseModel):
     """BaseModel describing the expected variables and data types for overland parameters of a model"""
 
-    wind: WindModel
-    river: list[RiverDischargeModel]
-    tide: TideModel
-    surge: SurgeModel
-    rainfall: Optional[RainfallModel]
-    hurricane: Optional[HurricaneModel]
+    wind: Optional[WindModel] = None
+    river: Optional[list[RiverDischargeModel]] = None
+    tide: Optional[TideModel] = None
+    surge: Optional[SurgeModel] = None
+    rainfall: Optional[RainfallModel] = None
+    hurricane: Optional[HurricaneModel] = None
 
 
 class OffShoreModel(BaseModel):
-    wind: WindModel
-    rainfall: RainfallModel
-    tide: TideModel
-    hurricane: Optional[HurricaneModel]
+    wind: Optional[WindModel] = None
+    rainfall: Optional[RainfallModel] = None
+    tide: Optional[TideModel] = None
+    hurricane: Optional[HurricaneModel] = None
 
 
 class EventModel(BaseModel):
@@ -314,8 +328,8 @@ class EventModel(BaseModel):
     overland: Optional[OverlandModel] = None  # What to do with hurricane?
     offshore: Optional[OffShoreModel] = None  # What to do with hurricane?
 
-    water_level_offset: Optional[UnitfulLength] = (
-        None  # only synthetic, move to overland or offshore?
+    water_level_offset: Optional[UnitfulLength] = UnitfulLength(
+        0, UnitTypesLength.meters
     )
 
     @model_validator(mode="after")

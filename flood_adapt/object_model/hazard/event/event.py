@@ -17,7 +17,8 @@ from cht_meteo.meteo import (
 from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
-    Defaults,
+    DefaultsInt,
+    DefaultsStr,
     EventModel,
     IEvent,
     Mode,
@@ -27,6 +28,7 @@ from flood_adapt.object_model.interface.events import (
 )
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.timeseries import Timeseries
+from flood_adapt.object_model.io.unitfulvalue import UnitfulTime, UnitTypesTime
 
 
 class Event(IEvent):
@@ -97,8 +99,8 @@ class Event(IEvent):
         )
 
         # Download and collect data
-        t0 = datetime.strptime(self.attrs.time.start_time, Defaults._DATETIME_FORMAT)
-        t1 = datetime.strptime(self.attrs.time.end_time, Defaults._DATETIME_FORMAT)
+        t0 = datetime.strptime(self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT)
+        t1 = datetime.strptime(self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT)
         time_range = [t0, t1]
 
         gfs_conus.download(time_range)
@@ -114,7 +116,7 @@ class Event(IEvent):
             # Extract the timestring from the filename and convert to pandas datetime format
             time_str = filename.split(".")[-2]
             time = pd.to_datetime(
-                time_str, format=Defaults._DATETIME_FORMAT.replace(" ", "_")
+                time_str, format=DefaultsStr._DATETIME_FORMAT.replace(" ", "_")
             )
 
             # Add the time coordinate to the dataset
@@ -133,7 +135,7 @@ class Event(IEvent):
         self,
         event_dir: Path,
         site_river: list[RiverDischargeModel],
-        time_step: float = Defaults._TIMESTEP,
+        time_step: UnitfulTime = DefaultsInt._TIMESTEP.value,
         input_river_df_list: Optional[list[pd.DataFrame]] = None,
     ):
         """Creates pd.Dataframe timeseries for river discharge and stores all created timeseries in self.dis_df.
@@ -147,7 +149,7 @@ class Event(IEvent):
         # Create empty list for results
         list_df = []
         tstart = datetime.strptime(
-            self.attrs.time.start_time, Defaults._DATETIME_FORMAT
+            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
         )
 
         for ii, rivermodel in enumerate(site_river):
@@ -184,13 +186,13 @@ class Event(IEvent):
             self.dis_df = None
         return self
 
-    def add_rainfall_ts(self, time_step: float = Defaults._TIMESTEP):
+    def add_rainfall_ts(self, time_step: UnitfulTime = DefaultsInt._TIMESTEP.value):
         """
         Add timeseries to event for constant or shape-type rainfall.
 
         Parameters
         ----------
-        time_step : float, optional
+        time_step : UnitfulTime, optional
             Time step of the generated rainfall time series, by default 600 seconds
 
         Returns
@@ -199,20 +201,26 @@ class Event(IEvent):
             Updated Event object with rainfall timeseries added in pd.DataFrame format
         """
         tstart = datetime.strptime(
-            self.attrs.time.start_time, Defaults._DATETIME_FORMAT
+            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
         )
         rainfall_model = self.attrs.overland.rainfall
 
         if rainfall_model.source == RainfallSource.timeseries:
             attr_dict = {
                 "shape_type": rainfall_model.timeseries.shape_type,
-                "shape_start": (
-                    tstart + rainfall_model.timeseries.start_time.to_timedelta()
-                ).total_seconds(),
-                "shape_end": (
-                    tstart + rainfall_model.timeseries.end_time.to_timedelta()
-                ).total_seconds(),
-                "peak_height": (rainfall_model.timeseries.peak_intensity).value,
+                "start_time": UnitfulTime(
+                    (
+                        tstart + rainfall_model.timeseries.start_time.to_timedelta()
+                    ).timestamp(),
+                    UnitTypesTime.seconds,
+                ),
+                "end_time": UnitfulTime(
+                    (
+                        tstart + rainfall_model.timeseries.end_time.to_timedelta()
+                    ).timestamp(),
+                    UnitTypesTime.seconds,
+                ),
+                "peak_intensity": rainfall_model.timeseries.peak_intensity,
                 "cumulative": rainfall_model.timeseries.cumulative,
                 "csv_file_path": rainfall_model.timeseries.csv_file_path,
                 "scstype": rainfall_model.timeseries.scstype,
@@ -228,7 +236,7 @@ class Event(IEvent):
         self.rain_ts = rainfall_df
         return self
 
-    def add_overland_wind_ts(self, time_step: float = Defaults._TIMESTEP):
+    def add_overland_wind_ts(self, time_step: float = DefaultsInt._TIMESTEP.value):
         """Adds constant wind or timeseries from overlandModel to event object.
 
         Parameters
@@ -242,9 +250,11 @@ class Event(IEvent):
             Updated object with wind timeseries added in pd.DataFrame format
         """
         tstart = datetime.strptime(
-            self.attrs.time.start_time, Defaults._DATETIME_FORMAT
+            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
         )
-        tstop = datetime.strptime(self.attrs.time.end_time, Defaults._DATETIME_FORMAT)
+        tstop = datetime.strptime(
+            self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT
+        )
         duration = (tstop - tstart).total_seconds()
         time_vec = pd.date_range(
             tstart, periods=duration / time_step + 1, freq=f"{time_step}S"
@@ -274,7 +284,7 @@ class Event(IEvent):
         self.overland_wind_ts = df
         return self
 
-    def add_offshore_wind_ts(self, time_step: float = Defaults._TIMESTEP):
+    def add_offshore_wind_ts(self, time_step: float = DefaultsInt._TIMESTEP.value):
         """Adds constant wind or timeseries from the OffshoreModel to event object.
 
         Parameters
@@ -288,9 +298,11 @@ class Event(IEvent):
             Updated object with wind timeseries added in pd.DataFrame format
         """
         tstart = datetime.strptime(
-            self.attrs.time.start_time, Defaults._DATETIME_FORMAT
+            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
         )
-        tstop = datetime.strptime(self.attrs.time.end_time, Defaults._DATETIME_FORMAT)
+        tstop = datetime.strptime(
+            self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT
+        )
         duration = (tstop - tstart).total_seconds()
         time_step = int(time_step)
         time_vec = pd.date_range(

@@ -466,7 +466,7 @@ class UnitfulTime(ValueUnitPair):
             datetime.timedelta object
         """
         seconds = self.convert(UnitTypesTime.seconds).value
-        return timedelta(second=seconds)
+        return timedelta(seconds=seconds)
 
     def convert(self, new_units: UnitTypesTime) -> "UnitfulTime":
         """converts given time to different units

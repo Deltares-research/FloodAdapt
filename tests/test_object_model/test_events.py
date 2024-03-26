@@ -14,10 +14,8 @@ from flood_adapt.object_model.hazard.event.historical_nearshore import (
 )
 from flood_adapt.object_model.hazard.event.historical_offshore import Offshore
 from flood_adapt.object_model.interface.events import (
-    Defaults,
     Mode,
     RainfallModel,
-    RiverModel,
     Template,
     TideModel,
     TimeModel,
@@ -189,7 +187,7 @@ def test_download_wl_timeseries(test_db):
     )
 
     assert wl_df.index[0] == datetime.strptime(
-        start_time_str, Defaults._DATETIME_FORMAT
+        start_time_str, DefaultsStr._DATETIME_FORMAT
     )
     assert wl_df.iloc[:, 0].dtypes == "float64"
 
