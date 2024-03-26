@@ -5,13 +5,17 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDirection,
     UnitfulDischarge,
     UnitfulIntensity,
     UnitfulLength,
     UnitfulTime,
+    UnitfulVelocity,
+    UnitfulVolume,
+    UnitTypesDischarge,
     UnitTypesLength,
 )
 
@@ -54,25 +58,51 @@ class Template(str, Enum):
 
 class ShapeType(str, Enum):
     gaussian = "gaussian"
-    block = "block"
+    constant = "constant"
     triangle = "triangle"
     scs = "scs"
+    csv_file = "csv_file"
+    harmonic = "harmonic"
 
 
 class WindSource(str, Enum):
+    none = "none"
+    timeseries = "timeseries"
     track = "track"
     map = "map"
     constant = "constant"
-    none = "none"  # todo remove?
-    timeseries = "timeseries"
+
+
+class Scstype(str, Enum):
+    type1 = "type1"
+    type1a = "type1a"
+    type2 = "type2"
+    type3 = "type3"
 
 
 class TimeseriesModel(BaseModel):
+    # Required
     shape_type: ShapeType
     start_time: UnitfulTime
     end_time: UnitfulTime
-    peak_intensity: Optional[UnitfulIntensity] = None
-    cumulative: Optional[UnitfulLength] = None
+
+    # Either one of these must be set
+    peak_intensity: Optional[Union[UnitfulIntensity, UnitfulDischarge]] = None
+    cumulative: Optional[Union[UnitfulLength, UnitfulVolume]] = None
+
+    # Only required for ShapeType.scs
+    csv_file_path: Optional[Union[str, Path]] = None
+    scstype: Optional[Scstype] = None
+
+    @field_validator("csv_file_path")
+    @classmethod
+    def validate_file_path(cls, value):
+        if value is not None:
+            if Path(value).suffix != ".csv":
+                raise ValueError("Timeseries file must be a .csv file")
+            elif not Path(value).is_file():
+                raise ValueError("Timeseries file must be a valid file")
+        return value
 
     @model_validator(mode="after")
     def validate_timeseries_model(self):
@@ -86,14 +116,24 @@ class TimeseriesModel(BaseModel):
 
         if self.cumulative is None and self.peak_intensity is None:
             raise ValueError("Exactly one of peak_intensity or cumulative must be set")
+
+        if self.shape_type == ShapeType.scs:
+            if (
+                self.csv_file_path is None
+                or self.scstype is None
+                or self.cumulative is None
+            ):
+                raise ValueError(
+                    f"csvfile, scstype and cumulative must be provided for SCS timeseries: {self.csv_file_path}, {self.scstype}, {self.cumulative}"
+                )
+
         return self
 
 
-# Validated
 class WindModel(BaseModel):
     source: WindSource
-    constant_speed: Optional[float] = None
-    constant_direction: Optional[float] = None
+    constant_speed: Optional[UnitfulVelocity] = None
+    constant_direction: Optional[UnitfulDirection] = None
     timeseries_file: Optional[str] = None
 
     @model_validator(mode="after")
@@ -103,159 +143,55 @@ class WindModel(BaseModel):
                 raise ValueError(
                     "Timeseries file must be set when source is timeseries"
                 )
-        elif self.source == WindSource.constant:
-            if self.constant_speed is None:
-                raise ValueError("Constant speed must be set when source is constant")
-            elif self.constant_speed < 0:
-                raise ValueError("Constant speed must be positive")
-
-            elif self.constant_direction is None:
-                raise ValueError(
-                    "Constant direction must be set when source is constant"
-                )
-            elif self.constant_direction < 0 or self.constant_direction > 360:
-                raise ValueError("Constant direction must be between 0 and 360")
-        return self
-
-
-class RainfallSource(str, Enum):
-    track = "track"
-    map = "map"
-    constant = "constant"
-    none = "none"  # todo remove?
-    timeseries = "timeseries"
-    shape = "shape"
-
-
-# Validated
-class RainfallModel(BaseModel):
-    source: RainfallSource
-    increase: float = 0.0
-    # constant
-    constant_intensity: Optional[UnitfulIntensity] = None
-    # timeseries
-    timeseries_file: Optional[str] = None
-    # shape
-    synthetic_timeseries: Optional[TimeseriesModel] = None
-
-    # shape_type: Optional[ShapeType] = None
-    # cumulative: Optional[UnitfulLength] = None
-    # shape_peak_intensity: Optional[float] = None
-    # shape_start_time: Optional[float] = None
-    # shape_end_time: Optional[float] = None
-
-    @model_validator(mode="after")
-    def validate_rainfallModel(self):
-
-        if self.source != RainfallSource.none:
-            if self.increase is None:
-                raise ValueError("Increase must be set when source is not none")
-            if self.increase < 0:
-                raise ValueError("Increase must be positive")
-
-        if self.source == RainfallSource.constant:
-            if self.constant_intensity is None:
-                raise ValueError(
-                    "Constant intensity must be set when source is constant"
-                )
-        elif self.source == RainfallSource.timeseries:
-            if self.timeseries_file is None:
-                raise ValueError(
-                    "Timeseries file must be set when source is timeseries"
-                )
-
-        elif self.source == RainfallSource.shape:
-            if self.shape_type is None:
-                raise ValueError("Shape type must be set when source is shape")
-            elif self.cumulative is None:
-                raise ValueError("Cumulative must be set when source is shape")
-            elif self.shape_peak_intensity is None:
-                raise ValueError(
-                    "Shape peak intensity must be set when source is shape"
-                )
-            elif self.shape_start_time is None:
-                raise ValueError("Shape start time must be set when source is shape")
-            elif self.shape_end_time is None:
-                raise ValueError("Shape end time must be set when source is shape")
-        return self
-
-
-class RiverSource(str, Enum):
-    constant = "constant"
-    timeseries = "timeseries"
-    shape = "shape"
-
-
-# Validated
-class RiverModel(BaseModel):
-    source: RiverSource
-
-    # constant
-    constant_discharge: Optional[UnitfulDischarge] = None
-
-    # timeseries
-    timeseries_file: Optional[str] = None
-
-    # shape
-    shape_type: Optional[ShapeType] = None
-    base_discharge: Optional[UnitfulDischarge] = None
-    shape_peak: Optional[UnitfulDischarge] = None
-    shape_duration: Optional[float] = None
-    shape_peak_time: Optional[float] = None
-    shape_start_time: Optional[float] = None
-    shape_end_time: Optional[float] = None
-
-    @model_validator(mode="after")
-    def validate_riverModel(self):
-        if self.source == RiverSource.constant:
-            if self.constant_discharge is None:
-                raise ValueError(
-                    "Constant discharge must be set when source is constant"
-                )
-            elif self.constant_discharge.value < 0:
-                raise ValueError("Constant discharge must be positive")
-
-        elif self.source == RiverSource.timeseries:
-            if self.timeseries_file is None:
-                raise ValueError(
-                    "Timeseries file must be set when source is timeseries"
-                )
             elif Path(self.timeseries_file).suffix != ".csv":
                 raise ValueError("Timeseries file must be a .csv file")
             elif not Path(self.timeseries_file).is_file():
                 raise ValueError("Timeseries file must be a valid file")
 
-        elif self.source == RiverSource.shape:
-            if self.shape_type is None:
-                raise ValueError("Shape type must be set when source is shape")
-
-            elif self.base_discharge is None:
-                raise ValueError("Base discharge must be set when source is shape")
-            elif self.base_discharge < 0:
-                raise ValueError("Base discharge must be positive")
-
-            elif self.shape_peak is None:
-                raise ValueError("Shape peak must be set when source is shape")
-            elif self.shape_peak < 0:
-                raise ValueError("Shape peak must be positive")
-
-            elif self.shape_duration is None:
-                raise ValueError("Shape duration must be set when source is shape")
-            elif self.shape_duration < 0:
-                raise ValueError("Shape duration must be positive")
-
-            elif self.shape_peak_time is None:
-                raise ValueError("Shape peak time must be set when source is shape")
-            elif self.shape_peak_time < 0:
-                raise ValueError("Shape peak time must be positive")
-
-            elif self.shape_start_time is None:
-                raise ValueError("Shape start time must be set when source is shape")
-            elif self.shape_end_time is None:
-                raise ValueError("Shape end time must be set when source is shape")
-            elif self.shape_start_time >= self.shape_end_time:
-                raise ValueError("Shape start time must be less than shape end time")
+        elif self.source == WindSource.constant:
+            if self.constant_speed is None:
+                raise ValueError("Constant speed must be set when source is constant")
+            elif self.constant_speed < 0:
+                raise ValueError("Constant speed must be positive")
+            elif self.constant_direction is None:
+                raise ValueError(
+                    "Constant direction must be set when source is constant"
+                )
         return self
+
+
+class RainfallSource(str, Enum):
+    none = "none"
+    timeseries = "timeseries"
+    track = "track"
+    map = "map"
+
+
+class RainfallModel(BaseModel):
+    source: RainfallSource
+    increase: float = 0.0  # in %
+    timeseries: Optional[TimeseriesModel] = None
+
+    @field_validator("increase")
+    @classmethod
+    def validate_increase(cls, value):
+        if value < 0:
+            raise ValueError("Increase must be positive")
+        return value
+
+    @model_validator(mode="after")
+    def validate_rainfallModel(self):
+        if self.source == RainfallSource.timeseries:
+            if self.timeseries is None:
+                raise ValueError(
+                    "TimeseriesModel must be set when source is timeseries"
+                )
+        return self
+
+
+class RiverDischargeModel(BaseModel):
+    timeseries: TimeseriesModel
+    base_discharge: UnitfulDischarge = UnitfulDischarge(0, UnitTypesDischarge.cms)
 
 
 class Timing(str, Enum):
@@ -265,12 +201,12 @@ class Timing(str, Enum):
     idealized = "idealized"
 
 
-# Validated
 class TimeModel(BaseModel):
     """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
 
-    duration_before_t0: float
-    duration_after_t0: float
+    timing: Timing
+    duration_before_t0: UnitfulTime
+    duration_after_t0: UnitfulTime
     start_time: Optional[str] = Defaults._START_TIME
     end_time: Optional[str] = Defaults._END_TIME
 
@@ -280,7 +216,6 @@ class TimeModel(BaseModel):
             raise ValueError("Duration before T0 must be positive")
         elif self.duration_after_t0 < 0:
             raise ValueError("Duration after T0 must be positive")
-
         elif datetime.datetime.strptime(
             self.start_time, Defaults._DATETIME_FORMAT
         ) > datetime.datetime.strptime(self.end_time, Defaults._DATETIME_FORMAT):
@@ -290,67 +225,44 @@ class TimeModel(BaseModel):
 
 
 class TideSource(str, Enum):
-    harmonic = "harmonic"
     timeseries = "timeseries"
     model = "model"
 
 
-# Validated
 class TideModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
 
     source: TideSource
-    harmonic_amplitude: Optional[UnitfulLength] = None
-    timeseries_file: Optional[str] = None
+    timeseries: Optional[TimeseriesModel] = None
 
     @model_validator(mode="after")
     def validate_tideModel(self):
-        if self.source == TideSource.harmonic:
-            if self.harmonic_amplitude is None:
+        if self.source == TideSource.timeseries:
+            if self.timeseries is None:
                 raise ValueError(
-                    "Harmonic amplitude must be set when source is harmonic"
+                    "Timeseries Model must be set when source is timeseries"
                 )
-            elif self.harmonic_amplitude.value < 0:
-                raise ValueError("Harmonic amplitude must be positive")
-
-        elif self.source == TideSource.timeseries:
-            if self.timeseries_file is None:
-                raise ValueError(
-                    "Timeseries file must be set when source is timeseries"
-                )
-            elif Path(self.timeseries_file).suffix != ".csv":
-                raise ValueError("Timeseries file must be a .csv file")
-            elif not Path(self.timeseries_file).is_file():
-                raise ValueError("Timeseries file must be a valid file")
         return self
 
 
 class SurgeSource(str, Enum):
-    none = "none"  # TODO remove?
-    shape = "shape"
+    none = "none"
+    timeseries = "timeseries"
 
 
-# Validated
 class SurgeModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
 
     source: SurgeSource
-    shape_type: Optional[str] = ShapeType.gaussian
-    shape_duration: Optional[float] = None
-    shape_peak_time: Optional[float] = None
-    shape_peak: Optional[UnitfulLength] = None
+    timeseries: Optional[TimeseriesModel] = None
 
     @model_validator(mode="after")
     def validate_surgeModel(self):
-        if self.source == SurgeSource.shape:
-            if self.shape_type is None:
-                raise ValueError("Shape type must be set when source is shape")
-            elif self.shape_duration is None:
-                raise ValueError("Shape duration must be set when source is shape")
-            elif self.shape_peak_time is None:
-                raise ValueError("Shape peak time must be set when source is shape")
-            elif self.shape_peak is None:
-                raise ValueError("Shape peak must be set when source is shape")
+        if self.source == SurgeSource.timeseries:
+            if self.timeseries is None:
+                raise ValueError(
+                    "Timeseries Model must be set when source is timeseries"
+                )
         return self
 
 
@@ -366,50 +278,56 @@ class TranslationModel(BaseModel):
     )
 
 
+class HurricaneModel(BaseModel):
+    track_name: str
+    hurricane_translation: TranslationModel
+
+
 class OverlandModel(BaseModel):
     """BaseModel describing the expected variables and data types for overland parameters of a model"""
 
     wind: WindModel
-    river: RiverModel
+    river: list[RiverDischargeModel]
     tide: TideModel
     surge: SurgeModel
     rainfall: Optional[RainfallModel]
+    hurricane: Optional[HurricaneModel]
 
 
 class OffShoreModel(BaseModel):
     wind: WindModel
     rainfall: RainfallModel
     tide: TideModel
-
-
-class HurricaneModel(BaseModel):
-    track_name: str
-    hurricane_translation: TranslationModel
+    hurricane: Optional[HurricaneModel]
 
 
 class EventModel(BaseModel):
     """BaseModel describing all variables and data types of attributes common to all event types"""
 
     # Every event
-    template: Template  # -> validate the optional models that a template requires
-    mode: Mode  # -> validate the optional models that a mode requires
-    timing: Timing  # -> validate the optional models that a timing requires
     name: str
-    description: Optional[str] = ""
+    mode: Mode  # single / risk
+    time: TimeModel  # -> time.timing = [historical, idealized]
 
     # Optional parameters used by all Event child classes
-    overland: Optional[OverlandModel] = None
-    offshore: Optional[OffShoreModel] = None
+    description: Optional[str] = None
+    overland: Optional[OverlandModel] = None  # What to do with hurricane?
+    offshore: Optional[OffShoreModel] = None  # What to do with hurricane?
 
-    # Optional parameters used by some Event child classes
-    time: Optional[TimeModel] = None
-    water_level_offset: Optional[UnitfulLength] = None  # validate positive?
-    wind: Optional[WindModel] = None
-    rainfall: Optional[RainfallModel] = None
-    river: Optional[list[RiverModel]] = None
-    tide: Optional[TideModel] = None
-    surge: Optional[SurgeModel] = None
-    hurricane: Optional[HurricaneModel] = None
+    water_level_offset: Optional[UnitfulLength] = (
+        None  # only synthetic, move to overland or offshore?
+    )
+
+    @model_validator(mode="after")
+    def validate_eventModel(self):
+        if self.mode == Mode.single_event:
+            if self.time is None:
+                raise ValueError("Time must be set when mode is single_event")
+            elif self.water_level_offset is None:
+                raise ValueError(
+                    "Water level offset must be set when mode is single_event"
+                )
+        return self
 
 
 # TODO investigate
@@ -446,77 +364,77 @@ class IEvent(ABC):
         ...
 
 
-#### SYNTHETIC ####
-class SyntheticEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
+# #### SYNTHETIC ####
+# class SyntheticEventModel(EventModel):
+#     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
 
-    template: Template = Template.synthetic
-    timing: Timing = Timing.idealized
+#     template: Template = Template.synthetic
+#     timing: Timing = Timing.idealized
 
-    @model_validator(mode="after")
-    def validate_syntheticEventModel(self):
-        if self.template != Template.synthetic:
-            raise ValueError("Template for a Synthetic event must be synthetic")
-        elif self.timing != Timing.idealized:
-            raise ValueError("Timing for a Synthetic event must be idealized")
-        return self
-
-
-#### HISTORICAL #### should be read-only
-class HistoricalEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of Historical that extend the parent class Event"""
-
-    template: Template = Template.historical
-    timing: Timing = Timing.historical
-
-    @model_validator(mode="after")
-    def validate_historicalEventModel(self):
-        if self.template != Template.historical:
-            raise ValueError("Template for a Historical event must be historical")
-        elif self.timing != Timing.historical:
-            raise ValueError("Historical events must have historical timing")
-        return self
+#     @model_validator(mode="after")
+#     def validate_syntheticEventModel(self):
+#         if self.template != Template.synthetic:
+#             raise ValueError("Template for a Synthetic event must be synthetic")
+#         elif self.timing != Timing.idealized:
+#             raise ValueError("Timing for a Synthetic event must be idealized")
+#         return self
 
 
-#### NEARSHORE ####
-class NearShoreEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of Nearshore that extend the parent class Event"""
+# #### HISTORICAL #### should be read-only
+# class HistoricalEventModel(EventModel):
+#     """BaseModel describing the expected variables and data types for parameters of Historical that extend the parent class Event"""
 
-    template: Template = Template.historical
+#     template: Template = Template.historical
+#     timing: Timing = Timing.historical
 
-    @model_validator(mode="after")
-    def validate_nearshoreEventModel(self):
-        if self.template != Template.historical:
-            raise ValueError("Template for a Nearshore event must be historical")
-        return self
-
-
-#### OFFSHORE ####
-class OffShoreEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of Offshore that extend the parent class Event"""
-
-    template: Template = Template.offshore
-
-    @model_validator(mode="after")
-    def validate_nearshoreEventModel(self):
-        if self.template != Template.offshore:
-            raise ValueError("Template for a Nearshore event must be offshore")
-        return self
+#     @model_validator(mode="after")
+#     def validate_historicalEventModel(self):
+#         if self.template != Template.historical:
+#             raise ValueError("Template for a Historical event must be historical")
+#         elif self.timing != Timing.historical:
+#             raise ValueError("Historical events must have historical timing")
+#         return self
 
 
-#### HURRICANE ####
-class HurricaneEventModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+# #### NEARSHORE ####
+# class NearShoreEventModel(EventModel):
+#     """BaseModel describing the expected variables and data types for parameters of Nearshore that extend the parent class Event"""
 
-    template: Template = Template.hurricane
-    timing: Timing = Timing.historical
-    hurricane_translation: TranslationModel
-    track_name: str
+#     template: Template = Template.historical
 
-    @model_validator(mode="after")
-    def validate_hurricaneEventModel(self):
-        if self.template != Template.hurricane:
-            raise ValueError("Template for a Hurricane event must be hurricane")
-        elif self.timing != Timing.historical:
-            raise ValueError("Hurricane events must have historical timing")
-        return self
+#     @model_validator(mode="after")
+#     def validate_nearshoreEventModel(self):
+#         if self.template != Template.historical:
+#             raise ValueError("Template for a Nearshore event must be historical")
+#         return self
+
+
+# #### OFFSHORE ####
+# class OffShoreEventModel(EventModel):
+#     """BaseModel describing the expected variables and data types for parameters of Offshore that extend the parent class Event"""
+
+#     template: Template = Template.offshore
+
+#     @model_validator(mode="after")
+#     def validate_nearshoreEventModel(self):
+#         if self.template != Template.offshore:
+#             raise ValueError("Template for a Nearshore event must be offshore")
+#         return self
+
+
+# #### HURRICANE ####
+# class HurricaneEventModel(EventModel):
+#     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+
+#     template: Template = Template.hurricane
+#     timing: Timing = Timing.historical
+#     hurricane_translation: TranslationModel
+#     track_name: str
+
+#     @model_validator(mode="after")
+#     def validate_hurricaneEventModel(self):
+#         if self.template != Template.hurricane:
+#             raise ValueError("Template for a Hurricane event must be hurricane")
+#         elif self.timing != Timing.historical:
+#             raise ValueError("Hurricane events must have historical timing")
+#         return self

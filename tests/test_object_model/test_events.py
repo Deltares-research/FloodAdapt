@@ -10,10 +10,11 @@ import tomli
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
+    Nearshore,
 )
-from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
+from flood_adapt.object_model.hazard.event.historical_offshore import Offshore
 from flood_adapt.object_model.interface.events import (
+    Defaults,
     Mode,
     RainfallModel,
     RiverModel,
@@ -153,7 +154,7 @@ def test_download_meteo(test_db):
         test_db.input_path / "events" / "kingTideNov2021" / "kingTideNov2021.toml"
     )
 
-    kingTide = HistoricalOffshore.load_file(event_toml)
+    kingTide = Offshore.load_file(event_toml)
 
     site_toml = test_db.static_path / "site" / "site.toml"
 
@@ -183,11 +184,13 @@ def test_download_wl_timeseries(test_db):
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
 
-    wl_df = HistoricalNearshore.download_wl_data(
+    wl_df = Nearshore.download_wl_data(
         station_id, start_time_str, stop_time_str, units="feet"
     )
 
-    assert wl_df.index[0] == datetime.strptime(start_time_str, Defaults._DATETIME_FORMAT)
+    assert wl_df.index[0] == datetime.strptime(
+        start_time_str, Defaults._DATETIME_FORMAT
+    )
     assert wl_df.iloc[:, 0].dtypes == "float64"
 
 
@@ -404,7 +407,9 @@ def test_constant_discharge(test_db):
     ]
     site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    event.add_river_discharge_ts(
+        event_dir=test_toml.parent, site_river=site.attrs.river
+    )
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     const_dis = event.attrs.river[0].constant_discharge.value
@@ -430,7 +435,9 @@ def test_gaussian_discharge(test_db):
     ]
     site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    event.add_river_discharge_ts(
+        event_dir=test_toml.parent, site_river=site.attrs.river
+    )
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     # event.dis_df.to_csv(
@@ -471,7 +478,9 @@ def test_block_discharge(test_db):
     ]
     site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    event.add_river_discharge_ts(
+        event_dir=test_toml.parent, site_river=site.attrs.river
+    )
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     # event.dis_df.to_csv(

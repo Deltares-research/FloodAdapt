@@ -3,6 +3,7 @@ import tempfile
 from itertools import product
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from flood_adapt.object_model.io.timeseries import (
@@ -25,7 +26,7 @@ class TestTimeseriesModel:
     def test_validate_peak_intensity(self):
         with pytest.raises(ValueError, match="Intensity cannot be negative"):
             TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(0, UnitTypesTime.hours),
                 end_time=UnitfulTime(1, UnitTypesTime.hours),
                 peak_intensity=UnitfulIntensity(-1, UnitTypesIntensity.mm_hr),
@@ -34,7 +35,7 @@ class TestTimeseriesModel:
     def test_validate_cumulative(self):
         with pytest.raises(ValueError, match="Length cannot be negative"):
             TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(0, UnitTypesTime.hours),
                 end_time=UnitfulTime(1, UnitTypesTime.hours),
                 cumulative=UnitfulLength(-1, UnitTypesLength.millimeters),
@@ -45,7 +46,7 @@ class TestTimeseriesModel:
             ValueError, match="Timeseries start time cannot be later than its end time"
         ):
             TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(1, UnitTypesTime.hours),
                 end_time=UnitfulTime(0, UnitTypesTime.hours),
             )
@@ -55,7 +56,7 @@ class TestTimeseriesModel:
             ValueError, match="Exactly one of peak_intensity or cumulative must be set"
         ):
             TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(0, UnitTypesTime.hours),
                 end_time=UnitfulTime(1, UnitTypesTime.hours),
                 peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
@@ -67,7 +68,7 @@ class TestTimeseriesModel:
             ValueError, match="Exactly one of peak_intensity or cumulative must be set"
         ):
             TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(0, UnitTypesTime.hours),
                 end_time=UnitfulTime(1, UnitTypesTime.hours),
             )
@@ -77,7 +78,7 @@ class TestTimeseries:
     def test_data_property(self):
         model = Timeseries()
         model.attrs = TimeseriesModel(
-            shape_type=ShapeType.block,
+            shape_type=ShapeType.constant,
             start_time=UnitfulTime(0, UnitTypesTime.hours),
             end_time=UnitfulTime(1, UnitTypesTime.hours),
             peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
@@ -87,7 +88,7 @@ class TestTimeseries:
     def test_calculate_data(self):
         model = Timeseries()
         model.attrs = TimeseriesModel(
-            shape_type=ShapeType.block,
+            shape_type=ShapeType.constant,
             start_time=UnitfulTime(0, UnitTypesTime.hours),
             end_time=UnitfulTime(1, UnitTypesTime.hours),
             peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
@@ -109,7 +110,7 @@ class TestTimeseries:
                 # Write to the file
                 tmp.write(
                     """
-                shape_type = "block"
+                shape_type = "constant"
                 start_time = { value = 0, units = "hours" }
                 end_time = { value = 1, units = "hours" }
                 peak_intensity = { value = 1, units = "mm/hr" }
@@ -121,7 +122,7 @@ class TestTimeseries:
             except Exception as e:
                 pytest.fail(str(e))
 
-            assert model.attrs.shape_type == ShapeType.block
+            assert model.attrs.shape_type == ShapeType.constant
             assert model.attrs.start_time == UnitfulTime(0, UnitTypesTime.hours)
             assert model.attrs.end_time == UnitfulTime(1, UnitTypesTime.hours)
             assert model.attrs.peak_intensity == UnitfulIntensity(
@@ -136,7 +137,7 @@ class TestTimeseries:
             ts = Timeseries()
             temp_path = "test.toml"
             ts.attrs = TimeseriesModel(
-                shape_type=ShapeType.block,
+                shape_type=ShapeType.constant,
                 start_time=UnitfulTime(0, UnitTypesTime.hours),
                 end_time=UnitfulTime(1, UnitTypesTime.hours),
                 peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
@@ -151,10 +152,43 @@ class TestTimeseries:
         finally:
             os.remove(temp_path)
 
+    def test_to_dataframe(self):
+        # Create a Timeseries object
+        ts = Timeseries().load_dict(
+            {
+                "shape_type": "constant",
+                "start_time": {"value": 0, "units": "hours"},
+                "end_time": {"value": 1, "units": "hours"},
+                "peak_intensity": {"value": 1, "units": "mm/hr"},
+            }
+        )
+
+        # Call the to_dataframe method
+        df = ts.to_dataframe(UnitfulTime(10, UnitTypesTime.seconds))
+
+        # Check that the DataFrame has the correct structure
+        assert isinstance(df, pd.DataFrame)
+        assert list(df.columns) == ["intensity", "time"]
+
+        # Check that the DataFrame has the correct content
+        expected_data = ts.calculate_data(
+            time_step=UnitfulTime(10, UnitTypesTime.seconds)
+        )
+        expected_time_range = pd.date_range(
+            start=pd.Timestamp("00:00:00"), periods=len(expected_data), freq="10S"
+        )
+        expected_df = pd.DataFrame(
+            {
+                "intensity": expected_data,
+                "time": expected_time_range,
+            }
+        )
+        pd.testing.assert_frame_equal(df, expected_df)
+
 
 class TestCompositeTimeseries:
     TIMESERIES_SHAPES = [
-        ShapeType.block,
+        ShapeType.constant,
         ShapeType.gaussian,
         ShapeType.triangle,
         ShapeType.scs,
@@ -274,7 +308,7 @@ class TestCompositeTimeseries:
     @pytest.mark.parametrize("timestep", TIME_STEP_VALUES)
     def test_timeseries_calculate_data_timesteps(self, timestep):
         dct = {
-            "shape_type": ShapeType.block,
+            "shape_type": ShapeType.constant,
             "start_time": UnitfulTime(0, UnitTypesTime.hours),
             "end_time": UnitfulTime(1, UnitTypesTime.hours),
             "peak_intensity": UnitfulIntensity(1, UnitTypesIntensity.inch_hr),

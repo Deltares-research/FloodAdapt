@@ -1,4 +1,5 @@
 import math
+from datetime import timedelta
 from enum import Enum
 
 from pydantic import BaseModel, field_validator
@@ -455,6 +456,17 @@ class UnitfulVolume(ValueUnitPair):
 class UnitfulTime(ValueUnitPair):
     value: float
     units: UnitTypesTime
+
+    def to_timedelta(self) -> timedelta:
+        """converts given time to datetime.deltatime object, relative to UnitfulTime(0, Any)
+
+        Returns
+        -------
+        datetime.timedelta
+            datetime.timedelta object
+        """
+        seconds = self.convert(UnitTypesTime.seconds).value
+        return timedelta(second=seconds)
 
     def convert(self, new_units: UnitTypesTime) -> "UnitfulTime":
         """converts given time to different units

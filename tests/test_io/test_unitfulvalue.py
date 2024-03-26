@@ -337,6 +337,7 @@ class TestValueUnitPair:
         vup1 = UnitfulLength(1, UnitTypesLength.meters)
         vup2 = UnitfulLength(value, unit)
         result = vup1 / vup2
+        assert isinstance(result, float)
         assert math.isclose(
             result, expected_value
         ), f"True division with unit conversion failed. Expected: {expected_value}, got: {result}"

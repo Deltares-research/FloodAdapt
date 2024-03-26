@@ -1,12 +1,19 @@
+import math
 import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Protocol, Union
 
 import numpy as np
+import pandas as pd
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.interface.events import ShapeType, TimeseriesModel
+from flood_adapt.object_model.interface.events import (
+    Constants,
+    ShapeType,
+    TimeseriesModel,
+)
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulTime,
@@ -24,24 +31,37 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(self, attrs: TimeseriesModel, timestep: UnitfulTime) -> np.ndarray:
         _shape_start = attrs.start_time.convert(UnitTypesTime.seconds).value
         _shape_end = attrs.end_time.convert(UnitTypesTime.seconds).value
-        _peak_intensity = attrs.peak_intensity.value
+        _duration = _shape_end - _shape_start
         _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _csv_path = attrs.csv_file_path
+        _scstype = attrs.scstype
 
-        tt = np.arange(
-            _shape_start,
-            _shape_end,
-            step=_timestep,
-        )
-        ts = np.piecewise(
+        tt = np.arange(0, _duration + 1, _timestep)
+
+        # rainfall
+        scs_df = pd.read_csv(_csv_path, index_col=0)
+        scstype_df = scs_df[_scstype]
+        tt_rain = _shape_start + scstype_df.index.to_numpy() * _duration
+        rain_series = scstype_df.to_numpy()
+        rain_instantaneous = np.diff(rain_series) / np.diff(
+            tt_rain / Constants._SECONDS_PER_HOUR
+        )  # divide by time in hours to get mm/hour
+
+        # interpolate instanetaneous rain intensity timeseries to tt
+        rain_interp = np.interp(
             tt,
-            [
-                tt < _shape_start,
-                (tt >= _shape_start) & (tt <= _shape_end),
-                tt > _shape_end,
-            ],
-            [0, _peak_intensity, 0],
+            tt_rain,
+            np.concatenate(([0], rain_instantaneous)),
+            left=0,
+            right=0,
         )
-        return ts
+
+        rainfall = (
+            rain_interp
+            * attrs.cumulative.value
+            / np.trapz(rain_interp, tt / Constants._SECONDS_PER_HOUR)
+        )
+        return rainfall
 
 
 class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
@@ -63,7 +83,7 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
         return ts
 
 
-class BlockTimeseriesCalculator(ITimeseriesCalculationStrategy):
+class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(self, attrs: TimeseriesModel, timestep: UnitfulTime) -> np.ndarray:
         _shape_start = attrs.start_time.convert(UnitTypesTime.seconds).value
         _shape_end = attrs.end_time.convert(UnitTypesTime.seconds).value
@@ -111,14 +131,44 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         return ts
 
 
+class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
+    def calculate(
+        self,
+        attrs: TimeseriesModel,
+        timestep: UnitfulTime,
+    ) -> np.ndarray:
+        _shape_start = attrs.start_time.convert(UnitTypesTime.seconds).value
+        _shape_end = attrs.end_time.convert(UnitTypesTime.seconds).value
+        _peak_intensity = attrs.peak_intensity.value
+        _timestep = timestep.convert(UnitTypesTime.seconds).value
+
+        tt = np.arange(
+            _shape_start,
+            _shape_end,
+            step=_timestep,
+        )
+        omega = 2 * math.pi / (Constants._TIDAL_PERIOD / Constants._HOURS_PER_DAY)
+        ts = _peak_intensity * np.cos(omega * tt / Constants._SECONDS_PER_DAY)
+
+        return ts
+
+
 class FileTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self,
         attrs: TimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        # TODO: implement file reading + interpolating to get the timeseries
-        raise NotImplementedError
+        """
+        Read a timeseries file and return a pd.Dataframe with the provided timestep by interpolating.
+        """
+        df = Timeseries.read_csv(attrs.filepath)
+        freq = int(timestep.convert(UnitTypesTime.seconds).value)
+        time_range = pd.date_range(
+            start=df.index.min(), end=df.index.max(), freq=f"{freq}S"
+        )
+        interpolated_df = df.reindex(time_range).interpolate(method="linear")
+        return interpolated_df
 
 
 class ITimeseries(ABC):
@@ -145,14 +195,26 @@ class ITimeseries(ABC):
         """save timeseries attributes to a toml file"""
         ...
 
+    @abstractmethod
+    def to_dataframe(self) -> pd.DataFrame:
+        """get timeseries data as a pandas dataframe with time as index and intensity as column"""
+        ...
+
+    @abstractmethod
+    def read_csv(self, filepath: Union[str, os.PathLike]) -> pd.DataFrame:
+        """read csv file and return a pandas dataframe with time as index and intensity as column"""
+        ...
+
 
 class Timeseries(ITimeseries):
     def __init__(self):
         self.calculation_strategies = {
             ShapeType.gaussian: GaussianTimeseriesCalculator(),
             ShapeType.scs: ScsTimeseriesCalculator(),
-            ShapeType.block: BlockTimeseriesCalculator(),
+            ShapeType.constant: ConstantTimeseriesCalculator(),
             ShapeType.triangle: TriangleTimeseriesCalculator(),
+            ShapeType.harmonic: HarmonicTimeseriesCalculator(),
+            ShapeType.csv_file: FileTimeseriesCalculator(),
         }
 
     @property
@@ -176,6 +238,7 @@ class Timeseries(ITimeseries):
             raise ValueError(f"Unsupported shape type: {self.attrs.shape_type}")
         return strategy.calculate(self.attrs, time_step)
 
+    @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
         """create timeseries from toml file"""
         obj = Timeseries()
@@ -195,37 +258,48 @@ class Timeseries(ITimeseries):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
+    @staticmethod
     def load_dict(data: dict[str, Any]):
         """create timeseries from object, e.g. when initialized from GUI"""
         obj = Timeseries()
         obj.attrs = TimeseriesModel.model_validate(data)
         return obj
 
-    # def plot(
-    #     self, time_unit: UnitTypesTime, intensity_unit: UnitTypesIntensity
-    # ) -> None:
-    #     _start_time = self.attrs.start_time.convert(UnitTypesTime.seconds)
-    #     _end_time = self.attrs.end_time.convert(UnitTypesTime.seconds)
+    def to_dataframe(self, timestep: UnitfulTime) -> pd.DataFrame:
+        """get timeseries data as a pandas dataframe with time as index and intensity as column"""
+        data = self.calculate_data(time_step=timestep)
+        df = pd.DataFrame(data, columns=["intensity"])
 
-    #     time_vector = np.arange((_end_time - _start_time).value)
-    #     time_conversion = UnitfulTime(1, UnitTypesTime.seconds).convert(time_unit)
+        # Create a time range
+        _time_step = int(timestep.convert(UnitTypesTime.seconds).value)
 
-    #     _time_vector = time_vector * time_conversion.value
+        time_range = pd.date_range(
+            start=pd.Timestamp("00:00:00"), periods=len(data), freq=f"{_time_step}S"
+        )  # TODO make flexible for user defined pd.Timestamps
 
-    #     intensity_conversion = (
-    #         UnitfulIntensity(1, self.attrs.peak_intensity.units)
-    #         .convert(intensity_unit)
-    #         .value
-    #     )
-    #     _timeseries = self.data * intensity_conversion
+        # Add the time range as a new column
+        df.index = time_range
+        df.index.name = "time"
+        return df
 
-    #     # Plot the event time vector with the overlayed timeseries
-    #     plt.plot(_time_vector, _timeseries)
-    #     plt.xlabel(f"Time ({time_unit.name})")
-    #     plt.ylabel(f"Intensity ({intensity_unit.name})")
-    #     plt.title(f"Event Timeseries Plot for shape: {self.attrs.shape_type}")
-    #     plt.grid(True)
-    #     plt.show()
+    @staticmethod
+    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
+        """Read a timeseries file and return a pd.Dataframe.
+
+        Parameters
+        ----------
+        csvpath : Union[str, os.PathLike]
+            path to csv file
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
+        df = pd.read_csv(csvpath, index_col=0, header=None)
+        df.index.names = ["time"]
+        df.index = pd.to_datetime(df.index)
+        return df
 
 
 class CompositeTimeseries:
