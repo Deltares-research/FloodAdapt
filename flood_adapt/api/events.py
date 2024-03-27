@@ -126,7 +126,9 @@ def copy_event(
 def download_wl_data(
     station_id, start_time, end_time, units: UnitTypesLength, file=None
 ) -> pd.DataFrame:
-    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time, units, file)
+    return HistoricalNearshore.download_wl_data(
+        station_id, start_time, end_time, units, file
+    )
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:

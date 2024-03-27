@@ -65,7 +65,11 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def download_wl_data(
-        station_id: int, start_time_str: str, stop_time_str: str, units: UnitTypesLength, file: Union[str, None]
+        station_id: int,
+        start_time_str: str,
+        stop_time_str: str,
+        units: UnitTypesLength,
+        file: Union[str, None],
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 

@@ -200,7 +200,7 @@ class Obs_stationModel(BaseModel):
     name: Union[int, str]
     description: Optional[str] = ""
     ID: int
-    file: Optional[str] = None # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
     mllw: Optional[UnitfulLength] = None
@@ -219,7 +219,7 @@ class Obs_pointModel(BaseModel):
     ID: Optional[int] = (
         None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
     )
-    file: Optional[str] = None # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
 
