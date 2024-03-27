@@ -70,8 +70,8 @@ class ShapeType(str, Enum):
 
 
 class WindSource(str, Enum):
-    none = "none"
     timeseries = "timeseries"
+    none = "none"
     track = "track"
     map = "map"
     constant = "constant"
@@ -94,9 +94,9 @@ class TimeseriesModel(BaseModel):
     peak_intensity: Optional[
         Union[UnitfulIntensity, UnitfulDischarge, UnitfulLength]
     ] = None
-    cumulative: Optional[Union[UnitfulLength, UnitfulVolume, UnitfulLength]] = None
+    cumulative: Optional[Union[UnitfulLength, UnitfulVolume]] = None
 
-    # Only required for ShapeType.scs
+    # Only required for ShapeType.scs or ShapeType.csv_file
     csv_file_path: Optional[Union[str, Path]] = None
     scstype: Optional[Scstype] = None
 
@@ -111,18 +111,15 @@ class TimeseriesModel(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def validate_timeseries_model(self):
+    def validate_timeseries_model_start_end_time(self):
         if self.start_time > self.end_time:
             raise ValueError(
                 f"Timeseries start time cannot be later than its end time: {self.start_time}, {self.end_time}"
             )
+        return self
 
-        if self.cumulative is not None and self.peak_intensity is not None:
-            raise ValueError("Exactly one of peak_intensity or cumulative must be set")
-
-        if self.cumulative is None and self.peak_intensity is None:
-            raise ValueError("Exactly one of peak_intensity or cumulative must be set")
-
+    @model_validator(mode="after")
+    def validate_timeseries_model_optional_variables(self):
         if self.shape_type == ShapeType.scs:
             if (
                 self.csv_file_path is None
@@ -133,6 +130,21 @@ class TimeseriesModel(BaseModel):
                     f"csvfile, scstype and cumulative must be provided for SCS timeseries: {self.csv_file_path}, {self.scstype}, {self.cumulative}"
                 )
 
+        elif self.shape_type == ShapeType.csv_file:
+            if self.csv_file_path is None:
+                raise ValueError("csvfile must be provided for csv_file timeseries")
+
+        else:
+            if self.cumulative is not None and self.peak_intensity is not None:
+                raise ValueError(
+                    "Exactly one of peak_intensity or cumulative must be set"
+                )
+
+            if self.cumulative is None and self.peak_intensity is None:
+                raise ValueError(
+                    "Exactly one of peak_intensity or cumulative must be set"
+                )
+
         return self
 
 
@@ -140,7 +152,7 @@ class WindModel(BaseModel):
     source: WindSource
     constant_speed: Optional[UnitfulVelocity] = None
     constant_direction: Optional[UnitfulDirection] = None
-    timeseries_file: Optional[str] = None
+    timeseries_file: Optional[Union[str, Path]] = None
 
     @model_validator(mode="after")
     def validate_windModel(self):
@@ -157,8 +169,10 @@ class WindModel(BaseModel):
         elif self.source == WindSource.constant:
             if self.constant_speed is None:
                 raise ValueError("Constant speed must be set when source is constant")
-            if self.constant_direction is None:
-                raise ValueError("Constant speed must be set when source is constant")
+            elif self.constant_direction is None:
+                raise ValueError(
+                    "Constant direction must be set when source is constant"
+                )
         return self
 
 
@@ -216,7 +230,6 @@ class TimeModel(BaseModel):
     @classmethod
     def validate_time_format(cls, value):
         try:
-            print(value, DefaultsStr._DATETIME_FORMAT.value)
             datetime.strptime(value, DefaultsStr._DATETIME_FORMAT.value)
         except ValueError:
             raise ValueError(
@@ -292,7 +305,7 @@ class TranslationModel(BaseModel):
     )
 
 
-class HurricaneModel(BaseModel):
+class HurricaneModel(BaseModel):  # TODO add validator?
     track_name: str
     hurricane_translation: TranslationModel
 
@@ -352,7 +365,7 @@ class EventSetModel(BaseModel):
     # TODO validate
     name: str
     mode: Mode
-    description: Optional[str] = ""
+    description: Optional[str] = None
     subevent_name: Optional[list[str]] = []
     frequency: Optional[list[float]] = []
 

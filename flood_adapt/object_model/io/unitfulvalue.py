@@ -178,7 +178,7 @@ class UnitfulLength(ValueUnitPair):
     value: float
     units: UnitTypesLength
 
-    def convert(self, new_units: UnitTypesLength) -> float:
+    def convert(self, new_units: UnitTypesLength) -> "UnitfulLength":
         """converts given length value different units
 
         Parameters
@@ -223,12 +223,12 @@ class UnitfulLength(ValueUnitPair):
             raise TypeError("Invalid length units")
         return UnitfulLength(conversion * new_conversion * self.value, new_units)
 
-    @field_validator("value")
-    @classmethod
-    def length_cannot_be_negative(cls, value: float):
-        if value < 0:
-            raise ValueError(f"Length cannot be negative: {value}")
-        return value
+    # @field_validator("value")
+    # @classmethod
+    # def length_cannot_be_negative(cls, value: float):
+    #     if value < 0:
+    #         raise ValueError(f"Length cannot be negative: {value}")
+    #     return value
 
 
 class UnitfulLengthRefValue(UnitfulLength):
@@ -239,7 +239,7 @@ class UnitfulArea(ValueUnitPair):
     value: float
     units: UnitTypesArea
 
-    def convert(self, new_units: UnitTypesArea) -> float:
+    def convert(self, new_units: UnitTypesArea) -> "UnitfulArea":
         """converts given length value different units
 
         Parameters
@@ -289,7 +289,7 @@ class UnitfulVelocity(ValueUnitPair):
     value: float
     units: UnitTypesVelocity
 
-    def convert(self, new_units: UnitTypesVelocity) -> float:
+    def convert(self, new_units: UnitTypesVelocity) -> "UnitfulVelocity":
         """converts given  velocity to different units
 
         Parameters
@@ -343,12 +343,17 @@ class UnitfulDirection(ValueUnitPair):
             )
         return value
 
+    def convert(self, new_units: UnitTypesDirection) -> "UnitfulDirection":
+        if new_units != UnitTypesDirection.degrees:
+            raise TypeError("Invalid direction units")
+        return self
+
 
 class UnitfulDischarge(ValueUnitPair):
     value: float
     units: UnitTypesDischarge
 
-    def convert(self, new_units: UnitTypesDischarge) -> float:
+    def convert(self, new_units: UnitTypesDischarge) -> "UnitfulDischarge":
         """converts given discharge to different units
 
         Parameters
@@ -420,7 +425,7 @@ class UnitfulVolume(ValueUnitPair):
     value: float
     units: UnitTypesVolume
 
-    def convert(self, new_units: UnitTypesVolume) -> float:
+    def convert(self, new_units: UnitTypesVolume) -> "UnitfulVolume":
         """converts given volume to different units
 
         Parameters
