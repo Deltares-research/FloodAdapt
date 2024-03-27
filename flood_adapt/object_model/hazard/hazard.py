@@ -813,8 +813,10 @@ class Hazard:
                     if isinstance(self.site.attrs.obs_point[ii].ID, int) or self.site.attrs.obs_point[ii].file is not None:
                         if self.site.attrs.obs_point[ii].file is not None:
                             file = self.database_input_path.parent.joinpath(
-                                "static", "tide_gauge", self.site.attrs.obs_point[ii].file
+                                "static", self.site.attrs.obs_point[ii].file
                             )
+                        else:
+                            file =None
                         df_gauge = HistoricalNearshore.download_wl_data(
                             station_id=self.site.attrs.obs_point[ii].ID,
                             start_time_str=self.event.attrs.time.start_time,
