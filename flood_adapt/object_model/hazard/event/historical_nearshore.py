@@ -65,7 +65,11 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def download_wl_data(
-        station_id: int, start_time_str: str, stop_time_str: str, units: UnitTypesLength
+        station_id: int,
+        start_time_str: str,
+        stop_time_str: str,
+        units: UnitTypesLength,
+        file: Union[str, None],
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
@@ -85,11 +89,17 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         """
         start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
         stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
-        # Get NOAA data
-        source = cht_station.source("noaa_coops")
-        df = source.get_data(station_id, start_time, stop_time)
-        df = pd.DataFrame(df)  # Convert series to dataframe
-        df = df.rename(columns={"v": 1})
+        if file is not None:
+            df_temp = HistoricalNearshore.read_csv(file)
+            startindex = df_temp.index.get_loc(start_time, method="nearest")
+            stopindex = df_temp.index.get_loc(stop_time, method="nearest")
+            df = df_temp.iloc[startindex:stopindex, :]
+        else:
+            # Get NOAA data
+            source = cht_station.source("noaa_coops")
+            df = source.get_data(station_id, start_time, stop_time)
+            df = pd.DataFrame(df)  # Convert series to dataframe
+            df = df.rename(columns={"v": 1})
         # convert to gui units
         metric_units = UnitfulLength(value=1.0, units=UnitTypesLength("meters"))
         conversion_factor = metric_units.convert(units)

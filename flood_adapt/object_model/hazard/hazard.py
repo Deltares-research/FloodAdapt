@@ -810,12 +810,22 @@ class Hazard:
                 if self.event.attrs.timing == "historical":
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
-                    if isinstance(self.site.attrs.obs_point[ii].ID, int):
+                    if (
+                        isinstance(self.site.attrs.obs_point[ii].ID, int)
+                        or self.site.attrs.obs_point[ii].file is not None
+                    ):
+                        if self.site.attrs.obs_point[ii].file is not None:
+                            file = self.database_input_path.parent.joinpath(
+                                "static", self.site.attrs.obs_point[ii].file
+                            )
+                        else:
+                            file = None
                         df_gauge = HistoricalNearshore.download_wl_data(
                             station_id=self.site.attrs.obs_point[ii].ID,
                             start_time_str=self.event.attrs.time.start_time,
                             stop_time_str=self.event.attrs.time.end_time,
                             units=UnitTypesLength(gui_units),
+                            file=file,
                         )
 
                         fig.add_trace(
