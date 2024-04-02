@@ -184,7 +184,7 @@ def test_download_wl_timeseries(test_db):
     stop_time_str = "20230102 000000"
 
     wl_df = HistoricalNearshore.download_wl_data(
-        station_id, start_time_str, stop_time_str, units="feet"
+        station_id, start_time_str, stop_time_str, units="feet", file=None
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
