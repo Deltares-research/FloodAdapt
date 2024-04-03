@@ -99,25 +99,32 @@ class DbsScenario(DbsTemplate):
 
         return scenarios
 
-    def delete(self, name: str):
-        """Deletes an already existing scenario and the results in the database.
+    def delete(self, name: str, toml_only: bool = False):
+        """Deletes an already existing scenario in the database.
 
         Parameters
         ----------
         name : str
             name of the scenario to be deleted
+        toml_only : bool, optional
+            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
+            it will always be deleted. By default False
+
+        Raises
+        ------
+        ValueError
+            Raise error if scenario to be deleted is already in use.
         """
 
         # First delete the scenario
-        super().delete(name)
+        super().delete(name, toml_only)
 
         # Then delete the results
-        if self._check_higher_level_usage(name):
-            results_path = (
-                self._database.input_path.parent / "output" / "Scenarios" / name
-            )
-            if results_path.exists():
-                shutil.rmtree(results_path, ignore_errors=False)
+        results_path = (
+            self._database.output_path / "Scenarios" / name
+        )
+        if results_path.exists():
+            shutil.rmtree(results_path, ignore_errors=False)
 
     def edit(self, scenario: IScenario):
         """Edits an already existing scenario in the database.
@@ -134,22 +141,17 @@ class DbsScenario(DbsTemplate):
         """
         # Check if it is possible to edit the scenario. This then also covers checking whether the
         # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        try:
-            super().edit(scenario)
-        except ValueError as e:
-            # If not, raise error
-            raise ValueError(e)
-        else:
-            # Delete output if edited
-            output_path = (
-                self._database.input_path.parent
-                / "output"
-                / "Scenarios"
-                / scenario.attrs.name
-            )
+        super().edit(scenario)
 
-            if output_path.exists():
-                shutil.rmtree(output_path, ignore_errors=True)
+        # Delete output if edited
+        output_path = (
+            self._database.output_path
+            / "Scenarios"
+            / scenario.attrs.name
+        )
+
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)
 
     def _check_higher_level_usage(self, name: str):
         """Checks if a scenario is used in a benefit.

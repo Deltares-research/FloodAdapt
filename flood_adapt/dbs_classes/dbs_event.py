@@ -7,6 +7,8 @@ from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.scenario import Scenario
 
+from pathlib import Path
+
 
 class DbsEvent(DbsTemplate):
     _type = "event"
@@ -26,7 +28,14 @@ class DbsEvent(DbsTemplate):
         IEvent
             event object
         """
+        # Get event path
         event_path = self._path / f"{name}" / f"{name}.toml"
+
+        # Check if the object exists
+        if not Path(event_path).is_file():
+            raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
+        
+        # Load event
         event_template = Event.get_template(event_path)
         event = EventFactory.get_event(event_template).load_file(event_path)
         return event

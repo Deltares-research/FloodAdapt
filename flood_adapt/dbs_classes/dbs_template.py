@@ -210,8 +210,8 @@ class DbsTemplate(AbstractDatabaseElement):
                 shutil.copy(file, dest / file.name)
 
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database. This only saves the toml file. If the object has a geometry, the geometry
-        file should be saved separately.
+        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file, 
+        this should be saved separately.
 
         Parameters
         ----------
@@ -219,27 +219,29 @@ class DbsTemplate(AbstractDatabaseElement):
             object to be saved in the database
         overwrite : OverwriteMode, optional
             whether to overwrite the object if it already exists in the 
-            database and if so, whether everything, only the toml or only 
-            the geojson should be overwritten, by default OverwriteMode.NO_OVERWRITE
+            database, by default False
 
         Raises
         ------
         ValueError
             Raise error if name is already in use.
         """
-        # If you want to overwrite the object, and the object already exists, first delete it
-        if overwrite and object_model.attrs.name in self.list_objects()["name"]:
-            self.delete(object_model.attrs.name, only_toml=True)
 
-        # If you don't want to overwrite, check if name is already in use
-        names = self.list_objects()["name"]
-        if not overwrite and object_model.attrs.name in names:
+        object_exists = object_model.attrs.name in self.list_objects()["name"]
+
+        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
+        # don't want to overwrite, raise an error.
+        if overwrite and object_exists:
+            self.delete(object_model.attrs.name, toml_only=True)
+        elif not overwrite and object_exists:
             raise ValueError(
                 f"'{object_model.attrs.name}' name is already used by another {self._type}. Choose a different name"
             )
 
-        # Make the folder and save the object
-        (self._path / object_model.attrs.name).mkdir()
+        # If the folder doesnt exist yet, make the folder and save the object
+        if not (self._path / object_model.attrs.name).exists():
+            (self._path / object_model.attrs.name).mkdir()
+
         object_model.save(
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
@@ -268,13 +270,16 @@ class DbsTemplate(AbstractDatabaseElement):
         # a higher level object or is locked. If any of these are the case, it cannot be deleted.
         self.save(object_model, overwrite=True)
 
-    def delete(self, name: str):
+    def delete(self, name: str, toml_only: bool = False):
         """Deletes an already existing object in the database.
 
         Parameters
         ----------
         name : str
             name of the object to be deleted
+        toml_only : bool, optional
+            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
+            it will always be deleted. By default False
 
         Raises
         ------
@@ -302,7 +307,17 @@ class DbsTemplate(AbstractDatabaseElement):
         
         # Once all checks are passed, delete the object
         path = self._path / name
-        shutil.rmtree(path, ignore_errors=True)
+        if toml_only:
+            # Only delete the toml file
+            toml_path = path / f"{name}.toml"
+            if toml_path.exists():
+                toml_path.unlink()
+            # If the folder is empty, delete the folder
+            if not list(path.iterdir()):
+                path.rmdir()
+        else:
+            # Delete the entire folder
+            shutil.rmtree(path, ignore_errors=True)
 
     def _check_standard_objects(self, name: str):
         """Checks if an object is a standard object.
@@ -316,7 +331,7 @@ class DbsTemplate(AbstractDatabaseElement):
         # By default, do nothing
         pass
 
-    def _check_higher_level_usage(self, name: str):
+    def _check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if an object is used in a higher level object.
 
         Parameters

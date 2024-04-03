@@ -25,30 +25,26 @@ class DbsBenefit(DbsTemplate):
         ValueError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
-        # If overwrite is True, delete existing benefit with same name
-        if overwrite:
-            self.delete(benefit.attrs.name)
-        
-        names = self.list_objects()["name"]
-        if benefit.attrs.name in names:
-            raise ValueError(
-                f"'{benefit.attrs.name}' name is already used by another benefit. Choose a different name"
-            )
-        elif not all(benefit.scenarios["scenario created"] != "No"):
+
+        # Check if all scenarios are created
+        if not all(benefit.scenarios["scenario created"] != "No"):
             raise ValueError(
                 f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
             )
-        else:
-            (self._path / benefit.attrs.name).mkdir()
-            benefit.save(self._path / benefit.attrs.name / f"{benefit.attrs.name}.toml")
+        
+        # Save the benefit
+        super().save(benefit, overwrite=overwrite)
 
-    def delete(self, name: str):
+    def delete(self, name: str, toml_only: bool = False):
         """Deletes an already existing benefit in the database.
 
         Parameters
         ----------
         name : str
             name of the benefit
+        toml_only : bool, optional
+            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
+            it will always be deleted. By default False
 
         Raises
         ------
@@ -56,23 +52,15 @@ class DbsBenefit(DbsTemplate):
             Raise error if benefit has already model output
         """
 
-        # Check if it is possible to delete the benefit. This then also covers checking whether the
-        # benefit is locked. If this is the case, it cannot be deleted.
-        if self.is_locked(name=name):
-            raise ValueError(
-                f"'{name}' {self._type} is locked by another process and cannot be deleted."
-            )
-        
-        # Delete benefit
-        benefit_path = self._path / name
-        benefit = Benefit.load_file(benefit_path / f"{name}.toml")
-        shutil.rmtree(benefit_path, ignore_errors=True)
+        # First delete the benefit
+        super().delete(name, toml_only=toml_only)
+
         # Delete output if edited
         output_path = (
             self._database.input_path.parent
             / "output"
             / "Benefits"
-            / benefit.attrs.name
+            / name
         )
 
         if output_path.exists():

@@ -123,14 +123,16 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database.
+        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file, 
+        this should be saved separately.
 
         Parameters
         ----------
         object_model : ObjectModel
             object to be saved in the database
-        overwrite : bool, optional
-            whether to overwrite the object if it already exists in the database, by default False
+        overwrite : OverwriteMode, optional
+            whether to overwrite the object if it already exists in the 
+            database, by default False
 
         Raises
         ------
@@ -156,13 +158,16 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def delete(self, name: str):
+    def delete(self, name: str, toml_only: bool = False):
         """Deletes an already existing object in the database.
 
         Parameters
         ----------
         name : str
             name of the object to be deleted
+        toml_only : bool, optional
+            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
+            it will always be deleted. By default False
 
         Raises
         ------
