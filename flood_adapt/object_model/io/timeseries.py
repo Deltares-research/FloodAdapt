@@ -1,16 +1,20 @@
 import math
 import os
 from abc import ABC, abstractmethod
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol, Union
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import tomli
 import tomli_w
 
 from flood_adapt.object_model.interface.events import (
-    Constants,
+    DEFAULT_DATETIME_FORMAT,
     ShapeType,
     TimeseriesModel,
 )
@@ -20,6 +24,14 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesIntensity,
     UnitTypesTime,
 )
+
+
+# move to toml file
+class Constants(Enum):
+    _TIDAL_PERIOD = 12.4
+    _HOURS_PER_DAY = 24
+    _SECONDS_PER_DAY = 86400
+    _SECONDS_PER_HOUR = 3600
 
 
 class ITimeseriesCalculationStrategy(Protocol):
@@ -73,7 +85,7 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end,
+            _shape_end + _timestep,
             step=_timestep,
         )
         mean = (_shape_start + _shape_end) / 2
@@ -92,7 +104,7 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end,
+            _shape_end + _timestep,
             step=_timestep,
         )
         ts = np.where((tt > _shape_start) & (tt < _shape_end), _peak_intensity, 0)
@@ -112,7 +124,7 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end,
+            _shape_end + _timestep,
             step=_timestep,
         )
         peak_time = (_shape_start + _shape_end) / 2
@@ -144,11 +156,15 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end,
+            _shape_end + _timestep,
             step=_timestep,
         )
-        omega = 2 * math.pi / (Constants._TIDAL_PERIOD / Constants._HOURS_PER_DAY)
-        ts = _peak_intensity * np.cos(omega * tt / Constants._SECONDS_PER_DAY)
+        omega = (
+            2
+            * math.pi
+            / (Constants._TIDAL_PERIOD.value / Constants._HOURS_PER_DAY.value)
+        )
+        ts = _peak_intensity * np.cos(omega * tt / Constants._SECONDS_PER_DAY.value)
 
         return ts
 
@@ -162,10 +178,10 @@ class FileTimeseriesCalculator(ITimeseriesCalculationStrategy):
         """
         Read a timeseries file and return a pd.Dataframe with the provided timestep by interpolating.
         """
-        df = Timeseries.read_csv(attrs.filepath)
+        df = Timeseries.read_csv(attrs.csv_file_path)
         freq = int(timestep.convert(UnitTypesTime.seconds).value)
         time_range = pd.date_range(
-            start=df.index.min(), end=df.index.max(), freq=f"{freq}S"
+            start=df.index.min(), end=df.index.max(), freq=f"{freq}S", inclusive="both"
         )
         interpolated_df = df.reindex(time_range).interpolate(method="linear")
         return interpolated_df
@@ -265,22 +281,36 @@ class Timeseries(ITimeseries):
         obj.attrs = TimeseriesModel.model_validate(data)
         return obj
 
-    def to_dataframe(self, timestep: UnitfulTime) -> pd.DataFrame:
+    def to_dataframe(
+        self,
+        start_time: Union[datetime, str],
+        end_time: Union[datetime, str],
+        time_step: UnitfulTime,
+    ) -> pd.DataFrame:
         """get timeseries data as a pandas dataframe with time as index and intensity as column"""
-        data = self.calculate_data(time_step=timestep)
-        df = pd.DataFrame(data, columns=["intensity"])
+        if isinstance(start_time, str):
+            start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
+        if isinstance(end_time, str):
+            end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
+        _time_step = int(time_step.convert(UnitTypesTime.seconds).value)
 
-        # Create a time range
-        _time_step = int(timestep.convert(UnitTypesTime.seconds).value)
+        full_df_time_range = pd.date_range(
+            start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="both"
+        )
+        full_df = pd.DataFrame(index=full_df_time_range)
+        full_df.index.name = "time"
 
-        time_range = pd.date_range(
-            start=pd.Timestamp("00:00:00"), periods=len(data), freq=f"{_time_step}S"
-        )  # TODO make flexible for user defined pd.Timestamps
+        data = self.calculate_data(time_step=time_step)
+        _time_range = pd.date_range(
+            start=(start_time + self.attrs.start_time.to_timedelta()),
+            end=(start_time + self.attrs.end_time.to_timedelta()),
+            inclusive="both",
+            freq=f"{_time_step}S",
+        )
+        df = pd.DataFrame(data, columns=["intensity"], index=_time_range)
 
-        # Add the time range as a new column
-        df.index = time_range
-        df.index.name = "time"
-        return df
+        full_df = df.reindex(full_df.index, method="nearest", limit=1, fill_value=0)
+        return full_df
 
     @staticmethod
     def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
@@ -376,26 +406,51 @@ class CompositeTimeseries:
         self.data = new_timeseries
         return self
 
-    def plot(self) -> None:
-        import matplotlib.pyplot as plt
+    @staticmethod
+    def plot(
+        df, xmin: pd.Timestamp, xmax: pd.Timestamp, intensity_units: UnitTypesIntensity
+    ) -> go.Figure:
+        fig = px.line(data_frame=df)
 
-        _start_time = self.start_time.convert(UnitTypesTime.seconds)
-        _end_time = self.end_time.convert(UnitTypesTime.seconds)
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
-        time_vector = np.arange((_end_time - _start_time).value)
-
-        time_conversion = UnitfulTime(1, UnitTypesTime.seconds).convert(self.time_unit)
-        intensity_conversion = UnitfulIntensity(1, UnitTypesIntensity.mm_hr).convert(
-            self.intensity_unit
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={"text": f"Rainfall intensity [{intensity_units}]"},
+            showlegend=False,
+            xaxis={"range": [xmin, xmax]},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
         )
+        return fig
+        # import matplotlib.pyplot as plt
 
-        _time_vector = time_vector * time_conversion.value
-        _timeseries = self.data * intensity_conversion.value
+        # _start_time = self.start_time.convert(UnitTypesTime.seconds)
+        # _end_time = self.end_time.convert(UnitTypesTime.seconds)
 
-        # Plot the event time vector with the overlayed timeseries
-        plt.plot(_time_vector, _timeseries)
-        plt.xlabel(f"Time ({self.time_unit.name})")
-        plt.ylabel(f"Intensity ({self.intensity_unit.name})")
-        plt.title("Event Timeseries Plot")
-        plt.grid(True)
-        plt.show()
+        # time_vector = np.arange((_end_time - _start_time).value)
+
+        # time_conversion = UnitfulTime(1, UnitTypesTime.seconds).convert(self.time_unit)
+        # intensity_conversion = UnitfulIntensity(1, UnitTypesIntensity.mm_hr).convert(
+        #     self.intensity_unit
+        # )
+
+        # _time_vector = time_vector * time_conversion.value
+        # _timeseries = self.data * intensity_conversion.value
+
+        # # Plot the event time vector with the overlayed timeseries
+        # plt.plot(_time_vector, _timeseries)
+        # plt.xlabel(f"Time ({self.time_unit.name})")
+        # plt.ylabel(f"Intensity ({self.intensity_unit.name})")
+        # plt.title("Event Timeseries Plot")
+        # plt.grid(True)
+        # plt.show()

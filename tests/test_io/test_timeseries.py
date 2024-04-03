@@ -25,7 +25,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 class TestTimeseriesModel:
     @staticmethod
-    def get_model(shape_type: ShapeType):
+    def get_test_model(shape_type: ShapeType):
         _TIMESERIES_MODEL_SIMPLE = {
             "shape_type": ShapeType.constant.value,
             "start_time": {"value": 0, "units": UnitTypesTime.hours},
@@ -70,7 +70,7 @@ class TestTimeseriesModel:
     )
     def test_TimeseriesModel_valid_input_simple_shapetypes(self, shape_type):
         # Arange
-        model = self.get_model(shape_type)
+        model = self.get_test_model(shape_type)
 
         # Act
         timeseries_model = TimeseriesModel.model_validate(model)
@@ -87,7 +87,7 @@ class TestTimeseriesModel:
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
-        model = self.get_model(ShapeType.scs)
+        model = self.get_test_model(ShapeType.scs)
         model["csv_file_path"] = Path(temp_file)
 
         # Act
@@ -107,7 +107,7 @@ class TestTimeseriesModel:
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
-        model = self.get_model(ShapeType.csv_file)
+        model = self.get_test_model(ShapeType.csv_file)
         model["csv_file_path"] = Path(temp_file)
 
         # Act
@@ -121,7 +121,7 @@ class TestTimeseriesModel:
 
     def test_TimeseriesModel_invalid_input_shapetype_csvfile_not_provided(self):
         # Arange
-        model = self.get_model(ShapeType.csv_file)
+        model = self.get_test_model(ShapeType.csv_file)
         model.pop("csv_file_path")
 
         # Act
@@ -138,7 +138,7 @@ class TestTimeseriesModel:
 
     def test_TimeseriesModel_invalid_input_csvfile_wrong_suffix(self):
         # Arange
-        model = self.get_model(ShapeType.csv_file)
+        model = self.get_test_model(ShapeType.csv_file)
         model["csv_file_path"] = "test.txt"
 
         # Act
@@ -154,7 +154,7 @@ class TestTimeseriesModel:
 
     def test_TimeseriesModel_invalid_input_csvfile_does_not_exist(self):
         # Arange
-        model = self.get_model(ShapeType.csv_file)
+        model = self.get_test_model(ShapeType.csv_file)
 
         # Act
         with pytest.raises(ValidationError) as e:
@@ -172,7 +172,7 @@ class TestTimeseriesModel:
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
-        model = self.get_model(ShapeType.scs)
+        model = self.get_test_model(ShapeType.scs)
         model["csv_file_path"] = Path(temp_file)
         model.pop(to_remove)
 
@@ -201,7 +201,7 @@ class TestTimeseriesModel:
         self, shape_type
     ):
         # Arange
-        model = self.get_model(shape_type)
+        model = self.get_test_model(shape_type)
         model["peak_intensity"] = {"value": 1, "units": UnitTypesIntensity.mm_hr}
         model["cumulative"] = {"value": 1, "units": UnitTypesLength.millimeters}
 
@@ -230,7 +230,7 @@ class TestTimeseriesModel:
         self, shape_type
     ):
         # Arange
-        model = self.get_model(shape_type)
+        model = self.get_test_model(shape_type)
         model.pop("peak_intensity")
         if "cumulative" in model:
             model.pop("cumulative")
@@ -251,7 +251,7 @@ class TestTimeseriesModel:
         self,
     ):
         # Arange
-        model = self.get_model(ShapeType.constant)
+        model = self.get_test_model(ShapeType.constant)
         model["start_time"]["value"] = 1
         model["end_time"]["value"] = 0
 

@@ -1,10 +1,10 @@
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.interface.events import (
-    DefaultsStr,
     EventModel,
     HurricaneModel,
     Mode,
@@ -19,7 +19,6 @@ from flood_adapt.object_model.interface.events import (
     TideSource,
     TimeModel,
     TimeseriesModel,
-    Timing,
     TranslationModel,
     WindModel,
     WindSource,
@@ -43,7 +42,7 @@ from tests.test_io.test_timeseries import TestTimeseriesModel
 
 class TestWindModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         # Arange
         _WIND_MODEL = {
             "source": WindSource.constant.value,
@@ -51,7 +50,7 @@ class TestWindModel:
             "constant_direction": {"value": 90, "units": UnitTypesDirection.degrees},
             "timeseries_file": "data.csv",
         }
-        return _WIND_MODEL.copy()
+        return deepcopy(_WIND_MODEL)
 
     @pytest.mark.skip("WindSource.map not implemented")
     def test_validate_WindModel_valid_input_WindSource_map(self):
@@ -65,7 +64,7 @@ class TestWindModel:
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
-        model = self.get_model()
+        model = self.get_test_model()
         model["timeseries_file"] = Path(temp_file)
 
         # Act
@@ -82,7 +81,7 @@ class TestWindModel:
 
     def test_validate_WindModel_valid_input_WindSource_constant(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("timeseries_file")
 
         # Act
@@ -98,7 +97,7 @@ class TestWindModel:
 
     def test_validate_windModel_timeseries_file_not_set(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["source"] = WindSource.timeseries.value
         model.pop("timeseries_file")
 
@@ -116,7 +115,7 @@ class TestWindModel:
 
     def test_validate_windModel_timeseries_file_not_csv(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["source"] = WindSource.timeseries.value
         model["timeseries_file"] = "data.txt"
 
@@ -133,7 +132,7 @@ class TestWindModel:
 
     def test_validate_windModel_timeseries_file_not_exists(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["source"] = WindSource.timeseries.value
 
         # Act
@@ -149,7 +148,7 @@ class TestWindModel:
 
     def test_validate_windModel_constant_speed_not_set(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["source"] = WindSource.constant.value
         model.pop("constant_speed")
 
@@ -167,7 +166,7 @@ class TestWindModel:
 
     def test_validate_windModel_constant_direction_not_set(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["source"] = WindSource.constant.value
         model.pop("constant_direction")
 
@@ -186,7 +185,7 @@ class TestWindModel:
 
 class TestRainfallModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         # Arange
         _RAINFALL_MODEL = {
             "source": RainfallSource.timeseries.value,
@@ -207,11 +206,11 @@ class TestRainfallModel:
                 },
             },
         }
-        return _RAINFALL_MODEL.copy()
+        return deepcopy(_RAINFALL_MODEL)
 
     def test_validate_RainfallModel_valid_input_RainfallSource_timeseries(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         rainfall_model = RainfallModel.model_validate(model)
@@ -246,7 +245,7 @@ class TestRainfallModel:
 
     def test_validate_RainfallModel_invalid_input_increase_cannot_be_negative(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["increase"] = -10
 
         # Act
@@ -262,7 +261,7 @@ class TestRainfallModel:
         self,
     ):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("timeseries")
 
         # Act
@@ -280,7 +279,7 @@ class TestRainfallModel:
 
 class TestRiverDischargeModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _RIVER_DISCHARGE_MODEL = {
             "base_discharge": {
                 "value": 10,
@@ -302,11 +301,11 @@ class TestRiverDischargeModel:
                 },
             },
         }
-        return _RIVER_DISCHARGE_MODEL.copy()
+        return deepcopy(_RIVER_DISCHARGE_MODEL)
 
     def test_validate_RiverDischargeModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         river_model = RiverDischargeModel.model_validate(model)
@@ -324,7 +323,7 @@ class TestRiverDischargeModel:
 
     def test_validate_RiverDischargeModel_valid_input_no_base_discharge(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("base_discharge")
 
         # Act
@@ -342,41 +341,42 @@ class TestRiverDischargeModel:
 
 class TestTimeModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _TIME_MODEL = {
-            "timing": Timing.idealized.value,
-            "duration_before_t0": {
-                "value": 10,
-                "units": UnitTypesTime.hours,
-            },
-            "duration_after_t0": {
-                "value": 10,
-                "units": UnitTypesTime.hours,
-            },
+            # "timing": Timing.idealized.value,
+            # "duration_before_t0": {
+            #     "value": 10,
+            #     "units": UnitTypesTime.hours,
+            # },
+            # "duration_after_t0": {
+            #     "value": 10,
+            #     "units": UnitTypesTime.hours,
+            # },
             "start_time": "2020-01-01 00:00:00",
             "end_time": "2020-01-03 00:00:00",
         }
-        return _TIME_MODEL.copy()
+        return deepcopy(_TIME_MODEL)
 
     def test_validate_TimeModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         time_model = TimeModel.model_validate(model)
 
         # Assert
-        assert time_model.timing == Timing.idealized
-        assert time_model.duration_before_t0 == UnitfulTime(10, UnitTypesTime.hours)
-        assert time_model.duration_after_t0 == UnitfulTime(10, UnitTypesTime.hours)
+        # assert time_model.timing == Timing.idealized
+        # assert time_model.duration_before_t0 == UnitfulTime(10, UnitTypesTime.hours)
+        # assert time_model.duration_after_t0 == UnitfulTime(10, UnitTypesTime.hours)
         assert time_model.start_time == "2020-01-01 00:00:00"
         assert time_model.end_time == "2020-01-03 00:00:00"
 
+    @pytest.mark.skip("currently testing refactor of this feature")
     def test_validate_TimeModel_invalid_input_duration_before_t0_cannot_be_negative(
         self,
     ):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["duration_before_t0"]["value"] = -10
 
         # Act
@@ -390,11 +390,12 @@ class TestTimeModel:
             errors[0]["ctx"]["error"].args[0] == "Duration before T0 must be positive"
         )
 
+    @pytest.mark.skip("currently testing refactor of this feature")
     def test_validate_TimeModel_invalid_input_duration_after_t0_cannot_be_negative(
         self,
     ):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["duration_after_t0"]["value"] = -10
 
         # Act
@@ -409,7 +410,7 @@ class TestTimeModel:
     def test_validate_TimeModel_invalid_input_end_time_before_start_time(
         self,
     ):  # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model["start_time"] = "2020-01-03 00:00:00"
         model["end_time"] = "2020-01-01 00:00:00"
 
@@ -424,8 +425,8 @@ class TestTimeModel:
 
     def test_validate_TimeModel_incorrect_time_format(self):
         # Arange
-        model = self.get_model()
-        incorrect_format = "2020-01-01 00:00"
+        model = self.get_test_model()
+        incorrect_format = "2020/01/01 00:00:00"
         model["start_time"] = incorrect_format
 
         # Act
@@ -437,22 +438,22 @@ class TestTimeModel:
         assert len(errors) == 1
         assert (
             errors[0]["ctx"]["error"].args[0]
-            == f"Time must be in format {DefaultsStr._DATETIME_FORMAT.value}. Got {incorrect_format}"
+            == f"Time must be in format {DEFAULT_DATETIME_FORMAT}. Got {incorrect_format}"
         )
 
 
 class TestTideModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _TIDE_MODEL = {
             "source": TideSource.timeseries.value,
-            "timeseries": TestTimeseriesModel.get_model(ShapeType.constant),
+            "timeseries": TestTimeseriesModel.get_test_model(ShapeType.constant),
         }
-        return _TIDE_MODEL.copy()
+        return deepcopy(_TIDE_MODEL)
 
     def test_validate_TideModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         tide_model = TideModel.model_validate(model)
@@ -460,14 +461,14 @@ class TestTideModel:
         # Assert
         assert tide_model.source == TideSource.timeseries
         assert tide_model.timeseries == TimeseriesModel.model_validate(
-            TestTimeseriesModel.get_model(ShapeType.constant)
+            TestTimeseriesModel.get_test_model(ShapeType.constant)
         )
 
     def test_validate_TideModel_invalid_input_timeseries_must_be_set_when_source_is_timeseries(
         self,
     ):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("timeseries")
 
         # Act
@@ -489,16 +490,16 @@ class TestTideModel:
 
 class TestSurgeModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _SURGE_MODEL = {
             "source": TideSource.timeseries.value,
-            "timeseries": TestTimeseriesModel.get_model(ShapeType.harmonic),
+            "timeseries": TestTimeseriesModel.get_test_model(ShapeType.harmonic),
         }
-        return _SURGE_MODEL.copy()
+        return deepcopy(_SURGE_MODEL)
 
     def test_validate_SurgeModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         surge_model = TideModel.model_validate(model)
@@ -506,14 +507,14 @@ class TestSurgeModel:
         # Assert
         assert surge_model.source == TideSource.timeseries
         assert surge_model.timeseries == TimeseriesModel.model_validate(
-            TestTimeseriesModel.get_model(ShapeType.harmonic)
+            TestTimeseriesModel.get_test_model(ShapeType.harmonic)
         )
 
     def test_validate_SurgeModel_invalid_input_timeseries_must_be_set_when_source_is_timeseries(
         self,
     ):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("timeseries")
 
         # Act
@@ -535,16 +536,16 @@ class TestSurgeModel:
 
 class TestTranslationModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _TRANSLATION_MODEL = {
             "eastwest_translation": {"value": 5, "units": UnitTypesLength.miles},
             "northsouth_translation": {"value": 15, "units": UnitTypesLength.miles},
         }
-        return _TRANSLATION_MODEL.copy()
+        return deepcopy(_TRANSLATION_MODEL)
 
     def test_validate_TranslationModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         translation_model = TranslationModel.model_validate(model)
@@ -575,17 +576,17 @@ class TestTranslationModel:
 
 class TestHurricaneModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         # Arange
         _HURRICANE_MODEL = {
             "track_name": "test_track",
-            "hurricane_translation": TestTranslationModel.get_model(),
+            "hurricane_translation": TestTranslationModel.get_test_model(),
         }
-        return _HURRICANE_MODEL.copy()
+        return deepcopy(_HURRICANE_MODEL)
 
     def test_validate_HurricaneModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         hurricane_model = HurricaneModel.model_validate(model)
@@ -593,52 +594,56 @@ class TestHurricaneModel:
         # Assert
         assert hurricane_model.track_name == "test_track"
         assert hurricane_model.hurricane_translation == TranslationModel.model_validate(
-            TestTranslationModel.get_model()
+            TestTranslationModel.get_test_model()
         )
 
 
 class TestOverlandModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _OVERLAND_MODEL = {
-            "wind": TestWindModel.get_model(),
+            "wind": TestWindModel.get_test_model(),
             "river": [
-                TestRiverDischargeModel.get_model(),
-                TestRiverDischargeModel.get_model(),
+                TestRiverDischargeModel.get_test_model(),
+                TestRiverDischargeModel.get_test_model(),
             ],
-            "tide": TestTideModel.get_model(),
-            "surge": TestSurgeModel.get_model(),
-            "rainfall": TestRainfallModel.get_model(),
-            "hurricane": TestHurricaneModel.get_model(),
+            "tide": TestTideModel.get_test_model(),
+            "surge": TestSurgeModel.get_test_model(),
+            "rainfall": TestRainfallModel.get_test_model(),
+            "hurricane": TestHurricaneModel.get_test_model(),
         }
-        return _OVERLAND_MODEL.copy()
+        return deepcopy(_OVERLAND_MODEL)
 
     def test_validate_OverlandModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         overland_model = OverlandModel.model_validate(model)
 
         # Assert
         assert overland_model.wind == WindModel.model_validate(
-            TestWindModel.get_model()
+            TestWindModel.get_test_model()
         )
         assert overland_model.river == [
-            RiverDischargeModel.model_validate(TestRiverDischargeModel.get_model()),
-            RiverDischargeModel.model_validate(TestRiverDischargeModel.get_model()),
+            RiverDischargeModel.model_validate(
+                TestRiverDischargeModel.get_test_model()
+            ),
+            RiverDischargeModel.model_validate(
+                TestRiverDischargeModel.get_test_model()
+            ),
         ]
         assert overland_model.tide == TideModel.model_validate(
-            TestTideModel.get_model()
+            TestTideModel.get_test_model()
         )
         assert overland_model.surge == SurgeModel.model_validate(
-            TestSurgeModel.get_model()
+            TestSurgeModel.get_test_model()
         )
         assert overland_model.rainfall == RainfallModel.model_validate(
-            TestRainfallModel.get_model()
+            TestRainfallModel.get_test_model()
         )
         assert overland_model.hurricane == HurricaneModel.model_validate(
-            TestHurricaneModel.get_model()
+            TestHurricaneModel.get_test_model()
         )
 
     def test_validate_OverlandModel_valid_input_all_is_optional(self):
@@ -659,34 +664,34 @@ class TestOverlandModel:
 
 class TestOffShoreModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _OFFSHORE_MODEL = {
-            "wind": TestWindModel.get_model(),
-            "tide": TestTideModel.get_model(),
-            "rainfall": TestRainfallModel.get_model(),
-            "hurricane": TestHurricaneModel.get_model(),
+            "wind": TestWindModel.get_test_model(),
+            "tide": TestTideModel.get_test_model(),
+            "rainfall": TestRainfallModel.get_test_model(),
+            "hurricane": TestHurricaneModel.get_test_model(),
         }
-        return _OFFSHORE_MODEL.copy()
+        return deepcopy(_OFFSHORE_MODEL)
 
     def test_validate_OffShoreModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         offshore_model = OffShoreModel.model_validate(model)
 
         # Assert
         assert offshore_model.wind == WindModel.model_validate(
-            TestWindModel.get_model()
+            TestWindModel.get_test_model()
         )
         assert offshore_model.tide == TideModel.model_validate(
-            TestTideModel.get_model()
+            TestTideModel.get_test_model()
         )
         assert offshore_model.rainfall == RainfallModel.model_validate(
-            TestRainfallModel.get_model()
+            TestRainfallModel.get_test_model()
         )
         assert offshore_model.hurricane == HurricaneModel.model_validate(
-            TestHurricaneModel.get_model()
+            TestHurricaneModel.get_test_model()
         )
 
     def test_validate_OverlandModel_valid_input_all_is_optional(self):
@@ -705,21 +710,21 @@ class TestOffShoreModel:
 
 class TestEventModel:
     @staticmethod
-    def get_model():
+    def get_test_model():
         _EVENT_MODEL = {
             "name": "test_event",
             "mode": "single_event",
             "description": "test_description",
-            "time": TestTimeModel.get_model(),
-            "overland": TestOverlandModel.get_model(),
-            "offshore": TestOffShoreModel.get_model(),
+            "time": TestTimeModel.get_test_model(),
+            "overland": TestOverlandModel.get_test_model(),
+            "offshore": TestOffShoreModel.get_test_model(),
             "water_level_offset": {"value": 2, "units": UnitTypesLength.meters},
         }
-        return _EVENT_MODEL.copy()
+        return deepcopy(_EVENT_MODEL)
 
     def test_validate_EventModel_valid_input(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
 
         # Act
         event_model = EventModel.model_validate(model)
@@ -728,13 +733,15 @@ class TestEventModel:
         assert event_model.name == "test_event"
         assert event_model.description == "test_description"
         assert event_model.mode == Mode.single_event
-        assert event_model.time == TimeModel.model_validate(TestTimeModel.get_model())
+        assert event_model.time == TimeModel.model_validate(
+            TestTimeModel.get_test_model()
+        )
 
         assert event_model.overland == OverlandModel.model_validate(
-            TestOverlandModel.get_model()
+            TestOverlandModel.get_test_model()
         )
         assert event_model.offshore == OffShoreModel.model_validate(
-            TestOffShoreModel.get_model()
+            TestOffShoreModel.get_test_model()
         )
         assert event_model.water_level_offset == UnitfulLength(
             2, UnitTypesLength.meters
@@ -742,7 +749,7 @@ class TestEventModel:
 
     def test_validate_EventModel_valid_input_all_optional(self):
         # Arange
-        model = self.get_model()
+        model = self.get_test_model()
         model.pop("description")
         model.pop("overland")
         model.pop("offshore")
@@ -754,7 +761,9 @@ class TestEventModel:
         # Assert
         assert event_model.name == "test_event"
         assert event_model.mode == Mode.single_event
-        assert event_model.time == TimeModel.model_validate(TestTimeModel.get_model())
+        assert event_model.time == TimeModel.model_validate(
+            TestTimeModel.get_test_model()
+        )
 
         assert event_model.description is None
         assert event_model.overland is None

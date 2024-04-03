@@ -468,7 +468,7 @@ class UnitfulTime(ValueUnitPair):
         Returns
         -------
         datetime.timedelta
-            datetime.timedelta object
+            datetime.timedelta object with representation: (days, seconds, microseconds)
         """
         seconds = self.convert(UnitTypesTime.seconds).value
         return timedelta(seconds=seconds)
@@ -483,8 +483,8 @@ class UnitfulTime(ValueUnitPair):
 
         Returns
         -------
-        float
-            converted value
+        UnitfulTime
+            converted value + units
         """
         conversion_factors = {
             UnitTypesTime.days: {

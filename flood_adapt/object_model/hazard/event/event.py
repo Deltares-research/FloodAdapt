@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, Union
 
+import cht_observations.observation_stations as cht_station
 import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
@@ -17,8 +18,8 @@ from cht_meteo.meteo import (
 from pyproj import CRS
 
 from flood_adapt.object_model.interface.events import (
-    DefaultsInt,
-    DefaultsStr,
+    DEFAULT_DATETIME_FORMAT,
+    DEFAULT_TIMESTEP,
     EventModel,
     IEvent,
     Mode,
@@ -28,13 +29,16 @@ from flood_adapt.object_model.interface.events import (
 )
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.timeseries import Timeseries
-from flood_adapt.object_model.io.unitfulvalue import UnitfulTime, UnitTypesTime
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitfulTime,
+    UnitTypesLength,
+)
 
 
 class Event(IEvent):
     """
-    Base event class for all event types that contains the common attributes and methods for all events.
-    This class should not be used directly, but only through its subclasses.
+    Base event class for all event types that contains pydantic models that are validated containing all the attributes, and also all methods for events.
     """
 
     @staticmethod
@@ -99,16 +103,13 @@ class Event(IEvent):
         )
 
         # Download and collect data
-        t0 = datetime.strptime(self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT)
-        t1 = datetime.strptime(self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT)
+        t0 = datetime.strptime(self.attrs.time.start_time, DEFAULT_DATETIME_FORMAT)
+        t1 = datetime.strptime(self.attrs.time.end_time, DEFAULT_DATETIME_FORMAT)
         time_range = [t0, t1]
 
         gfs_conus.download(time_range)
 
-        # Create an empty list to hold the datasets
         datasets = []
-
-        # Loop over each file and create a new dataset with a time coordinate
         for filename in sorted(glob.glob(str(path.joinpath("*.nc")))):
             # Open the file as an xarray dataset
             ds = xr.open_dataset(filename)
@@ -116,7 +117,7 @@ class Event(IEvent):
             # Extract the timestring from the filename and convert to pandas datetime format
             time_str = filename.split(".")[-2]
             time = pd.to_datetime(
-                time_str, format=DefaultsStr._DATETIME_FORMAT.replace(" ", "_")
+                time_str, format=DEFAULT_DATETIME_FORMAT.replace(" ", "_")
             )
 
             # Add the time coordinate to the dataset
@@ -135,7 +136,7 @@ class Event(IEvent):
         self,
         event_dir: Path,
         site_river: list[RiverDischargeModel],
-        time_step: UnitfulTime = DefaultsInt._TIMESTEP.value,
+        time_step: UnitfulTime = DEFAULT_TIMESTEP,
         input_river_df_list: Optional[list[pd.DataFrame]] = None,
     ):
         """Creates pd.Dataframe timeseries for river discharge and stores all created timeseries in self.dis_df.
@@ -148,9 +149,7 @@ class Event(IEvent):
 
         # Create empty list for results
         list_df = []
-        tstart = datetime.strptime(
-            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
-        )
+        tstart = datetime.strptime(self.attrs.time.start_time, DEFAULT_DATETIME_FORMAT)
 
         for ii, rivermodel in enumerate(site_river):
             attr_dict = {
@@ -186,9 +185,16 @@ class Event(IEvent):
             self.dis_df = None
         return self
 
-    def add_rainfall_ts(self, time_step: UnitfulTime = DefaultsInt._TIMESTEP.value):
+    def compute_rainfall_ts(
+        self, time_step: UnitfulTime = DEFAULT_TIMESTEP
+    ) -> pd.DataFrame:
         """
-        Add timeseries to event for constant or shape-type rainfall.
+        Compute timeseries of the event generated from the combination of:
+        1.  Timing Model:
+            determines the total duration of the event and has default values of 0 for the whole duration of the event
+        2.  Timeseries model:
+            determines the timeframe (start & end) of the rainfall timeseries within the event, and the intensity of the rainfall
+
 
         Parameters
         ----------
@@ -197,46 +203,26 @@ class Event(IEvent):
 
         Returns
         -------
-        self
-            Updated Event object with rainfall timeseries added in pd.DataFrame format
+            Rainfall timeseries added in pd.DataFrame format with time as index and intensity as first column.
         """
-        tstart = datetime.strptime(
-            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
+        event_start = datetime.strptime(
+            self.attrs.time.start_time, DEFAULT_DATETIME_FORMAT
         )
+        event_end = datetime.strptime(self.attrs.time.end_time, DEFAULT_DATETIME_FORMAT)
+
         rainfall_model = self.attrs.overland.rainfall
-
         if rainfall_model.source == RainfallSource.timeseries:
-            attr_dict = {
-                "shape_type": rainfall_model.timeseries.shape_type,
-                "start_time": UnitfulTime(
-                    (
-                        tstart + rainfall_model.timeseries.start_time.to_timedelta()
-                    ).timestamp(),
-                    UnitTypesTime.seconds,
-                ),
-                "end_time": UnitfulTime(
-                    (
-                        tstart + rainfall_model.timeseries.end_time.to_timedelta()
-                    ).timestamp(),
-                    UnitTypesTime.seconds,
-                ),
-                "peak_intensity": rainfall_model.timeseries.peak_intensity,
-                "cumulative": rainfall_model.timeseries.cumulative,
-                "csv_file_path": rainfall_model.timeseries.csv_file_path,
-                "scstype": rainfall_model.timeseries.scstype,
-            }
-
-            rainfall_df = (
-                Timeseries.load_dict(attr_dict)
-                .to_dataframe(time_step)
-                .round(decimals=2)
+            event_rainfall_df = Timeseries.load_dict(
+                rainfall_model.timeseries
+            ).to_dataframe(
+                start_time=event_start, end_time=event_end, time_step=time_step
             )
         else:  # track, map, none
             raise ValueError(f"Unsupported rainfall source: {rainfall_model.source}.")
-        self.rain_ts = rainfall_df
-        return self
 
-    def add_overland_wind_ts(self, time_step: float = DefaultsInt._TIMESTEP.value):
+        return event_rainfall_df
+
+    def add_overland_wind_ts(self, time_step: float = DEFAULT_TIMESTEP):
         """Adds constant wind or timeseries from overlandModel to event object.
 
         Parameters
@@ -249,12 +235,8 @@ class Event(IEvent):
         self
             Updated object with wind timeseries added in pd.DataFrame format
         """
-        tstart = datetime.strptime(
-            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
-        )
-        tstop = datetime.strptime(
-            self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT
-        )
+        tstart = datetime.strptime(self.attrs.time.start_time, DEFAULT_DATETIME_FORMAT)
+        tstop = datetime.strptime(self.attrs.time.end_time, DEFAULT_DATETIME_FORMAT)
         duration = (tstop - tstart).total_seconds()
         time_vec = pd.date_range(
             tstart, periods=duration / time_step + 1, freq=f"{time_step}S"
@@ -284,7 +266,7 @@ class Event(IEvent):
         self.overland_wind_ts = df
         return self
 
-    def add_offshore_wind_ts(self, time_step: float = DefaultsInt._TIMESTEP.value):
+    def add_offshore_wind_ts(self, time_step: float = DEFAULT_TIMESTEP):
         """Adds constant wind or timeseries from the OffshoreModel to event object.
 
         Parameters
@@ -297,12 +279,8 @@ class Event(IEvent):
         self
             Updated object with wind timeseries added in pd.DataFrame format
         """
-        tstart = datetime.strptime(
-            self.attrs.time.start_time, DefaultsStr._DATETIME_FORMAT
-        )
-        tstop = datetime.strptime(
-            self.attrs.time.end_time, DefaultsStr._DATETIME_FORMAT
-        )
+        tstart = datetime.strptime(self.attrs.time.start_time, DEFAULT_DATETIME_FORMAT)
+        tstop = datetime.strptime(self.attrs.time.end_time, DEFAULT_DATETIME_FORMAT)
         duration = (tstop - tstart).total_seconds()
         time_step = int(time_step)
         time_vec = pd.date_range(
@@ -341,3 +319,36 @@ class Event(IEvent):
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
         attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
         return attrs_1 == attrs_2
+
+    @staticmethod
+    def download_wl_data(
+        station_id: int, start_time_str: str, stop_time_str: str, units: UnitTypesLength
+    ) -> pd.DataFrame:
+        """Download waterlevel data from NOAA station using station_id, start and stop time.
+
+        Parameters
+        ----------
+        station_id : int
+            NOAA observation station ID.
+        start_time_str : str
+            Start time of timeseries in the form of: "YYYMMDD HHMMSS"
+        stop_time_str : str
+            End time of timeseries in the form of: "YYYMMDD HHMMSS"
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and waterlevel as first column.
+        """
+        start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
+        stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
+        # Get NOAA data
+        source = cht_station.source("noaa_coops")
+        df = source.get_data(station_id, start_time, stop_time)
+        df = pd.DataFrame(df)  # Convert series to dataframe
+        df = df.rename(columns={"v": 1})
+        # convert to gui units
+        metric_units = UnitfulLength(value=1.0, units=UnitTypesLength.meters)
+        conversion_factor = metric_units.convert(units)
+        df = conversion_factor * df
+        return df

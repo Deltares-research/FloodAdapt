@@ -79,11 +79,24 @@ class TestUnitfulTime:
         TEST_TIME_CONVERSIONS,
     )
     def test_UnitFullTime_convert(
-        initial_value, initial_unit, expected_value, target_unit
+        self, initial_value, initial_unit, expected_value, target_unit
     ):
         _perform_conversion_test(
             UnitfulTime, initial_value, initial_unit, expected_value, target_unit
         )
+
+    @pytest.mark.parametrize(
+        "input_value, input_unit, expected_value",
+        [
+            (4, UnitTypesTime.days, 4 * 24 * 60 * 60),
+            (10, UnitTypesTime.hours, 10 * 60 * 60),
+            (5, UnitTypesTime.minutes, 5 * 60),
+            (600, UnitTypesTime.seconds, 600),
+        ],
+    )
+    def test_UnitfulTime_to_timedelta(self, input_value, input_unit, expected_value):
+        time = UnitfulTime(input_value, input_unit)
+        assert time.to_timedelta().total_seconds() == expected_value
 
 
 class TestUnitfulIntensity:
@@ -103,13 +116,13 @@ class TestUnitfulIntensity:
         TEST_INTENSITY_CONVERSIONS,
     )
     def test_UnitFullIntensity_convert(
-        initial_value, initial_unit, expected_value, target_unit
+        self, initial_value, initial_unit, expected_value, target_unit
     ):
         _perform_conversion_test(
             UnitfulIntensity, initial_value, initial_unit, expected_value, target_unit
         )
 
-    def test_UnitFullIntensity_validator():
+    def test_UnitFullIntensity_validator(self):
         with pytest.raises(ValueError):
             UnitfulIntensity(-1.0, UnitTypesIntensity.inch_hr)
 
@@ -153,7 +166,7 @@ class TestUnitfulLength:
         TEST_LENGTH_CONVERSIONS,
     )
     def test_UnitFullLength_convert(
-        initial_value, initial_unit, expected_value, target_unit
+        self, initial_value, initial_unit, expected_value, target_unit
     ):
         _perform_conversion_test(
             UnitfulLength, initial_value, initial_unit, expected_value, target_unit
