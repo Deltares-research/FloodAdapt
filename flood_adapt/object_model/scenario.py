@@ -28,9 +28,6 @@ class Scenario(IScenario):
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Scenarios", self.attrs.name
         )
-        self.logging_path = Path(self.database_input_path).parent.joinpath(
-            "output", "Logging", self.attrs.name
-        )
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
             database_input_path=Path(self.database_input_path),
@@ -70,9 +67,8 @@ class Scenario(IScenario):
         os.makedirs(self.results_path, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
-        os.makedirs(self.logging_path, exist_ok=True)
         self.initiate_root_logger(
-            self.logging_path.joinpath(f"logfile_{self.attrs.name}.log")
+            self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
         )
         version = "0.1.0"
         logging.info(f"FloodAdapt version {version}")
