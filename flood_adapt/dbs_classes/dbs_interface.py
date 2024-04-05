@@ -30,7 +30,7 @@ class AbstractDatabaseElement(ABC):
         Returns
         -------
         ObjectModel
-            object of the type of the spedified object model
+            object of the type of the specified object model
         """
         pass
 
