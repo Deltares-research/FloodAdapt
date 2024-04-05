@@ -15,12 +15,10 @@ class ScenarioModel(BaseModel):
     projection: str
     strategy: str
 
-    @validator("lock_count")	
-    def validate_lock_count(
-        cls, lock_count: int
-    ) -> int:
-        """Validate lock_count"""	
-        if lock_count < 0:    
+    @validator("lock_count")
+    def validate_lock_count(cls, lock_count: int) -> int:
+        """Validate lock_count"""
+        if lock_count < 0:
             raise ValueError("lock_count must be a positive integer")
         return lock_count
 

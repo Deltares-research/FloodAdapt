@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
@@ -14,7 +15,6 @@ from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -70,7 +70,7 @@ class Database(IDatabase):
             "templates", self.site.attrs.sfincs.overland_model
         )
         self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self.site)
-        
+
         # Initialize the different database objects
         self._events = DbsEvent(self)
         self._scenarios = DbsScenario(self)
@@ -83,25 +83,25 @@ class Database(IDatabase):
     @property
     def events(self) -> DbsEvent:
         return self._events
-    
+
     @property
     def scenarios(self) -> DbsScenario:
         return self._scenarios
-    
+
     @property
     def strategies(self) -> DbsStrategy:
         return self._strategies
-    
+
     @property
     def measures(self) -> DbsMeasure:
         return self._measures
-    
+
     @property
     def projections(self) -> DbsProjection:
         return self._projections
-    
+
     @property
-    def benefits(self) -> DbsBenefit:   
+    def benefits(self) -> DbsBenefit:
         return self._benefits
 
     # General methods

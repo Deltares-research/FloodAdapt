@@ -1,8 +1,7 @@
 import shutil
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from typing import Any, Union
+from typing import Union
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -14,7 +13,6 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
 ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
-
 
 
 class DbsTemplate(AbstractDatabaseElement):
@@ -55,9 +53,9 @@ class DbsTemplate(AbstractDatabaseElement):
         return object_model
 
     def set_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
-        """Locks the element in the database to prevent other processes from accessing it. The object can be locked by 
-        providing either the model_object or the name. If both are provided, the model_object is used. An element can 
-        be locked multiple times. For example, if 2 scenario's are running that use the same event, it should be locked 
+        """Locks the element in the database to prevent other processes from accessing it. The object can be locked by
+        providing either the model_object or the name. If both are provided, the model_object is used. An element can
+        be locked multiple times. For example, if 2 scenario's are running that use the same event, it should be locked
         twice. The lock is only released when both scenario's are finished.
 
         Parameters
@@ -115,7 +113,7 @@ class DbsTemplate(AbstractDatabaseElement):
             raise ValueError(
                 f"'{model_object.attrs.name}' {self._type} is not locked and thus cannot be released."
             )
-        
+
         # Release the lock and save the object
         model_object.attrs.lock_count -= 1
         self.save(model_object, overwrite=True)
@@ -210,7 +208,7 @@ class DbsTemplate(AbstractDatabaseElement):
                 shutil.copy(file, dest / file.name)
 
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file, 
+        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
@@ -218,7 +216,7 @@ class DbsTemplate(AbstractDatabaseElement):
         object_model : ObjectModel
             object to be saved in the database
         overwrite : OverwriteMode, optional
-            whether to overwrite the object if it already exists in the 
+            whether to overwrite the object if it already exists in the
             database, by default False
 
         Raises
@@ -304,7 +302,7 @@ class DbsTemplate(AbstractDatabaseElement):
             raise ValueError(
                 f"'{name}' measure cannot be deleted since it is already used in: {', '.join(used_in)}"
             )
-        
+
         # Once all checks are passed, delete the object
         path = self._path / name
         if toml_only:

@@ -50,9 +50,9 @@ class DbsScenario(DbsTemplate):
             Raise error if both model_object and name are None.
         """
         super().set_lock(model_object, name)
-        DbsStrategy.set_lock(self, name = model_object.attrs.strategy)
-        DbsProjection.set_lock(self, name = model_object.attrs.projection)
-        DbsEvent.set_lock(self, name = model_object.attrs.event)
+        DbsStrategy.set_lock(self, name=model_object.attrs.strategy)
+        DbsProjection.set_lock(self, name=model_object.attrs.projection)
+        DbsEvent.set_lock(self, name=model_object.attrs.event)
 
     def release_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
         """Releases the lock on the element in the database. The object can be unlocked by providing either the
@@ -74,10 +74,9 @@ class DbsScenario(DbsTemplate):
             Raise error if both model_object and name are None.
         """
         super().release_lock(model_object, name)
-        DbsStrategy.release_lock(self, name = model_object.attrs.strategy)
-        DbsProjection.release_lock(self, name = model_object.attrs.projection)
-        DbsEvent.release_lock(self, name = model_object.attrs.event)
-        
+        DbsStrategy.release_lock(self, name=model_object.attrs.strategy)
+        DbsProjection.release_lock(self, name=model_object.attrs.projection)
+        DbsEvent.release_lock(self, name=model_object.attrs.event)
 
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the events that currently
@@ -120,9 +119,7 @@ class DbsScenario(DbsTemplate):
         super().delete(name, toml_only)
 
         # Then delete the results
-        results_path = (
-            self._database.output_path / "Scenarios" / name
-        )
+        results_path = self._database.output_path / "Scenarios" / name
         if results_path.exists():
             shutil.rmtree(results_path, ignore_errors=False)
 
@@ -144,11 +141,7 @@ class DbsScenario(DbsTemplate):
         super().edit(scenario)
 
         # Delete output if edited
-        output_path = (
-            self._database.output_path
-            / "Scenarios"
-            / scenario.attrs.name
-        )
+        output_path = self._database.output_path / "Scenarios" / scenario.attrs.name
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
@@ -176,9 +169,7 @@ class DbsScenario(DbsTemplate):
         used_in_benefit = [
             benefit.attrs.name
             for benefit in benefits
-            for scenario in benefit.check_scenarios()[
-                "scenario created"
-            ].to_list()
+            for scenario in benefit.check_scenarios()["scenario created"].to_list()
             if name == scenario
         ]
 

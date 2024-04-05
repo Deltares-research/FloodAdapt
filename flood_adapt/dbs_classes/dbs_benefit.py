@@ -31,7 +31,7 @@ class DbsBenefit(DbsTemplate):
             raise ValueError(
                 f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
             )
-        
+
         # Save the benefit
         super().save(benefit, overwrite=overwrite)
 
@@ -56,12 +56,7 @@ class DbsBenefit(DbsTemplate):
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = (
-            self._database.input_path.parent
-            / "output"
-            / "Benefits"
-            / name
-        )
+        output_path = self._database.input_path.parent / "output" / "Benefits" / name
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)

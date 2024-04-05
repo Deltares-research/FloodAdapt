@@ -20,7 +20,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def get(self, name: str) -> ObjectModel:
-        """ Returns the object of the type of the database with the given name.
+        """Returns the object of the type of the database with the given name.
 
         Parameters
         ----------
@@ -45,7 +45,7 @@ class AbstractDatabaseElement(ABC):
             The model_object to lock, by default None
         name : str, optional
             The name of the model_object to lock, by default None
-        
+
         Raises
         ------
         ValueError
@@ -102,7 +102,7 @@ class AbstractDatabaseElement(ABC):
         Returns
         -------
         dict[str, Any]
-            Includes 'name', 'description', 'path' and 'last_modification_date' info, as well as the objects themselves	
+            Includes 'name', 'description', 'path' and 'last_modification_date' info, as well as the objects themselves
         """
         pass
 
@@ -123,7 +123,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file, 
+        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
@@ -131,7 +131,7 @@ class AbstractDatabaseElement(ABC):
         object_model : ObjectModel
             object to be saved in the database
         overwrite : OverwriteMode, optional
-            whether to overwrite the object if it already exists in the 
+            whether to overwrite the object if it already exists in the
             database, by default False
 
         Raises

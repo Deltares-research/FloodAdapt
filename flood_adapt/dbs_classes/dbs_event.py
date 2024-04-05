@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
@@ -6,8 +7,6 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.scenario import Scenario
-
-from pathlib import Path
 
 
 class DbsEvent(DbsTemplate):
@@ -34,7 +33,7 @@ class DbsEvent(DbsTemplate):
         # Check if the object exists
         if not Path(event_path).is_file():
             raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
-        
+
         # Load event
         event_template = Event.get_template(event_path)
         event = EventFactory.get_event(event_template).load_file(event_path)
