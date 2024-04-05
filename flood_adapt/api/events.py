@@ -6,20 +6,9 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_controller import IDatabase
-
-# from flood_adapt.object_model.hazard.event import IHurricane
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    Nearshore,
-)
 from flood_adapt.object_model.interface.events import (
     IEvent,
-    # IHistoricalOffshore,
-    # IHurricane,
-    # INearshore,
-    # ISynthetic,
-    Template,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
@@ -38,68 +27,8 @@ def get_event_mode(name: str, database: IDatabase) -> str:
     return Event.get_mode(filename)
 
 
-def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
-    """Create a synthetic event object from a dictionary of attributes
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    Synthetic
-        Synthetic event object
-    """
-    return EventFactory.get_event(Template.SYNTHETIC).load_dict(attrs)
-
-
-def create_historical_nearshore_event(attrs: dict[str, Any]) -> INearshore:
-    """Create a historical nearshore event object from a dictionary of attributes
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    Nearshore
-        Historical nearshore event object
-    """
-    return EventFactory.get_event("Historical_nearshore").load_dict(attrs)
-
-
-def create_historical_offshore_event(attrs: dict[str, Any]) -> IOffshore:
-    """Create a historical offshore event object from a dictionary of attributes
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    Nearshore
-        Historical offshore event object
-    """
-    return EventFactory.get_event("Historical_offshore").load_dict(attrs)
-
-
-def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHurricane:
-    """Create a historical hurricane event object from a dictionary of attributes
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    HistoricalHurricane
-        Historical hurricane event object
-    """
-    return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
+def create_event(attrs: dict[str, Any], database: IDatabase) -> IEvent:
+    return Event.load_dict(attrs, database.input_path)
 
 
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
@@ -129,7 +58,7 @@ def copy_event(
 def download_wl_data(
     station_id, start_time, end_time, units: UnitTypesLength
 ) -> pd.DataFrame:
-    return Nearshore.download_wl_data(station_id, start_time, end_time, units)
+    return Event.download_wl_data(station_id, start_time, end_time, units)
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:

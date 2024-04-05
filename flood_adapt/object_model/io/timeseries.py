@@ -2,7 +2,6 @@ import math
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol, Union
 
@@ -25,13 +24,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesTime,
 )
 
-
-# move to toml file
-class Constants(Enum):
-    _TIDAL_PERIOD = 12.4
-    _HOURS_PER_DAY = 24
-    _SECONDS_PER_DAY = 86400
-    _SECONDS_PER_HOUR = 3600
+TIDAL_PERIOD = UnitfulTime(12.4, UnitTypesTime.hours)
 
 
 class ITimeseriesCalculationStrategy(Protocol):
@@ -56,7 +49,8 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
         tt_rain = _shape_start + scstype_df.index.to_numpy() * _duration
         rain_series = scstype_df.to_numpy()
         rain_instantaneous = np.diff(rain_series) / np.diff(
-            tt_rain / Constants._SECONDS_PER_HOUR
+            tt_rain
+            / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds).value
         )  # divide by time in hours to get mm/hour
 
         # interpolate instanetaneous rain intensity timeseries to tt
@@ -71,7 +65,13 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
         rainfall = (
             rain_interp
             * attrs.cumulative.value
-            / np.trapz(rain_interp, tt / Constants._SECONDS_PER_HOUR)
+            / np.trapz(
+                rain_interp,
+                tt
+                / UnitfulTime(1, UnitTypesTime.hours)
+                .convert(UnitTypesTime.seconds)
+                .value,
+            )
         )
         return rainfall
 
@@ -159,12 +159,12 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
             _shape_end + _timestep,
             step=_timestep,
         )
-        omega = (
-            2
-            * math.pi
-            / (Constants._TIDAL_PERIOD.value / Constants._HOURS_PER_DAY.value)
+        omega = 2 * math.pi / (TIDAL_PERIOD / UnitfulTime(1, UnitTypesTime.days))
+        ts = _peak_intensity * np.cos(
+            omega
+            * tt
+            / UnitfulTime(1, UnitTypesTime.days).convert(UnitTypesTime.seconds).value
         )
-        ts = _peak_intensity * np.cos(omega * tt / Constants._SECONDS_PER_DAY.value)
 
         return ts
 
@@ -330,6 +330,33 @@ class Timeseries(ITimeseries):
         df.index.names = ["time"]
         df.index = pd.to_datetime(df.index)
         return df
+
+    @staticmethod
+    def plot(
+        df, xmin: pd.Timestamp, xmax: pd.Timestamp, intensity_units: UnitTypesIntensity
+    ) -> go.Figure:
+        fig = px.line(data_frame=df)
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={"text": f"Rainfall intensity [{intensity_units}]"},
+            showlegend=False,
+            xaxis={"range": [xmin, xmax]},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+        return fig
 
 
 class CompositeTimeseries:

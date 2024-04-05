@@ -18,18 +18,20 @@ import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent
+from flood_adapt.object_model.interface.events import IEvent, RainfallSource, WindSource
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
+from flood_adapt.object_model.io.timeseries import Timeseries
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
+    UnitTypesLength,
+)
 from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.scenario import Scenario
@@ -309,148 +311,55 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
-        if (
-            event["template"] == "Synthetic"
-            or event["template"] == "Historical_nearshore"
-        ):
-            gui_units = self.site.attrs.gui.default_length_units
-            if event["template"] == "Synthetic":
-                temp_event = Synthetic.load_dict(event)
-                temp_event.add_tide_and_surge_ts()
-                wl_df = temp_event.tide_surge_ts
-                wl_df.index = np.arange(
-                    -temp_event.attrs.time.duration_before_t0,
-                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                    1 / 6,
+    def plot_wl(self, event: Event, input_wl_df: pd.DataFrame = None) -> str:
+        gui_units = self.site.attrs.gui.default_length_units
+        wl_df = input_wl_df or event.add_tide_and_surge_ts().tide_surge_ts
+        xlim1 = pd.to_datetime(event.attrs.time.start_time)
+        xlim2 = pd.to_datetime(event.attrs.time.end_time)
+
+        # Plot actual thing
+        fig = Timeseries.plot(
+            wl_df + self.site.attrs.water_level.msl.height.convert(gui_units).value,
+            xlim1,
+            xlim2,
+            self.site.attrs.gui.default_length_units,
+        )
+
+        # plot reference water levels
+        fig.add_hline(
+            y=self.site.attrs.water_level.msl.height.convert(gui_units).value,
+            line_dash="dash",
+            line_color="#000000",
+            annotation_text="MSL",
+            annotation_position="bottom right",
+        )
+
+        # plot other water reference levels
+        if self.site.attrs.water_level.other is not None:
+            for wl_ref in self.site.attrs.water_level.other:
+                fig.add_hline(
+                    y=wl_ref.height.convert(gui_units).value,
+                    line_dash="dash",
+                    line_color="#3ec97c",
+                    annotation_text=wl_ref.name,
+                    annotation_position="bottom right",
                 )
-                xlim1 = -temp_event.attrs.time.duration_before_t0
-                xlim2 = temp_event.attrs.time.duration_after_t0
-            elif event["template"] == "Historical_nearshore":
-                wl_df = input_wl_df
-                xlim1 = pd.to_datetime(event["time"]["start_time"])
-                xlim2 = pd.to_datetime(event["time"]["end_time"])
 
-            # Plot actual thing
-            fig = px.line(
-                wl_df + self.site.attrs.water_level.msl.height.convert(gui_units)
-            )
-
-            # plot reference water levels
-            fig.add_hline(
-                y=self.site.attrs.water_level.msl.height.convert(gui_units),
-                line_dash="dash",
-                line_color="#000000",
-                annotation_text="MSL",
-                annotation_position="bottom right",
-            )
-            if self.site.attrs.water_level.other:
-                for wl_ref in self.site.attrs.water_level.other:
-                    fig.add_hline(
-                        y=wl_ref.height.convert(gui_units),
-                        line_dash="dash",
-                        line_color="#3ec97c",
-                        annotation_text=wl_ref.name,
-                        annotation_position="bottom right",
-                    )
-
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                xaxis_title="Time",
-                yaxis_title=f"Water level [{gui_units}]",
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                showlegend=False,
-                xaxis={"range": [xlim1, xlim2]},
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
-
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
-
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and synthetic tide + surge."
-            )
-            return str("")
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def plot_rainfall(
-        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
-    ) -> (
-        str
-    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        if (
-            event["rainfall"]["source"] == "shape"
-            or event["rainfall"]["source"] == "timeseries"
-        ):
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-            if (
-                temp_event.attrs.rainfall.source == "shape"
-                and temp_event.attrs.rainfall.shape_type == ShapeType.SCS
-            ):
-                scsfile = self.input_path.parent.joinpath(
-                    "static", ShapeType.SCS, self.site.attrs.scs.file
-                )
-                if scsfile.is_file() is False:
-                    ValueError(
-                        "Information about SCS file and type missing in site.toml"
-                    )
-                temp_event.add_rainfall_ts(
-                    scsfile=scsfile, scstype=self.site.attrs.scs.type
-                )
-                df = temp_event.rain_ts
-            elif event["rainfall"]["source"] == "timeseries":
-                df = input_rainfall_df
-            else:
-                temp_event.add_rainfall_ts()
-                df = temp_event.rain_ts
-
-            # set timing relative to T0 if event is synthetic
-            if event["template"] == "Synthetic":
-                df.index = np.arange(
-                    -temp_event.attrs.time.duration_before_t0,
-                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                    1 / 6,
-                )
-                xlim1 = -temp_event.attrs.time.duration_before_t0
-                xlim2 = temp_event.attrs.time.duration_after_t0
-            else:
-                xlim1 = pd.to_datetime(event["time"]["start_time"])
-                xlim2 = pd.to_datetime(event["time"]["end_time"])
-
-            # Plot actual thing
-            fig = px.line(data_frame=df)
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                yaxis_title={
-                    "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
-                },
-                showlegend=False,
-                xaxis={"range": [xlim1, xlim2]},
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
+        self, event: Event, input_rainfall_df: pd.DataFrame = None
+    ) -> str:
+        if event.attrs.overland.rainfall.source == RainfallSource.timeseries:
+            df = input_rainfall_df or event.add_rainfall_ts().rainfall_ts
+            xlim1 = pd.to_datetime(event.attrs.time.start_time)
+            xlim2 = pd.to_datetime(event.attrs.time.end_time)
+            fig = Timeseries.plot(
+                df, xlim1, xlim2, self.site.attrs.gui.default_intensity_units
             )
 
             # write html to results folder
@@ -458,21 +367,21 @@ class Database(IDatabase):
             output_loc.parent.mkdir(parents=True, exist_ok=True)
             fig.write_html(output_loc)
             return str(output_loc)
-
         else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type rainfall."
+            raise NotImplementedError(
+                f"Plotting only available for rainfall timeseries {event.attrs.overland.rainfall.source}."
             )
-            return str("")
 
     def plot_river(
         self, event: IEvent, input_river_df: list[pd.DataFrame]
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-        event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
-        temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
+        event_dir = self.input_path.joinpath("events", event.attrs.name)
+        temp_event = Event.load_file(event_dir.joinpath(f"{event.attrs.name}.toml"))
+        temp_event.add_river_discharge_ts(
+            event_dir, self.site.attrs.river, input_river_df
+        )
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
         river_descriptions = np.where(
@@ -480,18 +389,8 @@ class Database(IDatabase):
         ).tolist()
         df = temp_event.dis_df
 
-        # set timing relative to T0 if event is synthetic
-        if event["template"] == "Synthetic":
-            df.index = np.arange(
-                -temp_event.attrs.time.duration_before_t0,
-                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
-                1 / 6,
-            )
-            xlim1 = -temp_event.attrs.time.duration_before_t0
-            xlim2 = temp_event.attrs.time.duration_after_t0
-        else:
-            xlim1 = pd.to_datetime(event["time"]["start_time"])
-            xlim2 = pd.to_datetime(event["time"]["end_time"])
+        xlim1 = pd.to_datetime(event.attrs.time.start_time)
+        xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
         # Plot actual thing
         fig = go.Figure()
@@ -536,66 +435,63 @@ class Database(IDatabase):
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        if event["wind"]["source"] == "timeseries":
-            df = input_wind_df
-
-            # Plot actual thing
-            # Create figure with secondary y-axis
-            import plotly.graph_objects as go
-            from plotly.subplots import make_subplots
-
-            fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-            # Add traces
-            fig.add_trace(
-                go.Scatter(
-                    x=df.index,
-                    y=df[1],
-                    name="Wind speed",
-                    mode="lines",
-                ),
-                secondary_y=False,
-            )
-
-            fig.add_trace(
-                go.Scatter(x=df.index, y=df[2], name="Wind direction", mode="markers"),
-                secondary_y=True,
-            )
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-            # Set y-axes titles
-            fig.update_yaxes(
-                title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
-                secondary_y=False,
-            )
-            fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                showlegend=False,
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
-
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
-
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type wind."
-            )
+        if event.attrs.overland.wind.source != WindSource.timeseries:
+            raise NotImplementedError("Plotting only available for wind timeseries.")
             return str("")
+
+        df = input_wind_df
+
+        # Plot actual thing
+        # Create figure with secondary y-axis
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+        # Add traces
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df[1],
+                name="Wind speed",
+                mode="lines",
+            ),
+            secondary_y=False,
+        )
+
+        fig.add_trace(
+            go.Scatter(x=df.index, y=df[2], name="Wind direction", mode="markers"),
+            secondary_y=True,
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+        # Set y-axes titles
+        fig.update_yaxes(
+            title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
+            secondary_y=False,
+        )
+        fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            showlegend=False,
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
@@ -781,8 +677,7 @@ class Database(IDatabase):
             object of one of the events
         """
         event_path = self.input_path / "events" / f"{name}" / f"{name}.toml"
-        event_template = Event.get_template(event_path)
-        event = EventFactory.get_event(event_template).load_file(event_path)
+        event = Event.load_file(event_path)
         return event
 
     def save_event(self, event: IEvent) -> None:
@@ -823,7 +718,7 @@ class Database(IDatabase):
             self.input_path
             / "events"
             / event.attrs.name
-            / f"{event.attrs.track_name}.cyc"
+            / f"{event.attrs.offshore.hurricane.track_name}.cyc"
         )
         # cht_cyclone function to write TropicalCyclone as .cyc file
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
@@ -836,7 +731,6 @@ class Database(IDatabase):
         event : IEvent
             object of the event
         """
-        # TODO should you be able to edit a measure that is already used in a hazard?
         event.save(
             self.input_path / "events" / event.attrs.name / f"{event.attrs.name}.toml"
         )

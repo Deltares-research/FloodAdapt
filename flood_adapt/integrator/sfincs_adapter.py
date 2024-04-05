@@ -13,10 +13,7 @@ from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
-from flood_adapt.object_model.hazard.event.event import EventModel
-from flood_adapt.object_model.hazard.event.historical_hurricane import (
-    HistoricalHurricane,
-)
+from flood_adapt.object_model.hazard.event.event import Event, EventModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
@@ -190,8 +187,12 @@ class SfincsAdapter:
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert(UnitTypesLength("meters"))
-                + physical_projection.sea_level_rise.convert(UnitTypesLength("meters"))
+                + event.offshore.water_level_offset.convert(
+                    UnitTypesLength.meters
+                ).value
+                + physical_projection.sea_level_rise.convert(
+                    UnitTypesLength.meters
+                ).value
             )
 
             if bnd_ii == 0:
@@ -400,7 +401,7 @@ class SfincsAdapter:
 
     def add_spw_forcing(
         self,
-        historical_hurricane: HistoricalHurricane,
+        hurricane_event: Event,
         database_path: Path,
         model_dir: Path,
     ):
@@ -408,7 +409,7 @@ class SfincsAdapter:
 
         Parameters
         ----------
-        historical_hurricane : HistoricalHurricane
+        historical_hurricane : Hurricane
             Information of the historical hurricane event
         database_path : Path
             Path of the main database
@@ -416,7 +417,7 @@ class SfincsAdapter:
             Output path of the model
         """
 
-        historical_hurricane.make_spw_file(
+        hurricane_event.make_spw_file(
             database_path=database_path, model_dir=model_dir, site=self.site
         )
 

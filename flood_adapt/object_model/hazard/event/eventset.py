@@ -19,14 +19,16 @@ class EventSet:
         obj = EventSet()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = EventSetModel.parse_obj(toml)
+        obj.attrs = EventSetModel.model_validate(toml)
         return obj
 
     def __eq__(self, other):
         if not isinstance(other, EventSet):
             # don't attempt to compare against unrelated types
             return NotImplemented
-        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
+        attrs_1, attrs_2 = self.attrs.model_copy(deep=True), other.attrs.model_copy(
+            deep=True
+        )
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
         attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
         return attrs_1 == attrs_2

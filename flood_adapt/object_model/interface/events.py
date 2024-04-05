@@ -21,27 +21,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-# move to toml file
-class Constants(Enum):
-    """class describing the accepted input for the variable constants in Event"""
-
-    _TIDAL_PERIOD = 12.4
-    _HOURS_PER_DAY = 24
-    _SECONDS_PER_DAY = 86400
-    _SECONDS_PER_HOUR = 3600
-
-
-# move to toml file
-class DefaultsStr(str, Enum):
-    _DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-    _START_TIME = "2020-01-01 00:00:00"
-    _END_TIME = "2020-01-03 00:00:00"
-
-
-class DefaultsInt(Enum):
-    _TIMESTEP = UnitfulTime(600, UnitTypesTime.seconds)
-
-
 # Enums
 class Mode(str, Enum):
     """class describing the accepted input for the variable mode in Event"""
@@ -50,23 +29,13 @@ class Mode(str, Enum):
     risk = "risk"
 
 
-class Template(str, Enum):
-    """class describing the accepted input for the variable template in Event"""
-
-    synthetic = "synthetic"
-    nearshore = "nearshore"
-    offshore = "offshore"
-    historical = "historical"
-    hurricane = "hurricane"
-
-
 class ShapeType(str, Enum):
     gaussian = "gaussian"
     constant = "constant"
     triangle = "triangle"
-    scs = "scs"
     csv_file = "csv_file"
     harmonic = "harmonic"
+    scs = "scs"
 
 
 class WindSource(str, Enum):
@@ -185,14 +154,14 @@ class RainfallSource(str, Enum):
 
 class RainfallModel(BaseModel):
     source: RainfallSource
-    increase: float = 0.0  # in %
+    multiplier: float = 1.0
     timeseries: Optional[TimeseriesModel] = None
 
-    @field_validator("increase")
+    @field_validator("multiplier")
     @classmethod
-    def validate_increase(cls, value):
+    def validate_multiplier(cls, value):
         if value < 0:
-            raise ValueError("Increase must be positive")
+            raise ValueError("Multiplier must be positive")
         return value
 
     @model_validator(mode="after")
@@ -209,6 +178,14 @@ class RiverDischargeModel(BaseModel):
     timeseries: TimeseriesModel
     base_discharge: UnitfulDischarge = UnitfulDischarge(0, UnitTypesDischarge.cms)
 
+    @model_validator(mode="after")
+    def validate_riverDischargeModel(self):
+        if not isinstance(self.timeseries.peak_intensity, UnitfulDischarge):
+            raise ValueError(
+                "Peak intensity must be a UnitfulDischarge when describing a river discharge"
+            )
+        return self
+
 
 class Timing(str, Enum):
     """class describing the accepted input for the variable timng in Event"""
@@ -217,35 +194,38 @@ class Timing(str, Enum):
     idealized = "idealized"
 
 
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
+DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_TIMESTEP = UnitfulTime(600, UnitTypesTime.seconds)
+DEFAULT_START_TIME = "2020-01-01 00:00:00"
+DEFAULT_END_TIME = "2020-01-03 00:00:00"
 
-    timing: Timing
-    duration_before_t0: UnitfulTime
-    duration_after_t0: UnitfulTime
-    start_time: Optional[str] = DefaultsStr._START_TIME
-    end_time: Optional[str] = DefaultsStr._END_TIME
+
+class TimeModel(BaseModel):
+    """
+    BaseModel describing the start and end times of an event model.
+    Used by all event types.
+    In the format of a string that is parsed as a datetime object, e.g. "2020-01-01 00:00:00" (YYYY-MM-DD HH:MM:SS)
+    """
+
+    start_time: str = DEFAULT_START_TIME
+    end_time: str = DEFAULT_END_TIME
 
     @field_validator("start_time", "end_time")
     @classmethod
     def validate_time_format(cls, value):
         try:
-            datetime.strptime(value, DefaultsStr._DATETIME_FORMAT.value)
+            datetime.strptime(value, DEFAULT_DATETIME_FORMAT)
         except ValueError:
             raise ValueError(
-                f"Time must be in format {DefaultsStr._DATETIME_FORMAT.value}. Got {value}"
+                f"Time must be in format {DEFAULT_DATETIME_FORMAT}. Got {value}"
             )
         return value
 
     @model_validator(mode="after")
     def validate_timeModel(self):
-        if self.duration_before_t0.value < 0:
-            raise ValueError("Duration before T0 must be positive")
-        elif self.duration_after_t0.value < 0:
-            raise ValueError("Duration after T0 must be positive")
-        elif datetime.strptime(
-            self.start_time, DefaultsStr._DATETIME_FORMAT.value
-        ) > datetime.strptime(self.end_time, DefaultsStr._DATETIME_FORMAT.value):
+        if datetime.strptime(
+            self.start_time, DEFAULT_DATETIME_FORMAT
+        ) > datetime.strptime(self.end_time, DEFAULT_DATETIME_FORMAT):
             raise ValueError("Start time must be before end time")
 
         return self
@@ -318,43 +298,39 @@ class OverlandModel(BaseModel):
     tide: Optional[TideModel] = None
     surge: Optional[SurgeModel] = None
     rainfall: Optional[RainfallModel] = None
-    hurricane: Optional[HurricaneModel] = None
+    gauged: bool = False
 
 
 class OffShoreModel(BaseModel):
     wind: Optional[WindModel] = None
     rainfall: Optional[RainfallModel] = None
     tide: Optional[TideModel] = None
+
     hurricane: Optional[HurricaneModel] = None
+    water_level_offset: Optional[UnitfulLength] = None
+
+    @field_validator("water_level_offset")
+    @classmethod
+    def validate_water_level_offset(cls, value):
+        if value is None:
+            raise ValueError(
+                "Water level offset must be set when running an offshore event"
+            )
+        return value
 
 
 class EventModel(BaseModel):
     """BaseModel describing all variables and data types of attributes common to all event types"""
 
-    # Every event
-    name: str
-    mode: Mode  # single / risk
-    time: TimeModel  # -> time.timing = [historical, idealized]
+    # Required attrs & models
+    name: str  # -> name of the event
+    mode: Mode  # -> single / risk
+    time: TimeModel  # -> start_time, end_time as datetime objects
 
-    # Optional parameters used by all Event child classes
+    # Optional attrs & models
     description: Optional[str] = None
-    overland: Optional[OverlandModel] = None  # What to do with hurricane?
-    offshore: Optional[OffShoreModel] = None  # What to do with hurricane?
-
-    water_level_offset: Optional[UnitfulLength] = UnitfulLength(
-        0, UnitTypesLength.meters
-    )
-
-    @model_validator(mode="after")
-    def validate_eventModel(self):
-        if self.mode == Mode.single_event:
-            if self.time is None:
-                raise ValueError("Time must be set when mode is single_event")
-            elif self.water_level_offset is None:
-                raise ValueError(
-                    "Water level offset must be set when mode is single_event"
-                )
-        return self
+    overland: Optional[OverlandModel] = None
+    offshore: Optional[OffShoreModel] = None
 
 
 # TODO investigate
@@ -366,8 +342,8 @@ class EventSetModel(BaseModel):
     name: str
     mode: Mode
     description: Optional[str] = None
-    subevent_name: Optional[list[str]] = []
-    frequency: Optional[list[float]] = []
+    subevent_name: Optional[list[str]] = None
+    frequency: Optional[list[float]] = None
 
 
 class IEvent(ABC):
@@ -389,79 +365,3 @@ class IEvent(ABC):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Event attributes to a toml file"""
         ...
-
-
-# #### SYNTHETIC ####
-# class SyntheticEventModel(EventModel):
-#     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
-
-#     template: Template = Template.synthetic
-#     timing: Timing = Timing.idealized
-
-#     @model_validator(mode="after")
-#     def validate_syntheticEventModel(self):
-#         if self.template != Template.synthetic:
-#             raise ValueError("Template for a Synthetic event must be synthetic")
-#         elif self.timing != Timing.idealized:
-#             raise ValueError("Timing for a Synthetic event must be idealized")
-#         return self
-
-
-# #### HISTORICAL #### should be read-only
-# class HistoricalEventModel(EventModel):
-#     """BaseModel describing the expected variables and data types for parameters of Historical that extend the parent class Event"""
-
-#     template: Template = Template.historical
-#     timing: Timing = Timing.historical
-
-#     @model_validator(mode="after")
-#     def validate_historicalEventModel(self):
-#         if self.template != Template.historical:
-#             raise ValueError("Template for a Historical event must be historical")
-#         elif self.timing != Timing.historical:
-#             raise ValueError("Historical events must have historical timing")
-#         return self
-
-
-# #### NEARSHORE ####
-# class NearShoreEventModel(EventModel):
-#     """BaseModel describing the expected variables and data types for parameters of Nearshore that extend the parent class Event"""
-
-#     template: Template = Template.historical
-
-#     @model_validator(mode="after")
-#     def validate_nearshoreEventModel(self):
-#         if self.template != Template.historical:
-#             raise ValueError("Template for a Nearshore event must be historical")
-#         return self
-
-
-# #### OFFSHORE ####
-# class OffShoreEventModel(EventModel):
-#     """BaseModel describing the expected variables and data types for parameters of Offshore that extend the parent class Event"""
-
-#     template: Template = Template.offshore
-
-#     @model_validator(mode="after")
-#     def validate_nearshoreEventModel(self):
-#         if self.template != Template.offshore:
-#             raise ValueError("Template for a Nearshore event must be offshore")
-#         return self
-
-
-# #### HURRICANE ####
-# class HurricaneEventModel(EventModel):
-#     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
-
-#     template: Template = Template.hurricane
-#     timing: Timing = Timing.historical
-#     hurricane_translation: TranslationModel
-#     track_name: str
-
-#     @model_validator(mode="after")
-#     def validate_hurricaneEventModel(self):
-#         if self.template != Template.hurricane:
-#             raise ValueError("Template for a Hurricane event must be hurricane")
-#         elif self.timing != Timing.historical:
-#             raise ValueError("Hurricane events must have historical timing")
-#         return self
