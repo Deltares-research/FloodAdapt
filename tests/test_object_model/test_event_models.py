@@ -5,6 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.interface.events import (
+    DEFAULT_DATETIME_FORMAT,
     EventModel,
     HurricaneModel,
     Mode,
@@ -189,7 +190,7 @@ class TestRainfallModel:
         # Arange
         _RAINFALL_MODEL = {
             "source": RainfallSource.timeseries.value,
-            "increase": 20,
+            "multiplier": 1.5,
             "timeseries": {
                 "shape_type": ShapeType.constant,
                 "start_time": {
@@ -217,7 +218,7 @@ class TestRainfallModel:
 
         # Assert
         assert rainfall_model.source == RainfallSource.timeseries
-        assert rainfall_model.increase == 20
+        assert rainfall_model.multiplier == 1.5
         assert rainfall_model.timeseries.shape_type == ShapeType.constant
         assert rainfall_model.timeseries.start_time == UnitfulTime(
             0, UnitTypesTime.hours
@@ -243,10 +244,10 @@ class TestRainfallModel:
         # Assert
         pass
 
-    def test_validate_RainfallModel_invalid_input_increase_cannot_be_negative(self):
+    def test_validate_RainfallModel_invalid_input_multiplier_cannot_be_negative(self):
         # Arange
         model = self.get_test_model()
-        model["increase"] = -10
+        model["multiplier"] = -10
 
         # Act
         with pytest.raises(ValidationError) as e:
@@ -255,7 +256,7 @@ class TestRainfallModel:
         # Assert
         errors = e.value.errors()
         assert len(errors) == 1
-        assert errors[0]["ctx"]["error"].args[0] == "Increase must be positive"
+        assert errors[0]["ctx"]["error"].args[0] == "Multiplier must be positive"
 
     def test_validate_RainfallModel_invalid_input_timeseriesmodel_must_be_set_when_source_is_timeseries(
         self,
@@ -343,15 +344,6 @@ class TestTimeModel:
     @staticmethod
     def get_test_model():
         _TIME_MODEL = {
-            # "timing": Timing.idealized.value,
-            # "duration_before_t0": {
-            #     "value": 10,
-            #     "units": UnitTypesTime.hours,
-            # },
-            # "duration_after_t0": {
-            #     "value": 10,
-            #     "units": UnitTypesTime.hours,
-            # },
             "start_time": "2020-01-01 00:00:00",
             "end_time": "2020-01-03 00:00:00",
         }
@@ -365,9 +357,6 @@ class TestTimeModel:
         time_model = TimeModel.model_validate(model)
 
         # Assert
-        # assert time_model.timing == Timing.idealized
-        # assert time_model.duration_before_t0 == UnitfulTime(10, UnitTypesTime.hours)
-        # assert time_model.duration_after_t0 == UnitfulTime(10, UnitTypesTime.hours)
         assert time_model.start_time == "2020-01-01 00:00:00"
         assert time_model.end_time == "2020-01-03 00:00:00"
 
@@ -610,7 +599,6 @@ class TestOverlandModel:
             "tide": TestTideModel.get_test_model(),
             "surge": TestSurgeModel.get_test_model(),
             "rainfall": TestRainfallModel.get_test_model(),
-            "hurricane": TestHurricaneModel.get_test_model(),
         }
         return deepcopy(_OVERLAND_MODEL)
 
@@ -642,9 +630,6 @@ class TestOverlandModel:
         assert overland_model.rainfall == RainfallModel.model_validate(
             TestRainfallModel.get_test_model()
         )
-        assert overland_model.hurricane == HurricaneModel.model_validate(
-            TestHurricaneModel.get_test_model()
-        )
 
     def test_validate_OverlandModel_valid_input_all_is_optional(self):
         # Arange
@@ -659,7 +644,6 @@ class TestOverlandModel:
         assert overland_model.tide is None
         assert overland_model.surge is None
         assert overland_model.rainfall is None
-        assert overland_model.hurricane is None
 
 
 class TestOffShoreModel:
@@ -670,6 +654,7 @@ class TestOffShoreModel:
             "tide": TestTideModel.get_test_model(),
             "rainfall": TestRainfallModel.get_test_model(),
             "hurricane": TestHurricaneModel.get_test_model(),
+            "water_level_offset": {"value": 0, "units": UnitTypesLength.meters},
         }
         return deepcopy(_OFFSHORE_MODEL)
 
@@ -692,6 +677,9 @@ class TestOffShoreModel:
         )
         assert offshore_model.hurricane == HurricaneModel.model_validate(
             TestHurricaneModel.get_test_model()
+        )
+        assert offshore_model.water_level_offset == UnitfulLength(
+            0, UnitTypesLength.meters
         )
 
     def test_validate_OverlandModel_valid_input_all_is_optional(self):
@@ -718,7 +706,6 @@ class TestEventModel:
             "time": TestTimeModel.get_test_model(),
             "overland": TestOverlandModel.get_test_model(),
             "offshore": TestOffShoreModel.get_test_model(),
-            "water_level_offset": {"value": 2, "units": UnitTypesLength.meters},
         }
         return deepcopy(_EVENT_MODEL)
 
@@ -743,9 +730,6 @@ class TestEventModel:
         assert event_model.offshore == OffShoreModel.model_validate(
             TestOffShoreModel.get_test_model()
         )
-        assert event_model.water_level_offset == UnitfulLength(
-            2, UnitTypesLength.meters
-        )
 
     def test_validate_EventModel_valid_input_all_optional(self):
         # Arange
@@ -753,7 +737,6 @@ class TestEventModel:
         model.pop("description")
         model.pop("overland")
         model.pop("offshore")
-        model.pop("water_level_offset")
 
         # Act
         event_model = EventModel.model_validate(model)
@@ -768,9 +751,6 @@ class TestEventModel:
         assert event_model.description is None
         assert event_model.overland is None
         assert event_model.offshore is None
-        assert event_model.water_level_offset == UnitfulLength(
-            0, UnitTypesLength.meters
-        )
 
 
 @pytest.mark.skip("TestEventSetModel not implemented")

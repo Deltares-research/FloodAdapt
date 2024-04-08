@@ -85,7 +85,7 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end + _timestep,
+            _shape_end,
             step=_timestep,
         )
         mean = (_shape_start + _shape_end) / 2
@@ -104,7 +104,7 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end + _timestep,
+            _shape_end,
             step=_timestep,
         )
         ts = np.where((tt > _shape_start) & (tt < _shape_end), _peak_intensity, 0)
@@ -124,7 +124,7 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
         tt = np.arange(
             _shape_start,
-            _shape_end + _timestep,
+            _shape_end,
             step=_timestep,
         )
         peak_time = (_shape_start + _shape_end) / 2
@@ -155,8 +155,8 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         _timestep = timestep.convert(UnitTypesTime.seconds).value
 
         tt = np.arange(
-            _shape_start,
-            _shape_end + _timestep,
+            start=_shape_start,
+            stop=_shape_end,
             step=_timestep,
         )
         omega = 2 * math.pi / (TIDAL_PERIOD / UnitfulTime(1, UnitTypesTime.days))
@@ -181,7 +181,7 @@ class FileTimeseriesCalculator(ITimeseriesCalculationStrategy):
         df = Timeseries.read_csv(attrs.csv_file_path)
         freq = int(timestep.convert(UnitTypesTime.seconds).value)
         time_range = pd.date_range(
-            start=df.index.min(), end=df.index.max(), freq=f"{freq}S", inclusive="both"
+            start=df.index.min(), end=df.index.max(), freq=f"{freq}S", inclusive="left"
         )
         interpolated_df = df.reindex(time_range).interpolate(method="linear")
         return interpolated_df
@@ -224,7 +224,7 @@ class ITimeseries(ABC):
 
 class Timeseries(ITimeseries):
     def __init__(self):
-        self.calculation_strategies = {
+        self.calculation_strategies: dict[ShapeType, ITimeseriesCalculationStrategy] = {
             ShapeType.gaussian: GaussianTimeseriesCalculator(),
             ShapeType.scs: ScsTimeseriesCalculator(),
             ShapeType.constant: ConstantTimeseriesCalculator(),
@@ -295,7 +295,7 @@ class Timeseries(ITimeseries):
         _time_step = int(time_step.convert(UnitTypesTime.seconds).value)
 
         full_df_time_range = pd.date_range(
-            start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="both"
+            start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="left"
         )
         full_df = pd.DataFrame(index=full_df_time_range)
         full_df.index.name = "time"
@@ -304,7 +304,7 @@ class Timeseries(ITimeseries):
         _time_range = pd.date_range(
             start=(start_time + self.attrs.start_time.to_timedelta()),
             end=(start_time + self.attrs.end_time.to_timedelta()),
-            inclusive="both",
+            inclusive="left",
             freq=f"{_time_step}S",
         )
         df = pd.DataFrame(data, columns=["intensity"], index=_time_range)

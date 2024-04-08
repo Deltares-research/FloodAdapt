@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Self, Union
+from typing import Any, Union
 
 import cht_observations.observation_stations as cht_station
 import hydromt.raster  # noqa: F401
@@ -67,15 +67,15 @@ class Event(IEvent):
         Load the event from a dictionary.
     get_mode(filepath: Path) -> Mode
         Get the mode of the event from a toml file.
-    add_river_discharge_ts(event_dir: Path, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self
+    add_river_discharge_ts(event_dir: Path, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Event
         Compute timeseries of the event generated from the combination of timing model and river discharge models.
-    add_rainfall_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self
+    add_rainfall_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Event
         Compute timeseries of the event generated from the combination of timing model and rainfall model.
-    add_overland_wind_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self
+    add_overland_wind_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Event
         Compute timeseries of the event generated from the combination of timing model and overland wind model.
-    add_offshore_wind_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self
+    add_offshore_wind_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Event
         Compute timeseries of the event generated from the combination of timing model and offshore wind model
-    add_tide_and_surge_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self
+    add_tide_and_surge_ts(time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Event
         Compute timeseries of the event generated from the combination of timing model, tide model and surge model.
     download_wl_data(station_id: int, start_time_str: str, stop_time_str: str, units: UnitTypesLength) -> pd.DataFrame
         Download water level data from NOAA station using station_id, start and stop time.
@@ -130,7 +130,7 @@ class Event(IEvent):
         event_dir: Path,
         site_river: list[RiverModel] = None,
         time_step: UnitfulTime = DEFAULT_TIMESTEP,
-    ) -> Self:
+    ) -> "Event":
         """
         Compute timeseries of the event generated from the combination of:
         1.  Timing Model:
@@ -191,7 +191,7 @@ class Event(IEvent):
             )
         return self
 
-    def add_rainfall_ts(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self:
+    def add_rainfall_ts(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> "Event":
         """
         Compute timeseries of the event generated from the combination of:
         1.  Timing Model:
@@ -226,7 +226,9 @@ class Event(IEvent):
             raise ValueError(f"Unsupported rainfall source: {rainfall_model.source}.")
         return self
 
-    def add_overland_wind_ts(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self:
+    def add_overland_wind_ts(
+        self, time_step: UnitfulTime = DEFAULT_TIMESTEP
+    ) -> "Event":
         """Adds constant wind or timeseries from overlandModel to event object.
 
         Parameters
@@ -271,7 +273,9 @@ class Event(IEvent):
         self.overland_wind_ts = df
         return self
 
-    def add_offshore_wind_ts(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self:
+    def add_offshore_wind_ts(
+        self, time_step: UnitfulTime = DEFAULT_TIMESTEP
+    ) -> "Event":
         """Adds constant wind or timeseries from offshoreModel to event object.
 
         Parameters
@@ -317,7 +321,9 @@ class Event(IEvent):
         self.offshore_wind_ts = df
         return self
 
-    def add_tide_and_surge_ts(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> Self:
+    def add_tide_and_surge_ts(
+        self, time_step: UnitfulTime = DEFAULT_TIMESTEP
+    ) -> "Event":
         """
         Compute timeseries of the event generated from the combination of:
         1.  Timing Model:

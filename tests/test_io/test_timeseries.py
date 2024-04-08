@@ -352,13 +352,19 @@ class TestTimeseries:
             {
                 "shape_type": "constant",
                 "start_time": {"value": 0, "units": "hours"},
-                "end_time": {"value": 1, "units": "hours"},
+                "end_time": {"value": 2, "units": "hours"},
                 "peak_intensity": {"value": 1, "units": "mm/hr"},
             }
         )
+        start = "2020-01-02 00:00:00"
+        end = "2020-01-02 02:00:00"
 
         # Call the to_dataframe method
-        df = ts.to_dataframe(UnitfulTime(10, UnitTypesTime.seconds))
+        df = ts.to_dataframe(
+            start_time=start,
+            end_time=end,
+            time_step=UnitfulTime(10, UnitTypesTime.seconds),
+        )
 
         assert isinstance(df, pd.DataFrame)
         assert list(df.columns) == ["intensity"]
@@ -369,7 +375,7 @@ class TestTimeseries:
             time_step=UnitfulTime(10, UnitTypesTime.seconds)
         )
         expected_time_range = pd.date_range(
-            start=pd.Timestamp("00:00:00"), periods=len(expected_data), freq="10S"
+            start=pd.Timestamp(start), end=end, freq="10S", inclusive="left"
         )
         expected_df = pd.DataFrame(
             expected_data, columns=["intensity"], index=expected_time_range
