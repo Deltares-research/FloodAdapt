@@ -100,6 +100,9 @@ class DbsTemplate(AbstractDatabaseElement):
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
+        # After changing the name and description, receate the model to re-trigger the validators
+        copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.dict())
+
         # Then a save. Checking whether the name is already in use is done in the save function
         self.save(copy_object)
 
