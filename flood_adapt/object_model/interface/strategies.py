@@ -2,11 +2,11 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class StrategyModel(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, pattern="^[^<>:\"/\\|?* ]*$")
     description: Optional[str] = ""
     measures: Optional[list[str]] = []
 
