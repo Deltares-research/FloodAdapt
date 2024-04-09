@@ -74,7 +74,7 @@
     "href": "index.html#cross-reference",
     "title": "Flood Adapt Documentation",
     "section": "Cross Reference",
-    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text wou want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
+    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text you want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
   },
   {
     "objectID": "6_demo/measures_impact.html#evaluating-measures",
