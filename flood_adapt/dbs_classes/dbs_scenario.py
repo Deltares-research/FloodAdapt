@@ -95,7 +95,7 @@ class DbsScenario(DbsTemplate):
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
-    def _check_higher_level_usage(self, name: str):
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if a scenario is used in a benefit.
 
         Parameters

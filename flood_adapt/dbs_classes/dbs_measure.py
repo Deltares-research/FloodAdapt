@@ -77,7 +77,7 @@ class DbsMeasure(DbsTemplate):
         measures["geometry"] = geometries
         return measures
 
-    def _check_higher_level_usage(self, name: str):
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if a measure is used in a strategy.
 
         Parameters

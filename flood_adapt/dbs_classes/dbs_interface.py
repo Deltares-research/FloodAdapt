@@ -115,3 +115,19 @@ class AbstractDatabaseElement(ABC):
             Raise error if object to be deleted is already in use.
         """
         pass
+
+    @abstractmethod
+    def check_higher_level_usage(self, name: str) -> list[str]:
+        """Checks if an object is used in a higher level object.
+
+        Parameters
+        ----------
+        name : str
+            name of the object to be checked
+
+        Returns
+        -------
+        list[str]
+            list of higher level objects that use the object
+        """
+        pass

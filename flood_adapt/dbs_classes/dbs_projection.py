@@ -28,7 +28,7 @@ class DbsProjection(DbsTemplate):
 
         return False
 
-    def _check_higher_level_usage(self, name: str):
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if a projection is used in a scenario.
 
         Parameters

@@ -194,7 +194,7 @@ class DbsTemplate(AbstractDatabaseElement):
             )
 
         # Check if object is used in a higher level object. If it is, raise an error
-        if used_in := self._check_higher_level_usage(name):
+        if used_in := self.check_higher_level_usage(name):
             raise ValueError(
                 f"'{name}' {self._type} cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
             )
@@ -230,7 +230,7 @@ class DbsTemplate(AbstractDatabaseElement):
         # By default, it is not a standard object.
         return False
 
-    def _check_higher_level_usage(self, name: str) -> list[str]:
+    def check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if an object is used in a higher level object.
 
         Parameters
