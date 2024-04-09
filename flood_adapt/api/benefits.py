@@ -10,11 +10,11 @@ from flood_adapt.object_model.interface.database import IDatabase
 
 def get_benefits(database: IDatabase) -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
-    return database.get_benefits()
+    return database.benefits.list_objects()
 
 
 def get_benefit(name: str, database: IDatabase) -> IBenefit:
-    return database.get_benefit(name)
+    return database.benefits.get(name)
 
 
 def create_benefit(attrs: dict[str, Any], database: IDatabase) -> IBenefit:
@@ -22,15 +22,15 @@ def create_benefit(attrs: dict[str, Any], database: IDatabase) -> IBenefit:
 
 
 def save_benefit(benefit: IBenefit, database: IDatabase) -> None:
-    database.save_benefit(benefit)
+    database.benefits.save(benefit)
 
 
 def edit_benefit(benefit: IBenefit, database: IDatabase) -> None:
-    database.edit_benefit(benefit)
+    database.benefits.edit(benefit)
 
 
 def delete_benefit(name: str, database: IDatabase) -> None:
-    database.delete_benefit(name)
+    database.benefits.delete(name)
 
 
 def check_benefit_scenarios(benefit: IBenefit, database: IDatabase) -> pd.DataFrame:
