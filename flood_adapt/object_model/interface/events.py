@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -163,7 +163,6 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
 
     name: str
     description: Optional[str] = ""
-    lock_count: int = 0
     mode: Mode
     template: Template
     timing: Timing
@@ -174,13 +173,6 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     time: TimeModel
     tide: TideModel
     surge: SurgeModel
-
-    @validator("lock_count")
-    def validate_lock_count(cls, lock_count: int) -> int:
-        """Validate lock_count"""
-        if lock_count < 0:
-            raise ValueError("lock_count must be a positive integer")
-        return lock_count
 
 
 class EventSetModel(

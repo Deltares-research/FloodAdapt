@@ -35,66 +35,6 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def set_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
-        """
-        Lock the element in the database to prevent other processes from accessing it. The object can be locked by providing either the model_object or the name.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-        """
-        pass
-
-    @abstractmethod
-    def release_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
-        """Releases the lock on the element in the database.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-        """
-        pass
-
-    @abstractmethod
-    def is_locked(self, model_object: ObjectModel = None, name: str = None) -> bool:
-        """Checks if the element in the database is locked.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-
-        Returns
-        -------
-        bool
-            True if the element is locked, False otherwise.
-        """
-        pass
-
-    @abstractmethod
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the objects that currently
         exist in the database.

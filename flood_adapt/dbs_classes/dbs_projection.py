@@ -8,7 +8,7 @@ class DbsProjection(DbsTemplate):
     _folder_name = "projections"
     _object_model_class = Projection
 
-    def _check_standard_objects(self, name: str):
+    def _check_standard_objects(self, name: str) -> bool:
         """Checks if a projection is a standard projection.
 
         Parameters
@@ -24,9 +24,9 @@ class DbsProjection(DbsTemplate):
         # Check if projection is a standard projection
         if self._database.site.attrs.standard_objects.projections:
             if name in self._database.site.attrs.standard_objects.projections:
-                raise ValueError(
-                    f"'{name}' projection cannot be deleted since it is a standard projection."
-                )
+                return True
+
+        return False
 
     def _check_higher_level_usage(self, name: str):
         """Checks if a projection is used in a scenario.

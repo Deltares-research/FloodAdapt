@@ -52,103 +52,6 @@ class DbsTemplate(AbstractDatabaseElement):
         object_model = self._object_model_class.load_file(full_path)
         return object_model
 
-    def set_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
-        """Locks the element in the database to prevent other processes from accessing it. The object can be locked by
-        providing either the model_object or the name. If both are provided, the model_object is used. An element can
-        be locked multiple times. For example, if 2 scenario's are running that use the same event, it should be locked
-        twice. The lock is only released when both scenario's are finished.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-        """
-        # If both model_object and name are None, raise error
-        if model_object is None and name is None:
-            raise ValueError("Either model_object or name must be provided.")
-
-        # If only name is provided, get the model_object
-        if model_object is None:
-            model_object = self.get(name)
-
-        # Set the lock and save the object
-        model_object.attrs.lock_count += 1
-        self.save(model_object, overwrite=True)
-
-    def release_lock(self, model_object: ObjectModel = None, name: str = None) -> None:
-        """Releases the lock on the element in the database. The object can be unlocked by providing either the
-        model_object or the name. If both are provided, the model_object is used. An element can be locked multiple
-        times. For example, if 2 scenario's are running that use the same event, it should be locked twice. The lock
-        is only released when both scenario's are finished.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-        """
-        # If both model_object and name are None, raise error
-        if model_object is None and name is None:
-            raise ValueError("Either model_object or name must be provided.")
-
-        # If only name is provided, get the model_object
-        if model_object is None:
-            model_object = self.get(name)
-
-        # Check if the object is locked
-        if model_object.attrs.lock_count < 1:
-            raise ValueError(
-                f"'{model_object.attrs.name}' {self._type} is not locked and thus cannot be released."
-            )
-
-        # Release the lock and save the object
-        model_object.attrs.lock_count -= 1
-        self.save(model_object, overwrite=True)
-
-    def is_locked(self, model_object: ObjectModel = None, name: str = None) -> bool:
-        """Checks if the element in the database is locked.
-
-        Parameters
-        ----------
-        model_object : ObjectModel, optional
-            The model_object to lock, by default None
-        name : str, optional
-            The name of the model_object to lock, by default None
-
-        Raises
-        ------
-        ValueError
-            Raise error if both model_object and name are None.
-
-        Returns
-        -------
-        bool
-            True if the element is locked, False otherwise.
-        """
-        # If both model_object and name are None, raise error
-        if model_object is None and name is None:
-            raise ValueError("Either model_object or name must be provided.")
-
-        # If only name is provided, get the model_object
-        if model_object is None:
-            model_object = self.get(name)
-
-        # Return whether the object is locked
-        return model_object.attrs.lock_count > 0
-
     def list_objects(self):
         """Returns a dictionary with info on the objects that currently
         exist in the database.
@@ -215,7 +118,7 @@ class DbsTemplate(AbstractDatabaseElement):
         ----------
         object_model : ObjectModel
             object to be saved in the database
-        overwrite : OverwriteMode, optional
+        overwrite : bool, optional
             whether to overwrite the object if it already exists in the
             database, by default False
 
@@ -260,12 +163,12 @@ class DbsTemplate(AbstractDatabaseElement):
         # Check if the object exists
         if object_model.attrs.name not in self.list_objects()["name"]:
             raise ValueError(
-                f"'{object_model.attrs.name}' {self._type} does not exist. You cannot edit an object that does not exist."
+                f"'{object_model.attrs.name}' {self._type} does not exist. You cannot edit an {self._type} that does not exist."
             )
 
         # Check if it is possible to delete the object by saving with overwrite. This then
         # also covers checking whether the object is a standard object, is already used in
-        # a higher level object or is locked. If any of these are the case, it cannot be deleted.
+        # a higher level object. If any of these are the case, it cannot be deleted.
         self.save(object_model, overwrite=True)
 
     def delete(self, name: str, toml_only: bool = False):
@@ -284,23 +187,16 @@ class DbsTemplate(AbstractDatabaseElement):
         ValueError
             Raise error if object to be deleted is already in use.
         """
-
-        # Check if object is a standard object
-        self._check_standard_objects(name)
-
-        # Check if object is used in a higher level object
-        used_in = self._check_higher_level_usage(name)
-
-        # Check if the object is locked by another process
-        if self.is_locked(name=name):
+        # Check if the object is a standard object. If it is, raise an error
+        if self._check_standard_objects(name):
             raise ValueError(
-                f"'{name}' {self._type} is locked by another process and cannot be deleted."
+                f"'{name}' cannot be deleted/modified since it is a standard {self._type}."
             )
 
-        # If measure is used in a strategy, raise error
-        if used_in:
+        # Check if object is used in a higher level object. If it is, raise an error
+        if used_in := self._check_higher_level_usage(name):
             raise ValueError(
-                f"'{name}' measure cannot be deleted since it is already used in: {', '.join(used_in)}"
+                f"'{name}' {self._type} cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
             )
 
         # Once all checks are passed, delete the object
@@ -317,17 +213,22 @@ class DbsTemplate(AbstractDatabaseElement):
             # Delete the entire folder
             shutil.rmtree(path, ignore_errors=True)
 
-    def _check_standard_objects(self, name: str):
+    def _check_standard_objects(self, name: str) -> bool:
         """Checks if an object is a standard object.
 
         Parameters
         ----------
         name : str
             name of the object to be checked
+
+        Returns
+        -------
+        bool
+            True if the object is a standard object, False otherwise
         """
         # If this function is not implemented for the object type, it cannot be a standard object.
-        # By default, do nothing
-        pass
+        # By default, it is not a standard object.
+        return False
 
     def _check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if an object is used in a higher level object.

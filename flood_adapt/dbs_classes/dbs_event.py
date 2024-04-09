@@ -55,7 +55,7 @@ class DbsEvent(DbsTemplate):
         events["objects"] = objects
         return events
 
-    def _check_standard_objects(self, name: str):
+    def _check_standard_objects(self, name: str) -> bool:
         """Checks if an event is a standard event.
 
         Parameters
@@ -63,19 +63,19 @@ class DbsEvent(DbsTemplate):
         name : str
             name of the event to be checked
 
-        Raises
-        ------
-        ValueError
-            Raise error if event is a standard event.
+        Returns
+        -------
+        bool
+            True if the event is a standard event, False otherwise
         """
         # Check if event is a standard event
         if self._database.site.attrs.standard_objects.events:
             if name in self._database.site.attrs.standard_objects.events:
-                raise ValueError(
-                    f"'{name}' event cannot be deleted since it is a standard event."
-                )
+                return True
 
-    def _check_higher_level_usage(self, name: str):
+        return False
+
+    def _check_higher_level_usage(self, name: str) -> list[str]:
         """Checks if an event is used in a scenario.
 
         Parameters

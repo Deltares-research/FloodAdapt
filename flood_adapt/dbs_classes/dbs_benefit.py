@@ -56,7 +56,7 @@ class DbsBenefit(DbsTemplate):
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = self._database.input_path.parent / "output" / "Benefits" / name
+        output_path = self._database.output_path / "Benefits" / name
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
@@ -74,21 +74,11 @@ class DbsBenefit(DbsTemplate):
         ValueError
             Raise error if name is already in use.
         """
-        # Check if it is possible to edit the benefit. This then also covers checking whether the
-        # benefit is already used in a higher level object. If this is the case, it cannot be edited.
-        try:
-            super().edit(benefit)
-        except ValueError as e:
-            # If not, raise error
-            raise ValueError(e)
-        else:
-            # Delete output if edited
-            output_path = (
-                self._database.input_path.parent
-                / "output"
-                / "Benefits"
-                / benefit.attrs.name
-            )
+        # Check if it is possible to edit the benefit.
+        super().edit(benefit)
 
-            if output_path.exists():
-                shutil.rmtree(output_path, ignore_errors=True)
+        # Delete output if edited
+        output_path = self._database.output_path / "Benefits" / benefit.attrs.name
+
+        if output_path.exists():
+            shutil.rmtree(output_path, ignore_errors=True)

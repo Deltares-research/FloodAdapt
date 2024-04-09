@@ -8,7 +8,7 @@ class DbsStrategy(DbsTemplate):
     _folder_name = "strategies"
     _object_model_class = Strategy
 
-    def _check_standard_objects(self, name: str):
+    def _check_standard_objects(self, name: str) -> bool:
         """Checks if a strategy is a standard strategy.
 
         Parameters
@@ -24,9 +24,9 @@ class DbsStrategy(DbsTemplate):
         # Check if strategy is a standard strategy
         if self._database.site.attrs.standard_objects.strategies:
             if name in self._database.site.attrs.standard_objects.strategies:
-                raise ValueError(
-                    f"'{name}' strategy cannot be deleted since it is a standard strategy."
-                )
+                return True
+
+        return False
 
     def _check_higher_level_usage(self, name: str):
         """Checks if a strategy is used in a scenario.
