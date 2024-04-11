@@ -49,7 +49,7 @@ class SelectionType(str, Enum):
 class MeasureModel(BaseModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
-    name: str = Field(..., min_length=1, pattern="^[^<>:\"/\\|?* ]*$")
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\|?* ]*$')
     description: Optional[str] = ""
     type: Union[HazardType, ImpactType]
 

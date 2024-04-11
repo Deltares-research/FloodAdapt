@@ -14,7 +14,7 @@ class CurrentSituationModel(BaseModel):
 class BenefitModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object"""
 
-    name: str = Field(..., min_length=1, pattern="^[^<>:\"/\\|?* ]*$")
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\|?* ]*$')
     description: Optional[str] = ""
     strategy: str
     event_set: str
