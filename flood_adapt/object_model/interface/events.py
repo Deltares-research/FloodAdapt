@@ -161,7 +161,7 @@ class TranslationModel(BaseModel):
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\|?* ]*$')
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     mode: Mode
     template: Template
@@ -180,7 +180,7 @@ class EventSetModel(
 ):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\|?* ]*$')
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     mode: Mode
     subevent_name: Optional[list[str]] = []

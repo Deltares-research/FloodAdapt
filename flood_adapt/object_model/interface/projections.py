@@ -32,7 +32,7 @@ class SocioEconomicChangeModel(BaseModel):
 
 
 class ProjectionModel(BaseModel):
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\|?* ]*$')
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
