@@ -26,11 +26,11 @@ def test_scenario(test_db):
     test_dict["name"] = "test1"
     scenario = api_scenarios.create_scenario(test_dict, test_db)
     api_scenarios.save_scenario(scenario, test_db)
-    test_db.get_scenarios()
+    test_db.scenarios.list_objects()
 
     # If user presses delete scenario the measure is deleted
     api_scenarios.delete_scenario("test1", test_db)
-    test_db.get_scenarios()
+    test_db.scenarios.list_objects()
 
 
 @pytest.mark.skip(reason="Part of test_has_hazard_run")
