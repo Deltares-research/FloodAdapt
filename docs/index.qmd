@@ -122,7 +122,7 @@ Create a warning .
 Cross reference to another page or figure:
 (remove quotation marks)
 
-"[Write here the text wou want to see]"("add the reference")
+"[Write here the text you would want to see]"("add the reference")
 
 ### Cross reference page
 "[Setup Guide]"(/3_setup_guide/index.qmd)"
