@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -161,7 +161,7 @@ class TranslationModel(BaseModel):
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
-    name: str
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     mode: Mode
     template: Template
@@ -180,7 +180,7 @@ class EventSetModel(
 ):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
 
-    name: str
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     mode: Mode
     subevent_name: Optional[list[str]] = []
