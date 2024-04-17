@@ -821,7 +821,7 @@ class Hazard:
                             )
                         else:
                             file = None
-                            
+
                         try:
                             df_gauge = HistoricalNearshore.download_wl_data(
                                 station_id=self.site.attrs.obs_point[ii].ID,
@@ -834,7 +834,7 @@ class Hazard:
                             logging.warning(
                                 f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
                             )
-                        else: 
+                        else:
                             # If data is available, add to plot
                             fig.add_trace(
                                 go.Scatter(
