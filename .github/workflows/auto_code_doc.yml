@@ -1,0 +1,36 @@
+name: Build and Publish Sphinx docs to Wiki
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx_rtd_theme
+
+    - name: Build docs
+      run: make -C flood_adapt/api html
+
+    - name: Publish to Wiki
+      run: |
+        git clone https://github.com/${{ github.repository }}.wiki.git
+        cp -r _build/html/* .wiki
+        cd .wiki
+        git add .
+        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
+        git push
