@@ -7,10 +7,10 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.object_model.interface.events import Scstype
-from flood_adapt.object_model.io.timeseries import (
+from flood_adapt.object_model.hazard.event.timeseries import (
+    Scstype,
     ShapeType,
-    Timeseries,
+    SyntheticTimeseries,
     TimeseriesModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
@@ -38,15 +38,8 @@ class TestTimeseriesModel:
             "start_time": {"value": 0, "units": UnitTypesTime.hours},
             "end_time": {"value": 1, "units": UnitTypesTime.hours},
             "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
-            "csv_file_path": "test_scs.csv",
-            "scstype": Scstype.type1.value,
-        }
-
-        _TIMESERIES_MODEL_CSV_FILE = {
-            "shape_type": ShapeType.csv_file.value,
-            "start_time": {"value": 0, "units": UnitTypesTime.hours},
-            "end_time": {"value": 1, "units": UnitTypesTime.hours},
-            "csv_file_path": "test.csv",
+            "scs_file_path": "test_scs.csv",
+            "scs_type": Scstype.type1.value,
         }
 
         models = {
@@ -55,7 +48,6 @@ class TestTimeseriesModel:
             ShapeType.triangle: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.harmonic: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.scs: _TIMESERIES_MODEL_SCS,
-            ShapeType.csv_file: _TIMESERIES_MODEL_CSV_FILE,
         }
         return models[shape_type]
 
@@ -83,12 +75,25 @@ class TestTimeseriesModel:
             1, UnitTypesIntensity.mm_hr
         )
 
+    def test_SyntheticTimeseries_save_load(self, tmp_path):
+        # Arange
+        model = self.get_test_model(ShapeType.constant)
+        model_path = tmp_path / "test.toml"
+        timeseries = SyntheticTimeseries.load_dict(model)
+
+        # Act
+        timeseries.save(model_path)
+        loaded_model = SyntheticTimeseries.load_file(model_path)
+
+        # Assert
+        assert timeseries == loaded_model
+
     def test_TimeseriesModel_valid_input_scs_shapetype(self, tmp_path):
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
         model = self.get_test_model(ShapeType.scs)
-        model["csv_file_path"] = Path(temp_file)
+        model["scs_file_path"] = Path(temp_file)
 
         # Act
         timeseries_model = TimeseriesModel.model_validate(model)
@@ -100,80 +105,16 @@ class TestTimeseriesModel:
         assert timeseries_model.cumulative == UnitfulLength(
             1, UnitTypesLength.millimeters
         )
-        assert timeseries_model.csv_file_path == Path(temp_file)
-        assert timeseries_model.scstype == Scstype.type1
+        assert timeseries_model.scs_file_path == Path(temp_file)
+        assert timeseries_model.scs_type == Scstype.type1
 
-    def test_TimeseriesModel_valid_input_csv_shapetype(self, tmp_path):
-        # Arange
-        temp_file = tmp_path / "data.csv"
-        temp_file.write_text("test")
-        model = self.get_test_model(ShapeType.csv_file)
-        model["csv_file_path"] = Path(temp_file)
-
-        # Act
-        timeseries_model = TimeseriesModel.model_validate(model)
-
-        # Assert
-        assert timeseries_model.shape_type == ShapeType.csv_file
-        assert timeseries_model.start_time == UnitfulTime(0, UnitTypesTime.hours)
-        assert timeseries_model.end_time == UnitfulTime(1, UnitTypesTime.hours)
-        assert timeseries_model.csv_file_path == Path(temp_file)
-
-    def test_TimeseriesModel_invalid_input_shapetype_csvfile_not_provided(self):
-        # Arange
-        model = self.get_test_model(ShapeType.csv_file)
-        model.pop("csv_file_path")
-
-        # Act
-        with pytest.raises(ValidationError) as e:
-            TimeseriesModel.model_validate(model)
-
-        # Assert
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert (
-            errors[0]["ctx"]["error"].args[0]
-            == "csvfile must be provided for csv_file timeseries"
-        )
-
-    def test_TimeseriesModel_invalid_input_csvfile_wrong_suffix(self):
-        # Arange
-        model = self.get_test_model(ShapeType.csv_file)
-        model["csv_file_path"] = "test.txt"
-
-        # Act
-        with pytest.raises(ValidationError) as e:
-            TimeseriesModel.model_validate(model)
-
-        # Assert
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert (
-            errors[0]["ctx"]["error"].args[0] == "Timeseries file must be a .csv file"
-        )
-
-    def test_TimeseriesModel_invalid_input_csvfile_does_not_exist(self):
-        # Arange
-        model = self.get_test_model(ShapeType.csv_file)
-
-        # Act
-        with pytest.raises(ValidationError) as e:
-            TimeseriesModel.model_validate(model)
-
-        # Assert
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert (
-            errors[0]["ctx"]["error"].args[0] == "Timeseries file must be a valid file"
-        )
-
-    @pytest.mark.parametrize("to_remove", ["scstype", "csv_file_path", "cumulative"])
+    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path", "cumulative"])
     def test_TimeseriesModel_invalid_input_shapetype_scs(self, tmp_path, to_remove):
         # Arange
         temp_file = tmp_path / "data.csv"
         temp_file.write_text("test")
         model = self.get_test_model(ShapeType.scs)
-        model["csv_file_path"] = Path(temp_file)
+        model["scs_file_path"] = Path(temp_file)
         model.pop(to_remove)
 
         # Act
@@ -184,7 +125,7 @@ class TestTimeseriesModel:
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "csvfile, scstype and cumulative must be provided for SCS timeseries:"
+            "scs_file, scs_type and cumulative must be provided for SCS timeseries:"
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -268,34 +209,29 @@ class TestTimeseriesModel:
         )
 
 
-class TestTimeseries:
-    def test_data_property(self):
-        model = Timeseries()
-        model.attrs = TimeseriesModel(
+class TestSyntheticTimeseries:
+    @staticmethod
+    def get_test_timeseries():
+        ts = SyntheticTimeseries()
+        ts.attrs = TimeseriesModel(
             shape_type=ShapeType.constant,
             start_time=UnitfulTime(0, UnitTypesTime.hours),
             end_time=UnitfulTime(1, UnitTypesTime.hours),
             peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
         )
-        assert model.data is not None
+        return ts
 
     def test_calculate_data(self):
-        model = Timeseries()
-        model.attrs = TimeseriesModel(
-            shape_type=ShapeType.constant,
-            start_time=UnitfulTime(0, UnitTypesTime.hours),
-            end_time=UnitfulTime(1, UnitTypesTime.hours),
-            peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
-        )
+        ts = self.get_test_timeseries()
 
-        duration = (model.attrs.end_time - model.attrs.start_time).convert(
+        duration = (ts.attrs.end_time - ts.attrs.start_time).convert(
             UnitTypesTime.seconds
         )
         timestep = UnitfulTime(1, UnitTypesTime.seconds)
-        data = model.calculate_data(timestep)
+        data = ts.calculate_data(timestep)
 
         assert (duration.value / timestep.value) == len(data)
-        assert np.amax(data) == model.attrs.peak_intensity.value
+        assert np.amax(data) == ts.attrs.peak_intensity.value
 
     def test_load_file(self):
         fd, path = tempfile.mkstemp(suffix=".toml")
@@ -312,7 +248,7 @@ class TestTimeseries:
                 )
 
             try:
-                model = Timeseries.load_file(path)
+                model = SyntheticTimeseries.load_file(path)
             except Exception as e:
                 pytest.fail(str(e))
 
@@ -328,7 +264,7 @@ class TestTimeseries:
 
     def test_save(self):
         try:
-            ts = Timeseries()
+            ts = SyntheticTimeseries()
             temp_path = "test.toml"
             ts.attrs = TimeseriesModel(
                 shape_type=ShapeType.constant,
@@ -347,8 +283,8 @@ class TestTimeseries:
             os.remove(temp_path)
 
     def test_to_dataframe(self):
-        # Create a Timeseries object
-        ts = Timeseries().load_dict(
+
+        ts = SyntheticTimeseries().load_dict(
             {
                 "shape_type": "constant",
                 "start_time": {"value": 0, "units": "hours"},

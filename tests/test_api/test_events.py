@@ -1,6 +1,7 @@
 import pytest
 
 import flood_adapt.api.events as api_events
+from flood_adapt.object_model.interface.events import ShapeType
 
 
 @pytest.fixture(scope="session")
@@ -9,7 +10,6 @@ def test_dict():
         "name": "extreme12ft",
         "description": "extreme 12 foot event",
         "mode": "single_event",
-        "template": "Synthetic",
         "timing": "idealized",
         "water_level_offset": {"value": "zero", "units": "feet"},
         "wind": {
@@ -31,7 +31,7 @@ def test_dict():
         },
         "surge": {
             "source": "shape",
-            "shape_type": ShapeType.GAUSSIAN,
+            "shape_type": ShapeType.gaussian,
             "shape_duration": 24,
             "shape_peak_time": 0,
             "shape_peak": {"value": 9.22, "units": "feet"},

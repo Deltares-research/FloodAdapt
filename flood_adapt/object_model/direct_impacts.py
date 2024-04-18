@@ -23,7 +23,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 
@@ -285,7 +284,7 @@ class DirectImpacts:
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
 
         # Add exceedance probability if needed (only for risk)
-        if self.hazard.event_mode == Mode.risk:
+        if self.hazard.event_mode == EventMode.risk:
             fiat_results_df = self._add_exeedance_probability(fiat_results_path)
 
         # Get the results dataframe
@@ -297,7 +296,7 @@ class DirectImpacts:
         # Create the infographic files
         self._create_infographics(self.hazard.event_mode, metrics_path)
 
-        if self.hazard.event_mode == Mode.risk:
+        if self.hazard.event_mode == EventMode.risk:
             # Calculate equity based damages
             self._create_equity(metrics_path)
 

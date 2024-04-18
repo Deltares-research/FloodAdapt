@@ -13,12 +13,13 @@ from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 
-from flood_adapt.object_model.hazard.event.event import Event, EventModel
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
 )
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
+from flood_adapt.object_model.interface.events import EventModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -401,7 +402,7 @@ class SfincsAdapter:
 
     def add_spw_forcing(
         self,
-        hurricane_event: Event,
+        hurricane_event: HurricaneEvent,
         database_path: Path,
         model_dir: Path,
     ):

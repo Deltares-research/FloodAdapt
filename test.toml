@@ -1,0 +1,13 @@
+shape_type = "constant"
+
+[start_time]
+value = 0.0
+units = "hours"
+
+[end_time]
+value = 1.0
+units = "hours"
+
+[peak_intensity]
+value = 1.0
+units = "mm/hr"

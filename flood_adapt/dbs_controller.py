@@ -17,7 +17,8 @@ from hydromt_fiat.fiat import FiatModel
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
@@ -27,7 +28,6 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.io.timeseries import Timeseries
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesLength,
@@ -311,14 +311,14 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wl(self, event: Event, input_wl_df: pd.DataFrame = None) -> str:
+    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
         gui_units = self.site.attrs.gui.default_length_units
         wl_df = input_wl_df or event.add_tide_and_surge_ts().tide_surge_ts
         xlim1 = pd.to_datetime(event.attrs.time.start_time)
         xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
         # Plot actual thing
-        fig = Timeseries.plot(
+        fig = SyntheticTimeseries.plot(
             wl_df + self.site.attrs.water_level.msl.height.convert(gui_units).value,
             xlim1,
             xlim2,
@@ -352,13 +352,13 @@ class Database(IDatabase):
         return str(output_loc)
 
     def plot_rainfall(
-        self, event: Event, input_rainfall_df: pd.DataFrame = None
+        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
     ) -> str:
         if event.attrs.overland.rainfall.source == RainfallSource.timeseries:
             df = input_rainfall_df or event.add_rainfall_ts().rainfall_ts
             xlim1 = pd.to_datetime(event.attrs.time.start_time)
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
-            fig = Timeseries.plot(
+            fig = SyntheticTimeseries.plot(
                 df, xlim1, xlim2, self.site.attrs.gui.default_intensity_units
             )
 
@@ -378,7 +378,9 @@ class Database(IDatabase):
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         event_dir = self.input_path.joinpath("events", event.attrs.name)
-        temp_event = Event.load_file(event_dir.joinpath(f"{event.attrs.name}.toml"))
+        temp_event = EventFactory.load_file(
+            event_dir.joinpath(f"{event.attrs.name}.toml")
+        )
         temp_event.add_river_discharge_ts(
             event_dir, self.site.attrs.river, input_river_df
         )
@@ -1297,8 +1299,8 @@ class Database(IDatabase):
         """
         events = self.get_object_list(object_type="events")
         objects = [Hazard.get_event_object(path) for path in events["path"]]
-        events["name"] = [obj.attrs.name for obj in objects]
-        events["description"] = [obj.attrs.description for obj in objects]
+        events["name"] = [obj.attrs.name or "" for obj in objects]
+        events["description"] = [obj.attrs.description or "" for obj in objects]
         return events
 
     def get_measures(self) -> dict[str, Any]:

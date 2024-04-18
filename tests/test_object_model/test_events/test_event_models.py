@@ -4,18 +4,16 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from flood_adapt.object_model.hazard.event.timeseries import ShapeType
 from flood_adapt.object_model.interface.events import (
     DEFAULT_DATETIME_FORMAT,
-    EventModel,
-    HurricaneModel,
-    Mode,
-    OffShoreModel,
-    OverlandModel,
+    EventMode,
+    EventTemplate,
     RainfallModel,
     RainfallSource,
     RiverDischargeModel,
-    ShapeType,
     SurgeModel,
+    SyntheticEventModel,
     TideModel,
     TideSource,
     TimeModel,
@@ -38,7 +36,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesTime,
     UnitTypesVelocity,
 )
-from tests.test_io.test_timeseries import TestTimeseriesModel
+from tests.test_object_model.test_events.test_timeseries import TestTimeseriesModel
 
 
 class TestWindModel:
@@ -563,57 +561,45 @@ class TestTranslationModel:
         )
 
 
-class TestHurricaneModel:
+class TestSyntheticEventModel:
     @staticmethod
     def get_test_model():
-        # Arange
-        _HURRICANE_MODEL = {
-            "track_name": "test_track",
-            "hurricane_translation": TestTranslationModel.get_test_model(),
-        }
-        return deepcopy(_HURRICANE_MODEL)
-
-    def test_validate_HurricaneModel_valid_input(self):
-        # Arange
-        model = self.get_test_model()
-
-        # Act
-        hurricane_model = HurricaneModel.model_validate(model)
-
-        # Assert
-        assert hurricane_model.track_name == "test_track"
-        assert hurricane_model.hurricane_translation == TranslationModel.model_validate(
-            TestTranslationModel.get_test_model()
-        )
-
-
-class TestOverlandModel:
-    @staticmethod
-    def get_test_model():
-        _OVERLAND_MODEL = {
-            "wind": TestWindModel.get_test_model(),
+        _MODEL = {
+            "name": "test_event",
+            "mode": "single_event",
+            "template": EventTemplate.Synthetic,
+            "description": "test_description",
+            "time": TestTimeModel.get_test_model(),
+            "rainfall": TestRainfallModel.get_test_model(),
             "river": [
                 TestRiverDischargeModel.get_test_model(),
                 TestRiverDischargeModel.get_test_model(),
             ],
             "tide": TestTideModel.get_test_model(),
             "surge": TestSurgeModel.get_test_model(),
-            "rainfall": TestRainfallModel.get_test_model(),
+            "wind": TestWindModel.get_test_model(),
         }
-        return deepcopy(_OVERLAND_MODEL)
+        return deepcopy(_MODEL)
 
-    def test_validate_OverlandModel_valid_input(self):
+    def test_validate_SyntheticEventModel_valid_input(self):
         # Arange
         model = self.get_test_model()
 
         # Act
-        overland_model = OverlandModel.model_validate(model)
+        event_model = SyntheticEventModel.model_validate(model)
 
         # Assert
-        assert overland_model.wind == WindModel.model_validate(
-            TestWindModel.get_test_model()
+        assert event_model.name == "test_event"
+        assert event_model.description == "test_description"
+        assert event_model.mode == EventMode.single_event
+        assert event_model.time == TimeModel.model_validate(
+            TestTimeModel.get_test_model()
         )
-        assert overland_model.river == [
+
+        assert event_model.rainfall == RainfallModel.model_validate(
+            TestRainfallModel.get_test_model()
+        )
+        assert event_model.river == [
             RiverDischargeModel.model_validate(
                 TestRiverDischargeModel.get_test_model()
             ),
@@ -621,136 +607,133 @@ class TestOverlandModel:
                 TestRiverDischargeModel.get_test_model()
             ),
         ]
-        assert overland_model.tide == TideModel.model_validate(
+        assert event_model.tide == TideModel.model_validate(
             TestTideModel.get_test_model()
         )
-        assert overland_model.surge == SurgeModel.model_validate(
+        assert event_model.surge == SurgeModel.model_validate(
             TestSurgeModel.get_test_model()
         )
-        assert overland_model.rainfall == RainfallModel.model_validate(
-            TestRainfallModel.get_test_model()
-        )
-
-    def test_validate_OverlandModel_valid_input_all_is_optional(self):
-        # Arange
-        model = {}
-
-        # Act
-        overland_model = OverlandModel.model_validate(model)
-
-        # Assert
-        assert overland_model.wind is None
-        assert overland_model.river is None
-        assert overland_model.tide is None
-        assert overland_model.surge is None
-        assert overland_model.rainfall is None
-
-
-class TestOffShoreModel:
-    @staticmethod
-    def get_test_model():
-        _OFFSHORE_MODEL = {
-            "wind": TestWindModel.get_test_model(),
-            "tide": TestTideModel.get_test_model(),
-            "rainfall": TestRainfallModel.get_test_model(),
-            "hurricane": TestHurricaneModel.get_test_model(),
-            "water_level_offset": {"value": 0, "units": UnitTypesLength.meters},
-        }
-        return deepcopy(_OFFSHORE_MODEL)
-
-    def test_validate_OffShoreModel_valid_input(self):
-        # Arange
-        model = self.get_test_model()
-
-        # Act
-        offshore_model = OffShoreModel.model_validate(model)
-
-        # Assert
-        assert offshore_model.wind == WindModel.model_validate(
+        assert event_model.wind == WindModel.model_validate(
             TestWindModel.get_test_model()
         )
-        assert offshore_model.tide == TideModel.model_validate(
-            TestTideModel.get_test_model()
-        )
-        assert offshore_model.rainfall == RainfallModel.model_validate(
-            TestRainfallModel.get_test_model()
-        )
-        assert offshore_model.hurricane == HurricaneModel.model_validate(
-            TestHurricaneModel.get_test_model()
-        )
-        assert offshore_model.water_level_offset == UnitfulLength(
-            0, UnitTypesLength.meters
-        )
 
-    def test_validate_OverlandModel_valid_input_all_is_optional(self):
-        # Arange
-        model = {}
-
-        # Act
-        offshore_model = OffShoreModel.model_validate(model)
-
-        # Assert
-        assert offshore_model.wind is None
-        assert offshore_model.tide is None
-        assert offshore_model.rainfall is None
-        assert offshore_model.hurricane is None
-
-
-class TestEventModel:
-    @staticmethod
-    def get_test_model():
-        _EVENT_MODEL = {
-            "name": "test_event",
-            "mode": "single_event",
-            "description": "test_description",
-            "time": TestTimeModel.get_test_model(),
-            "overland": TestOverlandModel.get_test_model(),
-            "offshore": TestOffShoreModel.get_test_model(),
-        }
-        return deepcopy(_EVENT_MODEL)
-
-    def test_validate_EventModel_valid_input(self):
-        # Arange
-        model = self.get_test_model()
-
-        # Act
-        event_model = EventModel.model_validate(model)
-
-        # Assert
-        assert event_model.name == "test_event"
-        assert event_model.description == "test_description"
-        assert event_model.mode == Mode.single_event
-        assert event_model.time == TimeModel.model_validate(
-            TestTimeModel.get_test_model()
-        )
-
-        assert event_model.overland == OverlandModel.model_validate(
-            TestOverlandModel.get_test_model()
-        )
-        assert event_model.offshore == OffShoreModel.model_validate(
-            TestOffShoreModel.get_test_model()
-        )
-
-    def test_validate_EventModel_valid_input_all_optional(self):
+    def test_validate_SyntheticEventModel_valid_input_all_optional(self):
         # Arange
         model = self.get_test_model()
         model.pop("description")
-        model.pop("overland")
-        model.pop("offshore")
+        model.pop("rainfall")
+        model.pop("river")
+        model.pop("tide")
+        model.pop("surge")
+        model.pop("wind")
 
         # Act
-        event_model = EventModel.model_validate(model)
+        event_model = SyntheticEventModel.model_validate(model)
 
         # Assert
         assert event_model.name == "test_event"
-        assert event_model.mode == Mode.single_event
+        assert event_model.mode == EventMode.single_event
         assert event_model.time == TimeModel.model_validate(
             TestTimeModel.get_test_model()
         )
 
         assert event_model.description is None
-        assert event_model.overland is None
-        assert event_model.offshore is None
+        assert event_model.rainfall is None
+        assert event_model.river is None
+        assert event_model.tide is None
+        assert event_model.surge is None
+        assert event_model.wind is None
+
+    def test_
+
+
+
+class TestHurricaneEventModel:
+    @staticmethod
+    def get_test_model():
+        _MODEL = {
+            "name": "test_event",
+            "mode": "single_event",
+            "template": EventTemplate.Hurricane,
+            "description": "test_description",
+            "time": TestTimeModel.get_test_model(),
+            "rainfall": TestRainfallModel.get_test_model(),
+            "river": [
+                TestRiverDischargeModel.get_test_model(),
+                TestRiverDischargeModel.get_test_model(),
+            ],
+            "tide": TestTideModel.get_test_model(),
+            "surge": TestSurgeModel.get_test_model(),
+            "wind": TestWindModel.get_test_model(),
+            "track_name": "test_track",
+            "hurricane_translation": TestTranslationModel.get_test_model(),
+        }
+        return deepcopy(_MODEL)
+
+
+class TestTestHistoricalEventModel:
+    @staticmethod
+    def get_test_model():
+        _MODEL = {
+            "name": "test_event",
+            "mode": "single_event",
+            "template": EventTemplate.Historical,
+            "description": "test_description",
+            "time": TestTimeModel.get_test_model(),
+            "rainfall": TestRainfallModel.get_test_model(),
+            "river": [
+                TestRiverDischargeModel.get_test_model(),
+                TestRiverDischargeModel.get_test_model(),
+            ],
+            "tide": TestTideModel.get_test_model(),
+            "surge": TestSurgeModel.get_test_model(),
+            "wind": TestWindModel.get_test_model(),
+        }
+        return deepcopy(_MODEL)
+
+
+#     def test_validate_EventModel_valid_input(self):
+#         # Arange
+#         model = self.get_test_model()
+
+#         # Act
+#         event_model = EventModel.model_validate(model)
+
+#         # Assert
+#         assert event_model.name == "test_event"
+#         assert event_model.description == "test_description"
+#         assert event_model.mode == EventMode.single_event
+#         assert event_model.time == TimeModel.model_validate(
+#             TestTimeModel.get_test_model()
+#         )
+
+#         assert event_model.overland == OverlandModel.model_validate(
+#             TestOverlandModel.get_test_model()
+#         )
+#         assert event_model.offshore == OffShoreModel.model_validate(
+#             TestOffShoreModel.get_test_model()
+#         )
+
+#     def test_validate_EventModel_valid_input_all_optional(self):
+#         # Arange
+#         model = self.get_test_model()
+#         model.pop("description")
+#         model.pop("overland")
+#         model.pop("offshore")
+
+#         # Act
+#         event_model = EventModel.model_validate(model)
+
+#         # Assert
+#         assert event_model.name == "test_event"
+#         assert event_model.mode == EventMode.single_event
+#         assert event_model.time == TimeModel.model_validate(
+#             TestTimeModel.get_test_model()
+#         )
+
+#         assert event_model.description is None
+#         assert event_model.overland is None
+#         assert event_model.offshore is None
 
 
 @pytest.mark.skip("TestEventSetModel not implemented")

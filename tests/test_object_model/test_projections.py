@@ -31,7 +31,7 @@ def test_dict():
         "physical_projection": {
             "sea_level_rise": {"value": 2, "units": "feet"},
             "subsidence": {"value": 0, "units": "feet"},
-            "rainfall_increase": 20,
+            "rainfall_multiplier": 20,
             "storm_frequency_increase": 20,
         },
         "socio_economic_change": {
@@ -103,7 +103,7 @@ def test_projection_getPhysicalProjection_readValidAttrs(test_projections):
     assert physical_attrs.attrs.subsidence.value == 0
     assert physical_attrs.attrs.subsidence.units == "feet"
 
-    assert physical_attrs.attrs.rainfall_increase == 20
+    assert physical_attrs.attrs.rainfall_multiplier == 20
     assert physical_attrs.attrs.storm_frequency_increase == 20
 
 

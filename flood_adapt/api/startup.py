@@ -132,8 +132,3 @@ def get_hazard_measure_types():
 
 def get_impact_measure_types():
     raise NotImplementedError
-
-
-def get_event_templates():
-    # get a list ideally automatically from the child classes of the parent class Event
-    raise NotImplementedError

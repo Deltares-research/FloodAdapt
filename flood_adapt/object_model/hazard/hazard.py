@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -14,18 +14,21 @@ from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.eventset import EventSet
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import (
-    Mode,
+    EventMode,
+    EventTemplate,
+    IEvent,
     RainfallSource,
     WindSource,
 )
 from flood_adapt.object_model.interface.measures import HazardType
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.io.timeseries import Timeseries
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
@@ -50,7 +53,7 @@ class Hazard:
 
     name: str
     database_input_path: Path
-    mode: Mode
+    mode: EventMode
     event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
@@ -59,10 +62,10 @@ class Hazard:
     def __init__(
         self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
     ) -> None:
-        self._mode: Mode
+        self._mode: EventMode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
-        self.event_list: list[Event] = []
+        self.event_list: list[IEvent] = []
         self.name = scenario.name
         self.results_dir = results_dir
         self.database_input_path = database_input_path
@@ -82,22 +85,22 @@ class Hazard:
         self.has_run = self.sfincs_has_run_check()
 
     @property
-    def event_mode(self) -> Mode:
+    def event_mode(self) -> EventMode:
         return self._mode
 
     @event_mode.setter
-    def event_mode(self, mode: Mode) -> None:
+    def event_mode(self, mode: EventMode) -> None:
         self._mode = mode
 
-    def _set_sfincs_map_path(self, mode: Mode) -> None:
-        if mode == Mode.single_event:
+    def _set_sfincs_map_path(self, mode: EventMode) -> None:
+        if mode == EventMode.single_event:
             [self.sfincs_map_path] = self.simulation_paths
 
-        elif mode == Mode.risk:
+        elif mode == EventMode.risk:
             self.sfincs_map_path = self.results_dir
 
     def set_simulation_paths(self) -> None:
-        if self._mode == Mode.single_event:
+        if self._mode == EventMode.single_event:
             self.simulation_paths = [
                 self.database_input_path.parent.joinpath(
                     "output",
@@ -119,7 +122,9 @@ class Hazard:
                     self.site.attrs.sfincs.offshore_model,
                 )
             ]
-        elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
+        elif (
+            self._mode == EventMode.risk
+        ):  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
@@ -173,7 +178,7 @@ class Hazard:
         return test_combined
 
     def set_event(self, event_name: str) -> None:
-        """Sets the actual Event template class list using the list of measure names
+        """Sets the actual Event class list using the list of measure names
         Args:
             event_name (str): name of event used in scenario
         """
@@ -181,14 +186,14 @@ class Hazard:
             self.database_input_path / "events" / event_name / f"{event_name}.toml"
         )
         # set mode (probabilistic_set or single_event)
-        self.event_mode = Event.get_mode(event_set_path)
+        self.event_mode = IEvent.get_mode(event_set_path)
         self.event_set = EventSet.load_file(event_set_path)
 
-        if self._mode == Mode.single_event:
+        if self._mode == EventMode.single_event:
             self.event_set.event_paths = [event_set_path]
             self.probabilities = [1]
 
-        elif self._mode == Mode.risk:
+        elif self._mode == EventMode.risk:
             self.event_set.event_paths = []
             subevents = self.event_set.attrs.subevent_name
 
@@ -202,9 +207,9 @@ class Hazard:
                 )
                 self.event_set.event_paths.append(event_path)
 
-        # parse event config file to get event template
+        # parse event config file
         for event_path in self.event_set.event_paths:
-            event = Event.load_file(event_path)
+            event = EventFactory.get_event(event_path)
             self.event_list.append(event)
         self.event = self.event_list[0]
         # set event for single_event to be able to plot wl etc
@@ -226,12 +231,14 @@ class Hazard:
     # no write function is needed since this is only used internally
 
     @staticmethod
-    def get_event_object(event_path):
-        mode = Event.get_mode(event_path)
-        if mode == Mode.single_event:
-            return Event.load_file(event_path)
-        elif mode == Mode.risk:
+    def get_event_object(event_path) -> Union[IEvent, EventSet]:
+        mode = EventFactory.get_mode(event_path)
+        if mode == EventMode.single_event:
+            return EventFactory.load_file(event_path)
+        elif mode == EventMode.risk:
             return EventSet.load_file(event_path)
+        else:
+            raise ValueError(f"Invalid Event mode: {mode}.")
 
     def preprocess_models(self):
         logging.info("Preparing hazard models...")
@@ -321,16 +328,17 @@ class Hazard:
 
             ## DOWNLOAD METEO ##
             if (
-                self.event.attrs.overland.wind.source == WindSource.map
-                or self.event.attrs.overland.rainfall.source == RainfallSource.map
+                self.event.attrs.wind.source == WindSource.map
+                or self.event.attrs.rainfall.source == RainfallSource.map
+                or self.event.attrs.template == EventTemplate.Historical
             ):
                 meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
                 if not meteo_dir.is_dir():
                     os.mkdir(
                         self.database_input_path.parent.joinpath("output", "meteo")
                     )
-                ds = self.event.download_meteo(
-                    site=self.site, path=meteo_dir
+                ds = HistoricalEvent.download_meteo(
+                    event=self.event, site=self.site, path=meteo_dir
                 )  # =event_dir)
                 ds = ds.rename({"barometric_pressure": "press"})
                 ds = ds.rename({"precipitation": "precip"})
@@ -340,41 +348,42 @@ class Hazard:
             ## WATER LEVELS ##
             # generate hazard water level bc incl SLR (in the offshore model these are already included)
             # returning wl referenced to MSL
-            if not self.event.attrs.overland.gauged:  # synthetic
-                logging.info("Preparing synthetic tide and surge for overland model...")
-                # e.g. for synthetic events that provide water levels
-                self.event.add_tide_and_surge_ts()
-                # add water level offset due to historic SLR for synthetic event
-                wl_ts = (
-                    self.event.tide_surge_ts
-                    + self.site.attrs.slr.vertical_offset.convert(
-                        self.site.attrs.gui.default_length_units
-                    ).value
-                )
-            else:  # gauged or produced by offshore model
-                # water level offset due to historic SLR already included in observations
-                logging.info(
-                    "Using gauged or generated tide and surge for overland model..."
-                )
-                wl_ts = self.event.tide_surge_ts
+            if self.event.attrs.template in [
+                EventTemplate.Synthetic,
+                EventTemplate.Historical,
+            ]:
+                if self.event.attrs.template == EventTemplate.Synthetic:
+                    # e.g. for synthetic events that provide water levels
+                    self.event.add_tide_and_surge_ts()
+                    # add water level offset due to historic SLR for synthetic event
+                    wl_ts = (
+                        self.event.tide_surge_ts
+                        + self.site.attrs.slr.vertical_offset.convert(
+                            self.site.attrs.gui.default_length_units
+                        ).value
+                    )
 
-            # In both cases, add SLR
-            wl_ts[1] = (
-                wl_ts[1]
-                + self.physical_projection.attrs.sea_level_rise.convert(
+                elif self.event.attrs.template == EventTemplate.Historical:
+                    # e.g. for historical events that need to download water levels
+                    wl_ts = self.event.tide_surge_ts
+                # In both cases (Synthetic and Historical nearshore) add SLR
+                wl_ts[1] = wl_ts[
+                    1
+                ] + self.physical_projection.attrs.sea_level_rise.convert(
                     self.site.attrs.gui.default_length_units
-                ).value
-            )
-            # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
-            conversion_factor = (
-                UnitfulLength(1, self.site.attrs.gui.default_length_units)
-                .convert(UnitTypesLength.meters)
-                .value
-            )
-            self.wl_ts = conversion_factor * wl_ts
+                )
+                # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
+                gui_units = UnitfulLength(
+                    value=1.0, units=self.site.attrs.gui.default_length_units
+                )
+                conversion_factor = gui_units.convert(UnitTypesLength("meters"))
+                self.wl_ts = conversion_factor * wl_ts
 
             ### OFFSHORE MODEL ###
-            if self.event.attrs.offshore is not None:
+            if self.event.attrs.template in [
+                EventTemplate.Historical,
+                EventTemplate.Hurricane,
+            ]:
                 logging.info("Preparing offshore model to generate tide and surge...")
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
@@ -423,9 +432,9 @@ class Hazard:
                 )
 
             ## NON-HURRICANE ##
-            if self.event.attrs.offshore.hurricane is None:
+            if self.event.attrs.hurricane is None:
                 ## RAINFALL ##
-                if self.event.attrs.overland.rainfall.source == RainfallSource.map:
+                if self.event.attrs.rainfall.source == RainfallSource.map:
                     logging.info(
                         "Adding gridded rainfall to the overland flood model..."
                     )
@@ -433,12 +442,9 @@ class Hazard:
                     model.add_precip_forcing_from_grid(
                         ds=ds["precip"]
                         * self.physical_projection.attrs.rainfall_multiplier
-                        * self.event.attrs.overland.rainfall.multiplier
+                        * self.event.attrs.rainfall.multiplier
                     )
-                elif (
-                    self.event.attrs.overland.rainfall.source
-                    == RainfallSource.timeseries
-                ):
+                elif self.event.attrs.rainfall.source == RainfallSource.timeseries:
                     logging.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
@@ -451,8 +457,8 @@ class Hazard:
                         .value
                     )
 
-                    df = Timeseries(
-                        self.event.attrs.overland.rainfall.timeseries
+                    df = SyntheticTimeseries(
+                        self.event.attrs.rainfall.timeseries
                     ).to_dataframe(
                         start_time=self.event.attrs.time.start_time,
                         end_time=self.event.attrs.time.end_time,
@@ -461,33 +467,31 @@ class Hazard:
                         conversion_factor_precip
                         * df
                         * self.physical_projection.attrs.rainfall_multiplier
-                        * self.event.attrs.overland.rainfall.multiplier
+                        * self.event.attrs.rainfall.multiplier
                     )
 
                     model.add_precip_forcing(timeseries=df)
 
                 ## WIND ##
-                if self.event.attrs.overland.wind.source == WindSource.map:
+                if self.event.attrs.wind.source == WindSource.map:
                     logging.info(
                         "Adding gridded wind field to the overland flood model..."
                     )
                     model.add_wind_forcing_from_grid(ds=ds)
-                elif self.event.attrs.overland.wind.source == WindSource.timeseries:
+                elif self.event.attrs.wind.source == WindSource.timeseries:
                     logging.info(
                         "Adding wind timeseries to the overland flood model..."
                     )
 
                     df = pd.read_csv(
-                        event_dir.joinpath(
-                            self.event.attrs.overland.wind.timeseries_file
-                        ),
+                        event_dir.joinpath(self.event.attrs.wind.timeseries_file),
                         index_col=0,
                         header=None,
                     )
                     df[1] = conversion_factor_precip * df[1]
                     df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=df)
-                elif self.event.attrs.overland.wind.source == WindSource.constant:
+                elif self.event.attrs.wind.source == WindSource.constant:
                     logging.info("Adding constant wind to the overland flood model...")
                     # conversion factor to metric units
                     conversion_factor_wind = (
@@ -496,9 +500,9 @@ class Hazard:
                         .value
                     )
                     model.add_wind_forcing(
-                        const_mag=self.event.attrs.overland.wind.constant_speed.value
+                        const_mag=self.event.attrs.wind.constant_speed.value
                         * conversion_factor_wind,
-                        const_dir=self.event.attrs.overland.wind.constant_direction.value,
+                        const_dir=self.event.attrs.wind.constant_direction.value,
                     )
 
             ## HURRICANE ##
@@ -548,7 +552,7 @@ class Hazard:
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
 
             # Write spw file to overland folder
-            if self.event.attrs.offshore.hurricane is not None:
+            if self.event.attrs.hurricane is not None:
                 shutil.copy2(
                     self.simulation_paths_offshore[ii].joinpath(spw_name),
                     self.simulation_paths[ii].joinpath(spw_name),
@@ -568,7 +572,7 @@ class Hazard:
         path_in_offshore = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.offshore_model
         )
-        if self.event_mode == Mode.risk:
+        if self.event_mode == EventMode.risk:
             event_dir = (
                 self.database_input_path
                 / "events"
@@ -594,24 +598,22 @@ class Hazard:
 
         # Add wind
         # and if applicable pressure forcing from meteo data (historical_offshore) or spiderweb file (historical_hurricane).
-        if self.event.attrs.offshore.hurricane is None:
-            if self.event.attrs.offshore.wind.source == WindSource.map:
+        if self.event.attrs.template == EventTemplate.Historical:
+            if self.event.attrs.wind.source == WindSource.map:
                 offshore_model.add_wind_forcing_from_grid(ds=ds)
                 offshore_model.add_pressure_forcing_from_grid(ds=ds["press"])
 
-            elif self.event.attrs.offshore.wind.source == WindSource.timeseries:
+            elif self.event.attrs.wind.source == WindSource.timeseries:
                 offshore_model.add_wind_forcing(
-                    timeseries=event_dir.joinpath(
-                        self.event.attrs.offshore.wind.timeseries_file
-                    )
+                    timeseries=event_dir.joinpath(self.event.attrs.wind.timeseries_file)
                 )
 
-            elif self.event.attrs.offshore.wind.source == WindSource.constant:
+            elif self.event.attrs.wind.source == WindSource.constant:
                 offshore_model.add_wind_forcing(
-                    const_mag=self.event.attrs.offshore.wind.constant_speed.value,
-                    const_dir=self.event.attrs.offshore.wind.constant_direction.value,
+                    const_mag=self.event.attrs.wind.constant_speed.value,
+                    const_dir=self.event.attrs.wind.constant_direction.value,
                 )
-        else:
+        elif self.event.attrs.template == EventTemplate.Hurricane:
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
             if event_dir.joinpath(spw_name).is_file():
@@ -636,6 +638,8 @@ class Hazard:
                     event_dir.joinpath(spw_name),
                 )
                 logging.info("Finished generating meteo data from hurricane track.")
+        else:  # synthetic
+            pass
 
         # write sfincs model in output destination
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
@@ -654,7 +658,7 @@ class Hazard:
         del offshore_model
 
     def postprocess_sfincs(self):
-        if self._mode == Mode.single_event:
+        if self._mode == EventMode.single_event:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
             self.plot_wl_obs()
@@ -663,7 +667,7 @@ class Hazard:
             # shutil.copyfile(
             #     self.simulation_paths[0].joinpath("sfincs_map.nc"), self.sfincs_map_path
             # )
-        elif self._mode == Mode.risk:
+        elif self._mode == EventMode.risk:
             self.calculate_rp_floodmaps()
             # self.sfincs_map_path = []
             # self.calculate_floodfrequency_map()
@@ -733,11 +737,11 @@ class Hazard:
                 )
 
                 # check if event uses tide gauge data
-                if self.event.attrs.overland.gauged:
+                if self.event.attrs.tide.source == "file":
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
                     if isinstance(self.site.attrs.obs_point[ii].ID, int):
-                        df_gauge = Event.download_wl_data(
+                        df_gauge = HistoricalEvent.download_wl_data(
                             station_id=self.site.attrs.obs_point[ii].ID,
                             start_time_str=self.event.attrs.time.start_time,
                             stop_time_str=self.event.attrs.time.end_time,

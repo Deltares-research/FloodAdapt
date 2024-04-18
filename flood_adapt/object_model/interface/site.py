@@ -54,7 +54,7 @@ class WaterLevelReferenceModel(BaseModel):
     reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = None
 
 
 class Cyclone_track_databaseModel(BaseModel):

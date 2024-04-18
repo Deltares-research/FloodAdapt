@@ -10,7 +10,6 @@ from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
-from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
@@ -66,8 +65,8 @@ class FiatAdapter:
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = self._get_sfincs_map_path(hazard)
         map_type = hazard.site.attrs.fiat.floodmap_type
-        var = "zsmax" if hazard.event_mode == Mode.RISK else "risk_maps"
-        is_risk = hazard.event_mode == Mode.RISK
+        var = "zsmax" if hazard.event_mode == EventMode.risk else "risk_maps"
+        is_risk = hazard.event_mode == EventMode.risk
 
         # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
@@ -101,10 +100,10 @@ class FiatAdapter:
         mode = hazard.event_mode
         map_fn: List[Union[str, Path]] = []
 
-        if mode == Mode.SINGLE_EVENT:
+        if mode == EventMode.single_event:
             map_fn.append(sim_path.joinpath("sfincs_map.nc"))
 
-        elif mode == Mode.RISK:
+        elif mode == EventMode.risk:
             # check for netcdf
             map_fn.extend(
                 sim_path.joinpath(file)

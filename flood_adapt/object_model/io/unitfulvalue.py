@@ -25,9 +25,6 @@ class ValueUnitPair(BaseModel):
     value: float
     units: Unit
 
-    def __init__(self, value: float, units: Unit, **data):
-        super().__init__(value=value, units=units, **data)
-
     def convert(self, new_units: Unit) -> "ValueUnitPair":
         raise NotImplementedError
 
@@ -462,6 +459,33 @@ class UnitfulTime(ValueUnitPair):
     value: float
     units: UnitTypesTime
 
+    _CONVERSION_FACTORS = {
+        UnitTypesTime.days: {
+            UnitTypesTime.days: 1.0,
+            UnitTypesTime.hours: 24.0,
+            UnitTypesTime.minutes: 24.0 * 60.0,
+            UnitTypesTime.seconds: 24.0 * 60.0 * 60.0,
+        },
+        UnitTypesTime.hours: {
+            UnitTypesTime.days: 1.0 / 24.0,
+            UnitTypesTime.hours: 1.0,
+            UnitTypesTime.minutes: 60.0,
+            UnitTypesTime.seconds: 60.0 * 60.0,
+        },
+        UnitTypesTime.minutes: {
+            UnitTypesTime.days: 1.0 / (24.0 * 60.0),
+            UnitTypesTime.hours: 1.0 / 60.0,
+            UnitTypesTime.minutes: 1.0,
+            UnitTypesTime.seconds: 60.0,
+        },
+        UnitTypesTime.seconds: {
+            UnitTypesTime.days: 1.0 / (24.0 * 60.0 * 60.0),
+            UnitTypesTime.hours: 1.0 / (60.0 * 60.0),
+            UnitTypesTime.minutes: 1.0 / 60.0,
+            UnitTypesTime.seconds: 1.0,
+        },
+    }
+
     def to_timedelta(self) -> timedelta:
         """converts given time to datetime.deltatime object, relative to UnitfulTime(0, Any)
 
@@ -486,35 +510,12 @@ class UnitfulTime(ValueUnitPair):
         UnitfulTime
             converted value + units
         """
-        conversion_factors = {
-            UnitTypesTime.days: {
-                UnitTypesTime.days: 1.0,
-                UnitTypesTime.hours: 24.0,
-                UnitTypesTime.minutes: 24.0 * 60.0,
-                UnitTypesTime.seconds: 24.0 * 60.0 * 60.0,
-            },
-            UnitTypesTime.hours: {
-                UnitTypesTime.days: 1.0 / 24.0,
-                UnitTypesTime.hours: 1.0,
-                UnitTypesTime.minutes: 60.0,
-                UnitTypesTime.seconds: 60.0 * 60.0,
-            },
-            UnitTypesTime.minutes: {
-                UnitTypesTime.days: 1.0 / (24.0 * 60.0),
-                UnitTypesTime.hours: 1.0 / 60.0,
-                UnitTypesTime.minutes: 1.0,
-                UnitTypesTime.seconds: 60.0,
-            },
-            UnitTypesTime.seconds: {
-                UnitTypesTime.days: 1.0 / (24.0 * 60.0 * 60.0),
-                UnitTypesTime.hours: 1.0 / (60.0 * 60.0),
-                UnitTypesTime.minutes: 1.0 / 60.0,
-                UnitTypesTime.seconds: 1.0,
-            },
-        }
 
-        if self.units not in conversion_factors or new_units not in conversion_factors:
+        if (
+            self.units not in self._CONVERSION_FACTORS
+            or new_units not in self._CONVERSION_FACTORS
+        ):
             raise TypeError("Invalid time units")
 
-        conversion_factor = conversion_factors[self.units][new_units]
-        return UnitfulTime(self.value * conversion_factor, new_units)
+        conversion_factor = self._CONVERSION_FACTORS[self.units][new_units]
+        return (self.value * conversion_factor, new_units)

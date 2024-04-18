@@ -222,7 +222,7 @@ def load_config(config_path: Path, overwrite: bool = True) -> dict:
 
 
 def update_config(
-    database_root=None, system_folder=None, database_name=None, overwrite=True
+    *, database_root=None, system_folder=None, database_name=None, overwrite=True
 ) -> None:
     """
     Parse the user input and set the corresponding configuration values.
