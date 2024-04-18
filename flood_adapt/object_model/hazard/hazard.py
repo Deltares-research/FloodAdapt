@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import xarray as xr
+from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
@@ -820,27 +821,34 @@ class Hazard:
                             )
                         else:
                             file = None
-                        df_gauge = HistoricalNearshore.download_wl_data(
-                            station_id=self.site.attrs.obs_point[ii].ID,
-                            start_time_str=self.event.attrs.time.start_time,
-                            stop_time_str=self.event.attrs.time.end_time,
-                            units=UnitTypesLength(gui_units),
-                            file=file,
-                        )
 
-                        fig.add_trace(
-                            go.Scatter(
-                                x=pd.DatetimeIndex(df_gauge.index),
-                                y=df_gauge[1]
-                                + self.site.attrs.water_level.msl.height.convert(
-                                    gui_units
-                                ),
-                                line_color="#ea6404",
+                        try:
+                            df_gauge = HistoricalNearshore.download_wl_data(
+                                station_id=self.site.attrs.obs_point[ii].ID,
+                                start_time_str=self.event.attrs.time.start_time,
+                                stop_time_str=self.event.attrs.time.end_time,
+                                units=UnitTypesLength(gui_units),
+                                file=file,
                             )
-                        )
-                        fig["data"][0]["name"] = "model"
-                        fig["data"][1]["name"] = "measurement"
-                        fig.update_layout(showlegend=True)
+                        except COOPSAPIError as e:
+                            logging.warning(
+                                f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
+                            )
+                        else:
+                            # If data is available, add to plot
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=pd.DatetimeIndex(df_gauge.index),
+                                    y=df_gauge[1]
+                                    + self.site.attrs.water_level.msl.height.convert(
+                                        gui_units
+                                    ),
+                                    line_color="#ea6404",
+                                )
+                            )
+                            fig["data"][0]["name"] = "model"
+                            fig["data"][1]["name"] = "measurement"
+                            fig.update_layout(showlegend=True)
 
                 # write html to results folder
                 station_name = gdf.iloc[ii]["Name"]

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CurrentSituationModel(BaseModel):
@@ -14,7 +14,7 @@ class CurrentSituationModel(BaseModel):
 class BenefitModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object"""
 
-    name: str
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     strategy: str
     event_set: str
