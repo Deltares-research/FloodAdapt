@@ -28,6 +28,7 @@ from flood_adapt.object_model.interface.site import (
     RiverModel,
     UnitfulDischarge,
 )
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
 
@@ -657,6 +658,17 @@ class Database:
         self.logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
+        SFINCS_units = UnitfulLength(
+            value=1.0, units="meters"
+        )  # SFINCS is always in meters
+        FIAT_units = self.site_attrs["sfincs"]["floodmap_units"]
+        conversion_factor = SFINCS_units.convert(FIAT_units)
+
+        if conversion_factor != 1:
+            self.logger.info(
+                f"Ground elevation for FIAT objects is in '{FIAT_units}', while SFINCS ground elevation is in 'meters'. Values in the exposure csv will be converted by a factor of {conversion_factor}"
+            )
+
         exposure_csv_path = Path(self.fiat_model.root).joinpath(
             "exposure", "exposure.csv"
         )
@@ -668,9 +680,10 @@ class Database:
 
         x_points = xr.DataArray(roads["geometry"].x, dims="points")
         y_points = xr.DataArray(roads["geometry"].y, dims="points")
-        roads["elev"] = dem.sel(
-            x=x_points, y=y_points, band=1, method="nearest"
-        ).to_numpy()
+        roads["elev"] = (
+            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+            * conversion_factor
+        )
 
         exposure.loc[
             exposure["Primary Object Type"] == "roads", "Ground Floor Height"
@@ -687,9 +700,10 @@ class Database:
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
         x_points = xr.DataArray(points["geometry"].x, dims="points")
         y_points = xr.DataArray(points["geometry"].y, dims="points")
-        points["elev"] = dem.sel(
-            x=x_points, y=y_points, band=1, method="nearest"
-        ).to_numpy()
+        points["elev"] = (
+            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+            * conversion_factor
+        )
         exposure = exposure.merge(
             points[["Object ID", "elev"]], on="Object ID", how="left"
         )
