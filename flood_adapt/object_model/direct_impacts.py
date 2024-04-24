@@ -56,10 +56,9 @@ class DirectImpacts:
             scenario, database_input_path, self.results_path.joinpath("Flooding")
         )
         # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        self.site_info = Site.load_file(self.site_toml_path)
+        self.static_path = Path(self.database_input_path).parent / "static"
+        site_toml_path = self.static_path / "site" / "site.toml"
+        self.site_info = Site.load_file(site_toml_path)
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.fiat_path = self.impacts_path.joinpath("fiat_model")
@@ -381,7 +380,7 @@ class DirectImpacts:
 
             # Create Equity object
             equity = Equity(
-                census_table=self.site_toml_path.parent.joinpath(
+                census_table=self.static_path.joinpath(
                     self.site_info.attrs.fiat.aggregation[ind].equity.census_data
                 ),
                 damages_table=fiat_data,
@@ -444,7 +443,7 @@ class DirectImpacts:
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_label
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
+            aggr_areas_path = self.static_path.joinpath(
                 self.site_info.attrs.fiat.aggregation[ind].file
             )
 
@@ -471,7 +470,7 @@ class DirectImpacts:
         if not self.site_info.attrs.fiat.building_footprints:
             raise ValueError("No building footprints are provided.")
         # Get footprints file
-        footprints_path = self.site_toml_path.parent.joinpath(
+        footprints_path = self.static_path.joinpath(
             self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved

@@ -117,7 +117,7 @@ class Database(IDatabase):
         aggregation_areas = {}
         for aggr_dict in self.site.attrs.fiat.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file,
+                self.static_path / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
