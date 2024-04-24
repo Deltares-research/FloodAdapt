@@ -375,11 +375,7 @@ class Database:
         self.site_attrs["fiat"]["exposure_crs"] = self.fiat_model.exposure.crs
         self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # for now fixed
         self.site_attrs["fiat"]["non_building_names"] = ["roads"]  #  for now fixed
-        self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.config["exposure"][
-            "csv"
-        ][
-            "damage_unit"
-        ]  # TODO update
+        self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         if not self.config.building_footprints:
@@ -651,7 +647,12 @@ class Database:
         ] = "meters"  # This is always in meters from SFINCS
 
     def update_fiat_elevation(self):
+        """
+        Updates the ground elevations of FIAT objects based on the SFINCS ground elevation map.
 
+        This method reads the DEM file and the exposure CSV file, and updates the ground elevations
+        of the FIAT objects (roads and buildings) based on the nearest elevation values from the DEM.
+        """
         dem_file = self.static_path.joinpath("dem", self.site_attrs["dem"]["filename"])
         # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
         # self.fiat_model.update_ground_elevation(dem_file)
