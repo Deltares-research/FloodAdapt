@@ -3,19 +3,22 @@ import shutil
 from enum import Enum
 from pathlib import Path
 from shutil import rmtree
-from typing import Optional
+from typing import Optional, Union
 from urllib.request import urlretrieve
 
 import click
 import geopandas as gpd
 import pandas as pd
+import rioxarray as rxr
 import tomli
 import tomli_w
+import xarray as xr
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
+from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.startup import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
@@ -175,6 +178,7 @@ class ConfigModel(BaseModel):
     cyclone_basin: Optional[Basins] = None
     river: Optional[list[RiverModel]] = []
     obs_point: Optional[list[Obs_pointModel]] = []
+    probabilistic_set: Optional[str] = None
 
 
 def read_toml(fn: str) -> dict:
@@ -207,6 +211,39 @@ def read_config(config: str) -> ConfigModel:
     return attrs
 
 
+def spatial_join(
+    objects: gpd.GeoDataFrame,
+    layer: Union[str, gpd.GeoDataFrame],
+    field_name: str,
+    rename: Optional[str] = None,
+) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+    """
+    Performs a spatial join between two GeoDataFrames.
+
+    Args:
+        objects (gpd.GeoDataFrame): The GeoDataFrame representing the objects.
+        layer (Union[str, gpd.GeoDataFrame]): The GeoDataFrame or file path of the layer to join with.
+        field_name (str): The name of the field to use for the join.
+        rename (Optional[str], optional): The new name to assign to the joined field. Defaults to None.
+
+    Returns:
+        tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]: A tuple containing the joined GeoDataFrame and the layer GeoDataFrame.
+
+    """
+    # Read in layer and keep only column of interest
+    if not isinstance(layer, gpd.GeoDataFrame):
+        layer = gpd.read_file(layer)
+    layer = layer[[field_name, "geometry"]]
+    # Spatial join of the layers
+    objects_joined = objects.sjoin(layer)
+    objects_joined = objects_joined[["Object ID", field_name]]
+    # rename field if provided
+    if rename:
+        objects_joined = objects_joined.rename(columns={field_name: rename})
+        layer = layer.rename(columns={field_name: rename})
+    return objects_joined, layer
+
+
 class Database:
     """
     Represents a FloodAdapt database.
@@ -231,7 +268,8 @@ class Database:
         self.logger.info(f"Initializing a FloodAdapt database in '{root}'")
         self.root = root
         self.site_attrs = {"name": config.name, "description": config.description}
-        self.site_path = root.joinpath("static", "site")
+        self.static_path = self.root.joinpath("static")
+        self.site_path = self.static_path.joinpath("site")
 
     def make_folder_structure(self):
         """
@@ -272,10 +310,10 @@ class Database:
         """
         # Load database
         dbs = read_database(self.root.parent, self.config.name)
-
+        # Create no measures strategy
         strategy = create_strategy({"name": "no_measures", "measures": []}, dbs)
         save_strategy(strategy, dbs)
-
+        # Create current conditions projection
         projection = create_projection(
             {
                 "name": "current",
@@ -284,6 +322,15 @@ class Database:
             }
         )
         save_projection(projection, dbs)
+        # If provided use probabilistic set
+        # TODO better check if configuration of event set is correct?
+        event_set = self.site_attrs["standard_objects"]["events"][0]
+        if event_set:
+            mode = get_event_mode(event_set, dbs)
+            if mode != "risk":
+                self.logger.error(
+                    f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
+                )
 
     def read_fiat(self):
         """
@@ -311,12 +358,14 @@ class Database:
         self.fiat_model = FiatModel(root=fiat_path, mode="r+")
         self.fiat_model.read()
 
+        # Read in geometries of buildings
+        ind = self.fiat_model.exposure.geom_names.index("buildings")
+        buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+        exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
+        exposure_csv = pd.read_csv(exposure_csv_path)
+
         # Get center of area of interest
-        center = (
-            self.fiat_model.exposure.exposure_geoms[0]
-            .dissolve()
-            .centroid.to_crs(4326)[0]
-        )
+        center = buildings.dissolve().centroid.to_crs(4326)[0]
         self.site_attrs["lat"] = center.y
         self.site_attrs["lon"] = center.x
 
@@ -329,14 +378,15 @@ class Database:
             "csv"
         ][
             "damage_unit"
-        ]  # TODO This should be accessed from object!
+        ]  # TODO update
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         if not self.config.building_footprints:
+            # TODO can we use hydromt-FIAT?
             rel_path = Path(
-                "../templates/fiat/footprints/footprints.gpkg"
+                "templates/fiat/footprints/footprints.gpkg"
             )  # default location for footprints
-            check_file = self.site_path.joinpath(
+            check_file = self.static_path.joinpath(
                 rel_path
             ).exists()  # check if file exists
             check_col = (
@@ -347,16 +397,16 @@ class Database:
                     "Buildings footprints path has not been provided. Please specify that by using the field 'building_footprints' in the configuration toml."
                 )
             if check_file and not check_col:
-                self.logger.info(
+                self.logger.error(
                     f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {self.site_path.joinpath(rel_path).resolve()}"
                 )
                 raise NotImplementedError
             if check_file and check_col:
-                self.site_attrs["fiat"][
-                    "building_footprints"
-                ] = "../templates/fiat/footprints/footprints.gpkg"
+                self.site_attrs["fiat"]["building_footprints"] = str(
+                    rel_path.as_posix()
+                )
                 self.logger.info(
-                    f"Using the footprints located at {self.site_path.joinpath(rel_path).resolve()}"
+                    f"Using the footprints located at {self.static_path.joinpath(rel_path).resolve()}"
                 )
         else:
             # TODO allow for user providing a vector of footprints and do spatial join here
@@ -369,64 +419,110 @@ class Database:
             "save_simulation"
         ] = "False"  # default is not to save simulations
 
-        # add base flood elevation information
+        # Add base flood elevation information
         if self.config.bfe:
+            # TODO can we use hydromt-FIAT?
             self.logger.info(
                 f"Using map from {self.config.bfe.file} as base flood elevation."
             )
-            # Read in BFE map and keep only column of interest
-            bfe = gpd.read_file(self.config.bfe.file)
-            bfe = bfe[[self.config.bfe.field_name, "geometry"]]
-            # Read in geometries of buildings
-            ind = self.fiat_model.exposure.geom_names.index("buildings")
-            buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+            # Spatially join buildings and map
+            buildings_joined, bfe = spatial_join(
+                buildings, self.config.bfe.file, self.config.bfe.field_name
+            )
             # Create folder
-            bfe_folder = self.root.joinpath("static", "bfe")
+            bfe_folder = self.static_path.joinpath("bfe")
             bfe_folder.mkdir()
             # Save the spatial file for future use
             geo_path = bfe_folder.joinpath("bfe.gpkg")
             bfe.to_file(geo_path)
             # Save csv with building values
-            buildings = buildings.sjoin(bfe)
-            buildings = buildings[["Object ID", "STATIC_BFE"]]
             csv_path = bfe_folder.joinpath("bfe.csv")
-            buildings.to_csv(csv_path, index=False)
+            buildings_joined.to_csv(csv_path, index=False)
             # Save site attributes
             self.site_attrs["fiat"]["bfe"] = {}
             self.site_attrs["fiat"]["bfe"]["geom"] = str(
-                Path("../")
-                .joinpath(geo_path.relative_to(self.site_path.parent))
-                .as_posix()
+                Path(geo_path.relative_to(self.static_path)).as_posix()
             )
             self.site_attrs["fiat"]["bfe"]["table"] = str(
-                Path("../")
-                .joinpath(csv_path.relative_to(self.site_path.parent))
-                .as_posix()
+                Path(csv_path.relative_to(self.static_path)).as_posix()
             )
             self.site_attrs["fiat"]["bfe"]["field_name"] = self.config.bfe.field_name
         else:
-            self.logger.info("No base flood elevation provided.")
+            self.logger.warning(
+                "No base flood elevation provided. Elevating building with respect to base flood elevation will not be possible."
+            )
 
         # Read aggregation areas
+        # TODO can we use hydromt-FIAT?
         self.site_attrs["fiat"]["aggregation"] = []
         for aggr in self.config.aggregation:
             # Make sure paths are correct
-            aggr.file = str(Path("../templates/fiat/").joinpath(aggr.file).as_posix())
+            aggr.file = str(
+                self.static_path.joinpath("templates", "fiat", aggr.file)
+                .relative_to(self.static_path)
+                .as_posix()
+            )
             aggr.equity.census_data = str(
-                Path("../templates/fiat/").joinpath(aggr.equity.census_data).as_posix()
+                self.static_path.joinpath("templates", "fiat", aggr.equity.census_data)
+                .relative_to(self.static_path)
+                .as_posix()
             )
             self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
 
         # Read SVI
-        # TODO check how to best include SVI
         if self.config.svi:
-            raise NotImplementedError
+            # TODO can we use hydromt-FIAT?
+            buildings_joined, svi = spatial_join(
+                buildings,
+                self.config.svi.file,
+                self.config.svi.field_name,
+                rename="SVI",
+            )
+            # Add column to exposure
+            if "SVI" in exposure_csv.columns:
+                self.logger.info(
+                    f"'SVI' column in the FIAT exposure csv will be replaced by {self.config.svi.file}."
+                )
+                del exposure_csv["SVI"]
+            else:
+                self.logger.info(
+                    f"'SVI' column in the FIAT exposure csv will be filled by {self.config.svi.file}."
+                )
+            exposure_csv = exposure_csv.merge(
+                buildings_joined, on="Object ID", how="left"
+            )
+            exposure_csv.to_csv(exposure_csv_path, index=False)
+            # Create folder
+            svi_folder = self.root.joinpath("static", "templates", "fiat", "svi")
+            svi_folder.mkdir()
+            # Save the spatial file for future use
+            geo_path = svi_folder.joinpath("svi.gpkg")
+            svi.to_file(geo_path)
+            # Save site attributes
+            self.site_attrs["fiat"]["svi"] = {}
+            self.site_attrs["fiat"]["svi"]["geom"] = str(
+                Path(geo_path.relative_to(self.static_path)).as_posix()
+            )
+            self.site_attrs["fiat"]["svi"]["field_name"] = "SVI"
+        else:
+            if "SVI" in self.fiat_model.exposure.exposure_db.columns:
+                self.logger.info("'SVI' column present in the FIAT exposure csv.")
+            else:
+                self.logger.warning(
+                    "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
+                )
 
         # Make sure that FIAT roads are polygons
-        # TODO this should be performed through hydromt-FIAT
         roads_path = fiat_path.joinpath("exposure", "roads.gpkg")
         roads = gpd.read_file(roads_path)
 
+        # TODO do we need the lanes column?
+        if "Segment Length [m]" not in exposure_csv.columns:
+            self.logger.warning(
+                "'Segment Length [m]' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
+            )
+
+        # TODO should this should be performed through hydromt-FIAT?
         if not isinstance(roads.geometry[0], Polygon):
             roads = roads.to_crs(roads.estimate_utm_crs())
             roads.geometry = roads.geometry.buffer(self.config.road_width, cap_style=2)
@@ -553,6 +649,57 @@ class Database:
             "units"
         ] = "meters"  # This is always in meters from SFINCS
 
+    def update_fiat_elevation(self):
+
+        dem_file = self.static_path.joinpath("dem", self.site_attrs["dem"]["filename"])
+        # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
+        # self.fiat_model.update_ground_elevation(dem_file)
+        self.logger.info(
+            "Updating FIAT objects ground elevations from SFINCS ground elevation map."
+        )
+        exposure_csv_path = Path(self.fiat_model.root).joinpath(
+            "exposure", "exposure.csv"
+        )
+        exposure = pd.read_csv(exposure_csv_path)
+        dem = rxr.open_rasterio(dem_file)
+        roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+        roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+        roads["geometry"] = roads.geometry.centroid  # get centroids
+
+        x_points = xr.DataArray(roads["geometry"].x, dims="points")
+        y_points = xr.DataArray(roads["geometry"].y, dims="points")
+        roads["elev"] = dem.sel(
+            x=x_points, y=y_points, band=1, method="nearest"
+        ).to_numpy()
+
+        exposure.loc[
+            exposure["Primary Object Type"] == "roads", "Ground Floor Height"
+        ] = 0
+        exposure = exposure.merge(
+            roads[["Object ID", "elev"]], on="Object ID", how="left"
+        )
+        exposure.loc[exposure["Primary Object Type"] == "roads", "Ground Elevation"] = (
+            exposure.loc[exposure["Primary Object Type"] == "roads", "elev"]
+        )
+        del exposure["elev"]
+
+        buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
+        points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
+        x_points = xr.DataArray(points["geometry"].x, dims="points")
+        y_points = xr.DataArray(points["geometry"].y, dims="points")
+        points["elev"] = dem.sel(
+            x=x_points, y=y_points, band=1, method="nearest"
+        ).to_numpy()
+        exposure = exposure.merge(
+            points[["Object ID", "elev"]], on="Object ID", how="left"
+        )
+        exposure.loc[exposure["Primary Object Type"] != "roads", "Ground Elevation"] = (
+            exposure.loc[exposure["Primary Object Type"] != "roads", "elev"]
+        )
+        del exposure["elev"]
+
+        exposure.to_csv(exposure_csv_path, index=False)
+
     def add_cyclone_dbs(self):
         """
         Downloads and adds a cyclone track database to the site attributes.
@@ -585,6 +732,7 @@ class Database:
         """
         # TODO define better default values
         # TODO for use location get closest station and read values from there (add observation station as well!)
+        # TODO add inputs for MSL and datum
         self.site_attrs["water_level"] = {}
 
         self.site_attrs["water_level"]["reference"] = {}
@@ -619,7 +767,7 @@ class Database:
         The units for the vertical offset are obtained from the `sfincs` attribute in the `site_attrs` dictionary.
         """
         # TODO better default values
-        # TODO add slr projections csv
+        # TODO slr projections csv should not be mandatory!
         self.site_attrs["slr"] = {}
         self.site_attrs["slr"]["relative_to_year"] = 2020
         self.site_attrs["slr"]["vertical_offset"] = {}
@@ -648,23 +796,23 @@ class Database:
         derives bins from the config max attributes, and adds visualization layers.
         """
         # Read default units from template
-        self.site_attrs["gui"] = self.get_default_units()
+        self.site_attrs["gui"] = self._get_default_units()
         # Get default value for tide?
         self.site_attrs["gui"]["tide_harmonic_amplitude"] = {
             "value": 0.0,  # TODO where should this come from?
             "units": self.site_attrs["gui"]["default_length_units"],
         }
         # Read default colors from template
-        self.site_attrs["gui"]["mapbox_layers"] = self.get_bin_colors()
+        self.site_attrs["gui"]["mapbox_layers"] = self._get_bin_colors()
         # Derive bins from config max attributes
         fd_max = self.config.gui.max_flood_depth
         self.site_attrs["gui"]["mapbox_layers"][
             "flood_map_depth_min"
-        ] = 0  # mask areas with flood depth lower than this (zero = all depths shown)
+        ] = 0  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
         self.site_attrs["gui"]["mapbox_layers"][
             "flood_map_zbmax"
         ] = (
-            -9999
+            -9999  # TODO How to define this?
         )  # mask areas with elevation lower than this (very negative = show all calculated flood depths)
         self.site_attrs["gui"]["mapbox_layers"]["flood_map_bins"] = [
             0.2 * fd_max,
@@ -727,13 +875,28 @@ class Database:
         self.site_attrs["risk"]["flooding_threshold"] = {}
         self.site_attrs["risk"]["flooding_threshold"][
             "value"
-        ] = 0  # TODO how to define this
+        ] = 0  # TODO Is this used??
         self.site_attrs["risk"]["flooding_threshold"]["units"] = self.site_attrs[
             "sfincs"
         ]["floodmap_units"]
 
+        # Copy prob set if given
+        if self.config.probabilistic_set:
+            self.logger.info(
+                f"{self.site_attrs['name']} probabilistic event set imported from {self.config.probabilistic_set}"
+            )
+            prob_event_name = Path(self.config.probabilistic_set).name
+            path_1 = self.root.joinpath("input", "events", prob_event_name)
+            shutil.copytree(self.config.probabilistic_set, path_1)
+        else:
+            self.logger.warning(
+                "probabilistic event set not provided. Risk scenarios cannot be run."
+            )
         self.site_attrs["standard_objects"] = {}
-        self.site_attrs["standard_objects"]["events"] = ["probabilistic_set"]
+        if prob_event_name:
+            self.site_attrs["standard_objects"]["events"] = [prob_event_name]
+        else:
+            self.site_attrs["standard_objects"]["events"] = []
         self.site_attrs["standard_objects"]["projections"] = ["current"]
         self.site_attrs["standard_objects"]["strategies"] = ["no_measures"]
 
@@ -742,7 +905,7 @@ class Database:
         self.site_attrs["benefits"]["current_year"] = 2023
         self.site_attrs["benefits"]["current_projection"] = "current"
         self.site_attrs["benefits"]["baseline_strategy"] = "no_measures"
-        self.site_attrs["benefits"]["event_set"] = "probabilistic_set"
+        self.site_attrs["benefits"]["event_set"] = prob_event_name
 
     def add_static_files(self):
         """
@@ -784,7 +947,20 @@ class Database:
             with open(file, "wb") as f:
                 tomli_w.dump(attrs, f)
 
-    def get_default_units(self):
+    def save_site_config(self):
+        """
+        Saves the site configuration to a TOML file.
+
+        This method creates a TOML file at the specified location and saves the site configuration
+        using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
+        """
+        site_config_path = self.root.joinpath("static", "site", "site.toml")
+        site_config_path.parent.mkdir()
+
+        site = Site.load_dict(self.site_attrs)
+        site.save(filepath=site_config_path)
+
+    def _get_default_units(self):
         """
         Retrieves the default units based on the configured GUI unit system.
 
@@ -798,7 +974,7 @@ class Database:
         )
         return default_units
 
-    def get_bin_colors(self):
+    def _get_bin_colors(self):
         """
         Retrieves the bin colors from the bin_colors.toml file.
 
@@ -810,19 +986,6 @@ class Database:
             templates_path.joinpath("mapbox_layers", "bin_colors.toml")
         )
         return bin_colors
-
-    def save_site_config(self):
-        """
-        Saves the site configuration to a TOML file.
-
-        This method creates a TOML file at the specified location and saves the site configuration
-        using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
-        """
-        site_config_path = self.root.joinpath("static", "site", "site.toml")
-        site_config_path.parent.mkdir()
-
-        site = Site.load_dict(self.site_attrs)
-        site.save(filepath=site_config_path)
 
 
 @click.command()
@@ -851,10 +1014,11 @@ def main(config_path):
     dbs.read_sfincs()
     if config.sfincs_offshore:
         dbs.read_offshore_sfincs()
+    dbs.add_dem()
+    dbs.update_fiat_elevation()
     dbs.add_rivers()
     dbs.add_obs_points()
     dbs.add_gui_params()
-    dbs.add_dem()
     dbs.add_cyclone_dbs()
     dbs.add_static_files()
     dbs.add_water_level()
