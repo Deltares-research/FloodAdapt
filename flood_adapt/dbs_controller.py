@@ -373,6 +373,7 @@ class Database(IDatabase):
         ):
             gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
+                event["name"] = "temp_event"
                 temp_event = Synthetic.load_dict(event)
                 temp_event.add_tide_and_surge_ts()
                 wl_df = temp_event.tide_surge_ts
