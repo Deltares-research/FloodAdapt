@@ -291,7 +291,10 @@ class SfincsAdapter:
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+        if (gdf_floodwall.geometry.type =="MultiLineString").any():
+            gdf_floodwall = gdf_floodwall.explode()
+        if "z" not in gdf_floodwall.columns:
+            gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
