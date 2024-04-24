@@ -53,7 +53,7 @@ In the specification window, the user enters a name for the measure (no spaces o
 
 ::: {.callout-note}
 ## How are buyouts represented in the modeling?
-When a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multipled by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed.   
+When a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multiplied by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed.   
 :::
 
 ## Floodproof
