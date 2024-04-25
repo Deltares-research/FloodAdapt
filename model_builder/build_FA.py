@@ -426,6 +426,12 @@ class Database:
             buildings_joined, bfe = spatial_join(
                 buildings, self.config.bfe.file, self.config.bfe.field_name
             )
+            # Make sure in case of multiple values that the max is kept
+            buildings_joined = (
+                buildings_joined.groupby("Object ID")
+                .max(self.config.bfe.field_name)
+                .sort_values(by=["Object ID"])
+            )
             # Create folder
             bfe_folder = self.static_path.joinpath("bfe")
             bfe_folder.mkdir()
