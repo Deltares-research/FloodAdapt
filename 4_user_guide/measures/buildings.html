@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -417,7 +420,15 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#elevate" id="toc-elevate" class="nav-link active" data-scroll-target="#elevate">Elevate</a></li>
+  <li><a href="#buyout" id="toc-buyout" class="nav-link" data-scroll-target="#buyout">Buyout</a></li>
+  <li><a href="#floodproof" id="toc-floodproof" class="nav-link" data-scroll-target="#floodproof">Floodproof</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -439,8 +450,127 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<p>FloodAdapt can simulate different types of building-level adaptation actions: <a href="#elevate">elevate</a>, <a href="#buyout">buyout</a>, and <a href="#floodproof">floodproof</a> properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.</p>
+<div id="fig-measures_buildingLevel" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measures_buildingLevel.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties"><img src="../../_static/images/measures_buildingLevel.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties</strong></figcaption>
+</figure>
+</div>
+<div id="fig-measures_buildingLevel_GUI" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measures_buildingLevel_GUI.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Selection of Building measures in the Measures tab, shown here for the example of elevating buildings"><img src="../../_static/images/measures_buildingLevel_GUI.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>Selection of Building measures in the Measures tab, shown here for the example of elevating buildings</strong></figcaption>
+</figure>
+</div>
+<p>To specify a building-level measure, the user goes to the Measures tab, and in the “Category” drop-down menu selects “Buildings” (see <a href="#fig-measures_buildingLevel_GUI">Figure&nbsp;2</a>). The user can then choose for “Measure” one of the three measure types: <a href="#elevation">elevate</a>, <a href="#buyouts">buyout</a>, or <a href="#floodproofing">floodproof</a> properties. For each of these measures, the user will choose an “Area type”. This indicates how the user will select the buildings to which they want to apply the measure. There are three options:</p>
+<ul>
+<li><p>Draw polygon: this option allows a user to click a polygon in the map to select the buildings of interest</p></li>
+<li><p>Aggregation area: this option allows a user to apply the measure to an entire aggregation area, for example a neighborhood</p></li>
+<li><p>Import polygon: this option allows a user to import a polygon that they have made externally, for example in GIS software</p></li>
+</ul>
+<p>When selecting buildings using the “Draw polygon” feature, it is useful to click on the “Show Buildings” button in the Measures tab (see example in <a href="#fig-measures_buildingLevel_GUI">Figure&nbsp;2</a>). This shows the buildings that are in the exposure data of the impact model within FloodAdapt.</p>
+<p>Each of the building-level measures allows users to specify a property type to which the measure should be applied. So, for example, if a user selects a neighborhood, but only wants to apply the measure to the residential properties within the neighborhood, they are able to specify this. The property type is linked to an attribute in the impact model called the ‘primary object type’. In the U.S, these are typically residential (RES) commercial (COM), industrial (IND), or public (PUB). You can also choose to apply the measure to all the buildings in the selected area.</p>
+<section id="elevate" class="level2">
+<h2 class="anchored" data-anchor-id="elevate">Elevate</h2>
+<p>Elevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the <a href="../../4_user_guide/measures/index.html">Measures</a> tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Elevate properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in <a href="#fig-measures_buildingLevel_elevatePoly">Figure&nbsp;3</a>). When you are finished clicking the polygon, right click or double click to open the measure specification window (see <a href="#fig-measures_buildingLevel_fpPoly_spec">Figure&nbsp;7</a>).</p>
+<div id="fig-measures_buildingLevel_elevatePoly" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measure_building_poly_elevate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Selecting buildings for applying the elevate measure"><img src="../../_static/images/measure_building_poly_elevate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>Selecting buildings for applying the elevate measure</strong></figcaption>
+</figure>
+</div>
+<p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see <a href="#fig-measure_building_poly_buyout_specification">Figure&nbsp;5</a> for the example of buyouts)</p>
+<div id="fig-measures_buildingLevel_elevate_spec" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measure_building_elevate_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Specifying information for an elevate measure"><img src="../../_static/images/measure_building_elevate_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;4: <strong>Specifying information for an elevate measure</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Elevate properties relative to…
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The elevate properties specification window asks the user to specify what the elevation of the property is relative to. The user can select the datum; in this case, the elevation is the elevation of the finished floor of the property above the specific datum. The user can also select to elevate properties relative to “Base Flood Elevation” (BFE). In this case the elevation is actually a height above this reference. In the U.S, BFE is a regulatory flood level that is related to insurance, and is often used in ordinances on how high new development must be built. In areas of the world where this is not used, the base flood elevation option may not be visible.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How is elevating properties represented in the modeling?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The exposed assets have multiple attributes, one of which is the height of the finished floor above the ground. When a user elevates properties, FloodAdapt adjusts this attribute for the selected properties to represent the user specifications. Whether a user specifies a property elevation as an elevation relative to a datum, or a height above a reference level like base flood elevation, FloodAdapt calculates for each selected property the equivalent height above the ground, and assigns this value to the finished floor height attribute of the elevated property. For example, if a user selects 12 feet above datum, and the ground elevation where a property is located is 10 feet above datum, FloodAdapt calculates that the finished floor height of the property as 2 feet, and assigns this as the finished floor height attribute of the elevated property. Similarly, if a user selects 2 feet above BFE, and the BFE at the location of a property is 9 feet, then the property must be raised to 11 feet relative to datum. If the ground elevation at that location is 8 feet, FloodAdapt would calculate that the finished floor height for the elevated property is 3 feet.</p>
+</div>
+</div>
+</section>
+<section id="buyout" class="level2">
+<h2 class="anchored" data-anchor-id="buyout">Buyout</h2>
+<p>Buyouts refer to the purchase and subsequent removal of a property, usually one that is high risk or has experienced repetitive flooding. To implement the buyout measure, go to the <a href="../../4_user_guide/measures/index.html">Measures</a> tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Buyout properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon” for the Area type, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure. When you are finished clicking the polygon, right click or double click to open the measure specification window. If you select “Aggregation area” the specification window will automatically open when you click “Add measure” and you will additionally choose an aggregation area to apply the measure (see <a href="#fig-measure_building_poly_buyout_specification">Figure&nbsp;5</a>).</p>
+<p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected “Aggregation area” - the aggregation area where the measure should be applied. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab.</p>
+<div id="fig-measure_building_poly_buyout_specification" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measure_building_poly_buyout_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Specifying information for a buyout measure"><img src="../../_static/images/measure_building_poly_buyout_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;5: <strong>Specifying information for a buyout measure</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How are buyouts represented in the modeling?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multiplied by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed.</p>
+</div>
+</div>
+</section>
+<section id="floodproof" class="level2">
+<h2 class="anchored" data-anchor-id="floodproof">Floodproof</h2>
+<p>Floodproofing in FloodAdapt refers to <em>dry floodproofing</em>, which involves sealing a building’s exterior, typically through barriers or seals, to prevent floodwaters from entering and causing damage. The effect of floodproofing is that the building will not incur any damages until floodwaters exceed the height of the floodproofing seals.</p>
+<p>To implement floodproofing to buildings in FloodAdapt, go to the <a href="../../4_user_guide/measures/index.html">Measures</a> tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Floodproof properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in <a href="#fig-measures_buildingLevel_fpPoly">Figure&nbsp;6</a>). When you are finished clicking the polygon, right click or double click to open the measure specification window (see <a href="#fig-measures_buildingLevel_fpPoly_spec">Figure&nbsp;7</a>).</p>
+<div id="fig-measures_buildingLevel_fpPoly" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measure_building_poly_fp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Selecting buildings for applying the floodproofing measure"><img src="../../_static/images/measure_building_poly_fp.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;6: <strong>Selecting buildings for applying the floodproofing measure</strong></figcaption>
+</figure>
+</div>
+<p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the height of the floodproofing, and the property type that the measure should be applied to. The floodproofing height ensures that damages only occur when the inundation depth is greater than the floodproofing height. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open when they click “Add measure” and they will additionally be asked to choose an aggregation area (see <a href="#fig-measure_building_poly_buyout_specification">Figure&nbsp;5</a> for the example of buyouts)</p>
+<div id="fig-measures_buildingLevel_fpPoly_spec" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/measure_building_poly_fp_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Specifying information for a floodproofing measure"><img src="../../_static/images/measure_building_poly_fp_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;7: <strong>Specifying information for a floodproofing measure</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How is floodproofing represented in the modeling?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The impact model uses depth-damage curves that relate inundation depths to fractions of total asset damage. When a user selects a floodproofing height, there will be no damage to the property until the inundation depths exceed that height. This is represented by modifying the depth-damage curve so that the damage fraction is zero below the floodproofing height. Above the floodproofing height, the damage curve is unchanged because once the inundation exceeds the floodproofing height, it is assumed the water will then enter the property and reach the levels it would have reached without the floodproofing barrier.</p>
+</div>
+</div>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -815,6 +945,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","openEffect":"zoom","loop":true,"selector":".lightbox"});</script>
 
 
 
