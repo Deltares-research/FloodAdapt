@@ -297,6 +297,8 @@ class SfincsAdapter:
             "z" not in gdf_floodwall.columns
         ):  # The column name and the choice if uniform value or from shape file should be an option in the GUI
             gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+        else:
+            gdf_floodwall["z"] = gdf_floodwall["z"].convert(UnitTypesLength("meters"))
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
