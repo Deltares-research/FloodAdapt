@@ -293,7 +293,9 @@ class SfincsAdapter:
         gdf_floodwall["name"] = floodwall.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
-        if "z" not in gdf_floodwall.columns:
+        if (
+            "z" not in gdf_floodwall.columns
+        ):  # The column name and the choice if uniform value or from shape file should be an option in the GUI
             gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
         gdf_floodwall["par1"] = 0.6
 
