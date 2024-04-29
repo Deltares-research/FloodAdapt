@@ -293,8 +293,8 @@ class SfincsAdapter:
         gdf_floodwall["name"] = floodwall.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
-        #TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
-        try: 
+        # TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
+        try:
             heights = [
                 float(
                     UnitfulLength(
@@ -311,7 +311,7 @@ class SfincsAdapter:
                 Using uniform height of {floodwall.elevation.convert(UnitTypesLength("meters"))} meters instead."""
             )
             gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
-            
+
         # par1 is the overflow coefficient for weirs
         gdf_floodwall["par1"] = 0.6
 
