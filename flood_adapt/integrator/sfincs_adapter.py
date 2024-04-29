@@ -293,11 +293,8 @@ class SfincsAdapter:
         gdf_floodwall["name"] = floodwall.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
-        if (
-            "z" not in gdf_floodwall.columns
-        ):  # The column name and the choice if uniform value or from shape file should be an option in the GUI
-            gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
-        else:
+        #TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
+        try: 
             heights = [
                 float(
                     UnitfulLength(
@@ -308,6 +305,13 @@ class SfincsAdapter:
                 for height in gdf_floodwall["z"]
             ]
             gdf_floodwall["z"] = heights
+        except Exception:
+            logging.warning(
+                f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
+                Using uniform height of {floodwall.elevation.convert(UnitTypesLength("meters"))} meters instead."""
+            )
+            gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+            
         # par1 is the overflow coefficient for weirs
         gdf_floodwall["par1"] = 0.6
 
