@@ -298,7 +298,15 @@ class SfincsAdapter:
         ):  # The column name and the choice if uniform value or from shape file should be an option in the GUI
             gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
         else:
-            heights = [float(UnitfulLength(value=float(height),units=self.site.attrs.gui.default_length_units).convert(UnitTypesLength("meters"))) for height in gdf_floodwall["z"]]
+            heights = [
+                float(
+                    UnitfulLength(
+                        value=float(height),
+                        units=self.site.attrs.gui.default_length_units,
+                    ).convert(UnitTypesLength("meters"))
+                )
+                for height in gdf_floodwall["z"]
+            ]
             gdf_floodwall["z"] = heights
         # par1 is the overflow coefficient for weirs
         gdf_floodwall["par1"] = 0.6
