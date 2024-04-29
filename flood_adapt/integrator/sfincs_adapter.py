@@ -305,6 +305,7 @@ class SfincsAdapter:
                 for height in gdf_floodwall["z"]
             ]
             gdf_floodwall["z"] = heights
+            logging.info("Using floodwall height from shape file.")
         except Exception:
             logging.warning(
                 f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
