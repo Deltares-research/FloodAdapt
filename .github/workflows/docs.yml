@@ -43,7 +43,7 @@ jobs:
       - name: Setup env
         run: |
           pip install tomli
-          mamba env create --file=environment_docs.yml --force
+          mamba env create --file=environment_docs.yml
 
       - name: Setup quarto
         run: |
