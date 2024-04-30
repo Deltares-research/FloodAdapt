@@ -155,23 +155,23 @@ class TippingPoints(ITipPoint):
         # if all scenarios have been run, check if tipping point is reached
 
 
+#TODO: uncomment this
+    # # my changes - if some scenarios are not ready, run them
+    # # TODO: double check this is correct
+    # def create_missing_scenarios(self, scenario: Scenario):
+    #     """Create missing scenarios"""
 
-    # my changes - if some scenarios are not ready, run them
-    # TODO: double check this is correct
-    def create_missing_scenarios(self, scenario: Scenario):
-        """Create missing scenarios"""
+    #     #If scenario has run, you don't need to run it again
+    #     if not scenario.attrs['scenario run']: 
+    #         scens = self.scenarios["scenario created"][~self.scenarios["scenario run"]]
+    #         for scen in scens:
+    #             scenario = Scenario.load_file(scen)
+    #             scenario.run()
 
-        #If scenario has run, you don't need to run it again
-        if not scenario.attrs['scenario run']: 
-            scens = self.scenarios["scenario created"][~self.scenarios["scenario run"]]
-            for scen in scens:
-                scenario = Scenario.load_file(scen)
-                scenario.run()
-
-                # if the status is reached, save the SLR and the metric value
-                if self.check_tipping_point():
-                    self.attrs.status = TippingPointStatus.reached
-                    break
+    #             # if the status is reached, save the SLR and the metric value
+    #             if self.check_tipping_point():
+    #                 self.attrs.status = TippingPointStatus.reached
+    #                 break
             
 # one base scenario for the tipping points
                 # create a list of tipping point scenarios
