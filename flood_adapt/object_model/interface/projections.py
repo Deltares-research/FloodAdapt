@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
+from .objectModel import ObjectModel, IObject
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -31,28 +32,10 @@ class SocioEconomicChangeModel(BaseModel):
     new_development_shapefile: Optional[str] = None
 
 
-class ProjectionModel(BaseModel):
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
+class ProjectionModel(ObjectModel):
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 
 
-class IProjection(ABC):
+class IProjection(IObject):
     attrs: ProjectionModel
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """get Projection attributes from toml file"""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """get Projection attributes from an object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """save Projection attributes to a toml file"""

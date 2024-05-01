@@ -38,7 +38,6 @@ class SomeDummyMeasure(TemplateDummyMeasure):
             "name": "some_measure_name",
             "description": "some_description",
             "type": "some_type",
-            "lock_count": 0,
             "polygon_file": None,
             "aggregation_area_name": None,
         }
@@ -52,7 +51,6 @@ class AnotherDummyMeasure(TemplateDummyMeasure):
             "name": "another_measure_name",
             "description": "another_description",
             "type": "another_type",
-            "lock_count": 0,
             "polygon_file": None,
             "aggregation_area_name": None,
         }
@@ -66,7 +64,6 @@ class DummyMeasureWithPolygon(TemplateDummyMeasure):
             "name": "dummy_measure_with_polygon",
             "description": "dummy_description",
             "type": "linestring_type",
-            "lock_count": 0,
             "polygon_file": "dummy_measure_with_polygon.geojson",
         }
         self.attrs = MeasureModel.__new__(MeasureModel)
@@ -82,7 +79,6 @@ class DummyMeasureWithAggregationArea(TemplateDummyMeasure):
             "name": "dummy_measure_with_aggregation_area",
             "description": "dummy_description",
             "type": "aggregate_type",
-            "lock_count": 0,
             "polygon_file": None,
             "aggregation_area_name": "dummy_aggregation_area",
             "aggregation_area_type": "some_aggregation_area_type",
@@ -96,7 +92,6 @@ class DummyMeasureWithIncorrectPolygon(TemplateDummyMeasure):
             "name": "dummy_measure_with_incorrect_polygon",
             "description": "dummy_description",
             "type": "linestring_type",
-            "lock_count": 0,
             "polygon_file": "non_existent_polygon.geojson",
         }
         self.attrs = MeasureModel.__new__(MeasureModel)
@@ -111,7 +106,6 @@ class DummyMeasureWithIncorrectAggregationArea(TemplateDummyMeasure):
             "name": "dummy_measure_with_incorrect_aggregation_area",
             "description": "dummy_description",
             "type": "aggregate_type",
-            "lock_count": 0,
             "polygon_file": None,
             "aggregation_area_name": "non_existent_aggregation_area",
             "aggregation_area_type": "some_aggregation_area_type",
@@ -128,7 +122,6 @@ class DummyMeasureWithIncorrectAggregationAreaType(TemplateDummyMeasure):
             "name": "dummy_measure_with_incorrect_aggregation_area_type",
             "description": "dummy_description",
             "type": "aggregate_type",
-            "lock_count": 0,
             "polygon_file": None,
             "aggregation_area_name": "dummy_aggregation_area",
             "aggregation_area_type": "non_existent_aggregation_area_type",

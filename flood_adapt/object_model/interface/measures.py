@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator, validator
+from .objectModel import ObjectModel, IObject
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -46,11 +47,9 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class MeasureModel(BaseModel):
+class MeasureModel(ObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     type: Union[HazardType, ImpactType]
 
 
@@ -205,26 +204,9 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-class IMeasure(ABC):
+class IMeasure(IObject):
     """This is a class for a FloodAdapt measure"""
-
     attrs: MeasureModel
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """get Measure attributes from toml file"""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """get Measure attributes from an object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """save Measure attributes to a toml file"""
 
 
 class IElevate(IMeasure):

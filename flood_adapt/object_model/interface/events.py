@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
+from .objectModel import ObjectModel, IObject
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -158,11 +159,9 @@ class TranslationModel(BaseModel):
     )
 
 
-class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
+class EventModel(ObjectModel):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     mode: Mode
     template: Template
     timing: Timing
@@ -206,24 +205,8 @@ class HistoricalHurricaneModel(EventModel):
     track_name: str
 
 
-class IEvent(ABC):
+class IEvent(IObject):
     attrs: EventModel
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """get Event attributes from toml file"""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """get Event attributes from an object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """save Event attributes to a toml file"""
 
 
 class ISynthetic(IEvent):

@@ -1,9 +1,11 @@
 import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from abc import abstractmethod
+from typing import Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from .objectModel import ObjectModel, IObject
+
 
 
 class CurrentSituationModel(BaseModel):
@@ -11,11 +13,9 @@ class CurrentSituationModel(BaseModel):
     year: int
 
 
-class BenefitModel(BaseModel):
+class BenefitModel(ObjectModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object"""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     strategy: str
     event_set: str
     projection: str
@@ -27,29 +27,11 @@ class BenefitModel(BaseModel):
     annual_maint_cost: Optional[float] = None
 
 
-class IBenefit(ABC):
+class IBenefit(IObject):
     attrs: BenefitModel
-    database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
     has_run: bool = False
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """get Benefit attributes from toml file"""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """get Benefit attributes from an object, e.g. when initialized from GUI"""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """save Benefit attributes to a toml file"""
-        ...
 
     @abstractmethod
     def check_scenarios(self) -> pd.DataFrame:

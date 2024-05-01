@@ -1,18 +1,12 @@
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Union
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
-from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.objectModel import IObject
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.strategies import IStrategy
-
-ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
 
 class DbsTemplate(AbstractDatabaseElement):
@@ -28,7 +22,7 @@ class DbsTemplate(AbstractDatabaseElement):
         self._path = self.input_path / self._folder_name
         self._database = database
 
-    def get(self, name: str) -> ObjectModel:
+    def get(self, name: str) -> IObject:
         """Returns an object of the type of the database with the given name.
 
         Parameters
@@ -38,14 +32,14 @@ class DbsTemplate(AbstractDatabaseElement):
 
         Returns
         -------
-        ObjectModel
+        IObject
             object of the type of the specified object model
         """
         # Make the full path to the object
         full_path = self._path / name / f"{name}.toml"
 
         # Check if the object exists
-        if not Path(full_path).is_file():
+        if not os.path.isfile(full_path):
             raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
 
         # Load and return the object
@@ -63,7 +57,7 @@ class DbsTemplate(AbstractDatabaseElement):
         """
         # Check if all objects exist
         object_list = self._get_object_list()
-        if not all(Path(path).is_file() for path in object_list["path"]):
+        if not all(os.path.isfile(path) for path in object_list["path"]):
             raise ValueError(
                 f"Error in {self._type} database. Some {self._type} are missing from the database."
             )
@@ -113,13 +107,13 @@ class DbsTemplate(AbstractDatabaseElement):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(self, object_model: IObject, overwrite: bool = False):
         """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : IObject
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
@@ -150,12 +144,12 @@ class DbsTemplate(AbstractDatabaseElement):
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
 
-    def edit(self, object_model: ObjectModel):
+    def edit(self, object_model: IObject):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : ObjectModel
+        object : IObject
             object to be edited in the database
 
         Raises
