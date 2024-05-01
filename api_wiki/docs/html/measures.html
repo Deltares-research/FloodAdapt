@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Measures API module &mdash; FloodAdapt-API 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Strategies API module" href="strategies.html" />
+    <link rel="prev" title="Projections API module" href="projections.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FloodAdapt-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="startup.html">Startup API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projections.html">Projections API module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Measures API module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#measures.IMeasure"><code class="docutils literal notranslate"><span class="pre">IMeasure</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#measures.IMeasure.attrs"><code class="docutils literal notranslate"><span class="pre">IMeasure.attrs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#measures.IMeasure.load_dict"><code class="docutils literal notranslate"><span class="pre">IMeasure.load_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#measures.IMeasure.load_file"><code class="docutils literal notranslate"><span class="pre">IMeasure.load_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#measures.IMeasure.save"><code class="docutils literal notranslate"><span class="pre">IMeasure.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.calculate_polygon_area"><code class="docutils literal notranslate"><span class="pre">calculate_polygon_area()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.calculate_volume"><code class="docutils literal notranslate"><span class="pre">calculate_volume()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.copy_measure"><code class="docutils literal notranslate"><span class="pre">copy_measure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.create_measure"><code class="docutils literal notranslate"><span class="pre">create_measure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.delete_measure"><code class="docutils literal notranslate"><span class="pre">delete_measure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.edit_measure"><code class="docutils literal notranslate"><span class="pre">edit_measure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.get_green_infra_table"><code class="docutils literal notranslate"><span class="pre">get_green_infra_table()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.get_measure"><code class="docutils literal notranslate"><span class="pre">get_measure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.get_measures"><code class="docutils literal notranslate"><span class="pre">get_measures()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#measures.save_measure"><code class="docutils literal notranslate"><span class="pre">save_measure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="strategies.html">Strategies API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenarios API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benefits.html">Benefits API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types API module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FloodAdapt-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Measures API module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/measures.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-measures">
+<span id="measures-api-module"></span><h1>Measures API module<a class="headerlink" href="#module-measures" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="measures.IMeasure">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">IMeasure</span></span><a class="headerlink" href="#measures.IMeasure" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>This is a class for a FloodAdapt measure</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="measures.IMeasure.attrs">
+<span class="sig-name descname"><span class="pre">attrs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MeasureModel</span></em><a class="headerlink" href="#measures.IMeasure.attrs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="measures.IMeasure.load_dict">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#measures.IMeasure.load_dict" title="Link to this definition"></a></dt>
+<dd><p>get Measure attributes from an object, e.g. when initialized from GUI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="measures.IMeasure.load_file">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#measures.IMeasure.load_file" title="Link to this definition"></a></dt>
+<dd><p>get Measure attributes from toml file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="measures.IMeasure.save">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#measures.IMeasure.save" title="Link to this definition"></a></dt>
+<dd><p>save Measure attributes to a toml file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.calculate_polygon_area">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">calculate_polygon_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ISite</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#measures.calculate_polygon_area" title="Link to this definition"></a></dt>
+<dd><p>Calculate area of a GeoDataFrame Polygon</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gdf</strong> (<em>gpd.GeoDataFrame</em>) – Polygon object</p></li>
+<li><p><strong>site</strong> (<em>ISite</em>) – site config (used for CRS)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Area [m2]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.calculate_volume">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">calculate_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percent_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#measures.calculate_volume" title="Link to this definition"></a></dt>
+<dd><p>Determine volume from area of the polygon and infiltration height</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>area</strong> (<a class="reference internal" href="types.html#flood_adapt.api.types.UnitfulArea" title="flood_adapt.api.types.UnitfulArea"><em>UnitfulArea</em></a>) – Area of polygon with units (calculated using calculate_polygon_area)</p></li>
+<li><p><strong>height</strong> (<a class="reference internal" href="types.html#flood_adapt.api.types.UnitfulHeight" title="flood_adapt.api.types.UnitfulHeight"><em>UnitfulHeight</em></a>) – Water height with units</p></li>
+<li><p><strong>percent_area</strong> (<em>float</em><em>, </em><em>optional</em>) – Percentage area covered by green infrastructure [%], by default 100.0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Volume [m3]</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.copy_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">copy_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#measures.copy_measure" title="Link to this definition"></a></dt>
+<dd><p>Copies (duplicates) an existing measure, and gives it a new name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_name</strong> (<em>str</em>) – name of the existing measure</p></li>
+<li><p><strong>new_name</strong> (<em>str</em>) – name of the new measure</p></li>
+<li><p><strong>new_description</strong> (<em>str</em>) – description of the new measure</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.create_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">create_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#measures.IMeasure" title="flood_adapt.object_model.interface.measures.IMeasure"><span class="pre">IMeasure</span></a></span></span><a class="headerlink" href="#measures.create_measure" title="Link to this definition"></a></dt>
+<dd><p>Create a measure from a dictionary of attributes and a type string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attrs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Dictionary of attributes for the measure.</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – Type of measure to create.</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em><em>, </em><em>optional</em>) – Database to use for creating the measure, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Measure object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#measures.IMeasure" title="measures.IMeasure">IMeasure</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.delete_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">delete_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#measures.delete_measure" title="Link to this definition"></a></dt>
+<dd><p>Deletes an already existing measure in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the measure to be deleted</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if object to be deleted is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.edit_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">edit_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#measures.IMeasure" title="flood_adapt.object_model.interface.measures.IMeasure"><span class="pre">IMeasure</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#measures.edit_measure" title="Link to this definition"></a></dt>
+<dd><p>Edits an already existing measure in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measure</strong> (<a class="reference internal" href="#measures.IMeasure" title="measures.IMeasure"><em>IMeasure</em></a>) – Measure object to be edited</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if name is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.get_green_infra_table">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">get_green_infra_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#measures.get_green_infra_table" title="Link to this definition"></a></dt>
+<dd><p>Return a table with different types of green infrastructure measures and their infiltration depths.
+This is read by a csv file in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p></li>
+<li><p><strong>measure_type</strong> (<em>str</em>) – Type of measure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Table with values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.get_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">get_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#measures.IMeasure" title="flood_adapt.object_model.interface.measures.IMeasure"><span class="pre">IMeasure</span></a></span></span><a class="headerlink" href="#measures.get_measure" title="Link to this definition"></a></dt>
+<dd><p>Returns a measure object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of the measure to be returned</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>measure object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#measures.IMeasure" title="measures.IMeasure">IMeasure</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.get_measures">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">get_measures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#measures.get_measures" title="Link to this definition"></a></dt>
+<dd><p>Returns a dictionary with info on the measures that currently
+exist in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with info on the measures</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="measures.save_measure">
+<span class="sig-prename descclassname"><span class="pre">measures.</span></span><span class="sig-name descname"><span class="pre">save_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#measures.IMeasure" title="flood_adapt.object_model.interface.measures.IMeasure"><span class="pre">IMeasure</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#measures.save_measure" title="Link to this definition"></a></dt>
+<dd><p>Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
+this should be saved separately.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measure</strong> (<a class="reference internal" href="#measures.IMeasure" title="measures.IMeasure"><em>IMeasure</em></a>) – Measure object to be saved in the database</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if name is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="projections.html" class="btn btn-neutral float-left" title="Projections API module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="strategies.html" class="btn btn-neutral float-right" title="Strategies API module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrichem.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

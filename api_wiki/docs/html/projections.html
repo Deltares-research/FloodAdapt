@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projections API module &mdash; FloodAdapt-API 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Measures API module" href="measures.html" />
+    <link rel="prev" title="Events API module" href="events.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FloodAdapt-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="startup.html">Startup API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events API module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Projections API module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#projections.IProjection"><code class="docutils literal notranslate"><span class="pre">IProjection</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#projections.IProjection.attrs"><code class="docutils literal notranslate"><span class="pre">IProjection.attrs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#projections.IProjection.load_dict"><code class="docutils literal notranslate"><span class="pre">IProjection.load_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#projections.IProjection.load_file"><code class="docutils literal notranslate"><span class="pre">IProjection.load_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#projections.IProjection.save"><code class="docutils literal notranslate"><span class="pre">IProjection.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.copy_projection"><code class="docutils literal notranslate"><span class="pre">copy_projection()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.create_projection"><code class="docutils literal notranslate"><span class="pre">create_projection()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.delete_projection"><code class="docutils literal notranslate"><span class="pre">delete_projection()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.edit_projection"><code class="docutils literal notranslate"><span class="pre">edit_projection()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.get_projection"><code class="docutils literal notranslate"><span class="pre">get_projection()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.get_projections"><code class="docutils literal notranslate"><span class="pre">get_projections()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.get_slr_scn_names"><code class="docutils literal notranslate"><span class="pre">get_slr_scn_names()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.interp_slr"><code class="docutils literal notranslate"><span class="pre">interp_slr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.plot_slr_scenarios"><code class="docutils literal notranslate"><span class="pre">plot_slr_scenarios()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#projections.save_projection"><code class="docutils literal notranslate"><span class="pre">save_projection()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="measures.html">Measures API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="strategies.html">Strategies API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenarios API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benefits.html">Benefits API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types API module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FloodAdapt-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Projections API module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/projections.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-projections">
+<span id="projections-api-module"></span><h1>Projections API module<a class="headerlink" href="#module-projections" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="projections.IProjection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">IProjection</span></span><a class="headerlink" href="#projections.IProjection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="projections.IProjection.attrs">
+<span class="sig-name descname"><span class="pre">attrs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ProjectionModel</span></em><a class="headerlink" href="#projections.IProjection.attrs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="projections.IProjection.load_dict">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#projections.IProjection.load_dict" title="Link to this definition"></a></dt>
+<dd><p>get Projection attributes from an object, e.g. when initialized from GUI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="projections.IProjection.load_file">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#projections.IProjection.load_file" title="Link to this definition"></a></dt>
+<dd><p>get Projection attributes from toml file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="projections.IProjection.save">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#projections.IProjection.save" title="Link to this definition"></a></dt>
+<dd><p>save Projection attributes to a toml file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.copy_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">copy_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#projections.copy_projection" title="Link to this definition"></a></dt>
+<dd><p>Copies (duplicates) an existing projection, and gives it a new name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_name</strong> (<em>str</em>) – name of the existing projection</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – database object</p></li>
+<li><p><strong>new_name</strong> (<em>str</em>) – name of the new projection</p></li>
+<li><p><strong>new_description</strong> (<em>str</em>) – description of the new projection</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.create_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">create_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#projections.IProjection" title="flood_adapt.object_model.interface.projections.IProjection"><span class="pre">IProjection</span></a></span></span><a class="headerlink" href="#projections.create_projection" title="Link to this definition"></a></dt>
+<dd><p>Create Projection from a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>attrs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Dictionary of attributes for the projection.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Projection object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#projections.IProjection" title="projections.IProjection">IProjection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.delete_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">delete_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#projections.delete_projection" title="Link to this definition"></a></dt>
+<dd><p>Deletes an already existing projection object in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of the projection to be deleted</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if projection to be deleted is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.edit_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">edit_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#projections.IProjection" title="flood_adapt.object_model.interface.projections.IProjection"><span class="pre">IProjection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#projections.edit_projection" title="Link to this definition"></a></dt>
+<dd><p>Edits an already existing projection object in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>projection</strong> (<a class="reference internal" href="#projections.IProjection" title="projections.IProjection"><em>IProjection</em></a>) – The projection to edit.</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – The database to save the projection to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if name is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.get_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">get_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#projections.IProjection" title="flood_adapt.object_model.interface.projections.IProjection"><span class="pre">IProjection</span></a></span></span><a class="headerlink" href="#projections.get_projection" title="Link to this definition"></a></dt>
+<dd><p>Returns the projection object with the specified name from the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of the object to be returned</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The projection object with the specified name</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#projections.IProjection" title="projections.IProjection">IProjection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.get_projections">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">get_projections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#projections.get_projections" title="Link to this definition"></a></dt>
+<dd><p>Returns a dictionary with info on the projections that currently
+exist in the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with info on the projections</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.get_slr_scn_names">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">get_slr_scn_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#projections.get_slr_scn_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.interp_slr">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">interp_slr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slr_scenario</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#projections.interp_slr" title="Link to this definition"></a></dt>
+<dd><p>interpolating SLR value and referencing it to the SLR reference year from the site toml</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slr_scenario</strong> (<em>str</em>) – SLR scenario name from the coulmn names in staticslrslr.csv</p></li>
+<li><p><strong>year</strong> (<em>float</em>) – year to evaluate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – if the reference year is outside of the time range in the slr.csv file</p></li>
+<li><p><strong>ValueError</strong> – if the year to evaluate is outside of the time range in the slr.csv file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.plot_slr_scenarios">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">plot_slr_scenarios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#projections.plot_slr_scenarios" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="projections.save_projection">
+<span class="sig-prename descclassname"><span class="pre">projections.</span></span><span class="sig-name descname"><span class="pre">save_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#projections.IProjection" title="flood_adapt.object_model.interface.projections.IProjection"><span class="pre">IProjection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#projections.save_projection" title="Link to this definition"></a></dt>
+<dd><p>Save the projection to the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>projection</strong> (<a class="reference internal" href="#projections.IProjection" title="projections.IProjection"><em>IProjection</em></a>) – The projection to save.</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – The database to save the projection to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If the projection could not be saved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="events.html" class="btn btn-neutral float-left" title="Events API module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="measures.html" class="btn btn-neutral float-right" title="Measures API module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrichem.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strategies API module &mdash; FloodAdapt-API 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Scenarios API module" href="scenarios.html" />
+    <link rel="prev" title="Measures API module" href="measures.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FloodAdapt-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="startup.html">Startup API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projections.html">Projections API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measures.html">Measures API module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Strategies API module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.IStrategy"><code class="docutils literal notranslate"><span class="pre">IStrategy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.IStrategy.attrs"><code class="docutils literal notranslate"><span class="pre">IStrategy.attrs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.IStrategy.database_input_path"><code class="docutils literal notranslate"><span class="pre">IStrategy.database_input_path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.IStrategy.load_dict"><code class="docutils literal notranslate"><span class="pre">IStrategy.load_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.IStrategy.load_file"><code class="docutils literal notranslate"><span class="pre">IStrategy.load_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#strategies.IStrategy.save"><code class="docutils literal notranslate"><span class="pre">IStrategy.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.create_strategy"><code class="docutils literal notranslate"><span class="pre">create_strategy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.delete_strategy"><code class="docutils literal notranslate"><span class="pre">delete_strategy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.get_strategies"><code class="docutils literal notranslate"><span class="pre">get_strategies()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.get_strategy"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#strategies.save_strategy"><code class="docutils literal notranslate"><span class="pre">save_strategy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenarios API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benefits.html">Benefits API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types API module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FloodAdapt-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Strategies API module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/strategies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-strategies">
+<span id="strategies-api-module"></span><h1>Strategies API module<a class="headerlink" href="#module-strategies" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="strategies.IStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">IStrategy</span></span><a class="headerlink" href="#strategies.IStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="strategies.IStrategy.attrs">
+<span class="sig-name descname"><span class="pre">attrs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">StrategyModel</span></em><a class="headerlink" href="#strategies.IStrategy.attrs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="strategies.IStrategy.database_input_path">
+<span class="sig-name descname"><span class="pre">database_input_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></em><a class="headerlink" href="#strategies.IStrategy.database_input_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.IStrategy.load_dict">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#strategies.IStrategy.load_dict" title="Link to this definition"></a></dt>
+<dd><p>get Strategy attributes from an object, e.g. when initialized from GUI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.IStrategy.load_file">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#strategies.IStrategy.load_file" title="Link to this definition"></a></dt>
+<dd><p>get Strategy attributes from toml file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="strategies.IStrategy.save">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#strategies.IStrategy.save" title="Link to this definition"></a></dt>
+<dd><p>save Strategy attributes to a toml file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="strategies.create_strategy">
+<span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">create_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#strategies.IStrategy" title="flood_adapt.object_model.interface.strategies.IStrategy"><span class="pre">IStrategy</span></a></span></span><a class="headerlink" href="#strategies.create_strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="strategies.delete_strategy">
+<span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">delete_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#strategies.delete_strategy" title="Link to this definition"></a></dt>
+<dd><p>Deletes an already existing strategy in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the strategy to be deleted</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – The database to delete the strategy from.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if strategy to be deleted is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="strategies.get_strategies">
+<span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">get_strategies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#strategies.get_strategies" title="Link to this definition"></a></dt>
+<dd><p>Returns a dictionary with info on the strategies that currently exist in the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>database</strong> (<em>IDatabase</em>) – Database object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with info on the strategies</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="strategies.get_strategy">
+<span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">get_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#strategies.IStrategy" title="flood_adapt.object_model.interface.strategies.IStrategy"><span class="pre">IStrategy</span></a></span></span><a class="headerlink" href="#strategies.get_strategy" title="Link to this definition"></a></dt>
+<dd><p>Returns the strategy object with the specified name from the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of the object to be returned</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – database object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strategy object with the specified name</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#strategies.IStrategy" title="strategies.IStrategy">IStrategy</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="strategies.save_strategy">
+<span class="sig-prename descclassname"><span class="pre">strategies.</span></span><span class="sig-name descname"><span class="pre">save_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#strategies.IStrategy" title="flood_adapt.object_model.interface.strategies.IStrategy"><span class="pre">IStrategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IDatabase</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#strategies.save_strategy" title="Link to this definition"></a></dt>
+<dd><p>Save the strategy to the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy</strong> (<a class="reference internal" href="#strategies.IStrategy" title="strategies.IStrategy"><em>IStrategy</em></a>) – The strategy to save.</p></li>
+<li><p><strong>database</strong> (<em>IDatabase</em>) – The database to save the strategy to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raise error if name is already in use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="measures.html" class="btn btn-neutral float-left" title="Measures API module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scenarios.html" class="btn btn-neutral float-right" title="Scenarios API module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrichem.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

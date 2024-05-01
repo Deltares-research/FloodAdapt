@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Types API module &mdash; FloodAdapt-API 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Benefits API module" href="benefits.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FloodAdapt-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="startup.html">Startup API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projections.html">Projections API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measures.html">Measures API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="strategies.html">Strategies API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenarios API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output API module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benefits.html">Benefits API module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Types API module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.HazardType"><code class="docutils literal notranslate"><span class="pre">HazardType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.culvert"><code class="docutils literal notranslate"><span class="pre">HazardType.culvert</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.floodwall"><code class="docutils literal notranslate"><span class="pre">HazardType.floodwall</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.greening"><code class="docutils literal notranslate"><span class="pre">HazardType.greening</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.levee"><code class="docutils literal notranslate"><span class="pre">HazardType.levee</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.pump"><code class="docutils literal notranslate"><span class="pre">HazardType.pump</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.thin_dam"><code class="docutils literal notranslate"><span class="pre">HazardType.thin_dam</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.total_storage"><code class="docutils literal notranslate"><span class="pre">HazardType.total_storage</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.HazardType.water_square"><code class="docutils literal notranslate"><span class="pre">HazardType.water_square</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.ImpactType"><code class="docutils literal notranslate"><span class="pre">ImpactType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ImpactType.buyout_properties"><code class="docutils literal notranslate"><span class="pre">ImpactType.buyout_properties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ImpactType.elevate_properties"><code class="docutils literal notranslate"><span class="pre">ImpactType.elevate_properties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ImpactType.floodproof_properties"><code class="docutils literal notranslate"><span class="pre">ImpactType.floodproof_properties</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.SelectionType"><code class="docutils literal notranslate"><span class="pre">SelectionType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.SelectionType.aggregation_area"><code class="docutils literal notranslate"><span class="pre">SelectionType.aggregation_area</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.SelectionType.all"><code class="docutils literal notranslate"><span class="pre">SelectionType.all</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.SelectionType.polygon"><code class="docutils literal notranslate"><span class="pre">SelectionType.polygon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.SelectionType.polyline"><code class="docutils literal notranslate"><span class="pre">SelectionType.polyline</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea"><code class="docutils literal notranslate"><span class="pre">UnitTypesArea</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea.cm2"><code class="docutils literal notranslate"><span class="pre">UnitTypesArea.cm2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea.m2"><code class="docutils literal notranslate"><span class="pre">UnitTypesArea.m2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea.mm2"><code class="docutils literal notranslate"><span class="pre">UnitTypesArea.mm2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea.sf"><code class="docutils literal notranslate"><span class="pre">UnitTypesArea.sf</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDirection"><code class="docutils literal notranslate"><span class="pre">UnitTypesDirection</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDirection.degrees"><code class="docutils literal notranslate"><span class="pre">UnitTypesDirection.degrees</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge"><code class="docutils literal notranslate"><span class="pre">UnitTypesDischarge</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge.cfs"><code class="docutils literal notranslate"><span class="pre">UnitTypesDischarge.cfs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge.cms"><code class="docutils literal notranslate"><span class="pre">UnitTypesDischarge.cms</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity"><code class="docutils literal notranslate"><span class="pre">UnitTypesIntensity</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity.inch"><code class="docutils literal notranslate"><span class="pre">UnitTypesIntensity.inch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity.mm"><code class="docutils literal notranslate"><span class="pre">UnitTypesIntensity.mm</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.centimeters"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.centimeters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.feet"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.feet</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.inch"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.inch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.meters"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.meters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.miles"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.miles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength.millimeters"><code class="docutils literal notranslate"><span class="pre">UnitTypesLength.millimeters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity"><code class="docutils literal notranslate"><span class="pre">UnitTypesVelocity</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity.knots"><code class="docutils literal notranslate"><span class="pre">UnitTypesVelocity.knots</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity.meters"><code class="docutils literal notranslate"><span class="pre">UnitTypesVelocity.meters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity.mph"><code class="docutils literal notranslate"><span class="pre">UnitTypesVelocity.mph</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume"><code class="docutils literal notranslate"><span class="pre">UnitTypesVolume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume.cf"><code class="docutils literal notranslate"><span class="pre">UnitTypesVolume.cf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume.m3"><code class="docutils literal notranslate"><span class="pre">UnitTypesVolume.m3</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea"><code class="docutils literal notranslate"><span class="pre">UnitfulArea</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.units"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulArea.value"><code class="docutils literal notranslate"><span class="pre">UnitfulArea.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection.units"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDirection.value"><code class="docutils literal notranslate"><span class="pre">UnitfulDirection.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.units"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulDischarge.value"><code class="docutils literal notranslate"><span class="pre">UnitfulDischarge.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight.convert_length_to_height"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight.convert_length_to_height()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulHeight.value"><code class="docutils literal notranslate"><span class="pre">UnitfulHeight.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.units"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulIntensity.value"><code class="docutils literal notranslate"><span class="pre">UnitfulIntensity.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength"><code class="docutils literal notranslate"><span class="pre">UnitfulLength</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.units"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLength.value"><code class="docutils literal notranslate"><span class="pre">UnitfulLength.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLengthRefValue"><code class="docutils literal notranslate"><span class="pre">UnitfulLengthRefValue</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulLengthRefValue.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulLengthRefValue.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulLengthRefValue.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulLengthRefValue.type"><code class="docutils literal notranslate"><span class="pre">UnitfulLengthRefValue.type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.units"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVelocity.value"><code class="docutils literal notranslate"><span class="pre">UnitfulVelocity.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.convert"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.model_config"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.model_fields"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.units"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.UnitfulVolume.value"><code class="docutils literal notranslate"><span class="pre">UnitfulVolume.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair.model_computed_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair.model_config"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair.model_fields"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair.model_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair.units"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair.units</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair.value"><code class="docutils literal notranslate"><span class="pre">ValueUnitPair.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flood_adapt.api.types.VerticalReference"><code class="docutils literal notranslate"><span class="pre">VerticalReference</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.VerticalReference.datum"><code class="docutils literal notranslate"><span class="pre">VerticalReference.datum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flood_adapt.api.types.VerticalReference.floodmap"><code class="docutils literal notranslate"><span class="pre">VerticalReference.floodmap</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FloodAdapt-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Types API module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/types.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-flood_adapt.api.types">
+<span id="types-api-module"></span><h1>Types API module<a class="headerlink" href="#module-flood_adapt.api.types" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">HazardType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.HazardType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Class describing the accepted input for the variable ‘type’ in HazardMeasure</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.culvert">
+<span class="sig-name descname"><span class="pre">culvert</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'culvert'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.culvert" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.floodwall">
+<span class="sig-name descname"><span class="pre">floodwall</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'floodwall'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.floodwall" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.greening">
+<span class="sig-name descname"><span class="pre">greening</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'greening'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.greening" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.levee">
+<span class="sig-name descname"><span class="pre">levee</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'levee'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.levee" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.pump">
+<span class="sig-name descname"><span class="pre">pump</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pump'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.pump" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.thin_dam">
+<span class="sig-name descname"><span class="pre">thin_dam</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'thin_dam'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.thin_dam" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.total_storage">
+<span class="sig-name descname"><span class="pre">total_storage</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'total_storage'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.total_storage" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.HazardType.water_square">
+<span class="sig-name descname"><span class="pre">water_square</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'water_square'</span></em><a class="headerlink" href="#flood_adapt.api.types.HazardType.water_square" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ImpactType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">ImpactType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.ImpactType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Class describing the accepted input for the variable ‘type’ in ImpactMeasure</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ImpactType.buyout_properties">
+<span class="sig-name descname"><span class="pre">buyout_properties</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'buyout_properties'</span></em><a class="headerlink" href="#flood_adapt.api.types.ImpactType.buyout_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ImpactType.elevate_properties">
+<span class="sig-name descname"><span class="pre">elevate_properties</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'elevate_properties'</span></em><a class="headerlink" href="#flood_adapt.api.types.ImpactType.elevate_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ImpactType.floodproof_properties">
+<span class="sig-name descname"><span class="pre">floodproof_properties</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'floodproof_properties'</span></em><a class="headerlink" href="#flood_adapt.api.types.ImpactType.floodproof_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.SelectionType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">SelectionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.SelectionType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Class describing the accepted input for the variable ‘selection_type’ in ImpactMeasure</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.SelectionType.aggregation_area">
+<span class="sig-name descname"><span class="pre">aggregation_area</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'aggregation_area'</span></em><a class="headerlink" href="#flood_adapt.api.types.SelectionType.aggregation_area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.SelectionType.all">
+<span class="sig-name descname"><span class="pre">all</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'all'</span></em><a class="headerlink" href="#flood_adapt.api.types.SelectionType.all" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.SelectionType.polygon">
+<span class="sig-name descname"><span class="pre">polygon</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'polygon'</span></em><a class="headerlink" href="#flood_adapt.api.types.SelectionType.polygon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.SelectionType.polyline">
+<span class="sig-name descname"><span class="pre">polyline</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'polyline'</span></em><a class="headerlink" href="#flood_adapt.api.types.SelectionType.polyline" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesArea">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesArea</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesArea" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesArea.cm2">
+<span class="sig-name descname"><span class="pre">cm2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cm2'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesArea.cm2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesArea.m2">
+<span class="sig-name descname"><span class="pre">m2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'m2'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesArea.m2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesArea.mm2">
+<span class="sig-name descname"><span class="pre">mm2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mm2'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesArea.mm2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesArea.sf">
+<span class="sig-name descname"><span class="pre">sf</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'sf'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesArea.sf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesDirection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesDirection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesDirection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesDirection.degrees">
+<span class="sig-name descname"><span class="pre">degrees</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'deg</span> <span class="pre">N'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesDirection.degrees" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesDischarge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesDischarge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesDischarge" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesDischarge.cfs">
+<span class="sig-name descname"><span class="pre">cfs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cfs'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesDischarge.cfs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesDischarge.cms">
+<span class="sig-name descname"><span class="pre">cms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'m3/s'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesDischarge.cms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesIntensity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesIntensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesIntensity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesIntensity.inch">
+<span class="sig-name descname"><span class="pre">inch</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'inch/hr'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesIntensity.inch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesIntensity.mm">
+<span class="sig-name descname"><span class="pre">mm</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mm/hr'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesIntensity.mm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.centimeters">
+<span class="sig-name descname"><span class="pre">centimeters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'centimeters'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.centimeters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.feet">
+<span class="sig-name descname"><span class="pre">feet</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'feet'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.feet" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.inch">
+<span class="sig-name descname"><span class="pre">inch</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'inch'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.inch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.meters">
+<span class="sig-name descname"><span class="pre">meters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'meters'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.meters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.miles">
+<span class="sig-name descname"><span class="pre">miles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'miles'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.miles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesLength.millimeters">
+<span class="sig-name descname"><span class="pre">millimeters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'millimeters'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesLength.millimeters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVelocity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesVelocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVelocity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVelocity.knots">
+<span class="sig-name descname"><span class="pre">knots</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'knots'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVelocity.knots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVelocity.meters">
+<span class="sig-name descname"><span class="pre">meters</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'m/s'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVelocity.meters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVelocity.mph">
+<span class="sig-name descname"><span class="pre">mph</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mph'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVelocity.mph" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVolume">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitTypesVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVolume" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVolume.cf">
+<span class="sig-name descname"><span class="pre">cf</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cf'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVolume.cf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitTypesVolume.m3">
+<span class="sig-name descname"><span class="pre">m3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'m3'</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitTypesVolume.m3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulArea</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesArea"><span class="pre">UnitTypesArea</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesArea"><span class="pre">UnitTypesArea</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given length value different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea" title="flood_adapt.api.types.UnitTypesArea"><em>UnitTypesArea</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesArea,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[Gt(gt=0)])}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesArea" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesArea"><span class="pre">UnitTypesArea</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulArea.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulArea.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulDirection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDirection" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesDirection"><span class="pre">UnitTypesDirection</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesDirection,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDirection" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesDirection"><span class="pre">UnitTypesDirection</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDirection.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDirection.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulDischarge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesDischarge"><span class="pre">UnitTypesDischarge</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesDischarge"><span class="pre">UnitTypesDischarge</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given discharge to different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge" title="flood_adapt.api.types.UnitTypesDischarge"><em>UnitTypesDischarge</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesDischarge,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesDischarge" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesDischarge"><span class="pre">UnitTypesDischarge</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulDischarge.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulDischarge.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulHeight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesLength"><span class="pre">UnitTypesLength</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.UnitfulLength" title="flood_adapt.object_model.io.unitfulvalue.UnitfulLength"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnitfulLength</span></code></a></p>
+<p>A special type of length that is always positive and non-zero. Used for heights.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight.convert_length_to_height">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_length_to_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight.convert_length_to_height" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesLength,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[Gt(gt=0)])}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulHeight.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulHeight.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulIntensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesIntensity"><span class="pre">UnitTypesIntensity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesIntensity"><span class="pre">UnitTypesIntensity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given rainfall intensity to different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity" title="flood_adapt.api.types.UnitTypesIntensity"><em>UnitTypesIntensity</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesIntensity,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesIntensity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesIntensity"><span class="pre">UnitTypesIntensity</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulIntensity.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulIntensity.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesLength"><span class="pre">UnitTypesLength</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesLength"><span class="pre">UnitTypesLength</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given length value different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.api.types.UnitTypesLength"><em>UnitTypesLength</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesLength,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesLength"><span class="pre">UnitTypesLength</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLength.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLength.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLengthRefValue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulLengthRefValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesLength" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesLength"><span class="pre">UnitTypesLength</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.VerticalReference" title="flood_adapt.object_model.io.unitfulvalue.VerticalReference"><span class="pre">VerticalReference</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulLengthRefValue" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.UnitfulLength" title="flood_adapt.object_model.io.unitfulvalue.UnitfulLength"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnitfulLength</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLengthRefValue.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLengthRefValue.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLengthRefValue.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'type':</span> <span class="pre">FieldInfo(annotation=VerticalReference,</span> <span class="pre">required=True),</span> <span class="pre">'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesLength,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLengthRefValue.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulLengthRefValue.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.VerticalReference" title="flood_adapt.object_model.io.unitfulvalue.VerticalReference"><span class="pre">VerticalReference</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulLengthRefValue.type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulVelocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVelocity"><span class="pre">UnitTypesVelocity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVelocity"><span class="pre">UnitTypesVelocity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given  velocity to different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity" title="flood_adapt.api.types.UnitTypesVelocity"><em>UnitTypesVelocity</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesVelocity,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVelocity" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVelocity"><span class="pre">UnitTypesVelocity</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVelocity.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVelocity.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">UnitfulVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVolume"><span class="pre">UnitTypesVolume</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flood_adapt.api.types.ValueUnitPair" title="flood_adapt.object_model.io.unitfulvalue.ValueUnitPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueUnitPair</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVolume"><span class="pre">UnitTypesVolume</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.convert" title="Link to this definition"></a></dt>
+<dd><p>converts given volume to different units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_units</strong> (<a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume" title="flood_adapt.api.types.UnitTypesVolume"><em>UnitTypesVolume</em></a>) – units to be converted to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>converted value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=UnitTypesVolume,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[Gt(gt=0)])}</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flood_adapt.api.types.UnitTypesVolume" title="flood_adapt.object_model.io.unitfulvalue.UnitTypesVolume"><span class="pre">UnitTypesVolume</span></a></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.UnitfulVolume.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.UnitfulVolume.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">ValueUnitPair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair.model_computed_fields" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'units':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'value':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair.model_fields" title="Link to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair.units" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.ValueUnitPair.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flood_adapt.api.types.ValueUnitPair.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flood_adapt.api.types.VerticalReference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flood_adapt.api.types.</span></span><span class="sig-name descname"><span class="pre">VerticalReference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flood_adapt.api.types.VerticalReference" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.VerticalReference.datum">
+<span class="sig-name descname"><span class="pre">datum</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'datum'</span></em><a class="headerlink" href="#flood_adapt.api.types.VerticalReference.datum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flood_adapt.api.types.VerticalReference.floodmap">
+<span class="sig-name descname"><span class="pre">floodmap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'floodmap'</span></em><a class="headerlink" href="#flood_adapt.api.types.VerticalReference.floodmap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="benefits.html" class="btn btn-neutral float-left" title="Benefits API module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrichem.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
