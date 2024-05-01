@@ -1,5 +1,7 @@
 # Event tab
+import inspect
 import os
+import types
 from typing import Any, Union
 
 import pandas as pd
@@ -22,11 +24,37 @@ from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:
-    # use PyQt table / sorting and filtering either with PyQt table or in the API
+    """Returns a dictionary with info on the events that currently
+    exist in the database
+
+    Parameters
+    ----------
+    database : IDatabase
+        Database object
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary with info on the events
+    """
     return database.events.list_objects()
 
 
 def get_event(name: str, database: IDatabase) -> IEvent:
+    """Returns the event object with the specified name from the database
+
+    Parameters
+    ----------
+    name : str
+        name of the object to be returned
+    database : IDatabase
+        database object
+
+    Returns
+    -------
+    IEvent
+        The event object with the specified name
+    """
     return database.events.get(name)
 
 
@@ -100,6 +128,20 @@ def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurri
 
 
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
+    """Save the event to the database as a .toml file
+
+    Parameters
+    ----------
+    event : IEvent
+        The event to save
+    database : IDatabase
+        The database to save the event to
+
+    Raises
+    ------
+    ValueError
+        Raise error if name is already in use
+    """
     database.events.save(event)
 
 
@@ -163,3 +205,15 @@ def plot_wind(
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):
     database.write_cyc(event, track)
+
+
+# Get a list of all public functions defined in this module
+__all__ = [
+    name
+    for name, obj in globals().items()
+    if (inspect.isfunction(obj) or isinstance(obj, types.FunctionType))
+    and not name.startswith("_")
+]
+
+# Append 'IMeasure' to the list
+__all__.append("IEvent")

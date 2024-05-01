@@ -33,8 +33,14 @@ class Projection(IProjection):
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
-        """create Projection from object, e.g. when initialized from GUI"""
+    def load_dict(data: dict[str, Any]) -> IProjection:
+        """Create Projection from a dictionary
+
+        Parameters
+        ----------
+        data : dict[str, Any]
+            dictionary with the attributes of the Projection
+        """
 
         obj = Projection()
         obj.attrs = ProjectionModel.parse_obj(data)

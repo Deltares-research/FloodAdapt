@@ -11,35 +11,140 @@ from flood_adapt.object_model.interface.database import IDatabase
 
 
 def get_outputs(database: IDatabase) -> dict[str, Any]:
-    # sorting and filtering either with PyQt table or in the API
+    """Returns a dictionary with info on the outputs that currently exist in the database.
+
+    Parameters
+    ----------
+    database : IDatabase
+        Database object
+
+    Returns
+    -------
+    dict[str, Any]
+        Dictionary with info on the outputs
+    """
     return database.get_outputs()
 
 
 def get_topobathy_path(database: IDatabase) -> str:
+    """Returns the path of the topobathy tiles in order to create flood maps with water level maps
+
+    Parameters
+    ----------
+    database : IDatabase
+        Database object
+
+    Returns
+    -------
+    str
+        path to topobathy tiles
+    """
     return database.get_topobathy_path()
 
 
 def get_index_path(database: IDatabase) -> str:
+    """Returns the path of the index tiles which are used to connect each water level cell with the topobathy tiles
+
+    Parameters
+    ----------
+    database : IDatabase
+        Database object
+
+    Returns
+    -------
+    str
+        path to index tiles
+    """
     return database.get_index_path()
 
 
 def get_depth_conversion(database: IDatabase) -> float:
+    """returns the flood depth conversion that is need in the gui to plot the flood map
+
+    Parameters
+    ----------
+    database : IDatabase
+        Database object
+
+    Returns
+    -------
+    float
+        conversion factor
+    """
     return database.get_depth_conversion()
 
 
 def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.array:
+    """Returns an array with the maximum water levels during an event
+
+    Parameters
+    ----------
+    name : str
+        name of scenario
+    database : IDatabase
+        database object
+    rp : int, optional
+        return period in years, by default None
+
+    Returns
+    -------
+    np.array
+        2D map of maximum water levels
+    """
     return database.get_max_water_level(name, rp)
 
 
 def get_fiat_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+    """Return a geodataframe of the impacts at the footprint level.
+
+    Parameters
+    ----------
+    name : str
+        name of scenario
+    database : IDatabase
+        database object
+
+    Returns
+    -------
+    GeoDataFrame
+        impacts at footprint level
+    """
     return database.get_fiat_footprints(name)
 
 
 def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
+    """Gets a dictionary with the aggregated damages as geodataframes
+
+    Parameters
+    ----------
+    name : str
+        name of the scenario
+    database : IDatabase
+        database object
+
+    Returns
+    -------
+    dict[GeoDataFrame]
+        dictionary with aggregated damages per aggregation type
+    """
     return database.get_aggregation(name)
 
 
 def get_roads(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+    """Return a geodataframe of the impacts at roads.
+
+    Parameters
+    ----------
+    name : str
+        name of scenario
+    database : IDatabase
+        database object
+
+    Returns
+    -------
+    GeoDataFrame
+        Impacts at roads
+    """
     return database.get_roads(name)
 
 

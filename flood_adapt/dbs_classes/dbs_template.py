@@ -85,11 +85,11 @@ class DbsTemplate(AbstractDatabaseElement):
         Parameters
         ----------
         old_name : str
-            name of the existing measure
+            name of the existing object
         new_name : str
-            name of the new measure
+            name of the new object
         new_description : str
-            description of the new measure
+            description of the new object
         """
         # Check if the provided old_name is valid
         if old_name not in self.list_objects()["name"]:
