@@ -274,7 +274,8 @@ class TestBenefitScenariosRun:
             for aggr_type in aggrs.keys():
                 aggr = aggrs[aggr_type]
                 # Generate random distribution of damage per aggregation area
-                dmgs = np.random.random(len(aggr))
+                generator = np.random.default_rng()
+                dmgs = generator.random(len(aggr))
                 dmgs = dmgs / dmgs.sum() * damages_dummy[name]
 
                 dict0 = {
