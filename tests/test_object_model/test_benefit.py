@@ -247,12 +247,14 @@ class TestBenefitScenariosRun:
             )
             if not output_path.exists():
                 output_path.mkdir(parents=True)
-            # Creaty dummy fiat log
-            fiat_path = output_path.joinpath("Impacts", "fiat_model")
-            if not fiat_path.exists():
-                fiat_path.mkdir(parents=True)
-            with open(fiat_path.joinpath("fiat.log"), "w") as f:
-                f.write("Geom calculation are done!")
+            # Create dummy building impact output csv file
+            fiat_path = output_path.joinpath(
+                "Impacts", f"Impacts_detailed_{row['scenario created']}.csv"
+            )
+            if not fiat_path.parent.exists():
+                fiat_path.parent.mkdir()
+            dummy_impacts = pd.DataFrame()
+            dummy_impacts.to_csv(fiat_path)
             # Create dummy metrics file
             dummy_metrics = pd.DataFrame(
                 {
