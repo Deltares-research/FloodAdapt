@@ -12,9 +12,9 @@ dependencies:
     - cht-tide
     - cht-meteo
     - cht-observations
-    - git+https://github.com/Deltares/hydromt_fiat.git@release
+    - git+https://github.com/Deltares/hydromt_fiat.git
     - git+https://github.com/Deltares/fiat_toolbox.git
-    - git+https://github.com/Deltares/hydromt_sfincs.git@storage_volume
+    - git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree
     - git+https://github.com/Deltares/cht_cyclones.git
   - black
   - typos
@@ -25,7 +25,7 @@ dependencies:
   - numpy
   - pandas
   - plotly
-  - pydantic=1.10.9
+  - pydantic
   - pytest
   - python=3.10
   - tomli

@@ -42,7 +42,7 @@ class SfincsModel(BaseModel):
     overland_model: str
     ambient_air_pressure: float
     floodmap_units: UnitTypesLength
-    save_simulation: bool
+    save_simulation: Optional[bool] = False
 
 
 class VerticalReferenceModel(BaseModel):
@@ -54,7 +54,7 @@ class WaterLevelReferenceModel(BaseModel):
     reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]]  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
@@ -70,22 +70,45 @@ class SlrModel(BaseModel):
     relative_to_year: int
 
 
+class DamageType(str, Enum):
+    """class describing the accepted input for the variable footprints_dmg_type"""
+
+    absolute = "absolute"
+    relative = "relative"
+
+
 class MapboxLayersModel(BaseModel):
     """class describing the configuration of the mapbox layers in the gui"""
 
+    buildings_min_zoom_level: int = 13
     flood_map_depth_min: float
     flood_map_zbmax: float
     flood_map_bins: list[float]
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
+    footprints_dmg_type: DamageType = "absolute"
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
-    svi_bins: Optional[list[float]]
-    svi_colors: Optional[list[str]]
+    svi_bins: Optional[list[float]] = []
+    svi_colors: Optional[list[str]] = []
     benefits_bins: list[float]
     benefits_colors: list[str]
+    benefits_threshold: Optional[float] = None
     damage_decimals: Optional[int] = 0
+
+
+class VisualizationLayersModel(BaseModel):
+    """class describing the configuration of the layers you might want to visualize in the gui"""
+
+    default_bin_number: int
+    default_colors: list[str]
+    layer_names: list[str]
+    layer_long_names: list[str]
+    layer_paths: list[str]
+    field_names: list[str]
+    bins: Optional[list[list[float]]] = []
+    colors: Optional[list[list[str]]] = []
 
 
 class GuiModel(BaseModel):
@@ -102,6 +125,7 @@ class GuiModel(BaseModel):
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
     mapbox_layers: MapboxLayersModel
+    visualization_layers: VisualizationLayersModel
 
 
 class RiskModel(BaseModel):
@@ -120,8 +144,6 @@ class DemModel(BaseModel):
 
 class EquityModel(BaseModel):
     census_data: str
-    # aggregation_type: str
-    # aggregation_label: Optional[str] = "name"
     percapitalincome_label: Optional[str] = "PerCapitalIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
@@ -130,12 +152,12 @@ class AggregationModel(BaseModel):
     name: str
     file: str
     field_name: str
-    equity: Optional[EquityModel]
+    equity: Optional[EquityModel] = None
 
 
 class BFEModel(BaseModel):
     geom: str
-    table: Optional[str]
+    table: Optional[str] = None
     field_name: str
 
 
@@ -148,16 +170,16 @@ class FiatModel(BaseModel):
     """class describing the accepted input for the variable fiat in Site"""
 
     exposure_crs: str
-    bfe: Optional[BFEModel]
+    bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
     non_building_names: Optional[list[str]]
     damage_unit: Optional[str] = "$"
-    building_footprints: Optional[str]
-    roads_file_name: Optional[str]
-    new_development_file_name: Optional[str]
+    building_footprints: Optional[str] = None
+    roads_file_name: Optional[str] = None
+    new_development_file_name: Optional[str] = None
     save_simulation: Optional[bool] = False
-    svi: Optional[SVIModel]
+    svi: Optional[SVIModel] = None
 
 
 class RiverModel(BaseModel):
@@ -178,12 +200,13 @@ class Obs_stationModel(BaseModel):
     name: Union[int, str]
     description: Optional[str] = ""
     ID: int
+    file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
-    mllw: Optional[UnitfulLength]
-    mhhw: Optional[UnitfulLength]
-    localdatum: Optional[UnitfulLength]
-    msl: Optional[UnitfulLength]
+    mllw: Optional[UnitfulLength] = None
+    mhhw: Optional[UnitfulLength] = None
+    localdatum: Optional[UnitfulLength] = None
+    msl: Optional[UnitfulLength] = None
 
 
 class Obs_pointModel(BaseModel):
@@ -193,9 +216,10 @@ class Obs_pointModel(BaseModel):
 
     name: Union[int, str]
     description: Optional[str] = ""
-    ID: Optional[
-        int
-    ] = None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
+    ID: Optional[int] = (
+        None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
+    )
+    file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
 
@@ -239,14 +263,15 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]]
-    obs_station: Optional[Obs_stationModel]
-    obs_point: Optional[list[Obs_pointModel]]
+    river: Optional[list[RiverModel]] = []
+    obs_station: Optional[Obs_stationModel] = None
+    obs_point: Optional[list[Obs_pointModel]] = []
     benefits: BenefitsModel
-    scs: Optional[SCSModel]  # optional for the US to use SCS rainfall curves
-    standard_objects: Optional[
-        StandardObjectModel
-    ] = StandardObjectModel()  # optional for the US to use standard objects
+    scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
+
+    standard_objects: Optional[StandardObjectModel] = (
+        StandardObjectModel()
+    )  # optional for the US to use standard objects
 
 
 class ISite(ABC):

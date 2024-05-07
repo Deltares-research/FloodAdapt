@@ -23,13 +23,9 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulVolume,
 )
 
-test_database = Path().absolute() / "tests" / "test_database"
 
-
-def test_floodwall_read(cleanup_database):
-    test_toml = (
-        test_database / "charleston" / "input" / "measures" / "seawall" / "seawall.toml"
-    )
+def test_floodwall_read(test_db):
+    test_toml = test_db.input_path / "measures" / "seawall" / "seawall.toml"
     assert test_toml.is_file()
 
     floodwall = FloodWall.load_file(test_toml)
@@ -46,11 +42,9 @@ def test_floodwall_read(cleanup_database):
     assert floodwall.attrs.elevation.units == "feet"
 
 
-def test_elevate_aggr_area_read(cleanup_database):
+def test_elevate_aggr_area_read(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "measures"
         / "raise_property_aggregation_area"
         / "raise_property_aggregation_area.toml"
@@ -77,7 +71,7 @@ def test_elevate_aggr_area_read(cleanup_database):
     assert elevate.attrs.aggregation_area_name == "name5"
 
 
-def test_elevate_aggr_area_read_fail(cleanup_database):
+def test_elevate_aggr_area_read_fail(test_db):
     # TODO validators do not work?
     test_dict = {
         "name": "test1",
@@ -89,23 +83,19 @@ def test_elevate_aggr_area_read_fail(cleanup_database):
         "property_type": "RES",
     }
 
-    Elevate.load_dict(test_dict, test_database / "charleston" / "input")
+    Elevate.load_dict(test_dict, test_db.input_path)
 
 
-def test_elevate_aggr_area_save(cleanup_database):
+def test_elevate_aggr_area_save(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "measures"
         / "raise_property_aggregation_area"
         / "raise_property_aggregation_area.toml"
     )
 
     test_toml_new = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "measures"
         / "raise_property_aggregation_area"
         / "raise_property_aggregation_area_new.toml"
@@ -125,11 +115,9 @@ def test_elevate_aggr_area_save(cleanup_database):
     test_toml_new.unlink()
 
 
-def test_elevate_polygon_read(cleanup_database):
+def test_elevate_polygon_read(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "measures"
         / "raise_property_polygon"
         / "raise_property_polygon.toml"
@@ -158,10 +146,8 @@ def test_elevate_polygon_read(cleanup_database):
     assert isinstance(polygon, gpd.GeoDataFrame)
 
 
-def test_buyout_read(cleanup_database):
-    test_toml = (
-        test_database / "charleston" / "input" / "measures" / "buyout" / "buyout.toml"
-    )
+def test_buyout_read(test_db):
+    test_toml = test_db.input_path / "measures" / "buyout" / "buyout.toml"
     assert test_toml.is_file()
 
     buyout = Buyout.load_file(test_toml)
@@ -173,15 +159,8 @@ def test_buyout_read(cleanup_database):
     assert isinstance(buyout.attrs.aggregation_area_name, str)
 
 
-def test_floodproof_read(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "measures"
-        / "floodproof"
-        / "floodproof.toml"
-    )
+def test_floodproof_read(test_db):
+    test_toml = test_db.input_path / "measures" / "floodproof" / "floodproof.toml"
     assert test_toml.is_file()
 
     floodproof = FloodProof.load_file(test_toml)
@@ -193,10 +172,8 @@ def test_floodproof_read(cleanup_database):
     assert isinstance(floodproof.attrs.aggregation_area_name, str)
 
 
-def test_pump_read():
-    test_toml = (
-        test_database / "charleston" / "input" / "measures" / "pump" / "pump.toml"
-    )
+def test_pump_read(test_db):
+    test_toml = test_db.input_path / "measures" / "pump" / "pump.toml"
 
     assert test_toml.is_file()
 
@@ -206,27 +183,13 @@ def test_pump_read():
     assert isinstance(pump.attrs.type, HazardType)
     assert isinstance(pump.attrs.discharge, UnitfulDischarge)
 
-    test_geojson = (
-        test_database
-        / "charleston"
-        / "input"
-        / "measures"
-        / "pump"
-        / pump.attrs.polygon_file
-    )
+    test_geojson = test_db.input_path / "measures" / "pump" / pump.attrs.polygon_file
 
     assert test_geojson.is_file()
 
 
-def test_green_infra_read(cleanup_database):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "measures"
-        / "green_infra"
-        / "green_infra.toml"
-    )
+def test_green_infra_read(test_db):
+    test_toml = test_db.input_path / "measures" / "green_infra" / "green_infra.toml"
 
     assert test_toml.is_file()
 
@@ -239,12 +202,7 @@ def test_green_infra_read(cleanup_database):
     assert isinstance(green_infra.attrs.height, UnitfulLength)
 
     test_geojson = (
-        test_database
-        / "charleston"
-        / "input"
-        / "measures"
-        / "green_infra"
-        / green_infra.attrs.polygon_file
+        test_db.input_path / "measures" / "green_infra" / green_infra.attrs.polygon_file
     )
 
     assert test_geojson.is_file()

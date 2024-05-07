@@ -1,49 +1,51 @@
-from pathlib import Path
-
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pytest
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.scenario import Scenario
 
-test_database = Path().absolute() / "tests" / "test_database"
 
-
-def test_add_obs_points(cleanup_database: None):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+@pytest.fixture()
+def test_scenarios(test_db):
+    test_tomls = [
+        test_db.input_path
         / "scenarios"
         / "current_extreme12ft_no_measures"
         / "current_extreme12ft_no_measures.toml"
-    )
-    assert test_toml.is_file()
+    ]
 
-    scenario = Scenario.load_file(test_toml)
-    scenario.init_object_model()
-    path_in = test_database.joinpath(
-        "charleston",
-        "static",
-        "templates",
-        scenario.site_info.attrs.sfincs.overland_model,
+    test_scenarios = {
+        toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
+    }
+    return test_scenarios
+
+
+def test_add_obs_points(test_db, test_scenarios):
+    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
+
+    test_scenario.init_object_model()
+    path_in = (
+        test_db.static_path
+        / "templates"
+        / test_scenario.site_info.attrs.sfincs.overland_model
     )
 
-    model = SfincsAdapter(site=scenario.site_info, model_root=path_in)
+    model = SfincsAdapter(site=test_scenario.site_info, model_root=path_in)
 
     model.add_obs_points()
 
     # write sfincs model in output destination
     model.write_sfincs_model(
-        path_out=scenario.direct_impacts.hazard.simulation_paths[0]
+        path_out=test_scenario.direct_impacts.hazard.simulation_paths[0]
     )
 
     del model
 
     # assert points are the same
     sfincs_obs = pd.read_csv(
-        scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"),
+        test_scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"),
         header=None,
         delim_whitespace=True,
     )
@@ -52,7 +54,7 @@ def test_add_obs_points(cleanup_database: None):
     lat = []
     lon = []
 
-    site_points = scenario.site_info.attrs.obs_point
+    site_points = test_scenario.site_info.attrs.obs_point
     for pt in site_points:
         names.append(pt.name)
         lat.append(pt.lat)

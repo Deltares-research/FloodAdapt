@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -27,12 +27,12 @@ class SocioEconomicChangeModel(BaseModel):
     economic_growth: Optional[float] = 0.0
 
     population_growth_new: Optional[float] = 0.0
-    new_development_elevation: Optional[UnitfulLengthRefValue]
-    new_development_shapefile: Optional[str]
+    new_development_elevation: Optional[UnitfulLengthRefValue] = None
+    new_development_shapefile: Optional[str] = None
 
 
 class ProjectionModel(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel

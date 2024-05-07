@@ -23,11 +23,11 @@ from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 def get_events(database: IDatabase) -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
-    return database.get_events()
+    return database.events.list_objects()
 
 
 def get_event(name: str, database: IDatabase) -> IEvent:
-    return database.get_event(name)
+    return database.events.get(name)
 
 
 def get_event_mode(name: str, database: IDatabase) -> str:
@@ -100,7 +100,7 @@ def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurri
 
 
 def save_event_toml(event: IEvent, database: IDatabase) -> None:
-    database.save_event(event)
+    database.events.save(event)
 
 
 def save_timeseries_csv(
@@ -110,23 +110,25 @@ def save_timeseries_csv(
 
 
 def edit_event(event: IEvent, database: IDatabase) -> None:
-    database.edit_event(event)
+    database.events.edit(event)
 
 
 def delete_event(name: str, database: IDatabase) -> None:
-    database.delete_event(name)
+    database.events.delete(name)
 
 
 def copy_event(
     old_name: str, database: IDatabase, new_name: str, new_description: str
 ) -> None:
-    database.copy_event(old_name, new_name, new_description)
+    database.events.copy(old_name, new_name, new_description)
 
 
 def download_wl_data(
-    station_id, start_time, end_time, units: UnitTypesLength
+    station_id, start_time, end_time, units: UnitTypesLength, file=None
 ) -> pd.DataFrame:
-    return HistoricalNearshore.download_wl_data(station_id, start_time, end_time, units)
+    return HistoricalNearshore.download_wl_data(
+        station_id, start_time, end_time, units, file
+    )
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
@@ -161,55 +163,3 @@ def plot_wind(
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):
     database.write_cyc(event, track)
-
-
-# def get_event(name: str) -> dict():  # get attributes
-#     pass
-
-
-# # on click add event
-# def create_new_event(template: str) -> dict():  # get attributes
-#     pass
-
-
-# def set_event(event: dict):  # set attributes
-#     pass
-
-
-# # in event pop-up window on click OK
-# def save_event(name: str):
-#     pass
-
-
-# # on click hurricane:
-# def get_hurricane_tracks():
-#     pass
-
-
-# # on click historical from nearshore:
-# def create_historical_nearshore_event() -> (
-#     dict()
-# ):  # gives back empty  object to populate pop-up window, different options for discharge are in the class #TODO: ask Julian
-#     pass
-
-
-# # on click plot water level boundary
-# def get_waterlevel_timeseries(event: dict) -> dict():
-#     pass
-
-
-# # on click plot rainfall
-# def get_rainfall_timeseries(event: dict):
-#     pass
-
-
-# # on click delete event
-# def check_delete_event() -> (
-#     bool
-# ):  # , str: # str contains full error message, empty if False
-#     pass
-
-
-# # on click copy event
-# def copy_event(name_orig: str, name_copy: str):
-#     pass

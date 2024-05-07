@@ -1,11 +1,9 @@
-import os
 from pathlib import Path
 from typing import List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -64,7 +62,7 @@ class FiatAdapter:
             handler.close()
 
     def set_hazard(self, hazard: Hazard) -> None:
-        map_fn = self._get_sfincs_map_path(hazard)
+        map_fn = hazard.flood_map_path
         map_type = hazard.site.attrs.fiat.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
@@ -72,17 +70,6 @@ class FiatAdapter:
         # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
-
-        # Read SFINCS map in a hydromt compatible format
-        if not is_risk:
-            sfincs_root = map_fn[0].parent
-            model = SfincsAdapter(model_root=sfincs_root, site=self.site)
-            da = model.read_zsmax()
-            da = da.fillna(0)
-            # TODO the units should come from SfincsAdapter
-            da.attrs["units"] = "m"
-            map_fn = [da]
-            del model
 
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
@@ -96,25 +83,8 @@ class FiatAdapter:
             unit_conversion_factor=conversion_factor,
         )
 
-    def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
-        sim_path = hazard.sfincs_map_path
-        mode = hazard.event_mode
-        map_fn: List[Union[str, Path]] = []
-
-        if mode == Mode.single_event:
-            map_fn.append(sim_path.joinpath("sfincs_map.nc"))
-
-        elif mode == Mode.risk:
-            # check for netcdf
-            map_fn.extend(
-                sim_path.joinpath(file)
-                for file in os.listdir(str(sim_path))
-                if file.endswith(".nc")
-            )
-        return map_fn
-
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = None
+        self, economic_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement economic growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
@@ -157,7 +127,7 @@ class FiatAdapter:
         )
 
     def apply_population_growth_existing(
-        self, population_growth: float, ids: Optional[list[str]] = None
+        self, population_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement population growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
@@ -264,7 +234,7 @@ class FiatAdapter:
     def elevate_properties(
         self,
         elevate: Elevate,
-        ids: Optional[list[str]] = None,
+        ids: Optional[list[str]] = [],
     ):
         """Elevate properties by adjusting the "Ground Floor Height" column
         in the FIAT exposure file.
@@ -309,7 +279,7 @@ class FiatAdapter:
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = None):
+    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = []):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
         zero in the FIAT exposure file.
 
@@ -353,7 +323,7 @@ class FiatAdapter:
         )
 
     def floodproof_properties(
-        self, floodproof: FloodProof, ids: Optional[list[str]] = None
+        self, floodproof: FloodProof, ids: Optional[list[str]] = []
     ):
         """Floodproof properties by creating new depth-damage functions and
         adding them in "Damage Function: {}" column in the FIAT exposure file.

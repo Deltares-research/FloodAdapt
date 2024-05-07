@@ -1,0 +1,63 @@
+---
+title: Historical event - without gauged water levels
+filters:
+  - lightbox
+lightbox: auto
+---
+
+::: {.callout-tip}
+## Watch our video - historical event without gauged water levels
+Don't feel like reading? No problem! Check out our video about how to add a historical (ungauged) event in FloodAdapt.
+:::
+
+When the user selects the “Historical event - without gauged water levels” option from the **Events** tab, they will see the event template window shown in @fig-ungaugedWindow. This window allows the user to input timeseries for:
+
+(1) [Rainfall](#rainfall)
+(2) [Wind](#wind)
+(3) [River discharge](#river-discharge)
+
+This event type is essentially the same as the [Historical event with gauged water levels](historic_events_gauged.qmd), except that instead of using measured nearshore water levels as input to the overland model, it calculates the nearshore water levels using an offshore model. This is why the section "Surge and tide" is empty in the event window. When you enter the start and stop time of the event, instead of pulling measured water levels from a gauge, FloodAdapt will pull gridded rain and wind data from **ADD SOURCE HERE** to use as input to the offshore model.
+
+The wind, rainfall, and river discharge that a user can specify in the event template window will be applied in the overland model, in the same way as is done for the Historical event with gauged water levels. [Click here to read more about how events are modelled in FloodAdapt](../index.qmd#how-are-events-modeled-in-floodadapt).
+
+![**Event template window for a historic event (without gauged water levels).**](../../../_static/images/popup_ungaugedEventWindow.png){#fig-ungaugedWindow}
+
+
+## Rainfall
+The user has four options for entering the rainfall that the overland model will use for the event:
+
+**None** - Selecting this option means that no rainfall will be included in the calculation. This is the **default** option.
+
+**Constant** - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.
+
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in <span style="color:red;"><WHICH UNITS?></span>.
+
+**Map** - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>.
+
+::: {.callout-note}
+## Rainfall magnifier with the Timeseries and Map options
+When a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like "what would have happened if the rainfall during that high tide would have been twice as intense?"
+:::
+
+## Wind
+
+::: {.callout-note}
+## What role does wind play in the overland model?
+The largest effect of wind on flooding is the surge it causes in the water levels. This wind effect is already included in the calculated nearshore water levels. The (more limited) role wind plays in the overland model is to skew the water levels from the model boundary to the land. Unless this is of particular interest to a user, the wind can be left at the default (none).
+:::
+The user has four options for entering wind that the overland model will use for the event:
+
+**None** - Selecting none means no wind will be included in the calculation. This is the **default** option.
+
+**Constant** - For a constant wind speed, the user is asked to enter the wind speed and wind direction.
+
+**Timeseries** - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in <span style="color:red;"><WHICH UNITS?></span>.
+
+**Map** - The map option downloads spatially and temporally varying wind at coarse spatial resolution from <span style="color:red;"><ADD SOURCE AND RESOLUTION HERE?></span>
+
+## River discharge
+The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.
+
+**Constant** - This is the **default** option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.
+
+**Timeseries** - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in <span style="color:red;"><WHICH UNITS?></span>.

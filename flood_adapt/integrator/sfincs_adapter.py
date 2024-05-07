@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
@@ -42,11 +44,8 @@ class SfincsAdapter:
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        # Check if model root exists
-        # if validate_existence_root_folder(model_root):
-        #    self.model_root = model_root
-
         self.sfincs_logger = logging.getLogger(__name__)
+        self.sfincs_logger.handlers = []  # To ensure logging file path has reset
         self.sf_model = SfincsModel(
             root=model_root, mode="r+", logger=self.sfincs_logger
         )
@@ -57,6 +56,8 @@ class SfincsAdapter:
         # Close the log file associated with the logger
         for handler in self.sfincs_logger.handlers:
             handler.close()
+        # Use garbage collector to ensure file handles are properly cleaned up
+        gc.collect()
 
     def set_timing(self, event: EventModel):
         """Changes model reference times based on event time series."""
@@ -290,7 +291,29 @@ class SfincsAdapter:
 
         # Add floodwall attributes to geodataframe
         gdf_floodwall["name"] = floodwall.name
-        gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+        if (gdf_floodwall.geometry.type == "MultiLineString").any():
+            gdf_floodwall = gdf_floodwall.explode()
+        # TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
+        try:
+            heights = [
+                float(
+                    UnitfulLength(
+                        value=float(height),
+                        units=self.site.attrs.gui.default_length_units,
+                    ).convert(UnitTypesLength("meters"))
+                )
+                for height in gdf_floodwall["z"]
+            ]
+            gdf_floodwall["z"] = heights
+            logging.info("Using floodwall height from shape file.")
+        except Exception:
+            logging.warning(
+                f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
+                Using uniform height of {floodwall.elevation.convert(UnitTypesLength("meters"))} meters instead."""
+            )
+            gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+
+        # par1 is the overflow coefficient for weirs
         gdf_floodwall["par1"] = 0.6
 
         # HydroMT function: create floodwall
@@ -312,10 +335,7 @@ class SfincsAdapter:
         """
 
         # HydroMT function: get geodataframe from filename
-        if (
-            green_infrastructure.selection_type == "polygon"
-            or green_infrastructure.selection_type == "import_area"
-        ):
+        if green_infrastructure.selection_type == "polygon":
             polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
@@ -349,16 +369,9 @@ class SfincsAdapter:
         # Make sure no multipolygons are there
         gdf_green_infra = gdf_green_infra.explode()
 
-        # Determine volume capacity of green infrastructure
-        if green_infrastructure.height.value != 0.0:
-            height = (
-                green_infrastructure.height.convert(UnitTypesLength("meters"))
-                * green_infrastructure.percent_area
-            )
-            volume = None
-        elif green_infrastructure.volume.value != 0.0:
-            height = None
-            volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
+        # Volume is always already calculated and is converted to m3 for SFINCS
+        height = None
+        volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
@@ -455,6 +468,7 @@ class SfincsAdapter:
         """Read zsmax file and return absolute maximum water level over entire simulation"""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        zsmax.attrs["units"] = "m"
         return zsmax
 
     def read_zs_points(self):
@@ -498,6 +512,16 @@ class SfincsAdapter:
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get bounding box from model"""
         return self.sf_model.region
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get grid from model
+
+        Returns
+        -------
+        QuadtreeGrid
+            QuadtreeGrid with the model grid
+        """
+        return self.sf_model.quadtree
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS

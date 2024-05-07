@@ -1,0 +1,6 @@
+---
+title: 	Hydraulic measures
+filters:
+  - lightbox
+lightbox: auto
+---

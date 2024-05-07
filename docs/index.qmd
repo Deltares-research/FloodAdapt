@@ -1,0 +1,136 @@
+---
+title: "Flood Adapt Documentation"
+filters:
+  - lightbox
+lightbox: auto
+---
+
+I put some styling infos here:
+but you can check all formatting here:
+
+https://quarto.org/docs/authoring/markdown-basics.html
+
+## Generate tables
+https://tablesgenerator.com/markdown_tables
+
+## Headings
+
+first level : # Heading
+second level : ## Heading
+third level : ### Heading
+
+...
+
+## Fonts
+
+**bold**: ** word ** (remove tab spaces betweenw asterisk and word)
+
+*italic*:  * this will be italic when tab space removed *
+
+## Paragraphs
+If you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.
+
+E.g I write and want to continue in the next line.
+
+If I only press enter to continue in the next line as I did now this will not show.
+-> I have to add 2 spaces after **line.**
+
+Let's see what happens when I add the 2 tabs:
+
+I to continue in the next **line.**
+If I only press enter to continue in the next line as I did now this will not show.
+
+## Additional options
+
+### Emphasizing
+Create different types to emphasize the text eg code
+
+Example 1: `conda install jupyter`  : Use ` (grave accent) before and after your sentence (without any spacing)
+
+Example 2:
+    something: just indent one time. for scrolling do the same just write a longer text (see below)
+
+    something really long that will needs scrolling so I will just continue writing until the scrolling bar appears.
+
+### Bullet Points
+Just write numbers below one another and use Indentation for the levels.
+
+1. Merry
+2. Christmas
+3. Kathryn
+    i) and a new year too
+
+Use the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.
+
+* Merry  (* Merry)
+    + Christmas   (+ Christmas)
+    + Kathryn     (+ Kathryn)
+
+## URLs
+
+add a URL and give it a name a
+
+[here comes the name] (here comes the URL)
+
+
+[FloodAdapt Deltares webpage](https://www.deltares.nl/en/software-and-data/products/floodadapt)
+
+## Embedded videos
+{{< video https://www.youtube.com/watch?v=VYd-G7yE0o4&t=9s >}}
+
+
+## Figures
+
+add a figure and give it a name add #fig..to cross-reference.  Just included here for demonstration purposes):
+
+First an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}
+
+add "fig-" before the label name to be able to cross reference.
+
+![Floodadapt](../_static/logo.png){#fig-logo width=200px height=200px}
+
+### Cross reference figure
+I want to reference the @fig-logo.
+
+## Note/ Warning Blocks
+
+Create info blocks within your test.
+
+Just use this header (remove quotation mark):
+"::: {.callout-tip}"
+write here the Note. and end with the following footer.
+":::"
+
+**Example:**
+::: {.callout-tip}
+create a tip
+:::
+
+::: {.callout-warning}
+Create a warning .
+:::
+
+#### options
+* note
+* warning
+* important
+* tip
+* caution
+
+
+## Cross Reference
+Cross reference to another page or figure:
+(remove quotation marks)
+
+"[Write here the text you want to see]"("add the reference")
+
+### Cross reference page
+"[Setup Guide]"(/3_setup_guide/index.qmd)"
+Here I use the reference to the [Setup Guide](/3_setup_guide/index.qmd)
+
+### Cross reference Figure
+use the @ before the logo Reference and use the name you gave it as reference above:
+@ fig-logo (remove space)
+
+Example:
+@fig-logo
