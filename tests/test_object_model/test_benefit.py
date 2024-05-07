@@ -80,7 +80,8 @@ def test_loadDict_fromTestDict_createBenefit(test_db):
 class TestBenefitScenariosNotCreated:
     # Fixture to create a Benefit object
     @pytest.fixture(scope="function")
-    def benefit_obj(self, test_db):
+    def benefit_obj(self, test_db_class):
+        test_db = test_db_class
         name = "benefit_raise_properties_2050"
         benefit_path = test_db.input_path.joinpath(
             "benefits",
