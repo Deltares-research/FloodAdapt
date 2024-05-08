@@ -2,485 +2,198 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Flood Adapt Documentation",
-    "section": "",
-    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
-  },
-  {
-    "objectID": "index.html#generate-tables",
-    "href": "index.html#generate-tables",
-    "title": "Flood Adapt Documentation",
-    "section": "Generate tables",
-    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
-  },
-  {
-    "objectID": "index.html#headings",
-    "href": "index.html#headings",
-    "title": "Flood Adapt Documentation",
-    "section": "Headings",
-    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
-  },
-  {
-    "objectID": "index.html#fonts",
-    "href": "index.html#fonts",
-    "title": "Flood Adapt Documentation",
-    "section": "Fonts",
-    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *"
-  },
-  {
-    "objectID": "index.html#paragraphs",
-    "href": "index.html#paragraphs",
-    "title": "Flood Adapt Documentation",
-    "section": "Paragraphs",
-    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
-  },
-  {
-    "objectID": "index.html#additional-options",
-    "href": "index.html#additional-options",
-    "title": "Flood Adapt Documentation",
-    "section": "Additional options",
-    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
-  },
-  {
-    "objectID": "index.html#urls",
-    "href": "index.html#urls",
-    "title": "Flood Adapt Documentation",
-    "section": "URLs",
-    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
-  },
-  {
-    "objectID": "index.html#embedded-videos",
-    "href": "index.html#embedded-videos",
-    "title": "Flood Adapt Documentation",
-    "section": "Embedded videos",
-    "text": "Embedded videos"
-  },
-  {
-    "objectID": "index.html#figures",
-    "href": "index.html#figures",
-    "title": "Flood Adapt Documentation",
-    "section": "Figures",
-    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\nFigure 1: Floodadapt\n\n\n\nCross reference figure\nI want to reference the Figure 1."
-  },
-  {
-    "objectID": "index.html#note-warning-blocks",
-    "href": "index.html#note-warning-blocks",
-    "title": "Flood Adapt Documentation",
-    "section": "Note/ Warning Blocks",
-    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark): “::: {.callout-tip}” write here the Note. and end with the following footer. “:::”\nExample: ::: {.callout-tip} create a tip :::\n\n\n\n\n\n\nWarning\n\n\n\nCreate a warning .\n\n\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
-  },
-  {
-    "objectID": "index.html#cross-reference",
-    "href": "index.html#cross-reference",
-    "title": "Flood Adapt Documentation",
-    "section": "Cross Reference",
-    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text you want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
-  },
-  {
-    "objectID": "6_demo/measures_impact.html#evaluating-measures",
-    "href": "6_demo/measures_impact.html#evaluating-measures",
-    "title": "Measures and their impact",
-    "section": "Evaluating measures",
-    "text": "Evaluating measures\n\nReduced impacts\n\n\nRisk-reduction benefits\n\n\nEffectiveness under future conditions"
-  },
-  {
-    "objectID": "6_demo/index.html",
-    "href": "6_demo/index.html",
-    "title": "Demonstrating the use of FloodAdapt",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "5_update_model/settings.html",
-    "href": "5_update_model/settings.html",
-    "title": "Updating settings for running probabilistic scenarios",
-    "section": "",
-    "text": "Updating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "5_update_model/index.html",
-    "href": "5_update_model/index.html",
-    "title": "Updating the CFRSS",
-    "section": "",
-    "text": "I put some text here. Will it show?\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "5_update_model/damage_functions.html",
-    "href": "5_update_model/damage_functions.html",
-    "title": "Updating damage functions",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/user_interface.html",
-    "href": "4_user_guide/user_interface.html",
-    "title": "GUI features",
-    "section": "",
-    "text": "To be filled in when the general features are more finalized (e.g. view and help options)\nTest.\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/site_tab.html",
-    "href": "4_user_guide/site_tab.html",
-    "title": "Site tab",
-    "section": "",
-    "text": "Don’t feel like reading? No problem! Check out our video about the FloodAdapt site tab:\n\nThe user interface opens by default to the Site tab, shown for the example of Charleston, South Carolina in Figure 1. The site tab shows the aggregation areas that have been defined for the site. If more than one type of aggregation area has been defined, the user can select which one they want to view from the drop-down box ‘Aggregation Areas Type’. Examples of aggregation area types are census blocks, neighborhoods, or zip codes. The ‘Aggregation Areas’ box populates with the different areas for the selected aggregation type. The user can hover over an area and see the name of that area. Similarly, they can select an area of the ‘Aggregation Areas’ list and that area will become highlighted on the map.\n\n\n\nFigure 1: The site tab, shown here for the example of Charleston, South Carolina\n\n\nThe site tab also shows the extent of the flood model. This can be substantially larger than the area of interest. If a user zooms out they can see the extent of the area, as show in Figure 2\n\n\n\nFigure 2: The site tab, zoomed out to show the full flood model extent (in red)\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/scenario_results/single_event.html",
-    "href": "4_user_guide/scenario_results/single_event.html",
-    "title": "Single-event scenario output",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/scenario_results/event_set.html",
-    "href": "4_user_guide/scenario_results/event_set.html",
-    "title": "Event-set (probabilistic risk) scenario output",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/projections/index.html",
-    "href": "4_user_guide/projections/index.html",
-    "title": "Projections",
-    "section": "",
-    "text": "FloodAdapt can simulate future climate and socio-economic conditions.\n\n\n\nFigure 1: FloodAdapt can simulate future climate projections - sea level rise, increased tropical storm frequencies, precipitation changes, and socio-economic projections - population growth and economic growth\n\n\nOn the Projections Tab in FloodAdapt, click ‘Add Projection’ to open the projections window (see Figure 2)\n\n\n\nFigure 2: Projections window on the Projections tab in FloodAdapt\n\n\nIn this window you can specify a climate projection, a socio-economic projection, or a combination (for example: 10% population growth with 1 foot of SLR).\nClick the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling.\nClimate projections\nSocio-economic projections\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/output/index.html",
-    "href": "4_user_guide/output/index.html",
-    "title": "Output tab",
-    "section": "",
-    "text": "Hello\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/measures/hydraulic.html",
-    "href": "4_user_guide/measures/hydraulic.html",
-    "title": "Hydraulic measures",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/measures/buildings.html",
-    "href": "4_user_guide/measures/buildings.html",
-    "title": "Building-level measures",
-    "section": "",
-    "text": "FloodAdapt can simulate different types of building-level adaptation actions: elevate, buyout, and floodproof properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.\nTo specify a building-level measure, the user goes to the Measures tab, and in the “Category” drop-down menu selects “Buildings” (see Figure 2). The user can then choose for “Measure” one of the three measure types: elevate, buyout, or floodproof properties. For each of these measures, the user will choose an “Area type”. This indicates how the user will select the buildings to which they want to apply the measure. There are three options:\nWhen selecting buildings using the “Draw polygon” feature, it is useful to click on the “Show Buildings” button in the Measures tab (see example in Figure 2). This shows the buildings that are in the exposure data of the impact model within FloodAdapt.\nEach of the building-level measures allows users to specify a property type to which the measure should be applied. So, for example, if a user selects a neighborhood, but only wants to apply the measure to the residential properties within the neighborhood, they are able to specify this. The property type is linked to an attribute in the impact model called the ‘primary object type’. In the U.S, these are typically residential (RES) commercial (COM), industrial (IND), or public (PUB). You can also choose to apply the measure to all the buildings in the selected area."
-  },
-  {
-    "objectID": "4_user_guide/measures/buildings.html#elevate",
-    "href": "4_user_guide/measures/buildings.html#elevate",
-    "title": "Building-level measures",
-    "section": "Elevate",
-    "text": "Elevate\nElevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Elevate properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in Figure 3). When you are finished clicking the polygon, right click or double click to open the measure specification window (see Figure 7).\n\n\n\nFigure 3: Selecting buildings for applying the elevate measure\n\n\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see Figure 5 for the example of buyouts)\n\n\n\nFigure 4: Specifying information for an elevate measure\n\n\n\n\n\n\n\n\nElevate properties relative to…\n\n\n\nThe elevate properties specification window asks the user to specify what the elevation of the property is relative to. The user can select the datum; in this case, the elevation is the elevation of the finished floor of the property above the specific datum. The user can also select to elevate properties relative to “Base Flood Elevation” (BFE). In this case the elevation is actually a height above this reference. In the U.S, BFE is a regulatory flood level that is related to insurance, and is often used in ordinances on how high new development must be built. In areas of the world where this is not used, the base flood elevation option may not be visible.\n\n\n\n\n\n\n\n\nHow is elevating properties represented in the modeling?\n\n\n\nThe exposed assets have multiple attributes, one of which is the height of the finished floor above the ground. When a user elevates properties, FloodAdapt adjusts this attribute for the selected properties to represent the user specifications. Whether a user specifies a property elevation as an elevation relative to a datum, or a height above a reference level like base flood elevation, FloodAdapt calculates for each selected property the equivalent height above the ground, and assigns this value to the finished floor height attribute of the elevated property. For example, if a user selects 12 feet above datum, and the ground elevation where a property is located is 10 feet above datum, FloodAdapt calculates that the finished floor height of the property as 2 feet, and assigns this as the finished floor height attribute of the elevated property. Similarly, if a user selects 2 feet above BFE, and the BFE at the location of a property is 9 feet, then the property must be raised to 11 feet relative to datum. If the ground elevation at that location is 8 feet, FloodAdapt would calculate that the finished floor height for the elevated property is 3 feet."
-  },
-  {
-    "objectID": "4_user_guide/measures/buildings.html#buyout",
-    "href": "4_user_guide/measures/buildings.html#buyout",
-    "title": "Building-level measures",
-    "section": "Buyout",
-    "text": "Buyout\nBuyouts refer to the purchase and subsequent removal of a property, usually one that is high risk or has experienced repetitive flooding. To implement the buyout measure, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Buyout properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon” for the Area type, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure. When you are finished clicking the polygon, right click or double click to open the measure specification window. If you select “Aggregation area” the specification window will automatically open when you click “Add measure” and you will additionally choose an aggregation area to apply the measure (see Figure 5).\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected “Aggregation area” - the aggregation area where the measure should be applied. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab.\n\n\n\nFigure 5: Specifying information for a buyout measure\n\n\n\n\n\n\n\n\nHow are buyouts represented in the modeling?\n\n\n\nWhen a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multiplied by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed."
-  },
-  {
-    "objectID": "4_user_guide/measures/buildings.html#floodproof",
-    "href": "4_user_guide/measures/buildings.html#floodproof",
-    "title": "Building-level measures",
-    "section": "Floodproof",
-    "text": "Floodproof\nFloodproofing in FloodAdapt refers to dry floodproofing, which involves sealing a building’s exterior, typically through barriers or seals, to prevent floodwaters from entering and causing damage. The effect of floodproofing is that the building will not incur any damages until floodwaters exceed the height of the floodproofing seals.\nTo implement floodproofing to buildings in FloodAdapt, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Floodproof properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in Figure 6). When you are finished clicking the polygon, right click or double click to open the measure specification window (see Figure 7).\n\n\n\nFigure 6: Selecting buildings for applying the floodproofing measure\n\n\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the height of the floodproofing, and the property type that the measure should be applied to. The floodproofing height ensures that damages only occur when the inundation depth is greater than the floodproofing height. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open when they click “Add measure” and they will additionally be asked to choose an aggregation area (see Figure 5 for the example of buyouts)\n\n\n\nFigure 7: Specifying information for a floodproofing measure\n\n\n\n\n\n\n\n\nHow is floodproofing represented in the modeling?\n\n\n\nThe impact model uses depth-damage curves that relate inundation depths to fractions of total asset damage. When a user selects a floodproofing height, there will be no damage to the property until the inundation depths exceed that height. This is represented by modifying the depth-damage curve so that the damage fraction is zero below the floodproofing height. Above the floodproofing height, the damage curve is unchanged because once the inundation exceeds the floodproofing height, it is assumed the water will then enter the property and reach the levels it would have reached without the floodproofing barrier."
-  },
-  {
-    "objectID": "4_user_guide/getting_started.html",
-    "href": "4_user_guide/getting_started.html",
-    "title": "Getting Started",
-    "section": "",
-    "text": "This section covers system requirements for running FloodAdapt, initial installation steps, and the folder structure of FloodAdapt."
-  },
-  {
-    "objectID": "4_user_guide/getting_started.html#system-requirements",
-    "href": "4_user_guide/getting_started.html#system-requirements",
-    "title": "Getting Started",
-    "section": "System requirements",
-    "text": "System requirements\nIn order to run FloodAdapt, the following are required:\n\nYour computer must be running a Windows operating system.\nThe first time the FloodAdapt application is opened must be by a user with administrative rights\nThe computer must have access to the internet\nAt least 2 GB of storage for the FloodAdapt system files and the underlying database\nApproximately 150 MB of storage for each user-generated scenario\n\n\n\n\n\n\n\nWarning\n\n\n\nBe sure to save the FloodAdapt folder in a high-level directory. For example: D:\\ FloodAdapt. This is because Windows has a 260-character path-name limit, and FloodAdapt includes user-selected scenario names in both folder and file names, which can lead to exceedance of the limit. Placing the FloodAdapt folder in a high-level directory will reduce the likelihood of this happening."
-  },
-  {
-    "objectID": "4_user_guide/getting_started.html#installation-steps",
-    "href": "4_user_guide/getting_started.html#installation-steps",
-    "title": "Getting Started",
-    "section": "Installation steps",
-    "text": "Installation steps\nThe FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon.\nThe first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly."
-  },
-  {
-    "objectID": "4_user_guide/getting_started.html#floodadapt-folder-structure",
-    "href": "4_user_guide/getting_started.html#floodadapt-folder-structure",
-    "title": "Getting Started",
-    "section": "FloodAdapt folder structure",
-    "text": "FloodAdapt folder structure\nThe FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.\nFigure 1 shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: System, FloodAdapt_gui and Database. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file floodadapt_gui.exe that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: Input, Output, and Static. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created.\nThe Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface. The user may want to access this folder to create their own visualization in third party software, such as ArcGIS.\n\n\n\nFigure 1: Folder structure of FloodAdapt."
-  },
-  {
-    "objectID": "4_user_guide/events/probabilistic_events.html",
-    "href": "4_user_guide/events/probabilistic_events.html",
-    "title": "Probabilistic event set",
-    "section": "",
-    "text": "A probabilistic event set is the combination of a set of synthetic events and their occurrence probabilities. These can be both tropical storms (hurricanes), as well as non-tropical events. They should include all event types that can lead to flooding in the site area (now or in the future), and can be compound flood events, meaning a combination of different flood drivers, like water level, rainfall, river discharge, or wind. It can be complicated to set up this set of events, and is therefore recommended to be done by an expert during the set-up of FloodAdapt for the site location.\nIn the events tab in FloodAdapt, a probabilistic event set can be recognized by the Type specification at the bottom of the window (see Figure 1). These event sets cannot be modified or deleted via the user interface.\n\n\n\nFigure 1: Probabilistic event set in the Events window. The Type is specified as Probabilistic Event Set and cannot be modified\n\n\n\n\n\n\n\n\nHow are probabilistic event sets used in FloodAdapt?\n\n\n\nWhen a user selects a scenario with a probabilistic event set, FloodAdapt calculate return period flood maps (such as the 100 year flood map), return period damages, and expected annual damages (risk) for the scenario. For example, if a user wants to explore the risk with 1 foot of sea level rise with a floodwall in place, their scenario components would be: projection = 1 ft. sea level rise, strategy = floodwall, event = probabilistic event set. The calculation of risk allows a user to explore the risk-reduction benefits of adaptation options, as well as obtaining more comprehensive insight into how at-risk different areas are when considering all relevant event types and their probability of occurring. The page on scenarios gives more examples how users can define scenarios to answer different questions.\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/index.html",
-    "href": "4_user_guide/events/historic_events/index.html",
-    "title": "Historical Events",
-    "section": "",
-    "text": "There are three types of historical events a user can select. Click on one of the links below or navigate via the side bar to learn more about each of these event types."
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/index.html#which-historical-event-type-should-i-choose",
-    "href": "4_user_guide/events/historic_events/index.html#which-historical-event-type-should-i-choose",
-    "title": "Historical Events",
-    "section": "Which historical event type should I choose?",
-    "text": "Which historical event type should I choose?\nAre you interested in a hurricane that made landfall at or near the site? Then choose Historical hurricane.\nAre you interested in a historical event that wasn’t a hurricane, like a king tide or a heavy rainfall event? If your site has a water level gauge, we recommend using the “Historical event with gauged water levels” option. The only time the “Historical event without gauged water levels” option is recommended is when there is no gauge at the site. Figure 1 shows a flow chart for deciding which event type to choose.\n\n\n\nFigure 1: Flow chart: which event type should I choose?"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_hurricane.html",
-    "href": "4_user_guide/events/historic_events/historic_events_hurricane.html",
-    "title": "Historical Hurricanes",
-    "section": "",
-    "text": "Watch a video about entering a historical hurricane\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a hurricane in FloodAdapt, and also how to shift the hurricane to see how different the flooding and impacts would have been had the hurricane made landfall somewhere else.\n\n\n\nThe historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the Events tab, they will see a hurricane selection window appear (see Figure 1), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date. The user can see all hurricanes within a specified distance of the site, or between specified years.\n\n\n\n\n\n\nHurricanes far offshore\n\n\n\nIt is not recommended to use the Historical hurricane option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type.\n\n\n\n\n\nFigure 1: Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window\n\n\nThe historical hurricane event template window is shown in Figure 2. After a user selects a hurricane from the hurricane selector window, the event name and description of the hurricane and the timing will be automatically filled in. The user can edit these if desired.\n\n\n\n\n\n\nEditing the hurricane start and stop time\n\n\n\nThe autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.\n\n\nUnder the “Surge and Tide” block, the user can shift the hurricane track by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.\nThe wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.\nThe river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge.\n\n\n\nFigure 2: Event template window for a historical hurricane.\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/events/general_info.html",
-    "href": "4_user_guide/events/general_info.html",
-    "title": "General event information",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/compare/Compare_table.html",
-    "href": "4_user_guide/compare/Compare_table.html",
-    "title": "Scenario comparison - metrics",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "4_user_guide/benefits.html",
-    "href": "4_user_guide/benefits.html",
-    "title": "Benefits",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "3_setup_guide/risk_analysis.html",
-    "href": "3_setup_guide/risk_analysis.html",
-    "title": "Set-up for probabilistic risk analysis",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "3_setup_guide/gui.html",
-    "href": "3_setup_guide/gui.html",
-    "title": "Settings to start the GUI",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "2_installation_guide/system_req.html",
-    "href": "2_installation_guide/system_req.html",
-    "title": "CFRSS system requirements",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "2_installation_guide/installation.html",
-    "href": "2_installation_guide/installation.html",
-    "title": "Installation steps",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "2_installation_guide/folder_struct.html",
-    "href": "2_installation_guide/folder_struct.html",
-    "title": "Folder Structure",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "1_introduction/reader_guidance.html",
-    "href": "1_introduction/reader_guidance.html",
-    "title": "Reader Guidance",
-    "section": "",
-    "text": "FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 1 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\nThe Installation Guide helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt.\nThe User Guide walks the user through all the functionality of FloodAdapt.\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nChapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.\n\n\n\nFigure 1: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section\n\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "1_introduction/intended_use.html",
-    "href": "1_introduction/intended_use.html",
-    "title": "Intended use of FloodAdapt",
-    "section": "",
-    "text": "FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "1_introduction/index.html",
-    "href": "1_introduction/index.html",
     "title": "Introduction",
     "section": "",
     "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
   },
   {
-    "objectID": "1_introduction/index.html#overview",
-    "href": "1_introduction/index.html#overview",
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
     "title": "Introduction",
     "section": "Overview",
     "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
   },
   {
-    "objectID": "1_introduction/index.html#intended-uses-of-floodadapt",
-    "href": "1_introduction/index.html#intended-uses-of-floodadapt",
+    "objectID": "index.html#intended-uses-of-floodadapt",
+    "href": "index.html#intended-uses-of-floodadapt",
     "title": "Introduction",
     "section": "Intended Uses of FloodAdapt",
     "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
   },
   {
-    "objectID": "1_introduction/index.html#reader-guidance",
-    "href": "1_introduction/index.html#reader-guidance",
+    "objectID": "index.html#reader-guidance",
+    "href": "index.html#reader-guidance",
     "title": "Introduction",
     "section": "Reader Guidance",
     "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 2 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe User Guide is for users of FloodAdapt. It provides information on how to get started with FloodAdapt, and describes all the FloodAdapt functionalities.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\n\n\n\n\n\n\nSetup Guide - special topic: Probabilistic event sets for risk analysis\n\n\n\nThe Setup guide includes guidance on preparing a probabilistic event set for risk analysis - this part of the setup requires a background in statistics and probability.\n\n\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nThe Demonstration of FloodAdapt illustrates use cases that can help the reader understand how FloodAdapt can support adaptation and resilience planning.\n\n\n\nFigure 2: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section"
   },
   {
-    "objectID": "1_introduction/overview_floodadapt.html",
-    "href": "1_introduction/overview_floodadapt.html",
-    "title": "Overview of FloodAdapt",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
     "section": "",
-    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software\n\n\n\n\n\n Back to top"
+    "text": "About this site\n\n\n\n Back to top"
   },
   {
-    "objectID": "1_introduction/terminology.html",
-    "href": "1_introduction/terminology.html",
-    "title": "Terminology",
-    "section": "",
-    "text": "Back to top"
-  },
-  {
-    "objectID": "2_installation_guide/index.html",
-    "href": "2_installation_guide/index.html",
-    "title": "Getting started with FloodAdapt",
+    "objectID": "6_demo/king_tides.html",
+    "href": "6_demo/king_tides.html",
+    "title": "King tides are already a problem – how will that look with sea level rise?",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "2_installation_guide/software_req.html",
-    "href": "2_installation_guide/software_req.html",
-    "title": "CFRSS system requirements",
+    "objectID": "6_demo/army_corps.html",
+    "href": "6_demo/army_corps.html",
+    "title": "The Army Corps has a surge-protection plan for the peninsula – what about the rest of Charleston?",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "3_setup_guide/database.html",
-    "href": "3_setup_guide/database.html",
-    "title": "Building the database",
-    "section": "",
-    "text": "Im testing\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "3_setup_guide/index.html",
-    "href": "3_setup_guide/index.html",
-    "title": "Setup Guide",
-    "section": "",
-    "text": "Heading 1\nHere is some content.\n…\n\n\n\n\n Back to top"
-  },
-  {
-    "objectID": "4_user_guide/arc_gis/index.html",
-    "href": "4_user_guide/arc_gis/index.html",
-    "title": "ArcGis",
+    "objectID": "5_update_model/objects.html",
+    "href": "5_update_model/objects.html",
+    "title": "Adding / updating objects in the exposure data",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/compare/Compare_map.html",
-    "href": "4_user_guide/compare/Compare_map.html",
-    "title": "Scenario comparison - map",
+    "objectID": "5_update_model/dem.html",
+    "href": "5_update_model/dem.html",
+    "title": "Updating the DEM",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/compare/index.html",
-    "href": "4_user_guide/compare/index.html",
-    "title": "Compare tabs",
+    "objectID": "5_update_model/aggregation_areas.html",
+    "href": "5_update_model/aggregation_areas.html",
+    "title": "Adding new aggregation areas",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html",
-    "href": "4_user_guide/events/historic_events/historic_events_gauged.html",
-    "title": "Historical event with gauged water levels",
+    "objectID": "4_user_guide/strategy/index.html",
+    "href": "4_user_guide/strategy/index.html",
+    "title": "Strategies",
     "section": "",
-    "text": "Watch our video - historical event using gauged water levels\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a historical (gauged) event in FloodAdapt.\nWhen the user selects the “Historical event - using gauged water levels” option from the Events tab, they will see the event template window shown in Figure 1. This window allows the user to input the historic time series for:"
+    "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#water-levels",
-    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#water-levels",
-    "title": "Historical event with gauged water levels",
-    "section": "Water levels",
-    "text": "Water levels\n\n\n\n\n\n\nWhat do we mean: Water levels, tide, and surge\n\n\n\nIn this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.\n\n\nIf the user wants to download water levels automatically from gauge data they should:\n\nSelect a start and stop time for the event\nClick the button “Download Observed Water Levels”\n\nThe plot window will then show the time series of the water levels over the duration specified by the start and stop time (see example in Figure 1).\nAlternatively, a user can import a water level time series.\n\n\n\n\n\n\nRequired format for imported water level time series\n\n\n\nThe water level time series should be a two-column csv. The first column contains the date and time, and the second column contains the water level. NEED TO SAY SOMETHING ABOUT UNITS ANDN REFERENCE LEVELS HERE"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#rainfall",
-    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#rainfall",
-    "title": "Historical event with gauged water levels",
-    "section": "Rainfall",
-    "text": "Rainfall\nThe user has four options for entering the rainfall for the event:\nNone - Selecting this option means that no rainfall will be included in the calculation. This is the default option.\nConstant - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;.\n\n\n\n\n\n\nRainfall magnifier with the Timeseries and Map options\n\n\n\nWhen a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like “what would have happened if the rainfall during that high tide would have been twice as intense?”"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#wind",
-    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#wind",
-    "title": "Historical event with gauged water levels",
-    "section": "Wind",
-    "text": "Wind\n\n\n\n\n\n\nWhat role does wind play when water levels were measured?\n\n\n\nThe largest effect of wind on flooding is the surge it causes in the water levels. For gauged events, this effect is already included in the meausured water levels. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.\n\n\nThe user has four options for entering wind for the event:\nNone - Selecting none means no wind will be included in the calculation. This is the default option.\nConstant - For a constant wind speed, the user is asked to enter the wind speed and wind direction.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying wind at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#river-discharge",
-    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#river-discharge",
-    "title": "Historical event with gauged water levels",
-    "section": "River discharge",
-    "text": "River discharge\nThe river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.\nConstant - This is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.\nTimeseries - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in &lt;WHICH UNITS?&gt;."
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html",
-    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html",
-    "title": "Historical event - without gauged water levels",
+    "objectID": "4_user_guide/scenarios/index.html",
+    "href": "4_user_guide/scenarios/index.html",
+    "title": "Scenarios",
     "section": "",
-    "text": "Watch our video - historical event without gauged water levels\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a historical (ungauged) event in FloodAdapt.\nWhen the user selects the “Historical event - without gauged water levels” option from the Events tab, they will see the event template window shown in Figure 1. This window allows the user to input timeseries for:\nThis event type is essentially the same as the Historical event with gauged water levels, except that instead of using measured nearshore water levels as input to the overland model, it calculates the nearshore water levels using an offshore model. This is why the section “Surge and tide” is empty in the event window. When you enter the start and stop time of the event, instead of pulling measured water levels from a gauge, FloodAdapt will pull gridded rain and wind data from ADD SOURCE HERE to use as input to the offshore model.\nThe wind, rainfall, and river discharge that a user can specify in the event template window will be applied in the overland model, in the same way as is done for the Historical event with gauged water levels. Click here to read more about how events are modelled in FloodAdapt."
+    "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#rainfall",
-    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#rainfall",
-    "title": "Historical event - without gauged water levels",
-    "section": "Rainfall",
-    "text": "Rainfall\nThe user has four options for entering the rainfall that the overland model will use for the event:\nNone - Selecting this option means that no rainfall will be included in the calculation. This is the default option.\nConstant - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;.\n\n\n\n\n\n\nRainfall magnifier with the Timeseries and Map options\n\n\n\nWhen a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like “what would have happened if the rainfall during that high tide would have been twice as intense?”"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#wind",
-    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#wind",
-    "title": "Historical event - without gauged water levels",
-    "section": "Wind",
-    "text": "Wind\n\n\n\n\n\n\nWhat role does wind play in the overland model?\n\n\n\nThe largest effect of wind on flooding is the surge it causes in the water levels. This wind effect is already included in the calculated nearshore water levels. The (more limited) role wind plays in the overland model is to skew the water levels from the model boundary to the land. Unless this is of particular interest to a user, the wind can be left at the default (none).\n\n\nThe user has four options for entering wind that the overland model will use for the event:\nNone - Selecting none means no wind will be included in the calculation. This is the default option.\nConstant - For a constant wind speed, the user is asked to enter the wind speed and wind direction.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying wind at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;"
-  },
-  {
-    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#river-discharge",
-    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#river-discharge",
-    "title": "Historical event - without gauged water levels",
-    "section": "River discharge",
-    "text": "River discharge\nThe river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.\nConstant - This is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.\nTimeseries - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in &lt;WHICH UNITS?&gt;."
-  },
-  {
-    "objectID": "4_user_guide/events/index.html",
-    "href": "4_user_guide/events/index.html",
-    "title": "Events",
+    "objectID": "4_user_guide/scenario_results/index.html",
+    "href": "4_user_guide/scenario_results/index.html",
+    "title": "Scenario results",
     "section": "",
-    "text": "In the event tab, a user can add different types of events. These can be either historical or synthetic events. It is also possible to select historical events and modify them to create what-if event scenarios.\nThere are three historical event types, which are described in the coming sections:\nWhen the user selects Add event in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.\nEach event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event."
+    "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/events/index.html#how-are-events-modeled-in-floodadapt",
-    "href": "4_user_guide/events/index.html#how-are-events-modeled-in-floodadapt",
-    "title": "Events",
-    "section": "How are events modeled in FloodAdapt?",
-    "text": "How are events modeled in FloodAdapt?\nFloodAdapt supports two levels of hydrodynamic models:\n\nAn offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.\nAn overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.\n\nWhen a user selects a historical hurricane, FloodAdapt will pull in wind and pressure data for the offshore model, calculate the nearshore water levels for the overland model, and then run the overland model with wind and rainfall (calculated based on track information), and any user-input river discharges.\nWhen a user selects a Historical event with gauged water levels, only the overland model will be run, using the gauged water levels as input to the overland model.\nWhen a user selects a Historical event without gauged water levels, the offshore model will first be run using the wind and pressure data from ADD SOURCE HERE. The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.\nWhen a user selects a Synthetic event, only the overland model will be run, using the tide and surge information specified by the user."
+    "objectID": "4_user_guide/projections/socioEconomic.html",
+    "href": "4_user_guide/projections/socioEconomic.html",
+    "title": "Socio-economic projections",
+    "section": "",
+    "text": "This section will describe how future projections of population in existing built area, population growth in new development areas and economic growth are specified and implemented in FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
+    "href": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
+    "title": "Socio-economic projections",
+    "section": "Population growth - existing built area",
+    "text": "Population growth - existing built area\nTo represent population growth in existing built areas within the community, the user can choose “Population Growth - Existing” (see Figure 1). The user enters a percentage (such as 10%) which represents the percentage of the current existing population. So if there are 100,000 people now living in a community, a 10% increase would represent an additional 10,000 residents.\n\n\n\nFigure 1: Entering a percentage population growth in the existing built area\n\n\nThe idea of the population growth option in existing built areas within FloodAdapt is that the building stock becomes either more dense (more buildings), or the existing residences are replaced by higher-density buildings like apartment buildings.\nThe implementation of population growthing within FloodAdapt is simplified. This is because users may not know where new buildings will be built or which buildings will be replaced by higher-density buildings to support future population growth. FloodAdapt therefore spreads the increase evenly over the entire building stock, by increasing the maximum potential damages of all the existing buildings. Figure 2 shows an example how this is implemented, highlighting one building. This increase is applied to all buildings equally, so that the overall increase in damages is reflective of the future situation with population growth.\n\n\n\nFigure 2: Simplification of population growth in the existing built area in FloodAdapt"
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
+    "href": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
+    "title": "Socio-economic projections",
+    "section": "Population growth - new development areas",
+    "text": "Population growth - new development areas\nTo evaluate future impacts of population growth specifically in new areas considered for development, users can choose the option “Population Growth - New (%)” (see Figure 3). This is an innovative feature of FloodAdapt which allows users to evaluate the flooding and impacts in areas considered for future development.\nThe user specifies the percentage of the current existing population that is projected to live in the new development area. For example, if the current population is 100,000, and the new development area is expected to support 1,000 new residents, the user would enter 1% for the population growth in the new area. The user is then asked to provide a shape file (or other spatial polygon file) specifying the boundaries of the new development area. In addition, the user can specify how high the new development will be built off the ground, either relative to a datum, or relative to base flood elevation (BFE). This allows users to explore the impact of regulations on how high new developments need to be built.\n\n\n\nFigure 3: Entering a percentage population growth for a new development area\n\n\nThe idea of population growth in new areas in FloodAdapt is that people will move to currently-undeveloped areas which will be zoned for residential or commercial use to accommodate population growth. This feature allows users to evaluate potential new development areas in terms of the impacts and risk that result.\nThe implementation of population growth in new areas in FloodAdapt is simplified. The user is not expected to know exactly where each new building will be located, or specifics about each building that are typically needed to calculated damages, such as maximum potential damages, or whether they will be one-story or two-story homes. Instead, FloodAdapt creates a composite building over the entire new development area. This composite building is currently assumed to reflect the make-up of the existing built area. For example, if the current built area is 80% residential, 18% commercial, and 2% government buildings, the new development will have this same composition. The way this is utilized in FloodAdapt is that the composite new-development building is assigned a depth-damage curve that is a weighted average of the depth-damage curves of the existing buildings. The maximum potential damage of the composite building is assumed to be the total maximum potential damages over all the existing buildings multiplied by the percentage population growth. For example, if the total maximum potential damages over all buildings in the area is $1 Billion, the maximum potential damages for a new development area with 1% population growth would be $10 Million. Because the new-development composite building is large, it is likely often partially flooded during flood events. FloodAdapt stores the flood depths over the entire new development area. It takes the average flood depth to calculate damages, but reduces these damages by the fraction of the area that is not flooded. For example, if the average flood depth leads to damages of $1 Million, but only 20% of the area was flooded, FloodAdapt will reduce the damages by 80% to $200,000. Figure 4 gives a visual representation of how population growth in new development areas is represented in FloodAdapt.\n\n\n\nFigure 4: Implementation of population growth in new development areas in FloodAdapt"
+  },
+  {
+    "objectID": "4_user_guide/projections/socioEconomic.html#economic-growth",
+    "href": "4_user_guide/projections/socioEconomic.html#economic-growth",
+    "title": "Socio-economic projections",
+    "section": "Economic growth",
+    "text": "Economic growth\nTo evaluate economic growth, users can choose the option “Economic Growth (%)” (see Figure 5). The user enters a percentage increase in economic growth.\nThe economic growth projection is implemented in a simplified way in FloodAdapt by increasing the maximum potential damages of the existing buildings by the specified percentage. This is a simplification intended to represent increasing wealth and value in the community, without specifically accounting for changes in economic activity which would lead to this wealth and value increase.\n\n\n\nFigure 5: Implementation of economic growth in FloodAdapt"
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html",
+    "href": "4_user_guide/projections/climate.html",
+    "title": "Climate projections",
+    "section": "",
+    "text": "This section will describe how future projections of sea level rise, precipitation and tropical storm frequencies are specified and implemented in FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#sea-level-rise",
+    "href": "4_user_guide/projections/climate.html#sea-level-rise",
+    "title": "Climate projections",
+    "section": "Sea level rise",
+    "text": "Sea level rise\nThere are two ways to specify sea level rise in the projections window: manually and from scenario.\nIf you select manually, you can type a number in the “Sea Level Rise” (see Figure 2). You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.\n\n\n\nFigure 2: Manually entering a sea level rise projection\n\n\nIf you select from scenario, a dropdown box will appear from which you can select the sea level rise scenario you want to use (see Figure 3). These options are configurable and are specified at system setup. Once you select a scenario, you specify a year and FloodAdapt will automatically calculate the sea level rise for that year, using the selected sea level rise scenario. You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.\n\n\n\nFigure 3: Using a sea level rise scenario and a year to enter a sea level rise projection\n\n\n\n\n\n\n\n\nSea level rise - since when?\n\n\n\nSea level rise scenarios have a starting point where sea level rise is zero (often, but not necessarily, starting at the year 2000). FloodAdapt corrects for this, using the ‘current year’, which is specified at system setup. So when a user chooses the “from scenario” option to input a sea level rise projection for a future year, the sea level rise that is shown in the projections window is relative to the current year. This is done by subtracting the projected rise between the starting point and the current year, for each sea level rise scenario.\n\n\n\n\n\n\n\n\nHow is the sea level rise projection represented in the modeling?\n\n\n\nWhen a user runs a scenario with a sea level rise projection, the sea level rise is added to the flood model’s coastal boundary condition. FloodAdapt treats this addition differently depending on the type of event. For a recent event using gauged water levels, the sea level rise in the current year relative to mean sea level is already represented in the measured water levels, so only the relative rise between the current year and future year is added. For a recent event without gauged water levels and for a historical hurricane, the offshore model calculates the nearshore coastal water levels relative to mean sea level. To correct for the sea level rise in the current year relative to mean sea level, an ‘offset’ is added which is specified at system set-up. On top of this, the relative sea level rise between the current year and the future year is added to represent the future conditions."
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#increased-precipitation",
+    "href": "4_user_guide/projections/climate.html#increased-precipitation",
+    "title": "Climate projections",
+    "section": "Increased precipitation",
+    "text": "Increased precipitation\nAn increase in precipitation is given as a percentage in the projections window (see Figure 5). You can give the projection a name and (optionally) a description and click “OK” and the projection will be added in the projections tab.\n\nWhy is this only for probabilistic event sets?\nIn the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a ‘what-if’ scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a historical event, or with complete flexibility in defining rainfall for a synthetic event). For probabilistic event sets, the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.\n\n\n\n\n\n\nWhat happens if I choose this projection for a single event scenario?\n\n\n\nIf you choose a projection of increased precipitation for a single event, it will work exactly as expected, and is identical to the precipitation magnifier option when you define your event. If you prefer to specify the increased precipitation via the projections tab instead of as a precipitation magnifier in the event tab, that is completely fine! Just be careful not to choose both, or the increase will be applied twice.\n\n\n\n\n\nFigure 4: Entering increased precipitation as a percentage increase"
+  },
+  {
+    "objectID": "4_user_guide/projections/climate.html#increased-storm-frequency",
+    "href": "4_user_guide/projections/climate.html#increased-storm-frequency",
+    "title": "Climate projections",
+    "section": "Increased storm frequency",
+    "text": "Increased storm frequency\nAn increase in storm frequency is given as a percentage in the projections window (see Figure 5). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.\n\n\n\n\n\n\nExample - increased storm frequency\n\n\n\nFor example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.22, or once in about 45 years.\n\n\n\nWhy is this only for probabilistic event sets?\nThe change in storm frequency will only affect the frequency of the storm. This frequency is used in the derivation of return period flood maps and the calculation of expected annual damages. For a single event, this frequency is not used.\n\n\n\n\n\n\nWhat happens if I choose this projection for a single event scenario?\n\n\n\nIf you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won’t do any harm, but it won’t have any effect on the resulting event-scenario flood and impact results.\n\n\n\n\n\nFigure 5: Entering increased storm frequency as a percentage increase"
+  },
+  {
+    "objectID": "4_user_guide/measures/index.html",
+    "href": "4_user_guide/measures/index.html",
+    "title": "Measures",
+    "section": "",
+    "text": "FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:\nUsers enter measures in the Measures tab in FloodAdapt (see Figure 2). To get started specifying a measure, the user selects three options:\nClick on each of the category types (Hydraulic, Green Infrastructure, or Buildings) to see details about how to enter information for specific measures."
+  },
+  {
+    "objectID": "4_user_guide/measures/index.html#view-layers-in-the-measures-tab",
+    "href": "4_user_guide/measures/index.html#view-layers-in-the-measures-tab",
+    "title": "Measures",
+    "section": "View layers in the Measures tab",
+    "text": "View layers in the Measures tab\nAnother feature on the Measures tab is the ability to show a layer that can support or guide a user in determining where to implement measures. For example, a social vulnerability index layer, a disadvantaged communities layer, or an income layer may help the user to see where they want to focus their efforts to support more equitable adaptation planning. The layers that are visible in the Measures tab are configurable, so that communities can include the data that is most relevant for them. To view a layer, the user clicks the “Show Layer” dropdown menu (see Figure 2) and selects the layer they want to view.\n\n\n\nFigure 2: Measures tab in FloodAdapt"
+  },
+  {
+    "objectID": "4_user_guide/measures/index.html#copying-editing-and-deleting-measures",
+    "href": "4_user_guide/measures/index.html#copying-editing-and-deleting-measures",
+    "title": "Measures",
+    "section": "Copying, editing and deleting measures",
+    "text": "Copying, editing and deleting measures\nFloodAdapt allows users to copy, edit, and delete measures they have already added. Copying measures is an efficient way to create multiple variations of a similar type of measure. For example, a user may want to evaluate elevating the same properties to different heights, or trying different heights for a floodwall.\nEditing measures allows the user to modify either the geometry of a measure or the measure parameters (these are specifications like the height of a wall). When a user selects “Edit measure”, FloodAdapt asks which of these a user would like to modify. If the user selects the geometry, they are able to modify polylines or polygons in the map. If they select parameters, the measure specification window opens and they can change parameters they specified.\nEditing and deleting measures is not permitted if the measure has already been used to specify a strategy. If the user wants to delete the measure, they must first delete the strategy which includes the measure."
+  },
+  {
+    "objectID": "4_user_guide/measures/green_infra.html",
+    "href": "4_user_guide/measures/green_infra.html",
+    "title": "Urban green infrastructure",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/index.html",
+    "href": "4_user_guide/index.html",
+    "title": "FloodAdapt User Guide",
+    "section": "",
+    "text": "Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios, to support your understanding of community vulnerability now and in the future, and the effectiveness and benefits of adaptation options.\nThis user guide covers both the installation and use of FloodAdapt. Below we highlight the information that you can find in this guide."
+  },
+  {
+    "objectID": "4_user_guide/index.html#structure-of-the-user-guide",
+    "href": "4_user_guide/index.html#structure-of-the-user-guide",
+    "title": "FloodAdapt User Guide",
+    "section": "Structure of the user guide",
+    "text": "Structure of the user guide\nThe user guide starts with instructions for getting started. This describes how to download FloodAdapt and how to get it up and running on your computer.\nThe guide then describes the use of FloodAdapt via the tabs in the FloodAdapt graphical user interface (GUI), covering how they are used to define, run, view, and compare scenarios."
+  },
+  {
+    "objectID": "4_user_guide/index.html#overview-of-the-floodadapt-gui",
+    "href": "4_user_guide/index.html#overview-of-the-floodadapt-gui",
+    "title": "FloodAdapt User Guide",
+    "section": "Overview of the FloodAdapt GUI",
+    "text": "Overview of the FloodAdapt GUI\nThe FloodAdapt GUI supports the creation, running, visualization, and comparison of scenarios.\n\n\n\n\n\n\nWhat is a scenario in FloodAdapt?\n\n\n\nScenarios in FloodAdapt are defined as a combination of an event, a projection, and a strategy, all of which are specified via the user interface.\n\n\nScenarios are used to answer user questions about how flooding and impacts are or will change with adaptation measures and under future conditions.\n\n\n\n\n\n\nExample user question\n\n\n\nHow would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?\nTo answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event.\n\n\nThe user guide describes how to specify events, projections, and strategies and how to view and compare scenario results.\nThere are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits. Figure 1 presents the tabs of the user interface and highlights the information needed to run and view results.\n\nThe Site tab is an informative tab where the user is not required to input any information.\nThe Events, Projections, Measures, and Strategy tabs are input tabs where the user will specify the ‘ingredients’ for their scenarios.\nThe Scenarios tab is a management tab, where the user can specify and run scenarios.\n\n\n\n\n\n\n\nRunning a scenario calls the SFINCS and Delft-FIAT models to start the simulations for the specified scenarios.\n\n\n\n\n\n\nFigure 1: Tabs of the FloodAdapt user interface. Orange fill indicates required user input, and the arrows show the flow of information from one tab to another\n\n\n\nThe Output tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.\nThe user can compare scenarios spatially (map comparison) in the Compare - map tab and can compare scenarios based on their tabulated metrics in the Compare - table tab.\nThe user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the Benefits tab."
   },
   {
     "objectID": "4_user_guide/events/synthetic_events.html",
@@ -525,171 +238,486 @@
     "text": "River discharge\nThe river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a shape, which is a synthetic timeseries.\nA constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.\nThe shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value."
   },
   {
-    "objectID": "4_user_guide/index.html",
-    "href": "4_user_guide/index.html",
-    "title": "FloodAdapt User Guide",
+    "objectID": "4_user_guide/events/index.html",
+    "href": "4_user_guide/events/index.html",
+    "title": "Events",
     "section": "",
-    "text": "Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios, to support your understanding of community vulnerability now and in the future, and the effectiveness and benefits of adaptation options.\nThis user guide covers both the installation and use of FloodAdapt. Below we highlight the information that you can find in this guide."
+    "text": "In the event tab, a user can add different types of events. These can be either historical or synthetic events. It is also possible to select historical events and modify them to create what-if event scenarios.\nThere are three historical event types, which are described in the coming sections:\nWhen the user selects Add event in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.\nEach event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event."
   },
   {
-    "objectID": "4_user_guide/index.html#structure-of-the-user-guide",
-    "href": "4_user_guide/index.html#structure-of-the-user-guide",
-    "title": "FloodAdapt User Guide",
-    "section": "Structure of the user guide",
-    "text": "Structure of the user guide\nThe user guide starts with instructions for getting started. This describes how to download FloodAdapt and how to get it up and running on your computer.\nThe guide then describes the use of FloodAdapt via the tabs in the FloodAdapt graphical user interface (GUI), covering how they are used to define, run, view, and compare scenarios."
+    "objectID": "4_user_guide/events/index.html#how-are-events-modeled-in-floodadapt",
+    "href": "4_user_guide/events/index.html#how-are-events-modeled-in-floodadapt",
+    "title": "Events",
+    "section": "How are events modeled in FloodAdapt?",
+    "text": "How are events modeled in FloodAdapt?\nFloodAdapt supports two levels of hydrodynamic models:\n\nAn offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.\nAn overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.\n\nWhen a user selects a historical hurricane, FloodAdapt will pull in wind and pressure data for the offshore model, calculate the nearshore water levels for the overland model, and then run the overland model with wind and rainfall (calculated based on track information), and any user-input river discharges.\nWhen a user selects a Historical event with gauged water levels, only the overland model will be run, using the gauged water levels as input to the overland model.\nWhen a user selects a Historical event without gauged water levels, the offshore model will first be run using the wind and pressure data from ADD SOURCE HERE. The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.\nWhen a user selects a Synthetic event, only the overland model will be run, using the tide and surge information specified by the user."
   },
   {
-    "objectID": "4_user_guide/index.html#overview-of-the-floodadapt-gui",
-    "href": "4_user_guide/index.html#overview-of-the-floodadapt-gui",
-    "title": "FloodAdapt User Guide",
-    "section": "Overview of the FloodAdapt GUI",
-    "text": "Overview of the FloodAdapt GUI\nThe FloodAdapt GUI supports the creation, running, visualization, and comparison of scenarios.\n\n\n\n\n\n\nWhat is a scenario in FloodAdapt?\n\n\n\nScenarios in FloodAdapt are defined as a combination of an event, a projection, and a strategy, all of which are specified via the user interface.\n\n\nScenarios are used to answer user questions about how flooding and impacts are or will change with adaptation measures and under future conditions.\n\n\n\n\n\n\nExample user question\n\n\n\nHow would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?\nTo answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event.\n\n\nThe user guide describes how to specify events, projections, and strategies and how to view and compare scenario results.\nThere are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits. Figure 1 presents the tabs of the user interface and highlights the information needed to run and view results.\n\nThe Site tab is an informative tab where the user is not required to input any information.\nThe Events, Projections, Measures, and Strategy tabs are input tabs where the user will specify the ‘ingredients’ for their scenarios.\nThe Scenarios tab is a management tab, where the user can specify and run scenarios.\n\n\n\n\n\n\n\nRunning a scenario calls the SFINCS and Delft-FIAT models to start the simulations for the specified scenarios.\n\n\n\n\n\n\nFigure 1: Tabs of the FloodAdapt user interface. Orange fill indicates required user input, and the arrows show the flow of information from one tab to another\n\n\n\nThe Output tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.\nThe user can compare scenarios spatially (map comparison) in the Compare - map tab and can compare scenarios based on their tabulated metrics in the Compare - table tab.\nThe user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the Benefits tab."
-  },
-  {
-    "objectID": "4_user_guide/measures/green_infra.html",
-    "href": "4_user_guide/measures/green_infra.html",
-    "title": "Urban green infrastructure",
+    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html",
+    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html",
+    "title": "Historical event - without gauged water levels",
     "section": "",
-    "text": "Back to top"
+    "text": "Watch our video - historical event without gauged water levels\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a historical (ungauged) event in FloodAdapt.\nWhen the user selects the “Historical event - without gauged water levels” option from the Events tab, they will see the event template window shown in Figure 1. This window allows the user to input timeseries for:\nThis event type is essentially the same as the Historical event with gauged water levels, except that instead of using measured nearshore water levels as input to the overland model, it calculates the nearshore water levels using an offshore model. This is why the section “Surge and tide” is empty in the event window. When you enter the start and stop time of the event, instead of pulling measured water levels from a gauge, FloodAdapt will pull gridded rain and wind data from ADD SOURCE HERE to use as input to the offshore model.\nThe wind, rainfall, and river discharge that a user can specify in the event template window will be applied in the overland model, in the same way as is done for the Historical event with gauged water levels. Click here to read more about how events are modelled in FloodAdapt."
   },
   {
-    "objectID": "4_user_guide/measures/index.html",
-    "href": "4_user_guide/measures/index.html",
-    "title": "Measures",
+    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#rainfall",
+    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#rainfall",
+    "title": "Historical event - without gauged water levels",
+    "section": "Rainfall",
+    "text": "Rainfall\nThe user has four options for entering the rainfall that the overland model will use for the event:\nNone - Selecting this option means that no rainfall will be included in the calculation. This is the default option.\nConstant - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;.\n\n\n\n\n\n\nRainfall magnifier with the Timeseries and Map options\n\n\n\nWhen a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like “what would have happened if the rainfall during that high tide would have been twice as intense?”"
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#wind",
+    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#wind",
+    "title": "Historical event - without gauged water levels",
+    "section": "Wind",
+    "text": "Wind\n\n\n\n\n\n\nWhat role does wind play in the overland model?\n\n\n\nThe largest effect of wind on flooding is the surge it causes in the water levels. This wind effect is already included in the calculated nearshore water levels. The (more limited) role wind plays in the overland model is to skew the water levels from the model boundary to the land. Unless this is of particular interest to a user, the wind can be left at the default (none).\n\n\nThe user has four options for entering wind that the overland model will use for the event:\nNone - Selecting none means no wind will be included in the calculation. This is the default option.\nConstant - For a constant wind speed, the user is asked to enter the wind speed and wind direction.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying wind at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;"
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/historic_events_ungauged.html#river-discharge",
+    "href": "4_user_guide/events/historic_events/historic_events_ungauged.html#river-discharge",
+    "title": "Historical event - without gauged water levels",
+    "section": "River discharge",
+    "text": "River discharge\nThe river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.\nConstant - This is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.\nTimeseries - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in &lt;WHICH UNITS?&gt;."
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html",
+    "href": "4_user_guide/events/historic_events/historic_events_gauged.html",
+    "title": "Historical event with gauged water levels",
     "section": "",
-    "text": "FloodAdapt can simulate several types of adaptation measures. These fall under three categories within FloodAdapt:\nUsers enter measures in the Measures tab in FloodAdapt (see Figure 2). To get started specifying a measure, the user selects three options:\nClick on each of the category types (Hydraulic, Green Infrastructure, or Buildings) to see details about how to enter information for specific measures."
+    "text": "Watch our video - historical event using gauged water levels\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a historical (gauged) event in FloodAdapt.\nWhen the user selects the “Historical event - using gauged water levels” option from the Events tab, they will see the event template window shown in Figure 1. This window allows the user to input the historic time series for:"
   },
   {
-    "objectID": "4_user_guide/measures/index.html#view-layers-in-the-measures-tab",
-    "href": "4_user_guide/measures/index.html#view-layers-in-the-measures-tab",
-    "title": "Measures",
-    "section": "View layers in the Measures tab",
-    "text": "View layers in the Measures tab\nAnother feature on the Measures tab is the ability to show a layer that can support or guide a user in determining where to implement measures. For example, a social vulnerability index layer, a disadvantaged communities layer, or an income layer may help the user to see where they want to focus their efforts to support more equitable adaptation planning. The layers that are visible in the Measures tab are configurable, so that communities can include the data that is most relevant for them. To view a layer, the user clicks the “Show Layer” dropdown menu (see Figure 2) and selects the layer they want to view.\n\n\n\nFigure 2: Measures tab in FloodAdapt"
+    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#water-levels",
+    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#water-levels",
+    "title": "Historical event with gauged water levels",
+    "section": "Water levels",
+    "text": "Water levels\n\n\n\n\n\n\nWhat do we mean: Water levels, tide, and surge\n\n\n\nIn this documentation, we refer to water levels as the combined effect of (1) astronomoical tide and (2) the surge caused by wind.\n\n\nIf the user wants to download water levels automatically from gauge data they should:\n\nSelect a start and stop time for the event\nClick the button “Download Observed Water Levels”\n\nThe plot window will then show the time series of the water levels over the duration specified by the start and stop time (see example in Figure 1).\nAlternatively, a user can import a water level time series.\n\n\n\n\n\n\nRequired format for imported water level time series\n\n\n\nThe water level time series should be a two-column csv. The first column contains the date and time, and the second column contains the water level. NEED TO SAY SOMETHING ABOUT UNITS ANDN REFERENCE LEVELS HERE"
   },
   {
-    "objectID": "4_user_guide/measures/index.html#copying-editing-and-deleting-measures",
-    "href": "4_user_guide/measures/index.html#copying-editing-and-deleting-measures",
-    "title": "Measures",
-    "section": "Copying, editing and deleting measures",
-    "text": "Copying, editing and deleting measures\nFloodAdapt allows users to copy, edit, and delete measures they have already added. Copying measures is an efficient way to create multiple variations of a similar type of measure. For example, a user may want to evaluate elevating the same properties to different heights, or trying different heights for a floodwall.\nEditing measures allows the user to modify either the geometry of a measure or the measure parameters (these are specifications like the height of a wall). When a user selects “Edit measure”, FloodAdapt asks which of these a user would like to modify. If the user selects the geometry, they are able to modify polylines or polygons in the map. If they select parameters, the measure specification window opens and they can change parameters they specified.\nEditing and deleting measures is not permitted if the measure has already been used to specify a strategy. If the user wants to delete the measure, they must first delete the strategy which includes the measure."
+    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#rainfall",
+    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#rainfall",
+    "title": "Historical event with gauged water levels",
+    "section": "Rainfall",
+    "text": "Rainfall\nThe user has four options for entering the rainfall for the event:\nNone - Selecting this option means that no rainfall will be included in the calculation. This is the default option.\nConstant - For a constant rainfall, the user is asked to enter a rainfall intensity. This rainfall will be applied over the entire duration of the event.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the rainfall intensity in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;.\n\n\n\n\n\n\nRainfall magnifier with the Timeseries and Map options\n\n\n\nWhen a user inputs rain data as timeseries or uses the Map option, they have the option to increase the rainfall by a specified percentage (referred to as the precipitation magnifier). This is to answer questions like “what would have happened if the rainfall during that high tide would have been twice as intense?”"
   },
   {
-    "objectID": "4_user_guide/projections/climate.html",
-    "href": "4_user_guide/projections/climate.html",
-    "title": "Climate projections",
-    "section": "",
-    "text": "This section will describe how future projections of sea level rise, precipitation and tropical storm frequencies are specified and implemented in FloodAdapt."
+    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#wind",
+    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#wind",
+    "title": "Historical event with gauged water levels",
+    "section": "Wind",
+    "text": "Wind\n\n\n\n\n\n\nWhat role does wind play when water levels were measured?\n\n\n\nThe largest effect of wind on flooding is the surge it causes in the water levels. For gauged events, this effect is already included in the meausured water levels. The (more limited) role wind plays in this event type is to skew the water levels from the model boundary (usually near the gauge) to the land. Unless this is of particular interest to a user, the wind can be ignored.\n\n\nThe user has four options for entering wind for the event:\nNone - Selecting none means no wind will be included in the calculation. This is the default option.\nConstant - For a constant wind speed, the user is asked to enter the wind speed and wind direction.\nTimeseries - For a timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the wind speed in &lt;WHICH UNITS?&gt;.\nMap - The map option downloads spatially and temporally varying wind at coarse spatial resolution from &lt;ADD SOURCE AND RESOLUTION HERE?&gt;"
   },
   {
-    "objectID": "4_user_guide/projections/climate.html#sea-level-rise",
-    "href": "4_user_guide/projections/climate.html#sea-level-rise",
-    "title": "Climate projections",
-    "section": "Sea level rise",
-    "text": "Sea level rise\nThere are two ways to specify sea level rise in the projections window: manually and from scenario.\nIf you select manually, you can type a number in the “Sea Level Rise” (see Figure 2). You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.\n\n\n\nFigure 2: Manually entering a sea level rise projection\n\n\nIf you select from scenario, a dropdown box will appear from which you can select the sea level rise scenario you want to use (see Figure 3). These options are configurable and are specified at system setup. Once you select a scenario, you specify a year and FloodAdapt will automatically calculate the sea level rise for that year, using the selected sea level rise scenario. You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.\n\n\n\nFigure 3: Using a sea level rise scenario and a year to enter a sea level rise projection\n\n\n\n\n\n\n\n\nSea level rise - since when?\n\n\n\nSea level rise scenarios have a starting point where sea level rise is zero (often, but not necessarily, starting at the year 2000). FloodAdapt corrects for this, using the ‘current year’, which is specified at system setup. So when a user chooses the “from scenario” option to input a sea level rise projection for a future year, the sea level rise that is shown in the projections window is relative to the current year. This is done by subtracting the projected rise between the starting point and the current year, for each sea level rise scenario.\n\n\n\n\n\n\n\n\nHow is the sea level rise projection represented in the modeling?\n\n\n\nWhen a user runs a scenario with a sea level rise projection, the sea level rise is added to the flood model’s coastal boundary condition. FloodAdapt treats this addition differently depending on the type of event. For a recent event using gauged water levels, the sea level rise in the current year relative to mean sea level is already represented in the measured water levels, so only the relative rise between the current year and future year is added. For a recent event without gauged water levels and for a historical hurricane, the offshore model calculates the nearshore coastal water levels relative to mean sea level. To correct for the sea level rise in the current year relative to mean sea level, an ‘offset’ is added which is specified at system set-up. On top of this, the relative sea level rise between the current year and the future year is added to represent the future conditions."
+    "objectID": "4_user_guide/events/historic_events/historic_events_gauged.html#river-discharge",
+    "href": "4_user_guide/events/historic_events/historic_events_gauged.html#river-discharge",
+    "title": "Historical event with gauged water levels",
+    "section": "River discharge",
+    "text": "River discharge\nThe river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a constant discharge or a timeseries.\nConstant - This is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.\nTimeseries - For a river discharge timeseries, the user must import a two-column CSV file. The first column must provide the date and time, and the second column the river discharge in &lt;WHICH UNITS?&gt;."
   },
   {
-    "objectID": "4_user_guide/projections/climate.html#increased-precipitation",
-    "href": "4_user_guide/projections/climate.html#increased-precipitation",
-    "title": "Climate projections",
-    "section": "Increased precipitation",
-    "text": "Increased precipitation\nAn increase in precipitation is given as a percentage in the projections window (see Figure 5). You can give the projection a name and (optionally) a description and click “OK” and the projection will be added in the projections tab.\n\nWhy is this only for probabilistic event sets?\nIn the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a ‘what-if’ scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a historical event, or with complete flexibility in defining rainfall for a synthetic event). For probabilistic event sets, the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.\n\n\n\n\n\n\nWhat happens if I choose this projection for a single event scenario?\n\n\n\nIf you choose a projection of increased precipitation for a single event, it will work exactly as expected, and is identical to the precipitation magnifier option when you define your event. If you prefer to specify the increased precipitation via the projections tab instead of as a precipitation magnifier in the event tab, that is completely fine! Just be careful not to choose both, or the increase will be applied twice.\n\n\n\n\n\nFigure 4: Entering increased precipitation as a percentage increase"
-  },
-  {
-    "objectID": "4_user_guide/projections/climate.html#increased-storm-frequency",
-    "href": "4_user_guide/projections/climate.html#increased-storm-frequency",
-    "title": "Climate projections",
-    "section": "Increased storm frequency",
-    "text": "Increased storm frequency\nAn increase in storm frequency is given as a percentage in the projections window (see Figure 5). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.\n\n\n\n\n\n\nExample - increased storm frequency\n\n\n\nFor example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.22, or once in about 45 years.\n\n\n\nWhy is this only for probabilistic event sets?\nThe change in storm frequency will only affect the frequency of the storm. This frequency is used in the derivation of return period flood maps and the calculation of expected annual damages. For a single event, this frequency is not used.\n\n\n\n\n\n\nWhat happens if I choose this projection for a single event scenario?\n\n\n\nIf you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won’t do any harm, but it won’t have any effect on the resulting event-scenario flood and impact results.\n\n\n\n\n\nFigure 5: Entering increased storm frequency as a percentage increase"
-  },
-  {
-    "objectID": "4_user_guide/projections/socioEconomic.html",
-    "href": "4_user_guide/projections/socioEconomic.html",
-    "title": "Socio-economic projections",
-    "section": "",
-    "text": "This section will describe how future projections of population in existing built area, population growth in new development areas and economic growth are specified and implemented in FloodAdapt."
-  },
-  {
-    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
-    "href": "4_user_guide/projections/socioEconomic.html#population-growth---existing-built-area",
-    "title": "Socio-economic projections",
-    "section": "Population growth - existing built area",
-    "text": "Population growth - existing built area\nTo represent population growth in existing built areas within the community, the user can choose “Population Growth - Existing” (see Figure 1). The user enters a percentage (such as 10%) which represents the percentage of the current existing population. So if there are 100,000 people now living in a community, a 10% increase would represent an additional 10,000 residents.\n\n\n\nFigure 1: Entering a percentage population growth in the existing built area\n\n\nThe idea of the population growth option in existing built areas within FloodAdapt is that the building stock becomes either more dense (more buildings), or the existing residences are replaced by higher-density buildings like apartment buildings.\nThe implementation of population growthing within FloodAdapt is simplified. This is because users may not know where new buildings will be built or which buildings will be replaced by higher-density buildings to support future population growth. FloodAdapt therefore spreads the increase evenly over the entire building stock, by increasing the maximum potential damages of all the existing buildings. Figure 2 shows an example how this is implemented, highlighting one building. This increase is applied to all buildings equally, so that the overall increase in damages is reflective of the future situation with population growth.\n\n\n\nFigure 2: Simplification of population growth in the existing built area in FloodAdapt"
-  },
-  {
-    "objectID": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
-    "href": "4_user_guide/projections/socioEconomic.html#population-growth---new-development-areas",
-    "title": "Socio-economic projections",
-    "section": "Population growth - new development areas",
-    "text": "Population growth - new development areas\nTo evaluate future impacts of population growth specifically in new areas considered for development, users can choose the option “Population Growth - New (%)” (see Figure 3). This is an innovative feature of FloodAdapt which allows users to evaluate the flooding and impacts in areas considered for future development.\nThe user specifies the percentage of the current existing population that is projected to live in the new development area. For example, if the current population is 100,000, and the new development area is expected to support 1,000 new residents, the user would enter 1% for the population growth in the new area. The user is then asked to provide a shape file (or other spatial polygon file) specifying the boundaries of the new development area. In addition, the user can specify how high the new development will be built off the ground, either relative to a datum, or relative to base flood elevation (BFE). This allows users to explore the impact of regulations on how high new developments need to be built.\n\n\n\nFigure 3: Entering a percentage population growth for a new development area\n\n\nThe idea of population growth in new areas in FloodAdapt is that people will move to currently-undeveloped areas which will be zoned for residential or commercial use to accommodate population growth. This feature allows users to evaluate potential new development areas in terms of the impacts and risk that result.\nThe implementation of population growth in new areas in FloodAdapt is simplified. The user is not expected to know exactly where each new building will be located, or specifics about each building that are typically needed to calculated damages, such as maximum potential damages, or whether they will be one-story or two-story homes. Instead, FloodAdapt creates a composite building over the entire new development area. This composite building is currently assumed to reflect the make-up of the existing built area. For example, if the current built area is 80% residential, 18% commercial, and 2% government buildings, the new development will have this same composition. The way this is utilized in FloodAdapt is that the composite new-development building is assigned a depth-damage curve that is a weighted average of the depth-damage curves of the existing buildings. The maximum potential damage of the composite building is assumed to be the total maximum potential damages over all the existing buildings multiplied by the percentage population growth. For example, if the total maximum potential damages over all buildings in the area is $1 Billion, the maximum potential damages for a new development area with 1% population growth would be $10 Million. Because the new-development composite building is large, it is likely often partially flooded during flood events. FloodAdapt stores the flood depths over the entire new development area. It takes the average flood depth to calculate damages, but reduces these damages by the fraction of the area that is not flooded. For example, if the average flood depth leads to damages of $1 Million, but only 20% of the area was flooded, FloodAdapt will reduce the damages by 80% to $200,000. Figure 4 gives a visual representation of how population growth in new development areas is represented in FloodAdapt.\n\n\n\nFigure 4: Implementation of population growth in new development areas in FloodAdapt"
-  },
-  {
-    "objectID": "4_user_guide/projections/socioEconomic.html#economic-growth",
-    "href": "4_user_guide/projections/socioEconomic.html#economic-growth",
-    "title": "Socio-economic projections",
-    "section": "Economic growth",
-    "text": "Economic growth\nTo evaluate economic growth, users can choose the option “Economic Growth (%)” (see Figure 5). The user enters a percentage increase in economic growth.\nThe economic growth projection is implemented in a simplified way in FloodAdapt by increasing the maximum potential damages of the existing buildings by the specified percentage. This is a simplification intended to represent increasing wealth and value in the community, without specifically accounting for changes in economic activity which would lead to this wealth and value increase.\n\n\n\nFigure 5: Implementation of economic growth in FloodAdapt"
-  },
-  {
-    "objectID": "4_user_guide/scenario_results/index.html",
-    "href": "4_user_guide/scenario_results/index.html",
-    "title": "Scenario results",
+    "objectID": "4_user_guide/compare/index.html",
+    "href": "4_user_guide/compare/index.html",
+    "title": "Compare tabs",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/scenarios/index.html",
-    "href": "4_user_guide/scenarios/index.html",
-    "title": "Scenarios",
+    "objectID": "4_user_guide/compare/Compare_map.html",
+    "href": "4_user_guide/compare/Compare_map.html",
+    "title": "Scenario comparison - map",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "4_user_guide/strategy/index.html",
-    "href": "4_user_guide/strategy/index.html",
-    "title": "Strategies",
+    "objectID": "4_user_guide/arc_gis/index.html",
+    "href": "4_user_guide/arc_gis/index.html",
+    "title": "ArcGis",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "5_update_model/aggregation_areas.html",
-    "href": "5_update_model/aggregation_areas.html",
-    "title": "Adding new aggregation areas",
+    "objectID": "3_setup_guide/index.html",
+    "href": "3_setup_guide/index.html",
+    "title": "Setup Guide",
+    "section": "",
+    "text": "Heading 1\nHere is some content.\n…\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "3_setup_guide/database.html",
+    "href": "3_setup_guide/database.html",
+    "title": "Building the database",
+    "section": "",
+    "text": "Im testing\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "2_installation_guide/software_req.html",
+    "href": "2_installation_guide/software_req.html",
+    "title": "CFRSS system requirements",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "5_update_model/dem.html",
-    "href": "5_update_model/dem.html",
-    "title": "Updating the DEM",
+    "objectID": "2_installation_guide/index.html",
+    "href": "2_installation_guide/index.html",
+    "title": "Getting started with FloodAdapt",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "5_update_model/objects.html",
-    "href": "5_update_model/objects.html",
-    "title": "Adding / updating objects in the exposure data",
+    "objectID": "1_introduction/terminology.html",
+    "href": "1_introduction/terminology.html",
+    "title": "Terminology",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "6_demo/army_corps.html",
-    "href": "6_demo/army_corps.html",
-    "title": "The Army Corps has a surge-protection plan for the peninsula – what about the rest of Charleston?",
+    "objectID": "1_introduction/overview_floodadapt.html",
+    "href": "1_introduction/overview_floodadapt.html",
+    "title": "Overview of FloodAdapt",
+    "section": "",
+    "text": "FloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "1_introduction/index.html",
+    "href": "1_introduction/index.html",
+    "title": "Introduction",
+    "section": "",
+    "text": "Welcome to the FloodAdapt documentation!\nIn this introduction, you will find an overview of FloodAdapt, information on its intended uses, and reader guidance explaining the information you will find in this documentation."
+  },
+  {
+    "objectID": "1_introduction/index.html#overview",
+    "href": "1_introduction/index.html#overview",
+    "title": "Introduction",
+    "section": "Overview",
+    "text": "Overview\nFloodAdapt is a flood adaptation decision-support tool, which aims to advance and accelerate flooding-related adaptation planning. It integrates rapid, physics-based compound flood modeling and detailed impact modeling into a user-friendly system, ensuring accessibility for end-users, regardless of their technical backgrounds. This enables users to define and evaluate meaningful “what-if” scenarios, which can be combinations of weather events, climate or socio-economic future conditions, and adaptation strategies. FloodAdapt rapidly generates high-quality flood and impact maps, equity-focused aggregations, and informative metrics, providing valuable support for planning and facilitating genuine stakeholder engagement. Beyond its usefulness for end-users, FloodAdapt acts as a vital bridge between scientific advancements and practical needs, enhancing the adoption and impact of adaptation research and development.\n\nFloodAdapt was developed as a rapid planning tool with a straightforward graphical user interface for scenario generation, simulation, and visualization of spatial flooding and flooding impacts. Decision-making needs at the community level were central to the design of FloodAdapt. Users can answer planning questions like: “How will potential adaptation options reduce flood impacts?”, “How will those options perform for different types of events, like hurricanes, king tides, or heavy rainfall?”, “Which neighborhoods will benefit most?”, “How will those options hold up in the future?”\nUsers specify what-if scenarios composed of historic or synthetic weather events, climate or socio-economic future projections, and adaptation measures. They are able to evaluate flooding and impacts due to compound weather events, like hurricanes, king tides, and rainfall events. Users can evaluate flooding, impacts, and risk considering user-specified projections of sea level rise, precipitation increase, storm frequency increase, population growth, and economic growth. They can also test out adaptation options, like sea walls, levees, pumps, urban green infrastructure, home elevations, buyouts and floodproofing.\nThe backend of FloodAdapt leverages the open-source, state-of-the-art process-based compound flood model SFINCS that can accurately predict compound flooding due to surge, rainfall, and river discharge, at a fraction of the computation time typically required by physics-based models. The damage model included in FloodAdapt is the Deltares-developed open-source flood impact assessment tool Delft-FIAT. It calculates the flood damages to individual buildings and roads, and – when social vulnerability data is available – aggregates these damages over vulnerability classes.\nWhen a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.\n\n\n\nFigure 1: Schematic showing the design concepts behind the FloodAdapt software"
+  },
+  {
+    "objectID": "1_introduction/index.html#intended-uses-of-floodadapt",
+    "href": "1_introduction/index.html#intended-uses-of-floodadapt",
+    "title": "Introduction",
+    "section": "Intended Uses of FloodAdapt",
+    "text": "Intended Uses of FloodAdapt\nFloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt."
+  },
+  {
+    "objectID": "1_introduction/index.html#reader-guidance",
+    "href": "1_introduction/index.html#reader-guidance",
+    "title": "Introduction",
+    "section": "Reader Guidance",
+    "text": "Reader Guidance\nFloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 2 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe User Guide is for users of FloodAdapt. It provides information on how to get started with FloodAdapt, and describes all the FloodAdapt functionalities.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\n\n\n\n\n\n\nSetup Guide - special topic: Probabilistic event sets for risk analysis\n\n\n\nThe Setup guide includes guidance on preparing a probabilistic event set for risk analysis - this part of the setup requires a background in statistics and probability.\n\n\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nThe Demonstration of FloodAdapt illustrates use cases that can help the reader understand how FloodAdapt can support adaptation and resilience planning.\n\n\n\nFigure 2: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section"
+  },
+  {
+    "objectID": "1_introduction/intended_use.html",
+    "href": "1_introduction/intended_use.html",
+    "title": "Intended use of FloodAdapt",
+    "section": "",
+    "text": "FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to prioritize investments, and to assess the effectiveness and longevity of different adaptation options.\nFloodAdapt is a powerful and physics-based system that can provide realistic flood and impact responses for user-defined scenarios. This is important because accuracy builds community trust in the tool. The underlying models and data in FloodAdapt can be continuously improved by the local or regional agencies who are operating it. The accuracy of the model results will depend on the accuracy of the input data. FloodAdapt can also help illuminate which data are missing or need improvement and should be collected when resources allow.\nFloodAdapt is not intended for use in the detailed engineering design of adaptation measures, particularly hydraulic ones. Once FloodAdapt has helped the community identify strategies and priority areas for improvements, the specific design requirements for these strategies should be done using more comprehensive modeling tools available. These may need to include detailed drainage infrastructure systems, groundwater, or other components not currently built into FloodAdapt.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "1_introduction/reader_guidance.html",
+    "href": "1_introduction/reader_guidance.html",
+    "title": "Reader Guidance",
+    "section": "",
+    "text": "FloodAdapt is intended for end-users who have some technical background, but do not need to be subject-matter experts in flood and impact modeling. Set-up of FloodAdapt and developing a set of events and probabilities for risk assessment require additional capabilities. Figure 1 provides a reading guide for this documentation. It shows the intended reader and the relative technical skills required for the different sections in this documentation.\nThe Setup Guide is intended for those who will “build” or configure FloodAdapt for a new site and set of end-users.\nThe Installation Guide helps an end-user get FloodAdapt installed and ready to run on their machine and explains the folder structure of FloodAdapt.\nThe User Guide walks the user through all the functionality of FloodAdapt.\nThe section on Updating FloodAdapt describes the steps involved in updating the database of FloodAdapt. This would be done whenever new or improved data becomes available.\nChapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.\n\n\n\nFigure 1: Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "2_installation_guide/folder_struct.html",
+    "href": "2_installation_guide/folder_struct.html",
+    "title": "Folder Structure",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "6_demo/king_tides.html",
-    "href": "6_demo/king_tides.html",
-    "title": "King tides are already a problem – how will that look with sea level rise?",
+    "objectID": "2_installation_guide/installation.html",
+    "href": "2_installation_guide/installation.html",
+    "title": "Installation steps",
     "section": "",
     "text": "Back to top"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "2_installation_guide/system_req.html",
+    "href": "2_installation_guide/system_req.html",
+    "title": "CFRSS system requirements",
     "section": "",
-    "text": "About this site\n\n\n\n Back to top"
+    "text": "Back to top"
+  },
+  {
+    "objectID": "3_setup_guide/gui.html",
+    "href": "3_setup_guide/gui.html",
+    "title": "Settings to start the GUI",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "3_setup_guide/risk_analysis.html",
+    "href": "3_setup_guide/risk_analysis.html",
+    "title": "Set-up for probabilistic risk analysis",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/benefits.html",
+    "href": "4_user_guide/benefits.html",
+    "title": "Benefits",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/compare/Compare_table.html",
+    "href": "4_user_guide/compare/Compare_table.html",
+    "title": "Scenario comparison - metrics",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/events/general_info.html",
+    "href": "4_user_guide/events/general_info.html",
+    "title": "General event information",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/historic_events_hurricane.html",
+    "href": "4_user_guide/events/historic_events/historic_events_hurricane.html",
+    "title": "Historical Hurricanes",
+    "section": "",
+    "text": "Watch a video about entering a historical hurricane\n\n\n\nDon’t feel like reading? No problem! Check out our video about how to add a hurricane in FloodAdapt, and also how to shift the hurricane to see how different the flooding and impacts would have been had the hurricane made landfall somewhere else.\n\n\n\nThe historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the Events tab, they will see a hurricane selection window appear (see Figure 1), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date. The user can see all hurricanes within a specified distance of the site, or between specified years.\n\n\n\n\n\n\nHurricanes far offshore\n\n\n\nIt is not recommended to use the Historical hurricane option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type.\n\n\n\n\n\nFigure 1: Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window\n\n\nThe historical hurricane event template window is shown in Figure 2. After a user selects a hurricane from the hurricane selector window, the event name and description of the hurricane and the timing will be automatically filled in. The user can edit these if desired.\n\n\n\n\n\n\nEditing the hurricane start and stop time\n\n\n\nThe autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.\n\n\nUnder the “Surge and Tide” block, the user can shift the hurricane track by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.\nThe wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.\nThe river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge.\n\n\n\nFigure 2: Event template window for a historical hurricane.\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/index.html",
+    "href": "4_user_guide/events/historic_events/index.html",
+    "title": "Historical Events",
+    "section": "",
+    "text": "There are three types of historical events a user can select. Click on one of the links below or navigate via the side bar to learn more about each of these event types."
+  },
+  {
+    "objectID": "4_user_guide/events/historic_events/index.html#which-historical-event-type-should-i-choose",
+    "href": "4_user_guide/events/historic_events/index.html#which-historical-event-type-should-i-choose",
+    "title": "Historical Events",
+    "section": "Which historical event type should I choose?",
+    "text": "Which historical event type should I choose?\nAre you interested in a hurricane that made landfall at or near the site? Then choose Historical hurricane.\nAre you interested in a historical event that wasn’t a hurricane, like a king tide or a heavy rainfall event? If your site has a water level gauge, we recommend using the “Historical event with gauged water levels” option. The only time the “Historical event without gauged water levels” option is recommended is when there is no gauge at the site. Figure 1 shows a flow chart for deciding which event type to choose.\n\n\n\nFigure 1: Flow chart: which event type should I choose?"
+  },
+  {
+    "objectID": "4_user_guide/events/probabilistic_events.html",
+    "href": "4_user_guide/events/probabilistic_events.html",
+    "title": "Probabilistic event set",
+    "section": "",
+    "text": "A probabilistic event set is the combination of a set of synthetic events and their occurrence probabilities. These can be both tropical storms (hurricanes), as well as non-tropical events. They should include all event types that can lead to flooding in the site area (now or in the future), and can be compound flood events, meaning a combination of different flood drivers, like water level, rainfall, river discharge, or wind. It can be complicated to set up this set of events, and is therefore recommended to be done by an expert during the set-up of FloodAdapt for the site location.\nIn the events tab in FloodAdapt, a probabilistic event set can be recognized by the Type specification at the bottom of the window (see Figure 1). These event sets cannot be modified or deleted via the user interface.\n\n\n\nFigure 1: Probabilistic event set in the Events window. The Type is specified as Probabilistic Event Set and cannot be modified\n\n\n\n\n\n\n\n\nHow are probabilistic event sets used in FloodAdapt?\n\n\n\nWhen a user selects a scenario with a probabilistic event set, FloodAdapt calculate return period flood maps (such as the 100 year flood map), return period damages, and expected annual damages (risk) for the scenario. For example, if a user wants to explore the risk with 1 foot of sea level rise with a floodwall in place, their scenario components would be: projection = 1 ft. sea level rise, strategy = floodwall, event = probabilistic event set. The calculation of risk allows a user to explore the risk-reduction benefits of adaptation options, as well as obtaining more comprehensive insight into how at-risk different areas are when considering all relevant event types and their probability of occurring. The page on scenarios gives more examples how users can define scenarios to answer different questions.\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/getting_started.html",
+    "href": "4_user_guide/getting_started.html",
+    "title": "Getting Started",
+    "section": "",
+    "text": "This section covers system requirements for running FloodAdapt, initial installation steps, and the folder structure of FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/getting_started.html#system-requirements",
+    "href": "4_user_guide/getting_started.html#system-requirements",
+    "title": "Getting Started",
+    "section": "System requirements",
+    "text": "System requirements\nIn order to run FloodAdapt, the following are required:\n\nYour computer must be running a Windows operating system.\nThe first time the FloodAdapt application is opened must be by a user with administrative rights\nThe computer must have access to the internet\nAt least 2 GB of storage for the FloodAdapt system files and the underlying database\nApproximately 150 MB of storage for each user-generated scenario\n\n\n\n\n\n\n\nWarning\n\n\n\nBe sure to save the FloodAdapt folder in a high-level directory. For example: D:\\ FloodAdapt. This is because Windows has a 260-character path-name limit, and FloodAdapt includes user-selected scenario names in both folder and file names, which can lead to exceedance of the limit. Placing the FloodAdapt folder in a high-level directory will reduce the likelihood of this happening."
+  },
+  {
+    "objectID": "4_user_guide/getting_started.html#installation-steps",
+    "href": "4_user_guide/getting_started.html#installation-steps",
+    "title": "Getting Started",
+    "section": "Installation steps",
+    "text": "Installation steps\nThe FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon.\nThe first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly."
+  },
+  {
+    "objectID": "4_user_guide/getting_started.html#floodadapt-folder-structure",
+    "href": "4_user_guide/getting_started.html#floodadapt-folder-structure",
+    "title": "Getting Started",
+    "section": "FloodAdapt folder structure",
+    "text": "FloodAdapt folder structure\nThe FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.\nFigure 1 shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: System, FloodAdapt_gui and Database. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file floodadapt_gui.exe that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: Input, Output, and Static. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created.\nThe Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface. The user may want to access this folder to create their own visualization in third party software, such as ArcGIS.\n\n\n\nFigure 1: Folder structure of FloodAdapt."
+  },
+  {
+    "objectID": "4_user_guide/measures/buildings.html",
+    "href": "4_user_guide/measures/buildings.html",
+    "title": "Building-level measures",
+    "section": "",
+    "text": "FloodAdapt can simulate different types of building-level adaptation actions: elevate, buyout, and floodproof properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.\nTo specify a building-level measure, the user goes to the Measures tab, and in the “Category” drop-down menu selects “Buildings” (see Figure 2). The user can then choose for “Measure” one of the three measure types: elevate, buyout, or floodproof properties. For each of these measures, the user will choose an “Area type”. This indicates how the user will select the buildings to which they want to apply the measure. There are three options:\nWhen selecting buildings using the “Draw polygon” feature, it is useful to click on the “Show Buildings” button in the Measures tab (see example in Figure 2). This shows the buildings that are in the exposure data of the impact model within FloodAdapt.\nEach of the building-level measures allows users to specify a property type to which the measure should be applied. So, for example, if a user selects a neighborhood, but only wants to apply the measure to the residential properties within the neighborhood, they are able to specify this. The property type is linked to an attribute in the impact model called the ‘primary object type’. In the U.S, these are typically residential (RES) commercial (COM), industrial (IND), or public (PUB). You can also choose to apply the measure to all the buildings in the selected area."
+  },
+  {
+    "objectID": "4_user_guide/measures/buildings.html#elevate",
+    "href": "4_user_guide/measures/buildings.html#elevate",
+    "title": "Building-level measures",
+    "section": "Elevate",
+    "text": "Elevate\nElevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Elevate properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in Figure 3). When you are finished clicking the polygon, right click or double click to open the measure specification window (see Figure 7).\n\n\n\nFigure 3: Selecting buildings for applying the elevate measure\n\n\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see Figure 5 for the example of buyouts)\n\n\n\nFigure 4: Specifying information for an elevate measure\n\n\n\n\n\n\n\n\nElevate properties relative to…\n\n\n\nThe elevate properties specification window asks the user to specify what the elevation of the property is relative to. The user can select the datum; in this case, the elevation is the elevation of the finished floor of the property above the specific datum. The user can also select to elevate properties relative to “Base Flood Elevation” (BFE). In this case the elevation is actually a height above this reference. In the U.S, BFE is a regulatory flood level that is related to insurance, and is often used in ordinances on how high new development must be built. In areas of the world where this is not used, the base flood elevation option may not be visible.\n\n\n\n\n\n\n\n\nHow is elevating properties represented in the modeling?\n\n\n\nThe exposed assets have multiple attributes, one of which is the height of the finished floor above the ground. When a user elevates properties, FloodAdapt adjusts this attribute for the selected properties to represent the user specifications. Whether a user specifies a property elevation as an elevation relative to a datum, or a height above a reference level like base flood elevation, FloodAdapt calculates for each selected property the equivalent height above the ground, and assigns this value to the finished floor height attribute of the elevated property. For example, if a user selects 12 feet above datum, and the ground elevation where a property is located is 10 feet above datum, FloodAdapt calculates that the finished floor height of the property as 2 feet, and assigns this as the finished floor height attribute of the elevated property. Similarly, if a user selects 2 feet above BFE, and the BFE at the location of a property is 9 feet, then the property must be raised to 11 feet relative to datum. If the ground elevation at that location is 8 feet, FloodAdapt would calculate that the finished floor height for the elevated property is 3 feet."
+  },
+  {
+    "objectID": "4_user_guide/measures/buildings.html#buyout",
+    "href": "4_user_guide/measures/buildings.html#buyout",
+    "title": "Building-level measures",
+    "section": "Buyout",
+    "text": "Buyout\nBuyouts refer to the purchase and subsequent removal of a property, usually one that is high risk or has experienced repetitive flooding. To implement the buyout measure, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Buyout properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon” for the Area type, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure. When you are finished clicking the polygon, right click or double click to open the measure specification window. If you select “Aggregation area” the specification window will automatically open when you click “Add measure” and you will additionally choose an aggregation area to apply the measure (see Figure 5).\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected “Aggregation area” - the aggregation area where the measure should be applied. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab.\n\n\n\nFigure 5: Specifying information for a buyout measure\n\n\n\n\n\n\n\n\nHow are buyouts represented in the modeling?\n\n\n\nWhen a property has been bought out and removed, it is no longer an exposed asset in the project area. However, the implementation in FloodAdapt does not actually remove the properties from the exposure data; instead, the selected properties are assigned a maximum potential damage value of zero. The damage is calculated as the damage fraction (based on the inundation depth) multiplied by the maximum potential damage. Because the maximum potential damage is set to zero, the bought out properties will result in damages of zero, regardless of the inundation depth. In this way, it represents the situation that the property has been removed."
+  },
+  {
+    "objectID": "4_user_guide/measures/buildings.html#floodproof",
+    "href": "4_user_guide/measures/buildings.html#floodproof",
+    "title": "Building-level measures",
+    "section": "Floodproof",
+    "text": "Floodproof\nFloodproofing in FloodAdapt refers to dry floodproofing, which involves sealing a building’s exterior, typically through barriers or seals, to prevent floodwaters from entering and causing damage. The effect of floodproofing is that the building will not incur any damages until floodwaters exceed the height of the floodproofing seals.\nTo implement floodproofing to buildings in FloodAdapt, go to the Measures tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Floodproof properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in Figure 6). When you are finished clicking the polygon, right click or double click to open the measure specification window (see Figure 7).\n\n\n\nFigure 6: Selecting buildings for applying the floodproofing measure\n\n\nIn the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the height of the floodproofing, and the property type that the measure should be applied to. The floodproofing height ensures that damages only occur when the inundation depth is greater than the floodproofing height. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open when they click “Add measure” and they will additionally be asked to choose an aggregation area (see Figure 5 for the example of buyouts)\n\n\n\nFigure 7: Specifying information for a floodproofing measure\n\n\n\n\n\n\n\n\nHow is floodproofing represented in the modeling?\n\n\n\nThe impact model uses depth-damage curves that relate inundation depths to fractions of total asset damage. When a user selects a floodproofing height, there will be no damage to the property until the inundation depths exceed that height. This is represented by modifying the depth-damage curve so that the damage fraction is zero below the floodproofing height. Above the floodproofing height, the damage curve is unchanged because once the inundation exceeds the floodproofing height, it is assumed the water will then enter the property and reach the levels it would have reached without the floodproofing barrier."
+  },
+  {
+    "objectID": "4_user_guide/measures/hydraulic.html",
+    "href": "4_user_guide/measures/hydraulic.html",
+    "title": "Hydraulic measures",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/output/index.html",
+    "href": "4_user_guide/output/index.html",
+    "title": "Output tab",
+    "section": "",
+    "text": "Hello\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/projections/index.html",
+    "href": "4_user_guide/projections/index.html",
+    "title": "Projections",
+    "section": "",
+    "text": "FloodAdapt can simulate future climate and socio-economic conditions.\n\n\n\nFigure 1: FloodAdapt can simulate future climate projections - sea level rise, increased tropical storm frequencies, precipitation changes, and socio-economic projections - population growth and economic growth\n\n\nOn the Projections Tab in FloodAdapt, click ‘Add Projection’ to open the projections window (see Figure 2)\n\n\n\nFigure 2: Projections window on the Projections tab in FloodAdapt\n\n\nIn this window you can specify a climate projection, a socio-economic projection, or a combination (for example: 10% population growth with 1 foot of SLR).\nClick the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling.\nClimate projections\nSocio-economic projections\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/scenario_results/event_set.html",
+    "href": "4_user_guide/scenario_results/event_set.html",
+    "title": "Event-set (probabilistic risk) scenario output",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/scenario_results/single_event.html",
+    "href": "4_user_guide/scenario_results/single_event.html",
+    "title": "Single-event scenario output",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "4_user_guide/site_tab.html",
+    "href": "4_user_guide/site_tab.html",
+    "title": "Site tab",
+    "section": "",
+    "text": "Don’t feel like reading? No problem! Check out our video about the FloodAdapt site tab:\n\nThe user interface opens by default to the Site tab, shown for the example of Charleston, South Carolina in Figure 1. The site tab shows the aggregation areas that have been defined for the site. If more than one type of aggregation area has been defined, the user can select which one they want to view from the drop-down box ‘Aggregation Areas Type’. Examples of aggregation area types are census blocks, neighborhoods, or zip codes. The ‘Aggregation Areas’ box populates with the different areas for the selected aggregation type. The user can hover over an area and see the name of that area. Similarly, they can select an area of the ‘Aggregation Areas’ list and that area will become highlighted on the map.\n\n\n\nFigure 1: The site tab, shown here for the example of Charleston, South Carolina\n\n\nThe site tab also shows the extent of the flood model. This can be substantially larger than the area of interest. If a user zooms out they can see the extent of the area, as show in Figure 2\n\n\n\nFigure 2: The site tab, zoomed out to show the full flood model extent (in red)\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "4_user_guide/user_interface.html",
+    "href": "4_user_guide/user_interface.html",
+    "title": "GUI features",
+    "section": "",
+    "text": "To be filled in when the general features are more finalized (e.g. view and help options)\nTest.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "5_update_model/damage_functions.html",
+    "href": "5_update_model/damage_functions.html",
+    "title": "Updating damage functions",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "5_update_model/index.html",
+    "href": "5_update_model/index.html",
+    "title": "Updating the CFRSS",
+    "section": "",
+    "text": "I put some text here. Will it show?\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "5_update_model/settings.html",
+    "href": "5_update_model/settings.html",
+    "title": "Updating settings for running probabilistic scenarios",
+    "section": "",
+    "text": "Updating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "6_demo/index.html",
+    "href": "6_demo/index.html",
+    "title": "Demonstrating the use of FloodAdapt",
+    "section": "",
+    "text": "Back to top"
+  },
+  {
+    "objectID": "6_demo/measures_impact.html#evaluating-measures",
+    "href": "6_demo/measures_impact.html#evaluating-measures",
+    "title": "Measures and their impact",
+    "section": "Evaluating measures",
+    "text": "Evaluating measures\n\nReduced impacts\n\n\nRisk-reduction benefits\n\n\nEffectiveness under future conditions"
+  },
+  {
+    "objectID": "formatting_tips.html",
+    "href": "formatting_tips.html",
+    "title": "Flood Adapt Documentation",
+    "section": "",
+    "text": "I put some styling infos here: but you can check all formatting here:\nhttps://quarto.org/docs/authoring/markdown-basics.html"
+  },
+  {
+    "objectID": "formatting_tips.html#generate-tables",
+    "href": "formatting_tips.html#generate-tables",
+    "title": "Flood Adapt Documentation",
+    "section": "Generate tables",
+    "text": "Generate tables\nhttps://tablesgenerator.com/markdown_tables"
+  },
+  {
+    "objectID": "formatting_tips.html#headings",
+    "href": "formatting_tips.html#headings",
+    "title": "Flood Adapt Documentation",
+    "section": "Headings",
+    "text": "Headings\nfirst level : # Heading second level : ## Heading third level : ### Heading\n…"
+  },
+  {
+    "objectID": "formatting_tips.html#fonts",
+    "href": "formatting_tips.html#fonts",
+    "title": "Flood Adapt Documentation",
+    "section": "Fonts",
+    "text": "Fonts\nbold: ** word ** (remove tab spaces betweenw asterisk and word)\nitalic: * this will be italic when tab space removed *"
+  },
+  {
+    "objectID": "formatting_tips.html#paragraphs",
+    "href": "formatting_tips.html#paragraphs",
+    "title": "Flood Adapt Documentation",
+    "section": "Paragraphs",
+    "text": "Paragraphs\nIf you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.\nE.g I write and want to continue in the next line.\nIf I only press enter to continue in the next line as I did now this will not show. -&gt; I have to add 2 spaces after line.\nLet’s see what happens when I add the 2 tabs:\nI to continue in the next line. If I only press enter to continue in the next line as I did now this will not show."
+  },
+  {
+    "objectID": "formatting_tips.html#additional-options",
+    "href": "formatting_tips.html#additional-options",
+    "title": "Flood Adapt Documentation",
+    "section": "Additional options",
+    "text": "Additional options\n\nEmphasizing\nCreate different types to emphasize the text eg code\nExample 1: conda install jupyter : Use ` (grave accent) before and after your sentence (without any spacing)\nExample 2: something: just indent one time. for scrolling do the same just write a longer text (see below)\nsomething really long that will needs scrolling so I will just continue writing until the scrolling bar appears.\n\n\nBullet Points\nJust write numbers below one another and use Indentation for the levels.\n\nMerry\nChristmas\nKathryn\n\nand a new year too\n\n\nUse the asterisks for your first level. For the second level in the row below add an indentation and a + per entry.\n\nMerry (* Merry)\n\nChristmas (+ Christmas)\nKathryn (+ Kathryn)"
+  },
+  {
+    "objectID": "formatting_tips.html#urls",
+    "href": "formatting_tips.html#urls",
+    "title": "Flood Adapt Documentation",
+    "section": "URLs",
+    "text": "URLs\nadd a URL and give it a name a\n[here comes the name] (here comes the URL)\nFloodAdapt Deltares webpage"
+  },
+  {
+    "objectID": "formatting_tips.html#embedded-videos",
+    "href": "formatting_tips.html#embedded-videos",
+    "title": "Flood Adapt Documentation",
+    "section": "Embedded videos",
+    "text": "Embedded videos"
+  },
+  {
+    "objectID": "formatting_tips.html#figures",
+    "href": "formatting_tips.html#figures",
+    "title": "Flood Adapt Documentation",
+    "section": "Figures",
+    "text": "Figures\nadd a figure and give it a name add #fig..to cross-reference. Just included here for demonstration purposes):\nFirst an exclamation mark - [here comes the name] (here comes the path to the file){#fig-logo}\nadd “fig-” before the label name to be able to cross reference.\n\n\n\nFigure 1: Floodadapt\n\n\n\nCross reference figure\nI want to reference the Figure 1."
+  },
+  {
+    "objectID": "formatting_tips.html#note-warning-blocks",
+    "href": "formatting_tips.html#note-warning-blocks",
+    "title": "Flood Adapt Documentation",
+    "section": "Note/ Warning Blocks",
+    "text": "Note/ Warning Blocks\nCreate info blocks within your test.\nJust use this header (remove quotation mark): “::: {.callout-tip}” write here the Note. and end with the following footer. “:::”\nExample: ::: {.callout-tip} create a tip :::\n\n\n\n\n\n\nWarning\n\n\n\nCreate a warning .\n\n\n\noptions\n\nnote\nwarning\nimportant\ntip\ncaution"
+  },
+  {
+    "objectID": "formatting_tips.html#cross-reference",
+    "href": "formatting_tips.html#cross-reference",
+    "title": "Flood Adapt Documentation",
+    "section": "Cross Reference",
+    "text": "Cross Reference\nCross reference to another page or figure: (remove quotation marks)\n“[Write here the text would want to see]”(“add the reference”)\n\nCross reference page\n“[Setup Guide]”(/3_setup_guide/index.qmd)” Here I use the reference to the Setup Guide\n\n\nCross reference Figure\nuse the @ before the logo Reference and use the name you gave it as reference above: @ fig-logo (remove space)\nExample: Figure 1"
   }
 ]
