@@ -2,11 +2,10 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Union
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
-from flood_adapt.object_model.interface.objectModel import IObject
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.objectModel import IDbsObject
 
 
 class DbsTemplate(AbstractDatabaseElement):
@@ -22,7 +21,7 @@ class DbsTemplate(AbstractDatabaseElement):
         self._path = self.input_path / self._folder_name
         self._database = database
 
-    def get(self, name: str) -> IObject:
+    def get(self, name: str) -> IDbsObject:
         """Returns an object of the type of the database with the given name.
 
         Parameters
@@ -32,7 +31,7 @@ class DbsTemplate(AbstractDatabaseElement):
 
         Returns
         -------
-        IObject
+        IDbsObject
             object of the type of the specified object model
         """
         # Make the full path to the object
@@ -107,13 +106,13 @@ class DbsTemplate(AbstractDatabaseElement):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
-    def save(self, object_model: IObject, overwrite: bool = False):
+    def save(self, object_model: IDbsObject, overwrite: bool = False):
         """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
         ----------
-        object_model : IObject
+        object_model : IDbsObject
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
@@ -144,12 +143,12 @@ class DbsTemplate(AbstractDatabaseElement):
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
 
-    def edit(self, object_model: IObject):
+    def edit(self, object_model: IDbsObject):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : IObject
+        object : IDbsObject
             object to be edited in the database
 
         Raises

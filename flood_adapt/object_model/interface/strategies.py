@@ -1,13 +1,11 @@
-
 from typing import Optional
 
-from .objectModel import ObjectModel, IObject
+from .objectModel import IDbsObject, DbsObjectModel
 
 
-class StrategyModel(ObjectModel):
+class StrategyModel(DbsObjectModel):
     measures: Optional[list[str]] = []
 
 
-class IStrategy(IObject):
+class IStrategy(IDbsObject):
     attrs: StrategyModel
- 

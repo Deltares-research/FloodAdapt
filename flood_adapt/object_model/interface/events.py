@@ -1,10 +1,7 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from .objectModel import ObjectModel, IObject
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -14,6 +11,8 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulVelocity,
     UnitTypesLength,
 )
+
+from .objectModel import IDbsObject, DbsObjectModel
 
 
 class Mode(str, Enum):
@@ -159,7 +158,9 @@ class TranslationModel(BaseModel):
     )
 
 
-class EventModel(ObjectModel):  # add WindModel etc as this is shared among all? templates
+class EventModel(
+    DbsObjectModel
+):  # add WindModel etc as this is shared among all? templates
     """BaseModel describing the expected variables and data types of attributes common to all event types"""
 
     mode: Mode
@@ -205,7 +206,7 @@ class HistoricalHurricaneModel(EventModel):
     track_name: str
 
 
-class IEvent(IObject):
+class IEvent(IDbsObject):
     attrs: EventModel
 
 

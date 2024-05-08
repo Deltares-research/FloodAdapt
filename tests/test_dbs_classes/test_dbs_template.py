@@ -1,29 +1,40 @@
+import datetime
 import os
+import shutil
+import tempfile
 import time
 from pathlib import Path
-from unittest.mock import Mock, patch
 from typing import Any, Union
-import datetime
-import geopandas as gpd
+from unittest.mock import Mock, patch
+
 import pytest
-from shapely.geometry import LineString
+import tomli
+import tomli_w
+from pydantic import BaseModel
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-
+from flood_adapt.object_model.interface.objectModel import IDbsObject
 
 ### Some dummy classes to be used in the tests
 
-class DummyObjectModel:
+
+class DummyObjectModel(BaseModel):
     name: str = "dummy_name"
     description: str = "dummy_description"
 
-class DummyObject:
+
+class DummyObject(IDbsObject):
     attrs: DummyObjectModel = DummyObjectModel()
     database_input_path = Path("some_fake_path")
 
     def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
         """get object attributes from toml file"""
-        return DummyObject()
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        dummy_object = DummyObject()
+        dummy_object.attrs = DummyObjectModel.parse_obj(toml)
+        dummy_object.database_input_path = Path(filepath).parents[1]
+        return dummy_object
 
     def load_dict(
         data: dict[str, Any],
@@ -31,246 +42,461 @@ class DummyObject:
         validate: bool = True,
     ):
         """get object attributes from an object, e.g. when initialized from GUI"""
-        return DummyObject()
+        dummy_object = DummyObject()
+        dummy_object.attrs = DummyObjectModel.parse_obj(data)
+        dummy_object.database_input_path = database_input_path
+        return dummy_object
 
     def save(self, filepath: Union[str, os.PathLike]):
         """save object attributes to a toml file"""
-        pass
+        with open(filepath, "wb") as f:
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
 
 ### End of dummy classes
-        
+
+
 ### Fixtures
 @pytest.fixture
 def mock_database_object():
+    temp_dir = tempfile.mkdtemp()
+
+    dummy_model = DummyObject()
+    temp_file = Path(temp_dir) / "dummy_name" / "dummy_name.toml"
+    temp_file.parent.mkdir(parents=True, exist_ok=True)
+    dummy_model.save(temp_file)
+
     mock_database_object = Mock()
-    mock_database_object.input_path = Path("some_fake_path")
-    mock_database_object.aggr_areas = {
-        "some_aggregation_area_type": gpd.GeoDataFrame(
-            data={"name": ["dummy_aggregation_area"]},
-            geometry=[LineString([(0, 0), (1, 1)])],
-        )
-    }
-    return mock_database_object
+    mock_database_object.input_path = Path(temp_dir)
+
+    yield mock_database_object
+
+    shutil.rmtree(temp_dir)
 
 
-# @pytest.fixture
-# def dbs_measure(mock_database_object):
-#     return DbsMeasure(mock_database_object)
+### End of fixtures
 
-
-# @pytest.fixture(params=[["SomeDummyMeasure", "AnotherDummyMeasure", "DummyMeasureWithPolygon", "DummyMeasureWithAggregationArea"]])
-# def dummy_measures(request):
-#     return [MEASURES_DICT[name] for name in request.param]
-
-
-# @pytest.fixture
-# def mock_paths(dummy_measures):
-#     mock_path = [MagicMock(spec=Path) for _ in dummy_measures]
-#     for path, measure in zip(mock_path, dummy_measures):
-#         path.name = measure.attrs.name
-#         path.__truediv__.return_value = Path(measure._get_toml_path())
-#     return mock_path
-
-
-# @pytest.fixture
-# def mock_path_stats():
-#     return os.stat_result((0, 0, 0, 0, 0, 0, 0, time.time(), 0, 0))
+### Mocks for internal functions
 
 
 @pytest.fixture
-def patch_is_file():
-    patcher = patch('os.path.isfile')
-    mock_exists = patcher.start()
-    mock_exists.return_value = True
-    yield mock_exists
-    patcher.stop()
-
-@pytest.fixture
-def patch_is_not_file():
-    patcher = patch('os.path.isfile')
-    mock_exists = patcher.start()
-    mock_exists.return_value = False
-    yield mock_exists
-    patcher.stop()
-
-# @pytest.fixture
-# def patch_file_exists():
-#     with patch.object(Path, "exists", return_value=True) as mock_exists:
-#         yield mock_exists
+def patch_delete(mock_database_object):
+    # Skip all fuzzy stuff but only delete the file
+    shutil.rmtree(mock_database_object.input_path / "dummy_name")
 
 
-# @pytest.fixture
-# def patch_file_not_exists():
-#     with patch.object(Path, "exists", return_value=False) as mock_exists:
-#         yield mock_exists
-
-@pytest.fixture
-def patch_iterdir():
-    mock_paths = [Path("some_fake_path/dummy_name") for _ in range(4)]
-    with patch.object(Path, "iterdir", return_value=mock_paths) as mock_iterdir:
-        yield mock_iterdir
+### End of mocks for internal functions
 
 
-@pytest.fixture
-def patch_stat():
-    mock_path_stats = os.stat_result((0, 0, 0, 0, 0, 0, 0, time.time(), 0, 0))
-    with patch.object(Path, "stat", return_value=mock_path_stats) as mock_stat:
-        yield mock_stat
-
-
-# @pytest.fixture
-# def patch_geopandas(dummy_measures):
-#     def geopandas_side_effect(arg):
-#         for measure in dummy_measures:
-#             if measure.attrs.polygon_file is None:
-#                 continue
-#             if arg == (measure._get_database_path() / measure.attrs.polygon_file):
-#                 return measure._get_geopandas_mocked_value()
-#         else:
-#             raise FileNotFoundError("File not found")
-
-#     with patch(
-#         "geopandas.read_file", side_effect=geopandas_side_effect
-#     ) as mock_geopandas:
-#         yield mock_geopandas
-
-
-# @pytest.fixture
-# def patch_measure_factory(dummy_measures):
-#     def MeasureFactory_side_effect(arg):
-#         for measure in dummy_measures:
-#             if arg == measure._get_toml_path():
-#                 return measure
-#         else:
-#             raise FileNotFoundError("File not found")
-
-#     with patch(
-#         "flood_adapt.dbs_classes.dbs_measure.MeasureFactory.get_measure_object",
-#         side_effect=MeasureFactory_side_effect,
-#     ) as mock_factory:
-#         yield mock_factory
-
-# ### End of fixtures
-        
 ### Tests
-class TestDbsMeasure:    
-    def test_getObject_fileFound(self, mock_database_object, patch_is_file):
-        """Test that the get_object method returns the correct measure object when the file is found.
-        
-        Patches:
-        - Path.is_file: to return True
-        """
+class TestDbsObject:
+
+    def test_getObject_fileFound(self, mock_database_object):
+        """Test that the get_object method returns the correct object object when the file is found."""
 
         # Arrange
-        database_template_class = DbsTemplate( mock_database_object )
-        database_template_class._object_model_class = DummyObject()
-
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
 
         # Act
-        with patch_is_file:
-            measure = database_template_class.get("dummy_name")
+        object = database_template_class.get("dummy_name")
 
         # Assert
-        assert measure.attrs.name == "dummy_name"
-        assert measure.attrs.description == "dummy_description"
-        patch_is_file.assert_called_once_with(Path("some_fake_path/dummy_name/dummy_name.toml"))
+        assert object.attrs.name == "dummy_name"
+        assert object.attrs.description == "dummy_description"
 
-    def test_getObject_fileNotFound(self, mock_database_object, patch_is_not_file):
+    def test_getObject_fileNotFound(self, mock_database_object):
         """Test that the get_object method raises a ValueError when the file is not found.
-        
+
         Patches:
         - Path.is_file: to return False
         """
 
         # Arrange
-        database_template_class = DbsTemplate( mock_database_object )
-        database_template_class._object_model_class = DummyObject()
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        os.remove(mock_database_object.input_path / "dummy_name" / "dummy_name.toml")
 
         # Act
-        with patch_is_not_file:
-            with pytest.raises(ValueError) as excinfo:
-                database_template_class.get("dummy_name")
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.get("dummy_name")
         assert " 'dummy_name' does not exist." in str(excinfo.value)
-        patch_is_not_file.assert_called_once_with(Path("some_fake_path/dummy_name/dummy_name.toml"))
 
-    def test_getObjectList_happyFlow(
-        self,
-        mock_database_object,
-        patch_iterdir,
-        patch_stat,
-    ):
-        """Test that the list_objects method returns a dictionary with the correct information.	
-
-        Patches:
-        - Path.iterdir: to return a mocked list of paths
-        - Path.stat: to return the mock path stats
-        """
-        # Arrange
-        database_template_class = DbsTemplate( mock_database_object )
-        database_template_class._object_model_class = DummyObject()
-
-        # Act
-        objects = database_template_class._get_object_list()
-
-        # Assert
-        assert objects["path"] == [Path("some_fake_path/dummy_name/dummy_name.toml")] * 4
-        assert objects["last_modification_date"][0] == [datetime.datetime(1970, 1, 1, 1, 0)]*4
-        assert patch_iterdir.call_count == 1
-        assert patch_stat.call_count == 4
-
-    def test_getObjectList_noMeasures(self, mock_database_object, patch_iterdir):
-        """Test that the list_objects method returns an empty dictionary if no measures are found in the database.
-        
-        Patches:
-        - Path.iterdir: to return an empty list
-        """
-        # Arrange
-        database_template_class = DbsTemplate( mock_database_object )
-        database_template_class._object_model_class = DummyObject()
-
-        patch_iterdir.return_value = []
-
-        # Act
-        objects = database_template_class._get_object_list()
-
-        # Assert
-        assert objects == {'path': [], 'last_modification_date': []}
-        assert patch_iterdir.call_count == 1   
-
-    def test_listObjects_happyFlow(self, mock_database_object,
-        patch_iterdir,
-        patch_stat,
-        patch_is_file):
+    @patch.object(
+        Path,
+        "stat",
+        return_value=os.stat_result((0, 0, 0, 0, 0, 0, 0, time.time(), 0, 0)),
+    )
+    def test_getObjectList_happyFlow(self, patch_stat, mock_database_object):
         """Test that the list_objects method returns a dictionary with the correct information.
 
         Patches:
-        - Path.iterdir: to return a mocked list of paths
-        - Path.stat: to return the mock path stats
-        - Path.is_file: to return True
+        - Path.stat: to return the mock path stats. Otherwise, it will give different results on different systems.
         """
         # Arrange
-        database_template_class = DbsTemplate( mock_database_object )
-        database_template_class._object_model_class = DummyObject()
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        object_path = (
+            Path(database_template_class.input_path) / "dummy_name" / "dummy_name.toml"
+        )
+
+        # Act
+        objects = database_template_class._get_object_list()
+
+        # Assert
+        assert objects["path"] == [object_path]
+        assert objects["last_modification_date"] == [
+            datetime.datetime(1970, 1, 1, 1, 0)
+        ]
+
+    def test_getObjectList_noObjects(self, mock_database_object):
+        """Test that the list_objects method returns an empty dictionary if no objects are found in the database."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        shutil.rmtree(mock_database_object.input_path / "dummy_name")
+
+        # Act
+        objects = database_template_class._get_object_list()
+
+        # Assert
+        assert objects == {"path": [], "last_modification_date": []}
+
+    @patch.object(
+        Path,
+        "stat",
+        return_value=os.stat_result((0, 0, 0, 0, 0, 0, 0, time.time(), 0, 0)),
+    )
+    def test_listObjects_happyFlow(self, patch_stat, mock_database_object):
+        """Test that the list_objects method returns a dictionary with the correct information.
+
+        Patches:
+        - Path.stat: to return the mock path stats. Otherwise, it will give different results on different systems.
+        """
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        object_path = (
+            Path(database_template_class.input_path) / "dummy_name" / "dummy_name.toml"
+        )
 
         # Act
         # Using this patch globaly breaks checking the call count of the patch
-        with patch_is_file:
-            objects = database_template_class.list_objects()
+        objects = database_template_class.list_objects()
 
         # Assert
-        assert objects["path"] == [Path("some_fake_path/dummy_name/dummy_name.toml")] * 4
-        assert objects["last_modification_date"] == [datetime.datetime(1970, 1, 1, 1, 0)]*4
-        assert objects["name"] == ["dummy_name"] * 4
-        assert objects["description"] == ["dummy_description"] * 4
+        assert objects["path"] == [object_path]
+        assert objects["last_modification_date"] == [
+            datetime.datetime(1970, 1, 1, 1, 0)
+        ]
+        assert objects["name"] == ["dummy_name"]
+        assert objects["description"] == ["dummy_description"]
         assert type(objects["objects"][0]) == DummyObject
         assert type(objects["objects"][0].attrs) == DummyObjectModel
         assert objects["objects"][0].attrs.name == "dummy_name"
         assert objects["objects"][0].attrs.description == "dummy_description"
-        assert objects["objects"][0].database_input_path == Path("some_fake_path")
-        assert patch_iterdir.call_count == 1
-        assert patch_stat.call_count == 4
-        assert patch_is_file.call_count == 4
-        assert patch_is_file.call_args_list == [
-            Path("some_fake_path/dummy_name/dummy_name.toml") 
-            ] * 4
+        assert objects["objects"][0].database_input_path == Path(
+            database_template_class.input_path
+        )
+
+    def test_listObjects_noObjects(self, mock_database_object):
+        """Test that the list_objects method returns an empty dictionary if no objects are found in the database."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        shutil.rmtree(mock_database_object.input_path / "dummy_name")
+
+        # Act
+        objects = database_template_class.list_objects()
+
+        # Assert
+        assert objects == {
+            "path": [],
+            "last_modification_date": [],
+            "name": [],
+            "description": [],
+            "objects": [],
+        }
+
+    @patch.object(
+        Path,
+        "stat",
+        return_value=os.stat_result((0, 0, 0, 0, 0, 0, 0, time.time(), 0, 0)),
+    )
+    def test_listObjects_fileNotFound(
+        self,
+        patch_stat,
+        mock_database_object,
+    ):
+        """Test that the list_objects method raises a FileNotFoundError when a file is not found.
+
+        Patches:
+        - Path.stat: to return the mock path stats
+        """
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        os.remove(mock_database_object.input_path / "dummy_name" / "dummy_name.toml")
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.list_objects()
+        assert "Error in  database. Some  are missing from the database." in str(
+            excinfo.value
+        )
+
+    @patch.object(DbsTemplate, "check_higher_level_usage", return_value=[])
+    @patch.object(DbsTemplate, "_check_standard_objects", return_value=False)
+    def test_deleteObject_onlyToml(
+        self,
+        patch_is_no_standard_object,
+        patch_not_used_in_higher_level,
+        mock_database_object,
+    ):
+        """Test that the delete_object method deletes the object from the database.
+
+        Patches:
+        - DbsTemplate._check_standard_objects: to return False
+        - DbsTemplate.check_higher_level_usage: to return an empty list
+        """
+
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        object_path = Path("some_fake_path/dummy_name/dummy_name.toml")
+
+        # Act
+        database_template_class.delete("dummy_name", toml_only=True)
+
+        # Assert
+        assert not object_path.exists()
+        assert patch_is_no_standard_object.call_count == 1
+        patch_is_no_standard_object.assert_called_once_with("dummy_name")
+        assert patch_not_used_in_higher_level.call_count == 1
+        patch_not_used_in_higher_level.assert_called_once_with("dummy_name")
+
+    @patch.object(DbsTemplate, "check_higher_level_usage", return_value=[])
+    @patch.object(DbsTemplate, "_check_standard_objects", return_value=False)
+    def test_deleteObject_entireFolder(
+        self,
+        patch_is_no_standard_object,
+        patch_not_used_in_higher_level,
+        mock_database_object,
+    ):
+        """Test that the delete_object method deletes the object from the database.
+
+        Patches:
+        - DbsTemplate._check_standard_objects: to return False
+        - DbsTemplate.check_higher_level_usage: to return an empty list
+        """
+
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+        object_path = Path("some_fake_path/dummy_name/dummy_name.toml")
+
+        # Act
+        database_template_class.delete("dummy_name", toml_only=False)
+
+        # Assert
+        assert not object_path.exists()
+        assert not object_path.parent.exists()
+        assert patch_is_no_standard_object.call_count == 1
+        patch_is_no_standard_object.assert_called_once_with("dummy_name")
+        assert patch_not_used_in_higher_level.call_count == 1
+        patch_not_used_in_higher_level.assert_called_once_with("dummy_name")
+
+    @patch.object(
+        DbsTemplate,
+        "check_higher_level_usage",
+        return_value=["some_higher_level_object"],
+    )
+    @patch.object(DbsTemplate, "_check_standard_objects", return_value=False)
+    def test_deleteObject_usedInHigherLevel(
+        self,
+        patch_is_no_standard_object,
+        patch_higher_level_usage,
+        mock_database_object,
+    ):
+        """Test that the delete_object method raises a ValueError when the object is used in a higher level object.
+
+        Patches:
+        - DbsTemplate._check_standard_objects: to return False
+        - DbsTemplate.check_higher_level_usage: to return a list with a higher level object
+        """
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.delete("dummy_name", toml_only=False)
+        assert (
+            "'dummy_name'  cannot be deleted/modified since it is already used in: some_higher_level_object"
+            in str(excinfo.value)
+        )
+        assert patch_higher_level_usage.call_count == 1
+        patch_higher_level_usage.assert_called_once_with("dummy_name")
+
+    @patch.object(DbsTemplate, "_check_standard_objects", return_value=True)
+    @patch.object(DbsTemplate, "check_higher_level_usage", return_value=[])
+    def test_deleteObject_standardObject(
+        self, patch_no_higher_level_uses, patch_is_standard_object, mock_database_object
+    ):
+        """Test that the delete_object method raises a ValueError when the object is a standard object.
+
+        Patches:
+        - DbsTemplate._check_standard_objects: to return True
+        - DbsTemplate.check_higher_level_usage: to return an empty list
+        """
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.delete("dummy_name", toml_only=False)
+        assert (
+            "'dummy_name' cannot be deleted/modified since it is a standard ."
+            in str(excinfo.value)
+        )
+        assert patch_is_standard_object.call_count == 1
+        patch_is_standard_object.assert_called_once_with("dummy_name")
+
+    def test_saveObject_noOverwrite(
+        self,
+        mock_database_object,
+    ):
+        """Test that the save_object method saves the object to a file."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = DummyObject()
+        new_object.attrs.name = "another_dummy_name"
+
+        # Act
+        database_template_class.save(new_object, overwrite=False)
+
+        # Assert
+        with open(
+            database_template_class.input_path
+            / "another_dummy_name"
+            / "another_dummy_name.toml",
+            mode="rb",
+        ) as fp:
+
+            result = tomli.load(fp)
+        assert result["name"] == "another_dummy_name"
+        assert result["description"] == "dummy_description"
+
+    def test_saveObject_overwrite(self, mock_database_object):
+        """Test that the save_object method saves the object to a file.
+
+        Patches:
+        """
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = (
+            DummyObject()
+        )  # Keep the existing name, otherwise it cannot overwrite
+        new_object.attrs.description = "new_description"
+
+        # Act
+        database_template_class.save(new_object, overwrite=True)
+
+        # Assert
+        with open(
+            database_template_class.input_path / "dummy_name" / "dummy_name.toml",
+            mode="rb",
+        ) as fp:
+            result = tomli.load(fp)
+
+        assert result["name"] == "dummy_name"
+        assert result["description"] == "new_description"
+
+    def test_saveObject_nameInUse_noOverwrite(self, mock_database_object):
+        """Test that the save_object method raises a ValueError when the name is already in use and overwrite is False."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = DummyObject()
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.save(new_object, overwrite=False)
+        assert (
+            "'dummy_name' name is already used by another . Choose a different name"
+            in str(excinfo.value)
+        )
+
+    def test_saveObject_nameNotInUse_overwrite(
+        self,
+        mock_database_object,
+    ):
+        """Test that the save_object method still saves the object when the name is not in use and overwrite is True."""
+
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = DummyObject()
+        new_object.attrs.name = "another_dummy_name"
+        new_object.attrs.description = "dummy_description"
+
+        # Act
+        database_template_class.save(new_object, overwrite=True)
+
+        # Assert
+        with open(
+            database_template_class.input_path
+            / "another_dummy_name"
+            / "another_dummy_name.toml",
+            mode="rb",
+        ) as fp:
+            result = tomli.load(fp)
+        assert result["name"] == "another_dummy_name"
+        assert result["description"] == "dummy_description"
+
+    def test_editObject_happyFlow(self, mock_database_object):
+        """Test that the edit_object method edits the object in the database."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = DummyObject()
+        new_object.attrs.name = "dummy_name"
+        new_object.attrs.description = "new_description"
+
+        # Act
+        database_template_class.edit(new_object)
+
+        # Assert
+        with open(
+            database_template_class.input_path / "dummy_name" / "dummy_name.toml",
+            mode="rb",
+        ) as fp:
+            result = tomli.load(fp)
+
+        assert result["name"] == "dummy_name"
+        assert result["description"] == "new_description"
+
+    def test_editObject_objectNotFound(self, mock_database_object):
+        """Test that the edit_object method raises a ValueError when the object is not found in the database."""
+        # Arrange
+        database_template_class = DbsTemplate(mock_database_object)
+        database_template_class._object_model_class = DummyObject
+
+        new_object = DummyObject()
+        new_object.attrs.name = "another_dummy_name"
+
+        # Act
+        with pytest.raises(ValueError) as excinfo:
+            database_template_class.edit(new_object)
+        assert (
+            "'another_dummy_name'  does not exist. You cannot edit an  that does not exist."
+            in str(excinfo.value)
+        )

@@ -4,8 +4,8 @@ from typing import Optional, Union
 
 import pandas as pd
 from pydantic import BaseModel
-from .objectModel import ObjectModel, IObject
 
+from .objectModel import IDbsObject, DbsObjectModel
 
 
 class CurrentSituationModel(BaseModel):
@@ -13,7 +13,7 @@ class CurrentSituationModel(BaseModel):
     year: int
 
 
-class BenefitModel(ObjectModel):
+class BenefitModel(DbsObjectModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object"""
 
     strategy: str
@@ -27,7 +27,7 @@ class BenefitModel(ObjectModel):
     annual_maint_cost: Optional[float] = None
 
 
-class IBenefit(IObject):
+class IBenefit(IDbsObject):
     attrs: BenefitModel
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame

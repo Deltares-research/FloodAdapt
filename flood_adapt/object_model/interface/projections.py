@@ -1,15 +1,14 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from typing import Optional
 
-from pydantic import BaseModel, Field
-from .objectModel import ObjectModel, IObject
+from pydantic import BaseModel
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
     UnitTypesLength,
 )
+
+from .objectModel import IDbsObject, DbsObjectModel
 
 
 class PhysicalProjectionModel(BaseModel):
@@ -32,10 +31,10 @@ class SocioEconomicChangeModel(BaseModel):
     new_development_shapefile: Optional[str] = None
 
 
-class ProjectionModel(ObjectModel):
+class ProjectionModel(DbsObjectModel):
     physical_projection: PhysicalProjectionModel
     socio_economic_change: SocioEconomicChangeModel
 
 
-class IProjection(IObject):
+class IProjection(IDbsObject):
     attrs: ProjectionModel

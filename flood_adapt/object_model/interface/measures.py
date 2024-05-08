@@ -1,10 +1,7 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator, validator
-from .objectModel import ObjectModel, IObject
+from pydantic import Field, field_validator, model_validator, validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -13,6 +10,8 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLengthRefValue,
     UnitfulVolume,
 )
+
+from .objectModel import IDbsObject, DbsObjectModel
 
 
 class ImpactType(str, Enum):
@@ -47,7 +46,7 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class MeasureModel(ObjectModel):
+class MeasureModel(DbsObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures"""
 
     type: Union[HazardType, ImpactType]
@@ -204,8 +203,9 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-class IMeasure(IObject):
+class IMeasure(IDbsObject):
     """This is a class for a FloodAdapt measure"""
+
     attrs: MeasureModel
 
 

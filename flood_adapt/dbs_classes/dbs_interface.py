@@ -8,7 +8,7 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
-ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+DbsObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
 
 class AbstractDatabaseElement(ABC):
@@ -19,7 +19,7 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> ObjectModel:
+    def get(self, name: str) -> DbsObjectModel:
         """Returns the object of the type of the database with the given name.
 
         Parameters
@@ -29,7 +29,7 @@ class AbstractDatabaseElement(ABC):
 
         Returns
         -------
-        ObjectModel
+        DbsObjectModel
             object of the type of the specified object model
         """
         pass
@@ -62,13 +62,13 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(self, object_model: DbsObjectModel, overwrite: bool = False):
         """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : DbsObjectModel
             object to be saved in the database
         overwrite : OverwriteMode, optional
             whether to overwrite the object if it already exists in the
@@ -82,12 +82,12 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def edit(self, object_model: ObjectModel):
+    def edit(self, object_model: DbsObjectModel):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : ObjectModel
+        object : DbsObjectModel
             object to be edited in the database
 
         Raises

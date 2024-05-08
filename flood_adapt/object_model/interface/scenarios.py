@@ -1,11 +1,9 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from abc import abstractmethod
 
-from pydantic import BaseModel, Field
-from .objectModel import ObjectModel, IObject
+from .objectModel import IDbsObject, DbsObjectModel
 
-class ScenarioModel(ObjectModel):
+
+class ScenarioModel(DbsObjectModel):
     """BaseModel describing the expected variables and data types of a scenario"""
 
     event: str
@@ -13,9 +11,8 @@ class ScenarioModel(ObjectModel):
     strategy: str
 
 
-class IScenario(IObject):
+class IScenario(IDbsObject):
     attrs: ScenarioModel
-
 
     @abstractmethod
     def run(self) -> None: ...

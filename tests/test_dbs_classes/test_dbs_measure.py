@@ -86,6 +86,7 @@ class DummyMeasureWithAggregationArea(TemplateDummyMeasure):
         self.attrs = MeasureModel.__new__(MeasureModel)
         self.attrs.__dict__.update(model_dict)
 
+
 class DummyMeasureWithIncorrectPolygon(TemplateDummyMeasure):
     def __init__(self):
         model_dict = {
@@ -99,7 +100,8 @@ class DummyMeasureWithIncorrectPolygon(TemplateDummyMeasure):
 
     def _get_geopandas_mocked_value(self):
         return gpd.GeoDataFrame(geometry=[LineString([(0, 0), (1, 1)])])
-    
+
+
 class DummyMeasureWithIncorrectAggregationArea(TemplateDummyMeasure):
     def __init__(self):
         model_dict = {
@@ -115,7 +117,8 @@ class DummyMeasureWithIncorrectAggregationArea(TemplateDummyMeasure):
 
     def _get_geopandas_mocked_value(self):
         return gpd.GeoDataFrame(geometry=[LineString([(0, 0), (1, 1)])])
-    
+
+
 class DummyMeasureWithIncorrectAggregationAreaType(TemplateDummyMeasure):
     def __init__(self):
         model_dict = {
@@ -132,14 +135,19 @@ class DummyMeasureWithIncorrectAggregationAreaType(TemplateDummyMeasure):
     def _get_geopandas_mocked_value(self):
         return gpd.GeoDataFrame(geometry=[LineString([(0, 0), (1, 1)])])
 
-# Define the measures as module-level constants  
+
+# Define the measures as module-level constants
 SOME_DUMMY_MEASURE = SomeDummyMeasure()
 ANOTHER_DUMMY_MEASURE = AnotherDummyMeasure()
 DUMMY_MEASURE_WITH_POLYGON = DummyMeasureWithPolygon()
 DUMMY_MEASURE_WITH_AGGREGATION_AREA = DummyMeasureWithAggregationArea()
 DUMMY_MEASURE_WITH_INCORRECT_POLYGON = DummyMeasureWithIncorrectPolygon()
-DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA = DummyMeasureWithIncorrectAggregationArea()
-DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA_TYPE = DummyMeasureWithIncorrectAggregationAreaType()
+DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA = (
+    DummyMeasureWithIncorrectAggregationArea()
+)
+DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA_TYPE = (
+    DummyMeasureWithIncorrectAggregationAreaType()
+)
 
 # Define a mapping from string names to the actual measure objects
 MEASURES_DICT = {
@@ -149,11 +157,12 @@ MEASURES_DICT = {
     "DummyMeasureWithAggregationArea": DUMMY_MEASURE_WITH_AGGREGATION_AREA,
     "DummyMeasureWithIncorrectPolygon": DUMMY_MEASURE_WITH_INCORRECT_POLYGON,
     "DummyMeasureWithIncorrectAggregationArea": DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA,
-    "DummyMeasureWithIncorrectAggregationAreaType": DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA_TYPE
+    "DummyMeasureWithIncorrectAggregationAreaType": DUMMY_MEASURE_WITH_INCORRECT_AGGREGATION_AREA_TYPE,
 }
 
 ### End of dummy classes
-        
+
+
 ### Fixtures
 @pytest.fixture
 def mock_database_object():
@@ -173,7 +182,16 @@ def dbs_measure(mock_database_object):
     return DbsMeasure(mock_database_object)
 
 
-@pytest.fixture(params=[["SomeDummyMeasure", "AnotherDummyMeasure", "DummyMeasureWithPolygon", "DummyMeasureWithAggregationArea"]])
+@pytest.fixture(
+    params=[
+        [
+            "SomeDummyMeasure",
+            "AnotherDummyMeasure",
+            "DummyMeasureWithPolygon",
+            "DummyMeasureWithAggregationArea",
+        ]
+    ]
+)
 def dummy_measures(request):
     return [MEASURES_DICT[name] for name in request.param]
 
@@ -202,6 +220,7 @@ def patch_file_exists():
 def patch_file_not_exists():
     with patch.object(Path, "exists", return_value=False) as mock_exists:
         yield mock_exists
+
 
 @pytest.fixture
 def patch_iterdir(mock_paths):
@@ -247,13 +266,15 @@ def patch_measure_factory(dummy_measures):
     ) as mock_factory:
         yield mock_factory
 
+
 ### End of fixtures
-        
+
+
 ### Tests
 class TestDbsMeasure:
     def test_getObject_fileFound(self, dbs_measure, patch_measure_factory):
         """Test that the get_object method returns the correct measure object when the file is found.
-        
+
         Patches:
         - MeasureFactory.get_measure_object: to return the correct measure object
         """
@@ -279,7 +300,7 @@ class TestDbsMeasure:
         patch_geopandas,
         patch_measure_factory,
     ):
-        """Test that the list_objects method returns a dictionary with the correct information.	
+        """Test that the list_objects method returns a dictionary with the correct information.
 
         Patches:
         - Path.exists: to return True for the geojson file
@@ -356,7 +377,7 @@ class TestDbsMeasure:
 
     def test_listObjects_noMeasures(self, dbs_measure, patch_iterdir):
         """Test that the list_objects method returns an empty dictionary if no measures are found in the database.
-        
+
         Patches:
         - Path.iterdir: to return an empty list
         """
@@ -368,11 +389,23 @@ class TestDbsMeasure:
         objects = dbs_measure.list_objects()
 
         # Assert
-        assert objects == {'path': [], 'last_modification_date': [], 'name': [], 'description': [], 'objects': [], 'geometry': []}
+        assert objects == {
+            "path": [],
+            "last_modification_date": [],
+            "name": [],
+            "description": [],
+            "objects": [],
+            "geometry": [],
+        }
         mock_iterdir.assert_called_once_with()
 
     def test_listObjects_geojsonNotFound(
-        self, dbs_measure, patch_file_not_exists, patch_iterdir, patch_stat, patch_measure_factory
+        self,
+        dbs_measure,
+        patch_file_not_exists,
+        patch_iterdir,
+        patch_stat,
+        patch_measure_factory,
     ):
         """Test that the list_objects method raises a FileNotFoundError if the geojson file does not exist.
 
@@ -391,14 +424,22 @@ class TestDbsMeasure:
             in str(excinfo.value)
         )
 
-    @pytest.mark.parametrize("dummy_measures", [["DummyMeasureWithIncorrectAggregationArea"]], indirect=True)
+    @pytest.mark.parametrize(
+        "dummy_measures", [["DummyMeasureWithIncorrectAggregationArea"]], indirect=True
+    )
     def test_listObjects_aggregationAreaNotFound(
-        self, dummy_measures, dbs_measure, patch_file_exists, patch_iterdir, patch_stat, patch_measure_factory
+        self,
+        dummy_measures,
+        dbs_measure,
+        patch_file_exists,
+        patch_iterdir,
+        patch_stat,
+        patch_measure_factory,
     ):
         """
         Test that the list_objects method raises a ValueError if the aggregation area does not exist.
-        
-        Patches: 
+
+        Patches:
         - Path.exists: to return True for the geojson file
         - Path.iterdir: to return the mock paths
         - Path.stat: to return the mock path stats
@@ -413,9 +454,19 @@ class TestDbsMeasure:
             in str(excinfo.value)
         )
 
-    @pytest.mark.parametrize("dummy_measures", [["DummyMeasureWithIncorrectAggregationAreaType"]], indirect=True)
+    @pytest.mark.parametrize(
+        "dummy_measures",
+        [["DummyMeasureWithIncorrectAggregationAreaType"]],
+        indirect=True,
+    )
     def test_listObjects_aggregationAreaTypeNotFound(
-        self, dummy_measures, dbs_measure, patch_file_exists, patch_iterdir, patch_stat, patch_measure_factory
+        self,
+        dummy_measures,
+        dbs_measure,
+        patch_file_exists,
+        patch_iterdir,
+        patch_stat,
+        patch_measure_factory,
     ):
         """
         Test that the list_objects method raises a ValueError if the aggregation area type does not exist.
@@ -437,7 +488,7 @@ class TestDbsMeasure:
 
     def test_setLock_happyFlow(self, dbs_measure, patch_measure_factory):
         """Test that the set_lock method sets the lock_count attribute of the measure object to 1.
-        
+
         Patches:
         - MeasureFactory.get_measure_object: to return the correct measure object
         """
@@ -445,7 +496,7 @@ class TestDbsMeasure:
         mock_factory = patch_measure_factory
 
         # Act
-        dbs_measure.set_lock(name = "some_measure_name")
+        dbs_measure.set_lock(name="some_measure_name")
 
         # Assert
         assert dbs_measure.get("some_measure_name").attrs.lock_count == 1

@@ -5,13 +5,13 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel, Field
 
 
-class ObjectModel(BaseModel):
+class DbsObjectModel(BaseModel):
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
 
 
-class IObject(ABC):
-    attrs: ObjectModel
+class IDbsObject(ABC):
+    attrs: DbsObjectModel
     database_input_path: Union[str, os.PathLike]
 
     @staticmethod
@@ -33,3 +33,4 @@ class IObject(ABC):
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
         """save object attributes to a toml file"""
+        ...
