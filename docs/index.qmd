@@ -51,9 +51,5 @@ The [Demonstration of FloodAdapt](/6_demo/index.qmd) illustrates use cases that 
 
 
 
-<<<<<<< HEAD
-"[Write here the text you want to see]"("add the reference")
-=======
 ![Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section](../_static/images/readerGuidance.png){#fig-readerGuidance}
->>>>>>> 15bf969 (change landing page)
 
