@@ -76,7 +76,7 @@ add a URL and give it a name a
 [FloodAdapt Deltares webpage](https://www.deltares.nl/en/software-and-data/products/floodadapt)
 
 ## Embedded videos
-{{< video https://www.youtube.com/watch?v=VYd-G7yE0o4&t=9s >}}
+<iframe width="560" height="315" src="https://www.youtube.com/embed/VYd-G7yE0o4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 ## Figures
