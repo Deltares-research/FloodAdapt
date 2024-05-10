@@ -431,6 +431,11 @@ class Database:
             # Save the spatial file for future use
             geo_path = bf_folder.joinpath("building_footprints.gpkg")
             building_footprints.to_file(geo_path)
+            # Save to exposure csv
+            exposure_csv = exposure_csv.merge(
+                buildings_joined, on="Object ID", how="left"
+            )
+            exposure_csv.to_csv(exposure_csv_path, index=False)
             # Save site attributes
             rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
             self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
