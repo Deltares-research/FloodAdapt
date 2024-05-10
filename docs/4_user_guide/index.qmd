@@ -1,0 +1,57 @@
+---
+title: 	FloodAdapt User Guide
+filters:
+  - lightbox
+lightbox: auto
+---
+
+Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios, to support your understanding of community vulnerability now and in the future, and the effectiveness and benefits of adaptation options. 
+
+This user guide covers both the installation and use of FloodAdapt. Below we highlight the information that you can find in this guide. 
+
+## Structure of the user guide
+The user guide starts with instructions for [getting started](getting_started.qmd). This describes how to download FloodAdapt and how to get it up and running on your computer. 
+
+The guide then describes the use of FloodAdapt [via the tabs in the FloodAdapt graphical user interface (GUI)](#overview-of-the-floodadapt-gui), covering how they are used to define, run, view, and compare scenarios. 
+
+## Overview of the FloodAdapt GUI
+The FloodAdapt GUI supports the creation, running, visualization, and comparison of scenarios.
+
+::: {.callout-note}
+## What is a scenario in FloodAdapt?
+Scenarios in FloodAdapt are defined as a combination of an event, a projection, and a strategy, all of which are specified via the user interface.
+:::
+ 
+ Scenarios are used to answer user questions about how flooding and impacts are or will change with adaptation measures and under future conditions. 
+  
+::: {.callout-tip}
+## Example user question
+**How would a floodwall have held up in a recent hurricane if the track had made a worst-case landfall?**
+
+To answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficientn to protect against this event. 
+:::
+ 
+ The user guide describes how to specify events, projections, and strategies and how to view and compare scenario results. 
+ 
+
+ 
+ There are ten tabs in the user interface: Site, Events, Projections, Measures, Strategies, Scenarios, Output, Compare - maps, Compare - tables, and Benefits. @fig-GUItabs presents the tabs of the user interface and highlights the information needed to run and view results.
+
+* The [Site tab](site_tab.qmd) is an informative tab where the user is not required to input any information. 
+
+* The [Events](events/index.qmd), [Projections](projections/index.qmd), [Measures](measures/index.qmd), and [Strategy](strategy/index.qmd) tabs are **input** tabs where the user will specify the 'ingredients' for their scenarios. 
+
+* The [Scenarios](scenarios/index.qmd) tab is a management tab, where the user can specify and run scenarios. 
+
+::: {.callout}
+Running a scenario calls the SFINCS and Delft-FIAT models to start the simulations for the specified scenarios.
+:::
+
+
+![Tabs of the FloodAdapt user interface. Orange fill indicates required user input, and the arrows show the flow of information from one tab to another](../_static/images/GUI_Tabs.drawio.svg){width=50% fig-align='left' #fig-GUItabs}
+
+* The [Output](output/index.qmd) tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run. 
+
+* The user can compare scenarios spatially (map comparison) in the [Compare - map](compare/Compare_map.qmd) tab and can compare scenarios based on their tabulated metrics in the [Compare - table](compare/Compare_table.qmd) tab. 
+
+* The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the [Benefits](benefits.qmd.qmd) tab.

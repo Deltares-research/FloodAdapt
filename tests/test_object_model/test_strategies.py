@@ -18,12 +18,7 @@ test_database = Path().absolute() / "tests" / "test_database"
 
 def test_strategy_comb_read(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "strategy_comb"
-        / "strategy_comb.toml"
+        test_db.input_path / "strategies" / "strategy_comb" / "strategy_comb.toml"
     )
     assert test_toml.is_file()
 
@@ -49,14 +44,7 @@ def test_strategy_comb_read(test_db):
 
 
 def test_strategy_no_measures(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "no_measures"
-        / "no_measures.toml"
-    )
+    test_toml = test_db.input_path / "strategies" / "no_measures" / "no_measures.toml"
     assert test_toml.is_file()
 
     strategy = Strategy.load_file(test_toml)
@@ -69,9 +57,7 @@ def test_strategy_no_measures(test_db):
 
 def test_elevate_comb_correct(test_db):
     test_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "strategies"
         / "elevate_comb_correct"
         / "elevate_comb_correct.toml"
@@ -88,14 +74,7 @@ def test_elevate_comb_correct(test_db):
 
 
 def test_green_infra(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "strategies"
-        / "greeninfra"
-        / "greeninfra.toml"
-    )
+    test_toml = test_db.input_path / "strategies" / "greeninfra" / "greeninfra.toml"
     assert test_toml.is_file()
 
     strategy = Strategy.load_file(test_toml)

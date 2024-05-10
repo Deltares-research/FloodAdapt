@@ -175,7 +175,7 @@ class Event:
         self,
         event_dir: Path,
         site_river: list,
-        input_river_df_list: Optional[list[pd.DataFrame]] = None,
+        input_river_df_list: Optional[list[pd.DataFrame]] = [],
     ):
         """Creates pd.Dataframe timeseries for river discharge
 

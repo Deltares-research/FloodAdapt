@@ -75,7 +75,7 @@ class DirectImpacts:
             config=self.site_info.attrs.direct_impacts,
         )
 
-    def has_run_check(self):
+    def has_run_check(self) -> bool:
         """Checks if direct impacts model has finished
 
         Returns
@@ -267,6 +267,9 @@ class DirectImpacts:
 
     def postprocess(self):
         # Postprocess the FIAT results
+        if not self.fiat_has_run_check():
+            raise RuntimeError("Delft-FIAT did not run successfully!")
+
         # First move and rename fiat output csv
         fiat_results_path = self.impacts_path.joinpath(
             f"Impacts_detailed_{self.name}.csv"
@@ -300,10 +303,14 @@ class DirectImpacts:
         if self.site_info.attrs.direct_impacts.roads_file_name:
             self._create_roads(fiat_results_df)
 
-        # TODO add this when hydromt logger issue solution has been merged
+        logging.info("Post-processing complete!")
+
         # If site config is set to not keep FIAT simulation, then delete folder
-        # if not self.site_info.attrs.direct_impacts.save_simulation:
-        # shutil.rmtree(self.fiat_path)
+        if not self.site_info.attrs.direct_impacts.save_simulation:
+            try:
+                shutil.rmtree(self.fiat_path)
+            except OSError as e_info:
+                logging.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
 
     def _create_roads(self, fiat_results_df):
         logging.info("Saving road impacts...")

@@ -1,0 +1,40 @@
+---
+title: 	Getting Started
+filters:
+  - lightbox
+lightbox: auto
+---
+This section covers [system requirements](#system-requirements) for running FloodAdapt, initial [installation steps](#installation-steps), and the [folder structure of FloodAdapt](#floodadapt-folder-structure).
+
+
+## System requirements
+In order to run FloodAdapt, the following are required:
+
+* Your computer must be running a Windows operating system.
+
+* The first time the FloodAdapt application is opened must be by a user with administrative rights
+
+* The computer must have access to the internet
+
+* At least 2 GB of storage for the FloodAdapt system files and the underlying database
+
+* Approximately 150 MB of storage for each user-generated scenario
+
+::: {.callout-warning}
+Be sure to save the FloodAdapt folder in a high-level directory. For example: D:\\\ FloodAdapt. This is because Windows has a 260-character path-name limit, and FloodAdapt includes user-selected scenario names in both folder and file names, which can lead to exceedance of the limit. Placing the FloodAdapt folder in a high-level directory will reduce the likelihood of this happening.
+:::
+
+## Installation steps
+The FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon.
+
+The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.
+
+## FloodAdapt folder structure
+The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.
+
+@fig-folderStructure shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: *System*, *FloodAdapt_gui* and *Database*. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file *floodadapt_gui.exe* that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: *Input*, *Output*, and *Static*. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created. 
+
+The Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface. The user may want to access this folder to create their own visualization in third party software, such as ArcGIS. 
+
+![**Folder structure of FloodAdapt.**](../_static/images/folderStructure.png){#fig-folderStructure}
+

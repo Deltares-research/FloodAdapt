@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 from typing import Any, List, Optional, Union
@@ -6,7 +5,6 @@ from typing import Any, List, Optional, Union
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.measures import (
@@ -133,7 +131,7 @@ class FiatAdapter:
             return False
 
     def set_hazard(self, hazard: Hazard) -> None:
-        map_fn = self._get_sfincs_map_path(hazard)
+        map_fn = hazard.flood_map_path
         map_type = hazard.site.attrs.direct_impacts.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
@@ -142,18 +140,7 @@ class FiatAdapter:
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
-        # Read SFINCS map in a hydromt compatible format
-        if not is_risk:
-            sfincs_root = map_fn[0].parent
-            model = SfincsAdapter(model_root=sfincs_root, site=self.site)
-            da = model.read_zsmax()
-            da = da.fillna(0)
-            # TODO the units should come from SfincsAdapter
-            da.attrs["units"] = "m"
-            map_fn = [da]
-            del model
-
-        self.model.setup_hazard(
+        self.fiat_model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
             rp=None,
@@ -165,25 +152,8 @@ class FiatAdapter:
             unit_conversion_factor=conversion_factor,
         )
 
-    def _get_sfincs_map_path(self, hazard: Hazard) -> List[Union[str, Path]]:
-        sim_path = hazard.sfincs_map_path
-        mode = hazard.event_mode
-        map_fn: List[Union[str, Path]] = []
-
-        if mode == Mode.single_event:
-            map_fn.append(sim_path.joinpath("sfincs_map.nc"))
-
-        elif mode == Mode.risk:
-            # check for netcdf
-            map_fn.extend(
-                sim_path.joinpath(file)
-                for file in os.listdir(str(sim_path))
-                if file.endswith(".nc")
-            )
-        return map_fn
-
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = None
+        self, economic_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement economic growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.
@@ -225,7 +195,7 @@ class FiatAdapter:
         )
 
     def apply_population_growth_existing(
-        self, population_growth: float, ids: Optional[list[str]] = None
+        self, population_growth: float, ids: Optional[list[str]] = []
     ):
         """Implement population growth in the exposure of FIAT. This is only done for buildings.
         This is done by multiplying maximum potential damages of objects with the percentage increase.

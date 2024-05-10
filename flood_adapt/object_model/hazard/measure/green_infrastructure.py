@@ -15,7 +15,10 @@ from flood_adapt.object_model.interface.measures import (
     IGreenInfrastructure,
 )
 from flood_adapt.object_model.interface.site import ISite
-from flood_adapt.object_model.io.unitfulvalue import UnitfulArea, UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulArea,
+    UnitfulHeight,
+)
 
 
 class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
@@ -55,7 +58,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
     @staticmethod
     def calculate_volume(
         area: UnitfulArea,
-        height: UnitfulLength = UnitfulLength(value=0.0, units="meters"),
+        height: UnitfulHeight,
         percent_area: float = 100.0,
     ) -> float:
         """Determine volume from area of the polygon and infiltration height
@@ -64,8 +67,8 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         ----------
         area : UnitfulArea
             Area of polygon with units (calculated using calculate_polygon_area)
-        height : UnitfulLength, optional
-            Water height with units, by default 0.0
+        height : UnitfulHeight
+            Water height with units
         percent_area : float, optional
             Percentage area covered by green infrastructure [%], by default 100.0
 

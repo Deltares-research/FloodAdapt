@@ -1,0 +1,21 @@
+---
+title: 	Projections
+filters:
+  - lightbox
+lightbox: auto
+---
+FloodAdapt can simulate future climate and socio-economic conditions.
+
+![**FloodAdapt can simulate future [climate projections]{.underline} - sea level rise, increased tropical storm frequencies, precipitation changes, and [socio-economic projections]{.underline} - population growth and economic growth**](../../_static/images/projections.png){#fig-projections}
+
+On the Projections Tab in FloodAdapt, click 'Add Projection' to open the projections window (see @fig-projectionWindow)
+
+![**Projections window on the Projections tab in FloodAdapt**](../../_static/images/Projection_window.png){#fig-projectionWindow}
+
+In this window you can specify a [climate projection](climate.qmd), a [socio-economic projection](socioEconomic.qmd), or a combination (for example: 10% population growth with 1 foot of SLR). 
+
+Click the following links to learn more about how climate and socio-economic projections can be specified in FloodAdapt, and how they are represented in the modeling. 
+
+[Climate projections](climate.qmd)
+
+[Socio-economic projections](socioEconomic.qmd)

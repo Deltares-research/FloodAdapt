@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import tomli
 
-from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.benefit import Benefit
 
 test_database = Path().absolute() / "tests" / "test_database"
@@ -14,9 +13,7 @@ rng = np.random.default_rng(2021)
 
 def test_benefit_read(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -29,9 +26,7 @@ def test_benefit_read(test_db):
 
 def test_check_scenarios(test_db):
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -45,12 +40,8 @@ def test_check_scenarios(test_db):
 
 
 def test_run_benefit_analysis(test_db):
-    dbs = Database(test_database, "charleston")
-
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050_no_costs"
         / "benefit_raise_properties_2050_no_costs.toml"
@@ -61,8 +52,8 @@ def test_run_benefit_analysis(test_db):
     benefit = Benefit.load_file(benefit_toml)
 
     # Create missing scenarios
-    dbs.create_benefit_scenarios(benefit)
-    aggrs = dbs.get_aggregation_areas()
+    test_db.create_benefit_scenarios(benefit)
+    aggrs = test_db.get_aggregation_areas()
 
     # Check that error is returned if not all runs are finished
     if not all(benefit.scenarios["scenario run"]):
@@ -80,13 +71,7 @@ def test_run_benefit_analysis(test_db):
 
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = (
-            test_database
-            / "charleston"
-            / "output"
-            / "Scenarios"
-            / row["scenario created"]
-        )
+        output_path = test_db.output_path / "Scenarios" / row["scenario created"]
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
@@ -108,7 +93,8 @@ def test_run_benefit_analysis(test_db):
         for aggr_type in aggrs.keys():
             aggr = aggrs[aggr_type]
             # Generate random distribution of damage per aggregation area
-            dmgs = np.random.random(len(aggr))
+            rng = np.random.default_rng(seed=2024)
+            dmgs = rng.random(len(aggr))
             dmgs = dmgs / dmgs.sum() * damages_dummy[name]
 
             dict0 = {
@@ -134,9 +120,7 @@ def test_run_benefit_analysis(test_db):
     benefit.cba()
 
     # Read results
-    results_path = (
-        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
-    )
+    results_path = test_db.output_path / "Benefits" / benefit.attrs.name
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 
@@ -166,12 +150,8 @@ def test_run_benefit_analysis(test_db):
 
 
 def test_run_CBA(test_db):
-    dbs = Database(test_database, "charleston")
-
     benefit_toml = (
-        test_database
-        / "charleston"
-        / "input"
+        test_db.input_path
         / "benefits"
         / "benefit_raise_properties_2050"
         / "benefit_raise_properties_2050.toml"
@@ -182,7 +162,7 @@ def test_run_CBA(test_db):
     benefit = Benefit.load_file(benefit_toml)
 
     # Create missing scenarios
-    dbs.create_benefit_scenarios(benefit)
+    test_db.create_benefit_scenarios(benefit)
 
     # Check that error is returned if not all runs are finished
     if not all(benefit.scenarios["scenario run"]):
@@ -200,13 +180,7 @@ def test_run_CBA(test_db):
 
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = (
-            test_database
-            / "charleston"
-            / "output"
-            / "Scenarios"
-            / row["scenario created"]
-        )
+        output_path = test_db.output_path / "Scenarios" / row["scenario created"]
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file
@@ -227,9 +201,7 @@ def test_run_CBA(test_db):
     benefit.cba()
 
     # Read results
-    results_path = (
-        test_database / "charleston" / "output" / "Benefits" / benefit.attrs.name
-    )
+    results_path = test_db.output_path / "Benefits" / benefit.attrs.name
     with open(results_path.joinpath("results.toml"), mode="rb") as fp:
         results = tomli.load(fp)
 

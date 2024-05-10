@@ -42,5 +42,8 @@ class Projection(IProjection):
 
     def save(self, filepath: Union[str, os.PathLike]):
         """save Projection to a toml file"""
+        if not os.path.exists(filepath):
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

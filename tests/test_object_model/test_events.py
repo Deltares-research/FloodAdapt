@@ -1,7 +1,6 @@
 import glob
 import os
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -35,18 +34,9 @@ from flood_adapt.object_model.site import (
     Site,
 )
 
-test_database = Path().absolute() / "tests" / "test_database"
-
 
 def test_get_template(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
 
     assert test_toml.is_file()
 
@@ -60,22 +50,10 @@ def test_get_template(test_db):
 
 
 def test_load_and_save_fromtoml_synthetic(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
 
     test_save_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft_test.toml"
+        test_db.input_path / "events" / "extreme12ft" / "extreme12ft_test.toml"
     )
 
     assert test_toml.is_file()
@@ -92,8 +70,8 @@ def test_load_and_save_fromtoml_synthetic(test_db):
     test_save_toml.unlink()  # added this to delete the file afterwards
 
 
-def test_load_from_toml_hurricane():
-    test_toml = test_database / "charleston" / "input" / "events" / "ETA" / "ETA.toml"
+def test_load_from_toml_hurricane(test_db):
+    test_toml = test_db.input_path / "events" / "ETA" / "ETA.toml"
 
     assert test_toml.is_file()
 
@@ -148,23 +126,11 @@ def test_load_from_toml_hurricane():
     # assert test_synthetic.attrs.river["constant_discharge"]["units"] == "cfs"
 
 
-def test_save_to_toml_hurricane():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+def test_save_to_toml_hurricane(test_db):
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
 
     test_save_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft_test.toml"
+        test_db.input_path / "events" / "extreme12ft" / "extreme12ft_test.toml"
     )
 
     assert test_toml.is_file()
@@ -184,20 +150,15 @@ def test_save_to_toml_hurricane():
 @pytest.mark.skip(reason="This right now takes ages to run! Check why!")
 def test_download_meteo(test_db):
     event_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "kingTideNov2021"
-        / "kingTideNov2021.toml"
+        test_db.input_path / "events" / "kingTideNov2021" / "kingTideNov2021.toml"
     )
 
     kingTide = HistoricalOffshore.load_file(event_toml)
 
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
 
     site = Site.load_file(site_toml)
-    path = test_database / "charleston" / "input" / "events" / "kingTideNov2021"
+    path = test_db.input_path / "events" / "kingTideNov2021"
     gfs_conus = kingTide.download_meteo(site=site, path=path)
 
     assert gfs_conus
@@ -223,26 +184,24 @@ def test_download_wl_timeseries(test_db):
     stop_time_str = "20230102 000000"
 
     wl_df = HistoricalNearshore.download_wl_data(
-        station_id, start_time_str, stop_time_str, units="feet"
+        station_id, start_time_str, stop_time_str, units="feet", file=None
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
     assert wl_df.iloc[:, 0].dtypes == "float64"
 
 
-def test_make_spw_file():
-    event_toml = (
-        test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml"
-    )
+def test_make_spw_file(test_db):
+    event_toml = test_db.input_path / "events" / "FLORENCE" / "FLORENCE.toml"
 
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
 
     FLORENCE.make_spw_file(
-        database_path=test_database.joinpath("charleston"),
+        database_path=test_db.input_path.parent,
         model_dir=event_toml.parent,
         site=site,
     )
@@ -254,17 +213,15 @@ def test_make_spw_file():
         os.remove(event_toml.parent.joinpath("hurricane.spw"))
 
 
-def test_translate_hurricane_track():
+def test_translate_hurricane_track(test_db):
     from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-    event_toml = (
-        test_database / "charleston" / "input" / "events" / "FLORENCE" / "FLORENCE.toml"
-    )
+    event_toml = test_db.input_path / "events" / "FLORENCE" / "FLORENCE.toml"
 
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
 
     tc = TropicalCyclone()
@@ -293,14 +250,7 @@ def test_translate_hurricane_track():
 
 
 def test_constant_rainfall(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -322,14 +272,7 @@ def test_constant_rainfall(test_db):
 
 
 def test_gaussian_rainfall(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -345,7 +288,7 @@ def test_gaussian_rainfall(test_db):
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
     # event.rain_ts.to_csv(
-    #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    #     (test_db.input_path / "events" / "extreme12ft" / "rain.csv")
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
@@ -354,14 +297,7 @@ def test_gaussian_rainfall(test_db):
 
 
 def test_block_rainfall(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -377,7 +313,7 @@ def test_block_rainfall(test_db):
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
     # event.rain_ts.to_csv(
-    #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    #     (test_db.input_path / "events" / "extreme12ft" / "rain.csv")
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
@@ -386,14 +322,7 @@ def test_block_rainfall(test_db):
 
 
 def test_triangle_rainfall(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -410,7 +339,7 @@ def test_triangle_rainfall(test_db):
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
     # event.rain_ts.to_csv(
-    #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    #     (test_db.input_path / "events" / "extreme12ft" / "rain.csv")
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
@@ -419,14 +348,7 @@ def test_triangle_rainfall(test_db):
 
 
 def test_scs_rainfall(test_db):
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -438,12 +360,12 @@ def test_scs_rainfall(test_db):
         shape_start_time=-24,
         shape_duration=6,
     )
-    scsfile = test_database / "charleston" / "static" / "scs" / "scs_rainfall.csv"
+    scsfile = test_db.static_path / "scs" / "scs_rainfall.csv"
     event.add_rainfall_ts(scsfile=scsfile, scstype="type_3")
     assert isinstance(event.rain_ts, pd.DataFrame)
     assert isinstance(event.rain_ts.index, pd.DatetimeIndex)
     # event.rain_ts.to_csv(
-    #     (test_database / "charleston" / "input" / "events" / "extreme12ft" / "rain.csv")
+    #     (test_db.input_path / "events" / "extreme12ft" / "rain.csv")
     # )
     dt = event.rain_ts.index.to_series().diff().dt.total_seconds().to_numpy()
     cum_rainfall_ts = np.sum(event.rain_ts.to_numpy().squeeze() * dt[1:].mean()) / 3600
@@ -451,15 +373,8 @@ def test_scs_rainfall(test_db):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-def test_constant_wind():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+def test_constant_wind(test_db):
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -475,15 +390,8 @@ def test_constant_wind():
     assert np.abs(event.wind_ts.to_numpy()[0][0] - 20) < 0.001
 
 
-def test_constant_discharge():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+def test_constant_discharge(test_db):
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -494,7 +402,7 @@ def test_constant_discharge():
             constant_discharge=UnitfulDischarge(value=2000.0, units="cfs"),
         )
     ]
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
     event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)
@@ -504,15 +412,8 @@ def test_constant_discharge():
     assert np.abs(event.dis_df.to_numpy()[0][0] - (const_dis)) < 0.001
 
 
-def test_gaussian_discharge():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+def test_gaussian_discharge(test_db):
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -527,7 +428,7 @@ def test_gaussian_discharge():
             shape_peak=UnitfulDischarge(value=10000, units="cfs"),
         )
     ]
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
     event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)
@@ -552,15 +453,8 @@ def test_gaussian_discharge():
     )
 
 
-def test_block_discharge():
-    test_toml = (
-        test_database
-        / "charleston"
-        / "input"
-        / "events"
-        / "extreme12ft"
-        / "extreme12ft.toml"
-    )
+def test_block_discharge(test_db):
+    test_toml = test_db.input_path / "events" / "extreme12ft" / "extreme12ft.toml"
     assert test_toml.is_file()
     template = Event.get_template(test_toml)
     # use event template to get the associated event child class
@@ -575,7 +469,7 @@ def test_block_discharge():
             shape_end_time=-20.0,
         )
     ]
-    site_toml = test_database / "charleston" / "static" / "site" / "site.toml"
+    site_toml = test_db.static_path / "site" / "site.toml"
     site = Site.load_file(site_toml)
     event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)

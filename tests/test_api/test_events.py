@@ -1,15 +1,10 @@
-from pathlib import Path
-
 import pytest
 
 import flood_adapt.api.events as api_events
-import flood_adapt.api.startup as api_startup
-
-test_database_path = Path().absolute() / "tests" / "test_database"
-test_site_name = "charleston"
 
 
-def test_synthetic_event(test_db):
+@pytest.fixture(scope="session")
+def test_dict():
     test_dict = {
         "name": "extreme12ft",
         "description": "extreme 12 foot event",
@@ -42,9 +37,10 @@ def test_synthetic_event(test_db):
             "shape_peak": {"value": 9.22, "units": "feet"},
         },
     }
-    # Initialize database object
-    database = api_startup.read_database(test_database_path, test_site_name)
+    return test_dict
 
+
+def test_synthetic_event(test_db, test_dict):
     # When user presses add event and chooses the events
     # the dictionary is returned and an Event object is created
     with pytest.raises(ValueError):
@@ -57,19 +53,19 @@ def test_synthetic_event(test_db):
 
     with pytest.raises(ValueError):
         # Assert error if name already exists
-        api_events.save_event_toml(event, database)
+        api_events.save_event_toml(event, test_db)
 
     # Change name to something new
     test_dict["name"] = "test1"
     event = api_events.create_synthetic_event(test_dict)
     # If the name is not used before the measure is save in the database
-    api_events.save_event_toml(event, database)
-    database.get_events()
+    api_events.save_event_toml(event, test_db)
+    test_db.events.list_objects()
 
     # Try to delete a measure which is already used in a scenario
     # with pytest.raises(ValueError):
     #    api_events.delete_measure("", database)
 
     # If user presses delete event the measure is deleted
-    api_events.delete_event("test1", database)
-    database.get_events()
+    api_events.delete_event("test1", test_db)
+    test_db.events.list_objects()

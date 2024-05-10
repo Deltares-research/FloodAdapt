@@ -33,4 +33,4 @@ class Site(ISite):
     def save(self, filepath: Union[str, os.PathLike]) -> None:
         """write toml file from model object"""
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(), f)
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)

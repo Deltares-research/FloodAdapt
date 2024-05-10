@@ -2,13 +2,13 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ScenarioModel(BaseModel):
     """BaseModel describing the expected variables and data types of a scenario"""
 
-    name: str
+    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
     event: str
     projection: str
