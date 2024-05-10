@@ -8,6 +8,7 @@ from urllib.request import urlretrieve
 
 import click
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import rioxarray as rxr
 import tomli
@@ -23,7 +24,6 @@ from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.startup import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.object_model.interface.site import (
-    EquityModel,
     Obs_pointModel,
     RiverModel,
     UnitfulDischarge,
@@ -78,10 +78,6 @@ class SpatialJoinModel(BaseModel):
     name: Optional[str] = None
     file: str
     field_name: str
-
-
-class AggregationModel(SpatialJoinModel):
-    equity: Optional[EquityModel] = None
 
 
 class UnitSystems(str, Enum):
@@ -173,7 +169,6 @@ class ConfigModel(BaseModel):
     gui: GuiModel
     building_footprints: Optional[SpatialJoinModel] = None
     bfe: Optional[SpatialJoinModel] = None
-    aggregation: list[AggregationModel]
     svi: Optional[SpatialJoinModel] = None
     road_width: Optional[float] = 2.5  # in meters
     cyclone_basin: Optional[Basins] = None
@@ -217,6 +212,7 @@ def spatial_join(
     layer: Union[str, gpd.GeoDataFrame],
     field_name: str,
     rename: Optional[str] = None,
+    filter: Optional[bool] = False,
 ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
     Performs a spatial join between two GeoDataFrames.
@@ -237,6 +233,10 @@ def spatial_join(
     layer = layer[[field_name, "geometry"]]
     # Spatial join of the layers
     objects_joined = objects.sjoin(layer)
+    # if needed filter out unused objects in the layer
+    if filter:
+        layer_inds = objects_joined["index_right"].dropna().unique()
+        layer = layer.iloc[np.sort(layer_inds)].reset_index(drop=True)
     objects_joined = objects_joined[["Object ID", field_name]]
     # rename field if provided
     if rename:
@@ -266,7 +266,7 @@ class Database:
 
         self.logger = logger(root.joinpath("floodadapt_builder.log"))
 
-        self.logger.info(f"Initializing a FloodAdapt database in '{root}'")
+        self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
         self.site_attrs = {"name": config.name, "description": config.description}
         self.static_path = self.root.joinpath("static")
@@ -382,7 +382,7 @@ class Database:
             # TODO can we use hydromt-FIAT?
             rel_path = Path(
                 "templates/fiat/footprints/footprints.gpkg"
-            )  # default location for footprints
+            )  # default location for footprints #TODO how to define this?
             check_file = self.static_path.joinpath(
                 rel_path
             ).exists()  # check if file exists
@@ -406,8 +406,37 @@ class Database:
                     f"Using the footprints located at {self.static_path.joinpath(rel_path).resolve()}"
                 )
         else:
-            # TODO allow for user providing a vector of footprints and do spatial join here
-            raise NotImplementedError
+            self.logger.info(
+                f"Using building footprints from {self.config.building_footprints.file}."
+            )
+            # Spatially join buildings and map
+            buildings_joined, building_footprints = spatial_join(
+                buildings,
+                self.config.building_footprints.file,
+                self.config.building_footprints.field_name,
+                rename="BF_FID",
+                filter=True,
+            )
+            # Make sure in case of multiple values that the first is kept
+            buildings_joined = (
+                buildings_joined.groupby("Object ID")
+                .first()
+                .sort_values(by=["Object ID"])
+            )
+            # Create folder
+            bf_folder = Path(self.fiat_model.root).joinpath(
+                "exposure", "building_footprints"
+            )
+            bf_folder.mkdir()
+            # Save the spatial file for future use
+            geo_path = bf_folder.joinpath("building_footprints.gpkg")
+            building_footprints.to_file(geo_path)
+            # Save site attributes
+            rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
+            self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
+            self.logger.info(
+                f"Building footprints saved at {self.static_path.joinpath(rel_path).resolve().as_posix()}"
+            )
 
         # TODO check how this naming of output geoms should become more explicit!
         self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
@@ -456,9 +485,8 @@ class Database:
             )
 
         # Read aggregation areas
-        # TODO can we use hydromt-FIAT?
         self.site_attrs["fiat"]["aggregation"] = []
-        for aggr in self.config.aggregation:
+        for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
             # Make sure paths are correct
             aggr.file = str(
                 self.static_path.joinpath("templates", "fiat", aggr.file)
@@ -474,7 +502,7 @@ class Database:
 
         # Read SVI
         if self.config.svi:
-            # TODO can we use hydromt-FIAT?
+            # TODO is the SVI a mandatory input for FA? And how do we expect to get it? From CDC?
             buildings_joined, svi = spatial_join(
                 buildings,
                 self.config.svi.file,
@@ -1023,7 +1051,7 @@ def main(config_path):
     Returns:
         None
     """
-    print(f"Read FloodAdapt building configuration from {config_path}")
+    print(f"Read FloodAdapt building configuration from {Path(config_path).as_posix()}")
     config = read_config(config_path)
     if not config.database_path:
         config.database_path = str(Path(config_path).parent)
@@ -1048,6 +1076,7 @@ def main(config_path):
     dbs.save_site_config()
     dbs.add_infometrics()
     dbs.create_standard_objects()
+    dbs.logger.info("FloodAdapt database creation finished!")
 
 
 if __name__ == "__main__":
