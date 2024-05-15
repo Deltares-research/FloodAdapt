@@ -2,9 +2,8 @@ import gc
 import subprocess
 from pathlib import Path
 
-import pytest
-
 import flood_adapt.config as FloodAdapt_config
+import pytest
 from flood_adapt.api.startup import read_database
 
 
@@ -63,6 +62,8 @@ def make_db_fixture(scope, clean=True):
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
+    CICD = True
+
     # Set required environment variables to run FloodAdapt
     database_root = str(Path(__file__).parent.parent.parent / "Database")
     system_folder = f"{database_root}/system"
@@ -80,10 +81,11 @@ def make_db_fixture(scope, clean=True):
     @pytest.fixture(scope=scope)
     def _db_fixture(clean=clean):
         # Update the database to the latest revision
-        subprocess.run(
-            ["svn", "update", database_path / database_name],
-            capture_output=True,
-        )
+        if not CICD:
+            subprocess.run(
+                ["svn", "update", database_path / database_name],
+                capture_output=True,
+            )
         # Initialize database controller
         dbs = read_database(database_path, database_name)
 
@@ -93,7 +95,7 @@ def make_db_fixture(scope, clean=True):
         # Close all dangling connections
         gc.collect()
 
-        if clean:
+        if clean and not CICD:
             # Reset versioned files to the latest revision
             subprocess.run(
                 ["svn", "revert", "-R", database_path / database_name],
