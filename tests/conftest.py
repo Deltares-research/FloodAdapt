@@ -115,7 +115,6 @@ def make_db_fixture(scope, clean=True):
     return _db_fixture
 
 
-# test
 # NOTE: to access the contents the fixtures in the test functions,
 # the fixture name needs to be passed as an argument to the test function.
 # the first line of your test needs to initialize the yielded variables:
