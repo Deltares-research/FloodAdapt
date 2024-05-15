@@ -119,7 +119,7 @@ def make_db_fixture(scope, clean=True):
 # the fixture name needs to be passed as an argument to the test function.
 # the first line of your test needs to initialize the yielded variables:
 # 'dbs = test_db_...'
-#
+
 
 test_db = make_db_fixture("function")
 test_db_class = make_db_fixture("class")
