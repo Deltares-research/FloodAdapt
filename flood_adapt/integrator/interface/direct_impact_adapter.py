@@ -3,13 +3,19 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 from flood_adapt.object_model.interface.measures import IBuyout, IElevate, IFloodProof
+from flood_adapt.object_model.interface.site import DirectImpactsModel
 
 
-class DirectImpactAdapter(ABC):
+class DirectImpactsAdapter(ABC):
     """Class holding the attributes and methods that a Direct Impact model can be connected to FloodAdapt.
     This includes pre-processing the model (w.r.t. projections, strategies and events), running the model,
     post-processing the model, and reading the results.
     """
+
+    name: str
+    template_model_root: Path
+    model_path: Path
+    config: DirectImpactsModel
 
     def __init__(self):
         pass

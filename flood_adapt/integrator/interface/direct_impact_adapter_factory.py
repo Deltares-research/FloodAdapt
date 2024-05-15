@@ -1,4 +1,4 @@
-from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactAdapter
+from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
 
 
 class DirectImpactAdapterFactory:
@@ -12,7 +12,7 @@ class DirectImpactAdapterFactory:
     """
 
     @staticmethod
-    def get_adapter(model: str) -> DirectImpactAdapter:
+    def get_adapter(model: str) -> DirectImpactsAdapter:
         if model == "fiat":
             from flood_adapt.integrator.fiat_adapter import FiatAdapter
 

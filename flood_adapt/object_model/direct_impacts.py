@@ -15,7 +15,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-from flood_adapt.integrator.fiat_adapter import FiatAdapter
+from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
 from flood_adapt.integrator.interface.direct_impact_adapter_factory import (
     DirectImpactAdapterFactory,
 )
@@ -42,7 +42,7 @@ class DirectImpacts:
     impact_strategy: ImpactStrategy
     hazard: Hazard
     has_run: bool = False
-    adapter: FiatAdapter  # This should be a Interface
+    adapter: DirectImpactsAdapter  # This should be a Interface
 
     def __init__(
         self, scenario: ScenarioModel, database_input_path: Path, results_path: Path

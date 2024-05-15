@@ -5,6 +5,8 @@ from typing import Any, List, Optional, Union
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
+import flood_adapt.config as FloodAdapt_config
+from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.measures import (
@@ -18,7 +20,7 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.utils import cd
 
 
-class FiatAdapter:
+class FiatAdapter(DirectImpactsAdapter):
     """Class holding all the attributes of the template fiat model and
     the methods to adjust it according to the projection and strategy
     attributes.
@@ -27,7 +29,6 @@ class FiatAdapter:
     name = "Delft-FIAT"
     template_model_root: Path
     model_path: Path
-    exec_path: Path
     config: DirectImpactsModel
 
     def __init__(
@@ -39,7 +40,6 @@ class FiatAdapter:
     ) -> None:
         """Loads FIAT model based on a root directory."""
         self.template_model_root = Path(database_path) / "static" / "templates" / "fiat"
-        self.exec_path = Path(database_path).parents[1] / "system" / "fiat" / "fiat.exe"
         self.model_path = Path(impacts_path).joinpath("fiat")
         self.config = config
         self.site = site
@@ -140,7 +140,7 @@ class FiatAdapter:
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
-        self.fiat_model.setup_hazard(
+        self.model.setup_hazard(
             map_fn=map_fn,
             map_type=map_type,
             rp=None,
@@ -417,8 +417,25 @@ class FiatAdapter:
             vulnerability=self.model.vulnerability,
         )
 
-    def run(self):
-        fiat_exec = str(self.exec_path)
+    def run(self) -> int:
+        """
+        Runs the FIAT model.
+
+        Raises:
+            ValueError: If the SYSTEM_FOLDER environment variable is not set.
+
+        Returns:
+            int: The return code of the process.
+        """
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
+        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+
         with cd(self.model_path):
             with open(self.model_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
@@ -428,4 +445,4 @@ class FiatAdapter:
                     shell=True,
                 )
 
-            return process.returncode
+        return process.returncode
