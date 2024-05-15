@@ -62,9 +62,9 @@ class Database(IDatabase):
             The name of the database.
         Notes
         """
-        self.input_path = Path(database_path / database_name / "input")
-        self.static_path = Path(database_path / database_name / "static")
-        self.output_path = Path(database_path / database_name / "output")
+        self.input_path = Path(database_path) / database_name / "input"
+        self.static_path = Path(database_path) / database_name / "static"
+        self.output_path = Path(database_path) / database_name / "output"
 
         self.site = Site.load_file(self.static_path / "site" / "site.toml")
         self.aggr_areas = self.get_aggregation_areas()

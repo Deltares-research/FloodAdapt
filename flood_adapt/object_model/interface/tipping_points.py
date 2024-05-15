@@ -42,7 +42,7 @@ class TipPointModel(BaseModel):
     event_set: str
     projection: str
     sealevelrise: list[float] # could be a numpy array too
-    tipping_point: dict[TippingPointMetrics, float]
+    tipping_point_metric: dict[TippingPointMetrics, float]
 
 
 class ITipPoint(ABC):
@@ -60,7 +60,7 @@ class ITipPoint(ABC):
 
     @staticmethod #copping from benefits.py
     @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(data: dict[str, Any]):
         """get Tipping Point attributes from an object, e.g. when initialized from GUI"""
         ...
 
