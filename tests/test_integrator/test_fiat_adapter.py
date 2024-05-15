@@ -245,6 +245,17 @@ def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
         )
     )
 
+    assert all(
+        height + elev
+        >= test_scenario.direct_impacts.impact_strategy.measures[
+            0
+        ].attrs.elevation.value
+        for height, elev in zip(
+            exposure_scenario.loc[inds2, "Ground Floor Height"],
+            exposure_scenario.loc[inds2, "Ground Elevation"],
+        )
+    )
+
 
 def test_fiat_return_periods(test_tomls):
     test_toml = test_tomls["current_test_set_no_measures.toml"]

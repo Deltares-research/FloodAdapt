@@ -64,12 +64,8 @@ class Scenario(IScenario):
     def run(self):
         """run direct impact models for the scenario"""
         self.init_object_model()
-        # start log file in scenario results folder
-        for parent in reversed(self.results_path.parents):
-            if not parent.exists():
-                os.mkdir(parent)
-        if not self.results_path.exists():
-            os.mkdir(self.results_path)
+        os.makedirs(self.results_path, exist_ok=True)
+
         # Initiate the logger for all the integrator scripts.
         self.initiate_root_logger(
             self.results_path.joinpath(f"logfile_{self.attrs.name}.log")

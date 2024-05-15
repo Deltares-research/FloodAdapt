@@ -4,6 +4,7 @@ on:
   release:
     types:
       - published
+  workflow_dispatch:
 
 jobs:
   build-artifacts:
@@ -59,7 +60,6 @@ jobs:
 
   upload-to-pypi:
     needs: test-built-dist
-    if: ${{ github.event_name == 'release' && !github.event.act  }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3

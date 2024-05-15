@@ -19,11 +19,11 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 def get_measures(database: IDatabase) -> dict[str, Any]:
-    return database.get_measures()
+    return database.measures.list_objects()
 
 
 def get_measure(name: str, database: IDatabase) -> IMeasure:
-    return database.get_measure(name)
+    return database.measures.get(name)
 
 
 def create_measure(
@@ -64,21 +64,21 @@ def create_measure(
 
 
 def save_measure(measure: IMeasure, database: IDatabase) -> None:
-    database.save_measure(measure)
+    database.measures.save(measure)
 
 
 def edit_measure(measure: IMeasure, database: IDatabase) -> None:
-    database.edit_measure(measure)
+    database.measures.edit(measure)
 
 
 def delete_measure(name: str, database: IDatabase) -> None:
-    database.delete_measure(name)
+    database.measures.delete(name)
 
 
 def copy_measure(
     old_name: str, database: IDatabase, new_name: str, new_description: str
 ) -> None:
-    database.copy_measure(old_name, new_name, new_description)
+    database.measures.copy(old_name, new_name, new_description)
 
 
 # Green infrastructure

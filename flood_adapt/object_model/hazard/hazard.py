@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import xarray as xr
+from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
@@ -63,16 +64,13 @@ class Hazard:
         self.name = scenario.name
         self.results_dir = results_dir
         self.database_input_path = database_input_path
-        self.set_event(
-            scenario.event
-        )  # also setting the mode (single_event or risk here)
+        self.event_name = scenario.event
+        self.set_event()  # also setting the mode (single_event or risk here)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
         self.site = Site.load_file(
             database_input_path.parent / "static" / "site" / "site.toml"
         )
-        self.set_simulation_paths()
-
         self.has_run = self.has_run_check()
 
     @property
@@ -176,20 +174,24 @@ class Hazard:
             test_combined = (test1) & (test2)
         return test_combined
 
-    def set_event(self, event: str) -> None:
+    def set_event(self) -> None:
         """Sets the actual Event template class list using the list of measure names
         Args:
             event_name (str): name of event used in scenario
         """
-        event_set_path = (
-            self.database_input_path / "events" / event / "{}.toml".format(event)
+        self.event_set_path = (
+            self.database_input_path
+            / "events"
+            / self.event_name
+            / "{}.toml".format(self.event_name)
         )
         # set mode (probabilistic_set or single_event)
-        self.event_mode = Event.get_mode(event_set_path)
-        self.event_set = EventSet.load_file(event_set_path)
+        self.event_mode = Event.get_mode(self.event_set_path)
+        self.event_set = EventSet.load_file(self.event_set_path)
 
+    def _set_event_objects(self) -> None:
         if self._mode == Mode.single_event:
-            self.event_set.event_paths = [event_set_path]
+            self.event_set.event_paths = [self.event_set_path]
             self.probabilities = [1]
 
         elif self._mode == Mode.risk:
@@ -200,7 +202,7 @@ class Hazard:
                 event_path = (
                     self.database_input_path
                     / "events"
-                    / event
+                    / self.event_name
                     / subevent
                     / "{}.toml".format(subevent)
                 )
@@ -337,6 +339,8 @@ class Hazard:
     def preprocess_sfincs(
         self,
     ):
+        self._set_event_objects()
+        self.set_simulation_paths()
         base_path = self.database_input_path.parent
         path_in = base_path.joinpath(
             "static", "templates", self.site.attrs.sfincs.overland_model
@@ -820,27 +824,34 @@ class Hazard:
                             )
                         else:
                             file = None
-                        df_gauge = HistoricalNearshore.download_wl_data(
-                            station_id=self.site.attrs.obs_point[ii].ID,
-                            start_time_str=self.event.attrs.time.start_time,
-                            stop_time_str=self.event.attrs.time.end_time,
-                            units=UnitTypesLength(gui_units),
-                            file=file,
-                        )
 
-                        fig.add_trace(
-                            go.Scatter(
-                                x=pd.DatetimeIndex(df_gauge.index),
-                                y=df_gauge[1]
-                                + self.site.attrs.water_level.msl.height.convert(
-                                    gui_units
-                                ),
-                                line_color="#ea6404",
+                        try:
+                            df_gauge = HistoricalNearshore.download_wl_data(
+                                station_id=self.site.attrs.obs_point[ii].ID,
+                                start_time_str=self.event.attrs.time.start_time,
+                                stop_time_str=self.event.attrs.time.end_time,
+                                units=UnitTypesLength(gui_units),
+                                file=file,
                             )
-                        )
-                        fig["data"][0]["name"] = "model"
-                        fig["data"][1]["name"] = "measurement"
-                        fig.update_layout(showlegend=True)
+                        except COOPSAPIError as e:
+                            logging.warning(
+                                f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
+                            )
+                        else:
+                            # If data is available, add to plot
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=pd.DatetimeIndex(df_gauge.index),
+                                    y=df_gauge[1]
+                                    + self.site.attrs.water_level.msl.height.convert(
+                                        gui_units
+                                    ),
+                                    line_color="#ea6404",
+                                )
+                            )
+                            fig["data"][0]["name"] = "model"
+                            fig["data"][1]["name"] = "measurement"
+                            fig.update_layout(showlegend=True)
 
                 # write html to results folder
                 station_name = gdf.iloc[ii]["Name"]
@@ -876,6 +887,8 @@ class Hazard:
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
             return NotImplemented
+        self._set_event_objects()
+        other._set_event_objects()
         test1 = self.event_list == other.event_list
         test2 = self.physical_projection == other.physical_projection
         test3 = self.hazard_strategy == other.hazard_strategy
