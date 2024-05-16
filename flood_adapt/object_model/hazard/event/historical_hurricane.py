@@ -114,6 +114,11 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             or self.attrs.hurricane_translation.northsouth_translation.value != 0
         ):
             tc = self.translate_tc_track(tc=tc, site=site)
+        
+        if self.attrs.rainfall.source == "track":
+            tc.include_rainfall = True
+        else:
+            tc.include_rainfall = False
 
         # Location of spw file
         filename = "hurricane.spw"
