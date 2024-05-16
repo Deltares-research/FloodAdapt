@@ -15,7 +15,7 @@ from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from flood_adapt.object_model.interface.tipping_points import TipPointModel, ITipPoint, TippingPointStatus
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
-
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.api.startup import read_database
 
 
@@ -66,83 +66,109 @@ class TippingPoint(ITipPoint):
         )
 
         # save a baseline folder for the scenarios
-        # create an if condition for the case where self.attrs.name does not exist in the scenarios folder
         if not (self.database_input_path / "scenarios" / self.attrs.name).exists():
             (self.database_input_path / "scenarios" / self.attrs.name).mkdir()
-        self.save(
-                    self.database_input_path
+        self.save(self.database_input_path
                     / "scenarios"
                     / self.attrs.name
-                    / f"{self.attrs.name}.toml"
-                )
-
+                    / f"{self.attrs.name}.toml")
+        return self
+    
+    def slr_projections(self, slr):      
+        """Create projections for sea level rise value"""  
+        new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
+        proj = database.projections.get(self.attrs.projection)
+        proj.attrs.physical_projection.sea_level_rise=UnitfulLength(value=slr, units=UnitTypesLength.meters)
+        proj.save(self.database_input_path / "projections" / new_projection_name/ (new_projection_name+".toml"))
         return self
 
-    def create_slr_scenarios(self):
+    def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value"""
         self.init_object_model()
-        #TODO: commenting out because now we are creating all scenarios
+        #TODO: commenting out because now we are creating all scenarios, check it later to see how we deal with redundant scenarios
         # self.check_scenarios()
         # self.has_run = self.has_run_check()
         # create projections based on SLR values
-        # for scenario in 
+        for slr in self.attrs.sealevelrise:
+            self.slr_projections(slr)
 
-        proj = database.get_projection(self.attrs.projection)
-        database.copy_projection(self.attrs.projection, self.attrs.projection + "_slr", " ")
-        database.edit_projection(new_projection, sea_level_rise = slr)
-        
-        # new_projection.attrs.physical_projection.sea_level_rise
-
-        # create list of scenarios for each sea level rise value
+        # crete scenarios for each SLR value          
         scenarios = {
-            f"slr_{slr}": {
-                "name": f"slr_{slr}", 
+            f"slr_" + str(slr).replace(".", ""): {
+                "name": f"slr_" + str(slr).replace(".", ""), 
                 "event": self.attrs.event_set,
-                "projection": self.attrs.projection + "_slr" + str(slr),
+                # get a string from slr removing the dot
+                "projection": self.attrs.projection + "_slr" + str(slr).replace(".", ""),
                 "strategy": self.attrs.strategy,
-                "slr": slr,
             }
             for slr in self.attrs.sealevelrise
         }
-        
+        self.scenarios_dict = scenarios
+
         # create subdirectories for each scenario and .toml files
         for scenario in scenarios.keys():
             if not (self.database_input_path / "scenarios" / self.attrs.name / scenario).exists():
                 (self.database_input_path / "scenarios" / self.attrs.name / scenario).mkdir()
+
             scenario_obj = Scenario.load_dict(scenarios[scenario], self.database_input_path)
+            scenario_obj.save(self.database_input_path / 
+                              "scenarios" / 
+                              self.attrs.name / 
+                              scenario / 
+                              f"{scenario}.toml")
 
-# copy the projection and edit the sea level rise
-            new_projection = database.get_projection(scenario_obj.attrs.projection)
+    def run_tp_scenarios(self):
+        for scenario in self.scenarios_dict.keys():
+            scenario_obj = Scenario.load_dict(self.scenarios_dict[scenario], self.database_input_path)
+            scenario_obj.run()
+
+            # if the status is reached, save the SLR and the metric value
+            if self.check_tipping_point(scenario_obj):
+                self.attrs.status = TippingPointStatus.reached
+                self.scenarios_dict[scenario]['tipping point reached'] = "Yes"
+                break
+            else:
+                self.attrs.status = TippingPointStatus.not_reached
+                self.scenarios_dict[scenario]['tipping point reached'] = "No"
+
+        # Save results
+        # If path for results does not yet exist, make it
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
+        # else:
+        #     shutil.rmtree(self.results_path)
+        #     self.results_path.mkdir(parents=True)
+        
+        tp_path = self.results_path.joinpath("tipping_point_results.csv")
+        # save self.scenarios_dict to a csv file in tp_path
+        pd.DataFrame(self.scenarios_dict).T.to_csv(tp_path)
+
+    def check_tipping_point(self, scenario: Scenario):
+        """Check if the tipping point is reached"""
+        # get the impact value for the selected metric as result of the simulation
+        self.load_impact_metric(scenario.direct_impacts)
+
+        if scenario.direct_impacts.impact_values > scenario.direct_impacts.tp_value:
+            print("Tipping point reached")
+            return True
+        else:
+            return False
+        
+    def load_impact_metric(self, scenario_di):
+        """Load the metric value from the results of the scenarios"""
+        tp_key, tp_value = next(iter(self.attrs.tipping_point_metric.items()))
+
+        info_df = pd.read_csv(scenario_di.results_path.joinpath(f"Infometrics_{scenario_di.name}.csv"),
+                              index_col=0)
+        impact_values = info_df.loc[tp_key, "Value"]
+        
+        scenario_di.tp_key = tp_key
+        scenario_di.tp_value = tp_value
+        scenario_di.impact_values = impact_values
+        return self
 
 
-
-            scenario_obj.save(
-                self.database_input_path / "scenarios" / self.attrs.name / scenario / f"{scenario}.toml"
-            )
-
-
-        #If scenario has run, you don't need to run it again
-        if not scenario.attrs['scenario run']: 
-            scens = self.scenarios[~self.scenarios["scenario run"]]
-            for scen in scens:
-                scenario = Scenario.load_file(scen)
-                scenario.run()
-
-                # if the status is reached, save the SLR and the metric value
-                if self.check_tipping_point():
-                    self.attrs.status = TippingPointStatus.reached
-                    break
-                else:
-                    self.attrs.status = TippingPointStatus.not_reached 
-
-
-                # Save results
-                # If path for results does not yet exist, make it
-                if not self.results_path.is_dir():
-                    self.results_path.mkdir(parents=True)
-                else:
-                    shutil.rmtree(self.results_path)
-                    self.results_path.mkdir(parents=True)
+# FUNCTIONS THAT ARE STILL NOT IMPLEMENTED
     
     def has_run_check(self):
         """Check if the tipping point analysis has already been run"""
@@ -214,29 +240,6 @@ class TippingPoint(ITipPoint):
         )
         return self.scenarios
     
-    def check_tipping_point(self, scenario: Scenario):
-        """Check if the tipping point is reached"""
-        # get the metric value
-        metric_value = scenario.direct_impacts.metrics[self.attrs.tipping_point["metric_name"]]
-        if metric_value > self.attrs.tipping_point["metric_value"]:
-            print("Tipping point reached")
-            return True
-        else:
-            return False
-        
-    def tipping_point_reached(self):
-        #TODO: Check with Luuk
-        # function to tell if tipping point was reached or not.
-        # if all scenarios have been run, check if tipping point is reached
-        # if reached, save the SLR and the metric value
-        for scenario in self.scenarios["scenario created"]:    
-            if self.check_tipping_point(scenario):
-                self.attrs.status = TippingPointStatus.reached
-                break
-            else:
-                self.attrs.status = TippingPointStatus.not_reached    
-        return self.attrs.status
-
 
 
 
@@ -279,19 +282,20 @@ if __name__ == "__main__":
     tp_dict = {
         "name": "tipping_point_test",
         "description": "",
-        "event_set": "test_set",
+        "event_set": "extreme12ft",
         "strategy": "no_measures",
         "projection": "current",
         "sealevelrise": [0.5, 1.0, 1.5],
-        "tipping_point_metric": {"houses_flooded": 500},
+        "tipping_point_metric": {"FloodedAll": 34195.0}
     }
     
     test_point = TippingPoint.load_dict(tp_dict, database.input_path) 
 
-    test_point.create_slr_scenarios()
+    test_point.create_tp_scenarios()
 
-    test_projection = database.get_projection(tp_dict['projection'])
-    
+    test_point.run_tp_scenarios()
+
+    test_point
    
 # one base scenario for the tipping points
                 # create a list of tipping point scenarios

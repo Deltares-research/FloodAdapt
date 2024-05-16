@@ -10,18 +10,37 @@ from pydantic import BaseModel
 
 class TippingPointMetrics(str, Enum):
     """class describing the accepted input for the variable metric_type in TippingPoint"""
-    population_exposed = "population_exposed"
-    houses_flooded = "houses_flooded"
-    critical_facilities_flooded = "critical_facilities_flooded"
-    economic_loss = "economic_loss"
-    agricultural_loss = "agricultural_loss"
-    social_loss = "social_loss"
-    environmental_loss = "environmental_loss"
-    population_displaced = "population_displaced"
-    population_affected = "population_affected"
-    population_evacuated = "population_evacuated"
-    population_in_shelters = "population_in_shelters"
-    population_needs_assistance = "population_needs_assistance"
+    # based on what I have found in floodadapt - but can be changed
+    FloodedAll = "FloodedAll"
+    FloodedLowVulnerability = "FloodedLowVulnerability"
+    FloodedHighVulnerability = "FloodedHighVulnerability"
+    TotalDamageEvent = "TotalDamageEvent"
+    TotalResDamageEvent = "TotalResDamageEvent"
+    ResidentialMinorCount = "ResidentialMinorCount"
+    ResidentialMajorCount = "ResidentialMajorCount"
+    ResidentialDestroyedCount = "ResidentialDestroyedCount"
+    CommercialCount = "CommercialCount"
+    CommercialMinorCount = "CommercialMinorCount"
+    CommercialMajorCount = "CommercialMajorCount"
+    CommercialDestroyedCount = "CommercialDestroyedCount"
+    HealthCount = "HealthCount"
+    HealthMinorCount = "HealthMinorCount"
+    HealthMajorCount = "HealthMajorCount"
+    HealthDestroyedCount = "HealthDestroyedCount"
+    SchoolsCount = "SchoolsCount"
+    SchoolsMinorCount = "SchoolsMinorCount"
+    SchoolsMajorCount = "SchoolsMajorCount"
+    SchoolsDestroyedCount = "SchoolsDestroyedCount"
+    EmergencyCount = "EmergencyCount"
+    EmergencyMinorCount = "EmergencyMinorCount"
+    EmergencyMajorCount = "EmergencyMajorCount"
+    EmergencyDestroyedCount = "EmergencyDestroyedCount"
+    DisplacedLowVulnerability = "DisplacedLowVulnerability"
+    DisplacedHighVulnerability = "DisplacedHighVulnerability"
+    SlightlyFloodedRoads = "SlightlyFloodedRoads"
+    MinorFloodedRoads = "MinorFloodedRoads"
+    MajorFloodedRoads = "MajorFloodedRoads"
+    FullyFloodedRoads = "FullyFloodedRoads"
 
 class TippingPointStatus(str, Enum):
     """class describing the accepted input for the variable metric_type in TippingPoint"""
@@ -43,6 +62,7 @@ class TipPointModel(BaseModel):
     projection: str
     sealevelrise: list[float] # could be a numpy array too
     tipping_point_metric: dict[TippingPointMetrics, float]
+    status: Optional[TippingPointStatus] = TippingPointStatus.not_reached
 
 
 class ITipPoint(ABC):
