@@ -51,21 +51,20 @@ class TippingPoint(ITipPoint):
     database_input_path: Union[str, os.PathLike]
 
     def __init__(self, database_input_path: Union[str, os.PathLike]):
-        """Initiation function called when object is created through the file or dict options"""
+        """Initiation function when object is created through file or dict options"""
         self.database_input_path = Path(database_input_path)
-        
         self.site_toml_path = (
             Path(database_input_path).parent / "static" / "site" / "site.toml"
         )
     
     def init_object_model(self):
-        """Create an input folder for the tipping point"""
+        """Create input and output folders for the tipping point"""
         
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Scenarios", self.attrs.name
         )
 
-        # save a baseline folder for the scenarios
+        # create an input baseline folder for the scenarios
         if not (self.database_input_path / "scenarios" / self.attrs.name).exists():
             (self.database_input_path / "scenarios" / self.attrs.name).mkdir()
         self.save(self.database_input_path
@@ -131,17 +130,13 @@ class TippingPoint(ITipPoint):
                 self.attrs.status = TippingPointStatus.not_reached
                 self.scenarios_dict[scenario]['tipping point reached'] = "No"
 
-        # Save results
-        # If path for results does not yet exist, make it
+        # Save results - make directory if it doesn't exist
         if not self.results_path.is_dir():
             self.results_path.mkdir(parents=True)
-        # else:
-        #     shutil.rmtree(self.results_path)
-        #     self.results_path.mkdir(parents=True)
-        
-        tp_path = self.results_path.joinpath("tipping_point_results.csv")
-        # save self.scenarios_dict to a csv file in tp_path
-        pd.DataFrame(self.scenarios_dict).T.to_csv(tp_path)
+
+        tp_path = self.results_path.joinpath(f"tipping_point_results_{self.attrs.name}.csv")
+        tp_results = pd.DataFrame.from_dict(self.scenarios_dict, orient='index').reset_index(drop=True)
+        tp_results.to_csv(tp_path)
 
     def check_tipping_point(self, scenario: Scenario):
         """Check if the tipping point is reached"""
@@ -168,7 +163,7 @@ class TippingPoint(ITipPoint):
         return self
 
 
-# FUNCTIONS THAT ARE STILL NOT IMPLEMENTED
+# FUNCTIONS THAT ARE STILL NOT IMPLEMENTED - from benefits
     
     def has_run_check(self):
         """Check if the tipping point analysis has already been run"""
@@ -240,9 +235,7 @@ class TippingPoint(ITipPoint):
         )
         return self.scenarios
     
-
-
-
+# standard functions
     def load_file(filepath: Union[str, Path], database_input_path: Union[str, os.PathLike]) -> "TippingPoint":
         """create risk event from toml file"""
 
@@ -288,14 +281,13 @@ if __name__ == "__main__":
         "sealevelrise": [0.5, 1.0, 1.5],
         "tipping_point_metric": {"FloodedAll": 34195.0}
     }
-    
+    # load
     test_point = TippingPoint.load_dict(tp_dict, database.input_path) 
-
+    # create scenarios for tipping points
     test_point.create_tp_scenarios()
-
+    # run all scenarios
     test_point.run_tp_scenarios()
 
-    test_point
    
 # one base scenario for the tipping points
                 # create a list of tipping point scenarios
