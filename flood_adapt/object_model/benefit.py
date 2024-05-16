@@ -504,7 +504,7 @@ class Benefit(IBenefit):
         obj = Benefit()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = BenefitModel.parse_obj(toml)
+        obj.attrs = BenefitModel.model_validate(toml)  # Replace parse_obj with model_validate
         # if benefits is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         obj.init()
@@ -515,7 +515,7 @@ class Benefit(IBenefit):
         """create Benefit object from dictionary, e.g. when initialized from GUI"""
 
         obj = Benefit()
-        obj.attrs = BenefitModel.parse_obj(data)
+        obj.attrs = BenefitModel.model_validate(data)
         obj.database_input_path = Path(database_input_path)
         obj.init()
         return obj
@@ -523,4 +523,4 @@ class Benefit(IBenefit):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Benefit object to a toml file"""
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.model_dump(self.attrs, f, exclude_none=True)

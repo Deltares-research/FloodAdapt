@@ -249,13 +249,13 @@ class TippingPoint(ITipPoint):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Scenario to a toml file"""
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.model_dump(self.attrs, f, exclude_none=True)
             
     def __eq__(self, other):
         if not isinstance(other, TippingPoint):
             # don't attempt to compare against unrelated types
             raise NotImplementedError
-        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
+        attrs_1, attrs_2 = self.attrs.model_copy(), other.attrs.model_copy()
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
         attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
         return attrs_1 == attrs_2
