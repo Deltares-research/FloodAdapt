@@ -14,7 +14,6 @@ from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.tipping_points import TipPointModel, ITipPoint, TippingPointStatus
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.api.startup import read_database
 
@@ -134,29 +133,26 @@ class TippingPoint(ITipPoint):
 
     def check_tipping_point(self, scenario: Scenario):
         """Check if the tipping point is reached"""
-        # get the impact value for the selected metric as result of the simulation
-        self.load_impact_metric(scenario.direct_impacts)
+        tp_key = self.attrs.tipping_point_metric.keys()
+        tp_value = self.attrs.tipping_point_metric[tp_key.value]
 
-        if scenario.direct_impacts.impact_values > scenario.direct_impacts.tp_value:
+        info_df = pd.read_csv(scenario.direct_impacts.results_path.joinpath(f"Infometrics_{scenario.direct_impacts.name}.csv"),
+                              index_col=0)
+        impact_value = info_df.loc[tp_key, "Value"]
+        # check if the impact value is greater than the tipping point value
+        if impact_value > tp_value:
             print("Tipping point reached")
             return True
         else:
             return False
         
-    def load_impact_metric(self, scenario_di):
-        """Load the metric value from the results of the scenarios"""
-        tp_key, tp_value = next(iter(self.attrs.tipping_point_metric.items()))
-
-        info_df = pd.read_csv(scenario_di.results_path.joinpath(f"Infometrics_{scenario_di.name}.csv"),
-                              index_col=0)
-        impact_values = info_df.loc[tp_key, "Value"]
-        
-        scenario_di.tp_key = tp_key
-        scenario_di.tp_value = tp_value
-        scenario_di.impact_values = impact_values
-        return self
+    # def evaluate_tipping_point(self):
+    #     """Evaluate the tipping point"""
+    #     impact_metrics = 
 
 
+    #     if self.attrs.tipping_point_operator == "greater":
+    #         return any([impact_metrics[key] > value for key, value in self.attrs.tippingpointdict.items()])
 # FUNCTIONS THAT ARE STILL NOT IMPLEMENTED - from benefits
     
     def has_run_check(self):
@@ -249,7 +245,7 @@ class TippingPoint(ITipPoint):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Scenario to a toml file"""
         with open(filepath, "wb") as f:
-            tomli_w.model_dump(self.attrs, f, exclude_none=True)
+            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
             
     def __eq__(self, other):
         if not isinstance(other, TippingPoint):
