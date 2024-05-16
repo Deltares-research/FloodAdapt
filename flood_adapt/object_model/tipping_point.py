@@ -18,31 +18,24 @@ from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.api.startup import read_database
 
-
-# add running sfincs & fiat
-
 '''
-Obective: the tipping point model will be used to calculate when sea 
-level rise matches a certain metric value (this metric is a result of floodadapt 
-simulations, so could be population exposd, houses flooded, etc.)
+This script implements a Tipping Point model to analyze the impact of sea level rise (SLR)
+on metrics such as population exposure, economic losses, etc.
+The model simulates scenarios based on varying SLR projections (for now) to identify tipping points 
+where a metric exceeds a predefined threshold.
 
-We should run flooadapt in a for loop for each sea level rise and calculate the 
-impacts for the corresponding metric. Once and if the tipping point is reached, 
-we should stop the loop and return the tipping point value and corresponding sea level.
+Core Functionalities:
+- Creates projections for different SLR values.
+- Iteratively runs simulations to determine tipping points for specified metrics.
+- Saves results and tipping point data in a structured format for analysis.
 
 Inputs:
-slr: list of floats
-tipping_point: dict with the following: metric_name, metric_value, metric_unit, metric_type
+- List of sea level rise values specifying different scenario projections.
+- Dictionary detailing the tipping point conditions including metric name, value, unit, and type.
 
-so for every value in slr, we simulate flooadapt and calculate the output for
-the metric value, then we compare the output with our tipping point value. 
-Stop when output > tipping point value. 
-
-# technical details
-1) check which scenarios are there based on the slr values
-2) check if the scenarios have been run
-
-
+Outputs:
+- Results for each scenario indicating if a tipping point is reached.
+- Compiled results are saved as CSV files.
 '''
 
 class TippingPoint(ITipPoint):
@@ -117,6 +110,7 @@ class TippingPoint(ITipPoint):
                               f"{scenario}.toml")
 
     def run_tp_scenarios(self):
+        """Run all scenarios to determine tipping points"""
         for scenario in self.scenarios_dict.keys():
             scenario_obj = Scenario.load_dict(self.scenarios_dict[scenario], self.database_input_path)
             scenario_obj.run()
@@ -288,50 +282,7 @@ if __name__ == "__main__":
     # run all scenarios
     test_point.run_tp_scenarios()
 
-   
-# one base scenario for the tipping points
-                # create a list of tipping point scenarios
-# then save a tippingpoint folder for different scenarios (so they don't mix) - name is base_scenario + tippingpoint metric+ metric value
-# then save the results in the tippingpoint folder
-# base scenario; actual tipping point scenarios (group - save in one folder) : scenario + SLR 
-# from the base scenario, it starts generating multiple tipping point scenarios and check if it reaches the tipping point
-                
-# new attribute: status - running, completed and reached, completed and not reached.
-# if reached, save the SLR and the metric value
-                    
 
-# post processing stuff still to be done
+# TODO: post processing stuff still to be done
                 # make html & plots
                 # write to file
-
- # test 1s scenarios to check status
-                # could also try adding evertyhing        
-
-# # TODO: check it's changed to Tipping points
-#     @staticmethod
-#     def load_file(filepath: Union[str, os.PathLike]):
-#         """create Benefit object from toml file"""
-
-#         obj = Benefit()
-#         with open(filepath, mode="rb") as fp:
-#             toml = tomli.load(fp)
-#         obj.attrs = BenefitModel.parse_obj(toml)
-#         # if benefits is created by path use that to get to the database path
-#         obj.database_input_path = Path(filepath).parents[2]
-#         obj.init()
-#         return obj
-
-#     @staticmethod
-#     def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-#         """create Benefit object from dictionary, e.g. when initialized from GUI"""
-
-#         obj = Benefit()
-#         obj.attrs = BenefitModel.parse_obj(data)
-#         obj.database_input_path = Path(database_input_path)
-#         obj.init()
-#         return obj
-
-#     def save(self, filepath: Union[str, os.PathLike]):
-#         """save Benefit object to a toml file"""
-#         with open(filepath, "wb") as f:
-#             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
