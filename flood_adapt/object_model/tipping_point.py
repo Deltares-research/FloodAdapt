@@ -172,29 +172,20 @@ class TippingPoint(ITipPoint):
             ),
             index_col=0,
         )
-        impact_metrics = {
-            key: info_df.loc[key, "Value"]
-            for key in self.attrs.tipping_point_metric.keys()
-        }
-        return self.evaluate_tipping_point(impact_metrics)
+        # if any tipping point is reached, return True
+        return any(
+            self.evaluate_tipping_point(
+                info_df.loc[metric[0], "Value"],
+                metric[1],
+                metric[2],
+            )
+            for metric in self.attrs.tipping_point_metric
+        )
 
-    def evaluate_tipping_point(self, impact_metrics):
-        """Compare tipping points and stops when one tipping point is reached"""
-        # already optimised for multiple metrics
-        if self.attrs.operator == "greater":
-            return any(
-                [
-                    impact_metrics[key] > value
-                    for key, value in self.attrs.tipping_point_metric.items()
-                ]
-            )
-        elif self.attrs.operator == "less":
-            return any(
-                [
-                    impact_metrics[key] < value
-                    for key, value in self.attrs.tipping_point_metric.items()
-                ]
-            )
+    def evaluate_tipping_point(self, current_value, threshold, operator):
+        """Compare current value with threshold for tipping point"""
+        operations = {"greater": lambda x, y: x >= y, "less": lambda x, y: x <= y}
+        return operations[operator](current_value, threshold)
 
     # FUNCTIONS THAT ARE STILL NOT IMPLEMENTED - from benefits
     def has_run_check(self):
@@ -319,8 +310,10 @@ if __name__ == "__main__":
         "strategy": "no_measures",
         "projection": "current",
         "sealevelrise": [0.5, 1.0, 1.5],
-        "tipping_point_metric": {"FloodedAll": 34195.0, "FullyFloodedRoads": 200},
-        "operator": "greater",
+        "tipping_point_metric": [
+            ("FloodedAll", 34195.0, "greater"),
+            ("FullyFloodedRoads", 2000, "greater"),
+        ],
     }
     # load
     test_point = TippingPoint.load_dict(tp_dict, database.input_path)

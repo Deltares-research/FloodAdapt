@@ -51,12 +51,6 @@ class TippingPointStatus(str, Enum):
     completed = "completed"
 
 
-class CurrentSituationModel(BaseModel):
-    projection: str
-    year: int
-
-
-# TODO: add class for TippingPointOperator
 class TippingPointOperator(str, Enum):
     """class describing the accepted input for the variable operator in TippingPoint"""
 
@@ -73,8 +67,7 @@ class TipPointModel(BaseModel):
     event_set: str
     projection: str
     sealevelrise: list[float]  # could be a numpy array too
-    tipping_point_metric: dict[TippingPointMetrics, float]
-    operator: TippingPointOperator
+    tipping_point_metric: list[tuple[TippingPointMetrics, float, TippingPointOperator]]
     status: Optional[TippingPointStatus] = TippingPointStatus.not_reached
 
 
