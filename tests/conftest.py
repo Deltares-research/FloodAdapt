@@ -2,8 +2,9 @@ import gc
 import subprocess
 from pathlib import Path
 
-import flood_adapt.config as FloodAdapt_config
 import pytest
+
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
 
 
