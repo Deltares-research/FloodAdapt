@@ -7,9 +7,9 @@ import pandas as pd
 from pydantic import BaseModel
 
 
-
 class TippingPointMetrics(str, Enum):
     """class describing the accepted input for the variable metric_type in TippingPoint"""
+
     # based on what I have found in floodadapt - but can be changed
     FloodedAll = "FloodedAll"
     FloodedLowVulnerability = "FloodedLowVulnerability"
@@ -42,15 +42,27 @@ class TippingPointMetrics(str, Enum):
     MajorFloodedRoads = "MajorFloodedRoads"
     FullyFloodedRoads = "FullyFloodedRoads"
 
+
 class TippingPointStatus(str, Enum):
     """class describing the accepted input for the variable metric_type in TippingPoint"""
+
     reached = "reached"
     not_reached = "not_reached"
-    completed = "completed" 
+    completed = "completed"
+
 
 class CurrentSituationModel(BaseModel):
     projection: str
     year: int
+
+
+# TODO: add class for TippingPointOperator
+class TippingPointOperator(str, Enum):
+    """class describing the accepted input for the variable operator in TippingPoint"""
+
+    greater = "greater"
+    less = "less"
+
 
 class TipPointModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Tipping Point analysis object"""
@@ -60,8 +72,9 @@ class TipPointModel(BaseModel):
     strategy: str
     event_set: str
     projection: str
-    sealevelrise: list[float] # could be a numpy array too
+    sealevelrise: list[float]  # could be a numpy array too
     tipping_point_metric: dict[TippingPointMetrics, float]
+    operator: TippingPointOperator
     status: Optional[TippingPointStatus] = TippingPointStatus.not_reached
 
 
@@ -78,7 +91,7 @@ class ITipPoint(ABC):
         """get Tipping Point attributes from toml file"""
         ...
 
-    @staticmethod #copping from benefits.py
+    @staticmethod  # copping from benefits.py
     @abstractmethod
     def load_dict(data: dict[str, Any]):
         """get Tipping Point attributes from an object, e.g. when initialized from GUI"""
@@ -88,9 +101,8 @@ class ITipPoint(ABC):
     def save(self, filepath: Union[str, os.PathLike]):
         """save Tipping Point attributes to a toml file"""
         ...
-    
+
     @abstractmethod
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this tipping point calculation and if they have already been created"""
         ...
-        
