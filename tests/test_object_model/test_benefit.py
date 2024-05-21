@@ -13,6 +13,20 @@ _TEST_NAMES = {
     "benefit_without_costs": "benefit_raise_properties_2050_no_costs",
 }
 
+_TEST_DICT = {
+    "name": "benefit_raise_properties_2080",
+    "description": "",
+    "event_set": "test_set",
+    "strategy": "elevate_comb_correct",
+    "projection": "all_projections",
+    "future_year": 2080,
+    "current_situation": {"projection": "current", "year": "2023"},
+    "baseline_strategy": "no_measures",
+    "discount_rate": 0.07,
+    "implementation_cost": 200000000,
+    "annual_maint_cost": 100000,
+}
+
 
 # Create Benefit object using example benefit toml in test database
 def test_loadFile_fromTestBenefitToml_createBenefit(test_db):
@@ -57,23 +71,22 @@ def test_loadFile_nonExistingFile_FileNotFoundError(test_db):
 
 # Create Benefit object using using a dictionary
 def test_loadDict_fromTestDict_createBenefit(test_db):
-    test_dict = {
-        "name": "benefit_raise_properties_2080",
-        "description": "",
-        "event_set": "test_set",
-        "strategy": "elevate_comb_correct",
-        "projection": "all_projections",
-        "future_year": 2080,
-        "current_situation": {"projection": "current", "year": "2023"},
-        "baseline_strategy": "no_measures",
-        "discount_rate": 0.07,
-        "implementation_cost": 200000000,
-        "annual_maint_cost": 100000,
-    }
-
-    benefit = Benefit.load_dict(test_dict, test_db.input_path)
+    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
 
     assert isinstance(benefit, IBenefit)
+
+
+# Save a toml from a test benefit dictionary
+def test_save_fromTestDict_saveToml(test_db):
+    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
+    output_path = test_db.input_path.joinpath(
+        "benefits", "test_benefit", "test_benefit.toml"
+    )
+    if not output_path.parent.exists():
+        output_path.parent.mkdir()
+    assert not output_path.exists()
+    benefit.save(output_path)
+    assert output_path.exists()
 
 
 # Tests for when the scenarios needed for the benefit analysis are not there yet
