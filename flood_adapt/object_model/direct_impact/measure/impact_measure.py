@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Union
 
 from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
-    DirectImpactAdapterFactory,
+    DirectImpactsAdapterFactory,
 )
 from flood_adapt.object_model.interface.measures import ImpactMeasureModel
 from flood_adapt.object_model.site import Site
@@ -30,7 +30,7 @@ class ImpactMeasure(ABC):
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
 
-        Adapter = DirectImpactAdapterFactory.get_adapter(
+        Adapter = DirectImpactsAdapterFactory.get_adapter(
             site.attrs.direct_impacts.model
         )
 

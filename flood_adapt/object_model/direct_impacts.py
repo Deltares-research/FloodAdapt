@@ -17,7 +17,7 @@ from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
 from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
 from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
-    DirectImpactAdapterFactory,
+    DirectImpactsAdapterFactory,
 )
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -65,7 +65,7 @@ class DirectImpacts:
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.has_run = self.has_run_check()
         # Set adapter
-        Adapter = DirectImpactAdapterFactory.get_adapter(
+        Adapter = DirectImpactsAdapterFactory.get_adapter(
             self.site_info.attrs.direct_impacts.model
         )
         self.adapter = Adapter(
