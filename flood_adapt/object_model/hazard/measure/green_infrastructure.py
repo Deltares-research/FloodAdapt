@@ -105,8 +105,8 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         crs = pyproj.CRS.from_string(site.sfincs.csname)
         gdf = gdf.to_crs(crs)
 
-        # The GeoJSON file contains only one polygon:
-        polygon = gdf.geometry.iloc[0]
-        # Calculate the area of the polygon
-        area = polygon.area
+        # The GeoJSON file can contain multiple polygons
+        polygon = gdf.geometry
+        # Calculate the area of all polygons
+        area = polygon.area.sum()
         return area
