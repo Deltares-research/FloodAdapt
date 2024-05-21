@@ -1,40 +1,30 @@
-from typing import Optional
+from abc import ABC, abstractmethod
 
-from pydantic import BaseModel
-
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulLength,
-    UnitfulLengthRefValue,
-    UnitTypesLength,
+from flood_adapt.object_model.direct_impact.socio_economic_change import (
+    SocioEconomicChange,
 )
-
-from .objectModel import IDbsObject, DbsObjectModel
-
-
-class PhysicalProjectionModel(BaseModel):
-    sea_level_rise: Optional[UnitfulLength] = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-    subsidence: Optional[UnitfulLength] = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-    rainfall_increase: float = 0.0
-    storm_frequency_increase: float = 0.0
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 
 
-class SocioEconomicChangeModel(BaseModel):
-    population_growth_existing: Optional[float] = 0.0
-    economic_growth: Optional[float] = 0.0
+class IProjection(ABC):
+    @abstractmethod
+    def get_physical_projection(self) -> PhysicalProjection:
+        """Get the physical projection of the object
 
-    population_growth_new: Optional[float] = 0.0
-    new_development_elevation: Optional[UnitfulLengthRefValue] = None
-    new_development_shapefile: Optional[str] = None
+        Returns
+        -------
+        PhysicalProjection
+            The physical projection of the object
+        """
+        ...
 
+    @abstractmethod
+    def get_socio_economic_change(self) -> SocioEconomicChange:
+        """Get the socio-economic change of the object
 
-class ProjectionModel(DbsObjectModel):
-    physical_projection: PhysicalProjectionModel
-    socio_economic_change: SocioEconomicChangeModel
-
-
-class IProjection(IDbsObject):
-    attrs: ProjectionModel
+        Returns
+        -------
+        SocioEconomicChange
+            The socio-economic change of the object
+        """
+        ...

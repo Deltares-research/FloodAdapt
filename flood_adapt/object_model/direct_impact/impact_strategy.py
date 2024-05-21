@@ -1,6 +1,8 @@
 from itertools import combinations
 
-from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
+from flood_adapt.object_model.object_classes.measure.impact_measure.impact_measure import (
+    ImpactMeasure,
+)
 
 
 class ImpactStrategy:

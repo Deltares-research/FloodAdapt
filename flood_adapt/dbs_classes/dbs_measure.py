@@ -1,15 +1,17 @@
+import os
 from typing import Any
 
 import geopandas as gpd
 
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.dbs_classes.dbs_object import DbsObject
 from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.measure import Measure
-from flood_adapt.object_model.measure_factory import MeasureFactory
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.object_classes.measure.measure import Measure
+from flood_adapt.object_model.object_classes.measure.measure_factory import (
+    MeasureFactory,
+)
 
 
-class DbsMeasure(DbsTemplate):
+class DbsMeasure(DbsObject):
     _type = "measure"
     _folder_name = "measures"
     _object_model_class = Measure
@@ -27,8 +29,8 @@ class DbsMeasure(DbsTemplate):
         IMeasure
             measure object
         """
-        measure_path = self._path / name / f"{name}.toml"
-        measure = MeasureFactory.get_measure_object(measure_path)
+        obj, data = super().get(name, get_data=True)  # Return object of type Measure
+        measure = MeasureFactory.get_sub_measure(obj, data)
         return measure
 
     def list_objects(self) -> dict[str, Any]:
@@ -41,7 +43,7 @@ class DbsMeasure(DbsTemplate):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         measures = self._get_object_list()
-        objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
+        objects = [self.get(os.path.basename(path)) for path in measures["path"]]
         measures["name"] = [obj.attrs.name for obj in objects]
         measures["description"] = [obj.attrs.description for obj in objects]
         measures["objects"] = objects
@@ -92,7 +94,7 @@ class DbsMeasure(DbsTemplate):
         """
         # Get all the strategies
         strategies = [
-            Strategy.load_file(path)
+            self._database.strategies.get(os.path.basename(path))
             for path in self._database.strategies.list_objects()["path"]
         ]
 

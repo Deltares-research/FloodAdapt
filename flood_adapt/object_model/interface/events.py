@@ -1,226 +1,167 @@
-from enum import Enum
-from typing import Optional
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Optional, Union
 
-from pydantic import BaseModel, Field
+import hydromt.raster  # noqa: F401
+import numpy as np
+import pandas as pd
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulVelocity,
-    UnitTypesLength,
+from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
+from flood_adapt.object_model.models.events import (
+    Mode,
+    SyntheticModel,
 )
 
 from .objectModel import IDbsObject, DbsObjectModel
 
 
-class Mode(str, Enum):
-    """class describing the accepted input for the variable mode in Event"""
+class IEvent(ABC):
 
-    single_event = "single_event"
-    risk = "risk"
+    @staticmethod
+    @abstractmethod
+    def get_template(filepath: Path):
+        """create Synthetic from toml file"""
+        ...
 
+    @staticmethod
+    @abstractmethod
+    def get_mode(filepath: Path) -> Mode:
+        """get mode of the event (single or risk) from toml file"""
+        ...
 
-class Template(str, Enum):
-    """class describing the accepted input for the variable template in Event"""
+    @staticmethod
+    @abstractmethod
+    def timeseries_shape(
+        shape_type: str, duration: float, peak: float, **kwargs
+    ) -> np.ndarray:
+        """create generic function to create shape timeseries for rainfall and discharge
 
-    Synthetic = "Synthetic"
-    Hurricane = "Historical_hurricane"
-    Historical_nearshore = "Historical_nearshore"
-    Historical_offshore = "Historical_offshore"
+        Parameters
+        ----------
+        shape_type : str
+            type of the shape: accepted types are gaussian, block or triangle
+        duration : float
+            total duration (in seconds) of the event
+        peak : float
+            shape_peak value
 
+        Optional Parameters (depending on shape type)
+        -------------------
+        time_shift : float
+            time (in seconds) between start of event and peak of the shape (only for gaussian and triangle)
+        start_shape : float
+            time (in seconds) between start of event and start of shape (only for triangle and block)
+        end_shape : float
+            time (in seconds) between start of event and end of shape (only for triangle and block)
+        shape_duration : float
+            duration (in seconds) of the shape (only for gaussian)
 
-class Timing(str, Enum):
-    """class describing the accepted input for the variable timng in Event"""
+        Returns
+        -------
+        np.ndarray
+            timeseries of the shape, corresponding to a time_vec with dt=600 seconds
+        """
+        ...
 
-    historical = "historical"
-    idealized = "idealized"
+    @staticmethod
+    @abstractmethod
+    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
+        """read csv file to pandas DataFrame
 
+        Parameters
+        ----------
+        csvpath : Path
+            path to the csv file
 
-class WindSource(str, Enum):
-    track = "track"
-    map = "map"
-    constant = "constant"
-    none = "none"
-    timeseries = "timeseries"
+        Returns
+        -------
+        pd.DataFrame
+            pandas DataFrame containing the csv data
+        """
+        ...
 
+    @abstractmethod
+    def download_meteo(self, site: ISite, path: Path): ...
 
-class RainfallSource(str, Enum):
-    track = "track"
-    map = "map"
-    constant = "constant"
-    none = "none"
-    timeseries = "timeseries"
-    shape = "shape"
+    @abstractmethod
+    def add_dis_ts(
+        self,
+        event_dir: Path,
+        site_river: list,
+        input_river_df_list: Optional[list[pd.DataFrame]] = [],
+    ):
+        """Creates pd.Dataframe timeseries for river discharge
 
+        Returns
+        -------
+        self
 
-class RiverSource(str, Enum):
-    constant = "constant"
-    timeseries = "timeseries"
-    shape = "shape"
+        """
+        ...
 
+    @abstractmethod
+    def add_rainfall_ts(self, **kwargs):
+        """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds
 
-class ShapeType(str, Enum):
-    gaussian = "gaussian"
-    block = "block"
-    triangle = "triangle"
-    scs = "scs"
+        Returns
+        -------
+        self
+            updated object with rainfall timeseries added in pd.DataFrame format
+        """
+        ...
 
+    @abstractmethod
+    def add_wind_ts(self):
+        """adds constant wind or timeseries from file to event object
 
-class WindModel(BaseModel):
-    source: WindSource
-    # constant
-    constant_speed: Optional[UnitfulVelocity] = None
-    constant_direction: Optional[UnitfulDirection] = None
-    # timeseries
-    timeseries_file: Optional[str] = None
-
-
-class RainfallModel(BaseModel):
-    source: RainfallSource
-    increase: Optional[float] = 0.0
-    # constant
-    constant_intensity: Optional[UnitfulIntensity] = None
-    # timeseries
-    timeseries_file: Optional[str] = None
-    # shape
-    shape_type: Optional[ShapeType] = None
-    cumulative: Optional[UnitfulLength] = None
-    shape_duration: Optional[float] = None
-    shape_peak_time: Optional[float] = None
-    shape_start_time: Optional[float] = None
-    shape_end_time: Optional[float] = None
-
-
-class RiverModel(BaseModel):
-    source: Optional[RiverSource] = None
-    # constant
-    constant_discharge: Optional[UnitfulDischarge] = None
-    # timeseries
-    timeseries_file: Optional[str] = None
-    # shape
-    shape_type: Optional[ShapeType] = None
-    base_discharge: Optional[UnitfulDischarge] = None
-    shape_peak: Optional[UnitfulDischarge] = None
-    shape_duration: Optional[float] = None
-    shape_peak_time: Optional[float] = None
-    shape_start_time: Optional[float] = None
-    shape_end_time: Optional[float] = None
-
-
-class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
-
-    duration_before_t0: Optional[float] = None
-    duration_after_t0: Optional[float] = None
-    start_time: Optional[str] = "20200101 000000"
-    end_time: Optional[str] = "20200103 000000"
-
-
-class TideSource(str, Enum):
-    harmonic = "harmonic"
-    timeseries = "timeseries"
-    model = "model"
-
-
-class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: TideSource
-    harmonic_amplitude: Optional[UnitfulLength] = None
-    timeseries_file: Optional[str] = None
-
-
-class SurgeSource(str, Enum):
-    none = "none"
-    shape = "shape"
-
-
-class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
-
-    source: SurgeSource
-    shape_type: Optional[str] = "gaussian"
-    shape_duration: Optional[float] = None
-    shape_peak_time: Optional[float] = None
-    shape_peak: Optional[UnitfulLength] = None
-
-
-class TranslationModel(BaseModel):
-    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
-
-    eastwest_translation: UnitfulLength = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-    northsouth_translation: UnitfulLength = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
-
-
-class EventModel(
-    DbsObjectModel
-):  # add WindModel etc as this is shared among all? templates
-    """BaseModel describing the expected variables and data types of attributes common to all event types"""
-
-    mode: Mode
-    template: Template
-    timing: Timing
-    water_level_offset: UnitfulLength
-    wind: WindModel
-    rainfall: RainfallModel
-    river: list[RiverModel]
-    time: TimeModel
-    tide: TideModel
-    surge: SurgeModel
-
-
-class EventSetModel(
-    BaseModel
-):  # add WindModel etc as this is shared among all? templates
-    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
-
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
-    mode: Mode
-    subevent_name: Optional[list[str]] = []
-    frequency: Optional[list[float]] = []
-
-
-class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
-
-
-class HistoricalNearshoreModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
-
-
-class HistoricalOffshoreModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
-
-
-class HistoricalHurricaneModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
-
-    hurricane_translation: TranslationModel
-    track_name: str
-
-
-class IEvent(IDbsObject):
-    attrs: EventModel
+        Returns
+        -------
+        self
+            updated object with wind timeseries added in pd.DataFrame format
+        """
+        ...
 
 
 class ISynthetic(IEvent):
+
     attrs: SyntheticModel
+
+    @abstractmethod
+    def add_tide_and_surge_ts(self):
+        """generating time series of harmoneous tide (cosine) and gaussian surge shape
+
+        Returns
+        -------
+        self
+            updated object with additional attribute of combined tide and surge timeseries as pandas Dataframe
+        """
+        ...
 
 
 class IHistoricalNearshore(IEvent):
-    attrs: HistoricalNearshoreModel
+    
+    @abstractmethod
+    def download_wl_data(
+        station_id: int,
+        start_time_str: str,
+        stop_time_str: str,
+        units: UnitTypesLength,
+        file: Union[str, None],
+    ) -> pd.DataFrame:
+        ...
 
 
 class IHistoricalOffshore(IEvent):
-    attrs: HistoricalOffshoreModel
-
+    ...
 
 class IHistoricalHurricane(IEvent):
-    attrs: HistoricalHurricaneModel
+
+    @abstractmethod
+    def make_spw_file(self, database_path: Path, model_dir: Path, site=ISite):
+        ...
+
+    @abstractmethod
+    def translate_tc_track(self, tc: TropicalCyclone, site: ISite):
+        ...

@@ -23,11 +23,11 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.object_classes.projection import Projection
 
 # from flood_adapt.object_model.scenario import ScenarioModel
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.object_classes.strategy import Strategy
+from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import cd
 
 

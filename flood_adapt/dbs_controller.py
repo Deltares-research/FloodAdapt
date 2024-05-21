@@ -22,14 +22,14 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.object_classes.event.event_factory import EventFactory
+from flood_adapt.object_model.object_classes.event.synthetic import Synthetic
+from flood_adapt.object_model.object_classes.scenario import Scenario
 from flood_adapt.object_model.site import Site
 
 
@@ -38,9 +38,36 @@ class Database(IDatabase):
     to get static data info, and all the input information.
     Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input
     """
+    _instance = None
+
+    database_path: Path
+    database_name: str
 
     input_path: Path
+    static_path: Path
+    output_path: Path
+
     site: ISite
+    aggr_areas: dict
+
+    static_sfincs_model: SfincsAdapter
+
+    _events: DbsEvent
+    _scenarios: DbsScenario
+    _strategies: DbsStrategy
+    _measures: DbsMeasure
+    _projections: DbsProjection
+    _benefits: DbsBenefit
+
+    def __new__(cls, database_path=None, database_name=None, *args, **kwargs):
+        if not cls._instance: # Singleton pattern. Only the first time the class is called, it creates an instance
+            cls._instance = super(Database, cls).__new__(cls)
+        else:
+            if database_path or database_name: # Instead of making a new instance, it will just update the path and name
+                if database_path == cls._instance.database_path and database_name == cls._instance.database_name: # If the path and name are the same, it will return the instance
+                    return cls._instance
+                cls._instance.__init__(database_path, database_name)
+        return cls._instance  
 
     def __init__(
         self,
@@ -58,6 +85,9 @@ class Database(IDatabase):
             The name of the database.
         Notes
         """
+        self.database_path = Path(database_path)
+        self.database_name = database_name
+
         self.input_path = Path(database_path / database_name / "input")
         self.static_path = Path(database_path / database_name / "static")
         self.output_path = Path(database_path / database_name / "output")

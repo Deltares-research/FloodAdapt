@@ -1,4 +1,6 @@
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
+from flood_adapt.object_model.object_classes.measure.hazard_measure.hazard_measure import (
+    HazardMeasure,
+)
 
 
 class HazardStrategy:

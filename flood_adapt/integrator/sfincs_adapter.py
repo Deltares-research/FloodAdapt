@@ -14,21 +14,23 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.object_model.hazard.event.event import EventModel
-from flood_adapt.object_model.hazard.event.historical_hurricane import (
-    HistoricalHurricane,
-)
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
-    GreenInfrastructureModel,
-)
-from flood_adapt.object_model.hazard.measure.pump import PumpModel
-from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDischarge,
     UnitTypesLength,
     UnitTypesVolume,
+)
+from flood_adapt.object_model.models.events import (
+    EventModel,
+)
+from flood_adapt.object_model.models.measures import (
+    FloodWallModel,
+    GreenInfrastructureModel,
+    PumpModel,
+)
+from flood_adapt.object_model.models.projections import PhysicalProjectionModel
+from flood_adapt.object_model.object_classes.event.historical_hurricane import (
+    HistoricalHurricane,
 )
 from flood_adapt.object_model.site import Site
 

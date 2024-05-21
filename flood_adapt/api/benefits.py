@@ -3,9 +3,9 @@ from typing import Any, Union
 import geopandas as gpd
 import pandas as pd
 
-from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.object_classes.benefit import Benefit
 
 
 def get_benefits(database: IDatabase) -> dict[str, Any]:

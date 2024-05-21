@@ -2,7 +2,7 @@ from typing import Any
 
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.object_classes.projection import Projection
 
 
 def get_projections(database: IDatabase) -> dict[str, Any]:

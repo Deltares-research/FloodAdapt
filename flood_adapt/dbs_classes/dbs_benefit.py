@@ -1,11 +1,11 @@
 import shutil
 
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit import Benefit
+from flood_adapt.dbs_classes.dbs_object import DbsObject
 from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.object_classes.benefit import Benefit
 
 
-class DbsBenefit(DbsTemplate):
+class DbsBenefit(DbsObject):
     _type = "benefit"
     _folder_name = "benefits"
     _object_model_class = Benefit

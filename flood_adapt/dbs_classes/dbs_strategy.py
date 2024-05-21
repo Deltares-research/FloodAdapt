@@ -1,9 +1,10 @@
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.strategy import Strategy
+import os
+
+from flood_adapt.dbs_classes.dbs_object import DbsObject
+from flood_adapt.object_model.object_classes.strategy import Strategy
 
 
-class DbsStrategy(DbsTemplate):
+class DbsStrategy(DbsObject):
     _type = "strategy"
     _folder_name = "strategies"
     _object_model_class = Strategy
@@ -43,7 +44,7 @@ class DbsStrategy(DbsTemplate):
         """
         # Get all the scenarios
         scenarios = [
-            Scenario.load_file(path)
+            self._database.scenarios.get(os.path.basename(path))
             for path in self._database.scenarios.list_objects()["path"]
         ]
 

@@ -3,19 +3,25 @@ from typing import Any
 import geopandas as gpd
 import pandas as pd
 
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
-    GreenInfrastructure,
-)
-from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
 )
 from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.object_classes.measure.hazard_measure.floodwall import (
+    FloodWall,
+)
+from flood_adapt.object_model.object_classes.measure.hazard_measure.green_infrastructure import (
+    GreenInfrastructure,
+)
+from flood_adapt.object_model.object_classes.measure.hazard_measure.pump import Pump
+from flood_adapt.object_model.object_classes.measure.impact_measure.buyout import Buyout
+from flood_adapt.object_model.object_classes.measure.impact_measure.elevate import (
+    Elevate,
+)
+from flood_adapt.object_model.object_classes.measure.impact_measure.floodproof import (
+    FloodProof,
+)
 
 
 def get_measures(database: IDatabase) -> dict[str, Any]:

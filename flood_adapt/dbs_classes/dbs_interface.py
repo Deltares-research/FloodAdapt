@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Tuple, Union
 
 from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
@@ -11,26 +12,42 @@ from flood_adapt.object_model.interface.strategies import IStrategy
 DbsObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
 
-class AbstractDatabaseElement(ABC):
-    def __init__(self):
+class IDbsObject(ABC):
+    def __init__(self, database: IDatabase):
         """
         Initialize any necessary attributes.
+
+        Parameters
+        ----------
+        database : IDatabase
+            database to be used for the object
         """
         pass
 
     @abstractmethod
-    def get(self, name: str) -> DbsObjectModel:
-        """Returns the object of the type of the database with the given name.
+    def get(
+        self, name: str, get_data: bool = False
+    ) -> Tuple[ObjectModel, Optional[dict]]:
+        """Returns an object of the type of the database with the given name.
 
         Parameters
         ----------
         name : str
             name of the object to be returned
+        get_data : bool, optional
+            whether to return the data of the object as well, by default False
 
         Returns
         -------
         DbsObjectModel
             object of the type of the specified object model
+        dict
+            dictionary with the object data
+
+        Raises
+        ------
+        ValueError
+            Raise error if the object does not exist
         """
         pass
 

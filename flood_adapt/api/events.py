@@ -6,11 +6,6 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_controller import IDatabase
-from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
-)
 from flood_adapt.object_model.interface.events import (
     IEvent,
     IHistoricalHurricane,
@@ -19,6 +14,11 @@ from flood_adapt.object_model.interface.events import (
     ISynthetic,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
+from flood_adapt.object_model.object_classes.event.event import Event
+from flood_adapt.object_model.object_classes.event.event_factory import EventFactory
+from flood_adapt.object_model.object_classes.event.historical_nearshore import (
+    HistoricalNearshore,
+)
 
 
 def get_events(database: IDatabase) -> dict[str, Any]:

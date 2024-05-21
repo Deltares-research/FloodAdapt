@@ -2,7 +2,7 @@ from typing import Any, Union
 
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.object_classes.scenario import Scenario
 
 
 def get_scenarios(database: IDatabase) -> dict[str, Any]:

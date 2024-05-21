@@ -1,9 +1,8 @@
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.dbs_classes.dbs_object import DbsObject
+from flood_adapt.object_model.object_classes.projection import Projection
 
 
-class DbsProjection(DbsTemplate):
+class DbsProjection(DbsObject):
     _type = "projection"
     _folder_name = "projections"
     _object_model_class = Projection
@@ -43,8 +42,8 @@ class DbsProjection(DbsTemplate):
         """
         # Get all the scenarios
         scenarios = [
-            Scenario.load_file(path)
-            for path in self._database.scenarios.list_objects()["path"]
+            self._database.scenarios.get(name=name)
+            for name in self._database.scenarios.list_objects()["name"]
         ]
 
         # Check if projection is used in a scenario

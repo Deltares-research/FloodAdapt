@@ -2,7 +2,7 @@ from typing import Any
 
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.strategies import IStrategy
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.object_classes.strategy import Strategy
 
 
 def get_strategies(database: IDatabase) -> dict[str, Any]:

@@ -1,15 +1,14 @@
-from pathlib import Path
+import os
 from typing import Any
 
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.dbs_classes.dbs_object import DbsObject
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.object_classes.event.event import Event
+from flood_adapt.object_model.object_classes.event.event_factory import EventFactory
 
 
-class DbsEvent(DbsTemplate):
+class DbsEvent(DbsObject):
     _type = "event"
     _folder_name = "events"
     _object_model_class = Event
@@ -27,17 +26,12 @@ class DbsEvent(DbsTemplate):
         IEvent
             event object
         """
-        # Get event path
-        event_path = self._path / f"{name}" / f"{name}.toml"
-
-        # Check if the object exists
-        if not Path(event_path).is_file():
-            raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
-
         # Load event
-        event_template = Event.get_template(event_path)
-        event = EventFactory.get_event(event_template).load_file(event_path)
-        return event
+        # event_template = Event.get_template(event_path)
+        # event = EventFactory.get_event(event_template).load_file(event_path)
+        event_obj = super().get(name)
+        event_obj = EventFactory.get_event(event_obj)
+        return event_obj.load_additional_data(self._path)        
 
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the events that currently
@@ -90,7 +84,7 @@ class DbsEvent(DbsTemplate):
         """
         # Get all the scenarios
         scenarios = [
-            Scenario.load_file(path)
+            self._database.scenarios.get(os.path.basename(path))
             for path in self._database.scenarios.list_objects()["path"]
         ]
 

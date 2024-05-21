@@ -15,16 +15,9 @@ from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.eventset import EventSet
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
-)
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
@@ -35,9 +28,16 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesVelocity,
 )
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.models.scenarios import ScenarioModel
+from flood_adapt.object_model.object_classes.event.event import Event
+from flood_adapt.object_model.object_classes.event.event_factory import EventFactory
+from flood_adapt.object_model.object_classes.event.eventset import EventSet
+from flood_adapt.object_model.object_classes.event.historical_nearshore import (
+    HistoricalNearshore,
+)
+from flood_adapt.object_model.object_classes.projection import Projection
+from flood_adapt.object_model.object_classes.strategy import Strategy
 from flood_adapt.object_model.site import Site
-from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd
 
 

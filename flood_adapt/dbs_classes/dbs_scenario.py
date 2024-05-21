@@ -1,13 +1,14 @@
+import os
 import shutil
 from typing import Any
 
-from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit import Benefit
+from flood_adapt.dbs_classes.dbs_object import DbsObject
+from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.object_classes.scenario import Scenario
 
 
-class DbsScenario(DbsTemplate):
+class DbsScenario(DbsObject):
     _type = "scenario"
     _folder_name = "scenarios"
     _object_model_class = Scenario
@@ -25,7 +26,18 @@ class DbsScenario(DbsTemplate):
         IScenario
             scenario object
         """
-        return super().get(name).init_object_model()
+        obj = super().get(name)
+        obj._site_info = self._database.site
+        obj._results_path = self._database.output_path.joinpath(
+            self._folder_name, self.attrs.name
+        )
+        obj._direct_impacts = DirectImpacts(
+            scenario=obj.attrs,
+            database_input_path=self._database.database_input_path,
+            results_path=obj.results_path,
+        )
+
+        return obj
 
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the events that currently
@@ -110,8 +122,8 @@ class DbsScenario(DbsTemplate):
         """
         # Get all the benefits
         benefits = [
-            Benefit.load_file(path)
-            for path in self._database.benefits.list_objects()["path"]
+            self._database.benefits.get(name)
+            for name in self._database.benefits.list_objects()["name"]
         ]
 
         # Check in which benefits this scenario is used
