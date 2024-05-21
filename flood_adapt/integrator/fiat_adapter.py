@@ -1,12 +1,13 @@
+import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
 import flood_adapt.config as FloodAdapt_config
-from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
+from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.measures import (
@@ -51,18 +52,37 @@ class FiatAdapter(DirectImpactsAdapter):
         )
         self.model.read()
 
-    def get_all_object_ids(self) -> list:
+    def get_all_buildings_geo(self):
+        buildings = self.model.exposure.select_objects(
+            primary_object_type="ALL",
+            non_building_names=self.config.non_building_names,
+            return_gdf=True,
+        )
+
+        return buildings
+
+    def get_building_types(self):
+        types = self.model.exposure.get_primary_object_type()
+        for name in self.config.non_building_names:
+            if name in types:
+                types.remove(name)
+        # Add "all" type for using as identifier
+        types.append("all")
+
+    def get_all_buildings_ids(self) -> list[int]:
         """
-        Retrieves the IDs of all existing objects in the FIAT model.
+        Retrieves the IDs of all existing buildings in the FIAT model.
 
         Returns:
-            list: A list of object IDs.
+            list: A list of buildings IDs.
         """
-        # Get ids of existing objects
-        ids = self.model.exposure.get_object_ids("all")
+        # Get ids of existing buildings
+        ids = self.model.exposure.get_object_ids(
+            "all", non_building_names=self.config.non_building_names
+        )
         return ids
 
-    def get_object_ids(self, attrs: ImpactMeasureModel) -> list[Any]:
+    def get_measure_buildings_ids(self, attrs: ImpactMeasureModel) -> list[int]:
         """Get ids of objects that are affected by the measure.
 
         Returns
@@ -83,7 +103,7 @@ class FiatAdapter(DirectImpactsAdapter):
             polygon_file = None
 
         # use the hydromt-fiat method to the ids
-        ids = self.fiat_model.exposure.get_object_ids(
+        ids = self.model.exposure.get_object_ids(
             selection_type=attrs.selection_type,
             property_type=attrs.property_type,
             non_building_names=self.config.non_building_names,
@@ -102,7 +122,7 @@ class FiatAdapter(DirectImpactsAdapter):
         boolean
             True if the FIAT model has finished running successfully, False otherwise
         """
-        log_file = self.fiat_path.joinpath("fiat.log")
+        log_file = self.output_model_path.joinpath("fiat.log")
         if log_file.exists():
             with open(log_file, "r", encoding="cp1252") as f:
                 if "Geom calculation are done!" in f.read():
@@ -111,6 +131,10 @@ class FiatAdapter(DirectImpactsAdapter):
                     return False
         else:
             return False
+
+    def write_model(self):
+        self.model.set_root(self.output_model_path)
+        self.model.write()
 
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = hazard.flood_map_path
@@ -245,47 +269,34 @@ class FiatAdapter(DirectImpactsAdapter):
         """
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
-            if not self.config.bfe:
+            if not self.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
-            # Use hydromt function
-            self.model.exposure.setup_new_composite_areas(
-                percent_growth=population_growth,
-                geom_file=Path(area_path),
-                ground_floor_height=ground_floor_height,
-                damage_types=["Structure", "Content"],
-                vulnerability=self.model.vulnerability,
-                elevation_reference="geom",
-                path_ref=self.bfe["geom"],
-                attr_ref=self.bfe["name"],
-                ground_elevation=ground_elevation,
-                aggregation_area_fn=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
-            )
+            kwargs = {
+                "elevation_reference": "geom",
+                "path_ref": self.bfe["geom"],
+                "attr_ref": self.bfe["name"],
+            }
         elif elevation_type == "datum":
-            # Use hydromt function
-            self.model.exposure.setup_new_composite_areas(
-                percent_growth=population_growth,
-                geom_file=Path(area_path),
-                ground_floor_height=ground_floor_height,
-                damage_types=["Structure", "Content"],
-                vulnerability=self.model.vulnerability,
-                elevation_reference="datum",
-                ground_elevation=ground_elevation,
-                aggregation_area_fn=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
-            )
+            kwargs = {"elevation_reference": "datum"}
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
+        # Use hydromt function
+        self.model.exposure.setup_new_composite_areas(
+            percent_growth=population_growth,
+            geom_file=Path(area_path),
+            ground_floor_height=ground_floor_height,
+            damage_types=["Structure", "Content"],
+            vulnerability=self.model.vulnerability,
+            ground_elevation=ground_elevation,
+            aggregation_area_fn=aggregation_areas,
+            attribute_names=attribute_names,
+            label_names=label_names,
+            **kwargs,
+        )
 
-    def elevate_properties(
-        self,
-        elevate: IElevate,
-        ids: Optional[list[str]] = None,
-    ):
+    def elevate_properties(self, elevate: IElevate):
         """Elevate properties by adjusting the "Ground Floor Height" column
         in the FIAT exposure file.
 
@@ -293,14 +304,11 @@ class FiatAdapter(DirectImpactsAdapter):
         ----------
         elevate : Elevate
             this is an "elevate" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to elevate,
-            by default None
         """
-        # If ids are given use that as an additional filter
-        objectids = self.get_object_ids(elevate.attrs)
-        if ids:
-            objectids = [id for id in objectids if id in ids]
+        # Get the ids of the buildings that are affected by the selection type
+        objectids = self.get_measure_buildings_ids(elevate.attrs)
+        # Make sure that only buildings from the template are affected
+        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
@@ -329,7 +337,7 @@ class FiatAdapter(DirectImpactsAdapter):
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: IBuyout, ids: Optional[list[str]] = None):
+    def buyout_properties(self, buyout: IBuyout):
         """Buyout properties by setting the "Max Potential Damage: {}" column to
         zero in the FIAT exposure file.
 
@@ -337,9 +345,12 @@ class FiatAdapter(DirectImpactsAdapter):
         ----------
         buyout : Buyout
             this is an "buyout" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on, by default None
         """
+        # Get the ids of the buildings that are affected by the selection type
+        objectids = self.get_measure_buildings_ids(buyout.attrs)
+        # Make sure that only buildings from the template are affected
+        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
+
         # Get columns that include max damage
         damage_cols = [
             c
@@ -347,21 +358,8 @@ class FiatAdapter(DirectImpactsAdapter):
             if "Max Potential Damage:" in c
         ]
 
-        # Get objects that are buildings (using site info)
-        buildings_rows = ~self.model.exposure.exposure_db["Primary Object Type"].isin(
-            self.config.non_building_names
-        )
-
         # Get rows that are affected
-        objectids = self.get_object_ids(buyout.attrs)
-        rows = (
-            self.model.exposure.exposure_db["Object ID"].isin(objectids)
-            & buildings_rows
-        )
-
-        # If ids are given use that as an additional filter
-        if ids:
-            rows = self.model.exposure.exposure_db["Object ID"].isin(ids) & rows
+        rows = self.model.exposure.exposure_db["Object ID"].isin(objectids)
 
         # Update columns using economic growth value
         updated_max_pot_damage = self.model.exposure.exposure_db.copy()
@@ -372,9 +370,7 @@ class FiatAdapter(DirectImpactsAdapter):
             updated_max_potential_damages=updated_max_pot_damage
         )
 
-    def floodproof_properties(
-        self, floodproof: IFloodProof, ids: Optional[list[str]] = None
-    ):
+    def floodproof_properties(self, floodproof: IFloodProof):
         """Floodproof properties by creating new depth-damage functions and
         adding them in "Damage Function: {}" column in the FIAT exposure file.
 
@@ -382,14 +378,11 @@ class FiatAdapter(DirectImpactsAdapter):
         ----------
         floodproof : FloodProof
             this is an "floodproof" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
         """
-        # If ids are given use that as an additional filter
-        objectids = self.get_object_ids(floodproof.attrs)
-        if ids:
-            objectids = [id for id in objectids if id in ids]
+        # Get the ids of the buildings that are affected by the selection type
+        objectids = self.get_measure_buildings_ids(floodproof.attrs)
+        # Make sure that only buildings from the template are affected
+        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
 
         # Use hydromt function
         self.model.exposure.truncate_damage_function(
@@ -418,8 +411,8 @@ class FiatAdapter(DirectImpactsAdapter):
             )
         fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
 
-        with cd(self.model_path):
-            with open(self.model_path.joinpath("fiat.log"), "a") as log_handler:
+        with cd(self.output_model_path):
+            with open(self.output_model_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
                     f'"{fiat_exec}" run settings.toml',
                     stdout=log_handler,
@@ -428,3 +421,6 @@ class FiatAdapter(DirectImpactsAdapter):
                 )
 
         return process.returncode
+
+    def write_csv_results(self, csv_path):
+        shutil.copy(self.output_model_path.joinpath("output", "output.csv"), csv_path)

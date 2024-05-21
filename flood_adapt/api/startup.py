@@ -29,8 +29,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDa
 
 
 def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
-    # TODO should this return a list of geojson? if yes what form?
-    """Gets the aggregations areas that are used for the site and fiat
+    """Gets the aggregations areas that are used for the site and direct impacts
 
     Parameters
     ----------
@@ -82,7 +81,7 @@ def get_model_grid(database: IDatabase) -> QuadtreeGrid:
 
 @staticmethod
 def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
-    """Gets the SVI map that are used in Fiat
+    """Gets the SVI map that are used in the direct impacts model
 
     Parameters
     ----------
@@ -94,7 +93,7 @@ def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return database.get_static_map(database.site.attrs.fiat.svi.geom)
+        return database.get_static_map(database.site.attrs.direct_impacts.svi.geom)
     except Exception:
         return None
 
@@ -124,7 +123,7 @@ def get_static_map(
 
 
 def get_buildings(database: IDatabase) -> GeoDataFrame:
-    """Gets the buildings exposure that are used in Fiat
+    """Gets the buildings exposure that are used in the direct impacts model
 
     Parameters
     ----------
@@ -133,7 +132,7 @@ def get_buildings(database: IDatabase) -> GeoDataFrame:
     Returns
     -------
     GeoDataFrame
-        GeoDataFrames with the buildings from FIAT exposure
+        GeoDataFrames with the buildings from the direct impacts exposure
     """
     return database.get_buildings()
 

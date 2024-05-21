@@ -12,7 +12,6 @@ import plotly.graph_objects as go
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
-from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
@@ -21,6 +20,9 @@ from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
 from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
+from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
+    DirectImpactsAdapterFactory,
+)
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
@@ -107,7 +109,7 @@ class Database(IDatabase):
     # General methods
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
-        These are expected to much the ones in the FIAT model
+        These are expected to much the ones in the direct impacts model
 
         Returns
         -------
@@ -656,26 +658,25 @@ class Database(IDatabase):
             return str("")
 
     def get_buildings(self) -> GeoDataFrame:
-        """Get the building footprints from the FIAT model.
+        """Get the building footprints from the direct impacts model.
         This should only be the buildings excluding any other types (e.g., roads)
         The parameters non_building_names in the site config is used for that
 
         Returns
         -------
         GeoDataFrame
-            building footprints with all the FIAT columns
+            building footprints with all the exposure columns
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
+        # Set adapter
+        Adapter = DirectImpactsAdapterFactory.get_adapter(
+            self.site_info.attrs.direct_impacts.model
         )
-        fm.read()
-        buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
-            non_building_names=self.site.attrs.direct_impacts.non_building_names,
-            return_gdf=True,
+        di_adapter = Adapter(
+            database_path=self.database_input_path.parent,
+            impacts_path=self.impacts_path,
+            config=self.site_info.attrs.direct_impacts,
         )
+        buildings = di_adapter.get_all_buildings_geo()
 
         return buildings
 
@@ -687,18 +688,16 @@ class Database(IDatabase):
         list
             _description_
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
+        # Set adapter
+        Adapter = DirectImpactsAdapterFactory.get_adapter(
+            self.site_info.attrs.direct_impacts.model
         )
-        fm.read()
-        types = fm.exposure.get_primary_object_type()
-        for name in self.site.attrs.direct_impacts.non_building_names:
-            if name in types:
-                types.remove(name)
-        # Add "all" type for using as identifier
-        types.append("all")
+        di_adapter = Adapter(
+            database_path=self.database_input_path.parent,
+            impacts_path=self.impacts_path,
+            config=self.site_info.attrs.direct_impacts,
+        )
+        types = di_adapter.get_building_types()
         return types
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
@@ -873,7 +872,7 @@ class Database(IDatabase):
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
         return zsmax
 
-    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+    def get_impact_building_footprints(self, scenario_name: str) -> GeoDataFrame:
         """Return a geodataframe of the impacts at the footprint level.
 
         Parameters

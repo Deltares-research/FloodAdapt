@@ -167,7 +167,7 @@ class SVIModel(BaseModel):
 
 
 class DirectImpactsModel(BaseModel):
-    """class describing the accepted input for the variable fiat in Site"""
+    """class describing the accepted input for the variable direct impacts in Site"""
 
     model: Optional[str] = "fiat"
     exposure_crs: str
@@ -181,6 +181,7 @@ class DirectImpactsModel(BaseModel):
     new_development_file_name: Optional[str] = None
     save_simulation: Optional[bool] = False
     svi: Optional[SVIModel] = None
+    equity_gamma: Optional[float] = 1.2
 
 
 class RiverModel(BaseModel):

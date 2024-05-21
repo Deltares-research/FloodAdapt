@@ -3,7 +3,7 @@ from abc import ABC
 from pathlib import Path
 from typing import Any, Union
 
-from flood_adapt.integrator.interface.direct_impact_adapter_factory import (
+from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
     DirectImpactAdapterFactory,
 )
 from flood_adapt.object_model.interface.measures import ImpactMeasureModel

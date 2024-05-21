@@ -1,7 +1,7 @@
-from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
+from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
 
 
-class DirectImpactAdapterFactory:
+class DirectImpactsAdapterFactory:
     """Simple parser to get the respective DirectImpactAdapter class from a model name string given in the config file
 
     Args:

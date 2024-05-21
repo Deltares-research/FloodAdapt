@@ -31,8 +31,8 @@ def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.ar
     return database.get_max_water_level(name, rp)
 
 
-def get_fiat_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
-    return database.get_fiat_footprints(name)
+def get_impact_building_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+    return database.get_impact_building_footprints(name)
 
 
 def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:

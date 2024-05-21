@@ -15,8 +15,8 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-from flood_adapt.integrator.interface.direct_impact_adapter import DirectImpactsAdapter
-from flood_adapt.integrator.interface.direct_impact_adapter_factory import (
+from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
+from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
     DirectImpactAdapterFactory,
 )
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -172,18 +172,19 @@ class DirectImpacts:
     def preprocess(self):
         # TODO move this method to the adapter?
         """Updates Direct Impacts model based on scenario information"""
-        ids_existing = self.adapter.get_all_object_ids()
+
+        ids_all_buildings = self.adapter.get_all_buildings_ids()
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
         if self.socio_economic_change.attrs.economic_growth != 0:
             self.adapter.apply_economic_growth(
                 economic_growth=self.socio_economic_change.attrs.economic_growth,
-                ids=ids_existing,  #
+                ids=ids_all_buildings,  #
             )
 
-        # Then we create the new population growth area if provided
-        # In that area only the economic growth is taken into account
+        # Then the new population growth area is added if provided
+        # In the new areas, the economic growth is taken into account!
         # Order matters since for the pop growth new, we only want the economic growth!
         if self.socio_economic_change.attrs.population_growth_new != 0:
             # Get path of new development area geometry
@@ -193,12 +194,14 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
+            # Get DEM location for assigning elevation to new areas
             dem = (
                 self.database_input_path.parent
                 / "static"
                 / "dem"
                 / self.site_info.attrs.dem.filename
             )
+            # Get available aggregation areas for assigning to new areas
             aggregation_areas = [
                 self.database_input_path.parent / "static" / "site" / aggr.file
                 for aggr in self.site_info.attrs.direct_impacts.aggregation
@@ -211,7 +214,7 @@ class DirectImpacts:
                 f"Aggregation Label: {aggr.name}"
                 for aggr in self.site_info.attrs.direct_impacts.aggregation
             ]
-
+            # Call adapter method to add the new areas
             self.adapter.apply_population_growth_new(
                 population_growth=self.socio_economic_change.attrs.population_growth_new,
                 ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
@@ -223,11 +226,11 @@ class DirectImpacts:
                 label_names=label_names,
             )
 
-        # Last apply population growth to existing objects
+        # Then apply population growth to existing objects
         if self.socio_economic_change.attrs.population_growth_existing != 0:
             self.adapter.apply_population_growth_existing(
                 population_growth=self.socio_economic_change.attrs.population_growth_existing,
-                ids=ids_existing,
+                ids=ids_all_buildings,
             )
 
         # Then apply Impact Strategy by iterating trough the impact measures
@@ -235,50 +238,48 @@ class DirectImpacts:
             if measure.attrs.type == "elevate_properties":
                 self.adapter.elevate_properties(
                     elevate=measure,
-                    ids=ids_existing,
                 )
             elif measure.attrs.type == "buyout_properties":
                 self.adapter.buyout_properties(
                     buyout=measure,
-                    ids=ids_existing,
                 )
             elif measure.attrs.type == "floodproof_properties":
                 self.adapter.floodproof_properties(
                     floodproof=measure,
-                    ids=ids_existing,
                 )
             else:
                 print("Impact measure type not recognized!")
 
-        # setup hazard for fiat
+        # Setup hazard for the Direct Impacts model
         self.adapter.set_hazard(self.hazard)
 
-        # Save the updated FIAT model
-        self.adapter.model.set_root(self.adapter.model_path)
-        self.adapter.model.write()
+        # Save the updated Direct Impacts model
+        self.adapter.write_model()
 
+        # Close the model writer to make sure that files can be deleted afterwards
         self.adapter.close_model()
 
     def postprocess(self):
-        # Postprocess the FIAT results
-        if not self.fiat_has_run_check():
-            raise RuntimeError("Delft-FIAT did not run successfully!")
+        # Postprocess the Direct Impacts model results
+        if not self.adapter.has_run_check():
+            raise RuntimeError(
+                f"{self.adapter.model_name} model did not run successfully!"
+            )
 
-        # First move and rename fiat output csv
-        fiat_results_path = self.impacts_path.joinpath(
-            f"Impacts_detailed_{self.name}.csv"
-        )
-        shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
+        # First write a csv file with the direct impact results
+        # TODO check which columns should be in here
+        csv_path = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv")
+        self.adapter.write_csv_results(csv_path)
 
         # Add exceedance probability if needed (only for risk)
         if self.hazard.event_mode == "risk":
-            fiat_results_df = self._add_exeedance_probability(fiat_results_path)
+            self._add_exeedance_probability(csv_path)
 
         # Get the results dataframe
-        fiat_results_df = pd.read_csv(fiat_results_path)
+        results_df = pd.read_csv(csv_path)
 
         # Create the infometrics files
-        metrics_path = self._create_infometrics(fiat_results_df)
+        metrics_path = self._create_infometrics(results_df)
 
         # Create the infographic files
         self._create_infographics(self.hazard.event_mode, metrics_path)
@@ -291,37 +292,39 @@ class DirectImpacts:
         self._create_aggregation(metrics_path)
 
         # Merge points data to building footprints
-        self._create_footprints(fiat_results_df)
+        self._create_footprints(results_df)
 
         # Create a roads spatial file
         if self.site_info.attrs.direct_impacts.roads_file_name:
-            self._create_roads(fiat_results_df)
+            self._create_roads(results_df)
 
         logging.info("Post-processing complete!")
 
-        # If site config is set to not keep FIAT simulation, then delete folder
+        # If site config is set to not keep model simulation, then delete folder
         if not self.site_info.attrs.direct_impacts.save_simulation:
             try:
-                shutil.rmtree(self.fiat_path)
+                shutil.rmtree(self.adapter.output_model_path)
             except OSError as e_info:
-                logging.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
+                logging.warning(
+                    f"{e_info}\nCould not delete {self.adapter.output_model_path}."
+                )
 
-    def _create_roads(self, fiat_results_df):
+    def _create_roads(self, results_df):
         logging.info("Saving road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
-            self.fiat_path.joinpath(
+            self.adapter.output_model_path.joinpath(
                 "output", self.site_info.attrs.direct_impacts.roads_file_name
             )
         )
         # Get columns to use
         aggr_cols = [
-            name for name in fiat_results_df.columns if "Aggregation Label:" in name
+            name for name in results_df.columns if "Aggregation Label:" in name
         ]
         inun_cols = [name for name in roads.columns if "Inundation Depth" in name]
         # Merge data
         roads = roads[["Object ID", "geometry"] + inun_cols].merge(
-            fiat_results_df[["Object ID", "Primary Object Type"] + aggr_cols],
+            results_df[["Object ID", "Primary Object Type"] + aggr_cols],
             on="Object ID",
         )
         # Save as geopackage
@@ -346,7 +349,7 @@ class DirectImpacts:
             if not self.site_info.attrs.direct_impacts.aggregation[ind].equity:
                 continue
 
-            fiat_data = pd.read_csv(file)
+            aggr_data = pd.read_csv(file)
 
             # Create Equity object
             equity = Equity(
@@ -355,7 +358,7 @@ class DirectImpacts:
                         ind
                     ].equity.census_data
                 ),
-                damages_table=fiat_data,
+                damages_table=aggr_data,
                 aggregation_label=self.site_info.attrs.direct_impacts.aggregation[
                     ind
                 ].field_name,
@@ -368,13 +371,12 @@ class DirectImpacts:
                 damage_column_pattern="TotalDamageRP{rp}",
             )
             # Calculate equity
-            # TODO gamma in configuration file?
-            gamma = 1.2  # elasticity
+            gamma = self.site_info.attrs.direct_impacts.equity_gamma  # elasticity
             df_equity = equity.equity_calculation(gamma)
             # Merge with metrics tables and resave
-            metrics_new = fiat_data.merge(
+            metrics_new = aggr_data.merge(
                 df_equity,
-                left_on=fiat_data.columns[0],
+                left_on=aggr_data.columns[0],
                 right_on=self.site_info.attrs.direct_impacts.aggregation[
                     ind
                 ].field_name,
@@ -439,11 +441,10 @@ class DirectImpacts:
                 file_format="geopackage",
             )
 
-    def _create_footprints(self, fiat_results_df):
+    def _create_footprints(self, results_df):
         logging.info("Saving impacts on building footprints...")
 
         # Get footprints file paths from site.toml
-        # TODO ensure that if this does not happen we get same file name output from FIAT?
         # Check if there is a footprint file given
         if not self.site_info.attrs.direct_impacts.building_footprints:
             raise ValueError("No building footprints are provided.")
@@ -460,32 +461,32 @@ class DirectImpacts:
         # TODO Will it save time if we load this footprints once when the database is initialized?
         footprints = gpd.read_file(footprints_path, engine="pyogrio")
         # Step to ensure that results is not a Geodataframe
-        if "geometry" in fiat_results_df.columns:
-            del fiat_results_df["geometry"]
+        if "geometry" in results_df.columns:
+            del results_df["geometry"]
         # Check if there is new development area
         new_development_area = None
-        file_path = self.fiat_path.joinpath(
+        file_path = self.adapter.output_model_path.joinpath(
             "output", self.site_info.attrs.direct_impacts.new_development_file_name
         )
         if file_path.exists():
             new_development_area = gpd.read_file(file_path)
         # Save file
         PointsToFootprints.write_footprint_file(
-            footprints, fiat_results_df, outpath, extra_footprints=new_development_area
+            footprints, results_df, outpath, extra_footprints=new_development_area
         )
 
-    def _add_exeedance_probability(self, fiat_results_path):
-        """Adds exceedance probability to the fiat results dataframe
+    def _add_exeedance_probability(self, results_path):
+        """Adds exceedance probability to the direct impacts results dataframe
 
         Parameters
         ----------
-        fiat_results_path : str
-            Path to the fiat results csv file
+        results_path : str
+            Path to the direct impacts results csv file
 
         Returns
         -------
         pandas.DataFrame
-            FIAT results dataframe with exceedance probability added"""
+            direct impacts results dataframe with exceedance probability added"""
 
         # Get config path
         config_path = self.database_input_path.parent.joinpath(
@@ -499,15 +500,13 @@ class DirectImpacts:
             raise ValueError("Not all required keys are present in the config file.")
 
         # Get the exceedance probability
-        fiat_results_df = ExceedanceProbabilityCalculator(
-            config["column"]
-        ).append_to_file(
-            fiat_results_path, fiat_results_path, config["threshold"], config["period"]
+        results_df = ExceedanceProbabilityCalculator(config["column"]).append_to_file(
+            results_path, results_path, config["threshold"], config["period"]
         )
 
-        return fiat_results_df
+        return results_df
 
-    def _create_infometrics(self, fiat_results_df) -> Path:
+    def _create_infometrics(self, results_df) -> Path:
         # Get the metrics configuration
         logging.info("Calculating infometrics...")
 
@@ -535,13 +534,13 @@ class DirectImpacts:
         metrics_writer = MetricsFileWriter(metrics_config_path)
 
         metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
+            df_results=results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate=None,
         )
 
         metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
+            df_results=results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate="all",
         )

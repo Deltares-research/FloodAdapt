@@ -42,6 +42,8 @@ class DirectImpactsAdapter(ABC):
             # Map is always needed!
             self.bfe["geom"] = Path(database_path) / "static" / config.bfe.geom
             self.bfe["name"] = config.bfe.field_name
+        else:
+            self.bfe = None
 
         self._create_model_dir()
 
