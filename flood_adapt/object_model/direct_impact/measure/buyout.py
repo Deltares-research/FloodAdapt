@@ -24,7 +24,7 @@ class Buyout(ImpactMeasure, IBuyout):
         obj = Buyout()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = BuyoutModel.parse_obj(toml)
+        obj.attrs = BuyoutModel.model_validate(toml)
         # if measure is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         return obj
@@ -36,7 +36,7 @@ class Buyout(ImpactMeasure, IBuyout):
         """create Buyout from object, e.g. when initialized from GUI"""
 
         obj = Buyout()
-        obj.attrs = BuyoutModel.parse_obj(data)
+        obj.attrs = BuyoutModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 

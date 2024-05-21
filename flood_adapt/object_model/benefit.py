@@ -504,7 +504,7 @@ class Benefit(IBenefit):
         obj = Benefit()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = BenefitModel.parse_obj(toml)
+        obj.attrs = BenefitModel.model_validate(toml)
         # if benefits is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         obj.init()
@@ -515,7 +515,7 @@ class Benefit(IBenefit):
         """create Benefit object from dictionary, e.g. when initialized from GUI"""
 
         obj = Benefit()
-        obj.attrs = BenefitModel.parse_obj(data)
+        obj.attrs = BenefitModel.model_validate(data)
         obj.database_input_path = Path(database_input_path)
         obj.init()
         return obj

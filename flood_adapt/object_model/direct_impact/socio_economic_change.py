@@ -5,4 +5,4 @@ class SocioEconomicChange:
     """The Projection class containing various risk drivers."""
 
     def __init__(self, data: SocioEconomicChangeModel):
-        self.attrs = SocioEconomicChangeModel.parse_obj(data)
+        self.attrs = SocioEconomicChangeModel.model_validate(data)

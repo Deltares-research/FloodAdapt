@@ -7,7 +7,7 @@ class PhysicalProjection:
     attrs: PhysicalProjectionModel
 
     def __init__(self, data: PhysicalProjectionModel):
-        self.attrs = PhysicalProjectionModel.parse_obj(data)
+        self.attrs = PhysicalProjectionModel.model_validate(data)
 
     def __eq__(self, other):
         if not isinstance(other, PhysicalProjection):
