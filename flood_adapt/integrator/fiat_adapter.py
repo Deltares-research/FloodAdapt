@@ -15,48 +15,27 @@ from flood_adapt.object_model.interface.measures import (
     IFloodProof,
     ImpactMeasureModel,
 )
-from flood_adapt.object_model.interface.site import DirectImpactsModel, ISite
+from flood_adapt.object_model.interface.site import DirectImpactsModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.utils import cd
 
 
 class FiatAdapter(DirectImpactsAdapter):
-    """Class holding all the attributes of the template fiat model and
-    the methods to adjust it according to the projection and strategy
-    attributes.
+    """Implementation of a DirectImpactsAdapter class for a Delft-FIAT model including
+    all the methods for reading and writing model data, and adjusting the model based
+    on scenarios.
     """
 
-    name = "Delft-FIAT"
-    template_model_root: Path
-    model_path: Path
-    config: DirectImpactsModel
+    model_name = "fiat"
 
     def __init__(
         self,
         database_path: str,
         impacts_path: str,
-        site: ISite,
         config: DirectImpactsModel,
     ) -> None:
-        """Loads FIAT model based on a root directory."""
-        self.template_model_root = Path(database_path) / "static" / "templates" / "fiat"
-        self.model_path = Path(impacts_path).joinpath("fiat")
-        self.config = config
-        self.site = site
-        self.database_input_path = Path(database_path) / "input"
-        # Setup base flood elevation if given
-        if config.bfe:
-            self.bfe = {}
-            if config.bfe.table:
-                self.bfe["mode"] = "table"
-                self.bfe["table"] = (
-                    Path(database_path) / "static" / "site" / config.bfe.table
-                )
-            else:
-                self.bfe["mode"] = "geom"
-            # Map is always needed!
-            self.bfe["geom"] = Path(database_path) / "static" / "site" / config.bfe.geom
-            self.bfe["name"] = config.bfe.field_name
+        super().__init__(database_path, impacts_path, config)
+        self._read_template()
 
     def close_model(self) -> None:
         # Close fiat_logger
@@ -64,17 +43,24 @@ class FiatAdapter(DirectImpactsAdapter):
             handler.close()
         del self.model
 
-    def read_template(self):
+    def _read_template(self):
         # First read template FIAT model
         self.logger = setuplog("hydromt_fiat", log_level=10)
         self.model = FiatModel(
-            root=self.template_model_root, mode="r", logger=self.logger
+            root=self.template_model_path, mode="r", logger=self.logger
         )
         self.model.read()
 
-    def get_all_object_ids(self):
+    def get_all_object_ids(self) -> list:
+        """
+        Retrieves the IDs of all existing objects in the FIAT model.
+
+        Returns:
+            list: A list of object IDs.
+        """
         # Get ids of existing objects
-        return self.model.exposure.exposure_db["Object ID"].to_list()
+        ids = self.model.exposure.get_object_ids("all")
+        return ids
 
     def get_object_ids(self, attrs: ImpactMeasureModel) -> list[Any]:
         """Get ids of objects that are affected by the measure.
@@ -84,10 +70,6 @@ class FiatAdapter(DirectImpactsAdapter):
         list[Any]
             list of ids
         """
-
-        # use hydromt-fiat to load the fiat model if it is not provided
-        fiat_model = FiatModel(root=self.template_model_root, mode="r")
-        fiat_model.read()
 
         # check if polygon file is used, then get the absolute path
         if attrs.polygon_file:
@@ -101,7 +83,7 @@ class FiatAdapter(DirectImpactsAdapter):
             polygon_file = None
 
         # use the hydromt-fiat method to the ids
-        ids = fiat_model.exposure.get_object_ids(
+        ids = self.fiat_model.exposure.get_object_ids(
             selection_type=attrs.selection_type,
             property_type=attrs.property_type,
             non_building_names=self.config.non_building_names,
@@ -112,13 +94,13 @@ class FiatAdapter(DirectImpactsAdapter):
 
         return ids
 
-    def has_run_check(self):
+    def has_run_check(self) -> bool:
         """Checks if direct impacts model has finished
 
         Returns
         -------
         boolean
-            True if it has run, False if something went wrong
+            True if the FIAT model has finished running successfully, False otherwise
         """
         log_file = self.fiat_path.joinpath("fiat.log")
         if log_file.exists():

@@ -71,7 +71,6 @@ class DirectImpacts:
         self.adapter = Adapter(
             database_path=self.database_input_path.parent,
             impacts_path=self.impacts_path,
-            site=self.site_info,
             config=self.site_info.attrs.direct_impacts,
         )
 
@@ -135,23 +134,25 @@ class DirectImpacts:
             raise ValueError(
                 "Hazard for this scenario has not been run yet! Direct Impact model cannot be initiated."
             )
-        logging.info(f"{self.adapter.name} model is used as the Direct Impact model.")
-        logging.info(f"Preprocessing {self.adapter.name} model...")
+        logging.info(
+            f"{self.adapter.model_name} model is used as the Direct Impacts model."
+        )
+        logging.info(f"Preprocessing {self.adapter.model_name} model...")
         # Preprocess all impact model input
         start_time = time.time()
         self.preprocess()
         end_time = time.time()
         print(
-            f"{self.adapter.name} preprocessing took {str(round(end_time - start_time, 2))} seconds"
+            f"{self.adapter.model_name} preprocessing took {str(round(end_time - start_time, 2))} seconds"
         )
 
     def run_models(self):
-        logging.info(f"Running {self.adapter.name} model...")
+        logging.info(f"Running {self.adapter.model_name} model...")
         start_time = time.time()
         return_code = self.adapter.run()
         end_time = time.time()
         print(
-            f"Running {self.adapter.name} model took {str(round(end_time - start_time, 2))} seconds"
+            f"Running {self.adapter.model_name} model took {str(round(end_time - start_time, 2))} seconds"
         )
 
         # Indicator that direct impacts have run
@@ -159,33 +160,26 @@ class DirectImpacts:
             self.__setattr__("has_run", True)
 
     def postprocess_models(self):
-        logging.info(f"Post-processing {self.adapter.name} model...")
+        logging.info(f"Post-processing {self.adapter.model_name} model...")
         # Preprocess all impact model input
         start_time = time.time()
         self.postprocess()
         end_time = time.time()
         print(
-            f"{self.adapter.name} postprocessing took {str(round(end_time - start_time, 2))} seconds"
+            f"{self.adapter.model_name} postprocessing took {str(round(end_time - start_time, 2))} seconds"
         )
 
     def preprocess(self):
+        # TODO move this method to the adapter?
         """Updates Direct Impacts model based on scenario information"""
-
-        # If path for results does not yet exist, make it
-        if not self.adapter.model_path.is_dir():
-            self.adapter.model_path.mkdir(parents=True)
-        else:
-            shutil.rmtree(self.adapter.model_path)
-            self.adapter.model_path.mkdir(parents=True)
-
-        self.adapter.read_template()
         ids_existing = self.adapter.get_all_object_ids()
+
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
         if self.socio_economic_change.attrs.economic_growth != 0:
             self.adapter.apply_economic_growth(
                 economic_growth=self.socio_economic_change.attrs.economic_growth,
-                ids=ids_existing,
+                ids=ids_existing,  #
             )
 
         # Then we create the new population growth area if provided
