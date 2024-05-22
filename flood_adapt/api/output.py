@@ -27,7 +27,7 @@ def get_depth_conversion() -> float:
     return Database().get_depth_conversion()
 
 
-def get_max_water_level(name: str,  rp: int = None) -> np.array:
+def get_max_water_level(name: str, rp: int = None) -> np.array:
     return Database().get_max_water_level(name, rp)
 
 

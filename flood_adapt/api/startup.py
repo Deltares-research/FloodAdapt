@@ -99,9 +99,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
 
 
 @staticmethod
-def get_static_map(
-     path: Union[str, Path]
-) -> Union[GeoDataFrame, None]:
+def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
     """Gets a static map from the database
 
     Parameters

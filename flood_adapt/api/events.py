@@ -103,9 +103,7 @@ def save_event_toml(event: IEvent) -> None:
     Database().events.save(event)
 
 
-def save_timeseries_csv(
-    name: str, event: IEvent, df: pd.DataFrame
-) -> None:
+def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
     Database().write_to_csv(name, event, df)
 
 
@@ -117,9 +115,7 @@ def delete_event(name: str) -> None:
     Database().events.delete(name)
 
 
-def copy_event(
-    old_name: str,  new_name: str, new_description: str
-) -> None:
+def copy_event(old_name: str, new_name: str, new_description: str) -> None:
     Database().events.copy(old_name, new_name, new_description)
 
 
@@ -135,29 +131,22 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return Event.read_csv(csvpath)
 
 
-def plot_wl(
-    event: IEvent,  input_wl_df: pd.DataFrame = None
-) -> str:
+def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
     return Database().plot_wl(event, input_wl_df)
 
 
 def plot_river(
     event: IEvent,
-    
     input_river_df: list[pd.DataFrame],
 ) -> str:
     return Database().plot_river(event, input_river_df)
 
 
-def plot_rainfall(
-    event: IEvent,  input_rainfall_df: pd.DataFrame = None
-) -> str:
+def plot_rainfall(event: IEvent, input_rainfall_df: pd.DataFrame = None) -> str:
     return Database().plot_rainfall(event, input_rainfall_df)
 
 
-def plot_wind(
-    event: IEvent,  input_wind_df: pd.DataFrame = None
-) -> str:
+def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
     return Database().plot_wind(event, input_wind_df)
 
 

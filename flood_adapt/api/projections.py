@@ -30,9 +30,7 @@ def delete_projection(name: str) -> None:
     Database().projections.delete(name)
 
 
-def copy_projection(
-    old_name: str,  new_name: str, new_description: str
-) -> None:
+def copy_projection(old_name: str, new_name: str, new_description: str) -> None:
     Database().projections.copy(old_name, new_name, new_description)
 
 
@@ -40,7 +38,7 @@ def get_slr_scn_names() -> list:
     return Database().get_slr_scn_names()
 
 
-def interp_slr( slr_scenario: str, year: float) -> float:
+def interp_slr(slr_scenario: str, year: float) -> float:
     return Database().interp_slr(slr_scenario, year)
 
 

@@ -26,9 +26,7 @@ def get_measure(name: str) -> IMeasure:
     return Database().measures.get(name)
 
 
-def create_measure(
-    attrs: dict[str, Any], type: str = None
-) -> IMeasure:
+def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
     """Create a measure from a dictionary of attributes and a type string.
 
     Parameters
@@ -75,9 +73,7 @@ def delete_measure(name: str) -> None:
     Database().measures.delete(name)
 
 
-def copy_measure(
-    old_name: str,  new_name: str, new_description: str
-) -> None:
+def copy_measure(old_name: str, new_name: str, new_description: str) -> None:
     Database().measures.copy(old_name, new_name, new_description)
 
 
@@ -94,5 +90,5 @@ def calculate_volume(
     )
 
 
-def get_green_infra_table( measure_type: str) -> pd.DataFrame:
+def get_green_infra_table(measure_type: str) -> pd.DataFrame:
     return Database().get_green_infra_table(measure_type)
