@@ -6,12 +6,11 @@ from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_controller import Database
-from flood_adapt.object_model.interface.database import IDatabase
 
 # upon start up of FloodAdapt
 
 
-def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDatabase:
+def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Database:
     """Given a path and a site name returns a IDatabase object.
 
     Parameters
@@ -28,7 +27,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDa
     return Database(database_path, site_name)
 
 
-def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
+def get_aggregation_areas() -> list[GeoDataFrame]:
     # TODO should this return a list of geojson? if yes what form?
     """Gets the aggregations areas that are used for the site and fiat
 
@@ -41,10 +40,10 @@ def get_aggregation_areas(database: IDatabase) -> list[GeoDataFrame]:
     list[GeoDataFrame]
         list of GeoDataFrames with the aggregation areas
     """
-    return database.get_aggregation_areas()
+    return Database().get_aggregation_areas()
 
 
-def get_obs_points(database: IDatabase) -> GeoDataFrame:
+def get_obs_points() -> GeoDataFrame:
     """Gets the observation points specified in the site.toml. These are
         also added to the flood hazard model. They are used as marker
         locations to plot water level time series in the output tab.
@@ -58,14 +57,14 @@ def get_obs_points(database: IDatabase) -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrame with observation points from the site.toml.
     """
-    return database.get_obs_points()
+    return Database().get_obs_points()
 
 
-def get_model_boundary(database: IDatabase) -> GeoDataFrame:
-    return database.get_model_boundary()
+def get_model_boundary() -> GeoDataFrame:
+    return Database().get_model_boundary()
 
 
-def get_model_grid(database: IDatabase) -> QuadtreeGrid:
+def get_model_grid() -> QuadtreeGrid:
     """Gets the model grid that is used in SFINCS
 
     Parameters
@@ -77,11 +76,11 @@ def get_model_grid(database: IDatabase) -> QuadtreeGrid:
     QuadtreeGrid
         QuadtreeGrid with the model grid
     """
-    return database.get_model_grid()
+    return Database().get_model_grid()
 
 
 @staticmethod
-def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
+def get_svi_map() -> Union[GeoDataFrame, None]:
     """Gets the SVI map that are used in Fiat
 
     Parameters
@@ -94,14 +93,14 @@ def get_svi_map(database: IDatabase) -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return database.get_static_map(database.site.attrs.fiat.svi.geom)
+        return Database().get_static_map(Database().site.attrs.fiat.svi.geom)
     except Exception:
         return None
 
 
 @staticmethod
 def get_static_map(
-    database: IDatabase, path: Union[str, Path]
+     path: Union[str, Path]
 ) -> Union[GeoDataFrame, None]:
     """Gets a static map from the database
 
@@ -118,12 +117,12 @@ def get_static_map(
         GeoDataFrame with the static map
     """
     try:
-        return database.get_static_map(path)
+        return Database().get_static_map(path)
     except Exception:
         return None
 
 
-def get_buildings(database: IDatabase) -> GeoDataFrame:
+def get_buildings() -> GeoDataFrame:
     """Gets the buildings exposure that are used in Fiat
 
     Parameters
@@ -135,11 +134,11 @@ def get_buildings(database: IDatabase) -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the buildings from FIAT exposure
     """
-    return database.get_buildings()
+    return Database().get_buildings()
 
 
-def get_property_types(database: IDatabase) -> list:
-    return database.get_property_types()
+def get_property_types() -> list:
+    return Database().get_property_types()
 
 
 def get_hazard_measure_types():

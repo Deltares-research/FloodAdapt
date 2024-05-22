@@ -3,6 +3,7 @@ from typing import Any
 import geopandas as gpd
 import pandas as pd
 
+from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -11,23 +12,22 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
 )
 from flood_adapt.object_model.interface.site import ISite
 
 
-def get_measures(database: IDatabase) -> dict[str, Any]:
-    return database.measures.list_objects()
+def get_measures() -> dict[str, Any]:
+    return Database().measures.list_objects()
 
 
-def get_measure(name: str, database: IDatabase) -> IMeasure:
-    return database.measures.get(name)
+def get_measure(name: str) -> IMeasure:
+    return Database().measures.get(name)
 
 
 def create_measure(
-    attrs: dict[str, Any], type: str, database: IDatabase = None
+    attrs: dict[str, Any], type: str = None
 ) -> IMeasure:
     """Create a measure from a dictionary of attributes and a type string.
 
@@ -47,7 +47,7 @@ def create_measure(
     """
 
     # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
-    database_path = database.input_path if database else None
+    database_path = Database().input_path
 
     if type == "elevate_properties":
         return Elevate.load_dict(attrs, database_path)
@@ -63,22 +63,22 @@ def create_measure(
         return GreenInfrastructure.load_dict(attrs, database_path)
 
 
-def save_measure(measure: IMeasure, database: IDatabase) -> None:
-    database.measures.save(measure)
+def save_measure(measure: IMeasure) -> None:
+    Database().measures.save(measure)
 
 
-def edit_measure(measure: IMeasure, database: IDatabase) -> None:
-    database.measures.edit(measure)
+def edit_measure(measure: IMeasure) -> None:
+    Database().measures.edit(measure)
 
 
-def delete_measure(name: str, database: IDatabase) -> None:
-    database.measures.delete(name)
+def delete_measure(name: str) -> None:
+    Database().measures.delete(name)
 
 
 def copy_measure(
-    old_name: str, database: IDatabase, new_name: str, new_description: str
+    old_name: str,  new_name: str, new_description: str
 ) -> None:
-    database.measures.copy(old_name, new_name, new_description)
+    Database().measures.copy(old_name, new_name, new_description)
 
 
 # Green infrastructure
@@ -94,5 +94,5 @@ def calculate_volume(
     )
 
 
-def get_green_infra_table(database: IDatabase, measure_type: str) -> pd.DataFrame:
-    return database.get_green_infra_table(measure_type)
+def get_green_infra_table( measure_type: str) -> pd.DataFrame:
+    return Database().get_green_infra_table(measure_type)
