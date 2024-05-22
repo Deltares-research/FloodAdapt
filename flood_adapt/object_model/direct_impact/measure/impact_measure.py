@@ -33,7 +33,11 @@ class ImpactMeasure(ABC):
         Adapter = DirectImpactsAdapterFactory.get_adapter(
             site.attrs.direct_impacts.model
         )
+        di_adapter = Adapter(
+            database_path=Path(self.database_input_path).parent,
+            config=site.attrs.direct_impacts,
+        )
 
-        ids = Adapter.get_object_ids(attrs=self.attrs)
+        ids = di_adapter.get_measure_buildings_ids(attrs=self.attrs)
 
         return ids

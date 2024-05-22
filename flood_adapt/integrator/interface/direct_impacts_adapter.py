@@ -3,31 +3,42 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional, Union
 
-from flood_adapt.object_model.interface.measures import IBuyout, IElevate, IFloodProof
+from geopandas import GeoDataFrame
+
+from flood_adapt.object_model.interface.measures import (
+    IBuyout,
+    IElevate,
+    IFloodProof,
+    ImpactMeasureModel,
+)
 from flood_adapt.object_model.interface.site import DirectImpactsModel
 
 
 class DirectImpactsAdapter(ABC):
-    """Abstract class holding the blueprints of a Direct Impacts model that can be connected to FloodAdapt.
+    """Abstract class holding the blueprints for a Direct Impacts model that can be connected to FloodAdapt.
     This includes methods for pre-processing the model (w.r.t. projections, strategies and events), running the model,
     post-processing the model, reading the results and reading the template model.
     """
 
-    model_name: str
-    template_model_path: Path
-    output_model_path: Path
-    config: DirectImpactsModel
+    model_name: str  # name of the model used
 
     def __init__(
         self,
         database_path: str,
-        impacts_path: str,
         config: DirectImpactsModel,
+        impacts_path: str = None,
     ) -> None:
+        """
+        Initializes the DirectImpactsAdapter class.
+
+        Args:
+            database_path (str): The path to the database.
+            config (DirectImpactsModel): The configuration for the direct impacts model.
+            impacts_path (str, optional): The path to the impacts location. Defaults to None.
+        """
         self.template_model_path = (
             Path(database_path) / "static" / "templates" / self.model_name
-        )  # template should be saved in a folder with the mode name
-        self.output_model_path = Path(impacts_path).joinpath(self.model_name)
+        )  # template should be saved in a folder with the model name
         self.config = config
         self.database_input_path = Path(database_path) / "input"
 
@@ -45,14 +56,63 @@ class DirectImpactsAdapter(ABC):
         else:
             self.bfe = None
 
-        self._create_model_dir()
+        if (
+            impacts_path
+        ):  # if impacts_path is given, an output location can be generated
+            self.output_model_path = Path(impacts_path).joinpath(self.model_name)
 
-    def _create_model_dir(self):
+    def _create_output_model_dir(self):
+        """
+        Creates the output model directory if it doesn't exist.
+        If the directory already exists, it removes it and creates a new one.
+        """
         if not self.output_model_path.is_dir():
             self.output_model_path.mkdir(parents=True)
         else:
             shutil.rmtree(self.output_model_path)
             self.output_model_path.mkdir(parents=True)
+
+    @abstractmethod
+    def get_building_locations(self) -> GeoDataFrame:
+        """
+        Retrieves the locations of all buildings from the template model.
+
+        Returns:
+            GeoDataFrame: A GeoDataFrame containing the locations of buildings.
+        """
+        ...
+
+    @abstractmethod
+    def get_building_types(self) -> list[str]:
+        """
+        Retrieves the list of building types from the model's exposure data.
+
+        Returns:
+            A list of building types, excluding the ones specified in the config.non_building_names.
+        """
+        ...
+
+    @abstractmethod
+    def get_building_ids(self) -> list[int]:
+        """
+        Retrieves the IDs of all existing buildings in the FIAT model.
+
+        Returns:
+            list: A list of buildings IDs.
+        """
+        ...
+
+    @abstractmethod
+    def get_measure_building_ids(self, attrs: ImpactMeasureModel) -> list[int]:
+        """Get ids of objects that are affected by the measure.
+
+        Returns
+        -------
+        list[Any]
+            list of ids
+        """
+
+        ...
 
     @abstractmethod
     def has_run_check(self) -> bool:
@@ -61,41 +121,52 @@ class DirectImpactsAdapter(ABC):
         Returns
         -------
         boolean
-            True if it has run, False if something went wrong
+            True if the FIAT model has finished running successfully, False otherwise
+        """
+        ...
+
+    @abstractmethod
+    def set_hazard(self, hazard) -> None:
+        """
+        Sets the hazard data for the model.
+
+        Args:
+            hazard (Hazard): The hazard object containing the necessary information.
+
+        Returns:
+            None
         """
         ...
 
     @abstractmethod
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = None
-    ):
-        """Implement economic growth in the Direct Impacts Model exposure. This is only done for building objects (not e.g., roads).
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+        self, economic_growth: float, ids: Optional[list] = None
+    ) -> None:
+        """
+        Applies economic growth to the maximum potential damage of buildings.
 
-        Parameters
-        ----------
-        economic_growth : float
-            Percentage value of economic growth.
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the economic growth on,
-            by default None
+        Args:
+            economic_growth (float): The economic growth rate in percentage.
+            ids (Optional[list]): Optional list of building IDs to apply the economic growth to.
+
+        Returns:
+            None
         """
         ...
 
     @abstractmethod
     def apply_population_growth_existing(
         self, population_growth: float, ids: Optional[list[str]] = None
-    ):
-        """Implement population growth in the exposure of FIAT. This is only done for buildings.
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+    ) -> None:
+        """
+        Applies population growth to the existing maximum potential damage values for buildings.
 
-        Parameters
-        ----------
-        population_growth : float
-            Percentage value of population growth.
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
+        Args:
+            population_growth (float): The percentage of population growth.
+            ids (Optional[list[str]]): Optional list of building IDs to apply the population growth to.
+
+        Returns:
+            None
         """
         ...
 
@@ -110,68 +181,107 @@ class DirectImpactsAdapter(ABC):
         aggregation_areas: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
-    ):
-        """Implement population growth in new development area.
+    ) -> None:
+        """
+        Applies population growth to the model's exposure data.
 
-        Parameters
-        ----------
-        population_growth : float
-            percentage of the existing population (value of assets) to use for the new area
-        ground_floor_height : float
-            height of the ground floor to be used for the objects in the new area
-        elevation_type : str
-            "floodmap" or "datum"
-        area_path : str
-            path to geometry file with new development areas
+        Args:
+            population_growth (float): The percentage population growth.
+            ground_floor_height (float): The height of the ground floor.
+            elevation_type (str): The type of elevation reference. Can be 'floodmap' or 'datum'.
+            area_path (str): The path to the area file.
+            ground_elevation (Union[None, str, Path], optional): The ground elevation. Defaults to None.
+            aggregation_areas (Union[List[str], List[Path], str, Path], optional): The aggregation areas. Defaults to None.
+            attribute_names (Union[List[str], str], optional): The attribute names. Defaults to None.
+            label_names (Union[List[str], str], optional): The label names. Defaults to None.
+
+        Raises:
+            ValueError: If elevation_type is not 'floodmap' or 'datum'.
+
+        Returns:
+            None
+        """
+        # TODO Use model template for aggregation areas
+        ...
+
+    @abstractmethod
+    def elevate_properties(self, elevate: IElevate) -> None:
+        """
+        Elevates the properties of selected buildings based on the provided elevation information.
+
+        Args:
+            elevate (IElevate): An object containing the elevation information.
+
+        Raises:
+            ValueError: If the elevation type is neither 'floodmap' nor 'datum'.
+
+        Returns:
+            None
         """
         ...
 
     @abstractmethod
-    def elevate_properties(
-        self,
-        elevate: IElevate,
-        ids: Optional[list[str]] = None,
-    ):
-        """Elevate properties by adjusting the "Ground Floor Height" column
-        in the FIAT exposure file.
+    def buyout_properties(self, buyout: IBuyout) -> None:
+        """
+        Buys out properties based on the provided buyout object.
 
-        Parameters
-        ----------
-        elevate : Elevate
-            this is an "elevate" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to elevate,
-            by default None
+        Args:
+            buyout (IBuyout): The buyout object containing information about the properties to be bought out.
+
+        Returns:
+            None
         """
         ...
 
     @abstractmethod
-    def buyout_properties(self, buyout: IBuyout, ids: Optional[list[str]] = None):
-        """Buyout properties by setting the "Max Potential Damage: {}" column to
-        zero in the FIAT exposure file.
+    def floodproof_properties(self, floodproof: IFloodProof) -> None:
+        """
+        Floodproofs the properties based on the provided floodproof object.
 
-        Parameters
-        ----------
-        buyout : Buyout
-            this is an "buyout" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on, by default None
+        Args:
+            floodproof (IFloodProof): The floodproof object containing the floodproofing attributes.
+
+        Returns:
+            None
         """
         ...
 
     @abstractmethod
-    def floodproof_properties(
-        self, floodproof: IFloodProof, ids: Optional[list[str]] = None
-    ):
-        """Floodproof properties by creating new depth-damage functions and
-        adding them in "Damage Function: {}" column in the FIAT exposure file.
+    def write_model(self) -> None:
+        """
+        Writes the model to the output model path.
 
-        Parameters
-        ----------
-        floodproof : FloodProof
-            this is an "floodproof" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
+        This method creates the model directory if it doesn't exist,
+        sets the root of the model to the output model path, and
+        writes the model.
+
+        Returns:
+            None
+        """
+        ...
+
+    @abstractmethod
+    def run(self) -> int:
+        """
+        Runs the direct impacts model.
+
+        Raises:
+            ValueError: If the SYSTEM_FOLDER environment variable is not set.
+
+        Returns:
+            int: The return code of the process.
+        """
+        ...
+
+    @abstractmethod
+    def write_csv_results(self, csv_path) -> None:
+        """
+        Writes the output CSV file to the specified path.
+
+        Parameters:
+            csv_path (str): The path where the CSV file should be written.
+
+        Returns:
+            None
         """
         ...

@@ -669,12 +669,11 @@ class Database(IDatabase):
         """
         # Set adapter
         Adapter = DirectImpactsAdapterFactory.get_adapter(
-            self.site_info.attrs.direct_impacts.model
+            self.site.attrs.direct_impacts.model
         )
         di_adapter = Adapter(
-            database_path=self.database_input_path.parent,
-            impacts_path=self.impacts_path,
-            config=self.site_info.attrs.direct_impacts,
+            database_path=self.input_path.parent,
+            config=self.site.attrs.direct_impacts,
         )
         buildings = di_adapter.get_all_buildings_geo()
 
@@ -690,12 +689,11 @@ class Database(IDatabase):
         """
         # Set adapter
         Adapter = DirectImpactsAdapterFactory.get_adapter(
-            self.site_info.attrs.direct_impacts.model
+            self.site.attrs.direct_impacts.model
         )
         di_adapter = Adapter(
-            database_path=self.database_input_path.parent,
-            impacts_path=self.impacts_path,
-            config=self.site_info.attrs.direct_impacts,
+            database_path=self.input_path.parent,
+            config=self.site.attrs.direct_impacts,
         )
         types = di_adapter.get_building_types()
         return types

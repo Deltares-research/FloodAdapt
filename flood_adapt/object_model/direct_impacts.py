@@ -173,7 +173,7 @@ class DirectImpacts:
         # TODO move this method to the adapter?
         """Updates Direct Impacts model based on scenario information"""
 
-        ids_all_buildings = self.adapter.get_all_buildings_ids()
+        ids_all_buildings = self.adapter.get_buildings_ids()
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects

@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, Union
 
+from geopandas import GeoDataFrame
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
@@ -27,32 +28,62 @@ class FiatAdapter(DirectImpactsAdapter):
     on scenarios.
     """
 
-    model_name = "fiat"
+    model_name = "fiat"  # model's name
 
     def __init__(
-        self,
-        database_path: str,
-        impacts_path: str,
-        config: DirectImpactsModel,
+        self, database_path: str, config: DirectImpactsModel, impacts_path: str = None
     ) -> None:
-        super().__init__(database_path, impacts_path, config)
+        """
+        Initializes a new instance of the FiatAdapter class.
+
+        Args:
+            database_path (str): The path to the database.
+            config (DirectImpactsModel): The configuration for the direct impacts model.
+            impacts_path (str, optional): The path to the impacts location. Defaults to None.
+        """
+        super().__init__(database_path, config, impacts_path)
         self._read_template()
 
-    def close_model(self) -> None:
-        # Close fiat_logger
-        for handler in self.logger.handlers:
-            handler.close()
-        del self.model
-
     def _read_template(self):
-        # First read template FIAT model
+        """
+        Reads the template FIAT model.
+
+        This method initializes the logger and reads the template FIAT model
+        using the provided model path.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self.logger = setuplog("hydromt_fiat", log_level=10)
         self.model = FiatModel(
             root=self.template_model_path, mode="r", logger=self.logger
         )
         self.model.read()
 
-    def get_all_buildings_geo(self):
+    def close_model(self) -> None:
+        """
+        Closes the model and the associated logger.
+
+        This method closes the fiat_logger by closing all its handlers and deletes the model object.
+
+        Returns:
+            None
+        """
+        # Close fiat_logger
+        for handler in self.logger.handlers:
+            handler.close()
+        del self.model
+
+    def get_building_locations(self) -> GeoDataFrame:
+        """
+        Retrieves the locations of all buildings from the template model.
+
+        Returns:
+            GeoDataFrame: A GeoDataFrame containing the locations of buildings.
+        """
         buildings = self.model.exposure.select_objects(
             primary_object_type="ALL",
             non_building_names=self.config.non_building_names,
@@ -61,7 +92,13 @@ class FiatAdapter(DirectImpactsAdapter):
 
         return buildings
 
-    def get_building_types(self):
+    def get_building_types(self) -> list[str]:
+        """
+        Retrieves the list of building types from the model's exposure data.
+
+        Returns:
+            A list of building types, excluding the ones specified in the config.non_building_names.
+        """
         types = self.model.exposure.get_primary_object_type()
         for name in self.config.non_building_names:
             if name in types:
@@ -69,7 +106,9 @@ class FiatAdapter(DirectImpactsAdapter):
         # Add "all" type for using as identifier
         types.append("all")
 
-    def get_all_buildings_ids(self) -> list[int]:
+        return types
+
+    def get_building_ids(self) -> list[int]:
         """
         Retrieves the IDs of all existing buildings in the FIAT model.
 
@@ -82,7 +121,7 @@ class FiatAdapter(DirectImpactsAdapter):
         )
         return ids
 
-    def get_measure_buildings_ids(self, attrs: ImpactMeasureModel) -> list[int]:
+    def get_measure_building_ids(self, attrs: ImpactMeasureModel) -> list[int]:
         """Get ids of objects that are affected by the measure.
 
         Returns
@@ -132,11 +171,17 @@ class FiatAdapter(DirectImpactsAdapter):
         else:
             return False
 
-    def write_model(self):
-        self.model.set_root(self.output_model_path)
-        self.model.write()
-
     def set_hazard(self, hazard: Hazard) -> None:
+        """
+        Sets the hazard data for the model.
+
+        Args:
+            hazard (Hazard): The hazard object containing the necessary information.
+
+        Returns:
+            None
+        """
+        # TODO input should not be a hazard object but the individual parameters that are used!
         map_fn = hazard.flood_map_path
         map_type = hazard.site.attrs.direct_impacts.floodmap_type
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
@@ -159,18 +204,18 @@ class FiatAdapter(DirectImpactsAdapter):
         )
 
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = []
-    ):
-        """Implement economic growth in the exposure of FIAT. This is only done for buildings.
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+        self, economic_growth: float, ids: Optional[list] = None
+    ) -> None:
+        """
+        Applies economic growth to the maximum potential damage of buildings.
 
-        Parameters
-        ----------
-        economic_growth : float
-            Percentage value of economic growth
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the economic growth on,
-            by default None"""
+        Args:
+            economic_growth (float): The economic growth rate in percentage.
+            ids (Optional[list]): Optional list of building IDs to apply the economic growth to.
+
+        Returns:
+            None
+        """
         # Get columns that include max damage
         damage_cols = [
             c
@@ -201,18 +246,17 @@ class FiatAdapter(DirectImpactsAdapter):
         )
 
     def apply_population_growth_existing(
-        self, population_growth: float, ids: Optional[list[str]] = []
-    ):
-        """Implement population growth in the exposure of FIAT. This is only done for buildings.
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+        self, population_growth: float, ids: Optional[list[str]] = None
+    ) -> None:
+        """
+        Applies population growth to the existing maximum potential damage values for buildings.
 
-        Parameters
-        ----------
-        population_growth : float
-            Percentage value of population growth.
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
+        Args:
+            population_growth (float): The percentage of population growth.
+            ids (Optional[list[str]]): Optional list of building IDs to apply the population growth to.
+
+        Returns:
+            None
         """
         # Get columns that include max damage
         damage_cols = [
@@ -253,20 +297,27 @@ class FiatAdapter(DirectImpactsAdapter):
         aggregation_areas: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
-    ):
-        """Implement population growth in new development area.
-
-        Parameters
-        ----------
-        population_growth : float
-            percentage of the existing population (value of assets) to use for the new area
-        ground_floor_height : float
-            height of the ground floor to be used for the objects in the new area
-        elevation_type : str
-            "floodmap" or "datum"
-        area_path : str
-            path to geometry file with new development areas
+    ) -> None:
         """
+        Applies population growth to the model's exposure data.
+
+        Args:
+            population_growth (float): The percentage population growth.
+            ground_floor_height (float): The height of the ground floor.
+            elevation_type (str): The type of elevation reference. Can be 'floodmap' or 'datum'.
+            area_path (str): The path to the area file.
+            ground_elevation (Union[None, str, Path], optional): The ground elevation. Defaults to None.
+            aggregation_areas (Union[List[str], List[Path], str, Path], optional): The aggregation areas. Defaults to None.
+            attribute_names (Union[List[str], str], optional): The attribute names. Defaults to None.
+            label_names (Union[List[str], str], optional): The label names. Defaults to None.
+
+        Raises:
+            ValueError: If elevation_type is not 'floodmap' or 'datum'.
+
+        Returns:
+            None
+        """
+        # TODO Use model template for aggregation areas
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
             if not self.bfe:
@@ -296,17 +347,22 @@ class FiatAdapter(DirectImpactsAdapter):
             **kwargs,
         )
 
-    def elevate_properties(self, elevate: IElevate):
-        """Elevate properties by adjusting the "Ground Floor Height" column
-        in the FIAT exposure file.
-
-        Parameters
-        ----------
-        elevate : Elevate
-            this is an "elevate" impact measure object
+    def elevate_properties(self, elevate: IElevate) -> None:
         """
+        Elevates the properties of selected buildings based on the provided elevation information.
+
+        Args:
+            elevate (IElevate): An object containing the elevation information.
+
+        Raises:
+            ValueError: If the elevation type is neither 'floodmap' nor 'datum'.
+
+        Returns:
+            None
+        """
+
         # Get the ids of the buildings that are affected by the selection type
-        objectids = self.get_measure_buildings_ids(elevate.attrs)
+        objectids = self.get_measure_building_ids(elevate.attrs)
         # Make sure that only buildings from the template are affected
         objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
 
@@ -337,17 +393,19 @@ class FiatAdapter(DirectImpactsAdapter):
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: IBuyout):
-        """Buyout properties by setting the "Max Potential Damage: {}" column to
-        zero in the FIAT exposure file.
-
-        Parameters
-        ----------
-        buyout : Buyout
-            this is an "buyout" impact measure object
+    def buyout_properties(self, buyout: IBuyout) -> None:
         """
+        Buys out properties based on the provided buyout object.
+
+        Args:
+            buyout (IBuyout): The buyout object containing information about the properties to be bought out.
+
+        Returns:
+            None
+        """
+
         # Get the ids of the buildings that are affected by the selection type
-        objectids = self.get_measure_buildings_ids(buyout.attrs)
+        objectids = self.get_measure_building_ids(buyout.attrs)
         # Make sure that only buildings from the template are affected
         objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
 
@@ -370,17 +428,18 @@ class FiatAdapter(DirectImpactsAdapter):
             updated_max_potential_damages=updated_max_pot_damage
         )
 
-    def floodproof_properties(self, floodproof: IFloodProof):
-        """Floodproof properties by creating new depth-damage functions and
-        adding them in "Damage Function: {}" column in the FIAT exposure file.
+    def floodproof_properties(self, floodproof: IFloodProof) -> None:
+        """
+        Floodproofs the properties based on the provided floodproof object.
 
-        Parameters
-        ----------
-        floodproof : FloodProof
-            this is an "floodproof" impact measure object
+        Args:
+            floodproof (IFloodProof): The floodproof object containing the floodproofing attributes.
+
+        Returns:
+            None
         """
         # Get the ids of the buildings that are affected by the selection type
-        objectids = self.get_measure_buildings_ids(floodproof.attrs)
+        objectids = self.get_measure_building_ids(floodproof.attrs)
         # Make sure that only buildings from the template are affected
         objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
 
@@ -391,6 +450,21 @@ class FiatAdapter(DirectImpactsAdapter):
             damage_function_types=["Structure", "Content"],
             vulnerability=self.model.vulnerability,
         )
+
+    def write_model(self) -> None:
+        """
+        Writes the model to the output model path.
+
+        This method creates the model directory if it doesn't exist,
+        sets the root of the model to the output model path, and
+        writes the model.
+
+        Returns:
+            None
+        """
+        self._create_output_model_dir
+        self.model.set_root(self.output_model_path)
+        self.model.write()
 
     def run(self) -> int:
         """
@@ -422,5 +496,14 @@ class FiatAdapter(DirectImpactsAdapter):
 
         return process.returncode
 
-    def write_csv_results(self, csv_path):
+    def write_csv_results(self, csv_path) -> None:
+        """
+        Writes the output CSV file to the specified path.
+
+        Parameters:
+            csv_path (str): The path where the CSV file should be written.
+
+        Returns:
+            None
+        """
         shutil.copy(self.output_model_path.joinpath("output", "output.csv"), csv_path)
