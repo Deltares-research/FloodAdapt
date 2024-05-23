@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from datetime import datetime
@@ -99,6 +100,7 @@ class Database(IDatabase):
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
+        logging.info(f"(Re-)Initializing database to {database_name} at {database_path}")
         self.database_path = database_path
         self.database_name = database_name
 
