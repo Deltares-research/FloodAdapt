@@ -103,6 +103,9 @@ class MapboxLayersModel(BaseModel):
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
+    max_aggregated_metrics_count_people: int = 1000000
+    max_aggregated_metrics_count_houses: int = 100
+    max_aggregated_metrics_damage: int = 10000000
     footprints_dmg_type: DamageType = "absolute"
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
@@ -140,7 +143,7 @@ class GuiModel(BaseModel):
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
-    mapbox_layers: MapboxLayersModel
+    mapbox_layers: MapboxLayersModel 
     visualization_layers: VisualizationLayersModel
 
 
