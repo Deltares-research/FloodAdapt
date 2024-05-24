@@ -11,7 +11,7 @@ def test_dict():
         "mode": "single_event",
         "template": "Synthetic",
         "timing": "idealized",
-        "water_level_offset": {"value": "zero", "units": "feet"},
+        "water_level_offset": {"value": 0, "units": "feet"},
         "wind": {
             "source": "constant",
             "constant_speed": {"value": 0, "units": "m/s"},
@@ -53,13 +53,13 @@ def test_synthetic_event(test_db, test_dict):
 
     with pytest.raises(ValueError):
         # Assert error if name already exists
-        api_events.save_event_toml(event, test_db)
+        api_events.save_event_toml(event)
 
     # Change name to something new
     test_dict["name"] = "test1"
     event = api_events.create_synthetic_event(test_dict)
     # If the name is not used before the measure is save in the database
-    api_events.save_event_toml(event, test_db)
+    api_events.save_event_toml(event)
     test_db.events.list_objects()
 
     # Try to delete a measure which is already used in a scenario
@@ -67,5 +67,5 @@ def test_synthetic_event(test_db, test_dict):
     #    api_events.delete_measure("", database)
 
     # If user presses delete event the measure is deleted
-    api_events.delete_event("test1", test_db)
+    api_events.delete_event("test1")
     test_db.events.list_objects()

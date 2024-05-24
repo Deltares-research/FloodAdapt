@@ -157,6 +157,7 @@ class TestBenefitScenariosNotCreated:
     def test_runCostBenefit_notCreated_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.run_cost_benefit()
+
         assert (
             str(exception_info.value)
             == "Necessary scenarios have not been created yet."
@@ -166,9 +167,7 @@ class TestBenefitScenariosNotCreated:
     def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.get_output()
-            assert "Cannot read output since benefit analysis" in str(
-                exception_info.value
-            )
+        assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
 # Tests for when the scenarios needed for the benefit analysis are created but not run
@@ -208,18 +207,16 @@ class TestBenefitScenariosCreated:
     def test_runCostBenefit_notReadyToRun_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.run_cost_benefit()
-            assert (
-                "need to be run before the cost-benefit analysis can be performed"
-                in str(exception_info.value)
-            )
+        assert (
+            "need to be run before the cost-benefit analysis can be performed"
+            in str(exception_info.value)
+        )
 
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
     def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
             benefit_obj.get_output()
-            assert "Cannot read output since benefit analysis" in str(
-                exception_info.value
-            )
+        assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
 # Tests for when the scenarios needed for the benefit analysis are run

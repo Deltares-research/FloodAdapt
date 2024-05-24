@@ -25,13 +25,13 @@ def test_projection(test_db):
 
     with pytest.raises(ValueError):
         # Assert error if name already exists
-        api_projections.save_projection(projection, test_db)
+        api_projections.save_projection(projection)
 
     # Change name to something new
     test_dict["name"] = "test_proj_1"
     projection = api_projections.create_projection(test_dict)
     # If the name is not used before the measure is save in the database
-    api_projections.save_projection(projection, test_db)
+    api_projections.save_projection(projection)
     test_db.projections.list_objects()
 
     # Try to delete a measure which is already used in a scenario
@@ -39,5 +39,5 @@ def test_projection(test_db):
     #    api_projections.delete_measure("", database)
 
     # If user presses delete projection the measure is deleted
-    api_projections.delete_projection("test_proj_1", test_db)
+    api_projections.delete_projection("test_proj_1")
     test_db.projections.list_objects()
