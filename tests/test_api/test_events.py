@@ -3,7 +3,7 @@ import pytest
 import flood_adapt.api.events as api_events
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_dict():
     test_dict = {
         "name": "extreme12ft",
@@ -40,32 +40,49 @@ def test_dict():
     return test_dict
 
 
-def test_synthetic_event(test_db, test_dict):
+def test_create_synthetic_event_valid_dict(test_db, test_dict):
     # When user presses add event and chooses the events
     # the dictionary is returned and an Event object is created
+    event = api_events.create_synthetic_event(test_dict)
+    # TODO assert event attrs
+
+
+def test_create_synthetic_event_invalid_dict(test_db, test_dict):
+    test_dict["water_level_offset"]["value"] = "zero"
     with pytest.raises(ValueError):
         # Assert error if a value is incorrect
-        event = api_events.create_synthetic_event(test_dict)
+        api_events.create_synthetic_event(test_dict)
+    # TODO assert error msg
 
-    # correct event
-    test_dict["water_level_offset"]["value"] = 0
+
+def test_save_synthetic_event_already_exists(test_db, test_dict):
     event = api_events.create_synthetic_event(test_dict)
+    print(api_events.get_events())
 
-    with pytest.raises(ValueError):
-        # Assert error if name already exists
+    if test_dict["name"] not in api_events.get_events()["name"]:
         api_events.save_event_toml(event)
 
+    with pytest.raises(ValueError):
+        api_events.save_event_toml(event)
+    # TODO assert error msg
+
+
+def test_save_event_toml_valid(test_db, test_dict):
     # Change name to something new
-    test_dict["name"] = "test1"
+    test_dict["name"] = "testNew"
     event = api_events.create_synthetic_event(test_dict)
-    # If the name is not used before the measure is save in the database
+    if test_dict["name"] in api_events.get_events()["name"]:
+        api_events.delete_event(test_dict["name"])
     api_events.save_event_toml(event)
-    test_db.events.list_objects()
+    # TODO assert event attrs
 
-    # Try to delete a measure which is already used in a scenario
-    # with pytest.raises(ValueError):
-    #    api_events.delete_measure("", database)
 
-    # If user presses delete event the measure is deleted
-    api_events.delete_event("test1")
-    test_db.events.list_objects()
+def test_delete_event(test_db):
+    for name in api_events.get_events()["name"]:
+        api_events.delete_event(name)
+        break
+
+
+def test_delete_event_doesnt_exist(test_db):
+    # apparently this doesnt raise an error?
+    api_events.delete_event("doesnt_exist")
