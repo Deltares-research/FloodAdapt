@@ -23,13 +23,13 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructureModel,
 )
 from flood_adapt.object_model.hazard.measure.pump import PumpModel
-from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDischarge,
     UnitTypesLength,
     UnitTypesVolume,
 )
+from flood_adapt.object_model.models.projections import PhysicalProjectionModel
 from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder

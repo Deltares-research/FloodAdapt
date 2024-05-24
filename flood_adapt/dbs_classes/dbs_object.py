@@ -1,9 +1,12 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Any, Optional, Tuple, Union
 
-from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
+import tomli
+import tomli_w
+
+from flood_adapt.dbs_classes.dbs_interface import IDbsObject
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
@@ -12,10 +15,10 @@ from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
-ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+DbsObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
-## TODO: This class will be replaced by the DbsObject class
-class DbsTemplate(AbstractDatabaseElement):
+
+class DbsObject(IDbsObject):
     _type = ""
     _folder_name = ""
     _object_model_class = None
@@ -23,23 +26,38 @@ class DbsTemplate(AbstractDatabaseElement):
     def __init__(self, database: IDatabase):
         """
         Initialize any necessary attributes.
+
+        Parameters
+        ----------
+        database : IDatabase
+            database to be used for the object
         """
-        self.input_path = database.input_path
-        self._path = self.input_path / self._folder_name
+        self._path = database.input_path / self._folder_name
         self._database = database
 
-    def get(self, name: str) -> ObjectModel:
+    def get(
+        self, name: str, get_data: bool = False
+    ) -> Tuple[DbsObjectModel, Optional[dict]]:
         """Returns an object of the type of the database with the given name.
 
         Parameters
         ----------
         name : str
             name of the object to be returned
+        get_data : bool, optional
+            whether to return the data of the object as well, by default False
 
         Returns
         -------
-        ObjectModel
+        DbsObjectModel
             object of the type of the specified object model
+        dict
+            dictionary with the object data
+
+        Raises
+        ------
+        ValueError
+            Raise error if the object does not exist
         """
         # Make the full path to the object
         full_path = self._path / name / f"{name}.toml"
@@ -49,10 +67,15 @@ class DbsTemplate(AbstractDatabaseElement):
             raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
 
         # Load and return the object
-        object_model = self._object_model_class.load_file(full_path)
-        return object_model
+        with open(full_path, mode="rb") as fp:
+            toml = tomli.load(fp)
 
-    def list_objects(self):
+        if get_data:
+            return self._object_model_class.load_dict(toml), toml
+        else:
+            return self._object_model_class.load_dict(toml)
+
+    def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the objects that currently
         exist in the database.
 
@@ -62,7 +85,7 @@ class DbsTemplate(AbstractDatabaseElement):
             Includes 'name', 'description', 'path' and 'last_modification_date' info, as well as the objects themselves
         """
         # Check if all objects exist
-        object_list = self._get_object_list()
+        object_list = self._get_basic_object_list()
         if not all(Path(path).is_file() for path in object_list["path"]):
             raise ValueError(
                 f"Error in {self._type} database. Some {self._type} are missing from the database."
@@ -70,11 +93,10 @@ class DbsTemplate(AbstractDatabaseElement):
 
         # Load all objects
         objects = [
-            self._object_model_class.load_file(path) for path in object_list["path"]
+            self.get(name) for name in object_list["name"]
         ]
 
         # From the loaded objects, get the name and description and add them to the object_list
-        object_list["name"] = [obj.attrs.name for obj in objects]
         object_list["description"] = [obj.attrs.description for obj in objects]
         object_list["objects"] = objects
         return object_list
@@ -113,13 +135,13 @@ class DbsTemplate(AbstractDatabaseElement):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(self, object_model: DbsObjectModel, overwrite: bool = False):
         """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : DbsObjectModel
             object to be saved in the database
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
@@ -143,19 +165,21 @@ class DbsTemplate(AbstractDatabaseElement):
             )
 
         # If the folder doesnt exist yet, make the folder and save the object
-        if not (self._path / object_model.attrs.name).exists():
-            (self._path / object_model.attrs.name).mkdir()
-
-        object_model.save(
+        filepath = (
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
+        if not filepath.parent.exists():
+            filepath.parent.mkdir()
 
-    def edit(self, object_model: ObjectModel):
+        with open(filepath, "wb") as f:
+            tomli_w.dump(object_model.attrs.dict(exclude_none=True), f)
+
+    def edit(self, object_model: DbsObjectModel):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : ObjectModel
+        object : DbsObjectModel
             object to be edited in the database
 
         Raises
@@ -250,7 +274,7 @@ class DbsTemplate(AbstractDatabaseElement):
         # level object. By default, return an empty list
         return []
 
-    def _get_object_list(self) -> dict[Path, datetime]:
+    def _get_basic_object_list(self) -> dict[Path, datetime]:
         """Given an object type (e.g., measures) get a dictionary with all the toml paths
         and last modification dates that exist in the database.
 
@@ -259,15 +283,16 @@ class DbsTemplate(AbstractDatabaseElement):
         dict[str, Any]
             Includes 'path' and 'last_modification_date' info
         """
-        base_path = self.input_path / self._folder_name
-        directories = list(base_path.iterdir())
+        directories = list(self._path.iterdir())
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
+        names = [path.stem for path in paths]
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]
 
         objects = {
             "path": paths,
+            "name": names,
             "last_modification_date": last_modification_date,
         }
 

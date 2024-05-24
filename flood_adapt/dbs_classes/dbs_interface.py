@@ -1,16 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Optional, Tuple, Union
 
 from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
-ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+DbsObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
 
 
+## TODO: This class will be replaced by the IDbsObject class
 class AbstractDatabaseElement(ABC):
     def __init__(self):
         """
@@ -19,7 +21,7 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> ObjectModel:
+    def get(self, name: str) -> DbsObjectModel:
         """Returns the object of the type of the database with the given name.
 
         Parameters
@@ -29,7 +31,7 @@ class AbstractDatabaseElement(ABC):
 
         Returns
         -------
-        ObjectModel
+        DbsObjectModel
             object of the type of the specified object model
         """
         pass
@@ -62,13 +64,13 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(self, object_model: DbsObjectModel, overwrite: bool = False):
         """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
         this should be saved separately.
 
         Parameters
         ----------
-        object_model : ObjectModel
+        object_model : DbsObjectModel
             object to be saved in the database
         overwrite : OverwriteMode, optional
             whether to overwrite the object if it already exists in the
@@ -82,12 +84,151 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def edit(self, object_model: ObjectModel):
+    def edit(self, object_model: DbsObjectModel):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : ObjectModel
+        object : DbsObjectModel
+            object to be edited in the database
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use.
+        """
+        pass
+
+    @abstractmethod
+    def delete(self, name: str, toml_only: bool = False):
+        """Deletes an already existing object in the database.
+
+        Parameters
+        ----------
+        name : str
+            name of the object to be deleted
+        toml_only : bool, optional
+            whether to only delete the toml file or the entire folder. If the folder is empty after deleting the toml,
+            it will always be deleted. By default False
+
+        Raises
+        ------
+        ValueError
+            Raise error if object to be deleted is already in use.
+        """
+        pass
+
+    @abstractmethod
+    def check_higher_level_usage(self, name: str) -> list[str]:
+        """Checks if an object is used in a higher level object.
+
+        Parameters
+        ----------
+        name : str
+            name of the object to be checked
+
+        Returns
+        -------
+        list[str]
+            list of higher level objects that use the object
+        """
+        pass
+
+
+
+class IDbsObject(ABC):
+    def __init__(self, database: IDatabase):
+        """
+        Initialize any necessary attributes.
+
+        Parameters
+        ----------
+        database : IDatabase
+            database to be used for the object
+        """
+        pass
+
+    @abstractmethod
+    def get(
+        self, name: str, get_data: bool = False
+    ) -> Tuple[DbsObjectModel, Optional[dict]]:
+        """Returns an object of the type of the database with the given name.
+
+        Parameters
+        ----------
+        name : str
+            name of the object to be returned
+        get_data : bool, optional
+            whether to return the data of the object as well, by default False
+
+        Returns
+        -------
+        DbsObjectModel
+            object of the type of the specified object model
+        dict
+            dictionary with the object data
+
+        Raises
+        ------
+        ValueError
+            Raise error if the object does not exist
+        """
+        pass
+
+    @abstractmethod
+    def list_objects(self) -> dict[str, Any]:
+        """Returns a dictionary with info on the objects that currently
+        exist in the database.
+
+        Returns
+        -------
+        dict[str, Any]
+            Includes 'name', 'description', 'path' and 'last_modification_date' info, as well as the objects themselves
+        """
+        pass
+
+    @abstractmethod
+    def copy(self, old_name: str, new_name: str, new_description: str):
+        """Copies (duplicates) an existing object, and gives it a new name.
+
+        Parameters
+        ----------
+        old_name : str
+            name of the existing measure
+        new_name : str
+            name of the new measure
+        new_description : str
+            description of the new measure
+        """
+        pass
+
+    @abstractmethod
+    def save(self, object_model: DbsObjectModel, overwrite: bool = False):
+        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
+        this should be saved separately.
+
+        Parameters
+        ----------
+        object_model : DbsObjectModel
+            object to be saved in the database
+        overwrite : OverwriteMode, optional
+            whether to overwrite the object if it already exists in the
+            database, by default False
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use.
+        """
+        pass
+
+    @abstractmethod
+    def edit(self, object_model: DbsObjectModel):
+        """Edits an already existing object in the database.
+
+        Parameters
+        ----------
+        object : DbsObjectModel
             object to be edited in the database
 
         Raises

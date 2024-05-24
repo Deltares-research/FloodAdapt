@@ -35,7 +35,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesVelocity,
 )
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.object_classes.projections import Projection
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd

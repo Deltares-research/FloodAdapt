@@ -23,7 +23,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.object_classes.projections import Projection
 from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.scenario import ScenarioModel
@@ -134,7 +134,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database_input_path, results_dir)
+        self.hazard = Hazard(scenario, results_dir)
 
     def preprocess_models(self):
         logging.info("Preparing impact models...")

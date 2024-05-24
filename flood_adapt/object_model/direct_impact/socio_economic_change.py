@@ -1,4 +1,4 @@
-from flood_adapt.object_model.interface.projections import SocioEconomicChangeModel
+from flood_adapt.object_model.models.projections import SocioEconomicChangeModel
 
 
 class SocioEconomicChange:
