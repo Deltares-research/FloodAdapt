@@ -114,7 +114,9 @@ class Database(IDatabase):
         sfincs_path = self.static_path.joinpath(
             "templates", self._site.attrs.sfincs.overland_model
         )
-        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self._site)
+        self.static_sfincs_model = SfincsAdapter(
+            model_root=sfincs_path, site=self._site
+        )
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
@@ -131,11 +133,11 @@ class Database(IDatabase):
     @property
     def site(self) -> ISite:
         return self._site
-    
+
     @property
     def static(self) -> DbsStatic:
         return self._static
-    
+
     @property
     def events(self) -> DbsEvent:
         return self._events

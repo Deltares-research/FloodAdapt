@@ -281,7 +281,7 @@ class ISite(ABC):
     @abstractmethod
     def attrs(self) -> SiteModel:
         """Get the site attributes as a dictionary
-        
+
         Returns
         -------
         SiteModel

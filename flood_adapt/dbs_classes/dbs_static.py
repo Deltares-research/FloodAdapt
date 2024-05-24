@@ -15,7 +15,7 @@ def cache_method_wrapper(func):
         if func.__name__ not in self._cached_data:
             self._cached_data[func.__name__] = {}
 
-        args_key = str(args) if args else 'no_args'
+        args_key = str(args) if args else "no_args"
         if args_key in self._cached_data[func.__name__]:
             return self._cached_data[func.__name__][args_key]
 
@@ -23,10 +23,11 @@ def cache_method_wrapper(func):
         self._cached_data[func.__name__][args_key] = result
 
         return result
+
     return wrapper
 
 
-class DbsStatic():
+class DbsStatic:
 
     _cached_data: dict[str, Any] = {}
     _database: IDatabase = None

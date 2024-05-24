@@ -1,11 +1,10 @@
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Union
+from typing import Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
-from geopandas import GeoDataFrame
 
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.events import IEvent
