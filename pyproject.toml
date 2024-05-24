@@ -42,8 +42,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-tests = [
+test = [
     "pytest",
+    "pytest-cov",
     "pre-commit"
 ]
 
