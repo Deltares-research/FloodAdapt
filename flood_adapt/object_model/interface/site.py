@@ -104,7 +104,7 @@ class MapboxLayersModel(BaseModel):
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
     max_aggregated_metrics_count_people: int = 13000
-    max_aggregated_metrics_count_houses: int = 500
+    max_aggregated_metrics_count_houses: int = 25
     max_aggregated_metrics_damage: int = 10000000
     footprints_dmg_type: DamageType = "absolute"
     footprints_dmg_bins: list[float]
