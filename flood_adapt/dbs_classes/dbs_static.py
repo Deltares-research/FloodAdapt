@@ -11,17 +11,20 @@ from flood_adapt.object_model.interface.database import IDatabase
 
 
 def cache_method_wrapper(func):
-    """Decorator to cache the result of a method in the class"""
-
     def wrapper(self, *args, **kwargs):
-        """Wrapper function to cache the result of the method"""
-        if func.__name__ in self._cached_data:
-            return self._cached_data[func.__name__]
-        result = func(self, *args, **kwargs)
-        self._cached_data[func.__name__] = result
-        return result
+        if func.__name__ not in self._cached_data:
+            self._cached_data[func.__name__] = {}
 
+        args_key = str(args) if args else 'no_args'
+        if args_key in self._cached_data[func.__name__]:
+            return self._cached_data[func.__name__][args_key]
+
+        result = func(self, *args, **kwargs)
+        self._cached_data[func.__name__][args_key] = result
+
+        return result
     return wrapper
+
 
 class DbsStatic():
 
@@ -129,6 +132,7 @@ class DbsStatic():
         # If the file is not found, throw an error
         raise FileNotFoundError(f"File {full_path} not found")
 
+    @cache_method_wrapper
     def get_slr_scn_names(self) -> list:
         """Get the names of the sea level rise scenarios from the slr.csv file
 
@@ -141,6 +145,7 @@ class DbsStatic():
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
+    @cache_method_wrapper
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
         This is read by a csv file in the database.
@@ -174,7 +179,7 @@ class DbsStatic():
 
         return df
 
-
+    @cache_method_wrapper
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
         This should only be the buildings excluding any other types (e.g., roads)
@@ -199,6 +204,7 @@ class DbsStatic():
 
         return buildings
 
+    @cache_method_wrapper
     def get_property_types(self) -> list:
         """_summary_
 

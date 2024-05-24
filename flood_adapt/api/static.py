@@ -60,7 +60,7 @@ def get_obs_points() -> GeoDataFrame:
     return Database().static.get_obs_points()
 
 
-def get_model_boundary(database: IDatabase) -> GeoDataFrame:
+def get_model_boundary() -> GeoDataFrame:
     return Database().static.get_model_boundary()
 
 
@@ -93,7 +93,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().static.get_static_map(database.site.attrs.fiat.svi.geom)
+        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
     except Exception:
         return None
 
@@ -135,7 +135,7 @@ def get_buildings() -> GeoDataFrame:
     return Database().static.get_buildings()
 
 
-def get_property_types(database: IDatabase) -> list:
+def get_property_types() -> list:
     return Database().static.get_property_types()
 
 

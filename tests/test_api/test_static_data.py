@@ -1,13 +1,12 @@
 import geopandas as gpd
 import pytest
 
-import flood_adapt.api.startup as api_startup
+import flood_adapt.api.static as api_startup
 
 
 @pytest.mark.skip(reason="test fails in TeamCity, TODO investigate")
 def test_buildings(test_db):
-    buildings = api_startup.get_buildings()
-    assert isinstance(buildings, gpd.GeoDataFrame)
+    assert isinstance(api_startup.get_buildings(), gpd.GeoDataFrame)
 
 
 def test_aggr_areas(test_db):

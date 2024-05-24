@@ -275,7 +275,19 @@ class SiteModel(BaseModel):
 
 
 class ISite(ABC):
-    attrs: SiteModel
+    _attrs: SiteModel
+
+    @property
+    @abstractmethod
+    def attrs(self) -> SiteModel:
+        """Get the site attributes as a dictionary
+        
+        Returns
+        -------
+        SiteModel
+            Pydantic model with the site attributes
+        """
+        ...
 
     @staticmethod
     @abstractmethod
@@ -292,3 +304,4 @@ class ISite(ABC):
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
         """save Site attributes to a toml file"""
+        ...

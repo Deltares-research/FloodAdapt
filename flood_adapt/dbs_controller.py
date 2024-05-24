@@ -49,8 +49,7 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    site: ISite
-    aggr_areas: dict
+    _site: ISite
 
     static_sfincs_model: SfincsAdapter
 
@@ -86,7 +85,7 @@ class Database(IDatabase):
             if not self._init_done:
                 raise ValueError(
                     """Database path and name must be provided for the first initialization. 
-                    To do this, run api_startup.read_database(database_path, site_name) first."""
+                    To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
                 return  # Skip re-initialization
@@ -109,13 +108,13 @@ class Database(IDatabase):
         self.static_path = Path(database_path / database_name / "static")
         self.output_path = Path(database_path / database_name / "output")
 
-        self.site = Site.load_file(self.static_path / "site" / "site.toml")
+        self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
         # Get the static sfincs model
         sfincs_path = self.static_path.joinpath(
-            "templates", self.site.attrs.sfincs.overland_model
+            "templates", self._site.attrs.sfincs.overland_model
         )
-        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self.site)
+        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self._site)
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
@@ -129,6 +128,10 @@ class Database(IDatabase):
         self._init_done = True
 
     # Property methods
+    @property
+    def site(self) -> ISite:
+        return self._site
+    
     @property
     def static(self) -> DbsStatic:
         return self._static
@@ -231,7 +234,7 @@ class Database(IDatabase):
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
             )
         else:
-            scenarios = self.get_slr_scn_names()
+            scenarios = self._static.get_slr_scn_names()
             for scn in scenarios:
                 ref_slr = np.interp(ref_year, df["Year"], df[scn])
                 df[scn] -= ref_slr
