@@ -7,6 +7,11 @@ import pytest
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.api.startup import read_database
 
+# Get the database file structure before the tests
+rootPath = Path().absolute().parent / "Database"  # the path to the database
+site_name = "charleston_test"  # the name of the test site
+database_path = str(rootPath.joinpath(site_name))
+
 
 def make_db_fixture(scope, clean=True):
     """

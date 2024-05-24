@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from datetime import datetime
@@ -39,13 +40,37 @@ class Database(IDatabase):
     Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input
     """
 
+    _instance = None
+
+    database_path: Union[str, os.PathLike]
+    database_name: str
+    _init_done: bool = False
+
     input_path: Path
+    static_path: Path
+    output_path: Path
+
     site: ISite
+    aggr_areas: dict
+
+    static_sfincs_model: SfincsAdapter
+
+    _events: DbsEvent
+    _scenarios: DbsScenario
+    _strategies: DbsStrategy
+    _measures: DbsMeasure
+    _projections: DbsProjection
+    _benefits: DbsBenefit
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:  # Singleton pattern
+            cls._instance = super(Database, cls).__new__(cls)
+        return cls._instance
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike],
-        database_name: str,
+        database_path: Union[str, os.PathLike] = None,
+        database_name: str = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
@@ -58,6 +83,29 @@ class Database(IDatabase):
             The name of the database.
         Notes
         """
+        if database_path is None or database_name is None:
+            if not self._init_done:
+                raise ValueError(
+                    """Database path and name must be provided for the first initialization. 
+                    To do this, run api_startup.read_database(database_path, site_name) first."""
+                )
+            else:
+                return  # Skip re-initialization
+
+        if (
+            self._init_done
+            and self.database_path == database_path
+            and self.database_name == database_name
+        ):
+            return  # Skip re-initialization
+
+        # If the database is not initialized, or a new path or name is provided, (re-)initialize
+        logging.info(
+            f"(Re-)Initializing database to {database_name} at {database_path}"
+        )
+        self.database_path = database_path
+        self.database_name = database_name
+
         self.input_path = Path(database_path / database_name / "input")
         self.static_path = Path(database_path / database_name / "static")
         self.output_path = Path(database_path / database_name / "output")
@@ -78,6 +126,8 @@ class Database(IDatabase):
         self._measures = DbsMeasure(self)
         self._projections = DbsProjection(self)
         self._benefits = DbsBenefit(self)
+
+        self._init_done = True
 
     # Property methods
     @property
