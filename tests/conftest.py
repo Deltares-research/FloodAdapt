@@ -44,9 +44,9 @@ def restore_db_from_snapshot():
             relative_path = snapshot_file.relative_to(snapshot_dir)
             database_file = database_path / relative_path
             if not database_file.exists():
+                os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
-                continue
-            if not filecmp.cmp(snapshot_file, database_file):
+            elif not filecmp.cmp(snapshot_file, database_file):
                 shutil.copy2(snapshot_file, database_file)
 
     # Remove created files from database
