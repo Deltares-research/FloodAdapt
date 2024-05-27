@@ -4,7 +4,8 @@ import flood_adapt.api.startup as api_startup
 
 
 def test_buildings(test_db):
-    assert isinstance(api_startup.get_buildings(), gpd.GeoDataFrame)
+    buildings = api_startup.get_buildings()
+    assert isinstance(buildings, gpd.GeoDataFrame)
 
 
 def test_aggr_areas(test_db):
