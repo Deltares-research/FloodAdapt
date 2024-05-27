@@ -1,5 +1,6 @@
 import filecmp
 import gc
+import logging
 import os
 import shutil
 import tempfile
@@ -10,11 +11,11 @@ import pytest
 import flood_adapt.config as fa_config
 from flood_adapt.api.startup import read_database
 
+logging.basicConfig(level=logging.ERROR)
 database_root = Path().absolute().parent / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
 database_path = database_root / site_name
-
 fa_config.parse_user_input(
     database_root=database_root,
     database_name=site_name,
@@ -29,7 +30,7 @@ def create_snapshot():
     shutil.copytree(database_path, snapshot_dir)
 
 
-def restore_snapshot():
+def restore_db_from_snapshot():
     """Restore the database directory from the snapshot."""
     if not snapshot_dir.exists():
         raise FileNotFoundError(
@@ -58,6 +59,13 @@ def restore_snapshot():
             if not snapshot_file.exists():
                 os.remove(database_file)
 
+    # Remove empty directories from the database
+    for root, dirs, _ in os.walk(database_path, topdown=False):
+        for directory in dirs:
+            dir_path = os.path.join(root, directory)
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
@@ -68,6 +76,7 @@ def session_setup_teardown():
 
     yield
 
+    restore_db_from_snapshot()
     shutil.rmtree(snapshot_dir)
 
 
@@ -75,10 +84,14 @@ def make_db_fixture(scope, clean=True):
     """
     This generates a fixture that is used for testing in general.
     All fixtures function as follows:
-        1) Create a snapshot of the database to restore after the tests
-        2) Initialize database controller
-        3) Perform all tests in scope
+    At the start of the test session:
+        1) Create a snapshot of the database
 
+    At the start of each test:
+        2) Restore the database from the snapshot
+        3) Initialize database controller
+        4) Perform all tests in scope
+        5) Restore the database from the snapshot
     Usage
     ----------
     To access the fixture in a test , you need to:
@@ -108,15 +121,18 @@ def make_db_fixture(scope, clean=True):
     def _db_fixture(clean=clean):
         """Fixture for setting up and tearing down the database for each test."""
         if clean:
-            restore_snapshot()
+            restore_db_from_snapshot()
 
         dbs = read_database(database_root, site_name)
 
         # Yield the database controller for the test
         yield dbs
 
-        # Clean up
+        # Close dangling connections
         gc.collect()
+
+        if clean:
+            restore_db_from_snapshot()
 
     return _db_fixture
 
