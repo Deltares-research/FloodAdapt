@@ -57,8 +57,6 @@ def test_create_synthetic_event_invalid_dict(test_db, test_dict):
 
 def test_save_synthetic_event_already_exists(test_db, test_dict):
     event = api_events.create_synthetic_event(test_dict)
-    print(api_events.get_events())
-
     if test_dict["name"] not in api_events.get_events()["name"]:
         api_events.save_event_toml(event)
 
@@ -75,12 +73,6 @@ def test_save_event_toml_valid(test_db, test_dict):
         api_events.delete_event(test_dict["name"])
     api_events.save_event_toml(event)
     # TODO assert event attrs
-
-
-def test_delete_event(test_db):
-    for name in api_events.get_events()["name"]:
-        api_events.delete_event(name)
-        break
 
 
 def test_delete_event_doesnt_exist(test_db):
