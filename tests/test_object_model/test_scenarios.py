@@ -10,7 +10,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
@@ -28,7 +27,6 @@ def test_tomls(test_db) -> list:
         / "scenarios"
         / "all_projections_extreme12ft_strategy_comb"
         / "all_projections_extreme12ft_strategy_comb.toml",
-
         test_db.input_path
         / "scenarios"
         / "current_extreme12ft_no_measures"
@@ -70,25 +68,26 @@ def test_hazard_load(test_db, test_scenarios):
 
     test_scenario.init_object_model()
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
-    
+
     assert event.attrs.timing == "idealized"
     assert isinstance(event.attrs.tide, TideModel)
+
 
 @pytest.mark.skip(reason="Refactor to use the new event model")
 def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.init_object_model()
-    
+
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
-    
+
     event.attrs.rainfall = RainfallModel(
         source="shape",
         cumulative=UnitfulLength(value=10.0, units="inch"),
         shape_type="scs",
         shape_start_time=-24,
         shape_duration=10,
-    )    
+    )
 
     hazard = test_scenario.direct_impacts.hazard
     hazard.site.attrs.scs = SCSModel(
@@ -116,7 +115,10 @@ def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
     cum_rainfall_toml = hazard.event.attrs.rainfall.cumulative.value
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
-@pytest.mark.skip(reason="Investigate why these fail and how to improve testing for scenario.run()")
+
+@pytest.mark.skip(
+    reason="Investigate why these fail and how to improve testing for scenario.run()"
+)
 class Test_scenario_run:
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class: Database):
@@ -129,7 +131,7 @@ class Test_scenario_run:
 
         test_scenario_not_run = Scenario.load_file(test_scenario_toml)
         test_scenario_not_run.init_object_model()
-        
+
         test_scenario_run = deepcopy(test_scenario_not_run)
         test_scenario_run.run()
 

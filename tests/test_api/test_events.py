@@ -43,7 +43,7 @@ def test_dict():
 def test_create_synthetic_event_valid_dict(test_db, test_dict):
     # When user presses add event and chooses the events
     # the dictionary is returned and an Event object is created
-    event = api_events.create_synthetic_event(test_dict)
+    api_events.create_synthetic_event(test_dict)
     # TODO assert event attrs
 
 

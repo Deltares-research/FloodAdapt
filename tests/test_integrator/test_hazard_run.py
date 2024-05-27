@@ -95,6 +95,7 @@ def test_hazard_preprocess_synthetic_discharge(test_scenarios):
     with pytest.raises(ValueError):
         test_scenario.direct_impacts.hazard.preprocess_models()
 
+
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR HAZARD")
 def test_preprocess_rainfall_timeseriesfile(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
@@ -164,6 +165,7 @@ def test_preprocess_greenInfra(test_scenarios):
     )
     test_scenario.direct_impacts.hazard.preprocess_models()
 
+
 @pytest.mark.skip(reason="Fails in CICD. Investigate GreenInfra validators!")
 def test_preprocess_greenInfra_aggr_area(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
@@ -190,6 +192,7 @@ def test_write_floodmap_geotiff(test_scenarios):
         "floodmap.tif"
     )
     assert floodmap_fn.is_file()
+
 
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR HAZARD!")
 def test_preprocess_prob_eventset(test_db, test_scenarios):
@@ -222,6 +225,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
     assert ~filecmp.cmp(bzs_file1, bzs_file2)
 
     # add SLR
+
 
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR")
 def test_preprocess_rainfall_increase(test_db, test_scenarios):
@@ -256,6 +260,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
     df_slr = pd.read_csv(bzs_file1_slr, header=None, index_col=0, delim_whitespace=True)
 
     assert np.abs((df_slr[1] - df[1]).mean() - slr.convert("meters")) < 0.01
+
 
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR")
 def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
@@ -499,6 +504,7 @@ def test_multiple_rivers(test_db, test_scenarios):
         "m3/s"
     )
 
+
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR INTO SMALLER TESTS")
 def test_no_rivers(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
@@ -535,6 +541,7 @@ def test_no_rivers(test_db, test_scenarios):
     assert not dis_file.is_file()
     assert not src_file.is_file()
     assert bnd_file.is_file()  # To check if the model has run
+
 
 @pytest.mark.skip(reason="Fails in CICD. FIX SOON!")
 def test_plot_wl_obs(test_db, test_scenarios):
