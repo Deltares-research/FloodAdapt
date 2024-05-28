@@ -9,6 +9,3 @@ dependencies:
   # Then `pip install .` to install the rest of the dependencies from the pyproj.toml that are on PyPI
   - python=3.10
   - geopandas
-  - pip
-  - pip:
-    - .[all]
