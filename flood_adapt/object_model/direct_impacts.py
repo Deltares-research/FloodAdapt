@@ -33,7 +33,7 @@ from flood_adapt.object_model.utils import cd
 
 class DirectImpacts:
     """All information related to the direct impacts of the scenario.
-    
+
     Includes methods to run the impact model or check if it has already been run.
     """
 

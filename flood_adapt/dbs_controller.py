@@ -36,7 +36,7 @@ from flood_adapt.object_model.site import Site
 
 class Database(IDatabase):
     """Implementation of IDatabase class that holds the site information and has methods to get static data info, and all the input information.
-    
+
     Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input.
     """
 

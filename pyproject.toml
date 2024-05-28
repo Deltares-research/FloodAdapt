@@ -107,3 +107,13 @@ target-version = [
 
 [tool.pyright]
 reportDeprecated = true
+
+[tool.typos]
+files.extend-exclude = [
+    "*.js",
+    "*.css",
+]
+files.ignore-hidden = true
+
+[tool.typos.default.extend-words]
+strat = "strat"
