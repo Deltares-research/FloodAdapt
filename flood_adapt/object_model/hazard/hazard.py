@@ -14,6 +14,7 @@ from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
+from flood_adapt.dbs_controller import Database
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -35,9 +36,9 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesVelocity,
 )
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import Site
-from flood_adapt.object_model.strategy import Strategy
+
+# from flood_adapt.object_model.projection import Projection
+# from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd
 
 
@@ -48,29 +49,26 @@ class Hazard:
     """
 
     name: str
-    database_input_path: Path
     mode: Mode
+    database: Database
     event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
     def __init__(
-        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+        self, scenario: ScenarioModel, results_dir: Path
     ) -> None:
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
         self.results_dir = results_dir
-        self.database_input_path = database_input_path
+        self.database = Database()
         self.event_name = scenario.event
         self.set_event()  # also setting the mode (single_event or risk here)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
-        self.site = Site.load_file(
-            database_input_path.parent / "static" / "site" / "site.toml"
-        )
         self.has_run = self.has_run_check()
 
     @property
@@ -84,24 +82,22 @@ class Hazard:
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
             self.simulation_paths = [
-                self.database_input_path.parent.joinpath(
-                    "output",
+                self.database.output_path.joinpath(
                     "Scenarios",
                     self.name,
                     "Flooding",
                     "simulations",
-                    self.site.attrs.sfincs.overland_model,
+                    self.database.site.attrs.sfincs.overland_model,
                 )
             ]
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
             self.simulation_paths_offshore = [
-                self.database_input_path.parent.joinpath(
-                    "output",
+                self.database.output_path.joinpath(
                     "Scenarios",
                     self.name,
                     "Flooding",
                     "simulations",
-                    self.site.attrs.sfincs.offshore_model,
+                    self.database.site.attrs.sfincs.offshore_model,
                 )
             ]
         elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
@@ -109,26 +105,24 @@ class Hazard:
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
                 self.simulation_paths.append(
-                    self.database_input_path.parent.joinpath(
-                        "output",
+                    self.database.output_path.joinpath(
                         "Scenarios",
                         self.name,
                         "Flooding",
                         "simulations",
                         subevent.attrs.name,
-                        self.site.attrs.sfincs.overland_model,
+                        self.database.site.attrs.sfincs.overland_model,
                     )
                 )
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 self.simulation_paths_offshore.append(
-                    self.database_input_path.parent.joinpath(
-                        "output",
+                    self.database.output_path.joinpath(
                         "Scenarios",
                         self.name,
                         "Flooding",
                         "simulations",
                         subevent.attrs.name,
-                        self.site.attrs.sfincs.offshore_model,
+                        self.database.site.attrs.sfincs.offshore_model,
                     )
                 )
 
@@ -187,7 +181,7 @@ class Hazard:
         )
         # set mode (probabilistic_set or single_event)
         self.event_mode = Event.get_mode(self.event_set_path)
-        self.event_set = EventSet.load_file(self.event_set_path)
+        self.event_set = EventSet.load_file(self.event_set_path) ##########FIX DBS_EVENTS FOR EVENTSET
 
     def _set_event_objects(self) -> None:
         if self._mode == Mode.single_event:
@@ -221,31 +215,23 @@ class Hazard:
             ]  # set event for single_event to be able to plot wl etc
 
     def set_physical_projection(self, projection: str) -> None:
-        projection_path = (
-            self.database_input_path / "Projections" / projection / f"{projection}.toml"
-        )
-        self.physical_projection = Projection.load_file(
-            projection_path
-        ).get_physical_projection()
+        self.physical_projection = self.database.projections.get(projection).get_physical_projection()
 
     def set_hazard_strategy(self, strategy: str) -> None:
-        strategy_path = (
-            self.database_input_path / "Strategies" / strategy / f"{strategy}.toml"
-        )
-        self.hazard_strategy = Strategy.load_file(strategy_path).get_hazard_strategy()
+        self.hazard_strategy = self.database.strategies.get(strategy).get_hazard_strategy()
 
     # no write function is needed since this is only used internally
 
-    @staticmethod
-    def get_event_object(event_path):
-        mode = Event.get_mode(event_path)
-        if mode == Mode.single_event:
-            # parse event config file to get event template
-            template = Event.get_template(event_path)
-            # use event template to get the associated event child class
-            return EventFactory.get_event(template).load_file(event_path)
-        elif mode == Mode.risk:
-            return EventSet.load_file(event_path)
+    # @staticmethod
+    # def get_event_object(event_path):
+    #     mode = Event.get_mode(event_path)
+    #     if mode == Mode.single_event:
+    #         # parse event config file to get event template
+    #         template = Event.get_template(event_path)
+    #         # use event template to get the associated event child class
+    #         return EventFactory.get_event(template).load_file(event_path)
+    #     elif mode == Mode.risk:
+    #         return EventSet.load_file(event_path)
 
     def preprocess_models(self):
         logging.info("Preparing hazard models...")
@@ -269,7 +255,7 @@ class Hazard:
         self.postprocess_sfincs()
         # add other models here
         # remove simulation folders
-        if not self.site.attrs.sfincs.save_simulation:
+        if not self.database.site.attrs.sfincs.save_simulation:
             sim_path = self.results_dir.joinpath("simulations")
             if os.path.exists(sim_path):
                 try:
@@ -343,7 +329,7 @@ class Hazard:
         self.set_simulation_paths()
         base_path = self.database_input_path.parent
         path_in = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.overland_model
+            "static", "templates", self.database.site.attrs.sfincs.overland_model
         )
 
         for ii, event in enumerate(self.event_list):
@@ -355,7 +341,7 @@ class Hazard:
                 shutil.rmtree(self.simulation_paths[ii].parent)
 
             # Load overland sfincs model
-            model = SfincsAdapter(model_root=path_in, site=self.site)
+            model = SfincsAdapter(model_root=path_in, site=self.database.site)
 
             # adjust timing of model
             model.set_timing(self.event.attrs)
@@ -373,7 +359,7 @@ class Hazard:
                         self.database_input_path.parent.joinpath("output", "meteo")
                     )
                 ds = self.event.download_meteo(
-                    site=self.site, path=meteo_dir
+                    site=self.database.site, path=meteo_dir
                 )  # =event_dir)
                 ds = ds.rename({"barometric_pressure": "press"})
                 ds = ds.rename({"precipitation": "precip"})
@@ -391,8 +377,8 @@ class Hazard:
                     # add water level offset due to historic SLR for synthetic event
                     wl_ts = (
                         self.event.tide_surge_ts
-                        + self.site.attrs.slr.vertical_offset.convert(
-                            self.site.attrs.gui.default_length_units
+                        + self.database.site.attrs.slr.vertical_offset.convert(
+                            self.database.site.attrs.gui.default_length_units
                         )
                     )
                 elif self.event.attrs.template == "Historical_nearshore":
@@ -402,11 +388,11 @@ class Hazard:
                 wl_ts[1] = wl_ts[
                     1
                 ] + self.physical_projection.attrs.sea_level_rise.convert(
-                    self.site.attrs.gui.default_length_units
+                    self.database.site.attrs.gui.default_length_units
                 )
                 # unit conversion to metric units (not needed for water levels coming from the offshore model, see below)
                 gui_units = UnitfulLength(
-                    value=1.0, units=self.site.attrs.gui.default_length_units
+                    value=1.0, units=self.database.site.attrs.gui.default_length_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesLength("meters"))
                 self.wl_ts = conversion_factor * wl_ts
@@ -430,15 +416,15 @@ class Hazard:
                 "Adding water level boundary conditions to the overland flood model..."
             )
             # add difference between MSL (vertical datum of offshore nad backend in general) and overland model
-            self.wl_ts += self.site.attrs.water_level.msl.height.convert(
+            self.wl_ts += self.database.site.attrs.water_level.msl.height.convert(
                 UnitTypesLength("meters")
-            ) - self.site.attrs.water_level.localdatum.height.convert(
+            ) - self.database.site.attrs.water_level.localdatum.height.convert(
                 UnitTypesLength("meters")
             )
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
+            self.event.add_dis_ts(event_dir=event_dir, site_river=self.database.site.attrs.river)
             if self.event.dis_df is not None:
                 # Generate and change discharge boundary condition
                 logging.info(
@@ -446,17 +432,17 @@ class Hazard:
                 )
                 # convert to metric units
                 gui_units = UnitfulDischarge(
-                    value=1.0, units=self.site.attrs.gui.default_discharge_units
+                    value=1.0, units=self.database.site.attrs.gui.default_discharge_units
                 )
                 conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
                 model.add_dis_bc(
                     list_df=conversion_factor * self.event.dis_df,
-                    site_river=self.site.attrs.river,
+                    site_river=self.database.site.attrs.river,
                 )
 
             # Generate and add rainfall boundary condition
             gui_units_precip = UnitfulIntensity(
-                value=1.0, units=self.site.attrs.gui.default_intensity_units
+                value=1.0, units=self.database.site.attrs.gui.default_intensity_units
             )
             conversion_factor_precip = gui_units_precip.convert(
                 UnitTypesIntensity("mm/hr")
@@ -508,9 +494,9 @@ class Hazard:
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
                         scsfile = self.database_input_path.parent.joinpath(
-                            "static", "scs", self.site.attrs.scs.file
+                            "static", "scs", self.database.site.attrs.scs.file
                         )
-                        scstype = self.site.attrs.scs.type
+                        scstype = self.database.site.attrs.scs.type
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
                     else:
                         self.event.add_rainfall_ts()
@@ -524,14 +510,14 @@ class Hazard:
                 # Generate and add wind boundary condition
                 # conversion factor to metric units
                 gui_units_wind = UnitfulVelocity(
-                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                    value=1.0, units=self.database.site.attrs.gui.default_velocity_units
                 )
                 conversion_factor_wind = gui_units_wind.convert(
                     UnitTypesVelocity("m/s")
                 )
                 # conversion factor to metric units
                 gui_units_wind = UnitfulVelocity(
-                    value=1.0, units=self.site.attrs.gui.default_velocity_units
+                    value=1.0, units=self.database.site.attrs.gui.default_velocity_units
                 )
                 conversion_factor_wind = gui_units_wind.convert(
                     UnitTypesVelocity("m/s")
@@ -624,7 +610,7 @@ class Hazard:
         # Determine folders for offshore model
         base_path = self.database_input_path.parent
         path_in_offshore = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.offshore_model
+            "static", "templates", self.database.site.attrs.sfincs.offshore_model
         )
         if self.event_mode == Mode.risk:
             event_dir = (
@@ -640,7 +626,7 @@ class Hazard:
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.site)
+        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.database.site)
 
         # Set timing of offshore model (same as overland model)
         offshore_model.set_timing(self.event.attrs)
@@ -698,7 +684,7 @@ class Hazard:
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
         offshore_model = SfincsAdapter(
-            model_root=self.simulation_paths_offshore[ii], site=self.site
+            model_root=self.simulation_paths_offshore[ii], site=self.database.site
         )
 
         # take the results from offshore model as input for wl bnd
@@ -733,7 +719,7 @@ class Hazard:
 
         elif mode == Mode.risk:
             map_fn = []
-            for rp in self.site.attrs.risk.return_periods:
+            for rp in self.database.site.attrs.risk.return_periods:
                 map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
         self.flood_map_path = map_fn
@@ -741,7 +727,7 @@ class Hazard:
     def write_water_level_map(self):
         """Reads simulation results from SFINCS and saves a netcdf with the maximum water levels"""
         # read SFINCS model
-        model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
+        model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.database.site)
         zsmax = model.read_zsmax()
         zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
         del model
@@ -752,13 +738,13 @@ class Hazard:
         """
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            model = SfincsAdapter(model_root=sim_path, site=self.database.site)
 
             df, gdf = model.read_zs_points()
 
             del model
 
-            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
+            gui_units = UnitTypesLength(self.database.site.attrs.gui.default_length_units)
 
             conversion_factor = UnitfulLength(
                 value=1.0, units=UnitTypesLength("meters")
@@ -768,21 +754,21 @@ class Hazard:
                 # Plot actual thing
                 fig = px.line(
                     df[col] * conversion_factor
-                    + self.site.attrs.water_level.localdatum.height.convert(
+                    + self.database.site.attrs.water_level.localdatum.height.convert(
                         gui_units
                     )  # convert to reference datum for plotting
                 )
 
                 # plot reference water levels
                 fig.add_hline(
-                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
+                    y=self.database.site.attrs.water_level.msl.height.convert(gui_units),
                     line_dash="dash",
                     line_color="#000000",
                     annotation_text="MSL",
                     annotation_position="bottom right",
                 )
-                if self.site.attrs.water_level.other:
-                    for wl_ref in self.site.attrs.water_level.other:
+                if self.database.site.attrs.water_level.other:
+                    for wl_ref in self.database.site.attrs.water_level.other:
                         fig.add_hline(
                             y=wl_ref.height.convert(gui_units),
                             line_dash="dash",
@@ -815,19 +801,19 @@ class Hazard:
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
                     if (
-                        isinstance(self.site.attrs.obs_point[ii].ID, int)
-                        or self.site.attrs.obs_point[ii].file is not None
+                        isinstance(self.database.site.attrs.obs_point[ii].ID, int)
+                        or self.database.site.attrs.obs_point[ii].file is not None
                     ):
-                        if self.site.attrs.obs_point[ii].file is not None:
+                        if self.database.site.attrs.obs_point[ii].file is not None:
                             file = self.database_input_path.parent.joinpath(
-                                "static", self.site.attrs.obs_point[ii].file
+                                "static", self.database.site.attrs.obs_point[ii].file
                             )
                         else:
                             file = None
 
                         try:
                             df_gauge = HistoricalNearshore.download_wl_data(
-                                station_id=self.site.attrs.obs_point[ii].ID,
+                                station_id=self.database.site.attrs.obs_point[ii].ID,
                                 start_time_str=self.event.attrs.time.start_time,
                                 stop_time_str=self.event.attrs.time.end_time,
                                 units=UnitTypesLength(gui_units),
@@ -835,7 +821,7 @@ class Hazard:
                             )
                         except COOPSAPIError as e:
                             logging.warning(
-                                f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
+                                f"Could not download tide gauge data for station {self.database.site.attrs.obs_point[ii].ID}. {e}"
                             )
                         else:
                             # If data is available, add to plot
@@ -843,7 +829,7 @@ class Hazard:
                                 go.Scatter(
                                     x=pd.DatetimeIndex(df_gauge.index),
                                     y=df_gauge[1]
-                                    + self.site.attrs.water_level.msl.height.convert(
+                                    + self.database.site.attrs.water_level.msl.height.convert(
                                         gui_units
                                     ),
                                     line_color="#ea6404",
@@ -863,10 +849,10 @@ class Hazard:
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            model = SfincsAdapter(model_root=sim_path, site=self.database.site)
             # dem file for high resolution flood depth map
             demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.site.attrs.dem.filename
+                "static", "dem", self.database.site.attrs.dem.filename
             )
 
             # read max. water level
@@ -903,7 +889,7 @@ class Hazard:
         TODO: make this robust and more efficient for bigger datasets
         """
 
-        floodmap_rp = self.site.attrs.risk.return_periods
+        floodmap_rp = self.database.site.attrs.risk.return_periods
 
         frequencies = self.event_set.attrs.frequency
         # adjust storm frequency for hurricane events
@@ -916,7 +902,7 @@ class Hazard:
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
         dummymodel = SfincsAdapter(
-            model_root=str(self.simulation_paths[0]), site=self.site
+            model_root=str(self.simulation_paths[0]), site=self.database.site
         )
         mask = dummymodel.get_mask().stack(z=("x", "y"))
         zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
@@ -925,7 +911,7 @@ class Hazard:
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
+            sim = SfincsAdapter(model_root=str(simulation_path), site=self.database.site)
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
             zs_maps.append(zs_stacked)
@@ -1012,11 +998,11 @@ class Hazard:
             # write geotiff
             # dem file for high resolution flood depth map
             demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.site.attrs.dem.filename
+                "static", "dem", self.database.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
             dummymodel = SfincsAdapter(
-                model_root=str(self.simulation_paths[0]), site=self.site
+                model_root=str(self.simulation_paths[0]), site=self.database.site
             )
             dummymodel.write_geotiff(
                 zs_rp_single.to_array().squeeze().transpose(),

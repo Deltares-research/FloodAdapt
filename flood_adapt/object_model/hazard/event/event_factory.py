@@ -1,4 +1,5 @@
 from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.eventset import EventSet
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
 )
@@ -7,6 +8,7 @@ from flood_adapt.object_model.hazard.event.historical_nearshore import (
 )
 from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+from flood_adapt.object_model.interface.events import Mode
 
 
 class EventFactory:
@@ -34,11 +36,16 @@ class EventFactory:
         """
 
         # Check template name and return object
-        if template == "Synthetic":
-            return Synthetic()
-        elif template == "Historical_hurricane":
-            return HistoricalHurricane()
-        elif template == "Historical_offshore":
-            return HistoricalOffshore()
-        elif template == "Historical_nearshore":
-            return HistoricalNearshore()
+        if template.attrs.mode == Mode.single_event:
+            if template == "Synthetic":
+                return Synthetic()
+            elif template == "Historical_hurricane":
+                return HistoricalHurricane()
+            elif template == "Historical_offshore":
+                return HistoricalOffshore()
+            elif template == "Historical_nearshore":
+                return HistoricalNearshore()
+        elif template.attrs.mode == Mode.risk:
+            return EventSet()
+        else:
+            raise ValueError(f"Template '{template}' is not recognized.")

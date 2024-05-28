@@ -7,7 +7,6 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.site import Site
@@ -17,23 +16,7 @@ class Scenario(IScenario):
     """class holding all information related to a scenario"""
 
     attrs: ScenarioModel
-    direct_impacts: DirectImpacts
     database_input_path: Union[str, os.PathLike]
-
-    def init_object_model(self):
-        """Create a Direct Impact object"""
-        self.site_info = Site.load_file(
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "Scenarios", self.attrs.name
-        )
-        self.direct_impacts = DirectImpacts(
-            scenario=self.attrs,
-            database_input_path=Path(self.database_input_path),
-            results_path=self.results_path,
-        )
-        return self
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
@@ -60,42 +43,6 @@ class Scenario(IScenario):
         """save Scenario to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
-    def run(self):
-        """run direct impact models for the scenario"""
-        self.init_object_model()
-        os.makedirs(self.results_path, exist_ok=True)
-
-        # Initiate the logger for all the integrator scripts.
-        self.initiate_root_logger(
-            self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
-        )
-        version = "0.1.0"
-        logging.info(f"FloodAdapt version {version}")
-        logging.info(
-            f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
-        )
-
-        # preprocess model input data first, then run, then post-process
-        if not self.direct_impacts.hazard.has_run:
-            self.direct_impacts.hazard.preprocess_models()
-            self.direct_impacts.hazard.run_models()
-            self.direct_impacts.hazard.postprocess_models()
-        else:
-            print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
-        if not self.direct_impacts.has_run:
-            self.direct_impacts.preprocess_models()
-            self.direct_impacts.run_models()
-            self.direct_impacts.postprocess_models()
-        else:
-            print(
-                f"Direct impacts for scenario '{self.attrs.name}' has already been run."
-            )
-
-        logging.info(
-            f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
-        )
-        self.close_root_logger_handlers()
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):

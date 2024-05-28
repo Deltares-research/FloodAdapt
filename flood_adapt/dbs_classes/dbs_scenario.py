@@ -25,7 +25,18 @@ class DbsScenario(DbsTemplate):
         IScenario
             scenario object
         """
-        return super().get(name).init_object_model()
+        return super().get(name).init_object_model() ### Should have a seperate method to check whether it has run
+    
+    def has_run(self) -> bool:
+        """Check if the scenario has run.
+
+        Returns
+        -------
+        bool
+            Whether the scenario has run
+        """
+        full_path = self._path / name / f"{name}.toml"
+        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the events that currently

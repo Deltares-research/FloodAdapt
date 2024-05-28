@@ -1,6 +1,10 @@
+import logging
+import os
+from pathlib import Path
 from typing import Any, Union
 
 from flood_adapt.dbs_controller import Database
+from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
@@ -49,4 +53,64 @@ def delete_scenario(name: str) -> None:
 
 
 def run_scenario(name: Union[str, list[str]]) -> None:
-    Database().run_scenario(name)
+    if not isinstance(name, list):
+        scenario_name = [name]
+
+    errors = []
+    database = Database()
+    for scn in scenario_name:
+        try:
+            database.has_run_hazard(scn)
+            scenario = database.scenarios.get(scn)
+            results_path = Path(database.output_path).joinpath(
+                "output", "Scenarios", scn
+            )
+            direct_impacts = DirectImpacts(
+                scenario=scenario.attrs,
+                database_input_path=Path(database.input_path),
+                results_path=results_path,
+            )
+            os.makedirs(results_path, exist_ok=True)
+
+            version = "0.1.0"
+            logging.info(f"FloodAdapt version {version}")
+            logging.info(
+                f"Started evaluation of {scn}"
+            )
+
+            scenario.initiate_root_logger(
+                results_path.joinpath(f"logfile_{scn}.log")
+            )
+
+            # preprocess model input data first, then run, then post-process
+            if not direct_impacts.hazard.has_run:
+                direct_impacts.hazard.preprocess_models()
+                direct_impacts.hazard.run_models()
+                direct_impacts.hazard.postprocess_models()
+            else:
+                print(f"Hazard for scenario '{scn}' has already been run.")
+            if not direct_impacts.has_run:
+                direct_impacts.preprocess_models()
+                direct_impacts.run_models()
+                direct_impacts.postprocess_models()
+            else:
+                print(
+                    f"Direct impacts for scenario '{scn}' has already been run."
+                )
+
+            logging.info(
+                f"Finished evaluation of {scn}"
+            )
+            scenario.close_root_logger_handlers()
+
+        except RuntimeError as e:
+            if "SFINCS model failed to run." in str(e):
+                errors.append(str(scn))
+
+    if errors:
+        raise RuntimeError(
+            "SFincs model failed to run for the following scenarios: "
+            + ", ".join(errors)
+            + ". Check the logs for more information."
+        )
+

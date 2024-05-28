@@ -1079,36 +1079,3 @@ class Database(IDatabase):
                     print(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
-
-    def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        """Runs a scenario hazard and impacts.
-
-        Parameters
-        ----------
-        scenario_name : Union[str, list[str]]
-            name(s) of the scenarios to run.
-
-        Raises
-        ------
-        RuntimeError
-            If an error occurs while running one of the scenarios
-        """
-        if not isinstance(scenario_name, list):
-            scenario_name = [scenario_name]
-
-        errors = []
-        for scn in scenario_name:
-            try:
-                self.has_run_hazard(scn)
-                scenario = self.scenarios.get(scn)
-                scenario.run()
-            except RuntimeError as e:
-                if "SFINCS model failed to run." in str(e):
-                    errors.append(str(scn))
-
-        if errors:
-            raise RuntimeError(
-                "SFincs model failed to run for the following scenarios: "
-                + ", ".join(errors)
-                + ". Check the logs for more information."
-            )

@@ -74,7 +74,6 @@ class DbsTemplate(AbstractDatabaseElement):
         ]
 
         # From the loaded objects, get the name and description and add them to the object_list
-        object_list["name"] = [obj.attrs.name for obj in objects]
         object_list["description"] = [obj.attrs.description for obj in objects]
         object_list["objects"] = objects
         return object_list
@@ -261,12 +260,14 @@ class DbsTemplate(AbstractDatabaseElement):
         """
         base_path = self.input_path / self._folder_name
         directories = list(base_path.iterdir())
+        names = [dir.name for dir in directories]
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]
 
         objects = {
+            "name": names,
             "path": paths,
             "last_modification_date": last_modification_date,
         }

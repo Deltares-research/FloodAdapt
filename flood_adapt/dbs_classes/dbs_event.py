@@ -4,7 +4,6 @@ from typing import Any
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.scenario import Scenario
 
@@ -49,11 +48,11 @@ class DbsEvent(DbsTemplate):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         events = self._get_object_list()
-        objects = [Hazard.get_event_object(path) for path in events["path"]]
-        events["name"] = [obj.attrs.name for obj in objects]
+        objects = [self.get(name) for name in events["name"]]
         events["description"] = [obj.attrs.description for obj in objects]
         events["objects"] = objects
         return events
+
 
     def _check_standard_objects(self, name: str) -> bool:
         """Checks if an event is a standard event.
