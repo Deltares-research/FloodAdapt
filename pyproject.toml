@@ -63,8 +63,48 @@ include = ["flood_adapt", "flood_adapt.*"]
 Source = "https://github.com/Deltares/FloodAdapt"
 
 [tool.ruff]
-select = ["E", "F", "NPY", "PD", "C4", "I"]
-ignore = ["E501", "PD901"]
+line-length = 88
+tab-size = 4
+indent-width = 4
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "D",
+    "E",
+    "F",
+    "NPY",
+    "PD",
+    "C4",
+    "I",
+]
+ignore = [
+    "D10",
+    "D417",
+
+    "PD010",
+    "PD013",
+    "PD901",
+    
+    "E501",
+    "E741",
+]
+fixable = [
+    "I",
+    "D"
+]
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.black]
+line-length = 88
+target-version = [
+    "py311",
+]
 
 [tool.pyright]
 reportDeprecated = true
