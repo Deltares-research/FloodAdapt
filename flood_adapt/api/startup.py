@@ -29,7 +29,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
     # TODO should this return a list of geojson? if yes what form?
-    """Gets the aggregations areas that are used for the site and fiat
+    """Get the aggregations areas that are used for the site and fiat.
 
     Parameters
     ----------
@@ -44,9 +44,9 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
 
 
 def get_obs_points() -> GeoDataFrame:
-    """Gets the observation points specified in the site.toml. These are
-        also added to the flood hazard model. They are used as marker
-        locations to plot water level time series in the output tab.
+    """Get the observation points specified in the site.toml.
+
+    These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
 
     Parameters
     ----------
@@ -65,7 +65,7 @@ def get_model_boundary() -> GeoDataFrame:
 
 
 def get_model_grid() -> QuadtreeGrid:
-    """Gets the model grid that is used in SFINCS
+    """Get the model grid that is used in SFINCS.
 
     Parameters
     ----------
@@ -81,7 +81,7 @@ def get_model_grid() -> QuadtreeGrid:
 
 @staticmethod
 def get_svi_map() -> Union[GeoDataFrame, None]:
-    """Gets the SVI map that are used in Fiat
+    """Get the SVI map that are used in Fiat.
 
     Parameters
     ----------
@@ -100,7 +100,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
 
 @staticmethod
 def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
-    """Gets a static map from the database
+    """Get a static map from the database.
 
     Parameters
     ----------
@@ -121,7 +121,7 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
 
 def get_buildings() -> GeoDataFrame:
-    """Gets the buildings exposure that are used in Fiat
+    """Get the buildings exposure that are used in Fiat.
 
     Parameters
     ----------

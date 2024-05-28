@@ -12,15 +12,14 @@ from flood_adapt.object_model.interface.measures import ElevateModel, IElevate
 
 
 class Elevate(ImpactMeasure, IElevate):
-    """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height"""
+    """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height."""
 
     attrs: ElevateModel
     database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IElevate:
-        """create Elevate from toml file"""
-
+        """Create Elevate from toml file."""
         obj = Elevate()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -33,14 +32,13 @@ class Elevate(ImpactMeasure, IElevate):
     def load_dict(
         data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IElevate:
-        """create Elevate from object, e.g. when initialized from GUI"""
-
+        """Create Elevate from object, e.g. when initialized from GUI."""
         obj = Elevate()
         obj.attrs = ElevateModel.parse_obj(data)
         obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Elevate to a toml file"""
+        """Save Elevate to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

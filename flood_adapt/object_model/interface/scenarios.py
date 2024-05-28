@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class ScenarioModel(BaseModel):
-    """BaseModel describing the expected variables and data types of a scenario"""
+    """BaseModel describing the expected variables and data types of a scenario."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
@@ -22,18 +22,18 @@ class IScenario(ABC):
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Scenario attributes from toml file"""
+        """Get Scenario attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
     def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """get Scenario attributes from an object, e.g. when initialized from GUI"""
+        """Get Scenario attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Scenario attributes to a toml file"""
+        """Save Scenario attributes to a toml file."""
         ...
 
     @abstractmethod

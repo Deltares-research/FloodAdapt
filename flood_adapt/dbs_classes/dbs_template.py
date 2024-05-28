@@ -21,15 +21,13 @@ class DbsTemplate(AbstractDatabaseElement):
     _object_model_class = None
 
     def __init__(self, database: IDatabase):
-        """
-        Initialize any necessary attributes.
-        """
+        """Initialize any necessary attributes."""
         self.input_path = database.input_path
         self._path = self.input_path / self._folder_name
         self._database = database
 
     def get(self, name: str) -> ObjectModel:
-        """Returns an object of the type of the database with the given name.
+        """Return an object of the type of the database with the given name.
 
         Parameters
         ----------
@@ -53,8 +51,7 @@ class DbsTemplate(AbstractDatabaseElement):
         return object_model
 
     def list_objects(self):
-        """Returns a dictionary with info on the objects that currently
-        exist in the database.
+        """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
         -------
@@ -80,7 +77,7 @@ class DbsTemplate(AbstractDatabaseElement):
         return object_list
 
     def copy(self, old_name: str, new_name: str, new_description: str):
-        """Copies (duplicates) an existing object, and gives it a new name.
+        """Copy (duplicate) an existing object, and give it a new name.
 
         Parameters
         ----------
@@ -114,8 +111,7 @@ class DbsTemplate(AbstractDatabaseElement):
                 shutil.copy(file, dest / file.name)
 
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
-        this should be saved separately.
+        """Save an object in the database. This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
 
         Parameters
         ----------
@@ -130,7 +126,6 @@ class DbsTemplate(AbstractDatabaseElement):
         ValueError
             Raise error if name is already in use.
         """
-
         object_exists = object_model.attrs.name in self.list_objects()["name"]
 
         # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
@@ -151,7 +146,7 @@ class DbsTemplate(AbstractDatabaseElement):
         )
 
     def edit(self, object_model: ObjectModel):
-        """Edits an already existing object in the database.
+        """Edit an already existing object in the database.
 
         Parameters
         ----------
@@ -175,7 +170,7 @@ class DbsTemplate(AbstractDatabaseElement):
         self.save(object_model, overwrite=True)
 
     def delete(self, name: str, toml_only: bool = False):
-        """Deletes an already existing object in the database.
+        """Delete an already existing object in the database.
 
         Parameters
         ----------
@@ -217,7 +212,7 @@ class DbsTemplate(AbstractDatabaseElement):
             shutil.rmtree(path, ignore_errors=True)
 
     def _check_standard_objects(self, name: str) -> bool:
-        """Checks if an object is a standard object.
+        """Check if an object is a standard object.
 
         Parameters
         ----------
@@ -234,7 +229,7 @@ class DbsTemplate(AbstractDatabaseElement):
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if an object is used in a higher level object.
+        """Check if an object is used in a higher level object.
 
         Parameters
         ----------
@@ -251,8 +246,7 @@ class DbsTemplate(AbstractDatabaseElement):
         return []
 
     def _get_object_list(self) -> dict[Path, datetime]:
-        """Given an object type (e.g., measures) get a dictionary with all the toml paths
-        and last modification dates that exist in the database.
+        """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
 
         Returns
         -------

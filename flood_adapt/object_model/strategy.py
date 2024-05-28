@@ -16,13 +16,13 @@ from flood_adapt.object_model.measure_factory import (
 
 
 class Strategy(IStrategy):
-    """Strategy class that holds all the information for a specific strategy"""
+    """Strategy class that holds all the information for a specific strategy."""
 
     attrs: StrategyModel
     database_input_path: Union[str, os.PathLike]
 
     def get_measures(self) -> list[Union[ImpactMeasure, HazardMeasure]]:
-        """Gets the measures paths and types"""
+        """Get the measures paths and types."""
         assert self.attrs.measures is not None
         # Get measure paths using a database structure
         measure_paths = [
@@ -58,7 +58,7 @@ class Strategy(IStrategy):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
-        """Create Strategy object from toml file
+        """Create Strategy object from toml file.
 
         Parameters
         ----------
@@ -91,7 +91,7 @@ class Strategy(IStrategy):
         database_input_path: Union[str, os.PathLike],
         validate: bool = True,
     ):
-        """_summary_
+        """_summary_.
 
         Parameters
         ----------

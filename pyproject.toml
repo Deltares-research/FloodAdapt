@@ -64,7 +64,6 @@ Source = "https://github.com/Deltares/FloodAdapt"
 
 [tool.ruff]
 line-length = 88
-tab-size = 4
 indent-width = 4
 
 [tool.ruff.format]

@@ -23,14 +23,13 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 class Event:
-    """abstract parent class for all event types"""
+    """abstract parent class for all event types."""
 
     attrs: EventModel
 
     @staticmethod
     def get_template(filepath: Path):
-        """create Synthetic from toml file"""
-
+        """Create Synthetic from toml file."""
         obj = Event()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -39,8 +38,7 @@ class Event:
 
     @staticmethod
     def get_mode(filepath: Path) -> Mode:
-        """get mode of the event (single or risk) from toml file"""
-
+        """Get mode of the event (single or risk) from toml file."""
         with open(filepath, mode="rb") as fp:
             event_data = tomli.load(fp)
         mode = event_data["mode"]
@@ -50,7 +48,7 @@ class Event:
     def timeseries_shape(
         shape_type: str, duration: float, peak: float, **kwargs
     ) -> np.ndarray:
-        """create generic function to create shape timeseries for rainfall and discharge
+        """Create generic function to create shape timeseries for rainfall and discharge.
 
         Parameters
         ----------
@@ -177,14 +175,13 @@ class Event:
         site_river: list,
         input_river_df_list: Optional[list[pd.DataFrame]] = [],
     ):
-        """Creates pd.Dataframe timeseries for river discharge
+        """Create pd.Dataframe timeseries for river discharge.
 
         Returns
         -------
         self
 
         """
-
         # Create empty list for results
         list_df = [None] * len(site_river)
 
@@ -278,7 +275,7 @@ class Event:
         return self
 
     def add_rainfall_ts(self, **kwargs):
-        """add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds
+        """Add timeseries to event for constant or shape-type rainfall, note all relative times and durations are converted to seconds.
 
         Returns
         -------
@@ -389,7 +386,7 @@ class Event:
             return self
 
     def add_wind_ts(self):
-        """adds constant wind or timeseries from file to event object
+        """Add constant wind or timeseries from file to event object.
 
         Returns
         -------

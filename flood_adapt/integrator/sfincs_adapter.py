@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 class SfincsAdapter:
     def __init__(self, site: Site, model_root: Optional[str] = None):
-        """Loads overland sfincs model based on a root directory.
+        """Load overland sfincs model based on a root directory.
 
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
@@ -60,8 +60,7 @@ class SfincsAdapter:
         gc.collect()
 
     def set_timing(self, event: EventModel):
-        """Changes model reference times based on event time series."""
-
+        """Set model reference times based on event time series."""
         # Get start and end time of event
         tstart = event.time.start_time
         tstop = event.time.end_time
@@ -173,8 +172,7 @@ class SfincsAdapter:
     def add_bzs_from_bca(
         self, event: EventModel, physical_projection: PhysicalProjectionModel
     ):
-        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs"""
-
+        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
         sb = SfincsBoundary()
         sb.read_flow_boundary_points(Path(self.sf_model.root).joinpath("sfincs.bnd"))
         sb.read_astro_boundary_conditions(
@@ -210,7 +208,7 @@ class SfincsAdapter:
         )
 
     def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
-        """Function to create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
+        """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
 
         Returns
         -------
@@ -229,14 +227,13 @@ class SfincsAdapter:
         return wl_df
 
     def add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
-        """Changes discharge of overland sfincs model based on new discharge time series.
+        """Add discharge to overland sfincs model based on new discharge time series.
 
         Parameters
         ----------
         df_ts : pd.DataFrame
             time series of discharge, index should be Pandas DateRange
         """
-
         # Determine bnd points from reference overland model
         # ASSUMPTION: Order of the rivers is the same as the site.toml file
         if np.any(list_df):
@@ -275,14 +272,13 @@ class SfincsAdapter:
             )
 
     def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
-        """Adds floodwall to sfincs model.
+        """Add floodwall to sfincs model.
 
         Parameters
         ----------
         floodwall : FloodWallModel
             floodwall information
         """
-
         # HydroMT function: get geodataframe from filename
         polygon_file = measure_path.joinpath(floodwall.polygon_file)
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
@@ -324,7 +320,7 @@ class SfincsAdapter:
     def add_green_infrastructure(
         self, green_infrastructure: GreenInfrastructureModel, measure_path: Path
     ):
-        """Adds green infrastructure to sfincs model.
+        """Add green infrastructure to sfincs model.
 
         Parameters
         ----------
@@ -333,7 +329,6 @@ class SfincsAdapter:
         measure_path: Path
             Path of the measure folder
         """
-
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.selection_type == "polygon":
             polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
@@ -379,14 +374,13 @@ class SfincsAdapter:
         )
 
     def add_pump(self, pump: PumpModel, measure_path: Path):
-        """Adds pump to sfincs model.
+        """Add pump to sfincs model.
 
         Parameters
         ----------
         pump : PumpModel
             pump information
         """
-
         # HydroMT function: get geodataframe from filename
         polygon_file = measure_path.joinpath(pump.polygon_file)
         gdf_pump = self.sf_model.data_catalog.get_geodataframe(
@@ -402,12 +396,11 @@ class SfincsAdapter:
         )
 
     def write_sfincs_model(self, path_out: Path):
-        """Write all the files for the sfincs model
+        """Write all the files for the sfincs model.
 
         Args:
             path_out (Path): new root of sfincs model
         """
-
         # Change model root to new folder
         self.sf_model.set_root(path_out, mode="w+")
 
@@ -420,7 +413,7 @@ class SfincsAdapter:
         database_path: Path,
         model_dir: Path,
     ):
-        """Add spiderweb forcing to the sfincs model
+        """Add spiderweb forcing to the sfincs model.
 
         Parameters
         ----------
@@ -431,7 +424,6 @@ class SfincsAdapter:
         model_dir : Path
             Output path of the model
         """
-
         historical_hurricane.make_spw_file(
             database_path=database_path, model_dir=model_dir, site=self.site
         )
@@ -443,8 +435,7 @@ class SfincsAdapter:
         self.sf_model.set_config("pavbnd", -9999)
 
     def add_obs_points(self):
-        """add observation points provided in the site toml to SFINCS model"""
-
+        """Add observation points provided in the site toml to SFINCS model."""
         if self.site.attrs.obs_point is not None:
             obs_points = self.site.attrs.obs_point
             names = []
@@ -465,18 +456,18 @@ class SfincsAdapter:
             self.sf_model.setup_observation_points(locations=gdf, merge=False)
 
     def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entire simulation"""
+        """Read zsmax file and return absolute maximum water level over entire simulation."""
         self.sf_model.read_results()
         zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
         zsmax.attrs["units"] = "m"
         return zsmax
 
     def read_zs_points(self):
-        """Read water level (zs) timeseries at observation points
-        Names are allocated from the site.toml.
-        See also add_obs_points() above
-        """
+        """Read water level (zs) timeseries at observation points.
 
+        Names are allocated from the site.toml.
+        See also add_obs_points() above.
+        """
         self.sf_model.read_results()
         da = self.sf_model.results["point_zs"]
         df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
@@ -499,22 +490,22 @@ class SfincsAdapter:
         return df, gdf
 
     def get_mask(self):
-        """Get mask with inactive cells from model"""
+        """Get mask with inactive cells from model."""
         mask = self.sf_model.grid["msk"]
         return mask
 
     def get_bedlevel(self):
-        """Get bed level from model"""
+        """Get bed level from model."""
         self.sf_model.read_results()
         zb = self.sf_model.results["zb"]
         return zb
 
     def get_model_boundary(self) -> gpd.GeoDataFrame:
-        """Get bounding box from model"""
+        """Get bounding box from model."""
         return self.sf_model.region
 
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get grid from model
+        """Get grid from model.
 
         Returns
         -------

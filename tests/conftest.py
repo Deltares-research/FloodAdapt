@@ -15,12 +15,13 @@ database_path = str(rootPath.joinpath(site_name))
 
 def make_db_fixture(scope, clean=True):
     """
-    This generates a fixture that is used for testing in general.
+    Generate a fixture that is used for testing in general.
+
     All fixtures function as follows:
         1) Update the database to the latest revision
         2) Initialize database controller
         3) Perform all tests in scope
-        4) Optionally clean the database
+        4) Optionally clean the database.
 
     Usage
     ----------
@@ -31,6 +32,7 @@ def make_db_fixture(scope, clean=True):
                 something = test_db.get_something()
                 some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
                 assert ...
+
     Parameters
     ----------
     scope : str

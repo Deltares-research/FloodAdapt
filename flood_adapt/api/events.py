@@ -36,7 +36,7 @@ def get_event_mode(name: str) -> str:
 
 
 def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
-    """Create a synthetic event object from a dictionary of attributes
+    """Create a synthetic event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
-    """Create a historical nearshore event object from a dictionary of attributes
+    """Create a historical nearshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNears
 
 
 def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffshore:
-    """Create a historical offshore event object from a dictionary of attributes
+    """Create a historical offshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffsho
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurricane:
-    """Create a historical hurricane event object from a dictionary of attributes
+    """Create a historical hurricane event object from a dictionary of attributes.
 
     Parameters
     ----------

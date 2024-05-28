@@ -15,7 +15,7 @@ class DbsEvent(DbsTemplate):
     _object_model_class = Event
 
     def get(self, name: str) -> IEvent:
-        """Returns an event object.
+        """Return an event object.
 
         Parameters
         ----------
@@ -40,8 +40,7 @@ class DbsEvent(DbsTemplate):
         return event
 
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the events that currently
-        exist in the database.
+        """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
         -------
@@ -56,7 +55,7 @@ class DbsEvent(DbsTemplate):
         return events
 
     def _check_standard_objects(self, name: str) -> bool:
-        """Checks if an event is a standard event.
+        """Check if an event is a standard event.
 
         Parameters
         ----------
@@ -76,7 +75,7 @@ class DbsEvent(DbsTemplate):
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if an event is used in a scenario.
+        """Check if an event is used in a scenario.
 
         Parameters
         ----------
