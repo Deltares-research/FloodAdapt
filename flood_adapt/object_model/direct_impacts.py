@@ -134,7 +134,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database_input_path, results_dir)
+        self.hazard = Hazard(scenario, results_dir)
 
     def preprocess_models(self):
         logging.info("Preparing impact models...")

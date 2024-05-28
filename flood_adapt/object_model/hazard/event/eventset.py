@@ -20,6 +20,9 @@ class EventSet:
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = EventSetModel.parse_obj(toml)
+        obj.event_paths = []
+        for sub_event in obj.attrs.subevent_name:
+            obj.event_paths.append(Path(filepath).parent / sub_event / f"{sub_event}.toml")
         return obj
 
     def __eq__(self, other):

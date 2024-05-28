@@ -13,7 +13,8 @@ import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
-from flood_adapt.object_model.scenario import Scenario
+
+# from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 
 
@@ -90,70 +91,71 @@ class Benefit(IBenefit):
         pd.DataFrame
             a table with the scenarios of the Benefit analysis and their status
         """
-        # Define names of scenarios
-        scenarios_calc = {
-            "current_no_measures": {},
-            "current_with_strategy": {},
-            "future_no_measures": {},
-            "future_with_strategy": {},
-        }
+        pass # TODO: implement this method
+        # # Define names of scenarios
+        # scenarios_calc = {
+        #     "current_no_measures": {},
+        #     "current_with_strategy": {},
+        #     "future_no_measures": {},
+        #     "future_with_strategy": {},
+        # }
 
-        # Use the predefined names for the current projections and no measures strategy
-        for scenario in scenarios_calc.keys():
-            scenarios_calc[scenario]["event"] = self.attrs.event_set
+        # # Use the predefined names for the current projections and no measures strategy
+        # for scenario in scenarios_calc.keys():
+        #     scenarios_calc[scenario]["event"] = self.attrs.event_set
 
-            if "current" in scenario:
-                scenarios_calc[scenario][
-                    "projection"
-                ] = self.attrs.current_situation.projection
-            elif "future" in scenario:
-                scenarios_calc[scenario]["projection"] = self.attrs.projection
+        #     if "current" in scenario:
+        #         scenarios_calc[scenario][
+        #             "projection"
+        #         ] = self.attrs.current_situation.projection
+        #     elif "future" in scenario:
+        #         scenarios_calc[scenario]["projection"] = self.attrs.projection
 
-            if "no_measures" in scenario:
-                scenarios_calc[scenario]["strategy"] = self.attrs.baseline_strategy
-            else:
-                scenarios_calc[scenario]["strategy"] = self.attrs.strategy
+        #     if "no_measures" in scenario:
+        #         scenarios_calc[scenario]["strategy"] = self.attrs.baseline_strategy
+        #     else:
+        #         scenarios_calc[scenario]["strategy"] = self.attrs.strategy
 
-        # Get the available scenarios
-        # TODO this should be done with a function of the database controller
-        # but the way it is set-up now there will be issues with cyclic imports
-        scenarios_avail = []
-        for scenario_path in list(
-            self.database_input_path.joinpath("scenarios").glob("*")
-        ):
-            scenarios_avail.append(
-                Scenario.load_file(scenario_path.joinpath(f"{scenario_path.name}.toml"))
-            )
+        # # Get the available scenarios
+        # # TODO this should be done with a function of the database controller
+        # # but the way it is set-up now there will be issues with cyclic imports
+        # scenarios_avail = []
+        # for scenario_path in list(
+        #     self.database_input_path.joinpath("scenarios").glob("*")
+        # ):
+        #     scenarios_avail.append(
+        #         Scenario.load_file(scenario_path.joinpath(f"{scenario_path.name}.toml"))
+        #     )
 
-        # Check if any of the needed scenarios are already there
-        for scenario in scenarios_calc.keys():
-            scn_dict = scenarios_calc[scenario].copy()
-            scn_dict["name"] = scenario
-            scenario_obj = Scenario.load_dict(scn_dict, self.database_input_path)
-            created = [
-                scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
-            ]
-            if len(created) > 0:
-                scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                if created[0].init_object_model().direct_impacts.has_run:
-                    scenarios_calc[scenario]["scenario run"] = True
-                else:
-                    scenarios_calc[scenario]["scenario run"] = False
-            else:
-                scenarios_calc[scenario]["scenario created"] = "No"
-                scenarios_calc[scenario]["scenario run"] = False
+        # # Check if any of the needed scenarios are already there
+        # for scenario in scenarios_calc.keys():
+        #     scn_dict = scenarios_calc[scenario].copy()
+        #     scn_dict["name"] = scenario
+        #     scenario_obj = Scenario.load_dict(scn_dict, self.database_input_path)
+        #     created = [
+        #         scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
+        #     ]
+        #     if len(created) > 0:
+        #         scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
+        #         if created[0].init_object_model().direct_impacts.has_run: ##TODO: init_objet_model is not a thing anymore
+        #             scenarios_calc[scenario]["scenario run"] = True
+        #         else:
+        #             scenarios_calc[scenario]["scenario run"] = False
+        #     else:
+        #         scenarios_calc[scenario]["scenario created"] = "No"
+        #         scenarios_calc[scenario]["scenario run"] = False
 
-        df = pd.DataFrame(scenarios_calc).T
-        self.scenarios = df.astype(
-            dtype={
-                "event": "str",
-                "projection": "str",
-                "strategy": "str",
-                "scenario created": "str",
-                "scenario run": bool,
-            }
-        )
-        return self.scenarios
+        # df = pd.DataFrame(scenarios_calc).T
+        # self.scenarios = df.astype(
+        #     dtype={
+        #         "event": "str",
+        #         "projection": "str",
+        #         "strategy": "str",
+        #         "scenario created": "str",
+        #         "scenario run": bool,
+        #     }
+        # )
+        # return self.scenarios
 
     def ready_to_run(self) -> bool:
         """Check if all the required scenarios have already been run

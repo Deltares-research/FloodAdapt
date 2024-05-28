@@ -7,9 +7,7 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.hazard.hazard import ScenarioModel
-from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
 
 
 class Scenario(IScenario):

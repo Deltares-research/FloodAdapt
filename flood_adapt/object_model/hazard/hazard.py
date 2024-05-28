@@ -56,17 +56,15 @@ class Hazard:
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
-    def __init__(
-        self, scenario: ScenarioModel, results_dir: Path
-    ) -> None:
-        self._mode: Mode
+    def __init__(self, scenario: ScenarioModel, results_dir: Path) -> None:
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
         self.results_dir = results_dir
         self.database = Database()
         self.event_name = scenario.event
-        self.set_event()  # also setting the mode (single_event or risk here)
+        self.event_set = self.database.events.get(scenario.event)
+        self.event_mode = self.event_set.attrs.mode
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
         self.has_run = self.has_run_check()
@@ -168,70 +166,30 @@ class Hazard:
             test_combined = (test1) & (test2)
         return test_combined
 
-    def set_event(self) -> None:
-        """Sets the actual Event template class list using the list of measure names
-        Args:
-            event_name (str): name of event used in scenario
-        """
-        self.event_set_path = (
-            self.database_input_path
-            / "events"
-            / self.event_name
-            / "{}.toml".format(self.event_name)
-        )
-        # set mode (probabilistic_set or single_event)
-        self.event_mode = Event.get_mode(self.event_set_path)
-        self.event_set = EventSet.load_file(self.event_set_path) ##########FIX DBS_EVENTS FOR EVENTSET
-
     def _set_event_objects(self) -> None:
-        if self._mode == Mode.single_event:
-            self.event_set.event_paths = [self.event_set_path]
-            self.probabilities = [1]
-
-        elif self._mode == Mode.risk:
-            self.event_set.event_paths = []
-            subevents = self.event_set.attrs.subevent_name
-
-            for subevent in subevents:
-                event_path = (
-                    self.database_input_path
-                    / "events"
-                    / self.event_name
-                    / subevent
-                    / "{}.toml".format(subevent)
-                )
-                self.event_set.event_paths.append(event_path)
-
         # parse event config file to get event template
         self.event_list = []
-        for event_path in self.event_set.event_paths:
-            template = Event.get_template(event_path)
-            # use event template to get the associated event child class
-            self.event_list.append(
-                EventFactory.get_event(template).load_file(event_path)
-            )
-            self.event = self.event_list[
-                0
-            ]  # set event for single_event to be able to plot wl etc
+        if self._mode == Mode.single_event:
+            self.event_list.append(self.event_set)
+        elif self._mode == Mode.risk:
+            for subevent in self.event_set.attrs.subevent_name:
+                # use event template to get the associated event child class
+                self.event_list.append(self.database.events.get(subevent))
+                self.event = self.event_list[
+                    0
+                ]  # set event for single_event to be able to plot wl etc
 
     def set_physical_projection(self, projection: str) -> None:
-        self.physical_projection = self.database.projections.get(projection).get_physical_projection()
+        self.physical_projection = self.database.projections.get(
+            projection
+        ).get_physical_projection()
 
     def set_hazard_strategy(self, strategy: str) -> None:
-        self.hazard_strategy = self.database.strategies.get(strategy).get_hazard_strategy()
+        self.hazard_strategy = self.database.strategies.get(
+            strategy
+        ).get_hazard_strategy()
 
     # no write function is needed since this is only used internally
-
-    # @staticmethod
-    # def get_event_object(event_path):
-    #     mode = Event.get_mode(event_path)
-    #     if mode == Mode.single_event:
-    #         # parse event config file to get event template
-    #         template = Event.get_template(event_path)
-    #         # use event template to get the associated event child class
-    #         return EventFactory.get_event(template).load_file(event_path)
-    #     elif mode == Mode.risk:
-    #         return EventSet.load_file(event_path)
 
     def preprocess_models(self):
         logging.info("Preparing hazard models...")
@@ -327,9 +285,8 @@ class Hazard:
     ):
         self._set_event_objects()
         self.set_simulation_paths()
-        base_path = self.database_input_path.parent
-        path_in = base_path.joinpath(
-            "static", "templates", self.database.site.attrs.sfincs.overland_model
+        path_in = self.database.static_path.joinpath(
+            "templates", self.database.site.attrs.sfincs.overland_model
         )
 
         for ii, event in enumerate(self.event_list):
@@ -353,11 +310,9 @@ class Hazard:
                 or self.event.attrs.template == "Historical_offshore"
             ):
                 logging.info("Downloading meteo data...")
-                meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
+                meteo_dir = self.database.output_path.joinpath("meteo")
                 if not meteo_dir.is_dir():
-                    os.mkdir(
-                        self.database_input_path.parent.joinpath("output", "meteo")
-                    )
+                    os.mkdir(self.database.output_path.joinpath("meteo"))
                 ds = self.event.download_meteo(
                     site=self.database.site, path=meteo_dir
                 )  # =event_dir)
@@ -424,7 +379,9 @@ class Hazard:
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            self.event.add_dis_ts(event_dir=event_dir, site_river=self.database.site.attrs.river)
+            self.event.add_dis_ts(
+                event_dir=event_dir, site_river=self.database.site.attrs.river
+            )
             if self.event.dis_df is not None:
                 # Generate and change discharge boundary condition
                 logging.info(
@@ -432,7 +389,8 @@ class Hazard:
                 )
                 # convert to metric units
                 gui_units = UnitfulDischarge(
-                    value=1.0, units=self.database.site.attrs.gui.default_discharge_units
+                    value=1.0,
+                    units=self.database.site.attrs.gui.default_discharge_units,
                 )
                 conversion_factor = gui_units.convert(UnitTypesDischarge("m3/s"))
                 model.add_dis_bc(
@@ -493,8 +451,8 @@ class Hazard:
                         "Adding rainfall shape timeseries to the overland flood model..."
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
-                        scsfile = self.database_input_path.parent.joinpath(
-                            "static", "scs", self.database.site.attrs.scs.file
+                        scsfile = self.database.static_path.joinpath(
+                            "scs", self.database.site.attrs.scs.file
                         )
                         scstype = self.database.site.attrs.scs.type
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
@@ -561,8 +519,8 @@ class Hazard:
             # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
-                    measure_path = base_path.joinpath(
-                        "input", "measures", measure.attrs.name
+                    measure_path = self.database.input_path.joinpath(
+                        "measures", measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
                         logging.info("Adding floodwall to the overland flood model...")
@@ -608,25 +566,26 @@ class Hazard:
             ii (int): Iterator for event set
         """
         # Determine folders for offshore model
-        base_path = self.database_input_path.parent
-        path_in_offshore = base_path.joinpath(
-            "static", "templates", self.database.site.attrs.sfincs.offshore_model
+        path_in_offshore = self.database.static_path.joinpath(
+            "templates", self.database.site.attrs.sfincs.offshore_model
         )
         if self.event_mode == Mode.risk:
             event_dir = (
-                self.database_input_path
+                self.database.input_path
                 / "events"
                 / self.event_set.attrs.name
                 / self.event.attrs.name
             )
         else:
-            event_dir = self.database_input_path / "events" / self.event.attrs.name
+            event_dir = self.database.input_path / "events" / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.database.site)
+        offshore_model = SfincsAdapter(
+            model_root=path_in_offshore, site=self.database.site
+        )
 
         # Set timing of offshore model (same as overland model)
         offshore_model.set_timing(self.event.attrs)
@@ -666,7 +625,7 @@ class Hazard:
                 )
                 offshore_model.add_spw_forcing(
                     historical_hurricane=self.event,
-                    database_path=base_path,
+                    database_path=self.database.input_path.parent,
                     model_dir=self.simulation_paths_offshore[ii],
                 )
                 # save created spw file in the event directory
@@ -727,7 +686,9 @@ class Hazard:
     def write_water_level_map(self):
         """Reads simulation results from SFINCS and saves a netcdf with the maximum water levels"""
         # read SFINCS model
-        model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.database.site)
+        model = SfincsAdapter(
+            model_root=self.simulation_paths[0], site=self.database.site
+        )
         zsmax = model.read_zsmax()
         zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
         del model
@@ -744,7 +705,9 @@ class Hazard:
 
             del model
 
-            gui_units = UnitTypesLength(self.database.site.attrs.gui.default_length_units)
+            gui_units = UnitTypesLength(
+                self.database.site.attrs.gui.default_length_units
+            )
 
             conversion_factor = UnitfulLength(
                 value=1.0, units=UnitTypesLength("meters")
@@ -761,7 +724,9 @@ class Hazard:
 
                 # plot reference water levels
                 fig.add_hline(
-                    y=self.database.site.attrs.water_level.msl.height.convert(gui_units),
+                    y=self.database.site.attrs.water_level.msl.height.convert(
+                        gui_units
+                    ),
                     line_dash="dash",
                     line_color="#000000",
                     annotation_text="MSL",
@@ -805,8 +770,8 @@ class Hazard:
                         or self.database.site.attrs.obs_point[ii].file is not None
                     ):
                         if self.database.site.attrs.obs_point[ii].file is not None:
-                            file = self.database_input_path.parent.joinpath(
-                                "static", self.database.site.attrs.obs_point[ii].file
+                            file = self.database.static_path.joinpath(
+                                self.database.site.attrs.obs_point[ii].file
                             )
                         else:
                             file = None
@@ -851,8 +816,8 @@ class Hazard:
             # read SFINCS model
             model = SfincsAdapter(model_root=sim_path, site=self.database.site)
             # dem file for high resolution flood depth map
-            demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.database.site.attrs.dem.filename
+            demfile = self.database.static_path.joinpath(
+                "dem", self.database.site.attrs.dem.filename
             )
 
             # read max. water level
@@ -911,7 +876,9 @@ class Hazard:
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=str(simulation_path), site=self.database.site)
+            sim = SfincsAdapter(
+                model_root=str(simulation_path), site=self.database.site
+            )
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
             zs_maps.append(zs_stacked)
@@ -997,8 +964,8 @@ class Hazard:
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.database.site.attrs.dem.filename
+            demfile = self.database.static_path.joinpath(
+                "dem", self.database.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
             dummymodel = SfincsAdapter(

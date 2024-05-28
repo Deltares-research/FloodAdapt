@@ -501,7 +501,7 @@ class Database(IDatabase):
             event["rainfall"]["source"] == "shape"
             or event["rainfall"]["source"] == "timeseries"
         ):
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+            temp_event = EventFactory.get_event(event)
             if (
                 temp_event.attrs.rainfall.source == "shape"
                 and temp_event.attrs.rainfall.shape_type == "scs"
@@ -578,7 +578,7 @@ class Database(IDatabase):
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+        temp_event = EventFactory.get_event(event)
         event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
         temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]

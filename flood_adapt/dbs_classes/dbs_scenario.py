@@ -12,31 +12,21 @@ class DbsScenario(DbsTemplate):
     _folder_name = "scenarios"
     _object_model_class = Scenario
 
-    def get(self, name: str) -> IScenario:
-        """Returns a scenario object.
+    def has_run(self, name) -> bool:
+        """Check in the output folder if the scenario has run.
 
         Parameters
         ----------
         name : str
-            name of the scenario to be returned
-
-        Returns
-        -------
-        IScenario
-            scenario object
-        """
-        return super().get(name).init_object_model() ### Should have a seperate method to check whether it has run
-    
-    def has_run(self) -> bool:
-        """Check if the scenario has run.
+            name of the scenario to be checked
 
         Returns
         -------
         bool
             Whether the scenario has run
         """
-        full_path = self._path / name / f"{name}.toml"
-        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
+        output_path = self._database.output_path / self._folder_name / name
+        return output_path.joinpath(f"Impacts_detailed_{name}.csv").exists()
 
     def list_objects(self) -> dict[str, Any]:
         """Returns a dictionary with info on the events that currently
@@ -52,9 +42,7 @@ class DbsScenario(DbsTemplate):
         scenarios["Projection"] = [obj.attrs.projection for obj in objects]
         scenarios["Event"] = [obj.attrs.event for obj in objects]
         scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
-        scenarios["finished"] = [
-            obj.init_object_model().direct_impacts.has_run for obj in objects
-        ]
+        scenarios["finished"] = [self.has_run(obj.attrs.name) for obj in objects]
 
         return scenarios
 

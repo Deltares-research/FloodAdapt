@@ -53,14 +53,16 @@ def delete_scenario(name: str) -> None:
 
 
 def run_scenario(name: Union[str, list[str]]) -> None:
-    if not isinstance(name, list):
+    if isinstance(name, str):
         scenario_name = [name]
+    else:
+        scenario_name = name
 
     errors = []
     database = Database()
     for scn in scenario_name:
         try:
-            database.has_run_hazard(scn)
+            database.scenarios.has_run(scn) # TODO: Make this into has run hazard, not both
             scenario = database.scenarios.get(scn)
             results_path = Path(database.output_path).joinpath(
                 "output", "Scenarios", scn
