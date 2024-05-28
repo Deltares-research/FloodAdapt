@@ -112,7 +112,7 @@ class UnitfulHeight(UnitfulLength):
 
     value: float = Field(..., gt=0)
 
-    @model_validator(pre=True)
+    @model_validator(mode="before")
     def convert_length_to_height(cls, obj):
         if isinstance(obj, UnitfulLength):
             return UnitfulHeight(value=obj.value, units=obj.units)
