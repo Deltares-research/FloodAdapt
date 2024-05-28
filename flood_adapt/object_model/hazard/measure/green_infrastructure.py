@@ -34,7 +34,6 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         obj = GreenInfrastructure()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        print(toml)
         obj.attrs = GreenInfrastructureModel.model_validate(toml)
         # if measure is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]

@@ -16,6 +16,7 @@ database_root = Path().absolute().parent / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
 database_path = database_root / site_name
+snapshot_dir = Path(tempfile.mkdtemp()) / "database_snapshot"
 fa_config.parse_user_input(
     database_root=database_root,
     database_name=site_name,
@@ -70,8 +71,6 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    global snapshot_dir
-    snapshot_dir = Path(tempfile.mkdtemp()) / "database_snapshot"
     create_snapshot()
 
     yield
