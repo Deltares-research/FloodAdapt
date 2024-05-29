@@ -92,7 +92,7 @@ def make_db_fixture(scope, clean=True):
         3) Initialize database controller
         4) Perform all tests in scope
         5) Restore the database from the snapshot
-        
+
     Usage
     ----------
     To access the fixture in a test , you need to:

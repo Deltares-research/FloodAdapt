@@ -20,10 +20,8 @@ class Scenario(IScenario):
     direct_impacts: DirectImpacts
     database_input_path: Union[str, os.PathLike]
 
-      
     def init_object_model(self):
         """Create a Direct Impact object."""
-
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
