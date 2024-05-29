@@ -56,6 +56,7 @@ class SfincsAdapter:
         # Close the log file associated with the logger
         for handler in self.sfincs_logger.handlers:
             handler.close()
+        self.sfincs_logger.handlers.clear()
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 

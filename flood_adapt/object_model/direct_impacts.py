@@ -271,6 +271,7 @@ class DirectImpacts:
         fa.fiat_model.set_root(self.fiat_path)
         fa.fiat_model.write()
 
+        # Delete instance of Adapter (together with all logging references)
         del fa
 
     def run_fiat(self):
