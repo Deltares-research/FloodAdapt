@@ -57,21 +57,19 @@ class Hazard:
     has_run: bool = False
 
     def __init__(
-        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+        self, scenario: ScenarioModel, database, results_dir: Path
     ) -> None:
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
         self.results_dir = results_dir
-        self.database_input_path = database_input_path
+        self.database_input_path = database.input_path
         self.event_name = scenario.event
         self.set_event()  # also setting the mode (single_event or risk here)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
-        self.site = Site.load_file(
-            database_input_path.parent / "static" / "site" / "site.toml"
-        )
+        self.site = database.site
         self.has_run = self.has_run_check()
 
     @property

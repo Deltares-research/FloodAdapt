@@ -45,16 +45,16 @@ class DirectImpacts:
     has_run: bool = False
 
     def __init__(
-        self, scenario: ScenarioModel, database_input_path: Path, results_path: Path
+        self, scenario: ScenarioModel, database, results_path: Path
     ) -> None:
         self.name = scenario.name
-        self.database_input_path = database_input_path
+        self.database_input_path = database.input_path
         self.scenario = scenario
         self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(
-            scenario, database_input_path, self.results_path.joinpath("Flooding")
+            scenario, database, self.results_path.joinpath("Flooding")
         )
         # Get site config
         self.site_toml_path = (
@@ -125,7 +125,7 @@ class DirectImpacts:
         self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
 
     def set_hazard(
-        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
+        self, scenario: ScenarioModel, database, results_dir: Path
     ) -> None:
         """Set the Hazard object of the scenario.
 
@@ -134,7 +134,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database_input_path, results_dir)
+        self.hazard = Hazard(scenario, database, results_dir)
 
     def preprocess_models(self):
         logging.info("Preparing impact models...")

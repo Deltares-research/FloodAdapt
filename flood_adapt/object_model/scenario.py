@@ -10,7 +10,6 @@ import tomli_w
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.site import Site
 
 
 class Scenario(IScenario):
@@ -20,17 +19,19 @@ class Scenario(IScenario):
     direct_impacts: DirectImpacts
     database_input_path: Union[str, os.PathLike]
 
-    def init_object_model(self):
-        """Create a Direct Impact object."""
-        self.site_info = Site.load_file(
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+    def init_object_model(self) -> "Scenario":
+        """Create a Direct Impact object"""
+        from flood_adapt.dbs_controller import (
+            Database,  # TODO: Fix circular import and move to top of file. There is too much entanglement between classes to fix this now
         )
-        self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "Scenarios", self.attrs.name
+
+        database = Database()
+        self.site_info = database.site
+        self.results_path = database.output_path.joinpath("Scenarios", self.attrs.name
         )
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
-            database_input_path=Path(self.database_input_path),
+            database=database,
             results_path=self.results_path,
         )
         return self

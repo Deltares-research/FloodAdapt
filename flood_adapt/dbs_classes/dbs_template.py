@@ -258,11 +258,13 @@ class DbsTemplate(AbstractDatabaseElement):
         base_path = self.input_path / self._folder_name
         directories = list(base_path.iterdir())
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
+        names = [dir.name for dir in directories]
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]
 
         objects = {
+            "name": names,
             "path": paths,
             "last_modification_date": last_modification_date,
         }
