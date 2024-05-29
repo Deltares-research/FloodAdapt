@@ -20,8 +20,10 @@ class Scenario(IScenario):
     direct_impacts: DirectImpacts
     database_input_path: Union[str, os.PathLike]
 
+      
     def init_object_model(self):
         """Create a Direct Impact object."""
+
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
@@ -41,7 +43,7 @@ class Scenario(IScenario):
         obj = Scenario()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = ScenarioModel.parse_obj(toml)
+        obj.attrs = ScenarioModel.model_validate(toml)
         # if scenario is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         return obj
@@ -50,7 +52,7 @@ class Scenario(IScenario):
     def load_dict(data: dict[str, Any], database_input_path: os.PathLike):
         """Create Scenario from object, e.g. when initialized from GUI."""
         obj = Scenario()
-        obj.attrs = ScenarioModel.parse_obj(data)
+        obj.attrs = ScenarioModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 

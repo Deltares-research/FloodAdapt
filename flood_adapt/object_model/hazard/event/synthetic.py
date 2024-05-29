@@ -27,7 +27,7 @@ class Synthetic(Event, ISynthetic):
         obj = Synthetic()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = SyntheticModel.parse_obj(toml)
+        obj.attrs = SyntheticModel.model_validate(toml)
 
         # synthetic event is the only one without start and stop time, so set this here.
         # Default start time is defined in TimeModel, setting end_time here
@@ -43,7 +43,7 @@ class Synthetic(Event, ISynthetic):
     def load_dict(data: dict[str, Any]):
         """Create Synthetic from object, e.g. when initialized from GUI."""
         obj = Synthetic()
-        obj.attrs = SyntheticModel.parse_obj(data)
+        obj.attrs = SyntheticModel.model_validate(data)
         # synthetic event is the only one without start and stop time, so set this here.
         # Default start time is defined in TimeModel, setting end_time here
         # based on duration before and after T0

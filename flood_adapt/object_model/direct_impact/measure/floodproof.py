@@ -23,7 +23,7 @@ class FloodProof(ImpactMeasure, IFloodProof):
         obj = FloodProof()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = FloodProofModel.parse_obj(toml)
+        obj.attrs = FloodProofModel.model_validate(toml)
         # if measure is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         return obj
@@ -34,7 +34,7 @@ class FloodProof(ImpactMeasure, IFloodProof):
     ) -> IFloodProof:
         """Create FloodProof from object, e.g. when initialized from GUI."""
         obj = FloodProof()
-        obj.attrs = FloodProofModel.parse_obj(data)
+        obj.attrs = FloodProofModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 

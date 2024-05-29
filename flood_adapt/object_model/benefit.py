@@ -564,7 +564,7 @@ class Benefit(IBenefit):
         obj = Benefit()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = BenefitModel.parse_obj(toml)
+        obj.attrs = BenefitModel.model_validate(toml)
         # if benefits is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         obj._init()
@@ -589,7 +589,7 @@ class Benefit(IBenefit):
             a Benefit object
         """
         obj = Benefit()
-        obj.attrs = BenefitModel.parse_obj(data)
+        obj.attrs = BenefitModel.model_validate(data)
         obj.database_input_path = Path(database_input_path)
         obj._init()
         return obj

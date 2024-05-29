@@ -162,20 +162,22 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
     @model_validator(mode="after")
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
+        e_msg = f"Error parsing GreenInfrastructureModel: {self.name}"
+
         if self.type == HazardType.total_storage:
             if self.height is not None or self.percent_area is not None:
                 raise ValueError(
-                    "Height and percent_area cannot be set for total storage type measures"
+                    f"{e_msg}\nHeight and percent_area cannot be set for total storage type measures"
                 )
             return self
         elif self.type == HazardType.water_square:
             if self.percent_area is not None:
                 raise ValueError(
-                    "Percentage_area cannot be set for water square type measures"
+                    f"{e_msg}\nPercentage_area cannot be set for water square type measures"
                 )
             elif not isinstance(self.height, UnitfulHeight):
                 raise ValueError(
-                    "Height needs to be set for water square type measures"
+                    f"{e_msg}\nHeight needs to be set for water square type measures"
                 )
             return self
         elif self.type == HazardType.greening:
@@ -183,11 +185,11 @@ class GreenInfrastructureModel(HazardMeasureModel):
                 self.percent_area, float
             ):
                 raise ValueError(
-                    "Height and percent_area needs to be set for greening type measures"
+                    f"{e_msg}\nHeight and percent_area needs to be set for greening type measures"
                 )
         else:
             raise ValueError(
-                "Type must be one of 'water_square', 'greening', or 'total_storage'"
+                f"{e_msg}\nType must be one of 'water_square', 'greening', or 'total_storage'"
             )
         return self
 

@@ -21,7 +21,7 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         obj = HistoricalOffshore()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = HistoricalOffshoreModel.parse_obj(toml)
+        obj.attrs = HistoricalOffshoreModel.model_validate(toml)
         if obj.attrs.rainfall.source == "timeseries":
             rainfall_csv_path = Path(Path(filepath).parents[0], "rainfall.csv")
             obj.rain_ts = HistoricalOffshore.read_csv(rainfall_csv_path)
@@ -34,7 +34,7 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
     def load_dict(data: dict[str, Any]):
         """Create Synthetic from object, e.g. when initialized from GUI."""
         obj = HistoricalOffshore()
-        obj.attrs = HistoricalOffshoreModel.parse_obj(data)
+        obj.attrs = HistoricalOffshoreModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

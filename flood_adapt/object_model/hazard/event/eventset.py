@@ -18,7 +18,7 @@ class EventSet:
         obj = EventSet()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = EventSetModel.parse_obj(toml)
+        obj.attrs = EventSetModel.model_validate(toml)
         return obj
 
     def __eq__(self, other):

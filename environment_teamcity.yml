@@ -5,7 +5,8 @@ channels:
   - numba
 
 dependencies: 
-  # Use conda to install pre-built binaries for geopandas and its C++ dependencies (GDAL, PROJ and fiona)
+  # Use conda to install pre-built binaries for geopandas and its dependencies (GDAL, PROJ and fiona)
   # Then `pip install .` to install the rest of the dependencies from the pyproj.toml that are on PyPI
   - python=3.10
   - geopandas
+

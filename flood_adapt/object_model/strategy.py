@@ -76,7 +76,7 @@ class Strategy(IStrategy):
         obj = Strategy()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = StrategyModel.parse_obj(toml)
+        obj.attrs = StrategyModel.model_validate(toml)
         # if strategy is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         # Need to ensure that the strategy can be created
@@ -109,7 +109,7 @@ class Strategy(IStrategy):
             _description_
         """
         obj = Strategy()
-        obj.attrs = StrategyModel.parse_obj(data)
+        obj.attrs = StrategyModel.model_validate(data)
         obj.database_input_path = database_input_path
         # Need to ensure that the strategy can be created
         if validate:

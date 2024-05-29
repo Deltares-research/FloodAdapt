@@ -92,7 +92,7 @@ class UnitfulLength(ValueUnitPair):
         # second, convert to new units
         if new_units == "centimeters":
             new_conversion = 100.0
-        if new_units == "millimeters":
+        elif new_units == "millimeters":
             new_conversion = 1000.0
         elif new_units == "meters":
             new_conversion = 1.0

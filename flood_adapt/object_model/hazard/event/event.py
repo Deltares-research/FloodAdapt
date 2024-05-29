@@ -33,7 +33,7 @@ class Event:
         obj = Event()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = EventModel.parse_obj(toml)
+        obj.attrs = EventModel.model_validate(toml)
         return obj.attrs.template
 
     @staticmethod

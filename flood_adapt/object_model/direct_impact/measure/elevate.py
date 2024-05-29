@@ -23,7 +23,7 @@ class Elevate(ImpactMeasure, IElevate):
         obj = Elevate()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = ElevateModel.parse_obj(toml)
+        obj.attrs = ElevateModel.model_validate(toml)
         # if measure is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         return obj
@@ -34,7 +34,7 @@ class Elevate(ImpactMeasure, IElevate):
     ) -> IElevate:
         """Create Elevate from object, e.g. when initialized from GUI."""
         obj = Elevate()
-        obj.attrs = ElevateModel.parse_obj(data)
+        obj.attrs = ElevateModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 
