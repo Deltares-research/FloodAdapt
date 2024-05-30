@@ -23,11 +23,8 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import Site
 
 # from flood_adapt.object_model.scenario import ScenarioModel
-from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd
 
 
@@ -44,26 +41,21 @@ class DirectImpacts:
     hazard: Hazard
     has_run: bool = False
 
-    def __init__(
-        self, scenario: ScenarioModel, database, results_path: Path
-    ) -> None:
+    def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
         self.name = scenario.name
+        self.database = database
         self.database_input_path = database.input_path
         self.scenario = scenario
         self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
-        self.set_hazard(
-            scenario, database, self.results_path.joinpath("Flooding")
-        )
+        self.set_hazard(scenario, database, self.results_path.joinpath("Flooding"))
         # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        self.site_info = Site.load_file(self.site_toml_path)
+        self.site_toml_path = self.database.static_path / "Site" / "site.toml"
+        self.site_info = database.site
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
-        self.fiat_path = self.impacts_path.joinpath("fiat_model")
+        self.fiat_path = self.impacts_path.joinpath("Fiat_model")
         self.has_run = self.has_run_check()
 
     def has_run_check(self) -> bool:
@@ -104,11 +96,8 @@ class DirectImpacts:
         projection : str
             Name of the projection used in the scenario
         """
-        projection_path = (
-            self.database_input_path / "Projections" / projection / f"{projection}.toml"
-        )
-        self.socio_economic_change = Projection.load_file(
-            projection_path
+        self.socio_economic_change = self.database.projections.get(
+            projection
         ).get_socio_economic_change()
 
     def set_impact_strategy(self, strategy: str) -> None:
@@ -119,10 +108,9 @@ class DirectImpacts:
         strategy : str
             Name of the strategy used in the scenario
         """
-        strategy_path = (
-            self.database_input_path / "Strategies" / strategy / f"{strategy}.toml"
-        )
-        self.impact_strategy = Strategy.load_file(strategy_path).get_impact_strategy()
+        self.impact_strategy = self.database.strategies.get(
+            strategy
+        ).get_impact_strategy()
 
     def set_hazard(
         self, scenario: ScenarioModel, database, results_dir: Path
@@ -170,13 +158,11 @@ class DirectImpacts:
             )
 
         # Get the location of the FIAT template model
-        template_path = (
-            self.database_input_path.parent / "static" / "templates" / "fiat"
-        )
+        template_path = self.database.static_path / "Templates" / "Fiat"
 
         # Read FIAT template with FIAT adapter
         fa = FiatAdapter(
-            model_root=template_path, database_path=self.database_input_path.parent
+            model_root=template_path, database_path=self.database.base_path
         )
 
         # If path for results does not yet exist, make it
@@ -202,19 +188,13 @@ class DirectImpacts:
         if self.socio_economic_change.attrs.population_growth_new != 0:
             # Get path of new development area geometry
             area_path = (
-                self.database_input_path
-                / "projections"
+                self.database.projections.get_database_path()
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
-            dem = (
-                self.database_input_path.parent
-                / "static"
-                / "dem"
-                / self.site_info.attrs.dem.filename
-            )
+            dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
-                self.database_input_path.parent / "static" / "site" / aggr.file
+                self.database.static_path / "Site" / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation
             ]
             attribute_names = [
@@ -281,7 +261,7 @@ class DirectImpacts:
                 The path should be a directory containing folders with the model executables
                 """
             )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+        fiat_exec = FloodAdapt_config.get_system_folder() / "Fiat" / "fiat.exe"
 
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
@@ -303,7 +283,7 @@ class DirectImpacts:
         fiat_results_path = self.impacts_path.joinpath(
             f"Impacts_detailed_{self.name}.csv"
         )
-        shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
+        shutil.copy(self.fiat_path.joinpath("Output", "output.csv"), fiat_results_path)
 
         # Add exceedance probability if needed (only for risk)
         if self.hazard.event_mode == "risk":
@@ -345,7 +325,7 @@ class DirectImpacts:
         logging.info("Saving road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
-            self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
+            self.fiat_path.joinpath("Output", self.site_info.attrs.fiat.roads_file_name)
         )
         # Get columns to use
         aggr_cols = [
@@ -511,8 +491,8 @@ class DirectImpacts:
         FIAT results dataframe with exceedance probability added
         """
         # Get config path
-        config_path = self.database_input_path.parent.joinpath(
-            "static", "templates", "infometrics", "metrics_additional_risk_configs.toml"
+        config_path = self.database.static_path.joinpath(
+            "Templates", "Infometrics", "metrics_additional_risk_configs.toml"
         )
         with open(config_path, mode="rb") as fp:
             config = tomli.load(fp)["flood_exceedance"]
@@ -539,18 +519,16 @@ class DirectImpacts:
         else:
             ext = ""
 
-        metrics_config_path = self.database_input_path.parent.joinpath(
-            "static",
-            "templates",
-            "infometrics",
+        metrics_config_path = self.database.static_path.joinpath(
+            "Templates",
+            "Infometrics",
             f"metrics_config{ext}.toml",
         )
 
         # Specify the metrics output path
-        metrics_outputs_path = self.database_input_path.parent.joinpath(
-            "output",
+        metrics_outputs_path = self.database.output_path.joinpath(
             "Scenarios",
-            self.name,
+            self.name.capitalize(),
             f"Infometrics_{self.name}.csv",
         )
 
@@ -575,13 +553,14 @@ class DirectImpacts:
         logging.info("Creating infographics...")
 
         # Get the infographic
-        database_path = Path(self.database_input_path).parent
-        config_path = database_path.joinpath("static", "templates", "infographics")
-        output_path = database_path.joinpath("output", "Scenarios", self.name)
         InforgraphicFactory.create_infographic_file_writer(
             infographic_mode=mode,
             scenario_name=self.name,
             metrics_full_path=metrics_path,
-            config_base_path=config_path,
-            output_base_path=output_path,
+            config_base_path=self.database.static_path.joinpath(
+                "Templates", "Infographics"
+            ),
+            output_base_path=self.database.output_path.joinpath(
+                "Scenarios", self.name.capitalize()
+            ),
         ).write_infographics_to_file()

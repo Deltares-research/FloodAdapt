@@ -47,6 +47,7 @@ class Database(IDatabase):
     database_name: str
     _init_done: bool = False
 
+    base_path: Path
     input_path: Path
     static_path: Path
     output_path: Path
@@ -106,9 +107,11 @@ class Database(IDatabase):
         self.database_path = database_path
         self.database_name = database_name
 
-        self.input_path = Path(database_path / database_name / "input")
-        self.static_path = Path(database_path / database_name / "static")
-        self.output_path = Path(database_path / database_name / "output")
+        # Set the paths
+        self.base_path = Path(database_path / database_name)
+        self.input_path = self.base_path / "Input"
+        self.static_path = self.base_path / "Static"
+        self.output_path = self.base_path / "Output"
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
