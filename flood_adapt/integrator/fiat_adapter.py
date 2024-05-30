@@ -1,3 +1,4 @@
+import gc
 import shutil
 import subprocess
 from pathlib import Path
@@ -75,6 +76,9 @@ class FiatAdapter(DirectImpactsAdapter):
         # Close fiat_logger
         for handler in self.logger.handlers:
             handler.close()
+        self.logger.handlers.clear()
+        # Use garbage collector to ensure file handlers are properly cleaned up
+        gc.collect()
         del self.model
 
     def get_building_locations(self) -> GeoDataFrame:
@@ -364,7 +368,7 @@ class FiatAdapter(DirectImpactsAdapter):
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(elevate.attrs)
         # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
+        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
@@ -407,7 +411,7 @@ class FiatAdapter(DirectImpactsAdapter):
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(buyout.attrs)
         # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
+        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Get columns that include max damage
         damage_cols = [
@@ -441,7 +445,7 @@ class FiatAdapter(DirectImpactsAdapter):
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(floodproof.attrs)
         # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_all_buildings_ids()]
+        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Use hydromt function
         self.model.exposure.truncate_damage_function(
