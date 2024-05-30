@@ -58,11 +58,11 @@ class DbsMeasure(DbsTemplate):
                 geometries.append(gpd.read_file(file_path))
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
-                if obj.attrs.aggregation_area_type not in self._database.aggr_areas:
+                if obj.attrs.aggregation_area_type not in self._database.static.get_aggregation_areas():
                     raise ValueError(
                         f"Aggregation area type {obj.attrs.aggregation_area_type} for measure {obj.attrs.name} does not exist."
                     )
-                gdf = self._database.aggr_areas[obj.attrs.aggregation_area_type]
+                gdf = self._database.static.get_aggregation_areas()[obj.attrs.aggregation_area_type]
                 if obj.attrs.aggregation_area_name not in gdf["name"].to_numpy():
                     raise ValueError(
                         f"Aggregation area name {obj.attrs.aggregation_area_name} for measure {obj.attrs.name} does not exist."
