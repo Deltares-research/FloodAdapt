@@ -16,5 +16,5 @@ class Measure:
         obj = Measure()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = MeasureModel.parse_obj(toml)
+        obj.attrs = MeasureModel.model_validate(toml)
         return obj.attrs.type

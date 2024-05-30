@@ -29,7 +29,7 @@ class Projection(IProjection):
         obj = Projection()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = ProjectionModel.parse_obj(toml)
+        obj.attrs = ProjectionModel.model_validate(toml)
         return obj
 
     @staticmethod
@@ -37,7 +37,7 @@ class Projection(IProjection):
         """create Projection from object, e.g. when initialized from GUI"""
 
         obj = Projection()
-        obj.attrs = ProjectionModel.parse_obj(data)
+        obj.attrs = ProjectionModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

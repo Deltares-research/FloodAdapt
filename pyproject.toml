@@ -37,13 +37,14 @@ dependencies = [
     "fiat_toolbox",
     "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
     "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree", # TODO: Temporary sfincs version, remove version when sfincs is updated
-    "hydromt_fiat @ git+https://github.com/Deltares/hydromt_fiat.git"
+    "hydromt_fiat"
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-tests = [
+test = [
     "pytest",
+    "pytest-cov",
     "pre-commit"
 ]
 

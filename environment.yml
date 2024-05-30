@@ -5,6 +5,8 @@ channels:
   - numba
 
 dependencies:
+  # Core
+  - python=3.10
   - pip
   - pip:
     - NDBC
@@ -12,27 +14,32 @@ dependencies:
     - cht-tide
     - cht-meteo
     - cht-observations
-    - git+https://github.com/Deltares/hydromt_fiat.git
-    - git+https://github.com/Deltares/fiat_toolbox.git
+    - hydromt_fiat
+    - fiat_toolbox
     - git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree
     - git+https://github.com/Deltares/cht_cyclones.git
-  - black
-  - typos
-  - ruff
-  - build
+  - pandas
+  - geojson
   - geopandas
   - mypy
   - numpy
-  - pandas
+  - numpy-financial
   - plotly
+  - pyogrio
   - pydantic
-  - pytest
-  - python=3.10
   - tomli
   - tomli-w
-  - twine
   - census
+  
+  # Testing
+  - pytest
+  
+  # Distribution
+  - build
+  - twine
+
+  # Development
   - pre-commit
-  - numpy-financial
-  - pyogrio
-  - geojson
+  - black
+  - typos
+  - ruff

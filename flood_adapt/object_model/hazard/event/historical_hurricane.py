@@ -57,7 +57,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             toml = tomli.load(fp)
 
         # load toml into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(toml)
+        obj.attrs = HistoricalHurricaneModel.model_validate(toml)
 
         # return object
         return obj
@@ -81,7 +81,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         obj = HistoricalHurricane()
 
         # load data into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(data)
+        obj.attrs = HistoricalHurricaneModel.model_validate(data)
 
         # return object
         return obj
@@ -114,6 +114,11 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             or self.attrs.hurricane_translation.northsouth_translation.value != 0
         ):
             tc = self.translate_tc_track(tc=tc, site=site)
+
+        if self.attrs.rainfall.source == "track":
+            tc.include_rainfall = True
+        else:
+            tc.include_rainfall = False
 
         # Location of spw file
         filename = "hurricane.spw"
