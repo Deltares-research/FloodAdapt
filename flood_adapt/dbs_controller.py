@@ -119,7 +119,7 @@ class Database(IDatabase):
         aggregation_areas = {}
         for aggr_dict in self.site.attrs.direct_impacts.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file,
+                self.input_path.parent / "static" / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
@@ -675,7 +675,7 @@ class Database(IDatabase):
             database_path=self.input_path.parent,
             config=self.site.attrs.direct_impacts,
         )
-        buildings = di_adapter.get_all_buildings_geo()
+        buildings = di_adapter.get_building_locations()
 
         return buildings
 

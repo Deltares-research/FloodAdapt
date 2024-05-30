@@ -38,6 +38,6 @@ class ImpactMeasure(ABC):
             config=site.attrs.direct_impacts,
         )
 
-        ids = di_adapter.get_measure_buildings_ids(attrs=self.attrs)
+        ids = di_adapter.get_measure_building_ids(attrs=self.attrs)
 
         return ids

@@ -84,6 +84,7 @@ class Scenario(IScenario):
         else:
             print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
         if not self.direct_impacts.has_run:
+            self.direct_impacts.set_adapter()
             self.direct_impacts.preprocess_models()
             self.direct_impacts.run_models()
             self.direct_impacts.postprocess_models()

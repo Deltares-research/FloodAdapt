@@ -49,6 +49,7 @@ class DirectImpacts:
     ) -> None:
         self.name = scenario.name
         self.database_input_path = database_input_path
+        self.database_static_path = Path(self.database_input_path).parent / "static"
         self.scenario = scenario
         self.results_path = results_path
         self._set_socio_economic_change(scenario.projection)
@@ -57,13 +58,13 @@ class DirectImpacts:
             scenario, database_input_path, self.results_path.joinpath("Flooding")
         )
         # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
+        self.site_toml_path = self.database_static_path / "site" / "site.toml"
         self.site_info = Site.load_file(self.site_toml_path)
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.has_run = self.has_run_check()
+
+    def set_adapter(self):
         # Set adapter
         Adapter = DirectImpactsAdapterFactory.get_adapter(
             self.site_info.attrs.direct_impacts.model
@@ -82,7 +83,7 @@ class DirectImpacts:
         boolean
             True if it has run, False if something went wrong
         """
-        results_file = self.impacts_path.joinpath(f"Impacts_{self.name}.csv")
+        results_file = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv")
         if results_file.exists():
             return True
         else:
@@ -173,7 +174,7 @@ class DirectImpacts:
         # TODO move this method to the adapter?
         """Updates Direct Impacts model based on scenario information"""
 
-        ids_all_buildings = self.adapter.get_buildings_ids()
+        ids_all_buildings = self.adapter.get_building_ids()
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
@@ -203,7 +204,7 @@ class DirectImpacts:
             )
             # Get available aggregation areas for assigning to new areas
             aggregation_areas = [
-                self.database_input_path.parent / "static" / "site" / aggr.file
+                self.database_input_path.parent / "static" / aggr.file
                 for aggr in self.site_info.attrs.direct_impacts.aggregation
             ]
             attribute_names = [
@@ -353,7 +354,7 @@ class DirectImpacts:
 
             # Create Equity object
             equity = Equity(
-                census_table=self.site_toml_path.parent.joinpath(
+                census_table=self.database_static_path.joinpath(
                     self.site_info.attrs.direct_impacts.aggregation[
                         ind
                     ].equity.census_data
@@ -423,7 +424,7 @@ class DirectImpacts:
                 for i, n in enumerate(self.site_info.attrs.direct_impacts.aggregation)
                 if n.name == aggr_label
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
+            aggr_areas_path = self.database_static_path.joinpath(
                 self.site_info.attrs.direct_impacts.aggregation[ind].file
             )
 
@@ -449,7 +450,7 @@ class DirectImpacts:
         if not self.site_info.attrs.direct_impacts.building_footprints:
             raise ValueError("No building footprints are provided.")
         # Get footprints file
-        footprints_path = self.site_toml_path.parent.joinpath(
+        footprints_path = self.database_static_path.joinpath(
             self.site_info.attrs.direct_impacts.building_footprints
         )
         # Define where footprint results are saved

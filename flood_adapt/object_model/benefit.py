@@ -22,6 +22,7 @@ class Benefit(IBenefit):
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
+    database_static_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
     has_run: bool = False
@@ -31,12 +32,11 @@ class Benefit(IBenefit):
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Benefits", self.attrs.name
         )
+        self.database_static_path = Path(self.database_input_path).parent / "static"
         self.check_scenarios()
         self.has_run = self.has_run_check()
         # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
+        self.site_toml_path = self.database_static_path / "site" / "site.toml"
         self.site_info = Site.load_file(self.site_toml_path)
         # Get monetary units
         self.unit = self.site_info.attrs.direct_impacts.damage_unit
@@ -418,7 +418,7 @@ class Benefit(IBenefit):
                 for i, n in enumerate(self.site_info.attrs.direct_impacts.aggregation)
                 if n.name == aggr_name
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
+            aggr_areas_path = self.database_static_path.joinpath(
                 self.site_info.attrs.direct_impacts.aggregation[ind].file
             )
 
