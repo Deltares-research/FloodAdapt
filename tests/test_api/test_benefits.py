@@ -95,7 +95,6 @@ def test_benefit(test_db, get_rng):
         dummy_metrics.to_csv(
             output_path.joinpath(f"Infometrics_{row['scenario created']}.csv")
         )
-
         # Create dummy metrics for aggregation areas
         for aggr_type in aggrs.keys():
             aggr = aggrs[aggr_type]
@@ -122,11 +121,11 @@ def test_benefit(test_db, get_rng):
                     f"Infometrics_{row['scenario created']}_{aggr_type}.csv"
                 )
             )
-        fiat_path = output_path.joinpath("Impacts", "fiat_model", "fiat.log")
-        fiat_path.parent.mkdir(parents=True, exist_ok=True)
-        f = open(fiat_path, "w")
-        f.write("Geom calculation are done!")
-        f.close()
+        output_csv_path = output_path.joinpath(
+            "Impacts", f"Impacts_detailed_{row['scenario created']}.csv"
+        )
+        output_csv_path.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame().to_csv(output_csv_path)
 
     api_benefits.run_benefit("benefit_raise_properties_2080", test_db)
 
