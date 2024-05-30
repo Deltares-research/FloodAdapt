@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Callable, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
@@ -10,12 +10,14 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from flood_adapt.object_model.interface.database import IDatabase
 
 
-def cache_method_wrapper(func):
-    def wrapper(self, *args, **kwargs):
+def cache_method_wrapper(func: Callable) -> Callable:
+    def wrapper(self, *args: Tuple[Any], **kwargs: dict[str, Any]) -> Any:
         if func.__name__ not in self._cached_data:
             self._cached_data[func.__name__] = {}
 
-        args_key = str(args) if args else "no_args"
+        args_key = (
+            str(args) + str(sorted(kwargs.items())) if args or kwargs else "no_args"
+        )
         if args_key in self._cached_data[func.__name__]:
             return self._cached_data[func.__name__][args_key]
 
@@ -36,7 +38,6 @@ class DbsStatic:
         """
         Initialize any necessary attributes.
         """
-        self.input_path = database.input_path
         self._database = database
 
     @cache_method_wrapper
@@ -52,7 +53,7 @@ class DbsStatic:
         aggregation_areas = {}
         for aggr_dict in self._database.site.attrs.fiat.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file,
+                self._database.static_path / "site" / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
@@ -142,7 +143,7 @@ class DbsStatic:
         list
             List of scenario names
         """
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self._database.static_path.joinpath("slr", "slr.csv")
         df = pd.read_csv(input_file)
         return df.columns[2:].to_list()
 
@@ -158,8 +159,8 @@ class DbsStatic:
         """
         # Read file from database
         df = pd.read_csv(
-            self.input_path.parent.joinpath(
-                "static", "green_infra_table", "green_infra_lookup_table.csv"
+            self._database.static_path.joinpath(
+                "green_infra_table", "green_infra_lookup_table.csv"
             )
         )
 
@@ -193,7 +194,7 @@ class DbsStatic:
         """
         # use hydromt-fiat to load the fiat model
         fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
+            root=self._database.static_path / "templates" / "fiat",
             mode="r",
         )
         fm.read()
@@ -202,6 +203,8 @@ class DbsStatic:
             non_building_names=self._database.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
+
+        del fm
 
         return buildings
 
@@ -216,7 +219,7 @@ class DbsStatic:
         """
         # use hydromt-fiat to load the fiat model
         fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
+            root=self._database.static_path / "templates" / "fiat",
             mode="r",
         )
         fm.read()
@@ -226,4 +229,7 @@ class DbsStatic:
                 types.remove(name)
         # Add "all" type for using as identifier
         types.append("all")
+
+        del fm
+
         return types

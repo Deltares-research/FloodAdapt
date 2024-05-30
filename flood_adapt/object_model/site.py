@@ -15,12 +15,11 @@ class Site(ISite):
     @property
     def attrs(self) -> SiteModel:
         return self._attrs
-    
+
     @attrs.setter
     def attrs(self, value: SiteModel):
         self._attrs = value
-                
-    
+
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
         """create Site from toml file"""
