@@ -289,6 +289,18 @@ class ISite(ABC):
         """
         ...
 
+    @attrs.setter
+    @abstractmethod
+    def attrs(self, value: SiteModel):
+        """Set the site attributes from a dictionary
+
+        Parameters
+        ----------
+        value : SiteModel
+            Pydantic model with the site attributes
+        """
+        ...
+
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
