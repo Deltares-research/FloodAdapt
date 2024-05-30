@@ -1,9 +1,11 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = [
+    "setuptools>=61",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flood_adapt"
+name = "flood-adapt"
 description = "A software package support ystem which can be used to assess the benefits and costs of flood resilience measures"
 readme = "README.md"
 authors = [
@@ -21,52 +23,70 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
+    "cht-cyclones@ git+https://github.com/deltares/cht_cyclones.git",
+    "cht-meteo",
+    "cht-observations",
+    "cht-tide",
+    "fiat-toolbox",
+    "geojson",
     "geopandas",
+    "hydromt-fiat",
+    "hydromt-sfincs@ git+https://github.com/deltares/hydromt_sfincs.git@fa_quadtree",
     "numpy",
     "numpy-financial",
     "pandas",
-    "pydantic",
-    "tomli-w",
-    "tomli",
     "plotly",
-    "cht_observations",
-    "cht_tide",
-    "cht_meteo",
+    "pydantic",
     "pyogrio",
+    "rasterio",
     "shapely",
-    "geojson",
-    "fiat_toolbox",
-    "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
-    "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree", # TODO: Temporary sfincs version, remove version when sfincs is updated
-    "hydromt_fiat"
+    "tomli",
+    "tomli-w",
 ]
-dynamic = ["version"]
+dynamic = [
+    "version",
+]
 
 [project.optional-dependencies]
 test = [
+    "pre-commit",
     "pytest",
     "pytest-cov",
-    "pre-commit"
 ]
-
-[tool.setuptools]
-zip-safe = false
-
-[tool.setuptools.dynamic]
-version = { attr = "flood_adapt.__version__" }
-
-[tool.setuptools.packages.find]
-include = ["flood_adapt", "flood_adapt.*"]
-
-[tool.setuptools.package-data]
-"flood_adapt" = ["py.typed"]
 
 [project.urls]
 Source = "https://github.com/Deltares/FloodAdapt"
 
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic.version]
+attr = "flood_adapt.__version__"
+
+[tool.setuptools.packages.find]
+include = [
+    "flood_adapt",
+    "flood_adapt.*",
+]
+
+[tool.setuptools.package-data]
+flood_adapt = [
+    "py.typed",
+]
+
 [tool.ruff]
-select = ["E", "F", "NPY", "PD", "C4", "I"]
-ignore = ["E501", "PD901"]
+select = [
+    "E",
+    "F",
+    "NPY",
+    "PD",
+    "C4",
+    "I",
+]
+ignore = [
+    "E501",
+    "PD901",
+]
 
 [tool.pyright]
 reportDeprecated = true
