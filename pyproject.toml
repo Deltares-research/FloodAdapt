@@ -33,6 +33,7 @@ dependencies = [
     "cht_tide",
     "cht_meteo",
     "pyogrio",
+    "shapely",
     "geojson",
     "fiat_toolbox",
     "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
