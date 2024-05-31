@@ -101,7 +101,7 @@ class MapboxLayersModel(BaseModel):
     flood_map_zbmax: float
     flood_map_bins: list[float]
     flood_map_colors: list[str]
-    aggregation_dmg_bins: list[float]
+    aggregation_metric_percentiles: list[float]
     aggregation_dmg_colors: list[str]
     max_aggregated_metrics_count_people: int = 13000
     max_aggregated_metrics_count_houses: int = 25

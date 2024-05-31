@@ -63,7 +63,7 @@ def test_dict():
                 "flood_map_zbmax": 3.28,
                 "flood_map_bins": [1, 3, 5],
                 "flood_map_colors": ["#BED2FF", "#B4D79E", "#1F80B8", "#081D58"],
-                "aggregation_dmg_bins": [0.00001, 1000000, 2500000, 5000000, 10000000],
+                "aggregation_metric_percentiles": [0.00001, 1000000, 2500000, 5000000, 10000000],
                 "aggregation_dmg_colors": [
                     "#FFFFFF",
                     "#FEE9CE",
