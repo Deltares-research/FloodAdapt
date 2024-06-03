@@ -40,7 +40,7 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
     list[GeoDataFrame]
         list of GeoDataFrames with the aggregation areas
     """
-    return Database().get_aggregation_areas()
+    return Database().static.get_aggregation_areas()
 
 
 def get_obs_points() -> GeoDataFrame:
@@ -57,11 +57,11 @@ def get_obs_points() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrame with observation points from the site.toml.
     """
-    return Database().get_obs_points()
+    return Database().static.get_obs_points()
 
 
 def get_model_boundary() -> GeoDataFrame:
-    return Database().get_model_boundary()
+    return Database().static.get_model_boundary()
 
 
 def get_model_grid() -> QuadtreeGrid:
@@ -76,7 +76,7 @@ def get_model_grid() -> QuadtreeGrid:
     QuadtreeGrid
         QuadtreeGrid with the model grid
     """
-    return Database().get_model_grid()
+    return Database().static.get_model_grid()
 
 
 @staticmethod
@@ -93,7 +93,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().get_static_map(Database().site.attrs.fiat.svi.geom)
+        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
     except Exception:
         return None
 
@@ -115,7 +115,7 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
         GeoDataFrame with the static map
     """
     try:
-        return Database().get_static_map(path)
+        return Database().static.get_static_map(path)
     except Exception:
         return None
 
@@ -132,11 +132,11 @@ def get_buildings() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the buildings from FIAT exposure
     """
-    return Database().get_buildings()
+    return Database().static.get_buildings()
 
 
 def get_property_types() -> list:
-    return Database().get_property_types()
+    return Database().static.get_property_types()
 
 
 def get_hazard_measure_types():

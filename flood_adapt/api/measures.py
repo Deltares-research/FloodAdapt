@@ -91,4 +91,4 @@ def calculate_volume(
 
 
 def get_green_infra_table(measure_type: str) -> pd.DataFrame:
-    return Database().get_green_infra_table(measure_type)
+    return Database().static.get_green_infra_table(measure_type)
