@@ -68,7 +68,7 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
         )
 
     output_path = Path(Database().output_path).joinpath("Scenarios", hazard.name)
-    gdf = Database().get_obs_points()
+    gdf = Database().static.get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
         for station in gdf.name
@@ -102,9 +102,9 @@ def get_infographic(name: str) -> str:
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    config_path = database.static_path("templates", "infographics")
-    output_path = database.output_path("Scenarios", impact.name)
-    metrics_outputs_path = database.output_path("Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
+    config_path = database.static_path.joinpath("templates", "infographics")
+    output_path = database.output_path.joinpath("Scenarios", impact.name)
+    metrics_outputs_path = database.output_path.joinpath("Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
     )
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(

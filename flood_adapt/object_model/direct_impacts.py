@@ -35,7 +35,6 @@ class DirectImpacts:
     """
 
     name: str
-    database_input_path: Path
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
     hazard: Hazard
@@ -44,7 +43,6 @@ class DirectImpacts:
     def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
         self.name = scenario.name
         self.database = database
-        self.database_input_path = database.input_path
         self.scenario = scenario
         self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
