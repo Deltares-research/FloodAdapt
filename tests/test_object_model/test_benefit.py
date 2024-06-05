@@ -245,7 +245,7 @@ class TestBenefitScenariosRun:
             "future_with_strategy": 180e6,
         }
         # Get aggregation areas of test database
-        aggrs = test_db.get_aggregation_areas()
+        aggrs = test_db.static.get_aggregation_areas()
 
         # Iterate through the 4 scenarios
         for name, row in benefit.scenarios.iterrows():

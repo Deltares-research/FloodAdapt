@@ -14,18 +14,18 @@ def scenario_event(test_db_session):
 
 
 def test_impact_metrics(scenario_event):
-    test_db_session, scenario_name = scenario_event
+    _, scenario_name = scenario_event
     metrics = api_output.get_infometrics(scenario_name)
     assert isinstance(metrics, pd.DataFrame)
 
 
 def test_impact_footprints(scenario_event):
-    test_db_session, scenario_name = scenario_event
+    _, scenario_name = scenario_event
     footprints = api_output.get_fiat_footprints(scenario_name)
     assert isinstance(footprints, gpd.GeoDataFrame)
 
 
 def test_impact_aggr_areas(scenario_event):
-    test_db_session, scenario_name = scenario_event
+    _, scenario_name = scenario_event
     aggr_areas = api_output.get_aggregation(scenario_name)
     assert isinstance(aggr_areas, dict)
