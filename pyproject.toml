@@ -32,7 +32,7 @@ dependencies = [
     "fiat-toolbox",
     "geojson",
     "geopandas",
-    "hydromt-fiat",
+    "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
     "hydromt-sfincs@ git+https://github.com/deltares/hydromt_sfincs.git@FA_quadtree",
     "mypy",
     "ndbc",
@@ -45,17 +45,6 @@ dependencies = [
     "pyogrio",
     "tomli",
     "tomli-w",
-    "tomli",
-    "plotly",
-    "cht_observations",
-    "cht_tide",
-    "cht_meteo",
-    "pyogrio",
-    "geojson",
-    "fiat_toolbox",
-    "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
-    "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree", # TODO: Temporary sfincs version, remove version when sfincs is updated
-    "hydromt_fiat"
 ]
 dynamic = [
     "version",
