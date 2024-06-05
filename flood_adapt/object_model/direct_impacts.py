@@ -558,7 +558,5 @@ class DirectImpacts:
             config_base_path=self.database.static_path.joinpath(
                 "templates", "Infographics"
             ),
-            output_base_path=self.database.output_path.joinpath(
-                "Scenarios", self.name
-            ),
+            output_base_path=self.database.output_path.joinpath("Scenarios", self.name),
         ).write_infographics_to_file()

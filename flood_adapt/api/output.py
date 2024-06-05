@@ -104,7 +104,8 @@ def get_infographic(name: str) -> str:
 
     config_path = database.static_path.joinpath("templates", "infographics")
     output_path = database.output_path.joinpath("Scenarios", impact.name)
-    metrics_outputs_path = database.output_path.joinpath("Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
+    metrics_outputs_path = database.output_path.joinpath(
+        "Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
     )
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(

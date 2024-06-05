@@ -88,7 +88,9 @@ class DbsScenario(DbsTemplate):
         super().edit(scenario)
 
         # Delete output if edited
-        output_path = self._database.output_path / self._folder_name / scenario.attrs.name
+        output_path = (
+            self._database.output_path / self._folder_name / scenario.attrs.name
+        )
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)

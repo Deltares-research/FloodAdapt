@@ -948,8 +948,7 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
-        )
+        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -968,8 +967,7 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
-        )
+        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -988,8 +986,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
-        )
+        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
             label = aggr_area.stem.split(f"{scenario_name}_")[-1]
@@ -1069,9 +1066,11 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.output_path.joinpath( "Scenarios", scn.attrs.name, "Flooding"
+                path_0 = self.output_path.joinpath(
+                    "Scenarios", scn.attrs.name, "Flooding"
                 )
-                path_new = self.output_path.joinpath( "Scenarios", scenario.attrs.name, "Flooding"
+                path_new = self.output_path.joinpath(
+                    "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.has_run_check()
