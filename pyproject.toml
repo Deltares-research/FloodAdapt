@@ -24,7 +24,6 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "census",
     "cht-cyclones@ git+https://github.com/deltares/cht_cyclones.git",
     "cht-meteo",
     "cht-observations",
@@ -34,9 +33,6 @@ dependencies = [
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
     "hydromt-sfincs@ git+https://github.com/deltares/hydromt_sfincs.git@FA_quadtree",
-    "mypy",
-    "ndbc",
-    "noaa-coops",
     "numpy",
     "numpy-financial",
     "pandas",
