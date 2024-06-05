@@ -19,6 +19,8 @@ class DbsTemplate(AbstractDatabaseElement):
     _type = ""
     _folder_name = ""
     _object_model_class = None
+    _path = None
+    _database = None
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""

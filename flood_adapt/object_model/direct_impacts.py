@@ -386,9 +386,9 @@ class DirectImpacts:
                 ),
                 damages_table=fiat_data,
                 aggregation_label=self.site_info.attrs.fiat.aggregation[ind].field_name,
-                percapitalincome_label=self.site_info.attrs.fiat.aggregation[
+                percapitaincome_label=self.site_info.attrs.fiat.aggregation[
                     ind
-                ].equity.percapitalincome_label,
+                ].equity.percapitaincome_label,
                 totalpopulation_label=self.site_info.attrs.fiat.aggregation[
                     ind
                 ].equity.totalpopulation_label,

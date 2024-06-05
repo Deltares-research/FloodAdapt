@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 import flood_adapt.config as fa_config
-from flood_adapt.api.startup import read_database
+from flood_adapt.api.static import read_database
 
 logging.basicConfig(level=logging.ERROR)
 database_root = Path().absolute().parent / "Database"
