@@ -594,7 +594,7 @@ class Database(IDatabase):
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-        event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
+        event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
         temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
@@ -769,14 +769,13 @@ class Database(IDatabase):
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
-            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            self.events.get_database_path().joinpath(event.attrs.name, f"{name}.csv"),
             header=False,
         )
 
     def write_cyc(self, event: IEvent, track: TropicalCyclone):
         cyc_file = (
-            self.input_path
-            / "events"
+            self.events.get_database_path()
             / event.attrs.name
             / f"{event.attrs.track_name}.cyc"
         )
@@ -916,8 +915,7 @@ class Database(IDatabase):
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            map_path = self.input_path.parent.joinpath(
-                "output",
+            map_path = self.output_path.joinpath(
                 "Scenarios",
                 scenario_name,
                 "Flooding",
@@ -928,8 +926,7 @@ class Database(IDatabase):
             zsmax = map.to_numpy()
 
         else:
-            file_path = self.input_path.parent.joinpath(
-                "output",
+            file_path = self.output_path.joinpath(
                 "Scenarios",
                 scenario_name,
                 "Flooding",
@@ -951,8 +948,7 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
         )
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
@@ -972,8 +968,7 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
         )
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
@@ -993,8 +988,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.output_path.joinpath( "Scenarios", scenario_name, "Impacts"
         )
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
@@ -1016,8 +1010,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated benefits per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output",
+        out_path = self.output_path.joinpath(
             "Benefits",
             benefit_name,
         )
@@ -1076,11 +1069,9 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scn.attrs.name, "Flooding"
+                path_0 = self.output_path.joinpath( "Scenarios", scn.attrs.name, "Flooding"
                 )
-                path_new = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scenario.attrs.name, "Flooding"
+                path_new = self.output_path.joinpath( "Scenarios", scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.has_run_check()

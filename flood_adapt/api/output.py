@@ -93,7 +93,8 @@ def get_infographic(name: str) -> str:
         The HTML string of the infographic.
     """
     # Get the direct_impacts objects from the scenario
-    impact = Database().scenarios.get(name).direct_impacts
+    database = Database()
+    impact = database.scenarios.get(name).direct_impacts
 
     # Check if the scenario has run
     if not impact.has_run_check():
@@ -101,11 +102,9 @@ def get_infographic(name: str) -> str:
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    database_path = Path(Database().input_path).parent
-    config_path = database_path.joinpath("static", "templates", "infographics")
-    output_path = database_path.joinpath("output", "Scenarios", impact.name)
-    metrics_outputs_path = database_path.joinpath(
-        "output", "Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
+    config_path = database.static_path("templates", "infographics")
+    output_path = database.output_path("Scenarios", impact.name)
+    metrics_outputs_path = database.output_path("Scenarios", impact.name, f"Infometrics_{impact.name}.csv"
     )
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(
@@ -139,8 +138,7 @@ def get_infometrics(name: str) -> pd.DataFrame:
         If the metrics file does not exist.
     """
     # Create the infographic path
-    metrics_path = Path(Database().input_path).parent.joinpath(
-        "output",
+    metrics_path = Database().output_path.joinpath(
         "Scenarios",
         name,
         f"Infometrics_{name}.csv",
