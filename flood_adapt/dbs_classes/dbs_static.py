@@ -35,15 +35,14 @@ class DbsStatic:
     _database: IDatabase = None
 
     def __init__(self, database: IDatabase):
-        """
-        Initialize any necessary attributes.
-        """
+        """Initialize any necessary attributes."""
         self._database = database
 
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
-        These are expected to much the ones in the FIAT model
+
+        These are expected to much the ones in the FIAT model.
 
         Returns
         -------
@@ -68,13 +67,13 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_model_boundary(self) -> GeoDataFrame:
-        """Get the model boundary from the SFINCS model"""
+        """Get the model boundary from the SFINCS model."""
         bnd = self._database.static_sfincs_model.get_model_boundary()
         return bnd
 
     @cache_method_wrapper
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get the model grid from the SFINCS model
+        """Get the model grid from the SFINCS model.
 
         Returns
         -------
@@ -86,7 +85,7 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_obs_points(self) -> GeoDataFrame:
-        """Get the observation points from the flood hazard model"""
+        """Get the observation points from the flood hazard model."""
         if self._database.site.attrs.obs_point is not None:
             obs_points = self._database.site.attrs.obs_point
             names = []
@@ -109,7 +108,7 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
-        """Get a map from the static folder
+        """Get a map from the static folder.
 
         Parameters
         ----------
@@ -136,7 +135,7 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_slr_scn_names(self) -> list:
-        """Get the names of the sea level rise scenarios from the slr.csv file
+        """Get the names of the sea level rise scenarios from the slr.csv file.
 
         Returns
         -------
@@ -150,6 +149,7 @@ class DbsStatic:
     @cache_method_wrapper
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
+
         This is read by a csv file in the database.
 
         Returns
@@ -184,8 +184,9 @@ class DbsStatic:
     @cache_method_wrapper
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
+
         This should only be the buildings excluding any other types (e.g., roads)
-        The parameters non_building_names in the site config is used for that
+        The parameters non_building_names in the site config is used for that.
 
         Returns
         -------
@@ -210,7 +211,7 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_property_types(self) -> list:
-        """_summary_
+        """_summary_.
 
         Returns
         -------

@@ -288,7 +288,7 @@ class ISite(ABC):
     @property
     @abstractmethod
     def attrs(self) -> SiteModel:
-        """Get the site attributes as a dictionary
+        """Get the site attributes as a dictionary.
 
         Returns
         -------
@@ -300,7 +300,7 @@ class ISite(ABC):
     @attrs.setter
     @abstractmethod
     def attrs(self, value: SiteModel):
-        """Set the site attributes from a dictionary
+        """Set the site attributes from a dictionary.
 
         Parameters
         ----------
@@ -323,5 +323,5 @@ class ISite(ABC):
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save Site attributes to a toml file"""
+        """Save Site attributes to a toml file."""
         ...

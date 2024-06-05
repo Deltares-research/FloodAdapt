@@ -13,6 +13,8 @@ import plotly.graph_objects as go
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
+from hydromt_fiat.fiat import FiatModel
+from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -165,7 +167,8 @@ class Database(IDatabase):
     # General methods
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
-        These are expected to much the ones in the FIAT model
+
+        These are expected to much the ones in the FIAT model.
 
         Returns
         -------
@@ -190,12 +193,12 @@ class Database(IDatabase):
         return aggregation_areas
 
     def get_model_boundary(self) -> GeoDataFrame:
-        """Get the model boundary from the SFINCS model"""
+        """Get the model boundary from the SFINCS model."""
         bnd = self.static_sfincs_model.get_model_boundary()
         return bnd
 
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get the model grid from the SFINCS model
+        """Get the model grid from the SFINCS model.
 
         Returns
         -------
@@ -206,7 +209,7 @@ class Database(IDatabase):
         return grid
 
     def get_obs_points(self) -> GeoDataFrame:
-        """Get the observation points from the flood hazard model"""
+        """Get the observation points from the flood hazard model."""
         if self.site.attrs.obs_point is not None:
             obs_points = self.site.attrs.obs_point
             names = []
@@ -228,7 +231,7 @@ class Database(IDatabase):
         return gdf
 
     def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
-        """Get a map from the static folder
+        """Get a map from the static folder.
 
         Parameters
         ----------
@@ -260,6 +263,7 @@ class Database(IDatabase):
 
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
+
         This is read by a csv file in the database.
 
         Returns
@@ -715,8 +719,9 @@ class Database(IDatabase):
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the FIAT model.
+
         This should only be the buildings excluding any other types (e.g., roads)
-        The parameters non_building_names in the site config is used for that
+        The parameters non_building_names in the site config is used for that.
 
         Returns
         -------
@@ -738,7 +743,7 @@ class Database(IDatabase):
         return buildings
 
     def get_property_types(self) -> list:
-        """_summary_
+        """_summary_.
 
         Returns
         -------
