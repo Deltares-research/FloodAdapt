@@ -24,6 +24,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
+from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.site import Site
 
@@ -42,7 +43,7 @@ class DirectImpacts:
     impact_strategy: ImpactStrategy
     hazard: Hazard
     has_run: bool = False
-    adapter: DirectImpactsAdapter  # This should be a Interface
+    adapter: DirectImpactsAdapter = None  # This should be a Interface
 
     def __init__(
         self, scenario: ScenarioModel, database_input_path: Path, results_path: Path
@@ -58,8 +59,10 @@ class DirectImpacts:
             scenario, database_input_path, self.results_path.joinpath("Flooding")
         )
         # Get site config
-        self.site_toml_path = self.database_static_path / "site" / "site.toml"
-        self.site_info = Site.load_file(self.site_toml_path)
+        self.site_info = Site.load_file(
+            self.database_static_path / "site" / "site.toml"
+        )
+        self._set_site_toml_paths()
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.has_run = self.has_run_check()
@@ -70,10 +73,34 @@ class DirectImpacts:
             self.site_info.attrs.direct_impacts.model
         )
         self.adapter = Adapter(
-            database_path=self.database_input_path.parent,
-            impacts_path=self.impacts_path,
+            template_model_path=self.database_static_path.joinpath(
+                "templates", self.site_info.attrs.direct_impacts.model
+            ),
             config=self.site_info.attrs.direct_impacts,
+            output_model_path=self.impacts_path.joinpath(
+                self.site_info.attrs.direct_impacts.model
+            ),
         )
+
+    def _set_site_toml_paths(self):
+        def rel_to_abs_path(path):
+            if path:
+                path_abs = self.database_static_path.joinpath(path)
+            return path_abs
+
+        config = self.site_info.attrs
+
+        config.direct_impacts.building_footprints = rel_to_abs_path(
+            config.direct_impacts.building_footprints
+        )
+        config.direct_impacts.bfe.geom = rel_to_abs_path(config.direct_impacts.bfe.geom)
+        config.direct_impacts.bfe.table = rel_to_abs_path(
+            config.direct_impacts.bfe.table
+        )
+        for aggr in self.site_info.attrs.direct_impacts.aggregation:
+            aggr.file = rel_to_abs_path(aggr.file)
+            if aggr.equity:
+                aggr.equity.census_data = rel_to_abs_path(aggr.equity.census_data)
 
     def has_run_check(self) -> bool:
         """Checks if direct impacts model has finished
@@ -196,25 +223,7 @@ class DirectImpacts:
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
             # Get DEM location for assigning elevation to new areas
-            dem = (
-                self.database_input_path.parent
-                / "static"
-                / "dem"
-                / self.site_info.attrs.dem.filename
-            )
-            # Get available aggregation areas for assigning to new areas
-            aggregation_areas = [
-                self.database_input_path.parent / "static" / aggr.file
-                for aggr in self.site_info.attrs.direct_impacts.aggregation
-            ]
-            attribute_names = [
-                aggr.field_name
-                for aggr in self.site_info.attrs.direct_impacts.aggregation
-            ]
-            label_names = [
-                f"Aggregation Label: {aggr.name}"
-                for aggr in self.site_info.attrs.direct_impacts.aggregation
-            ]
+            dem = self.database_static_path / "dem" / self.site_info.attrs.dem.filename
             # Call adapter method to add the new areas
             self.adapter.apply_population_growth_new(
                 population_growth=self.socio_economic_change.attrs.population_growth_new,
@@ -222,9 +231,6 @@ class DirectImpacts:
                 elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
                 area_path=area_path,
                 ground_elevation=dem,
-                aggregation_areas=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
             )
 
         # Then apply population growth to existing objects
@@ -236,6 +242,14 @@ class DirectImpacts:
 
         # Then apply Impact Strategy by iterating trough the impact measures
         for measure in self.impact_strategy.measures:
+            # Make sure that relative path is translated to absolute path
+            if measure.attrs.polygon_file:
+                measure.attrs.polygon_file = (
+                    self.database_input_path
+                    / "measures"
+                    / measure.attrs.name
+                    / measure.attrs.polygon_file
+                )
             if measure.attrs.type == "elevate_properties":
                 self.adapter.elevate_properties(
                     elevate=measure,
@@ -252,7 +266,11 @@ class DirectImpacts:
                 print("Impact measure type not recognized!")
 
         # Setup hazard for the Direct Impacts model
-        self.adapter.set_hazard(self.hazard)
+        map_fn = self.hazard.flood_map_path
+        map_type = self.hazard.site.attrs.direct_impacts.floodmap_type
+        var = "zsmax" if self.hazard.event_mode == Mode.risk else "risk_maps"
+        is_risk = self.hazard.event_mode == Mode.risk
+        self.adapter.set_hazard(map_fn, map_type, var, is_risk, units="meters")
 
         # Save the updated Direct Impacts model
         self.adapter.write_model()

@@ -2,7 +2,7 @@ import gc
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from geopandas import GeoDataFrame
 from hydromt.log import setuplog
@@ -10,15 +10,13 @@ from hydromt_fiat.fiat import FiatModel
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
-from flood_adapt.object_model.hazard.hazard import Hazard
-from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.measures import (
     IBuyout,
     IElevate,
     IFloodProof,
     ImpactMeasureModel,
 )
-from flood_adapt.object_model.interface.site import DirectImpactsModel
+from flood_adapt.object_model.interface.site import Floodmap_type
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.utils import cd
 
@@ -31,21 +29,7 @@ class FiatAdapter(DirectImpactsAdapter):
 
     model_name = "fiat"  # model's name
 
-    def __init__(
-        self, database_path: str, config: DirectImpactsModel, impacts_path: str = None
-    ) -> None:
-        """
-        Initializes a new instance of the FiatAdapter class.
-
-        Args:
-            database_path (str): The path to the database.
-            config (DirectImpactsModel): The configuration for the direct impacts model.
-            impacts_path (str, optional): The path to the impacts location. Defaults to None.
-        """
-        super().__init__(database_path, config, impacts_path)
-        self._read_template()
-
-    def _read_template(self):
+    def _read_template_model(self):
         """
         Reads the template FIAT model.
 
@@ -134,17 +118,6 @@ class FiatAdapter(DirectImpactsAdapter):
             list of ids
         """
 
-        # check if polygon file is used, then get the absolute path
-        if attrs.polygon_file:
-            polygon_file = (
-                Path(self.database_input_path)
-                / "measures"
-                / attrs.name
-                / attrs.polygon_file
-            )
-        else:
-            polygon_file = None
-
         # use the hydromt-fiat method to the ids
         ids = self.model.exposure.get_object_ids(
             selection_type=attrs.selection_type,
@@ -152,7 +125,7 @@ class FiatAdapter(DirectImpactsAdapter):
             non_building_names=self.config.non_building_names,
             aggregation=attrs.aggregation_area_type,
             aggregation_area_name=attrs.aggregation_area_name,
-            polygon_file=polygon_file,
+            polygon_file=attrs.polygon_file,
         )
 
         return ids
@@ -175,7 +148,15 @@ class FiatAdapter(DirectImpactsAdapter):
         else:
             return False
 
-    def set_hazard(self, hazard: Hazard) -> None:
+    def set_hazard(
+        self,
+        map_fn: str,
+        map_type: Floodmap_type,
+        var: str,
+        is_risk: bool,
+        units: str = "meters",
+    ) -> None:
+        # map_fn: str, map_type: Floodmap_type , var: str, is_risk: bool, units: str = "meters"
         """
         Sets the hazard data for the model.
 
@@ -185,14 +166,8 @@ class FiatAdapter(DirectImpactsAdapter):
         Returns:
             None
         """
-        # TODO input should not be a hazard object but the individual parameters that are used!
-        map_fn = hazard.flood_map_path
-        map_type = hazard.site.attrs.direct_impacts.floodmap_type
-        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
-        is_risk = hazard.event_mode == Mode.risk
-
         # Add the hazard data to a data catalog with the unit conversion
-        wl_current_units = UnitfulLength(value=1.0, units="meters")
+        wl_current_units = UnitfulLength(value=1.0, units=units)
         conversion_factor = wl_current_units.convert(self.model.exposure.unit)
 
         self.model.setup_hazard(
@@ -298,9 +273,6 @@ class FiatAdapter(DirectImpactsAdapter):
         elevation_type: str,
         area_path: str,
         ground_elevation: Union[None, str, Path] = None,
-        aggregation_areas: Union[List[str], List[Path], str, Path] = None,
-        attribute_names: Union[List[str], str] = None,
-        label_names: Union[List[str], str] = None,
     ) -> None:
         """
         Applies population growth to the model's exposure data.
@@ -321,22 +293,27 @@ class FiatAdapter(DirectImpactsAdapter):
         Returns:
             None
         """
-        # TODO Use model template for aggregation areas
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
-            if not self.bfe:
+            if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
             kwargs = {
                 "elevation_reference": "geom",
-                "path_ref": self.bfe["geom"],
-                "attr_ref": self.bfe["name"],
+                "path_ref": self.config.bfe.geom,
+                "attr_ref": self.config.bfe.field_name,
             }
         elif elevation_type == "datum":
             kwargs = {"elevation_reference": "datum"}
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
+        # Get aggregation areas info
+        aggregation_areas = [aggr.file for aggr in self.config.aggregation]
+        attribute_names = [aggr.field_name for aggr in self.config.aggregation]
+        label_names = [
+            f"Aggregation Label: {aggr.name}" for aggr in self.config.aggregation
+        ]
         # Use hydromt function
         self.model.exposure.setup_new_composite_areas(
             percent_growth=population_growth,
@@ -367,24 +344,26 @@ class FiatAdapter(DirectImpactsAdapter):
 
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(elevate.attrs)
-        # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
-            if not self.bfe:
+            if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
-            elev_ref = self.bfe["mode"]
-            path_ref = self.bfe[elev_ref]
+            if self.config.bfe.table:
+                path_ref = self.config.bfe.table
+                height_reference = "table"
+            else:
+                path_ref = self.config.bfe.geom
+                height_reference = "geom"
             # Use hydromt function
             self.model.exposure.raise_ground_floor_height(
                 raise_by=elevate.attrs.elevation.value,
                 objectids=objectids,
-                height_reference=elev_ref,
+                height_reference=height_reference,
                 path_ref=path_ref,
-                attr_ref=self.bfe["name"],
+                attr_ref=self.config.bfe.field_name,
             )
 
         elif elevate.attrs.elevation.type == "datum":
@@ -410,8 +389,6 @@ class FiatAdapter(DirectImpactsAdapter):
 
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(buyout.attrs)
-        # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Get columns that include max damage
         damage_cols = [
@@ -444,8 +421,6 @@ class FiatAdapter(DirectImpactsAdapter):
         """
         # Get the ids of the buildings that are affected by the selection type
         objectids = self.get_measure_building_ids(floodproof.attrs)
-        # Make sure that only buildings from the template are affected
-        objectids = [id for id in objectids if id in self.get_building_ids()]
 
         # Use hydromt function
         self.model.exposure.truncate_damage_function(

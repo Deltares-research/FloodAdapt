@@ -24,9 +24,9 @@ class DirectImpactsAdapter(ABC):
 
     def __init__(
         self,
-        database_path: str,
+        template_model_path: str,
         config: DirectImpactsModel,
-        impacts_path: str = None,
+        output_model_path: str = None,
     ) -> None:
         """
         Initializes the DirectImpactsAdapter class.
@@ -36,32 +36,16 @@ class DirectImpactsAdapter(ABC):
             config (DirectImpactsModel): The configuration for the direct impacts model.
             impacts_path (str, optional): The path to the impacts location. Defaults to None.
         """
-        self.template_model_path = (
-            Path(database_path) / "static" / "templates" / self.model_name
-        )  # template should be saved in a folder with the model name
+        self.template_model_path = Path(template_model_path)
         self.config = config
-        self.database_input_path = Path(database_path) / "input"
-
-        # Setup base flood elevation if given
-        if config.bfe:
-            self.bfe = {}
-            if config.bfe.table:
-                self.bfe["mode"] = "table"
-                self.bfe["table"] = Path(database_path) / "static" / config.bfe.table
-            else:
-                self.bfe["mode"] = "geom"
-            # Map is always needed!
-            self.bfe["geom"] = Path(database_path) / "static" / config.bfe.geom
-            self.bfe["name"] = config.bfe.field_name
-        else:
-            self.bfe = None
-
         if (
-            impacts_path
+            output_model_path
         ):  # if impacts_path is given, an output location can be generated
-            self.output_model_path = Path(impacts_path).joinpath(self.model_name)
+            self.output_model_path = Path(output_model_path)
+        # read in the template model
+        self._read_template_model()
 
-    def _create_output_model_dir(self):
+    def _create_output_model_dir(self) -> None:
         """
         Creates the output model directory if it doesn't exist.
         If the directory already exists, it removes it and creates a new one.
@@ -71,6 +55,13 @@ class DirectImpactsAdapter(ABC):
         else:
             shutil.rmtree(self.output_model_path)
             self.output_model_path.mkdir(parents=True)
+
+    @abstractmethod
+    def _read_template_model(self) -> None:
+        """
+        Reads the template direct impacts model.
+        """
+        ...
 
     @abstractmethod
     def get_building_locations(self) -> GeoDataFrame:
@@ -201,7 +192,6 @@ class DirectImpactsAdapter(ABC):
         Returns:
             None
         """
-        # TODO Use model template for aggregation areas
         ...
 
     @abstractmethod
