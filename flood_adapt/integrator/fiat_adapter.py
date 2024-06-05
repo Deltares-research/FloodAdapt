@@ -1,3 +1,4 @@
+import gc
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -57,6 +58,9 @@ class FiatAdapter:
         # Close fiat_logger
         for handler in self.fiat_logger.handlers:
             handler.close()
+        self.fiat_logger.handlers.clear()
+        # Use garbage collector to ensure file handlers are properly cleaned up
+        gc.collect()
 
     def set_hazard(self, hazard: Hazard) -> None:
         map_fn = hazard.flood_map_path
