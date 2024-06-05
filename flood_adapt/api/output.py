@@ -138,7 +138,6 @@ def get_infometrics(name: str) -> pd.DataFrame:
     FileNotFoundError
         If the metrics file does not exist.
     """
-
     # Create the infographic path
     metrics_path = Path(Database().input_path).parent.joinpath(
         "output",

@@ -15,7 +15,7 @@ class DbsMeasure(DbsTemplate):
     _object_model_class = Measure
 
     def get(self, name: str) -> IMeasure:
-        """Returns a measure object.
+        """Return a measure object.
 
         Parameters
         ----------
@@ -32,8 +32,7 @@ class DbsMeasure(DbsTemplate):
         return measure
 
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the measures that currently
-        exist in the database.
+        """Return a dictionary with info on the measures that currently exist in the database.
 
         Returns
         -------
@@ -83,7 +82,7 @@ class DbsMeasure(DbsTemplate):
         return measures
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if a measure is used in a strategy.
+        """Check if a measure is used in a strategy.
 
         Parameters
         ----------

@@ -1,9 +1,11 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = [
+    "setuptools>=61",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flood_adapt"
+name = "flood-adapt"
 description = "A software package support ystem which can be used to assess the benefits and costs of flood resilience measures"
 readme = "README.md"
 authors = [
@@ -13,6 +15,7 @@ authors = [
     { name = "Tim de Wilde", email = "Tim.deWilde@deltares.nl" },
     { name = "Julian Hofer", email = "Julian.Hofer@deltares.nl" },
     { name = "Daley Adrichem", email = "Daley.Adrichem@deltares.nl" },
+    { name = "Luuk Blom", email = "Luuk.Blom@deltares.nl" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -21,51 +24,129 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
+    "census",
+    "cht-cyclones@ git+https://github.com/deltares/cht_cyclones.git",
+    "cht-meteo",
+    "cht-observations",
+    "cht-tide",
+    "fiat-toolbox",
+    "geojson",
     "geopandas",
+    "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
+    "hydromt-sfincs@ git+https://github.com/deltares/hydromt_sfincs.git@FA_quadtree",
+    "mypy",
+    "ndbc",
+    "noaa-coops",
     "numpy",
     "numpy-financial",
     "pandas",
-    "pydantic",
-    "tomli-w",
-    "tomli",
     "plotly",
-    "cht_observations",
-    "cht_tide",
-    "cht_meteo",
+    "pydantic",
     "pyogrio",
-    "geojson",
-    "fiat_toolbox",
-    "cht_cyclones @ git+https://github.com/Deltares/cht_cyclones.git",
-    "hydromt_sfincs @ git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree", # TODO: Temporary sfincs version, remove version when sfincs is updated
-    "hydromt_fiat"
+    "tomli",
+    "tomli-w",
 ]
-dynamic = ["version"]
+dynamic = [
+    "version",
+]
 
 [project.optional-dependencies]
-test = [
+dev = [
+    "black",
+    "pre-commit",
     "pytest",
     "pytest-cov",
-    "pre-commit"
+    "ruff",
+    "typos",
 ]
+build = [
+    "build",
+    "twine",
+
+]
+docs = [
+    "jupyter",
+    "jupyter-cache",
+    "matplotlib",
+    "quartodoc",
+    "regex",
+]
+all = [
+    "flood-adapt[build,dev,docs]",
+]
+
+[project.urls]
+Source = "https://github.com/Deltares-research/FloodAdapt"
 
 [tool.setuptools]
 zip-safe = false
 
-[tool.setuptools.dynamic]
-version = { attr = "flood_adapt.__version__" }
+[tool.setuptools.dynamic.version]
+attr = "flood_adapt.__version__"
 
 [tool.setuptools.packages.find]
-include = ["flood_adapt", "flood_adapt.*"]
+include = [
+    "flood_adapt",
+    "flood_adapt.*",
+]
 
 [tool.setuptools.package-data]
-"flood_adapt" = ["py.typed"]
-
-[project.urls]
-Source = "https://github.com/Deltares/FloodAdapt"
+flood_adapt = [
+    "py.typed",
+]
 
 [tool.ruff]
-select = ["E", "F", "NPY", "PD", "C4", "I"]
-ignore = ["E501", "PD901"]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "D",
+    "E",
+    "F",
+    "NPY",
+    "PD",
+    "C4",
+    "I",
+]
+ignore = [
+    "D10",
+    "D417",
+
+    "PD010",
+    "PD013",
+    "PD901",
+    
+    "E501",
+    "E741",
+]
+fixable = [
+    "I",
+    "D"
+]
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.black]
+line-length = 88
+target-version = [
+    "py311",
+]
 
 [tool.pyright]
 reportDeprecated = true
+
+[tool.typos]
+files.extend-exclude = [
+    "*.js",
+    "*.css",
+]
+files.ignore-hidden = true
+
+[tool.typos.default.extend-words]
+strat = "strat"

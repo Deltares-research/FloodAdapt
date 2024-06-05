@@ -7,7 +7,7 @@ import tomli
 
 def set_database_root(database_root: Path, overwrite: bool = True) -> None:
     """
-    Sets the database root path.
+    Set the database root path.
 
     Parameters
     ----------
@@ -41,7 +41,7 @@ def set_database_root(database_root: Path, overwrite: bool = True) -> None:
 
 def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
     """
-    Sets the system folder path.
+    Set the system folder path.
 
     Parameters
     ----------
@@ -75,7 +75,7 @@ def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
 
 def set_database_name(database_name: str, overwrite: bool = True) -> None:
     """
-    Sets the database_name.
+    Set the database_name.
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def set_database_name(database_name: str, overwrite: bool = True) -> None:
 
 def get_database_root() -> Union[Path, None]:
     """
-    Gets the root directory for the database.
+    Get the root directory for the database.
 
     Returns
     -------
@@ -131,7 +131,7 @@ def get_database_root() -> Union[Path, None]:
 
 def get_system_folder() -> Union[Path, None]:
     """
-    Gets the system folder path.
+    Get the system folder path.
 
     Returns
     -------
@@ -146,7 +146,7 @@ def get_system_folder() -> Union[Path, None]:
 
 def get_database_name() -> Union[str, None]:
     """
-    Gets the database name.
+    Get the database name.
 
     Returns
     -------

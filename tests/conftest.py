@@ -81,7 +81,8 @@ def session_setup_teardown():
 
 def make_db_fixture(scope, clean=True):
     """
-    This generates a fixture that is used for testing in general.
+    Generate a fixture that is used for testing in general.
+
     All fixtures function as follows:
     At the start of the test session:
         1) Create a snapshot of the database
@@ -91,6 +92,7 @@ def make_db_fixture(scope, clean=True):
         3) Initialize database controller
         4) Perform all tests in scope
         5) Restore the database from the snapshot
+
     Usage
     ----------
     To access the fixture in a test , you need to:
@@ -100,6 +102,7 @@ def make_db_fixture(scope, clean=True):
                 something = test_db.get_something()
                 some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
                 assert ...
+
     Parameters
     ----------
     scope : str

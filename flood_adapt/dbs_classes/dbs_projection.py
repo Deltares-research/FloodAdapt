@@ -9,7 +9,7 @@ class DbsProjection(DbsTemplate):
     _object_model_class = Projection
 
     def _check_standard_objects(self, name: str) -> bool:
-        """Checks if a projection is a standard projection.
+        """Check if a projection is a standard projection.
 
         Parameters
         ----------
@@ -29,7 +29,7 @@ class DbsProjection(DbsTemplate):
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if a projection is used in a scenario.
+        """Check if a projection is used in a scenario.
 
         Parameters
         ----------

@@ -18,7 +18,7 @@ from flood_adapt.object_model.site import Site
 
 
 class Benefit(IBenefit):
-    """Object holding all attributes and methods related to a benefit analysis"""
+    """Object holding all attributes and methods related to a benefit analysis."""
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
@@ -27,7 +27,7 @@ class Benefit(IBenefit):
     has_run: bool = False
 
     def _init(self):
-        """Initiation function called when object is created through the load_file or load_dict methods"""
+        """Initialize function called when object is created through the load_file or load_dict methods."""
         # Get output path based on database path
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Benefits", self.attrs.name
@@ -45,7 +45,7 @@ class Benefit(IBenefit):
         self.unit = self.site_info.attrs.fiat.damage_unit
 
     def has_run_check(self) -> bool:
-        """Check if the benefit analysis has already been run
+        """Check if the benefit analysis has already been run.
 
         Returns
         -------
@@ -63,7 +63,7 @@ class Benefit(IBenefit):
         return check
 
     def get_output(self) -> dict:
-        """Reads the benefit analysis results and the path of the html output
+        """Read the benefit analysis results and the path of the html output.
 
         Returns
         -------
@@ -83,7 +83,8 @@ class Benefit(IBenefit):
 
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created.
-        The scenarios attribute of the object is updated accordingly and the table of the scenarios is returned
+
+        The scenarios attribute of the object is updated accordingly and the table of the scenarios is returned.
 
         Returns
         -------
@@ -156,7 +157,7 @@ class Benefit(IBenefit):
         return self.scenarios
 
     def ready_to_run(self) -> bool:
-        """Check if all the required scenarios have already been run
+        """Check if all the required scenarios have already been run.
 
         Returns
         -------
@@ -169,8 +170,7 @@ class Benefit(IBenefit):
         return check
 
     def run_cost_benefit(self):
-        """Run the cost-benefit calculation for the total study area and the different aggregation levels"""
-
+        """Run the cost-benefit calculation for the total study area and the different aggregation levels."""
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
             # First check is scenarios are there
@@ -197,7 +197,7 @@ class Benefit(IBenefit):
         self.get_output()
 
     def cba(self):
-        """Cost-benefit analysis for the whole study area"""
+        """Cost-benefit analysis for the whole study area."""
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
@@ -279,7 +279,7 @@ class Benefit(IBenefit):
         self._make_html(cba)
 
     def cba_aggregation(self):
-        """Zonal Benefits analysis for the different aggregation areas"""
+        """Zonal Benefits analysis for the different aggregation areas."""
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
         # Get years of interest
         year_start = self.attrs.current_situation.year
@@ -393,7 +393,7 @@ class Benefit(IBenefit):
         risk_with_strategy: list[float, float],
         discount_rate: float,
     ) -> pd.DataFrame:
-        """Calculates per year benefits and discounted benefits
+        """Calculate per year benefits and discounted benefits.
 
         Parameters
         ----------
@@ -445,7 +445,7 @@ class Benefit(IBenefit):
         annual_maint_cost: float,
         discount_rate: float,
     ) -> pd.DataFrame:
-        """Calculates per year costs and discounted costs
+        """Calculate per year costs and discounted costs.
 
         Parameters
         ----------
@@ -481,7 +481,7 @@ class Benefit(IBenefit):
         return benefits
 
     def _make_html(self, cba):
-        "Make an html with the time-series of the benefits and discounted benefits"
+        """Make an html with the time-series of the benefits and discounted benefits."""
         # Save a plotly graph in an html
         fig = go.Figure()
 
@@ -549,7 +549,7 @@ class Benefit(IBenefit):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IBenefit:
-        """Create a Benefit object from a toml file
+        """Create a Benefit object from a toml file.
 
         Parameters
         ----------
@@ -561,7 +561,6 @@ class Benefit(IBenefit):
         IBenefit
             a Benefit object
         """
-
         obj = Benefit()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -575,7 +574,7 @@ class Benefit(IBenefit):
     def load_dict(
         data: dict[str, Any], database_input_path: Union[str, os.PathLike]
     ) -> IBenefit:
-        """Create a Benefit object from a dictionary, e.g. when initialized from GUI
+        """Create a Benefit object from a dictionary, e.g. when initialized from GUI.
 
         Parameters
         ----------
@@ -596,7 +595,7 @@ class Benefit(IBenefit):
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save the Benefit attributes as a toml file
+        """Save the Benefit attributes as a toml file.
 
         Parameters
         ----------

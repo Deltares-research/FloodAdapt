@@ -12,7 +12,7 @@ class CurrentSituationModel(BaseModel):
 
 
 class BenefitModel(BaseModel):
-    """BaseModel describing the expected variables and data types of a Benefit analysis object"""
+    """BaseModel describing the expected variables and data types of a Benefit analysis object."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
@@ -37,21 +37,21 @@ class IBenefit(ABC):
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Benefit attributes from toml file"""
+        """Get Benefit attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
     def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """get Benefit attributes from an object, e.g. when initialized from GUI"""
+        """Get Benefit attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Benefit attributes to a toml file"""
+        """Save Benefit attributes to a toml file."""
         ...
 
     @abstractmethod
     def check_scenarios(self) -> pd.DataFrame:
-        """Check which scenarios are needed for this benefit calculation and if they have already been created"""
+        """Check which scenarios are needed for this benefit calculation and if they have already been created."""
         ...

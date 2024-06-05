@@ -12,15 +12,14 @@ from flood_adapt.object_model.interface.measures import FloodProofModel, IFloodP
 
 
 class FloodProof(ImpactMeasure, IFloodProof):
-    """Subclass of ImpactMeasure describing the measure of flood-proof buildings"""
+    """Subclass of ImpactMeasure describing the measure of flood-proof buildings."""
 
     attrs: FloodProofModel
     database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IFloodProof:
-        """create FloodProof from toml file"""
-
+        """Create FloodProof from toml file."""
         obj = FloodProof()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -33,14 +32,13 @@ class FloodProof(ImpactMeasure, IFloodProof):
     def load_dict(
         data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IFloodProof:
-        """create FloodProof from object, e.g. when initialized from GUI"""
-
+        """Create FloodProof from object, e.g. when initialized from GUI."""
         obj = FloodProof()
         obj.attrs = FloodProofModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save FloodProof to a toml file"""
+        """Save FloodProof to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

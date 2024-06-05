@@ -15,10 +15,7 @@ from flood_adapt.object_model.site import Site
 
 
 class FiatAdapter:
-    """Class holding all the attributes of the template fiat model and
-    the methods to adjust it according to the projection and strategy
-    attributes.
-    """
+    """All the attributes of the template fiat model and the methods to adjust it according to the projection and strategy attributes."""
 
     fiat_model: FiatModel  # hydroMT-FIAT model
     site: Site  # Site model
@@ -26,7 +23,7 @@ class FiatAdapter:
     bfe_name: str  # variable name of the base flood elevation
 
     def __init__(self, model_root: str, database_path: str) -> None:
-        """Loads FIAT model based on a root directory."""
+        """Load FIAT model based on a root directory."""
         # Load FIAT template
         self.fiat_logger = setuplog("hydromt_fiat", log_level=10)
         self.fiat_model = FiatModel(root=model_root, mode="r", logger=self.fiat_logger)
@@ -90,8 +87,9 @@ class FiatAdapter:
     def apply_economic_growth(
         self, economic_growth: float, ids: Optional[list[str]] = []
     ):
-        """Implement economic growth in the exposure of FIAT. This is only done for buildings.
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+        """Implement economic growth in the exposure of FIAT.
+
+        This is only done for buildings. This is done by multiplying maximum potential damages of objects with the percentage increase.
 
         Parameters
         ----------
@@ -133,8 +131,9 @@ class FiatAdapter:
     def apply_population_growth_existing(
         self, population_growth: float, ids: Optional[list[str]] = []
     ):
-        """Implement population growth in the exposure of FIAT. This is only done for buildings.
-        This is done by multiplying maximum potential damages of objects with the percentage increase.
+        """Implement population growth in the exposure of FIAT.
+
+        This is only done for buildings. This is done by multiplying maximum potential damages of objects with the percentage increase.
 
         Parameters
         ----------
@@ -240,8 +239,7 @@ class FiatAdapter:
         elevate: Elevate,
         ids: Optional[list[str]] = [],
     ):
-        """Elevate properties by adjusting the "Ground Floor Height" column
-        in the FIAT exposure file.
+        """Elevate properties by adjusting the "Ground Floor Height" column in the FIAT exposure file.
 
         Parameters
         ----------
@@ -284,8 +282,7 @@ class FiatAdapter:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
     def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = []):
-        """Buyout properties by setting the "Max Potential Damage: {}" column to
-        zero in the FIAT exposure file.
+        """Buyout properties by setting the "Max Potential Damage: {}" column to zero in the FIAT exposure file.
 
         Parameters
         ----------
@@ -329,8 +326,7 @@ class FiatAdapter:
     def floodproof_properties(
         self, floodproof: FloodProof, ids: Optional[list[str]] = []
     ):
-        """Floodproof properties by creating new depth-damage functions and
-        adding them in "Damage Function: {}" column in the FIAT exposure file.
+        """Floodproof properties by creating new depth-damage functions and adding them in "Damage Function: {}" column in the FIAT exposure file.
 
         Parameters
         ----------

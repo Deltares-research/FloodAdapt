@@ -20,7 +20,7 @@ def parse_content(
     parent: object = None,
     module: object = None,
 ):
-    """_summary_
+    """_summary_.
 
     Parameters
     ----------
@@ -79,7 +79,7 @@ def parse_section(
     builder: Builder,
     rel_dir: Path | str,
 ):
-    """_summary_
+    """_summary_.
 
     Parameters
     ----------
@@ -118,7 +118,7 @@ def parse_tree_section(
     content: list,
     sub: bool = False,
 ):
-    """_summary_
+    """_summary_.
 
     Parameters
     ----------
@@ -151,7 +151,7 @@ def create_tree(
     file: Path | str,
     filter: str = "*",
 ):
-    """_summary_
+    """_summary_.
 
     Parameters
     ----------

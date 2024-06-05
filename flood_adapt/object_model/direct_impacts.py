@@ -32,7 +32,8 @@ from flood_adapt.object_model.utils import cd
 
 
 class DirectImpacts:
-    """Class holding all information related to the direct impacts of the scenario.
+    """All information related to the direct impacts of the scenario.
+
     Includes methods to run the impact model or check if it has already been run.
     """
 
@@ -66,20 +67,19 @@ class DirectImpacts:
         self.has_run = self.has_run_check()
 
     def has_run_check(self) -> bool:
-        """Checks if the direct impact has been run.
+        """Check if the direct impact has been run.
 
         Returns
         -------
         bool
             _description_
         """
-
         check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
         return check
 
     def fiat_has_run_check(self) -> bool:
-        """Checks if fiat has run as expected
+        """Check if fiat has run as expected.
 
         Returns
         -------
@@ -97,7 +97,7 @@ class DirectImpacts:
             return False
 
     def set_socio_economic_change(self, projection: str) -> None:
-        """Sets the SocioEconomicChange object of the scenario.
+        """Set the SocioEconomicChange object of the scenario.
 
         Parameters
         ----------
@@ -112,7 +112,7 @@ class DirectImpacts:
         ).get_socio_economic_change()
 
     def set_impact_strategy(self, strategy: str) -> None:
-        """Sets the ImpactStrategy object of the scenario.
+        """Set the ImpactStrategy object of the scenario.
 
         Parameters
         ----------
@@ -127,7 +127,7 @@ class DirectImpacts:
     def set_hazard(
         self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
     ) -> None:
-        """Sets the Hazard object of the scenario.
+        """Set the Hazard object of the scenario.
 
         Parameters
         ----------
@@ -162,8 +162,7 @@ class DirectImpacts:
         logging.info("Impact models post-processing complete!")
 
     def preprocess_fiat(self):
-        """Updates FIAT model based on scenario information and then runs the FIAT model"""
-
+        """Update FIAT model based on scenario information and then runs the FIAT model."""
         # Check if hazard is already run
         if not self.hazard.has_run:
             raise ValueError(
@@ -499,7 +498,7 @@ class DirectImpacts:
         )
 
     def _add_exeedance_probability(self, fiat_results_path):
-        """Adds exceedance probability to the fiat results dataframe
+        """Add exceedance probability to the fiat results dataframe.
 
         Parameters
         ----------
@@ -509,8 +508,8 @@ class DirectImpacts:
         Returns
         -------
         pandas.DataFrame
-            FIAT results dataframe with exceedance probability added"""
-
+        FIAT results dataframe with exceedance probability added
+        """
         # Get config path
         config_path = self.database_input_path.parent.joinpath(
             "static", "templates", "infometrics", "metrics_additional_risk_configs.toml"

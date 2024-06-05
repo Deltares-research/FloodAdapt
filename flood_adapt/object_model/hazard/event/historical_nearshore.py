@@ -22,8 +22,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Historical Nearshore from toml file"""
-
+        """Create Historical Nearshore from toml file."""
         obj = HistoricalNearshore()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -46,14 +45,13 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Historical Nearshore from object, e.g. when initialized from GUI"""
-
+        """Create Historical Nearshore from object, e.g. when initialized from GUI."""
         obj = HistoricalNearshore()
         obj.attrs = HistoricalNearshoreModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Saving event toml
+        """Save event toml.
 
         Parameters
         ----------

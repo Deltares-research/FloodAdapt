@@ -43,7 +43,6 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
     IMeasure
         Measure object.
     """
-
     # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
     database_path = Database().input_path
 
