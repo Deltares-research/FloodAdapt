@@ -109,9 +109,9 @@ class Database(IDatabase):
 
         # Set the paths
         self.base_path = Path(database_path / database_name)
-        self.input_path = self.base_path / "Input"
-        self.static_path = self.base_path / "Static"
-        self.output_path = self.base_path / "Output"
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 

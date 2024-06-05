@@ -51,11 +51,11 @@ class DirectImpacts:
         self.set_impact_strategy(scenario.strategy)
         self.set_hazard(scenario, database, self.results_path.joinpath("Flooding"))
         # Get site config
-        self.site_toml_path = self.database.static_path / "Site" / "site.toml"
+        self.site_toml_path = self.database.static_path / "site" / "site.toml"
         self.site_info = database.site
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
-        self.fiat_path = self.impacts_path.joinpath("Fiat_model")
+        self.fiat_path = self.impacts_path.joinpath("fiat_model")
         self.has_run = self.has_run_check()
 
     def has_run_check(self) -> bool:
@@ -158,7 +158,7 @@ class DirectImpacts:
             )
 
         # Get the location of the FIAT template model
-        template_path = self.database.static_path / "Templates" / "Fiat"
+        template_path = self.database.static_path / "templates" / "fiat"
 
         # Read FIAT template with FIAT adapter
         fa = FiatAdapter(
@@ -194,7 +194,7 @@ class DirectImpacts:
             )
             dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
-                self.database.static_path / "Site" / aggr.file
+                self.database.static_path / "site" / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation
             ]
             attribute_names = [
@@ -261,7 +261,7 @@ class DirectImpacts:
                 The path should be a directory containing folders with the model executables
                 """
             )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "Fiat" / "fiat.exe"
+        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
 
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
@@ -283,7 +283,7 @@ class DirectImpacts:
         fiat_results_path = self.impacts_path.joinpath(
             f"Impacts_detailed_{self.name}.csv"
         )
-        shutil.copy(self.fiat_path.joinpath("Output", "output.csv"), fiat_results_path)
+        shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
 
         # Add exceedance probability if needed (only for risk)
         if self.hazard.event_mode == "risk":
@@ -325,7 +325,7 @@ class DirectImpacts:
         logging.info("Saving road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
-            self.fiat_path.joinpath("Output", self.site_info.attrs.fiat.roads_file_name)
+            self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
         )
         # Get columns to use
         aggr_cols = [
@@ -492,7 +492,7 @@ class DirectImpacts:
         """
         # Get config path
         config_path = self.database.static_path.joinpath(
-            "Templates", "Infometrics", "metrics_additional_risk_configs.toml"
+            "templates", "infometrics", "metrics_additional_risk_configs.toml"
         )
         with open(config_path, mode="rb") as fp:
             config = tomli.load(fp)["flood_exceedance"]
@@ -520,15 +520,15 @@ class DirectImpacts:
             ext = ""
 
         metrics_config_path = self.database.static_path.joinpath(
-            "Templates",
-            "Infometrics",
+            "templates",
+            "infometrics",
             f"metrics_config{ext}.toml",
         )
 
         # Specify the metrics output path
         metrics_outputs_path = self.database.output_path.joinpath(
             "Scenarios",
-            self.name.capitalize(),
+            self.name,
             f"Infometrics_{self.name}.csv",
         )
 
@@ -558,9 +558,9 @@ class DirectImpacts:
             scenario_name=self.name,
             metrics_full_path=metrics_path,
             config_base_path=self.database.static_path.joinpath(
-                "Templates", "Infographics"
+                "templates", "Infographics"
             ),
             output_base_path=self.database.output_path.joinpath(
-                "Scenarios", self.name.capitalize()
+                "Scenarios", self.name
             ),
         ).write_infographics_to_file()

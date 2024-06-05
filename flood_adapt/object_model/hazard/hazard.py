@@ -80,20 +80,20 @@ class Hazard:
             self.simulation_paths = [
                 self.database.output_path.joinpath(
                     "Scenarios",
-                    self.name.capitalize(),
+                    self.name,
                     "Flooding",
-                    "Simulations",
-                    self.site.attrs.sfincs.overland_model.capitalize(),
+                    "simulations",
+                    self.site.attrs.sfincs.overland_model,
                 )
             ]
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
             self.simulation_paths_offshore = [
                 self.database.output_path.joinpath(
                     "Scenarios",
-                    self.name.capitalize(),
+                    self.name,
                     "Flooding",
                     "simulations",
-                    self.site.attrs.sfincs.offshore_model.capitalize(),
+                    self.site.attrs.sfincs.offshore_model,
                 )
             ]
         elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
@@ -103,22 +103,22 @@ class Hazard:
                 self.simulation_paths.append(
                     self.database.output_path.joinpath(
                         "Scenarios",
-                        self.name.capitalize(),
+                        self.name,
                         "Flooding",
-                        "Simulations",
-                        subevent.attrs.name.capitalize(),
-                        self.site.attrs.sfincs.overland_model.capitalize(),
+                        "simulations",
+                        subevent.attrs.name,
+                        self.site.attrs.sfincs.overland_model,
                     )
                 )
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 self.simulation_paths_offshore.append(
                     self.database.output_path.joinpath(
                         "Scenarios",
-                        self.name.capitalize(),
+                        self.name,
                         "Flooding",
-                        "Simulations",
-                        subevent.attrs.name.capitalize(),
-                        self.site.attrs.sfincs.offshore_model.capitalize(),
+                        "simulations",
+                        subevent.attrs.name,
+                        self.site.attrs.sfincs.offshore_model,
                     )
                 )
 
@@ -172,7 +172,7 @@ class Hazard:
         """
         self.event_set_path = (
             self.database.events.get_database_path()
-            / self.event_name.capitalize()
+            / self.event_name
             / f"{self.event_name}.toml"
         )
         # set mode (probabilistic_set or single_event)
@@ -191,8 +191,8 @@ class Hazard:
             for subevent in subevents:
                 event_path = (
                     self.database.events.get_database_path()
-                    / self.event_name.capitalize()
-                    / subevent.capitalize()
+                    / self.event_name
+                    / subevent
                     / f"{subevent}.toml"
                 )
                 self.event_set.event_paths.append(event_path)
@@ -244,7 +244,7 @@ class Hazard:
         # add other models here
         # remove simulation folders
         if not self.site.attrs.sfincs.save_simulation:
-            sim_path = self.results_dir.joinpath("Simulations")
+            sim_path = self.results_dir.joinpath("simulations")
             if os.path.exists(sim_path):
                 try:
                     shutil.rmtree(sim_path)
@@ -261,7 +261,7 @@ class Hazard:
                 """
             )
 
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "Sfincs" / "sfincs.exe"
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         run_success = True
         for simulation_path in self.simulation_paths:
@@ -302,7 +302,7 @@ class Hazard:
                 The path should be a directory containing folders with the model executables
                 """
             )
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "Sfincs" / "sfincs.exe"
+        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
 
         simulation_path = self.simulation_paths_offshore[ii]
         with cd(simulation_path):
@@ -316,7 +316,7 @@ class Hazard:
         self._set_event_objects()
         self.set_simulation_paths()
         path_in = self.database.static_path.joinpath(
-            "Templates", self.site.attrs.sfincs.overland_model.capitalize()
+            "templates", self.site.attrs.sfincs.overland_model
         )
 
         for ii, event in enumerate(self.event_list):
@@ -594,7 +594,7 @@ class Hazard:
         """
         # Determine folders for offshore model
         path_in_offshore = self.database.static_path.joinpath(
-            "Templates", self.site.attrs.sfincs.offshore_model
+            "templates", self.site.attrs.sfincs.offshore_model
         )
         if self.event_mode == Mode.risk:
             event_dir = (
