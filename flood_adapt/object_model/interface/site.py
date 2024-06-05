@@ -144,7 +144,7 @@ class DemModel(BaseModel):
 
 class EquityModel(BaseModel):
     census_data: str
-    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
 
