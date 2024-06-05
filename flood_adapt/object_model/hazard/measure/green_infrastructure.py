@@ -22,15 +22,14 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
-    """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage"""
+    """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
 
     attrs: GreenInfrastructureModel
     database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
-        """create GreenInfrastructure from toml file"""
-
+        """Create GreenInfrastructure from toml file."""
         obj = GreenInfrastructure()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -43,15 +42,14 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
     def load_dict(
         data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IGreenInfrastructure:
-        """create Green Infrastructure from object, e.g. when initialized from GUI"""
-
+        """Create Green Infrastructure from object, e.g. when initialized from GUI."""
         obj = GreenInfrastructure()
         obj.attrs = GreenInfrastructureModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Green Infra to a toml file"""
+        """Save Green Infra to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
@@ -61,7 +59,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         height: UnitfulHeight,
         percent_area: float = 100.0,
     ) -> float:
-        """Determine volume from area of the polygon and infiltration height
+        """Determine volume from area of the polygon and infiltration height.
 
         Parameters
         ----------
@@ -87,7 +85,7 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
 
     @staticmethod
     def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: ISite) -> float:
-        """Calculate area of a GeoDataFrame Polygon
+        """Calculate area of a GeoDataFrame Polygon.
 
         Parameters
         ----------
@@ -105,8 +103,8 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         crs = pyproj.CRS.from_string(site.sfincs.csname)
         gdf = gdf.to_crs(crs)
 
-        # The GeoJSON file contains only one polygon:
-        polygon = gdf.geometry.iloc[0]
-        # Calculate the area of the polygon
-        area = polygon.area
+        # The GeoJSON file can contain multiple polygons
+        polygon = gdf.geometry
+        # Calculate the area of all polygons
+        area = polygon.area.sum()
         return area

@@ -14,14 +14,14 @@ from flood_adapt.object_model.site import Site
 
 
 class Scenario(IScenario):
-    """class holding all information related to a scenario"""
+    """class holding all information related to a scenario."""
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
     database_input_path: Union[str, os.PathLike]
 
     def init_object_model(self):
-        """Create a Direct Impact object"""
+        """Create a Direct Impact object."""
         self.site_info = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
@@ -37,8 +37,7 @@ class Scenario(IScenario):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Scenario from toml file"""
-
+        """Create Scenario from toml file."""
         obj = Scenario()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -49,20 +48,19 @@ class Scenario(IScenario):
 
     @staticmethod
     def load_dict(data: dict[str, Any], database_input_path: os.PathLike):
-        """create Scenario from object, e.g. when initialized from GUI"""
-
+        """Create Scenario from object, e.g. when initialized from GUI."""
         obj = Scenario()
         obj.attrs = ScenarioModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Scenario to a toml file"""
+        """Save Scenario to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     def run(self):
-        """run direct impact models for the scenario"""
+        """Run direct impact models for the scenario."""
         self.init_object_model()
         os.makedirs(self.results_path, exist_ok=True)
 
@@ -135,10 +133,11 @@ class Scenario(IScenario):
 
     @staticmethod
     def close_root_logger_handlers():
-        """Close and remove all handlers from the root logger. This way,
-        it is possible to delete the log file, which is not possible if
-        the file is still open."""
+        """Close and remove all handlers from the root logger.
 
+        This way, it is possible to delete the log file, which is not possible if
+        the file is still open.
+        """
         # Get the root logger
         root_logger = logging.getLogger("")
 

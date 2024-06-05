@@ -16,14 +16,14 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class Mode(str, Enum):
-    """class describing the accepted input for the variable mode in Event"""
+    """class describing the accepted input for the variable mode in Event."""
 
     single_event = "single_event"
     risk = "risk"
 
 
 class Template(str, Enum):
-    """class describing the accepted input for the variable template in Event"""
+    """class describing the accepted input for the variable template in Event."""
 
     Synthetic = "Synthetic"
     Hurricane = "Historical_hurricane"
@@ -32,7 +32,7 @@ class Template(str, Enum):
 
 
 class Timing(str, Enum):
-    """class describing the accepted input for the variable timng in Event"""
+    """class describing the accepted input for the variable timng in Event."""
 
     historical = "historical"
     idealized = "idealized"
@@ -110,7 +110,7 @@ class RiverModel(BaseModel):
 
 
 class TimeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for time parameters of synthetic model"""
+    """BaseModel describing the expected variables and data types for time parameters of synthetic model."""
 
     duration_before_t0: Optional[float] = None
     duration_after_t0: Optional[float] = None
@@ -125,7 +125,7 @@ class TideSource(str, Enum):
 
 
 class TideModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
     source: TideSource
     harmonic_amplitude: Optional[UnitfulLength] = None
@@ -138,7 +138,7 @@ class SurgeSource(str, Enum):
 
 
 class SurgeModel(BaseModel):
-    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model"""
+    """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
     source: SurgeSource
     shape_type: Optional[str] = "gaussian"
@@ -148,7 +148,7 @@ class SurgeModel(BaseModel):
 
 
 class TranslationModel(BaseModel):
-    """BaseModel describing the expected variables and data types for translation parameters of hurricane model"""
+    """BaseModel describing the expected variables and data types for translation parameters of hurricane model."""
 
     eastwest_translation: UnitfulLength = UnitfulLength(
         value=0.0, units=UnitTypesLength.meters
@@ -159,7 +159,7 @@ class TranslationModel(BaseModel):
 
 
 class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
-    """BaseModel describing the expected variables and data types of attributes common to all event types"""
+    """BaseModel describing the expected variables and data types of attributes common to all event types."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
@@ -178,7 +178,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
 class EventSetModel(
     BaseModel
 ):  # add WindModel etc as this is shared among all? templates
-    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set"""
+    """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
@@ -188,19 +188,19 @@ class EventSetModel(
 
 
 class SyntheticModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
-    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event"""
+    """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
 
 class HistoricalNearshoreModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event"""
+    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
 
 class HistoricalOffshoreModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event"""
+    """BaseModel describing the expected variables and data types for parameters of HistoricalOffshore that extend the parent class Event."""
 
 
 class HistoricalHurricaneModel(EventModel):
-    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event"""
+    """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
     hurricane_translation: TranslationModel
     track_name: str
@@ -212,18 +212,18 @@ class IEvent(ABC):
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Event attributes from toml file"""
+        """Get Event attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
     def load_dict(data: dict[str, Any]):
-        """get Event attributes from an object, e.g. when initialized from GUI"""
+        """Get Event attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Event attributes to a toml file"""
+        """Save Event attributes to a toml file."""
 
 
 class ISynthetic(IEvent):

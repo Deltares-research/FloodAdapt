@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from datetime import datetime
@@ -19,6 +20,7 @@ from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
 from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
+from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
     DirectImpactsAdapterFactory,
@@ -36,18 +38,41 @@ from flood_adapt.object_model.site import Site
 
 
 class Database(IDatabase):
-    """Implementation of IDatabase class that holds the site information and has methods
-    to get static data info, and all the input information.
-    Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input
+    """Implementation of IDatabase class that holds the site information and has methods to get static data info, and all the input information.
+
+    Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input.
     """
 
+    _instance = None
+
+    database_path: Union[str, os.PathLike]
+    database_name: str
+    _init_done: bool = False
+
     input_path: Path
-    site: ISite
+    static_path: Path
+    output_path: Path
+
+    _site: ISite
+
+    static_sfincs_model: SfincsAdapter
+
+    _events: DbsEvent
+    _scenarios: DbsScenario
+    _strategies: DbsStrategy
+    _measures: DbsMeasure
+    _projections: DbsProjection
+    _benefits: DbsBenefit
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:  # Singleton pattern
+            cls._instance = super(Database, cls).__new__(cls)
+        return cls._instance
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike],
-        database_name: str,
+        database_path: Union[str, os.PathLike] = None,
+        database_name: str = None,
     ) -> None:
         """
         Initialize the DatabaseController object.
@@ -58,22 +83,47 @@ class Database(IDatabase):
             The path to the database root
         database_name : str
             The name of the database.
-        Notes
+        -----
         """
+        if database_path is None or database_name is None:
+            if not self._init_done:
+                raise ValueError(
+                    """Database path and name must be provided for the first initialization.
+                    To do this, run api_static.read_database(database_path, site_name) first."""
+                )
+            else:
+                return  # Skip re-initialization
+
+        if (
+            self._init_done
+            and self.database_path == database_path
+            and self.database_name == database_name
+        ):
+            return  # Skip re-initialization
+
+        # If the database is not initialized, or a new path or name is provided, (re-)initialize
+        logging.info(
+            f"(Re-)Initializing database to {database_name} at {database_path}"
+        )
+        self.database_path = database_path
+        self.database_name = database_name
+
         self.input_path = Path(database_path / database_name / "input")
         self.static_path = Path(database_path / database_name / "static")
         self.output_path = Path(database_path / database_name / "output")
 
-        self.site = Site.load_file(self.static_path / "site" / "site.toml")
-        self.aggr_areas = self.get_aggregation_areas()
+        self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
         # Get the static sfincs model
         sfincs_path = self.static_path.joinpath(
-            "templates", self.site.attrs.sfincs.overland_model
+            "templates", self._site.attrs.sfincs.overland_model
         )
-        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, site=self.site)
+        self.static_sfincs_model = SfincsAdapter(
+            model_root=sfincs_path, site=self._site
+        )
 
         # Initialize the different database objects
+        self._static = DbsStatic(self)
         self._events = DbsEvent(self)
         self._scenarios = DbsScenario(self)
         self._strategies = DbsStrategy(self)
@@ -81,7 +131,17 @@ class Database(IDatabase):
         self._projections = DbsProjection(self)
         self._benefits = DbsBenefit(self)
 
+        self._init_done = True
+
     # Property methods
+    @property
+    def site(self) -> ISite:
+        return self._site
+
+    @property
+    def static(self) -> DbsStatic:
+        return self._static
+
     @property
     def events(self) -> DbsEvent:
         return self._events
@@ -109,6 +169,7 @@ class Database(IDatabase):
     # General methods
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
+
         These are expected to much the ones in the direct impacts model
 
         Returns
@@ -134,12 +195,12 @@ class Database(IDatabase):
         return aggregation_areas
 
     def get_model_boundary(self) -> GeoDataFrame:
-        """Get the model boundary from the SFINCS model"""
+        """Get the model boundary from the SFINCS model."""
         bnd = self.static_sfincs_model.get_model_boundary()
         return bnd
 
     def get_model_grid(self) -> QuadtreeGrid:
-        """Get the model grid from the SFINCS model
+        """Get the model grid from the SFINCS model.
 
         Returns
         -------
@@ -150,7 +211,7 @@ class Database(IDatabase):
         return grid
 
     def get_obs_points(self) -> GeoDataFrame:
-        """Get the observation points from the flood hazard model"""
+        """Get the observation points from the flood hazard model."""
         if self.site.attrs.obs_point is not None:
             obs_points = self.site.attrs.obs_point
             names = []
@@ -172,7 +233,7 @@ class Database(IDatabase):
         return gdf
 
     def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
-        """Get a map from the static folder
+        """Get a map from the static folder.
 
         Parameters
         ----------
@@ -204,6 +265,7 @@ class Database(IDatabase):
 
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
+
         This is read by a csv file in the database.
 
         Returns
@@ -236,7 +298,7 @@ class Database(IDatabase):
         return df
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
-        """interpolating SLR value and referencing it to the SLR reference year from the site toml
+        r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
 
         Parameters
         ----------
@@ -308,7 +370,7 @@ class Database(IDatabase):
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
             )
         else:
-            scenarios = self.get_slr_scn_names()
+            scenarios = self._static.get_slr_scn_names()
             for scn in scenarios:
                 ref_slr = np.interp(ref_year, df["Year"], df[scn])
                 df[scn] -= ref_slr
@@ -659,8 +721,9 @@ class Database(IDatabase):
 
     def get_buildings(self) -> GeoDataFrame:
         """Get the building footprints from the direct impacts model.
+
         This should only be the buildings excluding any other types (e.g., roads)
-        The parameters non_building_names in the site config is used for that
+        The parameters non_building_names in the site config is used for that.
 
         Returns
         -------
@@ -680,7 +743,7 @@ class Database(IDatabase):
         return buildings
 
     def get_property_types(self) -> list:
-        """_summary_
+        """_summary_.
 
         Returns
         -------
@@ -715,7 +778,7 @@ class Database(IDatabase):
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
     def check_benefit_scenarios(self, benefit: IBenefit) -> pd.DataFrame:
-        """Returns a dataframe with the scenarios needed for this benefit assessment run
+        """Return a dataframe with the scenarios needed for this benefit assessment run.
 
         Parameters
         ----------
@@ -724,7 +787,7 @@ class Database(IDatabase):
         return benefit.check_scenarios()
 
     def create_benefit_scenarios(self, benefit: IBenefit) -> None:
-        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already
+        """Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.
 
         Parameters
         ----------
@@ -753,7 +816,7 @@ class Database(IDatabase):
         benefit.check_scenarios()
 
     def run_benefit(self, benefit_name: Union[str, list[str]]) -> None:
-        """Runs a (cost-)benefit analysis.
+        """Run a (cost-)benefit analysis.
 
         Parameters
         ----------
@@ -775,8 +838,7 @@ class Database(IDatabase):
         self.benefits = self._benefits.list_objects()
 
     def get_outputs(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the outputs that currently
-        exist in the database.
+        """Return a dictionary with info on the outputs that currently exist in the database.
 
         Returns
         -------
@@ -792,7 +854,7 @@ class Database(IDatabase):
         return finished.to_dict()
 
     def get_topobathy_path(self) -> str:
-        """Returns the path of the topobathy tiles in order to create flood maps with water level maps
+        """Return the path of the topobathy tiles in order to create flood maps with water level maps.
 
         Returns
         -------
@@ -803,7 +865,7 @@ class Database(IDatabase):
         return str(path)
 
     def get_index_path(self) -> str:
-        """Returns the path of the index tiles which are used to connect each water level cell with the topobathy tiles
+        """Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
 
         Returns
         -------
@@ -814,7 +876,7 @@ class Database(IDatabase):
         return str(path)
 
     def get_depth_conversion(self) -> float:
-        """returns the flood depth conversion that is need in the gui to plot the flood map
+        """Return the flood depth conversion that is need in the gui to plot the flood map.
 
         Returns
         -------
@@ -832,7 +894,7 @@ class Database(IDatabase):
         scenario_name: str,
         return_period: int = None,
     ) -> np.array:
-        """Returns an array with the maximum water levels during an event
+        """Return an array with the maximum water levels during an event.
 
         Parameters
         ----------
@@ -913,7 +975,7 @@ class Database(IDatabase):
         return gdf
 
     def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
-        """Gets a dictionary with the aggregated damages as geodataframes
+        """Get a dictionary with the aggregated damages as geodataframes.
 
         Parameters
         ----------
@@ -936,7 +998,7 @@ class Database(IDatabase):
         return gdfs
 
     def get_aggregation_benefits(self, benefit_name: str) -> dict[GeoDataFrame]:
-        """Gets a dictionary with the aggregated benefits as geodataframes
+        """Get a dictionary with the aggregated benefits as geodataframes.
 
         Parameters
         ----------
@@ -961,8 +1023,7 @@ class Database(IDatabase):
         return gdfs
 
     def get_object_list(self, object_type: str) -> dict[str, Any]:
-        """Given an object type (e.g., measures) get a dictionary with all the toml paths
-        and last modification dates that exist in the database.
+        """Get a dictionary with all the toml paths and last modification dates that exist in the database that correspond to object_type.
 
         Parameters
         ----------
@@ -991,6 +1052,7 @@ class Database(IDatabase):
 
     def has_run_hazard(self, scenario_name: str) -> None:
         """Check if there is already a simulation that has the exact same hazard component.
+
         If yes that is copied to avoid running the hazard model twice.
 
         Parameters
@@ -1028,7 +1090,7 @@ class Database(IDatabase):
                     )
 
     def run_scenario(self, scenario_name: Union[str, list[str]]) -> None:
-        """Runs a scenario hazard and impacts.
+        """Run a scenario hazard and impacts.
 
         Parameters
         ----------

@@ -11,8 +11,7 @@ from flood_adapt.object_model.site import Site
 
 
 class ImpactMeasure(ABC):
-    """ImpactMeasure class that holds all the information for a
-    specific measure type that affects the impact model."""
+    """All the information for a specific measure type that affects the impact model."""
 
     attrs: ImpactMeasureModel
     database_input_path: Union[str, os.PathLike]

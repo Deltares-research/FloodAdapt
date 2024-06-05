@@ -2,12 +2,13 @@ from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpact
 
 
 class DirectImpactsAdapterFactory:
-    """Simple parser to get the respective DirectImpactAdapter class from a model name string given in the config file
+    """Simple parser to get the respective DirectImpactAdapter class from a model name string given in the config file.
 
     Args:
         type (str): name of the model
 
-    Returns:
+    Returns
+    -------
         Measure: ImpactMeasure subclass
     """
 

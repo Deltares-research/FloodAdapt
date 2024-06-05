@@ -5,7 +5,7 @@ from typing import Any, Union
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-from flood_adapt.dbs_controller import IDatabase
+from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
@@ -21,22 +21,22 @@ from flood_adapt.object_model.interface.events import (
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
-def get_events(database: IDatabase) -> dict[str, Any]:
+def get_events() -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
-    return database.events.list_objects()
+    return Database().events.list_objects()
 
 
-def get_event(name: str, database: IDatabase) -> IEvent:
-    return database.events.get(name)
+def get_event(name: str) -> IEvent:
+    return Database().events.get(name)
 
 
-def get_event_mode(name: str, database: IDatabase) -> str:
-    filename = database.input_path / "events" / f"{name}" / f"{name}.toml"
+def get_event_mode(name: str) -> str:
+    filename = Database().input_path / "events" / f"{name}" / f"{name}.toml"
     return Event.get_mode(filename)
 
 
 def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
-    """Create a synthetic event object from a dictionary of attributes
+    """Create a synthetic event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
-    """Create a historical nearshore event object from a dictionary of attributes
+    """Create a historical nearshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNears
 
 
 def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffshore:
-    """Create a historical offshore event object from a dictionary of attributes
+    """Create a historical offshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffsho
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurricane:
-    """Create a historical hurricane event object from a dictionary of attributes
+    """Create a historical hurricane event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -99,28 +99,24 @@ def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurri
     return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
 
 
-def save_event_toml(event: IEvent, database: IDatabase) -> None:
-    database.events.save(event)
+def save_event_toml(event: IEvent) -> None:
+    Database().events.save(event)
 
 
-def save_timeseries_csv(
-    name: str, event: IEvent, df: pd.DataFrame, database: IDatabase
-) -> None:
-    database.write_to_csv(name, event, df)
+def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
+    Database().write_to_csv(name, event, df)
 
 
-def edit_event(event: IEvent, database: IDatabase) -> None:
-    database.events.edit(event)
+def edit_event(event: IEvent) -> None:
+    Database().events.edit(event)
 
 
-def delete_event(name: str, database: IDatabase) -> None:
-    database.events.delete(name)
+def delete_event(name: str) -> None:
+    Database().events.delete(name)
 
 
-def copy_event(
-    old_name: str, database: IDatabase, new_name: str, new_description: str
-) -> None:
-    database.events.copy(old_name, new_name, new_description)
+def copy_event(old_name: str, new_name: str, new_description: str) -> None:
+    Database().events.copy(old_name, new_name, new_description)
 
 
 def download_wl_data(
@@ -135,31 +131,24 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return Event.read_csv(csvpath)
 
 
-def plot_wl(
-    event: IEvent, database: IDatabase, input_wl_df: pd.DataFrame = None
-) -> str:
-    return database.plot_wl(event, input_wl_df)
+def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
+    return Database().plot_wl(event, input_wl_df)
 
 
 def plot_river(
     event: IEvent,
-    database: IDatabase,
     input_river_df: list[pd.DataFrame],
 ) -> str:
-    return database.plot_river(event, input_river_df)
+    return Database().plot_river(event, input_river_df)
 
 
-def plot_rainfall(
-    event: IEvent, database: IDatabase, input_rainfall_df: pd.DataFrame = None
-) -> str:
-    return database.plot_rainfall(event, input_rainfall_df)
+def plot_rainfall(event: IEvent, input_rainfall_df: pd.DataFrame = None) -> str:
+    return Database().plot_rainfall(event, input_rainfall_df)
 
 
-def plot_wind(
-    event: IEvent, database: IDatabase, input_wind_df: pd.DataFrame = None
-) -> str:
-    return database.plot_wind(event, input_wind_df)
+def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
+    return Database().plot_wind(event, input_wind_df)
 
 
-def save_cyclone_track(event: IEvent, track: TropicalCyclone, database: IDatabase):
-    database.write_cyc(event, track)
+def save_cyclone_track(event: IEvent, track: TropicalCyclone):
+    Database().write_cyc(event, track)

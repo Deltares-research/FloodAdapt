@@ -16,15 +16,14 @@ from flood_adapt.object_model.interface.events import (
 
 
 class Synthetic(Event, ISynthetic):
-    """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict"""
+    """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict."""
 
     attrs: SyntheticModel
     tide_surge_ts: pd.DataFrame
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Synthetic from toml file"""
-
+        """Create Synthetic from toml file."""
         obj = Synthetic()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -42,8 +41,7 @@ class Synthetic(Event, ISynthetic):
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Synthetic from object, e.g. when initialized from GUI"""
-
+        """Create Synthetic from object, e.g. when initialized from GUI."""
         obj = Synthetic()
         obj.attrs = SyntheticModel.model_validate(data)
         # synthetic event is the only one without start and stop time, so set this here.
@@ -57,7 +55,7 @@ class Synthetic(Event, ISynthetic):
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """saving event toml
+        """Save event toml.
 
         Parameters
         ----------
@@ -68,7 +66,7 @@ class Synthetic(Event, ISynthetic):
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     def add_tide_and_surge_ts(self):
-        """generating time series of harmoneous tide (cosine) and gaussian surge shape
+        """Generate time series of harmoneous tide (cosine) and gaussian surge shape.
 
         Returns
         -------

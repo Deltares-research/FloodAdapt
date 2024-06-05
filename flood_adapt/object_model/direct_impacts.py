@@ -33,7 +33,8 @@ from flood_adapt.object_model.strategy import Strategy
 
 
 class DirectImpacts:
-    """Class holding all information related to the direct impacts of the scenario.
+    """All information related to the direct impacts of the scenario.
+
     Includes methods to run the impact model or check if it has already been run.
     """
 
@@ -103,7 +104,7 @@ class DirectImpacts:
                 aggr.equity.census_data = rel_to_abs_path(aggr.equity.census_data)
 
     def has_run_check(self) -> bool:
-        """Checks if direct impacts model has finished
+        """Check if direct impacts model has finished.
 
         Returns
         -------
@@ -117,7 +118,7 @@ class DirectImpacts:
             return False
 
     def _set_socio_economic_change(self, projection: str) -> None:
-        """Sets the SocioEconomicChange object of the scenario.
+        """Set the SocioEconomicChange object of the scenario.
 
         Parameters
         ----------
@@ -132,7 +133,7 @@ class DirectImpacts:
         ).get_socio_economic_change()
 
     def _set_impact_strategy(self, strategy: str) -> None:
-        """Sets the ImpactStrategy object of the scenario.
+        """Set the ImpactStrategy object of the scenario.
 
         Parameters
         ----------
@@ -147,7 +148,7 @@ class DirectImpacts:
     def _set_hazard(
         self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
     ) -> None:
-        """Sets the Hazard object of the scenario.
+        """Set the Hazard object of the scenario.
 
         Parameters
         ----------
@@ -199,8 +200,7 @@ class DirectImpacts:
 
     def preprocess(self):
         # TODO move this method to the adapter?
-        """Updates Direct Impacts model based on scenario information"""
-
+        """Update Direct Impacts model based on scenario information."""
         ids_all_buildings = self.adapter.get_building_ids()
 
         # Implement socioeconomic changes if needed
@@ -495,7 +495,7 @@ class DirectImpacts:
         )
 
     def _add_exeedance_probability(self, results_path):
-        """Adds exceedance probability to the direct impacts results dataframe
+        """Add exceedance probability to the direct impacts results dataframe.
 
         Parameters
         ----------
@@ -505,8 +505,8 @@ class DirectImpacts:
         Returns
         -------
         pandas.DataFrame
-            direct impacts results dataframe with exceedance probability added"""
-
+        direct impacts results dataframe with exceedance probability added
+        """
         # Get config path
         config_path = self.database_input_path.parent.joinpath(
             "static", "templates", "infometrics", "metrics_additional_risk_configs.toml"
