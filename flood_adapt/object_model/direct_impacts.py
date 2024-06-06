@@ -15,6 +15,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
+import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
 from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
     DirectImpactsAdapterFactory,
@@ -178,7 +179,15 @@ class DirectImpacts:
     def run_models(self):
         logging.info(f"Running {self.adapter.model_name} model...")
         start_time = time.time()
-        return_code = self.adapter.run()
+        if not FloodAdapt_config.get_system_folder():
+            raise ValueError(
+                """
+                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
+                The path should be a directory containing folders with the model executables
+                """
+            )
+        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+        return_code = self.adapter.run(fiat_exec)
         end_time = time.time()
         print(
             f"Running {self.adapter.model_name} model took {str(round(end_time - start_time, 2))} seconds"
@@ -381,9 +390,9 @@ class DirectImpacts:
                 aggregation_label=self.site_info.attrs.direct_impacts.aggregation[
                     ind
                 ].field_name,
-                percapitalincome_label=self.site_info.attrs.direct_impacts.aggregation[
+                percapitaincome_label=self.site_info.attrs.direct_impacts.aggregation[
                     ind
-                ].equity.percapitalincome_label,
+                ].equity.percapitaincome_label,
                 totalpopulation_label=self.site_info.attrs.direct_impacts.aggregation[
                     ind
                 ].equity.totalpopulation_label,

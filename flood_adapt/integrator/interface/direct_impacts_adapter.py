@@ -263,7 +263,7 @@ class DirectImpactsAdapter(ABC):
         ...
 
     @abstractmethod
-    def run(self) -> int:
+    def run(self, exec_path: str) -> int:
         """
         Run the direct impacts model.
 

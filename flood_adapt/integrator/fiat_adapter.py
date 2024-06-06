@@ -8,7 +8,6 @@ from geopandas import GeoDataFrame
 from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
 from flood_adapt.object_model.interface.measures import (
     IBuyout,
@@ -457,31 +456,18 @@ class FiatAdapter(DirectImpactsAdapter):
         self.model.set_root(self.output_model_path)
         self.model.write()
 
-    def run(self) -> int:
+    def run(self, exec_path: str) -> int:
         """
         Run the FIAT model.
-
-        Raises
-        ------
-            ValueError: If the SYSTEM_FOLDER environment variable is not set.
 
         Returns
         -------
             int: The return code of the process.
         """
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
-
         with cd(self.output_model_path):
             with open(self.output_model_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
-                    f'"{fiat_exec}" run settings.toml',
+                    f'"{exec_path}" run settings.toml',
                     stdout=log_handler,
                     check=True,
                     shell=True,
