@@ -88,7 +88,7 @@ class DirectImpactsAdapter(ABC):
     @abstractmethod
     def get_building_ids(self) -> list[int]:
         """
-        Retrieve the IDs of all existing buildings in the FIAT model.
+        Retrieve the IDs of all existing buildings in the direct impacts model.
 
         Returns
         -------
@@ -114,7 +114,7 @@ class DirectImpactsAdapter(ABC):
         Returns
         -------
         boolean
-            True if the FIAT model has finished running successfully, False otherwise
+            True if the direct impacts model has finished running successfully, False otherwise
         """
         ...
 

@@ -186,7 +186,12 @@ class DirectImpacts:
                 The path should be a directory containing folders with the model executables
                 """
             )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
+        # TODO now we assume that the folder name and .exe file all have the model name. Maybe add an attribute in the site toml?
+        fiat_exec = (
+            FloodAdapt_config.get_system_folder()
+            / self.adapter.model_name
+            / f"{self.adapter.model_name}.exe"
+        )
         return_code = self.adapter.run(fiat_exec)
         end_time = time.time()
         print(

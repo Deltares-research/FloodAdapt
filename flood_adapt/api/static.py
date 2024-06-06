@@ -28,8 +28,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
-    # TODO should this return a list of geojson? if yes what form?
-    """Get the aggregations areas that are used for the site and fiat.
+    """Get the aggregations areas that are used for the site and the direct-impacts model.
 
     Parameters
     ----------
@@ -81,7 +80,7 @@ def get_model_grid() -> QuadtreeGrid:
 
 @staticmethod
 def get_svi_map() -> Union[GeoDataFrame, None]:
-    """Get the SVI map that are used in Fiat.
+    """Get the SVI map that are used in the direct-impacts.
 
     Parameters
     ----------
@@ -93,7 +92,9 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
+        return Database().static.get_static_map(
+            Database().site.attrs.direct_impacts.svi.geom
+        )
     except Exception:
         return None
 
@@ -121,16 +122,15 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
 
 def get_buildings() -> GeoDataFrame:
-    """Get the buildings exposure that are used in Fiat.
+    """Get the building locations that are used in the direct impacts model.
 
-    Parameters
-    ----------
-    database : IDatabase
+    This should only be the buildings excluding any other types (e.g., roads)
+    The parameters non_building_names in the site config is used for that.
 
     Returns
     -------
     GeoDataFrame
-        GeoDataFrames with the buildings from FIAT exposure
+        building footprints with all the exposure columns
     """
     return Database().static.get_buildings()
 

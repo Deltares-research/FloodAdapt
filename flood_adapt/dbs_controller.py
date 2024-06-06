@@ -15,6 +15,9 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
+from build.lib.flood_adapt.integrator.interface.direct_impacts_adapter import (
+    DirectImpactsAdapter,
+)
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -56,6 +59,8 @@ class Database(IDatabase):
     _site: ISite
 
     static_sfincs_model: SfincsAdapter
+
+    direct_impacts_model: DirectImpactsAdapter
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -120,6 +125,18 @@ class Database(IDatabase):
         )
         self.static_sfincs_model = SfincsAdapter(
             model_root=sfincs_path, site=self._site
+        )
+
+        # Get the static Direct Impacts Model
+        # Set adapter
+        DI_Adapter = DirectImpactsAdapterFactory.get_adapter(
+            self._site.attrs.direct_impacts.model
+        )
+        self.direct_impacts_model = DI_Adapter(
+            template_model_path=self.static_path.joinpath(
+                "templates", self._site.attrs.direct_impacts.model
+            ),
+            config=self._site.attrs.direct_impacts,
         )
 
         # Initialize the different database objects
