@@ -747,15 +747,7 @@ class Database(IDatabase):
         GeoDataFrame
             building footprints with all the exposure columns
         """
-        # Set adapter
-        Adapter = DirectImpactsAdapterFactory.get_adapter(
-            self.site.attrs.direct_impacts.model
-        )
-        di_adapter = Adapter(
-            database_path=self.input_path.parent,
-            config=self.site.attrs.direct_impacts,
-        )
-        buildings = di_adapter.get_building_locations()
+        buildings = self.direct_impacts_model.get_building_locations()
 
         return buildings
 
@@ -767,15 +759,7 @@ class Database(IDatabase):
         list
             _description_
         """
-        # Set adapter
-        Adapter = DirectImpactsAdapterFactory.get_adapter(
-            self.site.attrs.direct_impacts.model
-        )
-        di_adapter = Adapter(
-            database_path=self.input_path.parent,
-            config=self.site.attrs.direct_impacts,
-        )
-        types = di_adapter.get_building_types()
+        types = self.direct_impacts_model.get_building_types()
         return types
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):

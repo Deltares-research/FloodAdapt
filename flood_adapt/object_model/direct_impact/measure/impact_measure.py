@@ -28,15 +28,23 @@ class ImpactMeasure(ABC):
         site = Site.load_file(
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
         )
-
-        Adapter = DirectImpactsAdapterFactory.get_adapter(
+        # Set adapter
+        DI_Adapter = DirectImpactsAdapterFactory.get_adapter(
             site.attrs.direct_impacts.model
         )
-        di_adapter = Adapter(
-            database_path=Path(self.database_input_path).parent,
+        adapter = DI_Adapter(
+            template_model_path=Path(self.database_input_path).parent.joinpath(
+                "static", "templates", site.attrs.direct_impacts.model
+            ),
             config=site.attrs.direct_impacts,
         )
 
-        ids = di_adapter.get_measure_building_ids(attrs=self.attrs)
+        # get absolute path of polygon if given
+        if self.attrs.polygon_file:
+            self.attrs.polygon_file = Path(self.database_input_path).joinpath(
+                "measures", self.attrs.name, self.attrs.polygon_file
+            )
+
+        ids = adapter.get_measure_building_ids(attrs=self.attrs)
 
         return ids
