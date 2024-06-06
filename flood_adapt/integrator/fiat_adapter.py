@@ -1,11 +1,11 @@
 import gc
+import logging
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
 from geopandas import GeoDataFrame
-from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.integrator.interface.direct_impacts_adapter import DirectImpactsAdapter
@@ -42,7 +42,7 @@ class FiatAdapter(DirectImpactsAdapter):
         -------
             None
         """
-        self.logger = setuplog("hydromt_fiat", log_level=10)
+        self.logger = logging.getLogger(__name__)
         self.model = FiatModel(
             root=self.template_model_path, mode="r", logger=self.logger
         )
