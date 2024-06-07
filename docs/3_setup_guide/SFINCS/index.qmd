@@ -1,0 +1,8 @@
+---
+title: SFINCS ModelBuilder for FloodAdapt Applications
+filters:
+  - lightbox
+lightbox: auto
+---
+
+Introduction to SFINCS, definitions, compound flooding, basics of hydrodynamic modeling
