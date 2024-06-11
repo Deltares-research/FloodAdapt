@@ -40,7 +40,6 @@ class SfincsModel(BaseModel):
     version: Optional[str] = ""
     offshore_model: str
     overland_model: str
-    ambient_air_pressure: float
     floodmap_units: UnitTypesLength
     save_simulation: Optional[bool] = False
 
@@ -55,7 +54,6 @@ class VerticalReferenceModel(BaseModel):
 class WaterLevelReferenceModel(BaseModel):
     """The accepted input for the variable water_level in Site."""
 
-    reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
     other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
@@ -271,9 +269,9 @@ class SiteModel(BaseModel):
     risk: RiskModel
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]] = []
+    river: Optional[list[RiverModel]] = None
     obs_station: Optional[Obs_stationModel] = None
-    obs_point: Optional[list[Obs_pointModel]] = []
+    obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
 
