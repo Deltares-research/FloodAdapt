@@ -797,6 +797,29 @@ class Database(IDatabase):
         gdf = gdf.to_crs(4326)
         return gdf
 
+    def get_aggregated_damages(self, scenario_name: str) -> dict[GeoDataFrame]:
+        """Get a dictionary with the aggregated damages as geodataframes.
+
+        Parameters
+        ----------
+        scenario_name : str
+            name of the scenario
+
+        Returns
+        -------
+        dict[GeoDataFrame]
+            dictionary with aggregated damages per aggregation type
+        """
+        out_path = self.input_path.parent.joinpath(
+            "output", "Scenarios", scenario_name, "Impacts"
+        )
+        gdfs = {}
+        for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
+            label = aggr_area.stem.split(f"{scenario_name}_")[-1]
+            gdfs[label] = gpd.read_file(aggr_area, engine="pyogrio")
+            gdfs[label] = gdfs[label].to_crs(4326)
+        return gdfs
+
     def get_aggregation_benefits(self, benefit_name: str) -> dict[GeoDataFrame]:
         """Get a dictionary with the aggregated benefits as geodataframes.
 
