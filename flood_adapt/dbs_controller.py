@@ -162,6 +162,50 @@ class Database(IDatabase):
     def benefits(self) -> DbsBenefit:
         return self._benefits
 
+    def interp_slr(self, slr_scenario: str, year: float) -> float:
+        r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
+
+        Parameters
+        ----------
+        slr_scenario : str
+            SLR scenario name from the coulmn names in static\slr\slr.csv
+        year : float
+            year to evaluate
+
+        Returns
+        -------
+        float
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if the reference year is outside of the time range in the slr.csv file
+        ValueError
+            if the year to evaluate is outside of the time range in the slr.csv file
+        """
+        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        df = pd.read_csv(input_file)
+        if year > df["year"].max() or year < df["year"].min():
+            raise ValueError(
+                "The selected year is outside the range of the available SLR scenarios"
+            )
+        else:
+            slr = np.interp(year, df["year"], df[slr_scenario])
+            ref_year = self.site.attrs.slr.relative_to_year
+            if ref_year > df["year"].max() or ref_year < df["year"].min():
+                raise ValueError(
+                    f"The reference year {ref_year} is outside the range of the available SLR scenarios"
+                )
+            else:
+                ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
+                new_slr = UnitfulLength(
+                    value=slr - ref_slr,
+                    units=df["units"][0],
+                )
+                gui_units = self.site.attrs.gui.default_length_units
+                return np.round(new_slr.convert(gui_units), decimals=2)
+
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
         input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
