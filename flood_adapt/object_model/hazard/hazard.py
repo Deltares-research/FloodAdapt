@@ -78,8 +78,7 @@ class Hazard:
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
             self.simulation_paths = [
-                self.database.output_path.joinpath(
-                    "Scenarios",
+                self.database.scenarios.get_database_path(get_input_path=False).joinpath(
                     self.name,
                     "Flooding",
                     "simulations",
@@ -88,8 +87,7 @@ class Hazard:
             ]
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
             self.simulation_paths_offshore = [
-                self.database.output_path.joinpath(
-                    "Scenarios",
+                self.database.scenarios.get_database_path(get_input_path=False).joinpath(
                     self.name,
                     "Flooding",
                     "simulations",
@@ -101,8 +99,7 @@ class Hazard:
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
                 self.simulation_paths.append(
-                    self.database.output_path.joinpath(
-                        "Scenarios",
+                    self.database.scenarios.get_database_path(get_input_path=False).joinpath(
                         self.name,
                         "Flooding",
                         "simulations",
@@ -112,8 +109,7 @@ class Hazard:
                 )
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 self.simulation_paths_offshore.append(
-                    self.database.output_path.joinpath(
-                        "Scenarios",
+                    self.database.scenarios.get_database_path(get_input_path=False).joinpath(
                         self.name,
                         "Flooding",
                         "simulations",

@@ -54,7 +54,7 @@ class DbsBenefit(DbsTemplate):
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Benefits" / name
+        output_path = self._database.benefits.get_database_path(get_input_path=False) / name
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
@@ -76,7 +76,7 @@ class DbsBenefit(DbsTemplate):
         super().edit(benefit)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Benefits" / benefit.attrs.name
+        output_path = self._database.benefits.get_database_path(get_input_path=False) / benefit.attrs.name
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)

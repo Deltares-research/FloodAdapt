@@ -915,8 +915,7 @@ class Database(IDatabase):
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            map_path = self.output_path.joinpath(
-                "Scenarios",
+            map_path = self.scenarios.get_database_path(get_input_path = False).joinpath(
                 scenario_name,
                 "Flooding",
                 "max_water_level_map.nc",
@@ -926,8 +925,7 @@ class Database(IDatabase):
             zsmax = map.to_numpy()
 
         else:
-            file_path = self.output_path.joinpath(
-                "Scenarios",
+            file_path = self.scenarios.get_database_path(get_input_path = False).joinpath(
                 scenario_name,
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
@@ -948,7 +946,7 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
+        out_path = self.scenarios.get_database_path(get_input_path = False).joinpath(scenario_name, "Impacts")
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -967,7 +965,7 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
+        out_path = self.scenarios.get_database_path(get_input_path = False).joinpath(scenario_name, "Impacts")
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -986,7 +984,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.output_path.joinpath("Scenarios", scenario_name, "Impacts")
+        out_path = self.scenarios.get_database_path(get_input_path = False).joinpath(scenario_name, "Impacts")
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
             label = aggr_area.stem.split(f"{scenario_name}_")[-1]
@@ -1007,8 +1005,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated benefits per aggregation type
         """
-        out_path = self.output_path.joinpath(
-            "Benefits",
+        out_path = self.benefits.get_database_path(get_input_path = False).joinpath(
             benefit_name,
         )
         gdfs = {}

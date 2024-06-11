@@ -524,8 +524,7 @@ class DirectImpacts:
         )
 
         # Specify the metrics output path
-        metrics_outputs_path = self.database.output_path.joinpath(
-            "Scenarios",
+        metrics_outputs_path = self.database.scenarios.get_database_path(get_input_path=False).joinpath(
             self.name,
             f"Infometrics_{self.name}.csv",
         )

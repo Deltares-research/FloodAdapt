@@ -10,6 +10,7 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
 ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+from pathlib import Path
 
 
 class AbstractDatabaseElement(ABC):
@@ -132,9 +133,14 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def get_database_path(self) -> Path:
+    def get_database_path(self, get_input_path: bool) -> Path:
         """Returns the path to the database.
 
+        Parameters
+        ----------
+        get_input_path : bool
+            whether to return the input or output path
+            
         Returns
         -------
         Path
