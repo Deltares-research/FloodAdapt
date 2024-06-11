@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
@@ -67,7 +66,11 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    output_path = Database().scenarios.get_database_path(get_input_path=False).joinpath(hazard.name)
+    output_path = (
+        Database()
+        .scenarios.get_database_path(get_input_path=False)
+        .joinpath(hazard.name)
+    )
     gdf = Database().static.get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
@@ -103,9 +106,10 @@ def get_infographic(name: str) -> str:
         )
 
     config_path = database.static_path.joinpath("templates", "infographics")
-    output_path = database.scenarios.get_database_path(get_input_path=False).joinpath(impact.name)
-    metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv"
+    output_path = database.scenarios.get_database_path(get_input_path=False).joinpath(
+        impact.name
     )
+    metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv")
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(
         infographic_mode=impact.hazard.event_mode,
@@ -138,9 +142,13 @@ def get_infometrics(name: str) -> pd.DataFrame:
         If the metrics file does not exist.
     """
     # Create the infographic path
-    metrics_path = Database().scenarios.get_database_path(get_input_path=False).joinpath(
-        name,
-        f"Infometrics_{name}.csv",
+    metrics_path = (
+        Database()
+        .scenarios.get_database_path(get_input_path=False)
+        .joinpath(
+            name,
+            f"Infometrics_{name}.csv",
+        )
     )
 
     # Check if the file exists

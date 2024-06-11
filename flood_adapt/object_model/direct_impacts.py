@@ -524,7 +524,9 @@ class DirectImpacts:
         )
 
         # Specify the metrics output path
-        metrics_outputs_path = self.database.scenarios.get_database_path(get_input_path=False).joinpath(
+        metrics_outputs_path = self.database.scenarios.get_database_path(
+            get_input_path=False
+        ).joinpath(
             self.name,
             f"Infometrics_{self.name}.csv",
         )
@@ -557,5 +559,7 @@ class DirectImpacts:
             config_base_path=self.database.static_path.joinpath(
                 "templates", "Infographics"
             ),
-            output_base_path=self.database.scenarios.get_database_path(get_input_path=False).joinpath(self.name),
+            output_base_path=self.database.scenarios.get_database_path(
+                get_input_path=False
+            ).joinpath(self.name),
         ).write_infographics_to_file()

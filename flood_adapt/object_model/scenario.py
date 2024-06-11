@@ -27,7 +27,9 @@ class Scenario(IScenario):
 
         database = Database()
         self.site_info = database.site
-        self.results_path = database.scenarios.get_database_path(get_input_path=False).joinpath(self.attrs.name)
+        self.results_path = database.scenarios.get_database_path(
+            get_input_path=False
+        ).joinpath(self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
             database=database,

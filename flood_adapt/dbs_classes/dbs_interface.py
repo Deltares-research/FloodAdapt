@@ -10,7 +10,6 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 
 ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
-from pathlib import Path
 
 
 class AbstractDatabaseElement(ABC):
@@ -140,7 +139,7 @@ class AbstractDatabaseElement(ABC):
         ----------
         get_input_path : bool
             whether to return the input or output path
-            
+
         Returns
         -------
         Path
