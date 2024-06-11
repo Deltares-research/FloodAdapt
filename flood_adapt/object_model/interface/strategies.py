@@ -18,7 +18,7 @@ class IStrategy(ABC):
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
-        """get Strategy attributes from toml file"""
+        """Get Strategy attributes from toml file."""
         ...
 
     @staticmethod
@@ -28,9 +28,9 @@ class IStrategy(ABC):
         database_input_path: Union[str, os.PathLike],
         validate: bool = True,
     ):
-        """get Strategy attributes from an object, e.g. when initialized from GUI"""
+        """Get Strategy attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Strategy attributes to a toml file"""
+        """Save Strategy attributes to a toml file."""

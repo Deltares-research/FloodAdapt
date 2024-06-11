@@ -12,7 +12,7 @@ from flood_adapt.object_model.interface.projections import IProjection, Projecti
 
 
 class Projection(IProjection):
-    """Projection class that holds all the information for a specific projection"""
+    """Projection class that holds all the information for a specific projection."""
 
     attrs: ProjectionModel
 
@@ -24,24 +24,22 @@ class Projection(IProjection):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Projection from toml file"""
-
+        """Create Projection from toml file."""
         obj = Projection()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = ProjectionModel.parse_obj(toml)
+        obj.attrs = ProjectionModel.model_validate(toml)
         return obj
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Projection from object, e.g. when initialized from GUI"""
-
+        """Create Projection from object, e.g. when initialized from GUI."""
         obj = Projection()
-        obj.attrs = ProjectionModel.parse_obj(data)
+        obj.attrs = ProjectionModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Projection to a toml file"""
+        """Save Projection to a toml file."""
         if not os.path.exists(filepath):
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
 

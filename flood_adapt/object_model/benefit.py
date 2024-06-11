@@ -18,7 +18,7 @@ from flood_adapt.object_model.site import Site
 
 
 class Benefit(IBenefit):
-    """Class holding all information related to a benefit analysis"""
+    """Object holding all attributes and methods related to a benefit analysis."""
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
@@ -26,13 +26,16 @@ class Benefit(IBenefit):
     scenarios: pd.DataFrame
     has_run: bool = False
 
-    def init(self):
-        """Initiation function called when object is created through the file or dict options"""
+    def _init(self):
+        """Initialize function called when object is created through the load_file or load_dict methods."""
+        # Get output path based on database path
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Benefits", self.attrs.name
         )
         self.check_scenarios()
         self.has_run = self.has_run_check()
+        if self.has_run:
+            self.get_output()
         # Get site config
         self.site_toml_path = (
             Path(self.database_input_path).parent / "static" / "site" / "site.toml"
@@ -41,8 +44,15 @@ class Benefit(IBenefit):
         # Get monetary units
         self.unit = self.site_info.attrs.fiat.damage_unit
 
-    def has_run_check(self):
-        """Check if the benefit assessment has already been run"""
+    def has_run_check(self) -> bool:
+        """Check if the benefit analysis has already been run.
+
+        Returns
+        -------
+        bool
+            True if the analysis has already been run, else False
+        """
+        # Output files to check
         results_toml = self.results_path.joinpath("results.toml")
         results_csv = self.results_path.joinpath("time_series.csv")
         results_html = self.results_path.joinpath("benefits.html")
@@ -50,15 +60,37 @@ class Benefit(IBenefit):
         check = all(
             result.exists() for result in [results_toml, results_csv, results_html]
         )
-        if check:
-            with open(results_toml, mode="rb") as fp:
-                self.results = tomli.load(fp)
-            self.results["html"] = str(results_html)
         return check
 
-    def check_scenarios(self):
-        """Check which scenarios are needed for this benefit calculation and if they have already been created"""
+    def get_output(self) -> dict:
+        """Read the benefit analysis results and the path of the html output.
 
+        Returns
+        -------
+        dict
+            results of benefit calculation
+        """
+        if not self.has_run_check():
+            raise RuntimeError(
+                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
+            )
+        results_toml = self.results_path.joinpath("results.toml")
+        results_html = self.results_path.joinpath("benefits.html")
+        with open(results_toml, mode="rb") as fp:
+            self.results = tomli.load(fp)
+        self.results["html"] = str(results_html)
+        return self.results
+
+    def check_scenarios(self) -> pd.DataFrame:
+        """Check which scenarios are needed for this benefit calculation and if they have already been created.
+
+        The scenarios attribute of the object is updated accordingly and the table of the scenarios is returned.
+
+        Returns
+        -------
+        pd.DataFrame
+            a table with the scenarios of the Benefit analysis and their status
+        """
         # Define names of scenarios
         scenarios_calc = {
             "current_no_measures": {},
@@ -124,124 +156,48 @@ class Benefit(IBenefit):
         )
         return self.scenarios
 
-    def ready_to_run(self):
-        """Checks if all the required scenarios have already been run"""
+    def ready_to_run(self) -> bool:
+        """Check if all the required scenarios have already been run.
+
+        Returns
+        -------
+        bool
+            True if required scenarios have been already run
+        """
         self.check_scenarios()
         check = all(self.scenarios["scenario run"])
+
         return check
 
     def run_cost_benefit(self):
-        """Runs the cost-benefit calculation"""
-
+        """Run the cost-benefit calculation for the total study area and the different aggregation levels."""
         # Throw an error if not all runs are finished
         if not self.ready_to_run():
+            # First check is scenarios are there
+            if "No" in self.scenarios["scenario created"].to_numpy():
+                raise RuntimeError("Necessary scenarios have not been created yet.")
             scens = self.scenarios["scenario created"][~self.scenarios["scenario run"]]
             raise RuntimeError(
                 f"Scenarios {', '.join(scens.values)} need to be run before the cost-benefit analysis can be performed"
             )
+
+        # If path for results does not yet exist, make it, and if it does delete it and recreate it
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
+        else:
+            shutil.rmtree(self.results_path)
+            self.results_path.mkdir(parents=True)
+
         # Run the cost-benefit analysis
         self.cba()
         # Run aggregation benefits
         self.cba_aggregation()
         # Updates results
         self.has_run_check()
-
-    @staticmethod
-    def _calc_benefits(
-        years: list[int, int],
-        risk_no_measures: list[float, float],
-        risk_with_strategy: list[float, float],
-        discount_rate: float,
-    ) -> pd.DataFrame:
-        """Calculates per year benefits and discounted benefits
-
-        Parameters
-        ----------
-        years : list[int, int]
-            the current and future year for the analysis
-        risk_no_measures : list[float, float]
-            the current and future risk value without any measures
-        risk_with_strategy : list[float, float]
-            the current and future risk value with the strategy under investigation
-        discount_rate : float
-            the yearly discount rate used to calculated the total benefit
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe containing the time-series of risks and benefits per year
-        """
-        benefits = pd.DataFrame(
-            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
-            index=np.arange(years[0], years[1] + 1),
-        )
-        benefits.index.names = ["year"]
-
-        # Fill in dataframe
-        for strat, risk in zip(
-            ["no_measures", "with_strategy"], [risk_no_measures, risk_with_strategy]
-        ):
-            benefits.loc[years[0], f"risk_{strat}"] = risk[0]
-            benefits.loc[years[1], f"risk_{strat}"] = risk[1]
-
-        # Assume linear trend between current and future
-        benefits = benefits.interpolate(method="linear")
-
-        # Calculate benefits
-        benefits["benefits"] = (
-            benefits["risk_no_measures"] - benefits["risk_with_strategy"]
-        )
-        # Calculate discounted benefits using the provided discount rate
-        benefits["benefits_discounted"] = benefits["benefits"] / (
-            1 + discount_rate
-        ) ** (benefits.index - benefits.index[0])
-
-        return benefits
-
-    @staticmethod
-    def _calc_costs(
-        benefits: pd.DataFrame,
-        implementation_cost: float,
-        annual_maint_cost: float,
-        discount_rate: float,
-    ) -> pd.DataFrame:
-        """Calculates per year costs and discounted costs
-
-        Parameters
-        ----------
-        benefits : pd.DataFrame
-            a time series of benefits per year (produced with __calc_benefits method)
-        implementation_cost : float
-            initial costs of implementing the adaptation strategy
-        annual_maint_cost : float
-            annual maintenance cost of the adaptation  strategy
-        discount_rate : float
-            yearly discount rate
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe containing the time-series of benefits, costs and profits per year
-        """
-        benefits = benefits.copy()
-        benefits["costs"] = np.nan
-        # implementations costs at current year and maintenance from year 1
-        benefits.loc[benefits.index[0], "costs"] = implementation_cost
-        benefits.loc[benefits.index[1:], "costs"] = annual_maint_cost
-        benefits["costs_discounted"] = benefits["costs"] / (1 + discount_rate) ** (
-            benefits.index - benefits.index[0]
-        )
-
-        # Benefit to Cost Ratio
-        benefits["profits"] = benefits["benefits"] - benefits["costs"]
-        benefits["profits_discounted"] = benefits["profits"] / (1 + discount_rate) ** (
-            benefits.index - benefits.index[0]
-        )
-
-        return benefits
+        self.get_output()
 
     def cba(self):
-        """Cost-benefit analysis"""
+        """Cost-benefit analysis for the whole study area."""
         # Get EAD for each scenario and save to new dataframe
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
@@ -307,11 +263,7 @@ class Benefit(IBenefit):
             results["IRR"] = np.round(npf.irr(cba["profits"]), 3)
 
         # Save results
-        # If path for results does not yet exist, make it
         if not self.results_path.is_dir():
-            self.results_path.mkdir(parents=True)
-        else:
-            shutil.rmtree(self.results_path)
             self.results_path.mkdir(parents=True)
 
         # Save indicators in a toml file
@@ -327,7 +279,7 @@ class Benefit(IBenefit):
         self._make_html(cba)
 
     def cba_aggregation(self):
-        """Zonal Benefits per aggregation"""
+        """Zonal Benefits analysis for the different aggregation areas."""
         results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
         # Get years of interest
         year_start = self.attrs.current_situation.year
@@ -405,6 +357,10 @@ class Benefit(IBenefit):
                         "benefits_discounted"
                     ].sum()
 
+        # Save results
+        if not self.results_path.is_dir():
+            self.results_path.mkdir(parents=True)
+
         # Save benefits per aggregation area (csv and gpkg)
         for i, aggr_name in enumerate(aggregations):
             csv_filename = self.results_path.joinpath(f"benefits_{aggr_name}.csv")
@@ -430,8 +386,102 @@ class Benefit(IBenefit):
             )
             aggr_areas.to_file(outpath, driver="GPKG")
 
+    @staticmethod
+    def _calc_benefits(
+        years: list[int, int],
+        risk_no_measures: list[float, float],
+        risk_with_strategy: list[float, float],
+        discount_rate: float,
+    ) -> pd.DataFrame:
+        """Calculate per year benefits and discounted benefits.
+
+        Parameters
+        ----------
+        years : list[int, int]
+            the current and future year for the analysis
+        risk_no_measures : list[float, float]
+            the current and future risk value without any measures
+        risk_with_strategy : list[float, float]
+            the current and future risk value with the strategy under investigation
+        discount_rate : float
+            the yearly discount rate used to calculated the total benefit
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe containing the time-series of risks and benefits per year
+        """
+        benefits = pd.DataFrame(
+            data={"risk_no_measures": np.nan, "risk_with_strategy": np.nan},
+            index=np.arange(years[0], years[1] + 1),
+        )
+        benefits.index.names = ["year"]
+
+        # Fill in dataframe
+        for strat, risk in zip(
+            ["no_measures", "with_strategy"], [risk_no_measures, risk_with_strategy]
+        ):
+            benefits.loc[years[0], f"risk_{strat}"] = risk[0]
+            benefits.loc[years[1], f"risk_{strat}"] = risk[1]
+
+        # Assume linear trend between current and future
+        benefits = benefits.interpolate(method="linear")
+
+        # Calculate benefits
+        benefits["benefits"] = (
+            benefits["risk_no_measures"] - benefits["risk_with_strategy"]
+        )
+        # Calculate discounted benefits using the provided discount rate
+        benefits["benefits_discounted"] = benefits["benefits"] / (
+            1 + discount_rate
+        ) ** (benefits.index - benefits.index[0])
+
+        return benefits
+
+    @staticmethod
+    def _calc_costs(
+        benefits: pd.DataFrame,
+        implementation_cost: float,
+        annual_maint_cost: float,
+        discount_rate: float,
+    ) -> pd.DataFrame:
+        """Calculate per year costs and discounted costs.
+
+        Parameters
+        ----------
+        benefits : pd.DataFrame
+            a time series of benefits per year (produced with __calc_benefits method)
+        implementation_cost : float
+            initial costs of implementing the adaptation strategy
+        annual_maint_cost : float
+            annual maintenance cost of the adaptation  strategy
+        discount_rate : float
+            yearly discount rate
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe containing the time-series of benefits, costs and profits per year
+        """
+        benefits = benefits.copy()
+        benefits["costs"] = np.nan
+        # implementations costs at current year and maintenance from year 1
+        benefits.loc[benefits.index[0], "costs"] = implementation_cost
+        benefits.loc[benefits.index[1:], "costs"] = annual_maint_cost
+        benefits["costs_discounted"] = benefits["costs"] / (1 + discount_rate) ** (
+            benefits.index - benefits.index[0]
+        )
+
+        # Benefit to Cost Ratio
+        benefits["profits"] = benefits["benefits"] - benefits["costs"]
+        benefits["profits_discounted"] = benefits["profits"] / (1 + discount_rate) ** (
+            benefits.index - benefits.index[0]
+        )
+
+        return benefits
+
     def _make_html(self, cba):
-        "Make an html with the time-series of the benefits and discounted benefits"
+        """Make an html with the time-series of the benefits and discounted benefits."""
         # Save a plotly graph in an html
         fig = go.Figure()
 
@@ -498,29 +548,59 @@ class Benefit(IBenefit):
         fig.write_html(html)
 
     @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """create Benefit object from toml file"""
+    def load_file(filepath: Union[str, os.PathLike]) -> IBenefit:
+        """Create a Benefit object from a toml file.
 
+        Parameters
+        ----------
+        filepath : Union[str, os.PathLike]
+            path to a toml file holding the attributes of a Benefit object
+
+        Returns
+        -------
+        IBenefit
+            a Benefit object
+        """
         obj = Benefit()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = BenefitModel.model_validate(toml)  # Replace parse_obj with model_validate
+        obj.attrs = BenefitModel.model_validate(toml)
         # if benefits is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
-        obj.init()
+        obj._init()
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """create Benefit object from dictionary, e.g. when initialized from GUI"""
+    def load_dict(
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
+    ) -> IBenefit:
+        """Create a Benefit object from a dictionary, e.g. when initialized from GUI.
 
+        Parameters
+        ----------
+        data : dict[str, Any]
+            a dictionary with the Benefit attributes
+        database_input_path : Union[str, os.PathLike]
+            the path where the FloodAdapt database is located
+
+        Returns
+        -------
+        IBenefit
+            a Benefit object
+        """
         obj = Benefit()
         obj.attrs = BenefitModel.model_validate(data)
         obj.database_input_path = Path(database_input_path)
-        obj.init()
+        obj._init()
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Benefit object to a toml file"""
+        """Save the Benefit attributes as a toml file.
+
+        Parameters
+        ----------
+        filepath : Union[str, os.PathLike]
+            path for saving the toml file
+        """
         with open(filepath, "wb") as f:
             tomli_w.model_dump(self.attrs, f, exclude_none=True)

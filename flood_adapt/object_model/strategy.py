@@ -16,13 +16,13 @@ from flood_adapt.object_model.measure_factory import (
 
 
 class Strategy(IStrategy):
-    """Strategy class that holds all the information for a specific strategy"""
+    """Strategy class that holds all the information for a specific strategy."""
 
     attrs: StrategyModel
     database_input_path: Union[str, os.PathLike]
 
     def get_measures(self) -> list[Union[ImpactMeasure, HazardMeasure]]:
-        """Gets the measures paths and types"""
+        """Get the measures paths and types."""
         assert self.attrs.measures is not None
         # Get measure paths using a database structure
         measure_paths = [
@@ -58,7 +58,7 @@ class Strategy(IStrategy):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
-        """Create Strategy object from toml file
+        """Create Strategy object from toml file.
 
         Parameters
         ----------
@@ -76,7 +76,7 @@ class Strategy(IStrategy):
         obj = Strategy()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = StrategyModel.parse_obj(toml)
+        obj.attrs = StrategyModel.model_validate(toml)
         # if strategy is created by path use that to get to the database path
         obj.database_input_path = Path(filepath).parents[2]
         # Need to ensure that the strategy can be created
@@ -91,7 +91,7 @@ class Strategy(IStrategy):
         database_input_path: Union[str, os.PathLike],
         validate: bool = True,
     ):
-        """_summary_
+        """_summary_.
 
         Parameters
         ----------
@@ -109,7 +109,7 @@ class Strategy(IStrategy):
             _description_
         """
         obj = Strategy()
-        obj.attrs = StrategyModel.parse_obj(data)
+        obj.attrs = StrategyModel.model_validate(data)
         obj.database_input_path = database_input_path
         # Need to ensure that the strategy can be created
         if validate:

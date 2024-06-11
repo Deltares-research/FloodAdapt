@@ -19,21 +19,21 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class Cstype(str, Enum):
-    """class describing the accepted input for the variable cstype in Site"""
+    """The accepted input for the variable cstype in Site."""
 
     projected = "projected"
     spherical = "spherical"
 
 
 class Floodmap_type(str, Enum):
-    """class describing the accepted input for the variable floodmap in Site"""
+    """The accepted input for the variable floodmap in Site."""
 
     water_level = "water_level"
     water_depth = "water_depth"
 
 
 class SfincsModel(BaseModel):
-    """class describing the accepted input for the variable sfincs in Site"""
+    """The accepted input for the variable sfincs in Site."""
 
     csname: str
     cstype: Cstype
@@ -46,11 +46,15 @@ class SfincsModel(BaseModel):
 
 
 class VerticalReferenceModel(BaseModel):
+    """The accepted input for the variable vertical_reference in Site."""
+
     name: str
     height: UnitfulLength
 
 
 class WaterLevelReferenceModel(BaseModel):
+    """The accepted input for the variable water_level in Site."""
+
     reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
@@ -58,27 +62,27 @@ class WaterLevelReferenceModel(BaseModel):
 
 
 class Cyclone_track_databaseModel(BaseModel):
-    """class describing the accepted input for the variable cyclone_track_database in Site"""
+    """The accepted input for the variable cyclone_track_database in Site."""
 
     file: str
 
 
 class SlrModel(BaseModel):
-    """class describing the accepted input for the variable slr in Site"""
+    """The accepted input for the variable slr in Site."""
 
     vertical_offset: UnitfulLength
     relative_to_year: int
 
 
 class DamageType(str, Enum):
-    """class describing the accepted input for the variable footprints_dmg_type"""
+    """The accepted input for the variable footprints_dmg_type."""
 
     absolute = "absolute"
     relative = "relative"
 
 
 class MapboxLayersModel(BaseModel):
-    """class describing the configuration of the mapbox layers in the gui"""
+    """The configuration of the mapbox layers in the gui."""
 
     buildings_min_zoom_level: int = 13
     flood_map_depth_min: float
@@ -99,7 +103,7 @@ class MapboxLayersModel(BaseModel):
 
 
 class VisualizationLayersModel(BaseModel):
-    """class describing the configuration of the layers you might want to visualize in the gui"""
+    """The configuration of the layers you might want to visualize in the gui."""
 
     default_bin_number: int
     default_colors: list[str]
@@ -112,7 +116,7 @@ class VisualizationLayersModel(BaseModel):
 
 
 class GuiModel(BaseModel):
-    """class describing the accepted input for the variable gui in Site"""
+    """The accepted input for the variable gui in Site."""
 
     tide_harmonic_amplitude: UnitfulLength
     default_length_units: UnitTypesLength
@@ -129,14 +133,14 @@ class GuiModel(BaseModel):
 
 
 class RiskModel(BaseModel):
-    """class describing the accepted input for the variable risk in Site"""
+    """The accepted input for the variable risk in Site."""
 
     flooding_threshold: UnitfulLength
     return_periods: list
 
 
 class DemModel(BaseModel):
-    """class describing the accepted input for the variable dem in Site"""
+    """The accepted input for the variable dem in Site."""
 
     filename: str
     units: UnitTypesLength
@@ -144,7 +148,7 @@ class DemModel(BaseModel):
 
 class EquityModel(BaseModel):
     census_data: str
-    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
 
@@ -167,7 +171,7 @@ class SVIModel(BaseModel):
 
 
 class FiatModel(BaseModel):
-    """class describing the accepted input for the variable fiat in Site"""
+    """The accepted input for the variable fiat in Site."""
 
     exposure_crs: str
     bfe: Optional[BFEModel] = None
@@ -183,7 +187,7 @@ class FiatModel(BaseModel):
 
 
 class RiverModel(BaseModel):
-    """class describing the accepted input for the variable river in Site"""
+    """Model that describes the accepted input for the variable river in Site."""
 
     name: str
     description: str
@@ -193,8 +197,9 @@ class RiverModel(BaseModel):
 
 
 class Obs_stationModel(BaseModel):
-    """class describing the accepted input for the variable obs_station in Site.
-    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition
+    """The accepted input for the variable obs_station in Site.
+
+    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
     name: Union[int, str]
@@ -210,8 +215,9 @@ class Obs_stationModel(BaseModel):
 
 
 class Obs_pointModel(BaseModel):
-    """class describing the accepted input for the variable obs_point in Site.
-    obs_points is used to define output locations in the hazard model, which will be plotted in the user interface
+    """The accepted input for the variable obs_point in Site.
+
+    obs_points is used to define output locations in the hazard model, which will be plotted in the user interface.
     """
 
     name: Union[int, str]
@@ -232,8 +238,10 @@ class BenefitsModel(BaseModel):
 
 
 class SCSModel(BaseModel):
-    """class describing the accepted input for the variable scs, which included the file with
-    the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type
+    """Class describing the accepted input for the variable scs.
+
+    Includes the file with the non-dimensional SCS rainfall curves in the site folder and the SCS rainfall curve type.
+
     """
 
     file: str
@@ -241,7 +249,7 @@ class SCSModel(BaseModel):
 
 
 class StandardObjectModel(BaseModel):
-    """class describing the accepted input for the variable standard_object in Site"""
+    """The accepted input for the variable standard_object in Site."""
 
     events: Optional[list[str]] = []
     projections: Optional[list[str]] = []
@@ -249,7 +257,7 @@ class StandardObjectModel(BaseModel):
 
 
 class SiteModel(BaseModel):
-    """BaseModel describing the expected variables and data types of attributes of the Site class"""
+    """The expected variables and data types of attributes of the Site class."""
 
     name: str
     description: Optional[str] = ""
@@ -275,20 +283,45 @@ class SiteModel(BaseModel):
 
 
 class ISite(ABC):
-    attrs: SiteModel
+    _attrs: SiteModel
+
+    @property
+    @abstractmethod
+    def attrs(self) -> SiteModel:
+        """Get the site attributes as a dictionary.
+
+        Returns
+        -------
+        SiteModel
+            Pydantic model with the site attributes
+        """
+        ...
+
+    @attrs.setter
+    @abstractmethod
+    def attrs(self, value: SiteModel):
+        """Set the site attributes from a dictionary.
+
+        Parameters
+        ----------
+        value : SiteModel
+            Pydantic model with the site attributes
+        """
+        ...
 
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Site attributes from toml file"""
+        """Get Site attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
     def load_dict(data: dict[str, Any]):
-        """get Site attributes from an object, e.g. when initialized from GUI"""
+        """Get Site attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Site attributes to a toml file"""
+        """Save Site attributes to a toml file."""
+        ...

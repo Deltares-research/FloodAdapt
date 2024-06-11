@@ -15,7 +15,7 @@ class DbsMeasure(DbsTemplate):
     _object_model_class = Measure
 
     def get(self, name: str) -> IMeasure:
-        """Returns a measure object.
+        """Return a measure object.
 
         Parameters
         ----------
@@ -32,8 +32,7 @@ class DbsMeasure(DbsTemplate):
         return measure
 
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the measures that currently
-        exist in the database.
+        """Return a dictionary with info on the measures that currently exist in the database.
 
         Returns
         -------
@@ -58,11 +57,16 @@ class DbsMeasure(DbsTemplate):
                 geometries.append(gpd.read_file(file_path))
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
-                if obj.attrs.aggregation_area_type not in self._database.aggr_areas:
+                if (
+                    obj.attrs.aggregation_area_type
+                    not in self._database.static.get_aggregation_areas()
+                ):
                     raise ValueError(
                         f"Aggregation area type {obj.attrs.aggregation_area_type} for measure {obj.attrs.name} does not exist."
                     )
-                gdf = self._database.aggr_areas[obj.attrs.aggregation_area_type]
+                gdf = self._database.static.get_aggregation_areas()[
+                    obj.attrs.aggregation_area_type
+                ]
                 if obj.attrs.aggregation_area_name not in gdf["name"].to_numpy():
                     raise ValueError(
                         f"Aggregation area name {obj.attrs.aggregation_area_name} for measure {obj.attrs.name} does not exist."
@@ -78,7 +82,7 @@ class DbsMeasure(DbsTemplate):
         return measures
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if a measure is used in a strategy.
+        """Check if a measure is used in a strategy.
 
         Parameters
         ----------

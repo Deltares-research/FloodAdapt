@@ -7,43 +7,43 @@ import pandas as pd
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.dbs_controller import Database
 
 
-def get_outputs(database: IDatabase) -> dict[str, Any]:
+def get_outputs() -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
-    return database.get_outputs()
+    return Database().get_outputs()
 
 
-def get_topobathy_path(database: IDatabase) -> str:
-    return database.get_topobathy_path()
+def get_topobathy_path() -> str:
+    return Database().get_topobathy_path()
 
 
-def get_index_path(database: IDatabase) -> str:
-    return database.get_index_path()
+def get_index_path() -> str:
+    return Database().get_index_path()
 
 
-def get_depth_conversion(database: IDatabase) -> float:
-    return database.get_depth_conversion()
+def get_depth_conversion() -> float:
+    return Database().get_depth_conversion()
 
 
-def get_max_water_level(name: str, database: IDatabase, rp: int = None) -> np.array:
-    return database.get_max_water_level(name, rp)
+def get_max_water_level(name: str, rp: int = None) -> np.array:
+    return Database().get_max_water_level(name, rp)
 
 
-def get_fiat_footprints(name: str, database: IDatabase) -> gpd.GeoDataFrame:
-    return database.get_fiat_footprints(name)
+def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
+    return Database().get_fiat_footprints(name)
 
 
-def get_aggregation(name: str, database: IDatabase) -> dict[gpd.GeoDataFrame]:
-    return database.get_aggregation(name)
+def get_aggregation(name: str) -> dict[gpd.GeoDataFrame]:
+    return Database().get_aggregation(name)
 
 
-def get_roads(name: str, database: IDatabase) -> gpd.GeoDataFrame:
-    return database.get_roads(name)
+def get_roads(name: str) -> gpd.GeoDataFrame:
+    return Database().get_roads(name)
 
 
-def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame:
+def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     """Return the HTML strings of the water level timeseries for the given scenario.
 
     Parameters
@@ -59,7 +59,7 @@ def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame
         The HTML strings of the water level timeseries
     """
     # Get the direct_impacts objects from the scenario
-    hazard = database.scenarios.get(name).direct_impacts.hazard
+    hazard = Database().scenarios.get(name).direct_impacts.hazard
 
     # Check if the scenario has run
     if not hazard.has_run_check():
@@ -67,8 +67,8 @@ def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    output_path = Path(database.output_path).joinpath("Scenarios", hazard.name)
-    gdf = database.get_obs_points()
+    output_path = Path(Database().output_path).joinpath("Scenarios", hazard.name)
+    gdf = Database().get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
         for station in gdf.name
@@ -77,7 +77,7 @@ def get_obs_point_timeseries(name: str, database: IDatabase) -> gpd.GeoDataFrame
     return gdf
 
 
-def get_infographic(name: str, database: IDatabase) -> str:
+def get_infographic(name: str) -> str:
     """Return the HTML string of the infographic for the given scenario.
 
     Parameters
@@ -93,7 +93,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
         The HTML string of the infographic.
     """
     # Get the direct_impacts objects from the scenario
-    impact = database.scenarios.get(name).direct_impacts
+    impact = Database().scenarios.get(name).direct_impacts
 
     # Check if the scenario has run
     if not impact.has_run_check():
@@ -101,7 +101,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    database_path = Path(database.input_path).parent
+    database_path = Path(Database().input_path).parent
     config_path = database_path.joinpath("static", "templates", "infographics")
     output_path = database_path.joinpath("output", "Scenarios", impact.name)
     metrics_outputs_path = database_path.joinpath(
@@ -119,7 +119,7 @@ def get_infographic(name: str, database: IDatabase) -> str:
     return infographic_path
 
 
-def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
+def get_infometrics(name: str) -> pd.DataFrame:
     """Return the metrics for the given scenario.
 
     Parameters
@@ -138,9 +138,8 @@ def get_infometrics(name: str, database: IDatabase) -> pd.DataFrame:
     FileNotFoundError
         If the metrics file does not exist.
     """
-
     # Create the infographic path
-    metrics_path = Path(database.input_path).parent.joinpath(
+    metrics_path = Path(Database().input_path).parent.joinpath(
         "output",
         "Scenarios",
         name,

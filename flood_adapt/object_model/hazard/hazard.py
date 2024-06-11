@@ -42,9 +42,10 @@ from flood_adapt.object_model.utils import cd
 
 
 class Hazard:
-    """class holding all information related to the hazard of the scenario
-    includes functions to generate generic timeseries for the hazard models
-    and to run the hazard models
+    """All information related to the hazard of the scenario.
+
+    Includes functions to generate generic timeseries for the hazard models
+    and to run the hazard models.
     """
 
     name: str
@@ -133,7 +134,7 @@ class Hazard:
                 )
 
     def has_run_check(self) -> bool:
-        """_summary_
+        """_summary_.
 
         Returns
         -------
@@ -150,7 +151,7 @@ class Hazard:
         return all(checks)
 
     def sfincs_has_run_check(self) -> bool:
-        """checks if the hazard has been already run"""
+        """Check if the hazard has been already run."""
         test_combined = False
         if len(self.simulation_paths) == 0:
             raise ValueError("The Scenario has not been initialized correctly.")
@@ -175,9 +176,10 @@ class Hazard:
         return test_combined
 
     def set_event(self) -> None:
-        """Sets the actual Event template class list using the list of measure names
+        """Set the actual Event template class list using the list of measure names.
+
         Args:
-            event_name (str): name of event used in scenario
+            event_name (str): name of event used in scenario.
         """
         self.event_set_path = (
             self.database_input_path
@@ -615,7 +617,7 @@ class Hazard:
             del model
 
     def preprocess_sfincs_offshore(self, ds: xr.DataArray, ii: int):
-        """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model
+        """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
         Args:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event.download_meteo())
@@ -724,7 +726,7 @@ class Hazard:
         self._get_flood_map_path()
 
     def _get_flood_map_path(self):
-        """_summary_"""
+        """_summary_."""
         results_path = self.results_dir
         mode = self.event_mode
 
@@ -739,7 +741,7 @@ class Hazard:
         self.flood_map_path = map_fn
 
     def write_water_level_map(self):
-        """Reads simulation results from SFINCS and saves a netcdf with the maximum water levels"""
+        """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         # read SFINCS model
         model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
         zsmax = model.read_zsmax()
@@ -747,8 +749,9 @@ class Hazard:
         del model
 
     def plot_wl_obs(self):
-        """Plot water levels at SFINCS observation points as html
-        Only for single event scenarios
+        """Plot water levels at SFINCS observation points as html.
+
+        Only for single event scenarios.
         """
         for sim_path in self.simulation_paths:
             # read SFINCS model
@@ -895,14 +898,15 @@ class Hazard:
         return test1 & test2 & test3
 
     def calculate_rp_floodmaps(self):
-        """calculates flood risk maps from a set of (currently) SFINCS water level outputs,
-        using linear interpolation, would be nice to make it more widely applicable and
-        move the loading of the SFINCS results to self.postprocess_sfincs()
+        """Calculate flood risk maps from a set of (currently) SFINCS water level outputs using linear interpolation.
+
+        It would be nice to make it more widely applicable and move the loading of the SFINCS results to self.postprocess_sfincs().
+
         generates return period water level maps in netcdf format to be used by FIAT
         generates return period water depth maps in geotiff format as product for users
-        TODO: make this robust and more efficient for bigger datasets
-        """
 
+        TODO: make this robust and more efficient for bigger datasets.
+        """
         floodmap_rp = self.site.attrs.risk.return_periods
 
         frequencies = self.event_set.attrs.frequency

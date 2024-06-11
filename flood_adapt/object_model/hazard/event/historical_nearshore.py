@@ -22,12 +22,11 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Historical Nearshore from toml file"""
-
+        """Create Historical Nearshore from toml file."""
         obj = HistoricalNearshore()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = HistoricalNearshoreModel.parse_obj(toml)
+        obj.attrs = HistoricalNearshoreModel.model_validate(toml)
 
         wl_csv_path = Path(Path(filepath).parents[0], obj.attrs.tide.timeseries_file)
         obj.tide_surge_ts = HistoricalNearshore.read_csv(wl_csv_path)
@@ -46,14 +45,13 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Historical Nearshore from object, e.g. when initialized from GUI"""
-
+        """Create Historical Nearshore from object, e.g. when initialized from GUI."""
         obj = HistoricalNearshore()
-        obj.attrs = HistoricalNearshoreModel.parse_obj(data)
+        obj.attrs = HistoricalNearshoreModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Saving event toml
+        """Save event toml.
 
         Parameters
         ----------

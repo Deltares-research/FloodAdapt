@@ -11,10 +11,9 @@ class Measure:
 
     @staticmethod
     def get_measure_type(filepath: Union[str, os.PathLike]):
-        """get a measure type from toml file"""
-
+        """Get a measure type from toml file."""
         obj = Measure()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = MeasureModel.parse_obj(toml)
+        obj.attrs = MeasureModel.model_validate(toml)
         return obj.attrs.type

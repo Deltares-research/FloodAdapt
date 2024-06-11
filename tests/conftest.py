@@ -1,21 +1,97 @@
+import filecmp
 import gc
-import subprocess
+import logging
+import os
+import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
 
-import flood_adapt.config as FloodAdapt_config
-from flood_adapt.api.startup import read_database
+import flood_adapt.config as fa_config
+from flood_adapt.api.static import read_database
+
+logging.basicConfig(level=logging.ERROR)
+database_root = Path().absolute().parent / "Database"
+site_name = "charleston_test"
+system_folder = database_root / "system"
+database_path = database_root / site_name
+snapshot_dir = Path(tempfile.mkdtemp()) / "database_snapshot"
+fa_config.parse_user_input(
+    database_root=database_root,
+    database_name=site_name,
+    system_folder=system_folder,
+)
+
+
+def create_snapshot():
+    """Create a snapshot of the database directory."""
+    if snapshot_dir.exists():
+        shutil.rmtree(snapshot_dir)
+    shutil.copytree(database_path, snapshot_dir)
+
+
+def restore_db_from_snapshot():
+    """Restore the database directory from the snapshot."""
+    if not snapshot_dir.exists():
+        raise FileNotFoundError(
+            "Snapshot path does not exist. Create a snapshot first."
+        )
+
+    # Copy deleted/changed files from snapshot to database
+    for root, _, files in os.walk(snapshot_dir):
+        for file in files:
+            snapshot_file = Path(root) / file
+            relative_path = snapshot_file.relative_to(snapshot_dir)
+            database_file = database_path / relative_path
+            if not database_file.exists():
+                os.makedirs(os.path.dirname(database_file), exist_ok=True)
+                shutil.copy2(snapshot_file, database_file)
+            elif not filecmp.cmp(snapshot_file, database_file):
+                shutil.copy2(snapshot_file, database_file)
+
+    # Remove created files from database
+    for root, _, files in os.walk(database_path):
+        for file in files:
+            database_file = Path(root) / file
+            relative_path = database_file.relative_to(database_path)
+            snapshot_file = snapshot_dir / relative_path
+
+            if not snapshot_file.exists():
+                os.remove(database_file)
+
+    # Remove empty directories from the database
+    for root, dirs, _ in os.walk(database_path, topdown=False):
+        for directory in dirs:
+            dir_path = os.path.join(root, directory)
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def session_setup_teardown():
+    """Session-wide setup and teardown for creating the initial snapshot."""
+    create_snapshot()
+
+    yield
+
+    restore_db_from_snapshot()
+    shutil.rmtree(snapshot_dir)
 
 
 def make_db_fixture(scope, clean=True):
     """
-    This generates a fixture that is used for testing in general.
+    Generate a fixture that is used for testing in general.
+
     All fixtures function as follows:
-        1) Update the database to the latest revision
-        2) Initialize database controller
-        3) Perform all tests in scope
-        4) Optionally clean the database
+    At the start of the test session:
+        1) Create a snapshot of the database
+
+    At the start of each test:
+        2) Restore the database from the snapshot
+        3) Initialize database controller
+        4) Perform all tests in scope
+        5) Restore the database from the snapshot
 
     Usage
     ----------
@@ -26,6 +102,7 @@ def make_db_fixture(scope, clean=True):
                 something = test_db.get_something()
                 some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
                 assert ...
+
     Parameters
     ----------
     scope : str
@@ -39,76 +116,25 @@ def make_db_fixture(scope, clean=True):
     _db_fixture : pytest.fixture
         The database fixture used for testing
     """
-    try:
-        subprocess.run(["svn", "--version"], capture_output=True)
-    except Exception:
-        print(
-            """
-            Make sure to have the svn command line tools installed
-            In case you have not already installed the TortoiseSVN, you can install the command line tools by following the steps below:
-            In case you have already installed the TortoiseSVN and wondering how to upgrade to command line tools, here are the steps...
-            Go to Windows Control Panel → Program and Features (Windows 7+)
-            Locate TortoiseSVN and click on it.
-            Select 'Change' from the options available.
-            Click 'Next'
-            Click 'Modify'
-            Enable 'Command line client tools'
-            Click 'Next'
-            Click 'Install'
-            Click 'Finish'
-            """
-        )
-        exit(1)
-
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
 
-    # Set required environment variables to run FloodAdapt
-    database_root = str(Path(__file__).parent.parent.parent / "Database")
-    system_folder = f"{database_root}/system"
-    database_name = "charleston_test"
-
-    FloodAdapt_config.parse_user_input(
-        database_root=database_root,
-        system_folder=system_folder,
-        database_name=database_name,
-    )
-
-    database_path = FloodAdapt_config.get_database_root()
-    database_name = FloodAdapt_config.get_database_name()
-
     @pytest.fixture(scope=scope)
     def _db_fixture(clean=clean):
-        # Update the database to the latest revision
-        subprocess.run(
-            ["svn", "update", database_path / database_name],
-            capture_output=True,
-        )
-        # Initialize database controller
-        dbs = read_database(database_path, database_name)
+        """Fixture for setting up and tearing down the database for each test."""
+        if clean:
+            restore_db_from_snapshot()
 
-        # Perform all tests in scope
+        dbs = read_database(database_root, site_name)
+
+        # Yield the database controller for the test
         yield dbs
 
-        # Close all dangling connections
+        # Close dangling connections
         gc.collect()
 
         if clean:
-            # Reset versioned files to the latest revision
-            subprocess.run(
-                ["svn", "revert", "-R", database_path / database_name],
-                capture_output=True,
-            )
-            # Delete unversioned files and folders
-            subprocess.run(
-                [
-                    "svn",
-                    "cleanup",
-                    "--remove-unversioned",
-                    database_path / database_name,
-                ],
-                capture_output=True,
-            )
+            restore_db_from_snapshot()
 
     return _db_fixture
 
@@ -117,6 +143,7 @@ def make_db_fixture(scope, clean=True):
 # the fixture name needs to be passed as an argument to the test function.
 # the first line of your test needs to initialize the yielded variables:
 # 'dbs = test_db_...'
+
 
 test_db = make_db_fixture("function")
 test_db_class = make_db_fixture("class")

@@ -37,15 +37,14 @@ def test_add_obs_points(test_db, test_scenarios):
     model.add_obs_points()
 
     # write sfincs model in output destination
-    model.write_sfincs_model(
-        path_out=test_scenario.direct_impacts.hazard.simulation_paths[0]
-    )
+    new_model_dir = test_scenario.results_path / "sfincs_model_obs_test"
+    model.write_sfincs_model(path_out=new_model_dir)
 
     del model
 
     # assert points are the same
     sfincs_obs = pd.read_csv(
-        test_scenario.direct_impacts.hazard.simulation_paths[0].joinpath("sfincs.obs"),
+        new_model_dir.joinpath("sfincs.obs"),
         header=None,
         delim_whitespace=True,
     )

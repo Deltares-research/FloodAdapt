@@ -17,28 +17,28 @@ from flood_adapt.object_model.site import Site
 
 
 class HistoricalHurricane(Event, IHistoricalHurricane):
-    """HistoricalHurricane class object for storing historical
-    hurricane data in a standardized format for use in flood_adapt
+    """HistoricalHurricane class object for storing historical hurricane data in a standardized format for use in flood_adapt.
 
     Attributes
     ----------
     attrs : HistoricalHurricaneModel
         HistoricalHurricaneModel object
+
     Methods
     -------
     load_file(filepath)
-        Loading event toml
+        Load event toml
     load_dict(data)
-        Loading event toml
+        Load event toml
     save(filepath)
-        Saving event toml
+        Save event toml
     """
 
     attrs = HistoricalHurricaneModel
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """Loading event toml
+        """Load event toml.
 
         Parameters
         ----------
@@ -50,21 +50,20 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         HistoricalHurricane
             HistoricalHurricane object
         """
-
         # load toml file
         obj = HistoricalHurricane()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
 
         # load toml into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(toml)
+        obj.attrs = HistoricalHurricaneModel.model_validate(toml)
 
         # return object
         return obj
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """Loading event toml
+        """Load event toml.
 
         Parameters
         ----------
@@ -76,25 +75,23 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         HistoricalHurricane
             HistoricalHurricane object
         """
-
         # Initialize object
         obj = HistoricalHurricane()
 
         # load data into object
-        obj.attrs = HistoricalHurricaneModel.parse_obj(data)
+        obj.attrs = HistoricalHurricaneModel.model_validate(data)
 
         # return object
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Saving event toml
+        """Save event toml.
 
         Parameters
         ----------
         file : Path
             path to the location where file will be saved
         """
-
         # save toml file
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
@@ -114,6 +111,11 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             or self.attrs.hurricane_translation.northsouth_translation.value != 0
         ):
             tc = self.translate_tc_track(tc=tc, site=site)
+
+        if self.attrs.rainfall.source == "track":
+            tc.include_rainfall = True
+        else:
+            tc.include_rainfall = False
 
         # Location of spw file
         filename = "hurricane.spw"
