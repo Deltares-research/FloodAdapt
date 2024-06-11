@@ -1063,11 +1063,9 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.output_path.joinpath(
-                    "Scenarios", scn.attrs.name, "Flooding"
+                path_0 = self.scenarios.get_database_path(get_input_path=False).joinpath(scn.attrs.name, "Flooding"
                 )
-                path_new = self.output_path.joinpath(
-                    "Scenarios", scenario.attrs.name, "Flooding"
+                path_new = self.scenarios.get_database_path(get_input_path=False).joinpath(scenario.attrs.name, "Flooding"
                 )
                 if (
                     scn.direct_impacts.hazard.has_run_check()
