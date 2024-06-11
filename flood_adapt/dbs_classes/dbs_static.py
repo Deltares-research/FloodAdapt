@@ -86,12 +86,12 @@ class DbsStatic:
     @cache_method_wrapper
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model."""
+        names = []
+        descriptions = []
+        lat = []
+        lon = []
         if self._database.site.attrs.obs_point is not None:
             obs_points = self._database.site.attrs.obs_point
-            names = []
-            descriptions = []
-            lat = []
-            lon = []
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)

@@ -715,7 +715,8 @@ class Hazard:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
             # Write watel-level time-series
-            self.plot_wl_obs()
+            if self.site.attrs.obs_point is not None:
+                self.plot_wl_obs()
             # Write max water-level netcdf
             self.write_water_level_map()
         elif self._mode == Mode.risk:

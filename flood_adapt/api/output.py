@@ -68,7 +68,7 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
         )
 
     output_path = Path(Database().output_path).joinpath("Scenarios", hazard.name)
-    gdf = Database().get_obs_points()
+    gdf = Database().static.get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
         for station in gdf.name
