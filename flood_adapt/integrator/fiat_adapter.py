@@ -42,14 +42,13 @@ class FiatAdapter:
                 self.bfe["table"] = (
                     Path(database_path)
                     / "static"
-                    / "site"
                     / self.site.attrs.fiat.bfe.table
                 )
             else:
                 self.bfe["mode"] = "geom"
             # Map is always needed!
             self.bfe["geom"] = (
-                Path(database_path) / "static" / "site" / self.site.attrs.fiat.bfe.geom
+                Path(database_path) / "static" / self.site.attrs.fiat.bfe.geom
             )
 
             self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
