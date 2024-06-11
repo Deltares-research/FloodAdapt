@@ -194,22 +194,18 @@ class RiverModel(BaseModel):
     y_coordinate: float
 
 
-class Obs_stationModel(BaseModel):
-    """The accepted input for the variable obs_station in Site.
+class TideGaugeModel(BaseModel):
+    """The accepted input for the variable tide_gauge in Site.
 
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
     name: Union[int, str]
     description: Optional[str] = ""
-    ID: int
+    ID: int  # This is the only attribute that is currently used in FA!
     file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
-    mllw: Optional[UnitfulLength] = None
-    mhhw: Optional[UnitfulLength] = None
-    localdatum: Optional[UnitfulLength] = None
-    msl: Optional[UnitfulLength] = None
 
 
 class Obs_pointModel(BaseModel):
@@ -270,7 +266,7 @@ class SiteModel(BaseModel):
     dem: DemModel
     fiat: FiatModel
     river: Optional[list[RiverModel]] = None
-    obs_station: Optional[Obs_stationModel] = None
+    tide_gauge: Optional[TideGaugeModel] = None
     obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
