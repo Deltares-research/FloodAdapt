@@ -133,8 +133,13 @@ class GuiModel(BaseModel):
 class RiskModel(BaseModel):
     """The accepted input for the variable risk in Site."""
 
-    flooding_threshold: UnitfulLength
     return_periods: list
+
+
+class FloodFrequencyModel(BaseModel):
+    """The accepted input for the variable flood_frequency in Site."""
+
+    flooding_threshold: UnitfulLength
 
 
 class DemModel(BaseModel):
@@ -263,6 +268,7 @@ class SiteModel(BaseModel):
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
+    flood_frequency: FloodFrequencyModel
     dem: DemModel
     fiat: FiatModel
     river: Optional[list[RiverModel]] = None
