@@ -268,11 +268,14 @@ class SiteModel(BaseModel):
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
-    flood_frequency: FloodFrequencyModel
+    # TODO what should the default be
+    flood_frequency: Optional[FloodFrequencyModel] = {
+        "flooding_threshold": UnitfulLength(value=0.0, units="meters")
+    }
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]] = None
     tide_gauge: Optional[TideGaugeModel] = None
+    river: Optional[list[RiverModel]] = None
     obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
