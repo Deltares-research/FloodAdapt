@@ -86,7 +86,7 @@ class Database(IDatabase):
         if database_path is None or database_name is None:
             if not self._init_done:
                 raise ValueError(
-                    """Database path and name must be provided for the first initialization. 
+                    """Database path and name must be provided for the first initialization.
                     To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
@@ -739,7 +739,7 @@ class Database(IDatabase):
             non_building_names=self.site.attrs.fiat.non_building_names,
             return_gdf=True,
         )
-
+        del fm
         return buildings
 
     def get_property_types(self) -> list:
@@ -762,6 +762,8 @@ class Database(IDatabase):
                 types.remove(name)
         # Add "all" type for using as identifier
         types.append("all")
+
+        del fm
         return types
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
