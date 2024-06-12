@@ -440,7 +440,12 @@ class Hazard:
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
+            if self.site.attrs.river is not None:
+                self.event.add_dis_ts(
+                    event_dir=event_dir, site_river=self.site.attrs.river
+                )
+            else:
+                self.event.dis_df = None
             if self.event.dis_df is not None:
                 # Generate and change discharge boundary condition
                 logging.info(
