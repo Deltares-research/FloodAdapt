@@ -37,7 +37,6 @@ def test_tomls(test_db):
     return test_tomls
 
 
-@pytest.mark.skip(reason="test fails in TeamCity, TODO investigate")
 def test_fiat_adapter_no_measures(test_db, test_tomls, exposure_template):
     test_toml = test_tomls["current_extreme12ft_no_measures.toml"]
     assert test_toml.is_file()
