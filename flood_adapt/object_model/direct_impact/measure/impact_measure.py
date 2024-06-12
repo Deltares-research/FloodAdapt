@@ -60,6 +60,4 @@ class ImpactMeasure(ABC):
             polygon_file=polygon_file,
         )
 
-        del fiat_model
-
         return ids
