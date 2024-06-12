@@ -263,7 +263,6 @@ def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
     )
 
 
-@pytest.mark.skip(reason="Fails in fiat_toolbox, TODO investigate")
 def test_fiat_return_periods(test_tomls):
     test_toml = test_tomls["current_test_set_no_measures.toml"]
 
