@@ -840,9 +840,12 @@ class Hazard:
                                 start_time_str=self.event.attrs.time.start_time,
                                 stop_time_str=self.event.attrs.time.end_time,
                                 units=UnitTypesLength(gui_units),
+                                source=self.site.attrs.tide_gauge.source,
                                 file=file,
                             )
-                        except COOPSAPIError as e:
+                        except (
+                            COOPSAPIError
+                        ) as e:  # TODO this should be a generic error!
                             logging.warning(
                                 f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
                             )

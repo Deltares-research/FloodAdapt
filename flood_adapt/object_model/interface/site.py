@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -30,6 +30,13 @@ class Floodmap_type(str, Enum):
 
     water_level = "water_level"
     water_depth = "water_depth"
+
+
+class TideGaugeSource(str, Enum):
+    """The accepted input for the variable floodmap in Site."""
+
+    file = "file"
+    noaa_coops = "noaa_coops"
 
 
 class SfincsModel(BaseModel):
@@ -205,12 +212,21 @@ class TideGaugeModel(BaseModel):
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
-    name: Union[int, str]
+    name: Optional[Union[int, str]] = None
     description: Optional[str] = ""
+    source: TideGaugeSource
     ID: int  # This is the only attribute that is currently used in FA!
     file: Optional[str] = None  # for locally stored data
-    lat: float
-    lon: float
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+
+    @model_validator(mode="after")
+    def validate_selection_type(self) -> "TideGaugeModel":
+        if self.source == "file" and self.file is None:
+            raise ValueError(
+                "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
+            )
+        return self
 
 
 class Obs_pointModel(BaseModel):
