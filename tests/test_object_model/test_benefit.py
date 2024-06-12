@@ -400,7 +400,7 @@ class TestBenefitScenariosRun:
         aggrs = prepare_outputs[1]
         benefit_obj.cba_aggregation()
         # loop through aggregation types
-        for aggr_type in benefit_obj.site_info.attrs.fiat.aggregation:
+        for aggr_type in benefit_obj.site_info.attrs.direct_impacts.aggregation:
             # assert existence of output files
             csv_path = benefit_obj.results_path.joinpath(
                 f"benefits_{aggr_type.name}.csv"
@@ -441,7 +441,7 @@ class TestBenefitScenariosRun:
         with open(results_path, mode="rb") as fp:
             results = tomli.load(fp)
         # get aggregation
-        for aggr_type in benefit_obj.site_info.attrs.fiat.aggregation:
+        for aggr_type in benefit_obj.site_info.attrs.direct_impacts.aggregation:
             csv_agg_results = pd.read_csv(
                 benefit_obj.results_path.joinpath(f"benefits_{aggr_type.name}.csv")
             )

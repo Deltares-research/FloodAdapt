@@ -22,6 +22,7 @@ class Benefit(IBenefit):
 
     attrs: BenefitModel
     database_input_path: Union[str, os.PathLike]
+    database_static_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
     has_run: bool = False
@@ -32,17 +33,16 @@ class Benefit(IBenefit):
         self.results_path = Path(self.database_input_path).parent.joinpath(
             "output", "Benefits", self.attrs.name
         )
+        self.database_static_path = Path(self.database_input_path).parent / "static"
         self.check_scenarios()
         self.has_run = self.has_run_check()
         if self.has_run:
             self.get_output()
         # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
+        self.site_toml_path = self.database_static_path / "site" / "site.toml"
         self.site_info = Site.load_file(self.site_toml_path)
         # Get monetary units
-        self.unit = self.site_info.attrs.fiat.damage_unit
+        self.unit = self.site_info.attrs.direct_impacts.damage_unit
 
     def has_run_check(self) -> bool:
         """Check if the benefit analysis has already been run.
@@ -289,12 +289,14 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
 
         # Read in the names of the aggregation area types
-        aggregations = [aggr.name for aggr in self.site_info.attrs.fiat.aggregation]
+        aggregations = [
+            aggr.name for aggr in self.site_info.attrs.direct_impacts.aggregation
+        ]
 
         # Check if equity information is available to define variables to use
         vars = []
         for i, aggr_name in enumerate(aggregations):
-            if self.site_info.attrs.fiat.aggregation[i].equity is not None:
+            if self.site_info.attrs.direct_impacts.aggregation[i].equity is not None:
                 vars.append(["EAD", "EWEAD"])
             else:
                 vars.append(["EAD"])
@@ -369,11 +371,11 @@ class Benefit(IBenefit):
             # Load aggregation areas
             ind = [
                 i
-                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
+                for i, n in enumerate(self.site_info.attrs.direct_impacts.aggregation)
                 if n.name == aggr_name
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
-                self.site_info.attrs.fiat.aggregation[ind].file
+            aggr_areas_path = self.database_static_path.joinpath(
+                self.site_info.attrs.direct_impacts.aggregation[ind].file
             )
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
@@ -382,7 +384,7 @@ class Benefit(IBenefit):
             # Save file
             aggr_areas = aggr_areas.join(
                 benefits[aggr_name],
-                on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                on=self.site_info.attrs.direct_impacts.aggregation[ind].field_name,
             )
             aggr_areas.to_file(outpath, driver="GPKG")
 

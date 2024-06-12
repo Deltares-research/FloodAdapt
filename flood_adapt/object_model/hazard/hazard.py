@@ -902,7 +902,7 @@ class Hazard:
 
         It would be nice to make it more widely applicable and move the loading of the SFINCS results to self.postprocess_sfincs().
 
-        generates return period water level maps in netcdf format to be used by FIAT
+        generates return period water level maps in netcdf format to be used by the direct impacts model
         generates return period water depth maps in geotiff format as product for users
 
         TODO: make this robust and more efficient for bigger datasets.

@@ -21,7 +21,7 @@ def test_impact_metrics(scenario_event):
 
 def test_impact_footprints(scenario_event):
     _, scenario_name = scenario_event
-    footprints = api_output.get_fiat_footprints(scenario_name)
+    footprints = api_output.get_impact_building_footprints(scenario_name)
     assert isinstance(footprints, gpd.GeoDataFrame)
 
 

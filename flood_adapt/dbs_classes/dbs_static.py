@@ -4,7 +4,6 @@ from typing import Any, Callable, Tuple, Union
 import geopandas as gpd
 import pandas as pd
 from geopandas import GeoDataFrame
-from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.object_model.interface.database import IDatabase
@@ -42,7 +41,7 @@ class DbsStatic:
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
-        These are expected to much the ones in the FIAT model.
+        These are expected to much the ones in the direct impacts model.
 
         Returns
         -------
@@ -50,9 +49,9 @@ class DbsStatic:
             list of geodataframes with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
-        for aggr_dict in self._database.site.attrs.fiat.aggregation:
+        for aggr_dict in self._database.site.attrs.direct_impacts.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self._database.static_path / "site" / aggr_dict.file,
+                self._database.static_path / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
@@ -183,7 +182,7 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_buildings(self) -> GeoDataFrame:
-        """Get the building footprints from the FIAT model.
+        """Get the building locations that are used in the direct impacts model.
 
         This should only be the buildings excluding any other types (e.g., roads)
         The parameters non_building_names in the site config is used for that.
@@ -191,46 +190,24 @@ class DbsStatic:
         Returns
         -------
         GeoDataFrame
-            building footprints with all the FIAT columns
+            building footprints with all the exposure columns
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self._database.static_path / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
-            non_building_names=self._database.site.attrs.fiat.non_building_names,
-            return_gdf=True,
-        )
-
-        del fm
+        buildings = self._database.direct_impacts_model.get_building_locations()
 
         return buildings
 
     @cache_method_wrapper
-    def get_property_types(self) -> list:
-        """_summary_.
+    def get_property_types(self) -> list[str]:
+        """
+        Get all the building types that are included in the exposure of the direct impact model.
+
+        Returns a list of property types available in the database.
 
         Returns
         -------
-        list
-            _description_
+        list[str]
+            A list of property types.
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self._database.static_path / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        types = fm.exposure.get_primary_object_type()
-        for name in self._database.site.attrs.fiat.non_building_names:
-            if name in types:
-                types.remove(name)
-        # Add "all" type for using as identifier
-        types.append("all")
-
-        del fm
+        types = self._database.direct_impacts_model.get_building_types()
 
         return types

@@ -106,7 +106,7 @@ def test_dict():
             "flooding_threshold": {"value": 0.5, "units": "feet"},
         },
         "dem": {"filename": "charleston_14m.tif", "units": "meters"},
-        "fiat": {
+        "direct_impacts": {
             "exposure_crs": "EPSG:4326",
             "floodmap_type": "water_level",
             "non_building_names": ["road"],
@@ -231,7 +231,7 @@ def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
 
     assert test_site.attrs.lat == 32.77
     assert test_site.attrs.slr.vertical_offset.value == 0.6
-    assert test_site.attrs.fiat.exposure_crs == "EPSG:4326"
+    assert test_site.attrs.direct_impacts.exposure_crs == "EPSG:4326"
     assert test_site.attrs.river[0].mean_discharge.value == 5000
 
 
@@ -243,7 +243,7 @@ def test_loadFile_tomlFile_no_river(test_sites):
     assert isinstance(test_site.attrs.obs_station, Obs_stationModel)
     assert test_site.attrs.lat == 32.77
     assert test_site.attrs.slr.vertical_offset.value == 0.6
-    assert test_site.attrs.fiat.exposure_crs == "EPSG:4326"
+    assert test_site.attrs.direct_impacts.exposure_crs == "EPSG:4326"
 
 
 def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):

@@ -336,13 +336,13 @@ class SfincsAdapter:
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
-            for aggr_dict in self.site.attrs.fiat.aggregation:
+            for aggr_dict in self.site.attrs.direct_impacts.aggregation:
                 # check which one is used in measure
                 if not aggr_dict.name == green_infrastructure.aggregation_area_type:
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    measure_path.parents[2] / "static" / "site" / aggr_dict.file,
+                    measure_path.parents[2] / "static" / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen

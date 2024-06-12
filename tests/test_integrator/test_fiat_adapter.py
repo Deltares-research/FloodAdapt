@@ -47,13 +47,9 @@ def test_fiat_adapter_no_measures(test_db, test_tomls, exposure_template):
     test_scenario.run()
 
     exposure_scenario = pd.read_csv(
-        test_db.output_path
-        / "Scenarios"
-        / test_scenario.attrs.name
-        / "Impacts"
-        / "fiat_model"
+        test_scenario.direct_impacts.adapter.output_model_path
         / "exposure"
-        / "exposure.csv",
+        / "exposure.csv"
     )
 
     # check if exposure is left unchanged

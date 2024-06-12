@@ -13,7 +13,6 @@ import plotly.graph_objects as go
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
-from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
@@ -23,6 +22,12 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
+from flood_adapt.integrator.interface.direct_impacts_adapter import (
+    DirectImpactsAdapter,
+)
+from flood_adapt.integrator.interface.direct_impacts_adapter_factory import (
+    DirectImpactsAdapterFactory,
+)
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
@@ -55,6 +60,8 @@ class Database(IDatabase):
 
     static_sfincs_model: SfincsAdapter
 
+    direct_impacts_model: DirectImpactsAdapter
+
     _events: DbsEvent
     _scenarios: DbsScenario
     _strategies: DbsStrategy
@@ -86,7 +93,7 @@ class Database(IDatabase):
         if database_path is None or database_name is None:
             if not self._init_done:
                 raise ValueError(
-                    """Database path and name must be provided for the first initialization. 
+                    """Database path and name must be provided for the first initialization.
                     To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
@@ -118,6 +125,18 @@ class Database(IDatabase):
         )
         self.static_sfincs_model = SfincsAdapter(
             model_root=sfincs_path, site=self._site
+        )
+
+        # Get the static Direct Impacts Model
+        # Set adapter
+        DI_Adapter = DirectImpactsAdapterFactory.get_adapter(
+            self._site.attrs.direct_impacts.model
+        )
+        self.direct_impacts_model = DI_Adapter(
+            template_model_path=self.static_path.joinpath(
+                "templates", self._site.attrs.direct_impacts.model
+            ),
+            config=self._site.attrs.direct_impacts,
         )
 
         # Initialize the different database objects
@@ -168,7 +187,7 @@ class Database(IDatabase):
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
-        These are expected to much the ones in the FIAT model.
+        These are expected to much the ones in the direct impacts model
 
         Returns
         -------
@@ -176,9 +195,9 @@ class Database(IDatabase):
             list of geodataframes with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
-        for aggr_dict in self.site.attrs.fiat.aggregation:
+        for aggr_dict in self.site.attrs.direct_impacts.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file,
+                self.input_path.parent / "static" / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
@@ -718,7 +737,7 @@ class Database(IDatabase):
             return str("")
 
     def get_buildings(self) -> GeoDataFrame:
-        """Get the building footprints from the FIAT model.
+        """Get the building footprints from the direct impacts model.
 
         This should only be the buildings excluding any other types (e.g., roads)
         The parameters non_building_names in the site config is used for that.
@@ -726,19 +745,9 @@ class Database(IDatabase):
         Returns
         -------
         GeoDataFrame
-            building footprints with all the FIAT columns
+            building footprints with all the exposure columns
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
-            non_building_names=self.site.attrs.fiat.non_building_names,
-            return_gdf=True,
-        )
+        buildings = self.direct_impacts_model.get_building_locations()
 
         return buildings
 
@@ -750,18 +759,7 @@ class Database(IDatabase):
         list
             _description_
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        types = fm.exposure.get_primary_object_type()
-        for name in self.site.attrs.fiat.non_building_names:
-            if name in types:
-                types.remove(name)
-        # Add "all" type for using as identifier
-        types.append("all")
+        types = self.direct_impacts_model.get_building_types()
         return types
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
@@ -935,7 +933,7 @@ class Database(IDatabase):
             zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
         return zsmax
 
-    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+    def get_impact_building_footprints(self, scenario_name: str) -> GeoDataFrame:
         """Return a geodataframe of the impacts at the footprint level.
 
         Parameters
