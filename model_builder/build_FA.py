@@ -139,6 +139,16 @@ class GuiModel(BaseModel):
     max_benefits: float
 
 
+class TideGaugeModel(BaseModel):
+    # TODO this should be loaded from floodadapt
+    source: str
+    file: Optional[str] = None
+    max_distance: Optional[float] = None
+    msl: Optional[float] = None
+    datum: Optional[float] = None
+    datum_name: Optional[str] = None
+
+
 class ConfigModel(BaseModel):
     """
     Configuration model for FloodAdapt.
@@ -168,6 +178,7 @@ class ConfigModel(BaseModel):
     sfincs_offshore: Optional[str] = None
     fiat: str
     gui: GuiModel
+    tide_gauge: Optional[TideGaugeModel] = None
     building_footprints: Optional[SpatialJoinModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SpatialJoinModel] = None
@@ -311,10 +322,10 @@ class Database:
         physical and socio-economic conditions, and saves them to the database.
         """
         # Load database
-        dbs = read_database(self.root.parent, self.config.name)
+        read_database(self.root.parent, self.config.name)
         # Create no measures strategy
-        strategy = create_strategy({"name": "no_measures", "measures": []}, dbs)
-        save_strategy(strategy, dbs)
+        strategy = create_strategy({"name": "no_measures", "measures": []})
+        save_strategy(strategy)
         # Create current conditions projection
         projection = create_projection(
             {
@@ -323,12 +334,12 @@ class Database:
                 "socio_economic_change": {},
             }
         )
-        save_projection(projection, dbs)
+        save_projection(projection)
         # If provided use probabilistic set
         # TODO better check if configuration of event set is correct?
         event_set = self.site_attrs["standard_objects"]["events"][0]
         if event_set:
-            mode = get_event_mode(event_set, dbs)
+            mode = get_event_mode(event_set)
             if mode != "risk":
                 self.logger.error(
                     f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
@@ -602,6 +613,9 @@ class Database:
             fiat_units = "feet"
         self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
         self.site_attrs["sfincs"]["save_simulation"] = "False"
+        self.site_attrs["sfincs"][
+            "ambient_air_pressure"
+        ] = 102000  # TODO delete this after PR merge
 
     def read_offshore_sfincs(self):
         """
@@ -774,7 +788,7 @@ class Database:
         self.site_attrs["cyclone_track_database"] = {}
         self.site_attrs["cyclone_track_database"]["file"] = name
 
-    def add_water_level(self):
+    def add_tide_gauge(self):
         """
         Adds water level information to the site attributes.
 
@@ -782,30 +796,13 @@ class Database:
         It sets default values for the water level reference, MSL (Mean Sea Level),
         and local datum. The height values are set to 0 by default.
         """
-        # TODO define better default values
-        # TODO for use location get closest station and read values from there (add observation station as well!)
-        # TODO add inputs for MSL and datum
-
-        # check available stations
-        obs_data = obs.source("noaa_coops")
-        obs_data.get_active_stations()
-        obs_stations = obs_data.gdf()
-        obs_stations["distance"] = obs_stations.distance(
-            self.sfincs.region.to_crs(4326).geometry.item()
-        )
-        # TODO get dinstance after reprojecting to local UTM
-        # closest_station = obs_stations[
-        #     obs_stations["distance"] == obs_stations["distance"].min()
-        # ]
-        # TODO check if all stations can be used? Tidal attr?
-        # station_metadata = obs_data.get_meta_data(closest_station.id.item())
-        # Get water levels by using the datum STND
+        # Start by defining default values for water levels
         self.site_attrs["water_level"] = {}
 
         self.site_attrs["water_level"]["msl"] = {}
         self.site_attrs["water_level"]["msl"]["name"] = "MSL"
         self.site_attrs["water_level"]["msl"]["height"] = {}
-        self.site_attrs["water_level"]["msl"]["height"]["value"] = 0
+        self.site_attrs["water_level"]["msl"]["height"]["value"] = 0.0
         self.site_attrs["water_level"]["msl"]["height"]["units"] = self.site_attrs[
             "sfincs"
         ]["floodmap_units"]
@@ -813,10 +810,150 @@ class Database:
         self.site_attrs["water_level"]["localdatum"] = {}
         self.site_attrs["water_level"]["localdatum"]["name"] = "Datum"
         self.site_attrs["water_level"]["localdatum"]["height"] = {}
-        self.site_attrs["water_level"]["localdatum"]["height"]["value"] = 0
+        self.site_attrs["water_level"]["localdatum"]["height"]["value"] = 0.0
         self.site_attrs["water_level"]["localdatum"]["height"]["units"] = (
             self.site_attrs["sfincs"]["floodmap_units"]
         )
+
+        self.site_attrs["water_level"]["reference"] = {}
+        self.site_attrs["water_level"]["reference"]["name"] = "Datum"
+        self.site_attrs["water_level"]["reference"]["height"] = {}
+        self.site_attrs["water_level"]["reference"]["height"]["value"] = 0.0
+        self.site_attrs["water_level"]["reference"]["height"]["units"] = (
+            self.site_attrs["sfincs"]["floodmap_units"]
+        )
+
+        zero_wl_msg = "A 0 value will be used for both MSL and Datum levels. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes."
+
+        # Then check if there is any extra configurations given
+        if self.config.tide_gauge is None:
+            self.logger.warning(
+                "Tide gauge information not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
+            )
+            self.logger.warning(zero_wl_msg)
+        else:
+            if self.config.tide_gauge.source != "file":
+                station = self._get_closest_station()
+                if station is not None:
+                    # Add tide_gauge information in site toml
+                    # TODO change obs_station to tide_gauge after PR is merged
+                    self.site_attrs["obs_station"] = {}
+                    # Mandatory fields
+                    self.site_attrs["obs_station"][
+                        "source"
+                    ] = self.config.tide_gauge.source
+                    self.site_attrs["obs_station"]["ID"] = int(station["id"])
+                    # Extra fields
+                    self.site_attrs["obs_station"]["name"] = station["name"]
+                    self.site_attrs["obs_station"]["lon"] = station["lon"]
+                    self.site_attrs["obs_station"]["lat"] = station["lat"]
+                    self.site_attrs["water_level"]["msl"]["height"]["value"] = station[
+                        "msl"
+                    ]
+                    self.site_attrs["water_level"]["localdatum"]["name"] = station[
+                        "datum_name"
+                    ]
+                    self.site_attrs["water_level"]["localdatum"]["height"]["value"] = (
+                        station["datum"]
+                    )
+                    self.site_attrs["water_level"]["reference"]["name"] = station[
+                        "reference"
+                    ]
+                else:
+                    self.logger.warning(zero_wl_msg)
+            if self.config.tide_gauge.source == "file":
+                self.site_attrs["obs_station"] = {}
+                self.site_attrs["obs_station"]["source"] = "file"
+                file_path = Path(self.static_path).joinpath(
+                    "tide_gauges", Path(self.config.tide_gauge.file).name
+                )
+                if not file_path.parent.exists():
+                    file_path.parent.mkdir()
+                shutil.copyfile(self.config.tide_gauge.file, file_path)
+                self.site_attrs["obs_station"]["file"] = str(
+                    Path(file_path.relative_to(self.static_path)).as_posix()
+                )
+                if (
+                    self.config.tide_gauge.msl is not None
+                    and self.config.tide_gauge.datum is not None
+                ):
+                    self.site_attrs["water_level"]["msl"]["height"][
+                        "value"
+                    ] = self.config.tide_gauge.msl
+                    self.site_attrs["water_level"]["localdatum"][
+                        "name"
+                    ] = self.config.tide_gauge.datum
+                    self.site_attrs["water_level"]["localdatum"]["height"][
+                        "value"
+                    ] = self.config.tide_gauge.datum_name
+                    self.site_attrs["water_level"]["reference"][
+                        "name"
+                    ] = self.config.tide_gauge.update_forward_ref
+                else:
+                    self.logger.warning(zero_wl_msg)
+
+    def _get_closest_station(self, ref: str = "MLLW"):
+
+        # Get available stations from source
+        obs_data = obs.source(self.config.tide_gauge.source)
+        obs_data.get_active_stations()
+        obs_stations = obs_data.gdf()
+        # Calculate distance from SFINCS region to all available stations in degrees
+        obs_stations["distance"] = obs_stations.distance(
+            self.sfincs.region.to_crs(4326).geometry.item()
+        )
+        # Get the closest station and its distance in meters
+        closest_station = obs_stations[
+            obs_stations["distance"] == obs_stations["distance"].min()
+        ]
+        distance = round(
+            closest_station.to_crs(self.sfincs.region.crs)
+            .distance(self.sfincs.region.geometry.item())
+            .item(),
+            0,
+        )
+        self.logger.info(
+            f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance} meters from the SFINCS domain"
+        )
+        # Check if user provided max distance
+        if self.config.tide_gauge.max_distance is not None:
+            if distance > self.config.tide_gauge.max_distance:
+                self.logger.warning(
+                    f"This distance is larger than the 'max_distance' value of {self.config.tide_gauge.max_distance} meters provided in the config file. The station cannot be used."
+                )
+                return None
+
+        # get station id
+        station_id = closest_station["id"].item()
+        # read station metadata
+        station_metadata = obs_data.get_meta_data(closest_station.id.item())
+        # TODO check if all stations can be used? Tidal attr?
+        # Get water levels by using the ref provided
+        datum_name = station_metadata["datums"]["OrthometricDatum"]
+        datums = station_metadata["datums"]["datums"]
+        names = [datum["name"] for datum in datums]
+
+        ref_value = datums[names.index(ref)]["value"]
+
+        meta = {}
+        meta["id"] = station_id
+        meta["name"] = station_metadata["name"]
+        meta["datum"] = round(datums[names.index(datum_name)]["value"] - ref_value, 3)
+        meta["datum_name"] = datum_name
+        meta["msl"] = round(datums[names.index("MSL")]["value"] - ref_value, 3)
+        meta["reference"] = ref
+        meta["lon"] = closest_station.geometry.x.item()
+        meta["lat"] = closest_station.geometry.y.item()
+
+        self.logger.info(
+            f"The tide gauge station '{station_metadata['name']}' from {self.config.tide_gauge.source} will be used to download nearshore historical water level time-series."
+        )
+
+        self.logger.info(
+            f"The station metadata will be used to fill in the water_level attribute in the site.toml. The reference level will be {ref}."
+        )
+
+        return meta
 
     def add_slr(self):
         """
@@ -1080,7 +1217,7 @@ def main(config_path):
     dbs.add_gui_params()
     dbs.add_cyclone_dbs()
     dbs.add_static_files()
-    dbs.add_water_level()
+    dbs.add_tide_gauge()
     dbs.add_slr()
     dbs.add_general_attrs()
     dbs.save_site_config()
