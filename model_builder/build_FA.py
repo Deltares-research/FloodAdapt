@@ -6,6 +6,7 @@ from shutil import rmtree
 from typing import Optional, Union
 from urllib.request import urlretrieve
 
+import cht_observations.observation_stations as obs
 import click
 import geopandas as gpd
 import numpy as np
@@ -596,9 +597,6 @@ class Database:
         ].lower()
         self.site_attrs["sfincs"]["offshore_model"] = "offshore"
         self.site_attrs["sfincs"]["overland_model"] = "overland"
-        self.site_attrs["sfincs"][
-            "ambient_air_pressure"
-        ] = 102000  # TODO this is not used anywhere
         fiat_units = self.fiat_model.config["vulnerability"]["unit"]
         if fiat_units == "ft":
             fiat_units = "feet"
@@ -787,15 +785,22 @@ class Database:
         # TODO define better default values
         # TODO for use location get closest station and read values from there (add observation station as well!)
         # TODO add inputs for MSL and datum
-        self.site_attrs["water_level"] = {}
 
-        self.site_attrs["water_level"]["reference"] = {}
-        self.site_attrs["water_level"]["reference"]["name"] = "MSL"
-        self.site_attrs["water_level"]["reference"]["height"] = {}
-        self.site_attrs["water_level"]["reference"]["height"]["value"] = 0
-        self.site_attrs["water_level"]["reference"]["height"]["units"] = (
-            self.site_attrs["sfincs"]["floodmap_units"]
+        # check available stations
+        obs_data = obs.source("noaa_coops")
+        obs_data.get_active_stations()
+        obs_stations = obs_data.gdf()
+        obs_stations["distance"] = obs_stations.distance(
+            self.sfincs.region.to_crs(4326).geometry.item()
         )
+        # TODO get dinstance after reprojecting to local UTM
+        # closest_station = obs_stations[
+        #     obs_stations["distance"] == obs_stations["distance"].min()
+        # ]
+        # TODO check if all stations can be used? Tidal attr?
+        # station_metadata = obs_data.get_meta_data(closest_station.id.item())
+        # Get water levels by using the datum STND
+        self.site_attrs["water_level"] = {}
 
         self.site_attrs["water_level"]["msl"] = {}
         self.site_attrs["water_level"]["msl"]["name"] = "MSL"
