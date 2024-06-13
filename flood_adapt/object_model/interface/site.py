@@ -33,7 +33,7 @@ class Floodmap_type(str, Enum):
 
 
 class TideGaugeSource(str, Enum):
-    """The accepted input for the variable floodmap in Site."""
+    """The accepted input for the variable source in tide_gauge."""
 
     file = "file"
     noaa_coops = "noaa_coops"
