@@ -31,7 +31,7 @@ def get_event(name: str) -> IEvent:
 
 
 def get_event_mode(name: str) -> str:
-    filename = Database().input_path / "events" / f"{name}" / f"{name}.toml"
+    filename = Database().events.get_database_path() / f"{name}" / f"{name}.toml"
     return Event.get_mode(filename)
 
 
