@@ -72,11 +72,18 @@ class Cyclone_track_databaseModel(BaseModel):
     file: str
 
 
+class SlrScenariosModel(BaseModel):
+    """The accepted input for the variable slr.scenarios ."""
+
+    file: str
+    relative_to_year: int
+
+
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
     vertical_offset: UnitfulLength
-    relative_to_year: int
+    scenarios: Optional[SlrScenariosModel] = None
 
 
 class DamageType(str, Enum):

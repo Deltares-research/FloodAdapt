@@ -86,7 +86,7 @@ class Database(IDatabase):
         if database_path is None or database_name is None:
             if not self._init_done:
                 raise ValueError(
-                    """Database path and name must be provided for the first initialization. 
+                    """Database path and name must be provided for the first initialization.
                     To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
@@ -257,9 +257,10 @@ class Database(IDatabase):
         raise FileNotFoundError(f"File {full_path} not found")
 
     def get_slr_scn_names(self) -> list:
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self.static_path.joinpath(self.site.attrs.slr.scenarios.file)
         df = pd.read_csv(input_file)
-        return df.columns[2:].to_list()
+        names = df.columns[2:].to_list()
+        return names
 
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
         """Return a table with different types of green infrastructure measures and their infiltration depths.
@@ -317,7 +318,9 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self.input_path.parent.joinpath(
+            "static", self.site.attrs.slr.scenarios.file
+        )
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
             raise ValueError(
@@ -325,7 +328,7 @@ class Database(IDatabase):
             )
         else:
             slr = np.interp(year, df["year"], df[slr_scenario])
-            ref_year = self.site.attrs.slr.relative_to_year
+            ref_year = self.site.attrs.slr.scenarios.relative_to_year
             if ref_year > df["year"].max() or ref_year < df["year"].min():
                 raise ValueError(
                     f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -341,7 +344,9 @@ class Database(IDatabase):
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self.input_path.parent.joinpath(
+            "static", self.site.attrs.slr.scenarios.file
+        )
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
         try:
@@ -362,7 +367,7 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
-        ref_year = self.site.attrs.slr.relative_to_year
+        ref_year = self.site.attrs.slr.scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():
             raise ValueError(
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
