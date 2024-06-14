@@ -31,6 +31,19 @@ def create_snapshot():
     shutil.copytree(database_path, snapshot_dir)
 
 
+def close_all_loggers():
+    """Close all loggers and their handlers."""
+    for logger in logging.Logger.manager.loggerDict.values():
+        if isinstance(logger, logging.PlaceHolder):
+            continue
+        handlers = logger.handlers
+        for handler in handlers:
+            handler.close()
+            logger.removeHandler(handler)
+    gc.collect()
+    logging.shutdown()
+
+
 def restore_db_from_snapshot():
     """Restore the database directory from the snapshot."""
     if not snapshot_dir.exists():
@@ -83,26 +96,6 @@ def make_db_fixture(scope, clean=True):
     """
     Generate a fixture that is used for testing in general.
 
-    All fixtures function as follows:
-    At the start of the test session:
-        1) Create a snapshot of the database
-
-    At the start of each test:
-        2) Restore the database from the snapshot
-        3) Initialize database controller
-        4) Perform all tests in scope
-        5) Restore the database from the snapshot
-
-    Usage
-    ----------
-    To access the fixture in a test , you need to:
-        1) pass the fixture name as an argument to the test function
-        2) directly use as a the database object:
-            def test_some_test(test_db):
-                something = test_db.get_something()
-                some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
-                assert ...
-
     Parameters
     ----------
     scope : str
@@ -121,18 +114,37 @@ def make_db_fixture(scope, clean=True):
 
     @pytest.fixture(scope=scope)
     def _db_fixture(clean=clean):
-        """Fixture for setting up and tearing down the database for each test."""
-        if clean:
-            restore_db_from_snapshot()
+        """
+        Fixture for setting up and tearing down the database once per scope.
 
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
         dbs = read_database(database_root, site_name)
 
-        # Yield the database controller for the test
+        # Perform tests
         yield dbs
 
-        # Close dangling connections
-        gc.collect()
-
+        # Teardown
+        close_all_loggers()
         if clean:
             restore_db_from_snapshot()
 
