@@ -133,7 +133,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def get_database_path(self, get_input_path: bool) -> Path:
-        """Returns the path to the database.
+        """Return the path to the database.
 
         Parameters
         ----------

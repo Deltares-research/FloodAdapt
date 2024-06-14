@@ -248,7 +248,7 @@ class DbsTemplate(AbstractDatabaseElement):
         return []
 
     def get_database_path(self, get_input_path: bool = True) -> Path:
-        """Returns the path to the database.
+        """Return the path to the database.
 
         Parameters
         ----------

@@ -110,9 +110,7 @@ class DirectImpacts:
             strategy
         ).get_impact_strategy()
 
-    def set_hazard(
-        self, scenario: ScenarioModel, database, results_dir: Path
-    ) -> None:
+    def set_hazard(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         """Set the Hazard object of the scenario.
 
         Parameters

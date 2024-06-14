@@ -20,7 +20,7 @@ class Scenario(IScenario):
     database_input_path: Union[str, os.PathLike]
 
     def init_object_model(self) -> "Scenario":
-        """Create a Direct Impact object"""
+        """Create a Direct Impact object."""
         from flood_adapt.dbs_controller import (
             Database,  # TODO: Fix circular import and move to top of file. There is too much entanglement between classes to fix this now
         )
