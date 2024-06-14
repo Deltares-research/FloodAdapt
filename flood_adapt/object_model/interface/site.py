@@ -45,7 +45,7 @@ class SfincsModel(BaseModel):
     csname: str
     cstype: Cstype
     version: Optional[str] = ""
-    offshore_model: str
+    offshore_model: Optional[str] = None
     overland_model: str
     floodmap_units: UnitTypesLength
     save_simulation: Optional[bool] = False
@@ -287,7 +287,7 @@ class SiteModel(BaseModel):
     lon: float
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
-    cyclone_track_database: Cyclone_track_databaseModel
+    cyclone_track_database: Optional[Cyclone_track_databaseModel] = None
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel

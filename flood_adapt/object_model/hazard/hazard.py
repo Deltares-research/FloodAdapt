@@ -95,16 +95,17 @@ class Hazard:
                 )
             ]
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
-            self.simulation_paths_offshore = [
-                self.database_input_path.parent.joinpath(
-                    "output",
-                    "Scenarios",
-                    self.name,
-                    "Flooding",
-                    "simulations",
-                    self.site.attrs.sfincs.offshore_model,
-                )
-            ]
+            if self.site.attrs.sfincs.offshore_model is not None:
+                self.simulation_paths_offshore = [
+                    self.database_input_path.parent.joinpath(
+                        "output",
+                        "Scenarios",
+                        self.name,
+                        "Flooding",
+                        "simulations",
+                        self.site.attrs.sfincs.offshore_model,
+                    )
+                ]
         elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
@@ -121,17 +122,18 @@ class Hazard:
                     )
                 )
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
-                self.simulation_paths_offshore.append(
-                    self.database_input_path.parent.joinpath(
-                        "output",
-                        "Scenarios",
-                        self.name,
-                        "Flooding",
-                        "simulations",
-                        subevent.attrs.name,
-                        self.site.attrs.sfincs.offshore_model,
+                if self.site.attrs.sfincs.offshore_model is not None:
+                    self.simulation_paths_offshore.append(
+                        self.database_input_path.parent.joinpath(
+                            "output",
+                            "Scenarios",
+                            self.name,
+                            "Flooding",
+                            "simulations",
+                            subevent.attrs.name,
+                            self.site.attrs.sfincs.offshore_model,
+                        )
                     )
-                )
 
     def has_run_check(self) -> bool:
         """_summary_.
@@ -628,6 +630,10 @@ class Hazard:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event.download_meteo())
             ii (int): Iterator for event set
         """
+        if self.site.attrs.sfincs.offshore_model is None:
+            raise ValueError(
+                f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.event.attrs.template}'"
+            )
         # Determine folders for offshore model
         base_path = self.database_input_path.parent
         path_in_offshore = base_path.joinpath(
