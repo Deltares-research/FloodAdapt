@@ -45,6 +45,7 @@ class Database(IDatabase):
     database_name: str
     _init_done: bool = False
 
+    base_path: Path
     input_path: Path
     static_path: Path
     output_path: Path
@@ -104,9 +105,11 @@ class Database(IDatabase):
         self.database_path = database_path
         self.database_name = database_name
 
-        self.input_path = Path(database_path / database_name / "input")
-        self.static_path = Path(database_path / database_name / "static")
-        self.output_path = Path(database_path / database_name / "output")
+        # Set the paths
+        self.base_path = Path(database_path / database_name)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
@@ -458,7 +461,7 @@ class Database(IDatabase):
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-        event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
+        event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
         temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
@@ -586,14 +589,13 @@ class Database(IDatabase):
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
-            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            self.events.get_database_path().joinpath(event.attrs.name, f"{name}.csv"),
             header=False,
         )
 
     def write_cyc(self, event: IEvent, track: TropicalCyclone):
         cyc_file = (
-            self.input_path
-            / "events"
+            self.events.get_database_path()
             / event.attrs.name
             / f"{event.attrs.track_name}.cyc"
         )
@@ -733,9 +735,7 @@ class Database(IDatabase):
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            map_path = self.input_path.parent.joinpath(
-                "output",
-                "Scenarios",
+            map_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
                 scenario_name,
                 "Flooding",
                 "max_water_level_map.nc",
@@ -745,9 +745,7 @@ class Database(IDatabase):
             zsmax = map.to_numpy()
 
         else:
-            file_path = self.input_path.parent.joinpath(
-                "output",
-                "Scenarios",
+            file_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
                 scenario_name,
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
@@ -768,8 +766,8 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
@@ -789,8 +787,8 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
@@ -810,8 +808,8 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
@@ -833,9 +831,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated benefits per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output",
-            "Benefits",
+        out_path = self.benefits.get_database_path(get_input_path=False).joinpath(
             benefit_name,
         )
         gdfs = {}
@@ -893,12 +889,12 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scn.attrs.name, "Flooding"
-                )
-                path_new = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scenario.attrs.name, "Flooding"
-                )
+                path_0 = self.scenarios.get_database_path(
+                    get_input_path=False
+                ).joinpath(scn.attrs.name, "Flooding")
+                path_new = self.scenarios.get_database_path(
+                    get_input_path=False
+                ).joinpath(scenario.attrs.name, "Flooding")
                 if (
                     scn.direct_impacts.hazard.has_run_check()
                 ):  # only copy results if the hazard model has actually finished and skip simulation folders

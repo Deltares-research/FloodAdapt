@@ -41,7 +41,6 @@ class DbsMeasure(DbsTemplate):
         """
         measures = self._get_object_list()
         objects = [MeasureFactory.get_measure_object(path) for path in measures["path"]]
-        measures["name"] = [obj.attrs.name for obj in objects]
         measures["description"] = [obj.attrs.description for obj in objects]
         measures["objects"] = objects
 
