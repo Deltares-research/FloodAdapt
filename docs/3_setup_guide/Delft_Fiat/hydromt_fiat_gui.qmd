@@ -1,0 +1,9 @@
+---
+title:	Hydromt FIAT Graphical User Interface
+filters:
+  - lightbox
+lightbox: auto
+---
+
+The Hydromt FIAT Graphical User Interface (GUI) makes the Delft FIAT model creation accessible for non-modeling experts and facilitates the process of setting up the Fiat model. 
+
