@@ -134,6 +134,10 @@ class Database(IDatabase):
 
         self._init_done = True
 
+    def reset(self):
+        self._instance = None
+        self._init_done = False
+        
     # Property methods
     @property
     def site(self) -> ISite:
