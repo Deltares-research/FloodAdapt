@@ -102,7 +102,14 @@ class MapboxLayersModel(BaseModel):
     flood_map_bins: list[float]
     flood_map_colors: list[str]
     aggregation_metric_percentiles: list[float] = [0.00000001, 0.1, 0.3, 0.7, 1]
-    aggregation_dmg_colors: list[str] = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
+    aggregation_dmg_colors: list[str] = [
+        "#FFFFFF",
+        "#FEE9CE",
+        "#FDBB84",
+        "#FC844E",
+        "#E03720",
+        "#860000",
+    ]
     max_aggregated_metrics_count_people: int = 13000
     max_aggregated_metrics_count_houses: int = 25
     max_aggregated_metrics_damage: int = 10000000
@@ -143,7 +150,7 @@ class GuiModel(BaseModel):
     default_discharge_units: UnitTypesDischarge
     default_intensity_units: UnitTypesIntensity
     default_cumulative_units: UnitTypesLength
-    mapbox_layers: MapboxLayersModel 
+    mapbox_layers: MapboxLayersModel
     visualization_layers: VisualizationLayersModel
 
 
