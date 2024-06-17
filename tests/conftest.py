@@ -145,6 +145,7 @@ def make_db_fixture(scope, clean=True):
 
         # Teardown
         close_all_loggers()
+        dbs.reset()
         if clean:
             restore_db_from_snapshot()
 
