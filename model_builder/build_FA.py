@@ -660,6 +660,7 @@ class Database:
         If `self.config.river` is empty, a dummy river is added with default values.
         Otherwise, the rivers specified in `self.config.river` are added.
         """
+        # TODO this should not be included with the new PR merge
         if not self.config.river:
             self.site_attrs["river"] = [
                 {
@@ -893,7 +894,24 @@ class Database:
                     self.logger.warning(zero_wl_msg)
 
     def _get_closest_station(self, ref: str = "MLLW"):
+        """
+        Finds the closest tide gauge station to the SFINCS domain and retrieves its metadata.
 
+        Args:
+            ref (str, optional): The reference level for water level calculations. Defaults to "MLLW".
+
+        Returns:
+            dict: A dictionary containing the metadata of the closest tide gauge station.
+                The dictionary includes the following keys:
+                - "id": The station ID.
+                - "name": The station name.
+                - "datum": The difference between the station's datum and the reference level.
+                - "datum_name": The name of the datum used by the station.
+                - "msl": The difference between the MSL datum and the reference level.
+                - "reference": The reference level used for water level calculations.
+                - "lon": The longitude of the station.
+                - "lat": The latitude of the station.
+        """
         # Get available stations from source
         obs_data = obs.source(self.config.tide_gauge.source)
         obs_data.get_active_stations()
@@ -1071,7 +1089,7 @@ class Database:
         self.site_attrs["risk"]["flooding_threshold"] = {}
         self.site_attrs["risk"]["flooding_threshold"][
             "value"
-        ] = 0  # TODO Is this used??
+        ] = 0  # TODO change this based on PR merge
         self.site_attrs["risk"]["flooding_threshold"]["units"] = self.site_attrs[
             "sfincs"
         ]["floodmap_units"]
@@ -1227,4 +1245,9 @@ def main(config_path):
 
 
 if __name__ == "__main__":
-    main(["--config_path", r"c:\Users\athanasi\Github\Database\FA_builder\config.toml"])
+    main(
+        [
+            "--config_path",
+            r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland.toml",
+        ]
+    )
