@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
+from pathlib import Path
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -13,6 +14,13 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulVelocity,
     UnitTypesLength,
 )
+
+
+class IForcing(BaseModel):
+    """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
+
+    data: Any
+    path: str | Path
 
 
 class Mode(str, Enum):

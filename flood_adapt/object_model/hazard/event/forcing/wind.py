@@ -1,0 +1,21 @@
+from flood_adapt.object_model.interface.events import IForcing
+from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
+
+
+class IWind(IForcing):
+    pass
+
+
+class WindConstant(IWind):
+    speed: UnitfulVelocity
+    direction: UnitfulDirection
+
+
+class WindTimeSeries(IWind):
+    file: str
+
+
+class WindFromModel(IWind):
+    # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
+    # Required coordinates: ['time', 'y', 'x']
+    path: str
