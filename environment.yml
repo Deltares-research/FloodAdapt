@@ -5,41 +5,10 @@ channels:
   - numba
 
 dependencies:
-  # Core
+  # Use conda to install pre-built binaries for geopandas and its C++ dependencies (GDAL, PROJ and fiona)
+  # Then `pip install .` to install the rest of the dependencies from the pyproj.toml that are on PyPI
   - python=3.10
+  - geopandas
   - pip
   - pip:
-    - NDBC
-    - noaa-coops
-    - cht-tide
-    - cht-meteo
-    - cht-observations
-    - hydromt_fiat
-    - fiat_toolbox
-    - git+https://github.com/Deltares/hydromt_sfincs.git@FA_quadtree
-    - git+https://github.com/Deltares/cht_cyclones.git
-  - pandas
-  - geojson
-  - geopandas
-  - mypy
-  - numpy
-  - numpy-financial
-  - plotly
-  - pyogrio
-  - pydantic
-  - tomli
-  - tomli-w
-  - census
-  
-  # Testing
-  - pytest
-  
-  # Distribution
-  - build
-  - twine
-
-  # Development
-  - pre-commit
-  - black
-  - typos
-  - ruff
+    - .[dev]

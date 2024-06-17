@@ -29,7 +29,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
     # TODO should this return a list of geojson? if yes what form?
-    """Gets the aggregations areas that are used for the site and fiat
+    """Get the aggregations areas that are used for the site and fiat.
 
     Parameters
     ----------
@@ -40,13 +40,13 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
     list[GeoDataFrame]
         list of GeoDataFrames with the aggregation areas
     """
-    return Database().get_aggregation_areas()
+    return Database().static.get_aggregation_areas()
 
 
 def get_obs_points() -> GeoDataFrame:
-    """Gets the observation points specified in the site.toml. These are
-        also added to the flood hazard model. They are used as marker
-        locations to plot water level time series in the output tab.
+    """Get the observation points specified in the site.toml.
+
+    These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
 
     Parameters
     ----------
@@ -57,15 +57,15 @@ def get_obs_points() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrame with observation points from the site.toml.
     """
-    return Database().get_obs_points()
+    return Database().static.get_obs_points()
 
 
 def get_model_boundary() -> GeoDataFrame:
-    return Database().get_model_boundary()
+    return Database().static.get_model_boundary()
 
 
 def get_model_grid() -> QuadtreeGrid:
-    """Gets the model grid that is used in SFINCS
+    """Get the model grid that is used in SFINCS.
 
     Parameters
     ----------
@@ -76,12 +76,12 @@ def get_model_grid() -> QuadtreeGrid:
     QuadtreeGrid
         QuadtreeGrid with the model grid
     """
-    return Database().get_model_grid()
+    return Database().static.get_model_grid()
 
 
 @staticmethod
 def get_svi_map() -> Union[GeoDataFrame, None]:
-    """Gets the SVI map that are used in Fiat
+    """Get the SVI map that are used in Fiat.
 
     Parameters
     ----------
@@ -93,14 +93,14 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().get_static_map(Database().site.attrs.fiat.svi.geom)
+        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
     except Exception:
         return None
 
 
 @staticmethod
 def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
-    """Gets a static map from the database
+    """Get a static map from the database.
 
     Parameters
     ----------
@@ -115,13 +115,13 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
         GeoDataFrame with the static map
     """
     try:
-        return Database().get_static_map(path)
+        return Database().static.get_static_map(path)
     except Exception:
         return None
 
 
 def get_buildings() -> GeoDataFrame:
-    """Gets the buildings exposure that are used in Fiat
+    """Get the buildings exposure that are used in Fiat.
 
     Parameters
     ----------
@@ -132,11 +132,11 @@ def get_buildings() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the buildings from FIAT exposure
     """
-    return Database().get_buildings()
+    return Database().static.get_buildings()
 
 
 def get_property_types() -> list:
-    return Database().get_property_types()
+    return Database().static.get_property_types()
 
 
 def get_hazard_measure_types():

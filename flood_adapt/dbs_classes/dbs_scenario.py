@@ -13,7 +13,7 @@ class DbsScenario(DbsTemplate):
     _object_model_class = Scenario
 
     def get(self, name: str) -> IScenario:
-        """Returns a scenario object.
+        """Return a scenario object.
 
         Parameters
         ----------
@@ -28,8 +28,7 @@ class DbsScenario(DbsTemplate):
         return super().get(name).init_object_model()
 
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the events that currently
-        exist in the database.
+        """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
         -------
@@ -48,7 +47,7 @@ class DbsScenario(DbsTemplate):
         return scenarios
 
     def delete(self, name: str, toml_only: bool = False):
-        """Deletes an already existing scenario in the database.
+        """Delete an already existing scenario in the database.
 
         Parameters
         ----------
@@ -63,12 +62,11 @@ class DbsScenario(DbsTemplate):
         ValueError
             Raise error if scenario to be deleted is already in use.
         """
-
         # First delete the scenario
         super().delete(name, toml_only)
 
         # Then delete the results
-        results_path = self._database.output_path / "Scenarios" / name
+        results_path = self._database.output_path / self._folder_name / name
         if results_path.exists():
             shutil.rmtree(results_path, ignore_errors=False)
 
@@ -90,13 +88,15 @@ class DbsScenario(DbsTemplate):
         super().edit(scenario)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Scenarios" / scenario.attrs.name
+        output_path = (
+            self._database.output_path / self._folder_name / scenario.attrs.name
+        )
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if a scenario is used in a benefit.
+        """Check if a scenario is used in a benefit.
 
         Parameters
         ----------

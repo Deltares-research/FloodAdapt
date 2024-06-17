@@ -17,8 +17,7 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """create Synthetic from toml file"""
-
+        """Create Synthetic from toml file."""
         obj = HistoricalOffshore()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -33,14 +32,13 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
 
     @staticmethod
     def load_dict(data: dict[str, Any]):
-        """create Synthetic from object, e.g. when initialized from GUI"""
-
+        """Create Synthetic from object, e.g. when initialized from GUI."""
         obj = HistoricalOffshore()
         obj.attrs = HistoricalOffshoreModel.model_validate(data)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Saving event toml
+        """Save event toml.
 
         Parameters
         ----------

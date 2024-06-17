@@ -1,6 +1,5 @@
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.scenario import Scenario
 
 
 class DbsProjection(DbsTemplate):
@@ -9,7 +8,7 @@ class DbsProjection(DbsTemplate):
     _object_model_class = Projection
 
     def _check_standard_objects(self, name: str) -> bool:
-        """Checks if a projection is a standard projection.
+        """Check if a projection is a standard projection.
 
         Parameters
         ----------
@@ -29,7 +28,7 @@ class DbsProjection(DbsTemplate):
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if a projection is used in a scenario.
+        """Check if a projection is used in a scenario.
 
         Parameters
         ----------
@@ -43,8 +42,8 @@ class DbsProjection(DbsTemplate):
         """
         # Get all the scenarios
         scenarios = [
-            Scenario.load_file(path)
-            for path in self._database.scenarios.list_objects()["path"]
+            self._database.scenarios.get(name)
+            for name in self._database.scenarios.list_objects()["name"]
         ]
 
         # Check if projection is used in a scenario

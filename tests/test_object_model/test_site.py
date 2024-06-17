@@ -131,7 +131,7 @@ def test_dict():
                     "field_name": "name",
                     "equity": {
                         "census_data": "../templates/fiat/equity/census_data_aggr_lvl_1.csv",
-                        "percapitalincome_label": "PerCapitaIncome",
+                        "percapitaincome_label": "PerCapitaIncome",
                         "totalpopulation_label": "TotalPopulation",
                     },
                 },
@@ -141,7 +141,7 @@ def test_dict():
                     "field_name": "name",
                     "equity": {
                         "census_data": "../templates/fiat/equity/census_data_aggr_lvl_2.csv",
-                        "percapitalincome_label": "PerCapitaIncome",
+                        "percapitaincome_label": "PerCapitaIncome",
                         "totalpopulation_label": "TotalPopulation",
                     },
                 },

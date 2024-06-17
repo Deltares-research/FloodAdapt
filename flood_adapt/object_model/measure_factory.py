@@ -30,12 +30,13 @@ class MeasureFactory:
 
 
 class ImpactMeasureFactory:
-    """Simple parser to get the respective measure subclass from a measure type string given in the config file
+    """Simple parser to get the respective measure subclass from a measure type string given in the config file.
 
     Args:
         type (str): name of measure type
 
-    Returns:
+    Returns
+    -------
         Measure: ImpactMeasure subclass
     """
 
@@ -50,12 +51,13 @@ class ImpactMeasureFactory:
 
 
 class HazardMeasureFactory:
-    """Simple parser to get the respective measure subclass from a measure type string given in the config file
+    """Simple parser to get the respective measure subclass from a measure type string given in the config file.
 
     Args:
         type (str): name of measure type
 
-    Returns:
+    Returns
+    -------
         Measure: HazardMeasure subclass
     """
 

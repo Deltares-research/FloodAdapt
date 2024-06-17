@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 
 
 class EventFactory:
-    """EventFactory class object for creating event objects from templates
+    """EventFactory class object for creating event objects from templates.
 
     Methods
     -------
@@ -20,7 +20,7 @@ class EventFactory:
 
     @staticmethod
     def get_event(template: str) -> Event:
-        """Returns event object based on template name
+        """Return event object based on template name.
 
         Parameters
         ----------
@@ -32,7 +32,6 @@ class EventFactory:
         Event
             Event object
         """
-
         # Check template name and return object
         if template == "Synthetic":
             return Synthetic()

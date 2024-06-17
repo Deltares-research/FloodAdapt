@@ -1,8 +1,0 @@
-[default.extend-words]
-# Ignore false-positives
-waring = "waring"
-strat = "strat"
-Ot = "Ot"
-adn = "adn"
-optin = "optin"
-BA = "BA"

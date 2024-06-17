@@ -4,9 +4,8 @@ from typing import Any
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.hazard import Hazard
-from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.hazard.event.eventset import EventSet
+from flood_adapt.object_model.interface.events import IEvent, Mode
 
 
 class DbsEvent(DbsTemplate):
@@ -15,7 +14,7 @@ class DbsEvent(DbsTemplate):
     _object_model_class = Event
 
     def get(self, name: str) -> IEvent:
-        """Returns an event object.
+        """Return an event object.
 
         Parameters
         ----------
@@ -35,13 +34,17 @@ class DbsEvent(DbsTemplate):
             raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
 
         # Load event
-        event_template = Event.get_template(event_path)
-        event = EventFactory.get_event(event_template).load_file(event_path)
-        return event
+        mode = Event.get_mode(event_path)
+        if mode == Mode.single_event:
+            # parse event config file to get event template
+            template = Event.get_template(event_path)
+            # use event template to get the associated event child class
+            return EventFactory.get_event(template).load_file(event_path)
+        elif mode == Mode.risk:
+            return EventSet.load_file(event_path)
 
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the events that currently
-        exist in the database.
+        """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
         -------
@@ -49,14 +52,13 @@ class DbsEvent(DbsTemplate):
             Includes 'name', 'description', 'path' and 'last_modification_date' info
         """
         events = self._get_object_list()
-        objects = [Hazard.get_event_object(path) for path in events["path"]]
-        events["name"] = [obj.attrs.name for obj in objects]
+        objects = [self._database.events.get(name) for name in events["name"]]
         events["description"] = [obj.attrs.description for obj in objects]
         events["objects"] = objects
         return events
 
     def _check_standard_objects(self, name: str) -> bool:
-        """Checks if an event is a standard event.
+        """Check if an event is a standard event.
 
         Parameters
         ----------
@@ -76,7 +78,7 @@ class DbsEvent(DbsTemplate):
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if an event is used in a scenario.
+        """Check if an event is used in a scenario.
 
         Parameters
         ----------
@@ -90,8 +92,8 @@ class DbsEvent(DbsTemplate):
         """
         # Get all the scenarios
         scenarios = [
-            Scenario.load_file(path)
-            for path in self._database.scenarios.list_objects()["path"]
+            self._database.scenarios.get(name)
+            for name in self._database.scenarios.list_objects()["name"]
         ]
 
         # Check if event is used in a scenario
