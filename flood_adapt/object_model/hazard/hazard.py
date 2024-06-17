@@ -35,9 +35,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesVelocity,
 )
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.site import Site
-from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import cd
 
 
@@ -56,22 +53,18 @@ class Hazard:
     hazard_strategy: HazardStrategy
     has_run: bool = False
 
-    def __init__(
-        self, scenario: ScenarioModel, database_input_path: Path, results_dir: Path
-    ) -> None:
+    def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
         self.name = scenario.name
         self.results_dir = results_dir
-        self.database_input_path = database_input_path
+        self.database = database
         self.event_name = scenario.event
         self.set_event()  # also setting the mode (single_event or risk here)
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
-        self.site = Site.load_file(
-            database_input_path.parent / "static" / "site" / "site.toml"
-        )
+        self.site = database.site
         self.has_run = self.has_run_check()
 
     @property
@@ -85,9 +78,9 @@ class Hazard:
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
             self.simulation_paths = [
-                self.database_input_path.parent.joinpath(
-                    "output",
-                    "Scenarios",
+                self.database.scenarios.get_database_path(
+                    get_input_path=False
+                ).joinpath(
                     self.name,
                     "Flooding",
                     "simulations",
@@ -97,9 +90,9 @@ class Hazard:
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
             if self.site.attrs.sfincs.offshore_model is not None:
                 self.simulation_paths_offshore = [
-                    self.database_input_path.parent.joinpath(
-                        "output",
-                        "Scenarios",
+                    self.database.scenarios.get_database_path(
+                        get_input_path=False
+                    ).joinpath(
                         self.name,
                         "Flooding",
                         "simulations",
@@ -111,9 +104,9 @@ class Hazard:
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
                 self.simulation_paths.append(
-                    self.database_input_path.parent.joinpath(
-                        "output",
-                        "Scenarios",
+                    self.database.scenarios.get_database_path(
+                        get_input_path=False
+                    ).joinpath(
                         self.name,
                         "Flooding",
                         "simulations",
@@ -124,9 +117,9 @@ class Hazard:
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 if self.site.attrs.sfincs.offshore_model is not None:
                     self.simulation_paths_offshore.append(
-                        self.database_input_path.parent.joinpath(
-                            "output",
-                            "Scenarios",
+                        self.database.scenarios.get_database_path(
+                            get_input_path=False
+                        ).joinpath(
                             self.name,
                             "Flooding",
                             "simulations",
@@ -184,10 +177,9 @@ class Hazard:
             event_name (str): name of event used in scenario.
         """
         self.event_set_path = (
-            self.database_input_path
-            / "events"
+            self.database.events.get_database_path()
             / self.event_name
-            / "{}.toml".format(self.event_name)
+            / f"{self.event_name}.toml"
         )
         # set mode (probabilistic_set or single_event)
         self.event_mode = Event.get_mode(self.event_set_path)
@@ -204,11 +196,10 @@ class Hazard:
 
             for subevent in subevents:
                 event_path = (
-                    self.database_input_path
-                    / "events"
+                    self.database.events.get_database_path()
                     / self.event_name
                     / subevent
-                    / "{}.toml".format(subevent)
+                    / f"{subevent}.toml"
                 )
                 self.event_set.event_paths.append(event_path)
 
@@ -225,31 +216,16 @@ class Hazard:
             ]  # set event for single_event to be able to plot wl etc
 
     def set_physical_projection(self, projection: str) -> None:
-        projection_path = (
-            self.database_input_path / "Projections" / projection / f"{projection}.toml"
-        )
-        self.physical_projection = Projection.load_file(
-            projection_path
+        self.physical_projection = self.database.projections.get(
+            projection
         ).get_physical_projection()
 
     def set_hazard_strategy(self, strategy: str) -> None:
-        strategy_path = (
-            self.database_input_path / "Strategies" / strategy / f"{strategy}.toml"
-        )
-        self.hazard_strategy = Strategy.load_file(strategy_path).get_hazard_strategy()
+        self.hazard_strategy = self.database.strategies.get(
+            strategy
+        ).get_hazard_strategy()
 
     # no write function is needed since this is only used internally
-
-    @staticmethod
-    def get_event_object(event_path):
-        mode = Event.get_mode(event_path)
-        if mode == Mode.single_event:
-            # parse event config file to get event template
-            template = Event.get_template(event_path)
-            # use event template to get the associated event child class
-            return EventFactory.get_event(template).load_file(event_path)
-        elif mode == Mode.risk:
-            return EventSet.load_file(event_path)
 
     def preprocess_models(self):
         logging.info("Preparing hazard models...")
@@ -345,9 +321,8 @@ class Hazard:
     ):
         self._set_event_objects()
         self.set_simulation_paths()
-        base_path = self.database_input_path.parent
-        path_in = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.overland_model
+        path_in = self.database.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.overland_model
         )
 
         for ii, event in enumerate(self.event_list):
@@ -371,11 +346,9 @@ class Hazard:
                 or self.event.attrs.template == "Historical_offshore"
             ):
                 logging.info("Downloading meteo data...")
-                meteo_dir = self.database_input_path.parent.joinpath("output", "meteo")
+                meteo_dir = self.database.output_path.joinpath("meteo")
                 if not meteo_dir.is_dir():
-                    os.mkdir(
-                        self.database_input_path.parent.joinpath("output", "meteo")
-                    )
+                    os.mkdir(self.database.output_path.joinpath("meteo"))
                 ds = self.event.download_meteo(
                     site=self.site, path=meteo_dir
                 )  # =event_dir)
@@ -516,8 +489,8 @@ class Hazard:
                         "Adding rainfall shape timeseries to the overland flood model..."
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
-                        scsfile = self.database_input_path.parent.joinpath(
-                            "static", "scs", self.site.attrs.scs.file
+                        scsfile = self.database.static_path.joinpath(
+                            "scs", self.site.attrs.scs.file
                         )
                         scstype = self.site.attrs.scs.type
                         self.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
@@ -584,8 +557,8 @@ class Hazard:
             # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
-                    measure_path = base_path.joinpath(
-                        "input", "measures", measure.attrs.name
+                    measure_path = self.database.measures.get_database_path().joinpath(
+                        measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
                         logging.info("Adding floodwall to the overland flood model...")
@@ -635,19 +608,17 @@ class Hazard:
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.event.attrs.template}'"
             )
         # Determine folders for offshore model
-        base_path = self.database_input_path.parent
-        path_in_offshore = base_path.joinpath(
-            "static", "templates", self.site.attrs.sfincs.offshore_model
+        path_in_offshore = self.database.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.offshore_model
         )
         if self.event_mode == Mode.risk:
             event_dir = (
-                self.database_input_path
-                / "events"
+                self.database.events.get_database_path()
                 / self.event_set.attrs.name
                 / self.event.attrs.name
             )
         else:
-            event_dir = self.database_input_path / "events" / self.event.attrs.name
+            event_dir = self.database.events.get_database_path() / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
@@ -693,7 +664,7 @@ class Hazard:
                 )
                 offshore_model.add_spw_forcing(
                     historical_hurricane=self.event,
-                    database_path=base_path,
+                    database_path=self.database.base_path,
                     model_dir=self.simulation_paths_offshore[ii],
                 )
                 # save created spw file in the event directory
@@ -834,8 +805,8 @@ class Hazard:
                         or self.site.attrs.obs_point[ii].file is not None
                     ):
                         if self.site.attrs.obs_point[ii].file is not None:
-                            file = self.database_input_path.parent.joinpath(
-                                "static", self.site.attrs.obs_point[ii].file
+                            file = self.database.static_path.joinpath(
+                                self.site.attrs.obs_point[ii].file
                             )
                         else:
                             file = None
@@ -883,8 +854,8 @@ class Hazard:
             # read SFINCS model
             model = SfincsAdapter(model_root=sim_path, site=self.site)
             # dem file for high resolution flood depth map
-            demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.site.attrs.dem.filename
+            demfile = self.database.static_path.joinpath(
+                "dem", self.site.attrs.dem.filename
             )
 
             # read max. water level
@@ -1030,8 +1001,8 @@ class Hazard:
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = self.database_input_path.parent.joinpath(
-                "static", "dem", self.site.attrs.dem.filename
+            demfile = self.database.static_path.joinpath(
+                "dem", self.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
             dummymodel = SfincsAdapter(
