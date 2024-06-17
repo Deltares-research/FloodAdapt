@@ -32,6 +32,8 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 from flood_adapt.object_model.site import Site
 
+from flood_adapt.dbs_classes.dbs_static import DbsStatic
+
 # from flood_adapt.object_model.validate.config import validate_existence_root_folder
 
 logger = logging.getLogger(__name__)
@@ -437,23 +439,8 @@ class SfincsAdapter:
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.site.attrs.obs_point is not None:
-            obs_points = self.site.attrs.obs_point
-            names = []
-            lat = []
-            lon = []
-            for pt in obs_points:
-                names.append(pt.name)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
-
-            # create GeoDataFrame from obs_points in site file
-            df = pd.DataFrame({"name": names})
-            gdf = gpd.GeoDataFrame(
-                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-            )
-
-            # Add locations to SFINCS file
+        gdf = DbsStatic.get_obs_points()
+        if gdf is not None:
             self.sf_model.setup_observation_points(locations=gdf, merge=False)
 
     def read_zsmax(self):

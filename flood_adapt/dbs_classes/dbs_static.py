@@ -98,13 +98,14 @@ class DbsStatic:
                 lat.append(pt.lat)
                 lon.append(pt.lon)
 
-        # create GeoDataFrame from obs_points in site file
-        df = pd.DataFrame({"name": names, "description": descriptions})
-        # TODO: make crs flexible and add this as a parameter to site.toml?
-        gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-        )
-        return gdf
+            # create GeoDataFrame from obs_points in site file
+            df = pd.DataFrame({"name": names, "description": descriptions})
+            # TODO: make crs flexible and add this as a parameter to site.toml?
+            gdf = gpd.GeoDataFrame(
+                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            )
+            return gdf
+        return None
 
     @cache_method_wrapper
     def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
