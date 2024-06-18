@@ -33,7 +33,7 @@ dependencies = [
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
     "hydromt-sfincs@ git+https://github.com/deltares/hydromt_sfincs.git@FA_quadtree",
-    "numpy",
+    "numpy < 2.0",
     "numpy-financial",
     "pandas",
     "plotly",
