@@ -372,8 +372,8 @@ class Benefit(IBenefit):
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_name
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
-                self.site_info.attrs.fiat.aggregation[ind].file
+            aggr_areas_path = self.database_input_path.parent.joinpath(
+                "static", self.site_info.attrs.fiat.aggregation[ind].file
             )
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")

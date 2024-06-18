@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Union
 
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -127,5 +128,21 @@ class AbstractDatabaseElement(ABC):
         -------
         list[str]
             list of higher level objects that use the object
+        """
+        pass
+
+    @abstractmethod
+    def get_database_path(self, get_input_path: bool) -> Path:
+        """Return the path to the database.
+
+        Parameters
+        ----------
+        get_input_path : bool
+            whether to return the input or output path
+
+        Returns
+        -------
+        Path
+            path to the database
         """
         pass

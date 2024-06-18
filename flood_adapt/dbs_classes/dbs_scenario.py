@@ -2,7 +2,6 @@ import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
@@ -66,7 +65,7 @@ class DbsScenario(DbsTemplate):
         super().delete(name, toml_only)
 
         # Then delete the results
-        results_path = self._database.output_path / "Scenarios" / name
+        results_path = self._database.output_path / self._folder_name / name
         if results_path.exists():
             shutil.rmtree(results_path, ignore_errors=False)
 
@@ -88,7 +87,9 @@ class DbsScenario(DbsTemplate):
         super().edit(scenario)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Scenarios" / scenario.attrs.name
+        output_path = (
+            self._database.output_path / self._folder_name / scenario.attrs.name
+        )
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
@@ -108,8 +109,8 @@ class DbsScenario(DbsTemplate):
         """
         # Get all the benefits
         benefits = [
-            Benefit.load_file(path)
-            for path in self._database.benefits.list_objects()["path"]
+            self._database.benefits.get(name)
+            for name in self._database.benefits.list_objects()["name"]
         ]
 
         # Check in which benefits this scenario is used

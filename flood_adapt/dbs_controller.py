@@ -13,8 +13,6 @@ import plotly.graph_objects as go
 import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
-from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -47,6 +45,7 @@ class Database(IDatabase):
     database_name: str
     _init_done: bool = False
 
+    base_path: Path
     input_path: Path
     static_path: Path
     output_path: Path
@@ -86,7 +85,7 @@ class Database(IDatabase):
         if database_path is None or database_name is None:
             if not self._init_done:
                 raise ValueError(
-                    """Database path and name must be provided for the first initialization. 
+                    """Database path and name must be provided for the first initialization.
                     To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
@@ -106,9 +105,11 @@ class Database(IDatabase):
         self.database_path = database_path
         self.database_name = database_name
 
-        self.input_path = Path(database_path / database_name / "input")
-        self.static_path = Path(database_path / database_name / "static")
-        self.output_path = Path(database_path / database_name / "output")
+        # Set the paths
+        self.base_path = Path(database_path / database_name)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
@@ -163,137 +164,6 @@ class Database(IDatabase):
     @property
     def benefits(self) -> DbsBenefit:
         return self._benefits
-
-    # General methods
-    def get_aggregation_areas(self) -> dict:
-        """Get a list of the aggregation areas that are provided in the site configuration.
-
-        These are expected to much the ones in the FIAT model.
-
-        Returns
-        -------
-        list[GeoDataFrame]
-            list of geodataframes with the polygons defining the aggregation areas
-        """
-        aggregation_areas = {}
-        for aggr_dict in self.site.attrs.fiat.aggregation:
-            aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self.input_path.parent / "static" / "site" / aggr_dict.file,
-                engine="pyogrio",
-            ).to_crs(4326)
-            # Use always the same column name for name labels
-            aggregation_areas[aggr_dict.name] = aggregation_areas[
-                aggr_dict.name
-            ].rename(columns={aggr_dict.field_name: "name"})
-            # Make sure they are ordered alphabetically
-            aggregation_areas[aggr_dict.name].sort_values(by="name").reset_index(
-                drop=True
-            )
-
-        return aggregation_areas
-
-    def get_model_boundary(self) -> GeoDataFrame:
-        """Get the model boundary from the SFINCS model."""
-        bnd = self.static_sfincs_model.get_model_boundary()
-        return bnd
-
-    def get_model_grid(self) -> QuadtreeGrid:
-        """Get the model grid from the SFINCS model.
-
-        Returns
-        -------
-        QuadtreeGrid
-            The model grid
-        """
-        grid = self.static_sfincs_model.get_model_grid()
-        return grid
-
-    def get_obs_points(self) -> GeoDataFrame:
-        """Get the observation points from the flood hazard model."""
-        if self.site.attrs.obs_point is not None:
-            obs_points = self.site.attrs.obs_point
-            names = []
-            descriptions = []
-            lat = []
-            lon = []
-            for pt in obs_points:
-                names.append(pt.name)
-                descriptions.append(pt.description)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
-
-        # create GeoDataFrame from obs_points in site file
-        df = pd.DataFrame({"name": names, "description": descriptions})
-        # TODO: make crs flexible and add this as a parameter to site.toml?
-        gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-        )
-        return gdf
-
-    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
-        """Get a map from the static folder.
-
-        Parameters
-        ----------
-        path : Union[str, Path]
-            Path to the map relative to the static folder
-
-        Returns
-        -------
-        gpd.GeoDataFrame
-            GeoDataFrame with the map in crs 4326
-
-        Raises
-        ------
-        FileNotFoundError
-            If the file is not found
-        """
-        # Read the map
-        full_path = self.static_path / path
-        if full_path.is_file():
-            return gpd.read_file(full_path, engine="pyogrio").to_crs(4326)
-
-        # If the file is not found, throw an error
-        raise FileNotFoundError(f"File {full_path} not found")
-
-    def get_slr_scn_names(self) -> list:
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
-        df = pd.read_csv(input_file)
-        return df.columns[2:].to_list()
-
-    def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:
-        """Return a table with different types of green infrastructure measures and their infiltration depths.
-
-        This is read by a csv file in the database.
-
-        Returns
-        -------
-        pd.DataFrame
-            Table with values
-        """
-        # Read file from database
-        df = pd.read_csv(
-            self.input_path.parent.joinpath(
-                "static", "green_infra_table", "green_infra_lookup_table.csv"
-            )
-        )
-
-        # Get column with values
-        val_name = "Infiltration depth"
-        col_name = [name for name in df.columns if val_name in name][0]
-        if not col_name:
-            raise KeyError(f"A column with a name containing {val_name} was not found!")
-
-        # Get list of types per measure
-        df["types"] = [
-            [x.strip() for x in row["types"].split(",")] for i, row in df.iterrows()
-        ]
-
-        # Show specific values based on measure type
-        inds = [i for i, row in df.iterrows() if measure_type in row["types"]]
-        df = df.drop(columns="types").iloc[inds, :]
-
-        return df
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
         r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
@@ -591,7 +461,7 @@ class Database(IDatabase):
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-        event_dir = self.input_path.joinpath("events", temp_event.attrs.name)
+        event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
         temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
@@ -717,63 +587,15 @@ class Database(IDatabase):
             )
             return str("")
 
-    def get_buildings(self) -> GeoDataFrame:
-        """Get the building footprints from the FIAT model.
-
-        This should only be the buildings excluding any other types (e.g., roads)
-        The parameters non_building_names in the site config is used for that.
-
-        Returns
-        -------
-        GeoDataFrame
-            building footprints with all the FIAT columns
-        """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
-            non_building_names=self.site.attrs.fiat.non_building_names,
-            return_gdf=True,
-        )
-
-        return buildings
-
-    def get_property_types(self) -> list:
-        """_summary_.
-
-        Returns
-        -------
-        list
-            _description_
-        """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self.input_path.parent / "static" / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        types = fm.exposure.get_primary_object_type()
-        for name in self.site.attrs.fiat.non_building_names:
-            if name in types:
-                types.remove(name)
-        # Add "all" type for using as identifier
-        types.append("all")
-        return types
-
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
-            Path(self.input_path, "events", event.attrs.name, f"{name}.csv"),
+            self.events.get_database_path().joinpath(event.attrs.name, f"{name}.csv"),
             header=False,
         )
 
     def write_cyc(self, event: IEvent, track: TropicalCyclone):
         cyc_file = (
-            self.input_path
-            / "events"
+            self.events.get_database_path()
             / event.attrs.name
             / f"{event.attrs.track_name}.cyc"
         )
@@ -913,9 +735,7 @@ class Database(IDatabase):
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            map_path = self.input_path.parent.joinpath(
-                "output",
-                "Scenarios",
+            map_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
                 scenario_name,
                 "Flooding",
                 "max_water_level_map.nc",
@@ -925,9 +745,7 @@ class Database(IDatabase):
             zsmax = map.to_numpy()
 
         else:
-            file_path = self.input_path.parent.joinpath(
-                "output",
-                "Scenarios",
+            file_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
                 scenario_name,
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
@@ -948,8 +766,8 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
@@ -969,15 +787,15 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+    def get_aggregated_damages(self, scenario_name: str) -> dict[GeoDataFrame]:
         """Get a dictionary with the aggregated damages as geodataframes.
 
         Parameters
@@ -990,8 +808,8 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output", "Scenarios", scenario_name, "Impacts"
+        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Impacts"
         )
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
@@ -1013,9 +831,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated benefits per aggregation type
         """
-        out_path = self.input_path.parent.joinpath(
-            "output",
-            "Benefits",
+        out_path = self.benefits.get_database_path(get_input_path=False).joinpath(
             benefit_name,
         )
         gdfs = {}
@@ -1073,12 +889,12 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scn.attrs.name, "Flooding"
-                )
-                path_new = self.input_path.parent.joinpath(
-                    "output", "Scenarios", scenario.attrs.name, "Flooding"
-                )
+                path_0 = self.scenarios.get_database_path(
+                    get_input_path=False
+                ).joinpath(scn.attrs.name, "Flooding")
+                path_new = self.scenarios.get_database_path(
+                    get_input_path=False
+                ).joinpath(scenario.attrs.name, "Flooding")
                 if (
                     scn.direct_impacts.hazard.has_run_check()
                 ):  # only copy results if the hazard model has actually finished and skip simulation folders

@@ -247,6 +247,24 @@ class DbsTemplate(AbstractDatabaseElement):
         # level object. By default, return an empty list
         return []
 
+    def get_database_path(self, get_input_path: bool = True) -> Path:
+        """Return the path to the database.
+
+        Parameters
+        ----------
+        get_input_path : bool
+            whether to return the input path or the output path
+
+        Returns
+        -------
+        Path
+            path to the database
+        """
+        if get_input_path:
+            return Path(self._path)
+        else:
+            return Path(self._database.output_path / self._folder_name)
+
     def _get_object_list(self) -> dict[Path, datetime]:
         """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
 
@@ -258,11 +276,13 @@ class DbsTemplate(AbstractDatabaseElement):
         base_path = self.input_path / self._folder_name
         directories = list(base_path.iterdir())
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
+        names = [dir.name for dir in directories]
         last_modification_date = [
             datetime.fromtimestamp(file.stat().st_mtime) for file in paths
         ]
 
         objects = {
+            "name": names,
             "path": paths,
             "last_modification_date": last_modification_date,
         }
