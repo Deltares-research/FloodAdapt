@@ -52,7 +52,7 @@ class DbsStatic:
         aggregation_areas = {}
         for aggr_dict in self._database.site.attrs.fiat.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self._database.static_path / "site" / aggr_dict.file,
+                self._database.static_path / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
