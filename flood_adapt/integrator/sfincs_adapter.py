@@ -341,7 +341,7 @@ class SfincsAdapter:
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    measure_path.parents[2] / "static" / "site" / aggr_dict.file,
+                    measure_path.parents[2] / "static" / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
