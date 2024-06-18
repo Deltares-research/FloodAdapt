@@ -87,7 +87,7 @@ class Database(IDatabase):
         if database_path is None or database_name is None:
             if not self._init_done:
                 raise ValueError(
-                    """Database path and name must be provided for the first initialization. 
+                    """Database path and name must be provided for the first initialization.
                     To do this, run api_static.read_database(database_path, site_name) first."""
                 )
             else:
@@ -137,7 +137,7 @@ class Database(IDatabase):
     def reset(self):
         self._instance = None
         self._init_done = False
-        
+
     # Property methods
     @property
     def site(self) -> ISite:
