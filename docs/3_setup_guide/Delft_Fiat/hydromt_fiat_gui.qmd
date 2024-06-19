@@ -15,29 +15,68 @@ To install the Hydromt FIAT GUI simply run the executable **(......exe)** and th
 ### Create the model boundaries
 
 Before you start you must select a model output directory by clicking **File** >> **Select Working Directory**.  
-Now it's time to set up the model. 
+Now you are ready to set up the model. 
 
-* There are multiple options on how to create the model boundaries:  
-  + Draw polygon/ draw box  
-  + Upload Sfincs boundaries  
-  + Upload file (vector file of a closed polygon)
+There are multiple options on how to create the model boundaries:
+
+  * Draw polygon/ draw box  
+  * Upload Sfincs boundaries  
+  * Upload file (polygon vector file)
 
 In the following video you can see how to generate the model boundaries by simply drawing a polygon. 
 
-::: {#fig-cern}
+::: {#fig-model_boundaries}
 
 {{< video ../../_static/videos/hydromt_fiat/Generate_Boundaries.mp4 >}}
 
-Delft Fiat: Create model boundaries using the "Draw Polygon" method.
+Create model boundaries using the "Draw Polygon" method.
+
+:::
+
+### Quickbuild
+If you set up a model in the United States and do not want to use your own data you can simply choose to work with the **quickbuild**. 
+
+The **quickbuild** downloads the 
+
+* **exposure data** from the National Structure Inventory
+* **vulnerability curves** from the FEMA’s Hazus Program
+* **social vulnerability index** and **equity** from the census api. 
+* **road data** from Open Street Map (OSM)
+
+::: {#fig-nsi_exposure}
+
+{{< video ../../_static/videos/hydromt_fiat/Quickbuild.mp4 >}}
+
+Quickbuild NSI data.
 
 :::
 
 ### Create the exposure data
-#### National Structure Inventory database (USA)
+There are two different databases to download the exposure data from, depending on where you want to set up your model:
+
+1. National Structure Inventory (United States)
+2. Open Street Map (international)
+
+You can also download road data from Open Street Map. Simply check the checkbox "Include OSM roads" in the GUI ().
+
+The videos below show the exposure setup using the National Structure Inventory (NSI) database (@fig-nsi_exposure) and the Open  Street Map (OSM) database (@fig-osm_exposure).
+
+::: {#fig-nsi_exposure}
+
 {{< video ../../_static/videos/hydromt_fiat/Exposure_NSI.mp4 >}}
 
-#### Open Street Map database (international)
+Exposure setup using NSI data.
+
+:::
+
+
+::: {#fig-osm_exposure}
+
 {{< video ../../_static/videos/hydromt_fiat/Exposure_OSM.mp4 >}}
+
+Exposure setup using OSM data.
+
+:::
 
 ### Assign vulnerability curves
 {{< video ../../_static/videos/hydromt_fiat/NSI_Vulnerability.mp4 >}}
