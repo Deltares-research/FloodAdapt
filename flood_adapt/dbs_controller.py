@@ -887,6 +887,10 @@ class Database(IDatabase):
         """
         scenario = self._scenarios.get(scenario_name)
 
+        # Dont do anything if the hazard model has already been run in itself
+        if scenario.direct_impacts.hazard.has_run_check():
+            return
+
         simulations = list(
             self.input_path.parent.joinpath("output", "Scenarios").glob("*")
         )
