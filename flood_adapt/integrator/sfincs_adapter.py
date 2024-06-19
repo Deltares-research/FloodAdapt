@@ -72,33 +72,32 @@ from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import cd
 
-# from flood_adapt.object_model.validate.config import validate_existence_root_folder
-
 
 class SfincsAdapter(IHazardAdapter):
+    _logger: logging.Logger
+    sf_model: SfincsModel
+    site: Site
+
     def __init__(self, site: Site, model_root: Optional[str] = None):
         """Load overland sfincs model based on a root directory.
 
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        self.sf_model = SfincsModel(
-            root=model_root, mode="r+", logger=self.sfincs_logger
-        )
+        self._logger = logging.getLogger(__file__)
+        self.sf_model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
         self.sf_model.read()
         self.site = site
 
     def __del__(self):
-        # Close the log file associated with the logger
-        for handler in self.sfincs_logger.handlers:
+        for handler in self._logger.handlers:
             handler.close()
-        self.sfincs_logger.handlers.clear()
-        # Use garbage collector to ensure file handles are properly cleaned up
+        self._logger.handlers.clear()
         gc.collect()
 
     def __enter__(self):
         self.sf_model = SfincsModel(
-            root=self.model_root, mode="r+", logger=self.sfincs_logger
+            root=self.model_root, mode="r+", logger=self._logger
         )
         self.sf_model.read()
         return self
@@ -107,7 +106,7 @@ class SfincsAdapter(IHazardAdapter):
         self.sf_model.close()
         del self
 
-    ### PUBLIC METHODS ###
+    ### HAZARD ADAPTER METHODS ###
     def read(self):
         """Read the sfincs model."""
         self.sf_model.read()
@@ -137,8 +136,8 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, IWaterlevel):
             self._add_forcing_waterlevels(forcing)
         else:
-            self.sfincs_logger.warning(
-                f"Skipping insupported forcing type {forcing.__class__.__name__}"
+            self._logger.warning(
+                f"Skipping unsupported forcing type {forcing.__class__.__name__}"
             )
             return
 
@@ -151,20 +150,20 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(measure, Pump):
             self._add_measure_pump(measure)
         else:
-            self.sfincs_logger.warning(
-                f"Skipping insupported measure type {measure.__class__.__name__}"
+            self._logger.warning(
+                f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
             return
 
     def add_projection(self, projection: PhysicalProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
-        self.add_wl_bc(self.get_water_levels() + projection.attrs.sea_level_rise)
+        self._add_wl_bc(self.get_water_levels() + projection.attrs.sea_level_rise)
 
         # TODO investigate how/if to add subsidence to model
         # projection.attrs.subsidence
 
         rainfall = self.get_rainfall() + projection.attrs.rainfall_increase
-        self.add_precip_forcing(rainfall)
+        self._add_precip_forcing(rainfall)
 
         # TODO investigate how/if to add storm frequency increase to model
         # projection.attrs.storm_frequency_increase
@@ -186,13 +185,39 @@ class SfincsAdapter(IHazardAdapter):
 
         return all(checks)
 
-    ### PRIVATE METHODS ###
+    ### PUBLIC GETTERS - Can be called from outside of this class ###
+    def get_mask(self):
+        """Get mask with inactive cells from model."""
+        mask = self.sf_model.grid["msk"]
+        return mask
+
+    def get_bedlevel(self):
+        """Get bed level from model."""
+        self.sf_model.read_results()
+        zb = self.sf_model.results["zb"]
+        return zb
+
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
+        """Get bounding box from model."""
+        return self.sf_model.region
+
+    def get_model_grid(self) -> QuadtreeGrid:
+        """Get grid from model.
+
+        Returns
+        -------
+        QuadtreeGrid
+            QuadtreeGrid with the model grid
+        """
+        return self.sf_model.quadtree
+
+    ### PRIVATE METHODS - Should not be called from outside of this class ###
     def _preprocess(self):
         sim_paths = self._get_simulation_paths()
         for ii, event in enumerate(self._scenario.events):
             _event = Database.events.get(event)
 
-            self.set_timing(_event.attrs)
+            self._set_timing(_event.attrs)
 
             # run offshore model or download wl data, copy all required files to the simulation folder
             _event.process()
@@ -207,10 +232,10 @@ class SfincsAdapter(IHazardAdapter):
                 self.add_projection(projection)
 
             # add observation points from site.toml
-            self.add_obs_points()
+            self._add_obs_points()
 
             # write sfincs model in output destination
-            self.write_sfincs_model(path_out=sim_paths[ii])
+            self._write_sfincs_model(path_out=sim_paths[ii])
 
     def _process(self):
         # Run new model(s)
@@ -329,10 +354,10 @@ class SfincsAdapter(IHazardAdapter):
                 magnitude=None,
             )
         elif isinstance(forcing, RainfallFromModel):
-            # TODO implement this
+            # TODO implement
             pass
         elif isinstance(forcing, RainfallFromSPWFile):
-            # TODO implement this
+            # TODO implement
             pass
         else:
             raise ValueError(
@@ -501,11 +526,260 @@ class SfincsAdapter(IHazardAdapter):
             merge=True,
         )
 
-    ### PROJECTIONS HELPERS ###
+    ### PROJECTIONS HELPERS - not needed at the moment ###
 
-    ### PREPROCESS HELPERS ###
+    ##### OLD CODE BELOW #####
+    # @Gundula: I have renamed some the functions and added comments to some that explain when they were called in the original hazard.py just to keep track.
+    # Im not super familiar with hydropmt_sfincs and its functions, so I have not changed the logic of the functions, only the names and comments.
+    # It could be the case that some of the functions in here are not needed anymore, but we can always remove them later if needed.
 
-    ### PROCESS HELPERS ###
+    # I have also added a '_' to the start of all functions I see as private.
+    # Public functions can be called from outside of the class, all private functions should not be called from outside of the class.
+    # (even though python does not care and will allow it anyways, we can still follow the convention just to make it clear)
+
+    ### SFINCS SETTERS ###
+    def _set_timing(self, event: EventModel):
+        """Set model reference times based on event time series."""
+        # Get start and end time of event
+        tstart = event.time.start_time
+        tstop = event.time.end_time
+
+        # Update timing of the model
+        self.sf_model.set_config("tref", tstart)
+        self.sf_model.set_config("tstart", tstart)
+        self.sf_model.set_config("tstop", tstop)
+
+    def _set_config_spw(self, spw_name: str):
+        self.sf_model.set_config("spwfile", spw_name)
+
+    def _turn_off_bnd_press_correction(self):
+        self.sf_model.set_config("pavbnd", -9999)
+
+    ### ADD TO SFINCS ###
+    # @Gundula functions starting with `add` should not blindly overwrite data in sfincs, but read data from the model, add something to it, then set the model again.
+    # This is to ensure that we do not overwrite any existing data in the model.
+    # (maybe this is what hydromt_sfincs already does, but just checking with you)
+    def _add_obs_points(self):
+        """Add observation points provided in the site toml to SFINCS model."""
+        if self.site.attrs.obs_point is not None:
+            logging.info("Adding observation points to the overland flood model...")
+
+            obs_points = self.site.attrs.obs_point
+            names = []
+            lat = []
+            lon = []
+            for pt in obs_points:
+                names.append(pt.name)
+                lat.append(pt.lat)
+                lon.append(pt.lon)
+
+            # create GeoDataFrame from obs_points in site file
+            df = pd.DataFrame({"name": names})
+            gdf = gpd.GeoDataFrame(
+                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
+            )
+
+            # Add locations to SFINCS file
+            self.sf_model.setup_observation_points(locations=gdf, merge=False)
+
+    def _add_wind_forcing_from_grid(self, ds: xr.DataArray):
+        # if self.event.attrs.template != "Historical_hurricane":
+        # if self.event.attrs.wind.source == "map":
+        # add to overland & offshore
+        """Add spatially varying wind forcing to sfincs model.
+
+        Parameters
+        ----------
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - wind_u: eastward wind velocity [m/s]
+            - wind_v: northward wind velocity [m/s]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_wind_forcing_from_grid(wind=ds)
+
+    def _add_pressure_forcing_from_grid(self, ds: xr.DataArray):
+        # if self.event.attrs.template == "Historical_offshore":
+        # if self.event.attrs.wind.source == "map":
+        # add to offshore only?
+        """Add spatially varying barometric pressure to sfincs model.
+
+        Parameters
+        ----------
+        ds : xr.DataArray
+            Dataarray which should contain:
+            - press: barometric pressure [Pa]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_pressure_forcing_from_grid(press=ds)
+
+    def _add_precip_forcing_from_grid(self, ds: xr.DataArray):
+        # if self.event.attrs.template != "Historical_hurricane":
+        # if self.event.attrs.rainfall.source == "map":
+        # to overland
+        """Add spatially varying precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : xr.DataArray
+            Dataarray which should contain:
+            - precip: precipitation rates [mm/hr]
+            - spatial_ref: CRS
+        """
+        self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
+
+    def _add_precip_forcing(
+        self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None
+    ):
+        # rainfall from file
+        # synthetic rainfall
+        # constant rainfall
+        """Add spatially uniform precipitation to sfincs model.
+
+        Parameters
+        ----------
+        precip : Union[str, os.PathLike], optional
+            timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
+        const_precip : float, optional
+            time-invariant precipitation magnitude [mm/hr], by default None
+        """
+        # Add precipitation to SFINCS model
+        self.sf_model.setup_precip_forcing(
+            timeseries=timeseries, magnitude=const_precip
+        )
+
+    def _add_wl_bc(self, df_ts: pd.DataFrame):
+        # ALL
+        """Add waterlevel dataframe to sfincs model.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            Dataframe with waterlevel time series at every boundary point (index of the dataframe should be time and every column should be an integer starting with 1)
+        """
+        # Determine bnd points from reference overland model
+        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
+        gdf_locs.crs = self.sf_model.crs
+
+        if len(df_ts.columns) == 1:
+            # Go from 1 timeseries to timeseries for all boundary points
+            for i in range(1, len(gdf_locs)):
+                df_ts[i + 1] = df_ts[1]
+
+        # HydroMT function: set waterlevel forcing from time series
+        self.sf_model.set_forcing_1d(
+            name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
+        )
+
+    def _add_bzs_from_bca(
+        self, event: EventModel, physical_projection: PhysicalProjectionModel
+    ):
+        # ONLY offshore models
+        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
+        sb = SfincsBoundary()
+        sb.read_flow_boundary_points(Path(self.sf_model.root).joinpath("sfincs.bnd"))
+        sb.read_astro_boundary_conditions(
+            Path(self.sf_model.root).joinpath("sfincs.bca")
+        )
+
+        times = pd.date_range(
+            start=event.time.start_time,
+            end=event.time.end_time,
+            freq="10T",
+        )
+
+        # Predict tidal signal and add SLR
+        for bnd_ii in range(len(sb.flow_boundary_points)):
+            tide_ii = (
+                predict(sb.flow_boundary_points[bnd_ii].astro, times)
+                + event.water_level_offset.convert(UnitTypesLength("meters"))
+                + physical_projection.sea_level_rise.convert(UnitTypesLength("meters"))
+            )
+
+            if bnd_ii == 0:
+                wl_df = pd.DataFrame(data={1: tide_ii}, index=times)
+            else:
+                wl_df[bnd_ii + 1] = tide_ii
+
+        # Determine bnd points from reference overland model
+        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
+        gdf_locs.crs = self.sf_model.crs
+
+        # HydroMT function: set waterlevel forcing from time series
+        self.sf_model.set_forcing_1d(
+            name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
+        )
+
+    def _add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
+        # Should always be called if rivers in site > 0
+        # then use site as default values, and overwrite if discharge is provided.
+        """Add discharge to overland sfincs model based on new discharge time series.
+
+        Parameters
+        ----------
+        df_ts : pd.DataFrame
+            time series of discharge, index should be Pandas DateRange
+        """
+        # Determine bnd points from reference overland model
+        # ASSUMPTION: Order of the rivers is the same as the site.toml file
+        if np.any(list_df):
+            gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
+            gdf_locs.crs = self.sf_model.crs
+
+            if len(list_df.columns) != len(gdf_locs):
+                logging.error(
+                    """The number of rivers of the site.toml does not match the
+                              number of rivers in the SFINCS model. Please check the number
+                              of coordinates in the SFINCS *.src file."""
+                )
+                raise ValueError(
+                    "Number of rivers in site.toml and SFINCS template model not compatible"
+                )
+
+            # Test order of rivers is the same in the site file as in the SFICNS model
+            for ii, river in enumerate((site_river)):
+                if not (
+                    np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
+                    and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
+                ):
+                    logging.error(
+                        """The location and/or order of rivers in the site.toml does not match the
+                                locations and/or order of rivers in the SFINCS model. Please check the
+                                coordinates and their order in the SFINCS *.src file and ensure they are
+                                consistent with the coordinates and order orf rivers in the site.toml file."""
+                    )
+                    raise ValueError(
+                        "River coordinates in site.toml and SFINCS template model not compatible"
+                    )
+                    break
+
+            self.sf_model.setup_discharge_forcing(
+                timeseries=list_df, locations=gdf_locs, merge=False
+            )
+
+    def _add_forcing_spw(
+        self,
+        historical_hurricane: HistoricalHurricane,
+        database_path: Path,
+        model_dir: Path,
+    ):
+        # TODO investigate this. seems to not add any forcing?
+        """Add spiderweb forcing to the sfincs model.
+
+        Parameters
+        ----------
+        historical_hurricane : HistoricalHurricane
+            Information of the historical hurricane event
+        database_path : Path
+            Path of the main database
+        model_dir : Path
+            Output path of the model
+        """
+        historical_hurricane.make_spw_file(
+            database_path=database_path, model_dir=model_dir, site=self.site
+        )
+
+    ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario_name: str = None) -> Path:
         if scenario_name is None:
             scenario_name = self._scenario.attrs.name
@@ -572,8 +846,60 @@ class SfincsAdapter(IHazardAdapter):
 
         return map_fn
 
-    ### POSTPROCESS HELPERS ###
-    # Load overland sfincs model
+    def _get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
+        """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
+
+        Returns
+        -------
+        wl_df: pd.DataFrame
+            time series of water level.
+        """
+        ds_his = utils.read_sfincs_his_results(
+            Path(self.sf_model.root).joinpath("sfincs_his.nc"),
+            crs=self.sf_model.crs.to_epsg(),
+        )
+        wl_df = pd.DataFrame(
+            data=ds_his.point_zs.to_numpy(),
+            index=ds_his.time.to_numpy(),
+            columns=np.arange(1, ds_his.point_zs.to_numpy().shape[1] + 1, 1),
+        )
+        return wl_df
+
+    def _get_zsmax(self):
+        """Read zsmax file and return absolute maximum water level over entire simulation."""
+        self.sf_model.read_results()
+        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        zsmax.attrs["units"] = "m"
+        return zsmax
+
+    def _get_zs_points(self):
+        """Read water level (zs) timeseries at observation points.
+
+        Names are allocated from the site.toml.
+        See also add_obs_points() above.
+        """
+        self.sf_model.read_results()
+        da = self.sf_model.results["point_zs"]
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+
+        # get station names from site.toml
+        if self.site.attrs.obs_point is not None:
+            names = []
+            descriptions = []
+            obs_points = self.site.attrs.obs_point
+            for pt in obs_points:
+                names.append(pt.name)
+                descriptions.append(pt.description)
+
+        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
+        gdf = gpd.GeoDataFrame(
+            pt_df,
+            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
+            crs=self.sf_model.crs,
+        )
+        return df, gdf
+
+    ### OUTPUT HELPERS ###
     def _write_floodmap_geotiff(self):
         results_path = self._get_result_path()
 
@@ -586,127 +912,16 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
                 # read max. water level
-                zsmax = model.read_zsmax()
+                zsmax = model._get_zsmax()
 
                 # writing the geotiff to the scenario results folder
-                model.write_geotiff(
+                model._write_geotiff(
                     zsmax,
                     demfile=demfile,
                     floodmap_fn=results_path.joinpath(
                         f"FloodMap_{self._scenario.attrs.name}.tif"
                     ),
                 )
-
-    def _plot_wl_obs(self):
-        """Plot water levels at SFINCS observation points as html.
-
-        Only for single event scenarios.
-        """
-        for sim_path in self._get_simulation_paths():
-            # read SFINCS model
-            with SfincsAdapter(model_root=sim_path, site=self.site) as model:
-                df, gdf = model.read_zs_points()
-
-            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
-            conversion_factor = UnitfulLength(
-                value=1.0, units=UnitTypesLength("meters")
-            ).convert(gui_units)
-
-            for ii, col in enumerate(df.columns):
-                # Plot actual thing
-                fig = px.line(
-                    df[col] * conversion_factor
-                    + self.site.attrs.water_level.localdatum.height.convert(
-                        gui_units
-                    )  # convert to reference datum for plotting
-                )
-
-                # plot reference water levels
-                fig.add_hline(
-                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
-                    line_dash="dash",
-                    line_color="#000000",
-                    annotation_text="MSL",
-                    annotation_position="bottom right",
-                )
-                if self.site.attrs.water_level.other:
-                    for wl_ref in self.site.attrs.water_level.other:
-                        fig.add_hline(
-                            y=wl_ref.height.convert(gui_units),
-                            line_dash="dash",
-                            line_color="#3ec97c",
-                            annotation_text=wl_ref.name,
-                            annotation_position="bottom right",
-                        )
-
-                fig.update_layout(
-                    autosize=False,
-                    height=100 * 2,
-                    width=280 * 2,
-                    margin={"r": 0, "l": 0, "b": 0, "t": 20},
-                    font={"size": 10, "color": "black", "family": "Arial"},
-                    title={
-                        "text": gdf.iloc[ii]["Description"],
-                        "font": {"size": 12, "color": "black", "family": "Arial"},
-                        "x": 0.5,
-                        "xanchor": "center",
-                    },
-                    xaxis_title="Time",
-                    yaxis_title=f"Water level [{gui_units}]",
-                    yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                    xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                    showlegend=False,
-                )
-
-                # check if event is historic
-                event = Database.events.get(self._scenario.attrs.event)
-                if event.attrs.timing == "historical":
-                    # check if observation station has a tide gauge ID
-                    # if yes to both download tide gauge data and add to plot
-                    if (
-                        isinstance(self.site.attrs.obs_point[ii].ID, int)
-                        or self.site.attrs.obs_point[ii].file is not None
-                    ):
-                        if self.site.attrs.obs_point[ii].file is not None:
-                            file = Database.static_path.joinpath(
-                                self.site.attrs.obs_point[ii].file
-                            )
-                        else:
-                            file = None
-
-                        try:
-                            # TODO move download functionality to here ?
-                            df_gauge = HistoricalNearshore.download_wl_data(
-                                station_id=self.site.attrs.obs_point[ii].ID,
-                                start_time_str=event.attrs.time.start_time,
-                                stop_time_str=event.attrs.time.end_time,
-                                units=UnitTypesLength(gui_units),
-                                file=file,
-                            )
-                        except COOPSAPIError as e:
-                            logging.warning(
-                                f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
-                            )
-                        else:
-                            # If data is available, add to plot
-                            fig.add_trace(
-                                go.Scatter(
-                                    x=pd.DatetimeIndex(df_gauge.index),
-                                    y=df_gauge[1]
-                                    + self.site.attrs.water_level.msl.height.convert(
-                                        gui_units
-                                    ),
-                                    line_color="#ea6404",
-                                )
-                            )
-                            fig["data"][0]["name"] = "model"
-                            fig["data"][1]["name"] = "measurement"
-                            fig.update_layout(showlegend=True)
-
-                # write html to results folder
-                station_name = gdf.iloc[ii]["Name"]
-                results_path = self._get_result_path()
-                fig.write_html(results_path.joinpath(f"{station_name}_timeseries.html"))
 
     def _write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
@@ -718,6 +933,61 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_paths[0], site=self.site) as model:
             zsmax = model.read_zsmax()
             zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
+
+    def _write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
+        # read DEM and convert units to metric units used by SFINCS
+
+        demfile_units = self.site.attrs.dem.units
+        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
+            UnitTypesLength("meters")
+        )
+        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+
+        # determine conversion factor for output floodmap
+        floodmap_units = self.site.attrs.sfincs.floodmap_units
+        floodmap_conversion = UnitfulLength(
+            value=1.0, units=UnitTypesLength("meters")
+        ).convert(floodmap_units)
+
+        utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
+            dep=floodmap_conversion * dem,
+            hmin=0.01,
+            floodmap_fn=str(floodmap_fn),
+        )
+
+    def _write_sfincs_model(self, path_out: Path):
+        """Write all the files for the sfincs model.
+
+        Args:
+            path_out (Path): new root of sfincs model
+        """
+        # Change model root to new folder
+        self.sf_model.set_root(path_out, mode="w+")
+
+        # Write sfincs files in output folder
+        self.sf_model.write()
+
+    def _downscale_hmax(self, zsmax, demfile: Path):
+        # read DEM and convert units to metric units used by SFINCS
+        demfile_units = self.site.attrs.dem.units
+        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
+            UnitTypesLength("meters")
+        )
+        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+
+        # determine conversion factor for output floodmap
+        floodmap_units = self.site.attrs.sfincs.floodmap_units
+        floodmap_conversion = UnitfulLength(
+            value=1.0, units=UnitTypesLength("meters")
+        ).convert(floodmap_units)
+
+        hmax = utils.downscale_floodmap(
+            zsmax=floodmap_conversion * zsmax,
+            dep=floodmap_conversion * dem,
+            hmin=0.01,
+        )
+        return hmax
 
     def _calculate_rp_floodmaps(self):
         """Calculate flood risk maps from a set of (currently) SFINCS water level outputs using linear interpolation.
@@ -845,376 +1115,113 @@ class SfincsAdapter(IHazardAdapter):
                     floodmap_fn=result_path.joinpath(f"RP_{rp:04d}_maps.tif"),
                 )
 
-    ##### OLD CODE #####
+    def _plot_wl_obs(self):
+        """Plot water levels at SFINCS observation points as html.
 
-    ### SFINCS HELPERS ###
-    # TODO: with Gundula: go through this file and delete obsolete functions
-    def set_timing(self, event: EventModel):
-        """Set model reference times based on event time series."""
-        # Get start and end time of event
-        tstart = event.time.start_time
-        tstop = event.time.end_time
-
-        # Update timing of the model
-        self.sf_model.set_config("tref", tstart)
-        self.sf_model.set_config("tstart", tstart)
-        self.sf_model.set_config("tstop", tstop)
-
-    def add_obs_points(self):
-        """Add observation points provided in the site toml to SFINCS model."""
-        if self.site.attrs.obs_point is not None:
-            logging.info("Adding observation points to the overland flood model...")
-
-            obs_points = self.site.attrs.obs_point
-            names = []
-            lat = []
-            lon = []
-            for pt in obs_points:
-                names.append(pt.name)
-                lat.append(pt.lat)
-                lon.append(pt.lon)
-
-            # create GeoDataFrame from obs_points in site file
-            df = pd.DataFrame({"name": names})
-            gdf = gpd.GeoDataFrame(
-                df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
-            )
-
-            # Add locations to SFINCS file
-            self.sf_model.setup_observation_points(locations=gdf, merge=False)
-
-    def add_wind_forcing_from_grid(self, ds: xr.DataArray):
-        # if self.event.attrs.template != "Historical_hurricane":
-        # if self.event.attrs.wind.source == "map":
-        # add to overland & offshore
-        """Add spatially varying wind forcing to sfincs model.
-
-        Parameters
-        ----------
-        ds : xr.DataArray
-            Dataarray which should contain:
-            - wind_u: eastward wind velocity [m/s]
-            - wind_v: northward wind velocity [m/s]
-            - spatial_ref: CRS
+        Only for single event scenarios.
         """
-        self.sf_model.setup_wind_forcing_from_grid(wind=ds)
+        for sim_path in self._get_simulation_paths():
+            # read SFINCS model
+            with SfincsAdapter(model_root=sim_path, site=self.site) as model:
+                df, gdf = model._get_zs_points()
 
-    def add_pressure_forcing_from_grid(self, ds: xr.DataArray):
-        # if self.event.attrs.template == "Historical_offshore":
-        # if self.event.attrs.wind.source == "map":
-        # add to offshore only?
-        """Add spatially varying barometric pressure to sfincs model.
+            gui_units = UnitTypesLength(self.site.attrs.gui.default_length_units)
+            conversion_factor = UnitfulLength(
+                value=1.0, units=UnitTypesLength("meters")
+            ).convert(gui_units)
 
-        Parameters
-        ----------
-        ds : xr.DataArray
-            Dataarray which should contain:
-            - press: barometric pressure [Pa]
-            - spatial_ref: CRS
-        """
-        self.sf_model.setup_pressure_forcing_from_grid(press=ds)
-
-    def add_precip_forcing_from_grid(self, ds: xr.DataArray):
-        # if self.event.attrs.template != "Historical_hurricane":
-        # if self.event.attrs.rainfall.source == "map":
-        # to overland
-        """Add spatially varying precipitation to sfincs model.
-
-        Parameters
-        ----------
-        precip : xr.DataArray
-            Dataarray which should contain:
-            - precip: precipitation rates [mm/hr]
-            - spatial_ref: CRS
-        """
-        self.sf_model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
-
-    def add_precip_forcing(
-        self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None
-    ):
-        # rainfall from file
-        # synthetic rainfall
-        # constant rainfall
-        """Add spatially uniform precipitation to sfincs model.
-
-        Parameters
-        ----------
-        precip : Union[str, os.PathLike], optional
-            timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
-        const_precip : float, optional
-            time-invariant precipitation magnitude [mm/hr], by default None
-        """
-        # Add precipitation to SFINCS model
-        self.sf_model.setup_precip_forcing(
-            timeseries=timeseries, magnitude=const_precip
-        )
-
-    def add_wl_bc(self, df_ts: pd.DataFrame):
-        # ALL
-        """Add waterlevel dataframe to sfincs model.
-
-        Parameters
-        ----------
-        df_ts : pd.DataFrame
-            Dataframe with waterlevel time series at every boundary point (index of the dataframe should be time and every column should be an integer starting with 1)
-        """
-        # Determine bnd points from reference overland model
-        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
-        gdf_locs.crs = self.sf_model.crs
-
-        if len(df_ts.columns) == 1:
-            # Go from 1 timeseries to timeseries for all boundary points
-            for i in range(1, len(gdf_locs)):
-                df_ts[i + 1] = df_ts[1]
-
-        # HydroMT function: set waterlevel forcing from time series
-        self.sf_model.set_forcing_1d(
-            name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
-        )
-
-    def add_bzs_from_bca(
-        self, event: EventModel, physical_projection: PhysicalProjectionModel
-    ):
-        # ONLY offshore models
-        """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
-        sb = SfincsBoundary()
-        sb.read_flow_boundary_points(Path(self.sf_model.root).joinpath("sfincs.bnd"))
-        sb.read_astro_boundary_conditions(
-            Path(self.sf_model.root).joinpath("sfincs.bca")
-        )
-
-        times = pd.date_range(
-            start=event.time.start_time,
-            end=event.time.end_time,
-            freq="10T",
-        )
-
-        # Predict tidal signal and add SLR
-        for bnd_ii in range(len(sb.flow_boundary_points)):
-            tide_ii = (
-                predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert(UnitTypesLength("meters"))
-                + physical_projection.sea_level_rise.convert(UnitTypesLength("meters"))
-            )
-
-            if bnd_ii == 0:
-                wl_df = pd.DataFrame(data={1: tide_ii}, index=times)
-            else:
-                wl_df[bnd_ii + 1] = tide_ii
-
-        # Determine bnd points from reference overland model
-        gdf_locs = self.sf_model.forcing["bzs"].vector.to_gdf()
-        gdf_locs.crs = self.sf_model.crs
-
-        # HydroMT function: set waterlevel forcing from time series
-        self.sf_model.set_forcing_1d(
-            name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
-        )
-
-    def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
-        """Create a pd.Dataframe with waterlevels from the offshore model at the bnd locations of the overland model.
-
-        Returns
-        -------
-        wl_df: pd.DataFrame
-            time series of water level.
-        """
-        ds_his = utils.read_sfincs_his_results(
-            Path(self.sf_model.root).joinpath("sfincs_his.nc"),
-            crs=self.sf_model.crs.to_epsg(),
-        )
-        wl_df = pd.DataFrame(
-            data=ds_his.point_zs.to_numpy(),
-            index=ds_his.time.to_numpy(),
-            columns=np.arange(1, ds_his.point_zs.to_numpy().shape[1] + 1, 1),
-        )
-        return wl_df
-
-    def add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
-        # Should always be called if rivers in site > 0
-        # then use site as default values, and overwrite if discharge is provided.
-        """Add discharge to overland sfincs model based on new discharge time series.
-
-        Parameters
-        ----------
-        df_ts : pd.DataFrame
-            time series of discharge, index should be Pandas DateRange
-        """
-        # Determine bnd points from reference overland model
-        # ASSUMPTION: Order of the rivers is the same as the site.toml file
-        if np.any(list_df):
-            gdf_locs = self.sf_model.forcing["dis"].vector.to_gdf()
-            gdf_locs.crs = self.sf_model.crs
-
-            if len(list_df.columns) != len(gdf_locs):
-                logging.error(
-                    """The number of rivers of the site.toml does not match the
-                              number of rivers in the SFINCS model. Please check the number
-                              of coordinates in the SFINCS *.src file."""
-                )
-                raise ValueError(
-                    "Number of rivers in site.toml and SFINCS template model not compatible"
+            for ii, col in enumerate(df.columns):
+                # Plot actual thing
+                fig = px.line(
+                    df[col] * conversion_factor
+                    + self.site.attrs.water_level.localdatum.height.convert(
+                        gui_units
+                    )  # convert to reference datum for plotting
                 )
 
-            # Test order of rivers is the same in the site file as in the SFICNS model
-            for ii, river in enumerate((site_river)):
-                if not (
-                    np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
-                    and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
-                ):
-                    logging.error(
-                        """The location and/or order of rivers in the site.toml does not match the
-                                locations and/or order of rivers in the SFINCS model. Please check the
-                                coordinates and their order in the SFINCS *.src file and ensure they are
-                                consistent with the coordinates and order orf rivers in the site.toml file."""
-                    )
-                    raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
-                    )
-                    break
+                # plot reference water levels
+                fig.add_hline(
+                    y=self.site.attrs.water_level.msl.height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#000000",
+                    annotation_text="MSL",
+                    annotation_position="bottom right",
+                )
+                if self.site.attrs.water_level.other:
+                    for wl_ref in self.site.attrs.water_level.other:
+                        fig.add_hline(
+                            y=wl_ref.height.convert(gui_units),
+                            line_dash="dash",
+                            line_color="#3ec97c",
+                            annotation_text=wl_ref.name,
+                            annotation_position="bottom right",
+                        )
 
-            self.sf_model.setup_discharge_forcing(
-                timeseries=list_df, locations=gdf_locs, merge=False
-            )
+                fig.update_layout(
+                    autosize=False,
+                    height=100 * 2,
+                    width=280 * 2,
+                    margin={"r": 0, "l": 0, "b": 0, "t": 20},
+                    font={"size": 10, "color": "black", "family": "Arial"},
+                    title={
+                        "text": gdf.iloc[ii]["Description"],
+                        "font": {"size": 12, "color": "black", "family": "Arial"},
+                        "x": 0.5,
+                        "xanchor": "center",
+                    },
+                    xaxis_title="Time",
+                    yaxis_title=f"Water level [{gui_units}]",
+                    yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+                    showlegend=False,
+                )
 
-    def write_sfincs_model(self, path_out: Path):
-        """Write all the files for the sfincs model.
+                # check if event is historic
+                event = Database.events.get(self._scenario.attrs.event)
+                if event.attrs.timing == "historical":
+                    # check if observation station has a tide gauge ID
+                    # if yes to both download tide gauge data and add to plot
+                    if (
+                        isinstance(self.site.attrs.obs_point[ii].ID, int)
+                        or self.site.attrs.obs_point[ii].file is not None
+                    ):
+                        if self.site.attrs.obs_point[ii].file is not None:
+                            file = Database.static_path.joinpath(
+                                self.site.attrs.obs_point[ii].file
+                            )
+                        else:
+                            file = None
 
-        Args:
-            path_out (Path): new root of sfincs model
-        """
-        # Change model root to new folder
-        self.sf_model.set_root(path_out, mode="w+")
+                        try:
+                            # TODO move download functionality to here ?
+                            df_gauge = HistoricalNearshore.download_wl_data(
+                                station_id=self.site.attrs.obs_point[ii].ID,
+                                start_time_str=event.attrs.time.start_time,
+                                stop_time_str=event.attrs.time.end_time,
+                                units=UnitTypesLength(gui_units),
+                                file=file,
+                            )
+                        except COOPSAPIError as e:
+                            logging.warning(
+                                f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
+                            )
+                        else:
+                            # If data is available, add to plot
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=pd.DatetimeIndex(df_gauge.index),
+                                    y=df_gauge[1]
+                                    + self.site.attrs.water_level.msl.height.convert(
+                                        gui_units
+                                    ),
+                                    line_color="#ea6404",
+                                )
+                            )
+                            fig["data"][0]["name"] = "model"
+                            fig["data"][1]["name"] = "measurement"
+                            fig.update_layout(showlegend=True)
 
-        # Write sfincs files in output folder
-        self.sf_model.write()
-
-    def add_spw_forcing(
-        self,
-        historical_hurricane: HistoricalHurricane,
-        database_path: Path,
-        model_dir: Path,
-    ):
-        # TODO investigate this. seems to not add any forcing?
-        """Add spiderweb forcing to the sfincs model.
-
-        Parameters
-        ----------
-        historical_hurricane : HistoricalHurricane
-            Information of the historical hurricane event
-        database_path : Path
-            Path of the main database
-        model_dir : Path
-            Output path of the model
-        """
-        historical_hurricane.make_spw_file(
-            database_path=database_path, model_dir=model_dir, site=self.site
-        )
-
-    def set_config_spw(self, spw_name: str):
-        self.sf_model.set_config("spwfile", spw_name)
-
-    def turn_off_bnd_press_correction(self):
-        self.sf_model.set_config("pavbnd", -9999)
-
-    def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entire simulation."""
-        self.sf_model.read_results()
-        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
-        zsmax.attrs["units"] = "m"
-        return zsmax
-
-    def read_zs_points(self):
-        """Read water level (zs) timeseries at observation points.
-
-        Names are allocated from the site.toml.
-        See also add_obs_points() above.
-        """
-        self.sf_model.read_results()
-        da = self.sf_model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
-
-        # get station names from site.toml
-        if self.site.attrs.obs_point is not None:
-            names = []
-            descriptions = []
-            obs_points = self.site.attrs.obs_point
-            for pt in obs_points:
-                names.append(pt.name)
-                descriptions.append(pt.description)
-
-        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
-        gdf = gpd.GeoDataFrame(
-            pt_df,
-            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
-            crs=self.sf_model.crs,
-        )
-        return df, gdf
-
-    def get_mask(self):
-        """Get mask with inactive cells from model."""
-        mask = self.sf_model.grid["msk"]
-        return mask
-
-    def get_bedlevel(self):
-        """Get bed level from model."""
-        self.sf_model.read_results()
-        zb = self.sf_model.results["zb"]
-        return zb
-
-    def get_model_boundary(self) -> gpd.GeoDataFrame:
-        """Get bounding box from model."""
-        return self.sf_model.region
-
-    def get_model_grid(self) -> QuadtreeGrid:
-        """Get grid from model.
-
-        Returns
-        -------
-        QuadtreeGrid
-            QuadtreeGrid with the model grid
-        """
-        return self.sf_model.quadtree
-
-    def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
-        # read DEM and convert units to metric units used by SFINCS
-
-        demfile_units = self.site.attrs.dem.units
-        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
-            UnitTypesLength("meters")
-        )
-        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.floodmap_units
-        floodmap_conversion = UnitfulLength(
-            value=1.0, units=UnitTypesLength("meters")
-        ).convert(floodmap_units)
-
-        utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zsmax,
-            dep=floodmap_conversion * dem,
-            hmin=0.01,
-            floodmap_fn=str(floodmap_fn),
-        )
-
-    def downscale_hmax(self, zsmax, demfile: Path):
-        # read DEM and convert units to metric units used by SFINCS
-        demfile_units = self.site.attrs.dem.units
-        dem_conversion = UnitfulLength(value=1.0, units=demfile_units).convert(
-            UnitTypesLength("meters")
-        )
-        dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
-
-        # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.floodmap_units
-        floodmap_conversion = UnitfulLength(
-            value=1.0, units=UnitTypesLength("meters")
-        ).convert(floodmap_units)
-
-        hmax = utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zsmax,
-            dep=floodmap_conversion * dem,
-            hmin=0.01,
-        )
-        return hmax
+                # write html to results folder
+                station_name = gdf.iloc[ii]["Name"]
+                results_path = self._get_result_path()
+                fig.write_html(results_path.joinpath(f"{station_name}_timeseries.html"))
