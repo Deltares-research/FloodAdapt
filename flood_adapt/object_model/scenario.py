@@ -113,7 +113,7 @@ class Scenario(IScenario):
         logging.getLogger("").setLevel(logging.INFO)
 
         # Create a file handler and set the required logging level.
-        fh = logging.FileHandler(filename=filename, mode="w")
+        fh = logging.FileHandler(filename=filename, mode="a")
         fh.setLevel(logging.DEBUG)
 
         # Create a console handler and set the required logging level.
@@ -142,11 +142,9 @@ class Scenario(IScenario):
         # Get the root logger
         root_logger = logging.getLogger("")
 
-        # Retrieve the handlers
-        handlers = root_logger.handlers
-
         # Close and remove the handlers
-        for handler in handlers:
+        while len(root_logger.handlers) > 0:
+            handler = root_logger.handlers[0]
             handler.close()
             root_logger.removeHandler(handler)
 
