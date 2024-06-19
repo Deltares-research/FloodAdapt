@@ -140,10 +140,17 @@ $navbar-hl: $links ;
 #quarto-sidebar-section-9 .sidebar-item:first-child a:hover {
     width: 105%;
 }
+#quarto-sidebar-section-10 .sidebar-item-container:nth-child(1) {
+    height: 30px !important;
+  }
 
 #quarto-sidebar-section-10 .sidebar-item:nth-child(1) a:hover {
+    height: 145%;
+    width: 115%
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) a:hover {
     height: 105%;
-    width: 105%
+    width: 115%
 }
 
 
