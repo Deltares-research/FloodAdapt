@@ -100,6 +100,7 @@ def create_env(
     prefix: str = None,
     editable: bool = False,
     optional_deps: str = None,
+
 ):
     if not BACKEND_ROOT.exists():
         raise FileNotFoundError(
@@ -118,6 +119,7 @@ def create_env(
 
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
+
 
     command_list = [
         "conda activate",
