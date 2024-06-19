@@ -465,6 +465,10 @@ class Database(IDatabase):
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if any(df.empty for df in input_river_df) and any(
+            river["source"] == "timeseries" for river in event["river"]
+        ):
+            return ""
         event["name"] = "temp_event"
         temp_event = EventFactory.get_event(event["template"]).load_dict(event)
         event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
