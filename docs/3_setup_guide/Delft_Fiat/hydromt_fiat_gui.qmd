@@ -43,7 +43,9 @@ The **quickbuild** downloads the
 * **social vulnerability index** and **equity** from the census api. 
 * **road data** from Open Street Map (OSM)
 
-::: {#fig-nsi_exposure}
+After you generated the model boundaries you can select the quickbuild option in the same tab in the GUI (@fig-nsi_quickbuild)
+
+::: {#fig-nsi_quickbuild}
 
 {{< video ../../_static/videos/hydromt_fiat/Quickbuild.mp4 >}}
 
