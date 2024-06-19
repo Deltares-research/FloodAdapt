@@ -3,6 +3,8 @@ from typing import Union
 
 import tomli
 
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.interface.events import EventSetModel
 
 
@@ -20,6 +22,15 @@ class EventSet:
             toml = tomli.load(fp)
         obj.attrs = EventSetModel.model_validate(toml)
         return obj
+
+    def get_subevents(self) -> list[Event]:
+        # parse event config file to get event template
+        event_list = []
+        for event_path in self.event_paths:
+            template = Event.get_template(event_path)
+            # use event template to get the associated event child class
+            event_list.append(EventFactory.get_event(template).load_file(event_path))
+        return event_list
 
     def __eq__(self, other):
         if not isinstance(other, EventSet):
