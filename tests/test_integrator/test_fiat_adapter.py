@@ -6,14 +6,6 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
-def exposure_template(test_db):
-    exposure_template = pd.read_csv(
-        test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
-    )
-    return exposure_template
-
-
-@pytest.fixture()
 def test_tomls(test_db):
     test_tomls = [
         test_db.input_path
@@ -37,10 +29,13 @@ def test_tomls(test_db):
     return test_tomls
 
 
-@pytest.mark.skip(reason="test fails in TeamCity, TODO investigate")
-def test_fiat_adapter_no_measures(test_db, test_tomls, exposure_template):
+def test_fiat_adapter_no_measures(test_db, test_tomls):
     test_toml = test_tomls["current_extreme12ft_no_measures.toml"]
     assert test_toml.is_file()
+
+    exposure_template = pd.read_csv(
+        test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
+    )
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
@@ -61,9 +56,13 @@ def test_fiat_adapter_no_measures(test_db, test_tomls, exposure_template):
 
 
 # @pytest.mark.skip(reason="test needs to reviewed")
-def test_fiat_adapter_measures(test_db, test_tomls, exposure_template):
+def test_fiat_adapter_measures(test_db, test_tomls):
     test_toml = test_tomls["all_projections_extreme12ft_strategy_comb.toml"]
     assert test_toml.is_file()
+
+    exposure_template = pd.read_csv(
+        test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
+    )
 
     test_scenario = Scenario.load_file(test_toml)
     test_scenario.run()
@@ -210,10 +209,13 @@ def test_fiat_adapter_measures(test_db, test_tomls, exposure_template):
     )
 
 
-def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
+def test_fiat_raise_datum(test_db, test_tomls):
     test_toml = test_tomls["current_extreme12ft_raise_datum.toml"]
-
     assert test_toml.is_file()
+
+    exposure_template = pd.read_csv(
+        test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
+    )
 
     # use event template to get the associated Event child class
     test_scenario = Scenario.load_file(test_toml)
@@ -264,7 +266,6 @@ def test_fiat_raise_datum(test_db, test_tomls, exposure_template):
     )
 
 
-@pytest.mark.skip(reason="Fails in fiat_toolbox, TODO investigate")
 def test_fiat_return_periods(test_tomls):
     test_toml = test_tomls["current_test_set_no_measures.toml"]
 
