@@ -59,7 +59,7 @@ class Scenario(IScenario):
     def save(self, filepath: Union[str, os.PathLike]):
         """Save Scenario to a toml file."""
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
     def run(self):
         """Run direct impact models for the scenario."""

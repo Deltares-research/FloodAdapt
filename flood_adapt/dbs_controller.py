@@ -106,7 +106,7 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
-        self.base_path = Path(database_path / database_name)
+        self.base_path = Path(database_path) / database_name
         self.input_path = self.base_path / "input"
         self.static_path = self.base_path / "static"
         self.output_path = self.base_path / "output"
