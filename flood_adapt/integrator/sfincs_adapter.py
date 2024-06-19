@@ -264,9 +264,8 @@ class SfincsAdapter:
                                 consistent with the coordinates and order orf rivers in the site.toml file."""
                     )
                     raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
+                        f"Incompatible river coordinates for river: {river.name}.\nsite.toml: ({river.x_coordinate}, {river.y_coordinate})\nSFINCS template model ({gdf_locs.geometry[ii + 1].x}, {gdf_locs.geometry[ii + 1].y})."
                     )
-                    break
 
             self.sf_model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False

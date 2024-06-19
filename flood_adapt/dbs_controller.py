@@ -132,6 +132,10 @@ class Database(IDatabase):
 
         self._init_done = True
 
+    def reset(self):
+        self._instance = None
+        self._init_done = False
+
     # Property methods
     @property
     def site(self) -> ISite:
@@ -890,6 +894,10 @@ class Database(IDatabase):
             name of the scenario to check if needs to be rerun for hazard
         """
         scenario = self._scenarios.get(scenario_name)
+
+        # Dont do anything if the hazard model has already been run in itself
+        if scenario.direct_impacts.hazard.has_run_check():
+            return
 
         simulations = list(
             self.input_path.parent.joinpath("output", "Scenarios").glob("*")
