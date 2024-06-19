@@ -12,14 +12,15 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.tipping_points import (
-    TipPointModel,
+    TippingPointModel,
     ITipPoint,
     TippingPointStatus,
 )
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-from flood_adapt.api.startup import read_database
+from flood_adapt.api.static import read_database
 
 """
 This script implements a Tipping Point model to analyze the impact of sea level rise (SLR)
@@ -45,9 +46,6 @@ Outputs:
 class TippingPoint(ITipPoint):
     """Class holding all information related to tipping points analysis"""
 
-    attrs: TipPointModel
-    database_input_path: Union[str, os.PathLike]
-
     def __init__(self, database_input_path: Union[str, os.PathLike]):
         """Initiation function when object is created through file or dict options"""
         self.database_input_path = Path(database_input_path)
@@ -55,23 +53,22 @@ class TippingPoint(ITipPoint):
             Path(database_input_path).parent / "static" / "site" / "site.toml"
         )
 
-    def init_object_model(self):
-        """Create input and output folders for the tipping point"""
+    # def init_object_model(self):
+    #     """Create input and output folders for the tipping point"""
+    #     self.results_path = Path(self.database_input_path).parent.joinpath(
+    #         "output", "Scenarios", self.attrs.name
+    #     )
 
-        self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "Scenarios", self.attrs.name
-        )
-
-        # create an input baseline folder for the scenarios
-        if not (self.database_input_path / "scenarios" / self.attrs.name).exists():
-            (self.database_input_path / "scenarios" / self.attrs.name).mkdir()
-        self.save(
-            self.database_input_path
-            / "scenarios"
-            / self.attrs.name
-            / f"{self.attrs.name}.toml"
-        )
-        return self
+    #     # create an input baseline folder for the scenarios
+    #     if not (self.database_input_path / "scenarios" / self.attrs.name).exists():
+    #         (self.database_input_path / "scenarios" / self.attrs.name).mkdir()
+    #     self.save(
+    #         self.database_input_path
+    #         / "scenarios"
+    #         / self.attrs.name
+    #         / f"{self.attrs.name}.toml"
+    #     )
+    #     return self
 
     def slr_projections(self, slr):
         """Create projections for sea level rise value"""
@@ -90,7 +87,7 @@ class TippingPoint(ITipPoint):
 
     def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value"""
-        self.init_object_model()
+        # self.init_object_model()
         # TODO: commenting out because now we are creating all scenarios, check it later to see how we deal with redundant scenarios
         # self.check_scenarios()
         # self.has_run = self.has_run_check()
@@ -99,15 +96,12 @@ class TippingPoint(ITipPoint):
             self.slr_projections(slr)
 
         # crete scenarios for each SLR value
+        str_rpl = str(slr).replace(".", "")
         scenarios = {
-            f"slr_"
-            + str(slr).replace(".", ""): {
-                "name": f"slr_" + str(slr).replace(".", ""),
+            f"slr_{str_rpl}": {
+                "name": f"slr_{str_rpl}",
                 "event": self.attrs.event_set,
-                # get a string from slr removing the dot
-                "projection": self.attrs.projection
-                + "_slr"
-                + str(slr).replace(".", ""),
+                "projection": f"{self.attrs.projection}_slr{str_rpl}",
                 "strategy": self.attrs.strategy,
             }
             for slr in self.attrs.sealevelrise
@@ -263,7 +257,7 @@ class TippingPoint(ITipPoint):
         obj = TippingPoint(database_input_path)
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = TipPointModel.model_validate(toml)
+        obj.attrs = TippingPointModel.model_validate(toml)
         return obj
 
     def load_dict(
@@ -272,7 +266,7 @@ class TippingPoint(ITipPoint):
         """create risk event from toml file"""
 
         obj = TippingPoint(database_input_path)
-        obj.attrs = TipPointModel.model_validate(dct)
+        obj.attrs = TippingPointModel.model_validate(dct)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

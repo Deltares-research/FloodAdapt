@@ -58,7 +58,7 @@ class TippingPointOperator(str, Enum):
     less = "less"
 
 
-class TipPointModel(BaseModel):
+class TippingPointModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Tipping Point analysis object"""
 
     name: str
@@ -68,11 +68,11 @@ class TipPointModel(BaseModel):
     projection: str
     sealevelrise: list[float]  # could be a numpy array too
     tipping_point_metric: list[tuple[TippingPointMetrics, float, TippingPointOperator]]
-    status: Optional[TippingPointStatus] = TippingPointStatus.not_reached
+    status: TippingPointStatus = TippingPointStatus.not_reached
 
 
 class ITipPoint(ABC):
-    attrs: TipPointModel
+    attrs: TippingPointModel
     database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
