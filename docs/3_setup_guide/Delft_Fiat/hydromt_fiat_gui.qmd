@@ -49,17 +49,17 @@ After you generated the model boundaries you can select the quickbuild option in
 
 {{< video ../../_static/videos/hydromt_fiat/Quickbuild.mp4 >}}
 
-Quickbuild NSI data.
+Quickbuild option in the United States.
 
 :::
 
 ### Create the exposure data
-There are two different databases to download the exposure data from, depending on where you want to set up your model:
+There are two different databases to download the **exposure data** from, depending on where you want to set up your model:
 
-1. National Structure Inventory (United States)
-2. Open Street Map (international)
+1. **National Structure Inventory (United States)**
+2. **Open Street Map (international)**
 
-You can also download road data from Open Street Map. Simply check the checkbox "Include OSM roads" in the GUI ().
+Additionally, you can download **road data** from Open Street Map. To do so, simply check the checkbox "Include OSM roads" in the GUI ().
 
 The videos below show the exposure setup using the National Structure Inventory (NSI) database (@fig-nsi_exposure) and the Open  Street Map (OSM) database (@fig-osm_exposure).
 
@@ -81,10 +81,45 @@ Exposure setup using OSM data.
 :::
 
 ### Assign vulnerability curves
+As a next step you must assign the vulnerability curves to the exposure data. There are two data sources from which the vulnerability curves are downloaded from, depending on the location of your model:
+
+1. **FEMA Hazus Curves (United States)**
+2. **JRC Vulnerability Curves (international)**
+
+The GUI will automatically select the correct default curves for your model based upon your exposure data. Therefore, you only need to add the curves to the model without further adjustment. You can follow the steps in the video below (@fig-vulnerability).
+
+::: {#fig-vulnerability}
+
 {{< video ../../_static/videos/hydromt_fiat/NSI_Vulnerability.mp4 >}}
 
+Assign the default vulnerability curves to the exposure data. 
+
+:::
+
 ### Create model
+At this point, you are ready to create the **Delft FIAT model**. Verify the data sources in the bottom tab, to make sure they match your expectations. If so, create your model (@fig-create_model).
+
+::: {#fig-create_model}
+
 {{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
 
+Create your Delft FIAT model. 
+
+:::
+
 ### Additional features
+
+#### Social Vulnerability Index (SVI) and Equity
+Delft FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States SVI data can be calculated based upon recent literature. 
+However, the user has the freedom to upload any **social vulnerability index** and/or **equity** layer and assign a value to each asset that overlaps the layer (@fig-additional_attr).
+
+#### Additional attribtues
+Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be imposed on the exposure data (@fig-additional_attr).
+
+::: {#fig-additional_attr}
+
 {{< video ../../_static/videos/hydromt_fiat/SVI_Additional_Attributes_NSI.mp4 >}}
+
+Create your Delft FIAT model. 
+
+:::
