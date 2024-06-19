@@ -95,8 +95,8 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
             df = df_temp.iloc[startindex:stopindex, :]
         else:
             # Get NOAA data
-            source = cht_station.source(source)
-            df = source.get_data(station_id, start_time, stop_time)
+            source_obj = cht_station.source(source)
+            df = source_obj.get_data(station_id, start_time, stop_time)
             df = pd.DataFrame(df)  # Convert series to dataframe
             df = df.rename(columns={"v": 1})
         # convert to gui units
