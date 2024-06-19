@@ -9,6 +9,7 @@ repos:
     -   id: check-toml
     -   id: check-merge-conflict
     -   id: check-added-large-files
+        exclude: '^environment/'
     -   id: check-merge-conflict
     -   id: trailing-whitespace
 -   repo: https://github.com/psf/black
