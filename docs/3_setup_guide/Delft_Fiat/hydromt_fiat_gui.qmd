@@ -5,5 +5,28 @@ filters:
 lightbox: auto
 ---
 
-The Hydromt FIAT Graphical User Interface (GUI) makes the Delft FIAT model creation accessible for non-modeling experts and facilitates the process of setting up the Fiat model. 
+The Hydromt FIAT Graphical User Interface (GUI) makes the **Delft FIAT** model creation accessible for non-modeling experts and facilitates the process of setting up the **Delft FIAT** model. 
 
+The Hydromt FIAT GUI can be downloaded from the [Deltares website](https://www.deltares-usa.us/product-page/floodadapt-software).
+
+### Installation
+To install the Hydromt FIAT GUI simply run the executable **(......exe)** and the software is ready to go. 
+
+### Create the model boundaries
+{{< video ../../_static/videos/hydromt_fiat/Generate_Boundaries.mp4 >}}
+
+### Create the exposure data
+#### National Structure Inventory database (USA)
+{{< video ../../_static/videos/hydromt_fiat/Exposure_NSI.mp4 >}}
+
+#### Open Street Map database (international)
+{{< video ../../_static/videos/hydromt_fiat/Exposure_OSM.mp4 >}}
+
+### Assign vulnerability curves
+{{< video ../../_static/videos/hydromt_fiat/NSI_Vulnerability.mp4 >}}
+
+### Create model
+{{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
+
+### Additional features
+{{< video ../../_static/videos/hydromt_fiat/SVI_Additional_Attributes_NSI.mp4 >}}
