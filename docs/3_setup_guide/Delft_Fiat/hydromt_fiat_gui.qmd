@@ -111,10 +111,10 @@ Create your Delft FIAT model.
 
 #### Social Vulnerability Index (SVI) and Equity
 Delft FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States SVI data can be calculated based upon recent literature. 
-However, the user has the freedom to upload any **social vulnerability index** and/or **equity** layer and assign a value to each asset that overlaps the layer (@fig-additional_attr).
+However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer (@fig-additional_attr).
 
 #### Additional attribtues
-Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be imposed on the exposure data (@fig-additional_attr).
+Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be imposed (@fig-additional_attr). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
 
 ::: {#fig-additional_attr}
 
