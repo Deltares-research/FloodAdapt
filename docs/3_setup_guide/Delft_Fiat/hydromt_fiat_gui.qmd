@@ -84,10 +84,14 @@ To set up the exposure open the **"Exposure"**-tab on the top panel (@fig-exposu
   2. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data
   3. **only OSM**: Define a <u>damage currency</u> and the <u>finished floor height</u> for all assets (can be updated later on hthe individual asset level in the advanced model) 
   4. **optional**: Include OSM roads by checking the checkbox "Include OSM roads" 
+  5. Add to model.
+  
 
 ![Workflow to setup exposure data.NSI(National Structure Inventory), OSM (Open Street Map).](../../_static/figures/Exposure.svg){#fig-exposure}
 
-The videos below show the exposure setup using the National Structure Inventory (NSI) database (@fig-nsi_exposure) and the Open  Street Map (OSM) database for roads(@fig-osm_exposure).
+These are all the steps that are required to set up the exposure for a **simple model**. If you want to update the model or input your own data please refer to the section ***Model from scratch: Advanced model***, in which the additional tabs of the bottom panel are discussed such as *Finished Floor Height* or *Max. Potential Damages*. 
+
+The videos below show the exposure setup using the National Structure Inventory (NSI) data with the Open  Street Map (OSM) data for roads (@fig-nsi_exposure) and the exposure setup for a global model, using OSM data (incl. roads) (@fig-osm_exposure).
 
 ::: {#fig-nsi_exposure}
 
@@ -109,10 +113,17 @@ Exposure setup using OSM data.
 ### Assign vulnerability curves
 As a next step you must assign the vulnerability curves to the exposure data. There are two data sources from which the vulnerability curves are downloaded from, depending on the location of your model:
 
-1. **FEMA Hazus Curves (United States)**
-2. **JRC Vulnerability Curves (global)**
+1. **United States: FEMA Hazus Curves**
+2. **global: JRC Vulnerability Curves**
 
-The GUI will automatically select the correct default curves for your model based upon your exposure data. Therefore, you only need to add the curves to the model without further adjustment. You can follow the steps in the video below (@fig-vulnerability).
+*Gui Instructions*  
+To set up the exposure open the **"Vulnerability"**-tab on the top panel (@fig-vulnerability_curve). 
+
+The GUI will automatically select the correct <u>default curves</u> for your model based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. For detailed information about the default curves please refer to [Data Input](data_input.qmd).
+
+![Workflow to assign vulnerability curves to assets with option to update default NSI vulnerability curves.](../../_static/figures/vulnerability.svg){#fig-vulnerability_curve}
+
+You can follow the steps in the video below (@fig-vulnerability).
 
 ::: {#fig-vulnerability}
 
