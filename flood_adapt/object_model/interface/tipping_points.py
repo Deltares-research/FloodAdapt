@@ -69,6 +69,7 @@ class TippingPointModel(BaseModel):
     sealevelrise: list[float]  # could be a numpy array too
     tipping_point_metric: list[tuple[TippingPointMetrics, float, TippingPointOperator]]
     status: TippingPointStatus = TippingPointStatus.not_reached
+    scenarios: list[str] = []
 
 
 class ITipPoint(ABC):
@@ -96,6 +97,6 @@ class ITipPoint(ABC):
         ...
 
     @abstractmethod
-    def check_scenarios(self) -> pd.DataFrame:
+    def check_scenarios_exist(self) -> pd.DataFrame:
         """Check which scenarios are needed for this tipping point calculation and if they have already been created"""
         ...

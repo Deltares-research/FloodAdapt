@@ -48,9 +48,9 @@ class TippingPoint(ITipPoint):
 
     def __init__(self):
         """Initiation function when object is created through file or dict options"""
-        self.database_input_path = Database().input_path
         self.site_toml_path = Path(Database().static_path) / "site" / "site.toml"
-        self.results_path = Database().output_path / "scenarios"
+        self.results_path = Database().output_path / "tipping_points"
+        self.scenarios = {}
 
     def create_tp_obj(self):
         # Save tipping point object to the tipping_points folder and a toml file
@@ -81,11 +81,17 @@ class TippingPoint(ITipPoint):
         )
         return self
 
+    def check_scenarios_exist(self, scenario_obj):
+        db_list = []
+        # check if the current scenario in the tipping point object already exists in the database
+        for db_scenario in Database().scenarios.list_objects()["objects"]:
+            if scenario_obj == db_scenario:
+                db_list.append(db_scenario.attrs.name)
+        return db_list
+
     def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value inside the tipping_point folder"""
         self.create_tp_obj()
-        # self.check_scenarios()
-        # self.has_run = self.has_run_check()
         # create projections based on SLR values
         for i, slr in enumerate(self.attrs.sealevelrise):
             self.slr_projections(slr)
@@ -101,74 +107,80 @@ class TippingPoint(ITipPoint):
             }
             for slr in self.attrs.sealevelrise
         }
-        self.scenarios_dict = scenarios
 
         # create subdirectories for each scenario and .toml files
         for scenario in scenarios.keys():
-            if not (
-                Database().input_path
-                / "tipping_points"
-                / self.attrs.name
-                / "scenarios"
-                / scenario
-            ).exists():
-                (
-                    Database().input_path
-                    / "tipping_points"
-                    / self.attrs.name
-                    / "scenarios"
-                    / scenario
-                ).mkdir(parents=True)
+            if not (Database().input_path / "scenarios" / scenario).exists():
+                (Database().input_path / "scenarios" / scenario).mkdir(parents=True)
 
             scenario_obj = Scenario.load_dict(
                 scenarios[scenario], Database().input_path
             )
-            scenario_obj.save(
-                Database().input_path
-                / "tipping_points"
-                / self.attrs.name
-                / "scenarios"
-                / scenario
-                / f"{scenario}.toml"
-            )
+            scen_exists = self.check_scenarios_exist(scenario_obj)
+            if scen_exists:
+                # make a dict with name and object
+                self.scenarios[scen_exists[0]] = {
+                    "name": scen_exists[0],
+                    "object": scenario_obj,
+                }
+            else:
+                Database().scenarios.save(scenario_obj)
+                self.scenarios[scenario_obj.attrs.name] = {
+                    "name": scenario_obj.attrs.name,
+                    "object": scenario_obj,
+                }
+
+        self.attrs.scenarios = list(self.scenarios.keys())
+        self.save(
+            filepath=Database().input_path
+            / "tipping_points"
+            / self.attrs.name
+            / f"{self.attrs.name}.toml"
+        )  # for later when we have a database_tp: TODO: Database().tipping_points.save(self)
 
     def run_tp_scenarios(self):
-        """Run all scenarios to determine tipping points, but first check if some scenarios are already run from the output folder"""
-        for scenario in self.scenarios_dict.keys():
-            scenario_obj = Scenario.load_dict(
-                self.scenarios_dict[scenario], Database().input_path
-            )
-            # check if scenario already exists in the database, if yes skip the run and copy results
-            if not self.check_scenarios(scenario_obj):
-                # run scenario but there's also a check inside the function in case the scenario has already been run
+        """Run all scenarios to determine tipping points"""
+        for name, scenario in self.scenarios.items():
+            scenario_obj = scenario["object"]
+            # check if scenario has been run, if yes skip it
+            if not self.scenario_has_run(scenario_obj):
                 scenario_obj.run()
 
             # if the status is reached, save the SLR and the metric value
             if self.check_tipping_point(scenario_obj):
                 self.attrs.status = TippingPointStatus.reached
-                self.scenarios_dict[scenario]["tipping point reached"] = "Yes"
+                self.scenarios[name]["tipping point reached"] = True
                 break
             else:
                 self.attrs.status = TippingPointStatus.not_reached
-                self.scenarios_dict[scenario]["tipping point reached"] = "No"
+                self.scenarios[name]["tipping point reached"] = False
+
+        tp_path = self.results_path.joinpath(self.attrs.name)
 
         # Save results - make directory if it doesn't exist
-        if not self.results_path.is_dir():
-            self.results_path.mkdir(parents=True)
+        if not tp_path.is_dir():
+            tp_path.mkdir(parents=True)
 
-        tp_path = self.results_path.joinpath(
-            f"tipping_point_results_{self.attrs.name}.csv"
+        tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
+            drop=True
         )
-        tp_results = pd.DataFrame.from_dict(
-            self.scenarios_dict, orient="index"
-        ).reset_index(drop=True)
-        tp_results.to_csv(tp_path)
+        tp_results.to_csv(tp_path / "tipping_point_results.csv")
+
+    def scenario_has_run(self, scenario_obj):
+        # TODO: once has_run is refactored (external) we change below to make it more direct
+        for db_scenario, finished in zip(
+            Database().scenarios.list_objects()["objects"],
+            Database().scenarios.list_objects()["finished"],
+        ):
+            if scenario_obj == db_scenario and finished:
+                return True
+        return False
 
     def check_tipping_point(self, scenario: Scenario):
         """Load results and check if the tipping point is reached"""
         # already optimised for multiple metrics
         info_df = pd.read_csv(
-            scenario.direct_impacts.results_path.joinpath(
+            scenario.init_object_model().direct_impacts.results_path.joinpath(
                 f"Infometrics_{scenario.direct_impacts.name}.csv"
             ),
             index_col=0,
@@ -188,27 +200,11 @@ class TippingPoint(ITipPoint):
         operations = {"greater": lambda x, y: x >= y, "less": lambda x, y: x <= y}
         return operations[operator](current_value, threshold)
 
-    def check_scenarios(self, scenario_obj):
-        # check if the current scenario in the tipping point object already exists in the database
-        for db_scenario in Database().scenarios.list_objects()["name"]:
-            if scenario_obj.__eq__(Database().scenarios.get(db_scenario)):
-                # check if the scenario has been run
-                if scenario_obj.init_object_model().direct_impacts.has_run:
-                    # copy the output files from db_scenario to the output folder
-                    shutil.copytree(
-                        Database().scenarios.get(db_scenario).results_path,
-                        scenario_obj.results_path,
-                    )
-                    return True
-        return False
-
-    # standard functions
-    def load_file(
-        filepath: Union[str, Path], database_input_path: Union[str, os.PathLike]
-    ) -> "TippingPoint":
+    ### standard functions ###
+    def load_file(filepath: Union[str, Path]) -> "TippingPoint":
         """create risk event from toml file"""
 
-        obj = TippingPoint(database_input_path)
+        obj = TippingPoint()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = TippingPointModel.model_validate(toml)
@@ -222,7 +218,7 @@ class TippingPoint(ITipPoint):
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Scenario to a toml file"""
+        """save tipping point to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
