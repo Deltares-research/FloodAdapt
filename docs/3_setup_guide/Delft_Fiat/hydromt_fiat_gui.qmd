@@ -5,17 +5,21 @@ filters:
 lightbox: auto
 ---
 
-The Hydromt FIAT Graphical User Interface (GUI) makes the **Delft FIAT** model creation accessible for non-modeling experts and facilitates the process of setting up the **Delft FIAT** model. 
+The Hydromt FIAT Graphical User Interface (GUI) makes the **Delft FIAT** model creation accessible for users without modeling experience and facilitates the process of setting up the **Delft FIAT** model. 
 
 The Hydromt FIAT GUI can be downloaded from the [Deltares website](https://www.deltares-usa.us/product-page/floodadapt-software).
 
+## Setup Guide
 ### Installation
 To install the Hydromt FIAT GUI simply run the executable **(......exe)** and the software is ready to go. 
 
-### Create the model boundaries
+## User Guide
+After you open the GUI you must select a model output directory before you start by clicking  
+**File** >> **Select Working Directory**.
 
-Before you start you must select a model output directory by clicking **File** >> **Select Working Directory**.  
-Now you are ready to set up the model. 
+Now you are ready to set up the model.
+
+### Create Model Boundary
 
 There are multiple options on how to create the model boundaries:
 
@@ -23,7 +27,11 @@ There are multiple options on how to create the model boundaries:
   * Upload Sfincs boundaries  
   * Upload file (polygon vector file)
 
-In the following video you can see how to generate the model boundaries by simply drawing a polygon. 
+![Workflow to create model boundaries.](../../_static/figures/Draw_boundaries.svg){#fig-boundaries}
+
+Select any of the options in the drop-down menu in the **Model Boundary | Quickbuild** -tab and create your boundaries. As soon you are done click "**Generate boundary**" and your model boundary is established (@fig-boundaries).
+
+For further details please refer to @fig-model_boundaries.
 
 ::: {#fig-model_boundaries}
 
@@ -36,14 +44,18 @@ Create model boundaries using the "Draw Polygon" method.
 ### Quickbuild
 If you set up a model in the United States and do not want to use your own data you can simply choose to work with the **quickbuild**. 
 
-The **quickbuild** downloads the 
+The **quickbuild** downloads the data from different sources:  
 
-* **exposure data** from the National Structure Inventory
-* **vulnerability curves** from the FEMA’s Hazus Program
-* **social vulnerability index** and **equity** from the census api. 
-* **road data** from Open Street Map (OSM)
+* **Exposure**: National Structure Inventory (NSI)
+* **Vulnerability curves**: FEMA’s Hazus Program
+* **Social vulnerability index**/**equity**: Census api
+* **Roads**: Open Street Map (OSM)
 
-After you generated the model boundaries you can select the quickbuild option in the same tab in the GUI (@fig-nsi_quickbuild)
+After you generated the model boundaries you can select the quickbuild option in the same tab in the GUI (@fig-quickbuild)
+
+![Workflow to use the "Quickbuild"-option.](../../_static/figures/Quickbuild.svg){#fig-quickbuild}
+
+For further details please refer to (@fig-nsi_quickbuild).
 
 ::: {#fig-nsi_quickbuild}
 
@@ -53,15 +65,29 @@ Quickbuild option in the United States.
 
 :::
 
-### Create the exposure data
+### Model from scratch: A simple model
+This section explains the creation of a simple model without additional input by the user. This can be set up globally or in the United States.  
+After you created your model boundaries (please refer to Chapter Create Model Boundary) pick-up here. 
+
+#### Create the exposure data
 There are two different databases to download the **exposure data** from, depending on where you want to set up your model:
 
-1. **National Structure Inventory (United States)**
-2. **Open Street Map (international)**
+1. **United States: National Structure Inventory**
+2. **Global: Open Street Map**
 
-Additionally, you can download **road data** from Open Street Map. To do so, simply check the checkbox "Include OSM roads" in the GUI ().
+Additionally, you can download **road data** from Open Street Map. 
 
-The videos below show the exposure setup using the National Structure Inventory (NSI) database (@fig-nsi_exposure) and the Open  Street Map (OSM) database (@fig-osm_exposure).
+*Gui Instructions*  
+To set up the exposure open the **"Exposure"**-tab on the top panel (@fig-exposure). 
+
+  1. Select the **"Asset Location"**-tab at the bottom panel
+  2. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data
+  3. **only OSM**: Define a <u>damage currency</u> and the <u>finished floor height</u> for all assets (can be updated later on hthe individual asset level in the advanced model) 
+  4. **optional**: Include OSM roads by checking the checkbox "Include OSM roads" 
+
+![Workflow to setup exposure data.NSI(National Structure Inventory), OSM (Open Street Map).](../../_static/figures/Exposure.svg){#fig-exposure}
+
+The videos below show the exposure setup using the National Structure Inventory (NSI) database (@fig-nsi_exposure) and the Open  Street Map (OSM) database for roads(@fig-osm_exposure).
 
 ::: {#fig-nsi_exposure}
 
@@ -84,7 +110,7 @@ Exposure setup using OSM data.
 As a next step you must assign the vulnerability curves to the exposure data. There are two data sources from which the vulnerability curves are downloaded from, depending on the location of your model:
 
 1. **FEMA Hazus Curves (United States)**
-2. **JRC Vulnerability Curves (international)**
+2. **JRC Vulnerability Curves (global)**
 
 The GUI will automatically select the correct default curves for your model based upon your exposure data. Therefore, you only need to add the curves to the model without further adjustment. You can follow the steps in the video below (@fig-vulnerability).
 
@@ -113,7 +139,7 @@ Create your Delft FIAT model.
 Delft FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States SVI data can be calculated based upon recent literature. 
 However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer (@fig-additional_attr).
 
-*Gui Instructions*
+*Gui Instructions*  
 Follow these instructions when setting up a model in the **United States**
 
   1. In the top panel, select *"SVI + Equity"*.
@@ -125,13 +151,15 @@ If your model is setup in a location outside the U.S please refer to Chapter **A
 For a detailed demonstration please refer to @fig-additional_attr.
 
 #### Additional attribtues
-Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be imposed (@fig-additional_attr). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
+Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be addedd (@fig-additional_attr). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
 
-*Gui Instructions*
-If you wish to impose **SVI** and/or **Equity** follow these intstructions. The same instructions apply 1for any aggregation layer or additional attribute you wish to impose on your model. 
+##### Gui Instructions   
+If you wish to add **SVI** and/or **Equity** follow these intstructions. The same instructions apply 1for any aggregation layer or additional attribute you wish to add on your model. 
+
+![GUI Instructions flowchart](../../_static/figures/svi_flowchart.svg)
 
   1. In the top panel, select *"Additional Attributes"*.
-  2. In the bottom panel *"Add new Source"*, **select the source** of your vector layer and **load** it into the model. 
+  2. In the bottom panel *"Add new Source"*, select the **source** of your vector layer and **load** it into the model. 
   3. In the bottom panel *"Select attribute"*, select the **Attribute ID** from the dropdown menu. If you loaded in your file corretly the drop-down menu includes all columns of your data file. Select the column of the attribute/aggregation you wish to impose on your model. 
   4. In the bottom panel *"Select attribute"*, give your layer a **Label** (free-text). This label will be the header for your new additional attribute/aggregation layer in the output data. 
   5. In the bottom panel *"Select attribute"*, click **Add** to add the new layer and the layer will appear in the table in the bottom panel *"Overview attribute"*. 
