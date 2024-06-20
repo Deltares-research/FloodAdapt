@@ -1,20 +1,52 @@
 from abc import ABC, abstractmethod
-from typing import List
 
-from flood_adapt.object_model.interface.events import EventModel, IForcing
+from flood_adapt.object_model.hazard.event.new_event_models import (
+    EventSetModel,
+    HistoricalEventModel,
+    HurricaneEventModel,
+    IEventModel,
+    SyntheticEventModel,
+)
 
 
-class Event(ABC):
-    attrs: EventModel
-    forcings: List[IForcing]
+class IEvent(ABC):
+    attrs: IEventModel
 
     @abstractmethod
-    def preprocess(self):
+    def process(self):
         """
-        Preprocess the event.
+        Process the event.
 
         - Read eventmodel to see what forcings are needed
         - Compute forcing data (via synthetic functions or running offshore)
-        - Write to forcing files.
+        - Write output to self.forcings
         """
         pass
+
+
+class SyntheticEvent(IEvent):
+    attrs: SyntheticEventModel
+
+
+class HistoricalEvent(IEvent):
+    attrs: HistoricalEventModel
+
+    def process(self):
+        # if *FromModel in forcings, run offshore sfincs model
+        pass
+
+    def download_data(self):
+        # download data from external sources
+        pass
+
+
+class HurricaneEvent(IEvent):
+    attrs: HurricaneEventModel
+
+    def process(self):
+        # if *FromModel in forcings, run offshore sfincs model
+        pass
+
+
+class EventSet(IEvent):
+    attrs: EventSetModel

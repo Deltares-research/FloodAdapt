@@ -12,7 +12,7 @@ class WindConstant(IWind):
 
 
 class WindTimeSeries(IWind):
-    file: str
+    path: str = None
 
 
 class WindFromModel(IWind):
