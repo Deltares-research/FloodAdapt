@@ -9,24 +9,44 @@ format:
 jupyter: python3
 ---
 
-### Exposure Data 
+
+### Folder structure
+We recommened to follow the folder structure as shown below for your model to ensure that FIAT can find each data file and run smoothly. 
+```
+├───📁 FIAT/
+    |
+    ├───📁 hazard/
+    │   └───📄 This will be empty
+    |
+    ├───📁 exposure/
+    │   ├───📄 buildings.gpkg
+    │   └───📄 exposure.csv
+    |
+    ├───📁 vulnerability/
+    │   └───📄 vulnerability_curves.csv
+    |
+    └───📄 settings.toml
+
+```
+
+## Exposure Data 
 
 The **exposure data** describe the assets within the region of interest. FIAT allows **vector and raster data** inputs. 
 
 ::: {.callout-tip}
-You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#)
+You can also create your exposure data with the [**Floodadapt  model builder**](hydromt_fiat_gui).
 :::
 
-## Types of Data
+### Types of Data
 Because FIAT consists of two models, the exposure data can be supplied in either a vector format or in raster format
 
-### Vector data
+#### Vector data
 FIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:
 
 - **Geometry file(s)**
 - **CSV file**
 
-### Raster Data
+#### Raster Data
 
 ::: {.callout-important}
  This functionality is in beta phase
@@ -34,8 +54,15 @@ FIAT can be used to assess flood damages to buildings, roads, utilities, and oth
 
 Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **max potential damage** per cell is required. A damage function must be assigned to each raster file as well, linking with the damage function name in the meta data to the name in the **vulnerability curves file**.
 
-### Vulnerability Data
-The **vulnerability** of an asset is determined by its building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This **vulnerability** can be quantified via **flood depth-damage** functions, see for example @fig-damagefunction. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the **exposure data**.
+## Vulnerability Data
+The **vulnerability** of an asset is determined by its building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. 
+
+::: {.callout-tip}
+You can also create damage functions with the [**Floodadapt  model builder**](hydromt_fiat_gui).
+:::
+
+Different assests incur different degrees of damage at varying inundation levels. This **vulnerability** can be quantified via **flood depth-damage** functions, see for example @fig-damagefunction. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the **exposure data**.
+
 
 ```{python}
 #| echo: false
@@ -69,7 +96,31 @@ plt.gca().get_legend().set_title('')
 ```
 
 
-The damage functions must be given in a CSV file (`vulnerability.csv`), located in the [vulnerability folder](structural_setup.qmd). The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; `#UNIT=<unit>`, e.g., `#UNIT=m`. The second row, named `#METHOD`, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the *area* method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the **exposure data**.
+The damage functions must be given in a CSV file (`vulnerability.csv`), located in the vulnerability folder of the model. The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; `#UNIT=<unit>`, e.g., `#UNIT=m`. The second row, named `#METHOD`, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the *area* method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the **exposure data**.
+
+```{python}
+#| echo: false
+#| label: tbl-damage-curve
+#| tbl-cap: "Extract from the vulnerability data CSV file. The water depth must be in the outer left column followed by the damage functions. The user has the freedom to add multiple damage curves. "
+
+import pandas as pd
+from pathlib import Path
+from IPython.display import HTML
+
+file_path = Path.cwd()
+
+file_path = Path(file_path.parents[1], "_static", "files", "vulnerability_curves.csv")
+file_path = file_path.resolve()
+data = df = pd.read_csv(file_path, comment='#')
+
+df = pd.DataFrame({
+    ('#UNIT=m','#METHOD','water depth'): data.iloc[604:614, 0],
+    ('','mean', 'STRUCT1'): data.iloc[604:614, 1],
+    ('','max','STRUCT2'): data.iloc[604:614, 2],
+})
+
+HTML(df.to_html(index=False))
+```
 
 ::: {.callout-important}
  Water depth units (e.g. feet or meters) must be consistent with the units of the flood hazard map and the exposure data (i.e., ground elevation, ground floor height).
@@ -77,6 +128,3 @@ The damage functions must be given in a CSV file (`vulnerability.csv`), located 
 
 Water depths may be negative for assets that incur damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage functions can have any name. Multiple damage-functions can be described in the vulnerability curves CSV file by simply adding consecutive columns next to one another.
 
-::: {.callout-tip}
-You can also create damage functions with the [**HydroMT-FIAT model builder GUI**](hydromt_fiat_gui.qmd) or the [**HydroMT-FIAT model builder**](https://deltares.github.io/hydromt_fiat/latest/#)
-:::
