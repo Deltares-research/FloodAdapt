@@ -15,18 +15,15 @@ import tomli_w
 from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
+    IUnitFullValue,
     UnitfulTime,
-    UnitfulVolume,
     UnitTypesIntensity,
     UnitTypesTime,
 )
 
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_TIMESTEP = UnitfulTime(600, UnitTypesTime.seconds)
+DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
 
 
 ### ENUMS ###
@@ -53,24 +50,37 @@ class ITimeseriesModel(BaseModel):
 class SyntheticTimeseriesModel(ITimeseriesModel):
     # Required
     shape_type: ShapeType
-    shape_duration: UnitfulTime
-    shape_peak_time: UnitfulTime
+    duration: UnitfulTime
+    peak_time: UnitfulTime
 
     # Either one of these must be set
-    peak_intensity: Optional[UnitfulIntensity | UnitfulDischarge | UnitfulLength] = None
-    cumulative: Optional[UnitfulLength | UnitfulVolume] = None
+    peak_value: Optional[IUnitFullValue] = None
+    cumulative: Optional[IUnitFullValue] = None
 
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
-        if self.shape_duration < 0:
+        if self.duration < 0:
             raise ValueError(
-                f"Timeseries shape duration must be positive, got {self.shape_duration}"
+                f"Timeseries shape duration must be positive, got {self.duration}"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_timeseries_model_value_specification(self):
+        if self.peak_value is None and self.cumulative is None:
+            raise ValueError(
+                "Either peak_value or cumulative must be specified for the timeseries model."
+            )
+        if self.peak_value is not None and self.cumulative is not None:
+            raise ValueError(
+                "Only one of peak_value or cumulative should be specified for the timeseries model."
             )
         return self
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
     csv_file_path: str | Path
+    # TODO: Add validation for csv_file_path / contents ?
 
 
 ### CALCULATION STRATEGIES ###
@@ -83,12 +93,12 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.shape_duration.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
         _shape_start = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
         )
         _shape_end = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
         )
 
         _timestep = timestep.convert(UnitTypesTime.seconds).value
@@ -134,15 +144,15 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.shape_duration.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
         _shape_start = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
         )
         _shape_end = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
         )
 
-        _peak_intensity = attrs.peak_intensity.value
+        _peak_value = attrs.peak_value.value
         _timestep = timestep.convert(UnitTypesTime.seconds).value
 
         tt = np.arange(
@@ -153,7 +163,7 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
         mean = (_shape_start + _shape_end) / 2
         sigma = (_shape_end - _shape_start) / 6
         # 99.7% of the rain will fall within a duration of 6 sigma
-        ts = _peak_intensity * np.exp(-0.5 * ((tt - mean) / sigma) ** 2)
+        ts = _peak_value * np.exp(-0.5 * ((tt - mean) / sigma) ** 2)
         return ts
 
 
@@ -161,15 +171,15 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.shape_duration.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
         _shape_start = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
         )
         _shape_end = (
-            attrs.shape_peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
+            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
         )
 
-        _peak_intensity = attrs.peak_intensity.value
+        _peak_value = attrs.peak_value.value
         _timestep = timestep.convert(UnitTypesTime.seconds).value
 
         tt = np.arange(
@@ -177,7 +187,7 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
             _shape_end,
             step=_timestep,
         )
-        ts = np.where((tt > _shape_start) & (tt < _shape_end), _peak_intensity, 0)
+        ts = np.where((tt > _shape_start) & (tt < _shape_end), _peak_value, 0)
         return ts
 
 
@@ -187,12 +197,12 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.shape_duration.convert(UnitTypesTime.seconds).value
-        _peak_time = attrs.shape_peak_time.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
+        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds).value
         _shape_start = _peak_time - _duration / 2
         _shape_end = _peak_time + _duration / 2
 
-        _peak_intensity = attrs.peak_intensity.value
+        _peak_value = attrs.peak_value.value
         _timestep = timestep.convert(UnitTypesTime.seconds).value
 
         tt = np.arange(
@@ -201,15 +211,15 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
             step=_timestep,
         )
 
-        ascending_slope = _peak_intensity / (_peak_time - _shape_start)
-        descending_slope = -_peak_intensity / (_shape_end - _peak_time)
+        ascending_slope = _peak_value / (_peak_time - _shape_start)
+        descending_slope = -_peak_value / (_shape_end - _peak_time)
 
         ts = np.piecewise(
             tt,
             [tt < _peak_time, tt >= _peak_time],
             [
                 lambda x: ascending_slope * (x - _shape_start),
-                lambda x: descending_slope * (x - _peak_time) + _peak_intensity,
+                lambda x: descending_slope * (x - _peak_time) + _peak_value,
                 0,
             ],
         )
@@ -222,12 +232,12 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.shape_duration.convert(UnitTypesTime.seconds).value
-        _peak_time = attrs.shape_peak_time.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
+        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds).value
         _shape_start = _peak_time - _duration / 2
         _shape_end = _peak_time + _duration / 2
 
-        _peak_intensity = attrs.peak_intensity.value
+        _peak_value = attrs.peak_value.value
         _timestep = timestep.convert(UnitTypesTime.seconds).value
 
         tt = np.arange(
@@ -236,7 +246,7 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
             step=_timestep,
         )
         omega = 2 * math.pi / (TIDAL_PERIOD / UnitfulTime(1, UnitTypesTime.days))
-        ts = _peak_intensity * np.cos(
+        ts = _peak_value * np.cos(
             omega
             * tt
             / UnitfulTime(1, UnitTypesTime.days).convert(UnitTypesTime.seconds).value
@@ -315,9 +325,6 @@ class ITimeseries(ABC):
         df, xmin: pd.Timestamp, xmax: pd.Timestamp, intensity_units: UnitTypesIntensity
     ) -> go.Figure:
         fig = px.line(data_frame=df)
-
-        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
         fig.update_layout(
             autosize=False,
             height=100 * 2,
@@ -332,10 +339,20 @@ class ITimeseries(ABC):
             yaxis_title={"text": f"Rainfall intensity [{intensity_units}]"},
             showlegend=False,
             xaxis={"range": [xmin, xmax]},
-            # paper_bgcolor="#3A3A3A",
-            # plot_bgcolor="#131313",
         )
         return fig
+
+    def __eq__(self, other: "ITimeseries") -> bool:
+        if not isinstance(other, ITimeseries):
+            raise NotImplementedError(f"Cannot compare Timeseries to {type(other)}")
+
+        # If the following equation is element-wise True, then allclose returns True.:
+        # absolute(a - b) <= (atol + rtol * absolute(b))
+        return np.allclose(
+            self.calculate_data(DEFAULT_TIMESTEP),
+            other.calculate_data(DEFAULT_TIMESTEP),
+            rtol=1e-2,
+        )
 
 
 class SyntheticTimeseries(ITimeseries):
@@ -396,13 +413,6 @@ class SyntheticTimeseries(ITimeseries):
         obj = SyntheticTimeseries()
         obj.attrs = SyntheticTimeseriesModel.model_validate(data)
         return obj
-
-    def __eq__(self, other: "SyntheticTimeseries") -> bool:
-        if not isinstance(other, SyntheticTimeseries):
-            raise NotImplementedError(
-                f"Cannot compare SyntheticTimeseries to {type(other)}"
-            )
-        return self.attrs == other.attrs
 
 
 class CSVTimeseries(ITimeseries):

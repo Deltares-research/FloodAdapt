@@ -27,6 +27,7 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
     IDischarge,
 )
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     IRainfall,
     RainfallConstant,
@@ -59,8 +60,8 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.events import IForcing, Mode
-from flood_adapt.object_model.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.interface.hazard_adapter import HazardData, IHazardAdapter
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -73,6 +74,15 @@ from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import cd
 
 
+class SfincsData(HazardData):
+    flood_map = "flood_map"
+    boundary = "boundary"
+    water_level_map = "water_level_map"
+    mask = "mask"
+    bed_level = "bed_level"
+    grid = "grid"
+
+
 class SfincsAdapter(IHazardAdapter):
     _logger: logging.Logger
     _site: Site
@@ -83,7 +93,8 @@ class SfincsAdapter(IHazardAdapter):
         """Load overland sfincs model based on a root directory.
 
         Args:
-            model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
+            site (Site): Site object with site specific information.
+            model_root (str): Root directory of overland sfincs model.
         """
         self._logger = logging.getLogger(__file__)
         self._model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
@@ -236,15 +247,15 @@ class SfincsAdapter(IHazardAdapter):
     ### PRIVATE METHODS - Should not be called from outside of this class ###
     def _preprocess(self):
         sim_paths = self._get_simulation_paths()
-        for ii, event in enumerate(self._scenario.events):
-            _event = Database.events.get(event)
+        for ii, name in enumerate(self._scenario.events):
+            event = Database().events.get(name)
 
-            self._set_timing(_event.attrs)
+            self._set_timing(event.attrs)
 
             # run offshore model or download wl data, copy all required files to the simulation folder
-            _event.process()
+            event.process()
 
-            for forcing in _event.attrs.forcings:
+            for forcing in event.attrs.forcings:
                 self.add_forcing(forcing)
 
             for measure in self._scenario.attrs.strategy:
@@ -260,7 +271,6 @@ class SfincsAdapter(IHazardAdapter):
             self._write_sfincs_model(path_out=sim_paths[ii])
 
     def _process(self):
-        # Run new model(s)
         if not FloodAdapt_config.get_system_folder():
             raise ValueError(
                 """
@@ -306,7 +316,7 @@ class SfincsAdapter(IHazardAdapter):
         if not self.has_run_check(self._scenario):
             raise RuntimeError("SFINCS was not run successfully!")
 
-        mode = Database.events.get(self._scenario.attrs.event).get_mode()
+        mode = Database().events.get(self._scenario.attrs.event).get_mode()
         if mode == Mode.single_event:
             # Write flood-depth map geotiff
             self._write_floodmap_geotiff()
@@ -350,9 +360,10 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, WindFromModel):
             self._model.setup_wind_forcing_from_grid(wind=forcing.path)
         else:
-            raise ValueError(
+            self._logger.warning(
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
             )
+            return
 
     def _add_forcing_rain(self, forcing: IRainfall):
         """Add spatially constant rain forcing to sfincs model. Use timeseries or a constant magnitude.
@@ -375,15 +386,18 @@ class SfincsAdapter(IHazardAdapter):
                 magnitude=None,
             )
         elif isinstance(forcing, RainfallFromModel):
-            # TODO implement
-            pass
+            # TODO: check how to add this to the model
+            data = self._get_wl_df_from_offshore_his_results()
+            self._model.setup_precip_forcing_from_grid(precip=data)
+
         elif isinstance(forcing, RainfallFromSPWFile):
-            # TODO implement
+            # TODO: check how to add this to the model
             pass
         else:
-            raise ValueError(
+            self._logger.warning(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
             )
+            return
 
     def _add_forcing_discharge(self, forcing: IDischarge):
         """Add spatially constant discharge forcing to sfincs model. Use timeseries or a constant magnitude.
@@ -407,9 +421,10 @@ class SfincsAdapter(IHazardAdapter):
                 magnitude=None,
             )
         else:
-            raise ValueError(
+            self._logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
+            return
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         if isinstance(forcing, WaterlevelSynthetic):
@@ -422,9 +437,10 @@ class SfincsAdapter(IHazardAdapter):
             # TODO implement this
             pass
         else:
-            raise ValueError(
+            self._logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
+            return
 
     ### MEASURES HELPERS ###
     def _add_measure_floodwall(self, floodwall: FloodWall):
@@ -436,7 +452,7 @@ class SfincsAdapter(IHazardAdapter):
             floodwall information
         """
         # HydroMT function: get geodataframe from filename
-        polygon_file = Database.input_path.joinpath(floodwall.attrs.polygon_file)
+        polygon_file = Database().input_path.joinpath(floodwall.attrs.polygon_file)
         gdf_floodwall = self._model.data_catalog.get_geodataframe(
             polygon_file, geom=self._model.region, crs=self._model.crs
         )
@@ -476,11 +492,11 @@ class SfincsAdapter(IHazardAdapter):
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.attrs.selection_type == "polygon":
-            polygon_file = Database.input_path.joinpath(
+            polygon_file = Database().input_path.joinpath(
                 green_infrastructure.attrs.polygon_file
             )
         elif green_infrastructure.attrs.selection_type == "aggregation_area":
-            # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
+            # TODO this logic already exists in the Database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
             for aggr_dict in self._site.attrs.fiat.aggregation:
                 # check which one is used in measure
@@ -491,7 +507,7 @@ class SfincsAdapter(IHazardAdapter):
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    Database.static_path / "site" / aggr_dict.file,
+                    Database().static_path / "site" / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
@@ -531,7 +547,7 @@ class SfincsAdapter(IHazardAdapter):
         pump : PumpModel
             pump information
         """
-        polygon_file = Database.input_path.joinpath(pump.attrs.polygon_file)
+        polygon_file = Database().input_path.joinpath(pump.attrs.polygon_file)
         # HydroMT function: get geodataframe from filename
         gdf_pump = self._model.data_catalog.get_geodataframe(
             polygon_file, geom=self._model.region, crs=self._model.crs
@@ -549,7 +565,7 @@ class SfincsAdapter(IHazardAdapter):
 
     ##### OLD CODE BELOW #####
     # @Gundula: I have renamed some the functions and added comments to some that explain when they were called in the original hazard.py just to keep track.
-    # Im not super familiar with hydropmt_sfincs and its functions, so I have not changed the logic of the functions, only the names and comments.
+    # Im not super familiar with hydromt_sfincs and its functions, so I have not changed the logic of the functions, only the names and comments.
     # It could be the case that some of the functions in here are not needed anymore, but we can always remove them later if needed.
 
     # I have also added a '_' to the start of all functions I see as private.
@@ -798,15 +814,17 @@ class SfincsAdapter(IHazardAdapter):
     def _get_result_path(self, scenario_name: str = None) -> Path:
         if scenario_name is None:
             scenario_name = self._scenario.attrs.name
-        path = Database.scenarios.get_database_path(get_input_path=False).joinpath(
-            scenario_name, "Flooding"
+        path = (
+            Database()
+            .scenarios.get_database_path(get_input_path=False)
+            .joinpath(scenario_name, "Flooding")
         )
         return path
 
     def _get_simulation_paths(self) -> tuple[list[Path], list[Path]]:
         simulation_paths = []
         simulation_paths_offshore = []
-        event = Database.events.get(self._scenario.attrs.event)
+        event = Database().events.get(self._scenario.attrs.event)
         mode = event.get_mode()
         results_path = self._get_result_path()
 
@@ -850,7 +868,7 @@ class SfincsAdapter(IHazardAdapter):
     def _get_flood_map_path(self) -> list[Path]:
         """_summary_."""
         results_path = self._get_result_path()
-        mode = Database.events.get(self._scenario.attrs.event).get_mode()
+        mode = Database().events.get(self._scenario.attrs.event).get_mode()
 
         if mode == Mode.single_event:
             map_fn = [results_path.joinpath("max_water_level_map.nc")]
@@ -923,7 +941,7 @@ class SfincsAdapter(IHazardAdapter):
             # read SFINCS model
             with SfincsAdapter(model_root=sim_path, site=self._site) as model:
                 # dem file for high resolution flood depth map
-                demfile = Database.static_path.joinpath(
+                demfile = Database().static_path.joinpath(
                     "dem", self._site.attrs.dem.filename
                 )
 
@@ -1018,8 +1036,8 @@ class SfincsAdapter(IHazardAdapter):
         floodmap_rp = self._site.attrs.risk.return_periods
         result_path = self.get_result_path()
         sim_paths, offshore_sim_paths = self._get_simulation_paths()
-        event_set = Database.events.get(self._scenario.attrs.event)
-        phys_proj = Database.projections.get(self._scenario.attrs.projection)
+        event_set = Database().events.get(self._scenario.attrs.event)
+        phys_proj = Database().projections.get(self._scenario.attrs.projection)
         frequencies = event_set.attrs.frequency
 
         # adjust storm frequency for hurricane events
@@ -1120,7 +1138,7 @@ class SfincsAdapter(IHazardAdapter):
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = Database.static_path.joinpath(
+            demfile = Database().static_path.joinpath(
                 "dem", self._site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
@@ -1195,7 +1213,7 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
                 # check if event is historic
-                event = Database.events.get(self._scenario.attrs.event)
+                event = Database().events.get(self._scenario.attrs.event)
                 if event.attrs.timing == "historical":
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
@@ -1204,7 +1222,7 @@ class SfincsAdapter(IHazardAdapter):
                         or self._site.attrs.obs_point[ii].file is not None
                     ):
                         if self._site.attrs.obs_point[ii].file is not None:
-                            file = Database.static_path.joinpath(
+                            file = Database().static_path.joinpath(
                                 self._site.attrs.obs_point[ii].file
                             )
                         else:

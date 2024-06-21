@@ -1,57 +1,16 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+from flood_adapt.integrator.interface.model_adapter import IAdapter, ModelData
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.events import IForcing
 
 
-class IHazardAdapter(ABC):
-    @abstractmethod
-    def __enter__(self):
-        """Use the adapter as a context manager to handle opening/closing of the hazard model and attached resources.
+class HazardData(ModelData):
+    pass
 
-        This method should return the adapter object itself, so that it can be used in a with statement.
 
-        Usage:
-
-        with Adapter as model:
-            ...
-            model.run()
-
-        Entering the with block will call adapter.__enter__() and
-        Exiting the with block (via regular execution or an error) will call adapter.__exit__()
-        """
-        pass
-
-    @abstractmethod
-    def __exit__(self):
-        """Use the adapter as a context manager to handle opening/closing of the hazard model and attached resources.
-
-        This method should return the adapter object itself, so that it can be used in a with statement.
-
-        Usage:
-
-        with Adapter as model:
-            ...
-            model.run()
-
-        Entering the `with` block will call adapter.__enter__()
-        Exiting the `with` block (via regular execution or an error) will call adapter.__exit__()
-        """
-        pass
-
-    @abstractmethod
-    def read(self):
-        pass
-
-    @abstractmethod
-    def write(self):
-        pass
-
-    @abstractmethod
-    def run(self):
-        pass
-
+class IHazardAdapter(IAdapter):
     @abstractmethod
     def add_forcing(self, forcing: IForcing):
         """

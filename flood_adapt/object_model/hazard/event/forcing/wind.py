@@ -1,4 +1,4 @@
-from flood_adapt.object_model.interface.events import IForcing
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
 
 

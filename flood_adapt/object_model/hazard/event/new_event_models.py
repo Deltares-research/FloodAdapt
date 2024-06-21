@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
     IDischarge,  # noqa
 )
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     IRainfall,
     RainfallConstant,
@@ -27,17 +28,18 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindFromModel,
     WindTimeSeries,
 )
-from flood_adapt.object_model.interface.events import Mode, TranslationModel
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 
-class IForcing(BaseModel):
-    """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
+class Mode(str, Enum):
+    """Class describing the accepted input for the variable mode in Event."""
 
-    pass
+    single_event = "single_event"
+    risk = "risk"
 
 
 class Template(str, Enum):
-    """class describing the accepted input for the variable template in Event."""
+    """Class describing the accepted input for the variable template in Event."""
 
     Synthetic = "Synthetic"
     Hurricane = "Historical_hurricane"
@@ -53,6 +55,17 @@ class TimeModel(BaseModel):
     start_time: datetime = DEFAULT_START_TIME
     end_time: datetime = DEFAULT_END_TIME
     time_step: timedelta = timedelta(minutes=10)
+
+
+class TranslationModel(BaseModel):
+    """BaseModel describing the expected variables and data types for translation parameters of hurricane model."""
+
+    eastwest_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
+    northsouth_translation: UnitfulLength = UnitfulLength(
+        value=0.0, units=UnitTypesLength.meters
+    )
 
 
 class IEventModel(BaseModel):

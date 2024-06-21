@@ -1,5 +1,5 @@
-from flood_adapt.object_model.hazard.event.timeseries import TimeseriesModel
-from flood_adapt.object_model.interface.events import IForcing
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
+from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseriesModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
 
 
@@ -12,7 +12,7 @@ class RainfallConstant(IRainfall):
 
 
 class RainfallSynthetic(IRainfall):
-    timeseries: TimeseriesModel
+    timeseries: SyntheticTimeseriesModel
 
 
 class RainfallFromModel(IRainfall):

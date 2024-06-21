@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
+from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
 from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseriesModel,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.events import IForcing
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitfulTime
 
 
