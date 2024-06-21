@@ -69,7 +69,7 @@ class TippingPoint(ITipPoint):
     def slr_projections(self, slr):
         """Create projections for sea level rise value"""
         new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
-        proj = database.projections.get(self.attrs.projection)
+        proj = Database().projections.get(self.attrs.projection)
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
             value=slr, units=UnitTypesLength.meters
         )
@@ -230,39 +230,6 @@ class TippingPoint(ITipPoint):
         attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
         attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
         return attrs_1 == attrs_2
-
-
-# TODO: expand test into a separate file
-# test function
-from flood_adapt.config import set_system_folder
-
-if __name__ == "__main__":
-    database = read_database(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt-Database",
-        "charleston_full",
-    )
-    set_system_folder(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt-Database\\system"
-    )
-
-    tp_dict = {
-        "name": "tipping_point_test",
-        "description": "",
-        "event_set": "extreme12ft",
-        "strategy": "no_measures",
-        "projection": "current",
-        "sealevelrise": [0.5, 1.0, 1.5],
-        "tipping_point_metric": [
-            ("FloodedAll", 34195.0, "greater"),
-            ("FullyFloodedRoads", 2000, "greater"),
-        ],
-    }
-    # load
-    test_point = TippingPoint.load_dict(tp_dict)
-    # create scenarios for tipping points
-    test_point.create_tp_scenarios()
-    # run all scenarios
-    test_point.run_tp_scenarios()
 
 
 # TODO: post processing stuff still to be done
