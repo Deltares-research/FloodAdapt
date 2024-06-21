@@ -106,11 +106,14 @@ $navbar-hl: $links ;
     height: 170%;
 }
 
-#quarto-sidebar-section-7 .sidebar-item:nth-child(3) {
-    padding-bottom: 10px;
-}
 
+#quarto-sidebar-section-7 .sidebar-item:nth-child(3) {
+    padding-bottom: 20px;
+}
 #quarto-sidebar-section-7 .sidebar-item:nth-child(3) a:hover {
+    height: 170%;
+}
+#quarto-sidebar-section-8 .sidebar-item:nth-child(2) a:hover {
     height: 170%;
 }
 
@@ -143,9 +146,7 @@ $navbar-hl: $links ;
 #quarto-sidebar-section-10 .sidebar-item-container:nth-child(1) {
     height: 30px !important;
   }
-
-#quarto-sidebar-section-10 .sidebar-item:nth-child(1) a:hover {
-    height: 145%;
+  #quarto-sidebar-section-10 .sidebar-item:nth-child(1) a:hover {
     width: 115%
 }
 #quarto-sidebar-section-10 .sidebar-item:nth-child(3) a:hover {
