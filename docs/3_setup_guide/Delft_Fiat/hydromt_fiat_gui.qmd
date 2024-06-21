@@ -243,6 +243,7 @@ Assign the default vulnerability curves to the exposure data.
 
 :::
 
+
 Assign the default vulnerability curves to the exposure data. 
 
 :::
