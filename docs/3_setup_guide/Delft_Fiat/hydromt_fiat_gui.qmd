@@ -151,7 +151,7 @@ To set up the vulnerability curves open the **"Vulnerability"**-tab on the top p
 
   1. The GUI will automatically select the correct <u>default curves</u> for your model based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. For detailed information about the default curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
 
-  2. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve. 
+  2. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve (@fig-update_curves). 
 
 ![Workflow to assign vulnerability curves to assets with option to update default NSI vulnerability curves.](../../_static/figures/vulnerability.svg){#fig-vulnerability_curve}
 
@@ -162,6 +162,14 @@ You can follow the steps in the video below (@fig-vulnerability).
 {{< video ../../_static/videos/hydromt_fiat/NSI_Vulnerability.mp4 >}}
 
 Assign the default vulnerability curves to the exposure data. 
+
+:::
+
+::: {#fig-update_curves}
+
+{{< video ../../_static/videos/hydromt_fiat/Update_default_damage_curve.mp4 >}}
+
+***Only NSI***: Update default vulnerability curves. 
 
 :::
 
