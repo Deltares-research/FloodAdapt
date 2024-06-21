@@ -9,8 +9,17 @@ format:
 jupyter: python3
 ---
 
+FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts.
 
-### Folder structure
+## Types of Data
+- **Hazard**
+    - please refer to the SFINCS Model Setup
+- **Exposure**
+    - Exposure data either in vector or gridded format
+- **Vulnerability**
+    - Data relating the hazard intensity to damage fraction
+
+## Folder structure
 We recommened to follow the folder structure as shown below for your model to ensure that FIAT can find each data file and run smoothly. 
 ```
 ├───📁 FIAT/
