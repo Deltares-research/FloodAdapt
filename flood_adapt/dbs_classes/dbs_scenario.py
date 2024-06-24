@@ -2,7 +2,6 @@ import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
@@ -110,8 +109,8 @@ class DbsScenario(DbsTemplate):
         """
         # Get all the benefits
         benefits = [
-            Benefit.load_file(path)
-            for path in self._database.benefits.list_objects()["path"]
+            self._database.benefits.get(name)
+            for name in self._database.benefits.list_objects()["name"]
         ]
 
         # Check in which benefits this scenario is used

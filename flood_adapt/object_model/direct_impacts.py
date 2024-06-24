@@ -190,7 +190,7 @@ class DirectImpacts:
             )
             dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
-                self.database.static_path / "site" / aggr.file
+                self.database.static_path / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation
             ]
             attribute_names = [
@@ -357,7 +357,7 @@ class DirectImpacts:
 
             # Create Equity object
             equity = Equity(
-                census_table=self.site_toml_path.parent.joinpath(
+                census_table=self.database.static_path.joinpath(
                     self.site_info.attrs.fiat.aggregation[ind].equity.census_data
                 ),
                 damages_table=fiat_data,
@@ -420,7 +420,7 @@ class DirectImpacts:
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_label
             ][0]
-            aggr_areas_path = self.site_toml_path.parent.joinpath(
+            aggr_areas_path = self.database.static_path.joinpath(
                 self.site_info.attrs.fiat.aggregation[ind].file
             )
 
@@ -447,7 +447,7 @@ class DirectImpacts:
         if not self.site_info.attrs.fiat.building_footprints:
             raise ValueError("No building footprints are provided.")
         # Get footprints file
-        footprints_path = self.site_toml_path.parent.joinpath(
+        footprints_path = self.database.static_path.joinpath(
             self.site_info.attrs.fiat.building_footprints
         )
         # Define where footprint results are saved
