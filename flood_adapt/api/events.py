@@ -120,10 +120,10 @@ def copy_event(old_name: str, new_name: str, new_description: str) -> None:
 
 
 def download_wl_data(
-    station_id, start_time, end_time, units: UnitTypesLength, file=None
+    station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
 ) -> pd.DataFrame:
     return HistoricalNearshore.download_wl_data(
-        station_id, start_time, end_time, units, file
+        station_id, start_time, end_time, units, source, file
     )
 
 
