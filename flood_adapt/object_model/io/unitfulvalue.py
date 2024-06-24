@@ -2,7 +2,7 @@ import math
 from datetime import timedelta
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 class Unit(str, Enum):
@@ -17,8 +17,8 @@ class IUnitFullValue(BaseModel):
 
     Attributes
     ----------
-        _STANDARD_UNIT (Unit): The default unit.
-        _CONVERSION_FACTORS (dict[Unit: float]): A dictionary of conversion factors from any unit to the default unit.
+        _DEFAULT_UNIT (Unit): The default unit.
+        _CONVERSION_FACTORS (dict[Unit: float]): A dictionary of conversion factors from the default unit to any unit.
         value (float): The numerical value.
         units (Unit): The units of the value.
     """
@@ -216,15 +216,8 @@ class UnitfulArea(IUnitFullValue):
         UnitTypesArea.sf: 10.764,
     }
     _DEFAULT_UNIT = UnitTypesArea.mm2
-    value: float
+    value: float = Field(gt=0.0)
     units: UnitTypesArea
-
-    @field_validator("value")
-    @classmethod
-    def area_cannot_be_negative(cls, value: float):
-        if value < 0:
-            raise ValueError(f"Area cannot be negative: {value}")
-        return value
 
 
 class UnitfulVelocity(IUnitFullValue):
@@ -282,12 +275,10 @@ class UnitfulTime(IUnitFullValue):
     units: UnitTypesTime
 
     _CONVERSION_FACTORS = {
-        UnitTypesTime.hours: {
-            UnitTypesTime.days: 1.0 / 24.0,
-            UnitTypesTime.hours: 1.0,
-            UnitTypesTime.minutes: 60.0,
-            UnitTypesTime.seconds: 60.0 * 60.0,
-        },
+        UnitTypesTime.days: 1.0 / 24.0,
+        UnitTypesTime.hours: 1.0,
+        UnitTypesTime.minutes: 60.0,
+        UnitTypesTime.seconds: 60.0 * 60.0,
     }
     _DEFAULT_UNIT = UnitTypesTime.hours
 
