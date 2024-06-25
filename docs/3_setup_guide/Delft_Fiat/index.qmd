@@ -7,31 +7,79 @@ lightbox: auto
 
 Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It can be used as a stand-alone tool, or integrated with other tools such in this case with **FloodAdapt**.  
 
-It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic and monetary impacts to buildings, utilities, and roads for specified flood events and return periods. In the further documentation, Delft-FIAT.
+It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic impacts to buildings, utilities, and roads for input flood maps.
 
-Delft-FIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk.
+Delft-FIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user.
 
 ::: {.callout-tip}
 For a detailed documentation of Delft-FIAT you can visit the [**Delft-FIAT documentation**](https://deltares.github.io/Delft-FIAT/stable/)
 :::
 
-<html>
-<head>
-<meta charset="utf-8"/>
-</head>
-<body>
-<div class="mxgraph" style="max-width:100%;padding:3em 0 18em 0;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot; modified=\&quot;2023-10-25T06:59:31.803Z\&quot; agent=\&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46\&quot; etag=\&quot;QpuXOlBkvi8B3uUODvBo\&quot; version=\&quot;22.0.7\&quot; type=\&quot;device\&quot;&gt;&lt;diagram name=\&quot;Page-1\&quot; id=\&quot;aSg1EHzWzZEX-zshLOQz\&quot;&gt;&lt;mxGraphModel dx=\&quot;746\&quot; dy=\&quot;479\&quot; grid=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; page=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;850\&quot; pageHeight=\&quot;1100\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Flood maps&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;100\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-3\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; Damage functions&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;190\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-4\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Exposure&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;290\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-7\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; Flood Impact&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;540\&quot; y=\&quot;191\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-8\&quot; value=\&quot;\&quot; style=\&quot;rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;280\&quot; y=\&quot;150\&quot; width=\&quot;255\&quot; height=\&quot;165\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-9\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; style=&amp;quot;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 28px;&amp;quot;&amp;gt;Delft-FIAT&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=0;fillColor=#080c80ff;strokeColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;328.13\&quot; y=\&quot;150\&quot; width=\&quot;158.75\&quot; height=\&quot;158.75\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-14\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;242\&quot; y=\&quot;131.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330\&quot; y=\&quot;130\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-15\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;240.13\&quot; y=\&quot;219.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330.13\&quot; y=\&quot;219.5\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-16\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;240.13\&quot; y=\&quot;319.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330.13\&quot; y=\&quot;319.5\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-17\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;491.88\&quot; y=\&quot;220.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;551.1004778278927\&quot; y=\&quot;220.6985665163221\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-22\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;4&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;333\&quot; y=\&quot;112\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-23\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;1&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;117.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-24\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;2&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;207.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-25\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;3&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;307.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-26\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;5&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;562\&quot; y=\&quot;208.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
-<script type="text/javascript" src="https://app.diagrams.net/js/viewer-static.min.js"></script>
-</body>
-</html>
+## Input Data
+
+Delft-FIAT is a calculation engine and does not come pre-populated with data. It is flexible and allows users to input and modify their own exposure, vulnerability, and hazard data. The quality of the estimated damages is entirely dependent on the quality of the data that is input into Delft-FIAT. 
 
 
+## Exposure Data 
 
-|   | Field            | Description                                                                        |
-|---|------------------|-----------------------------------------------------------------------------|
-| 1 | Flood maps       | Hazard input: Selected per damage/risk simulation                                |
-| 2 | Damage functions | Vulnerability input: Prepared when setting up the model, coupled to exposure objects  |
-| 3 | Exposure data    | Exposure input: Prepared when setting up the model, including exposure assets and max potential damages       |
-| 4 | Delft-FIAT       | Flood Impact Assesment Tool    |
-| 5 | Flood impact    | Resulting (economic) damages and risk                  |
-: {.striped .hover}
+The **exposure data** describe the assets within the region of interest. Delft-FIAT allows **vector** inputs. 
+
+#### Vector data
+Delft-FIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a Delft-FIAT model with geometry exposure data requires two data types:
+
+- **Geometry file(s)**
+- **CSV file**
+
+## Vulnerability Data
+Vulnerability data in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a percentage of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. The damage function relates the inundation depth to a fraction of total damage per building type (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. 
+
+```{python}
+#| echo: false
+#| label: fig-damagefunction
+#| fig-cap: "Example of depth-damage functions."
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+
+
+file_path = Path.cwd()
+
+file_path = Path(file_path.parents[1], "_static", "files", "vulnerability_curves.csv")
+file_path = file_path.resolve()
+data = df = pd.read_csv(file_path, comment='#')
+df = pd.DataFrame({
+    ('water depth'): data.iloc[:, 0],
+    ('STRUCT1'): data.iloc[:, 1],
+    ('STRUCT2'): data.iloc[:, 2],
+
+})
+
+labels=["example building type 1","example building type 1"]
+plt.plot(df['water depth'], df['STRUCT1'])
+plt.plot(df['water depth'], df['STRUCT2'])
+plt.xlabel('Water depth (m)')
+plt.ylabel('Fraction of maximum potential damage')
+plt.legend(labels)
+plt.gca().get_legend().set_title('')
+```
+
+
+## Folder structure
+We recommened to follow the folder structure as shown below for your model to ensure that Delft-FIAT can find each data file and run smoothly. 
+```
+├───📁 FIAT/
+    |
+    ├───📁 hazard/
+    │   └───📄 This will be empty
+    |
+    ├───📁 exposure/
+    │   ├───📄 buildings.gpkg
+    │   └───📄 exposure.csv
+    |
+    ├───📁 vulnerability/
+    │   └───📄 vulnerability_curves.csv
+    |
+    └───📄 settings.toml
+
+```
