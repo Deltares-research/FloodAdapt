@@ -70,7 +70,7 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 :::
 
 ## Tailored Delft-FIAT model
-This section explains the creation of a simple model without additional input by the user. This can be set up globally or in the United States, after you created your model boundaries (please refer to the section *Create Model Boundary*).
+This section explains the creation of a simple Delft-FIAT model configured by the user. The model can be set up at any location worldwide.
 
 ### Create the exposure data
 There are two different database sources to download the **exposure data** from, determined by the location of your model:
@@ -80,14 +80,14 @@ There are two different database sources to download the **exposure data** from,
 
 Additionally, you can download **road data** from Open Street Map. 
 
-*Step-by-step instructions for the tailored Delft-FIAT model*  
+*Step-by-step instructions to setup the exposure data*  
 To set up the exposure data open the **"Exposure"**-tab on the top panel (@fig-exposure). 
-
-  1. Select the **"Asset Location"**-tab at the bottom panel.
-  2. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data.
-  3. ***Only OSM***: Define a <u>damage currency (JRC damage curves default is Euro)</u> and the <u>finished floor height (meters)</u> for all assets (can be updated later on the individual asset level in the Exposure >> Finished Floor Height-tab) .
-  4. ***optional***: Include OSM roads by checking the checkbox "Include OSM roads".
-  5. Add to model.
+  1. Generate your model boundaries
+  2. Select the **"Asset Location"**-tab at the bottom panel.
+  3. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data.
+  4. ***Only OSM***: Define a <u>damage currency (JRC damage curves default is Euro)</u> and the <u>finished floor height (meters)</u> for all assets (can be updated later on the individual asset level in the Exposure >> Finished Floor Height-tab) .
+  5. ***optional***: Include OSM roads by checking the checkbox "Include OSM roads".
+  6. Add to model.
   
  #######After creating your model you should end up with a folder structure as describted in the section [Data Input - Folder Structure] Add this somewhere here
 ![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/Exposure.svg){#fig-exposure}
@@ -112,6 +112,35 @@ Exposure setup in the United States using NSI exposure and OSM roads.
 Global exposure setup using OSM exposure and OSM roads .
 
 :::
+
+#### Update Finished Floor Height
+
+*Step-by-step instructions to setup/update the Finished Floor Height*  
+To set up the finished floor height open the **"Exposure"**-tab on the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
+  1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
+  2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
+  3. Select the column that holds the finished floor height data. 
+  4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the model builder. If you do not wish to change the default settings there is no need to change the settings. 
+  5. Click **Add to model**.
+
+#### Update Ground Elevation
+
+*Step-by-step instructions to setup/update the Ground Elevation*  
+To set up the ground elevation open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
+There are two options in the drop-down menu to set up the ground elevation data:
+  1. SFINCS Ground Elevation
+
+    a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the model builder will recognize the file automatically.
+    b. Click **Add to model**.
+
+  2. Upload file
+
+    a. Select the file source of your ground elevation data. The file must be a raster file (e.g. *.tif*).
+    b. Select the elevation unit of your file (meters or feet).
+    d. Click **Add to model**. 
+
+#### Update Max. Potential Damages
+
 
 ### Assign vulnerability curves
 As a next step you must assign the vulnerability curves to the exposure data. There are two data sources which the vulnerability curves are downloaded from, determined by the location of your model:
