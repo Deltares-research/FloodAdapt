@@ -8,7 +8,7 @@ execute:
 jupyter: python3
 ---
 
-The Hydromt FIAT Graphical User Interface (GUI), also refered to as **Flood Adapt Model Builder (FIAT)**, facilitates the process of setting up the Delft-FIAT model, thus making the Delft-FIAT model creation accessible for users without modeling experience . 
+The Hydromt Delft-FIAT Graphical User Interface (GUI), also refered to as **Flood Adapt Model Builder (Delft-FIAT)**, facilitates the process of setting up the Delft-FIAT model, thus making the Delft-FIAT model creation accessible for users without modeling experience . 
 
 # Setup Guide
 ## Installation

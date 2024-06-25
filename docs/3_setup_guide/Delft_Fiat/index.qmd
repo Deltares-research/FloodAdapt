@@ -7,7 +7,7 @@ lightbox: auto
 
 Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It can be used as a stand-alone tool, or integrated with other tools such in this case with **FloodAdapt**.  
 
-It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic and monetary impacts to buildings, utilities, and roads for specified flood events and return periods. In the further documentation, Delft-FIAT will be refered to simply as FIAT.
+It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic and monetary impacts to buildings, utilities, and roads for specified flood events and return periods. In the further documentation, Delft-FIAT.
 
 Delft-FIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk.
 
