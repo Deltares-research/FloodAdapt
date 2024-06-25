@@ -27,5 +27,5 @@ def test_impact_footprints(scenario_event):
 
 def test_impact_aggr_damages(scenario_event):
     _, scenario_name = scenario_event
-    aggr_areas = api_output.get_aggregated_damages(scenario_name)
+    aggr_areas = api_output.get_aggregation(scenario_name)
     assert isinstance(aggr_areas, dict)
