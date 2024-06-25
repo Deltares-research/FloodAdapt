@@ -20,7 +20,7 @@ def test_projections(test_db):
     test_projections = {
         toml_file.name: Projection.load_file(toml_file) for toml_file in test_tomls
     }
-    return test_projections
+    yield test_projections
 
 
 @pytest.fixture()
