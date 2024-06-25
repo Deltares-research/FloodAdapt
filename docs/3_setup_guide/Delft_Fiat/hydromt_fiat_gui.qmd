@@ -1,5 +1,5 @@
 ---
-title:	Flood Adapt Model Builder - Graphical User Interface
+title:	Delft-FIAT model-builder
 filters:
   - lightbox
 lightbox: auto
@@ -96,7 +96,7 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 
 :::
 
-## Model from scratch: A simple model
+## Tailored Delft-FIAT model
 This section explains the creation of a simple model without additional input by the user. This can be set up globally or in the United States, after you created your model boundaries (please refer to the section *Create Model Boundary*).
 
 ### Create the exposure data
