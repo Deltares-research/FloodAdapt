@@ -34,9 +34,8 @@ def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
     return Database().get_fiat_footprints(name)
 
 
-# TODO this does not represent only damages. A more generic name should be used
-def get_aggregated_damages(name: str) -> dict[gpd.GeoDataFrame]:
-    return Database().get_aggregated_damages(name)
+def get_aggregation(name: str) -> dict[gpd.GeoDataFrame]:
+    return Database().get_aggregation(name)
 
 
 def get_roads(name: str) -> gpd.GeoDataFrame:
