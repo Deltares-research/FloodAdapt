@@ -5,25 +5,30 @@ filters:
 lightbox: auto
 ---
 
-Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and infrastructure through construction of structures or pumps. More natural measures to prevent flooding are described in the section on [urban green infrastructure](green_infra.qmd). FloodAdapt can simulate two main types of hydraulic (grey) measures: [floodwalls and levees](#floodwalls-and-levees), and [pumps](#pumps) properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling. 
+Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and infrastructure through construction of structures or pumps. More natural measures to prevent flooding are described in the section on [urban green infrastructure](green_infra.qmd). FloodAdapt can simulate two main types of hydraulic (grey) measures: [floodwalls and levees](#floodwalls-and-levees) and [pumps](#pumps). This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling. 
 
 ![**Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps**](../../_static/images/measures_hydraulic.png){width=40% fig-align=left #fig-measures_buildingLevel}
 
-![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../../_static/images/measures_buildingLevel_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
+![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../../_static/images/measures_hydraulic_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
 
-To specify a hydraulic measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Hydraulic" (see @fig-measures_buildingLevel_GUI). The user can then choose for "Measure" one of the three measure types: [floodwall or levee](#floodwalls-and-levees), or [pumps](#pumps). For each of these measures, the user will choose an "Area type". This indicates how the user will select the buildings to which they want to apply the measure. There are two options:
+To specify a hydraulic measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Hydraulic" (see @fig-measures_buildingLevel_GUI). The user can then choose for "Measure" one of the measure types: [floodwall or levee](#floodwalls-and-levees), or [pumps](#pumps). For each of these measures, the user will choose an "Area type". This indicates how the user will specify the location of the measure. There are two options:
 
-* Draw polygon: this option allows a user to click a polygon in the map to select the buildings of interest
+* Draw polyline: this option allows a user to click a polyline in the map to represent either the floodwall/levee or the intake/outtake location of a pump
 
-* Import polygon: this option allows a user to import a polygon that they have made externally, for example in GIS software
+* Import polyline: this option allows a user to import a polyline that they have made externally, for example in GIS software
 
-When selecting buildings using the "Draw polygon" feature, it is useful to click on the "Show Buildings" button in the Measures tab (see example in @fig-measures_buildingLevel_GUI). This shows the buildings that are in the exposure data of the impact model within FloodAdapt.
-
-Each of the building-level measures allows users to specify a property type to which the measure should be applied. So, for example, if a user selects a neighborhood, but only wants to apply the measure to the residential properties within the neighborhood, they are able to specify this. The property type is linked to an attribute in the impact model called the 'primary object type'. In the U.S, these are typically residential (RES) commercial (COM), industrial (IND), or public (PUB). You can also choose to apply the measure to all the buildings in the selected area. 
+When specifying a hydraulic measure, it is useful to see the underlying hazard model grid which helps understand how the measure will be schematized in the model (hydraulic measures are always snapped to the hazard model grid). For this the user can click the "Show Grid" box. In addition, if you click the "Show Grid Snapper" box, FloodAdapt will show you how your polyline will be snapped to the hazard model grid. This is especially important when drawing a floodwall or leveel to make sure that the area you want to protect is well-represented once the polyline is snapped to the grid. 
 
 ## Floodwalls and levees
 
-Elevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the [Measures](../measures/index.qmd) tab, select "Buildings" for the Category, and then from the Measure drop-down menu, select "Elevate properties". Select one of the "Area type" options and then click "Add Measure". If you selected "Draw polygon", you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in @fig-measures_buildingLevel_elevatePoly). When you are finished clicking the polygon, right click or double click to open the measure specification window (see @fig-measures_buildingLevel_fpPoly_spec). 
+Floodwalls and levees are engineered structures designed to provide barriers against flood waters, thereby mitigating flood risks and protecting vulnerable areas from inundation. To implement floodwalls or levees in FloodAdapt:
+
+* Go to the [Measures](../measures/index.qmd) tab
+* Select "Hydraulic" for the Category
+* From the Measure drop-down menu, Select "Floowall" or "Levee" 
+* Select one of the "Area type" options and then click "Add Measure". 
+
+If you selected "Draw polygon", you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in @fig-measures_buildingLevel_elevatePoly). When you are finished clicking the polygon, right click or double click to open the measure specification window (see @fig-measures_buildingLevel_fpPoly_spec). 
 
 ![**Selecting buildings for applying the elevate measure**](../../_static/images/measure_building_poly_elevate.png){width=70% fig-align=left #fig-measures_buildingLevel_elevatePoly}
 
