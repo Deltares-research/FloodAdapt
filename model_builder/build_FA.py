@@ -22,12 +22,11 @@ from shapely.geometry import Polygon
 
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
-from flood_adapt.api.startup import read_database
+from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.object_model.interface.site import (
     Obs_pointModel,
     RiverModel,
-    UnitfulDischarge,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
@@ -40,7 +39,8 @@ def logger(log_path):
     Args:
         log_path (str): The path to the log file.
 
-    Returns:
+    Returns
+    -------
         logging.Logger: The configured logger object.
     """
     # Create a root logger and set the minimum logging level.
@@ -70,7 +70,8 @@ class SpatialJoinModel(BaseModel):
     """
     Represents a spatial join model.
 
-    Attributes:
+    Attributes
+    ----------
         name (Optional[str]): The name of the model (optional).
         file (str): The file associated with the model.
         field_name (str): The field name used for the spatial join.
@@ -83,9 +84,11 @@ class SpatialJoinModel(BaseModel):
 
 class UnitSystems(str, Enum):
     """The `UnitSystems` class is an enumeration that represents the accepted values for the `metric_system` field.
+
     It provides two options: `imperial` and `metric`.
 
-    Attributes:
+    Attributes
+    ----------
         imperial (str): Represents the imperial unit system.
         metric (str): Represents the metric unit system.
     """
@@ -100,7 +103,8 @@ class Basins(str, Enum):
 
     Each basin is represented by a string value.
 
-    Attributes:
+    Attributes
+    ----------
         NA (str): North Atlantic
         SA (str): South Atlantic
         EP (str): Eastern North Pacific (which includes the Central Pacific region)
@@ -123,7 +127,8 @@ class GuiModel(BaseModel):
     """
     Represents a GUI model for for FloodAdapt.
 
-    Attributes:
+    Attributes
+    ----------
         unit_system (Optional[UnitSystems]): The unit system used (default: "metric").
         max_flood_depth (float): The last visualization bin will be ">value".
         max_aggr_dmg (float): The last visualization bin will be ">value".
@@ -140,7 +145,6 @@ class GuiModel(BaseModel):
 
 
 class TideGaugeModel(BaseModel):
-    # TODO this should be loaded from floodadapt
     source: str
     file: Optional[str] = None
     max_distance: Optional[float] = None
@@ -153,7 +157,8 @@ class ConfigModel(BaseModel):
     """
     Configuration model for FloodAdapt.
 
-    Attributes:
+    Attributes
+    ----------
         name (str): The name of the study area.
         description (Optional[str]): The description of the study area.
         database_path (Optional[str]): The path to the database.
@@ -191,13 +196,14 @@ class ConfigModel(BaseModel):
 
 def read_toml(fn: str) -> dict:
     """
-    Reads a TOML file and returns its contents as a dictionary.
+    Read a TOML file and return its contents as a dictionary.
 
     Args:
         fn (str): The path to the TOML file.
 
-    Returns:
-        dict: The contents of the TOML file as a dictionary.
+    Returns
+    -------
+    dict: The contents of the TOML file as a dictionary.
     """
     with open(fn, mode="rb") as fp:
         toml = tomli.load(fp)
@@ -206,12 +212,13 @@ def read_toml(fn: str) -> dict:
 
 def read_config(config: str) -> ConfigModel:
     """
-    Reads a configuration file and returns the validated attributes.
+    Read a configuration file and returns the validated attributes.
 
     Args:
         config (str): The path to the configuration file.
 
-    Returns:
+    Returns
+    -------
         ConfigModel: The validated attributes from the configuration file.
     """
     toml = read_toml(config)
@@ -227,7 +234,7 @@ def spatial_join(
     filter: Optional[bool] = False,
 ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
-    Performs a spatial join between two GeoDataFrames.
+    Perform a spatial join between two GeoDataFrames.
 
     Args:
         objects (gpd.GeoDataFrame): The GeoDataFrame representing the objects.
@@ -235,7 +242,8 @@ def spatial_join(
         field_name (str): The name of the field to use for the join.
         rename (Optional[str], optional): The new name to assign to the joined field. Defaults to None.
 
-    Returns:
+    Returns
+    -------
         tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]: A tuple containing the joined GeoDataFrame and the layer GeoDataFrame.
 
     """
@@ -286,7 +294,7 @@ class Database:
 
     def make_folder_structure(self):
         """
-        Creates the folder structure for the database.
+        Create the folder structure for the database.
 
         This method creates the necessary folder structure for the FloodAdapt database, including
         the input and static folders. It also creates subfolders within the input and
@@ -316,7 +324,7 @@ class Database:
 
     def create_standard_objects(self):
         """
-        Creates standard objects for the FloodAdapt model.
+        Create standard objects for the FloodAdapt model.
 
         This method creates a strategy with no measures and a projection with current
         physical and socio-economic conditions, and saves them to the database.
@@ -347,7 +355,7 @@ class Database:
 
     def read_fiat(self):
         """
-        Reads the FIAT model and extracts relevant information for the site configuration.
+        Read the FIAT model and extracts relevant information for the site configuration.
 
         This method reads the FIAT model from the specified path and performs the following steps:
         1. Copies the FIAT model to the database.
@@ -584,7 +592,7 @@ class Database:
 
     def read_sfincs(self):
         """
-        Reads the SFINCS model and sets the necessary attributes for the site configuration.
+        Read the SFINCS model and sets the necessary attributes for the site configuration.
 
         This method performs the following steps:
         1. Copies the sfincs model to the database.
@@ -613,13 +621,10 @@ class Database:
             fiat_units = "feet"
         self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
         self.site_attrs["sfincs"]["save_simulation"] = "False"
-        self.site_attrs["sfincs"][
-            "ambient_air_pressure"
-        ] = 102000  # TODO delete this after PR merge
 
     def read_offshore_sfincs(self):
         """
-        Reads the offshore SFINCS model and sets the necessary attributes for the site configuration.
+        Read the offshore SFINCS model and sets the necessary attributes for the site configuration.
 
         This method reads the offshore SFINCS model and performs the following steps:
         1. Copies the offshore sfincs model to the database.
@@ -655,28 +660,17 @@ class Database:
 
     def add_rivers(self):
         """
-        Adds rivers to the site attributes.
+        Add rivers to the site attributes.
 
         If `self.config.river` is empty, a dummy river is added with default values.
         Otherwise, the rivers specified in `self.config.river` are added.
         """
-        # TODO this should not be included with the new PR merge
-        if not self.config.river:
-            self.site_attrs["river"] = [
-                {
-                    "name": "dummy",
-                    "description": "dummy river",
-                    "x_coordinate": 0,
-                    "y_coordinate": 0,
-                    "mean_discharge": UnitfulDischarge(value=0.0, units="m3/s"),
-                }
-            ]
-        else:
+        if self.config.river:
             self.site_attrs["river"] = self.config.river
 
     def add_dem(self):
         """
-        Moves DEM files from the SFINCS model to the FloodAdapt model.
+        Move DEM files from the SFINCS model to the FloodAdapt model.
 
         If the DEM files are found in the SFINCS model, they are moved to the corresponding
         location in the FloodAdapt model. The filenames and units of the DEM files are
@@ -700,7 +694,7 @@ class Database:
 
     def update_fiat_elevation(self):
         """
-        Updates the ground elevations of FIAT objects based on the SFINCS ground elevation map.
+        Update the ground elevations of FIAT objects based on the SFINCS ground elevation map.
 
         This method reads the DEM file and the exposure CSV file, and updates the ground elevations
         of the FIAT objects (roads and buildings) based on the nearest elevation values from the DEM.
@@ -769,7 +763,7 @@ class Database:
 
     def add_cyclone_dbs(self):
         """
-        Downloads and adds a cyclone track database to the site attributes.
+        Download and adds a cyclone track database to the site attributes.
 
         If the `cyclone_basin` configuration is provided, it downloads the cyclone track database for the specified basin.
         Otherwise, it downloads the cyclone track database for all basins.
@@ -791,7 +785,7 @@ class Database:
 
     def add_tide_gauge(self):
         """
-        Adds water level information to the site attributes.
+        Add water level information to the site attributes.
 
         This method adds water level information to the `site_attrs` dictionary.
         It sets default values for the water level reference, MSL (Mean Sea Level),
@@ -837,17 +831,16 @@ class Database:
                 station = self._get_closest_station()
                 if station is not None:
                     # Add tide_gauge information in site toml
-                    # TODO change obs_station to tide_gauge after PR is merged
-                    self.site_attrs["obs_station"] = {}
+                    self.site_attrs["tide_gauge"] = {}
                     # Mandatory fields
-                    self.site_attrs["obs_station"][
+                    self.site_attrs["tide_gauge"][
                         "source"
                     ] = self.config.tide_gauge.source
-                    self.site_attrs["obs_station"]["ID"] = int(station["id"])
+                    self.site_attrs["tide_gauge"]["ID"] = int(station["id"])
                     # Extra fields
-                    self.site_attrs["obs_station"]["name"] = station["name"]
-                    self.site_attrs["obs_station"]["lon"] = station["lon"]
-                    self.site_attrs["obs_station"]["lat"] = station["lat"]
+                    self.site_attrs["tide_gauge"]["name"] = station["name"]
+                    self.site_attrs["tide_gauge"]["lon"] = station["lon"]
+                    self.site_attrs["tide_gauge"]["lat"] = station["lat"]
                     self.site_attrs["water_level"]["msl"]["height"]["value"] = station[
                         "msl"
                     ]
@@ -863,15 +856,15 @@ class Database:
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
-                self.site_attrs["obs_station"] = {}
-                self.site_attrs["obs_station"]["source"] = "file"
+                self.site_attrs["tide_gauge"] = {}
+                self.site_attrs["tide_gauge"]["source"] = "file"
                 file_path = Path(self.static_path).joinpath(
                     "tide_gauges", Path(self.config.tide_gauge.file).name
                 )
                 if not file_path.parent.exists():
                     file_path.parent.mkdir()
                 shutil.copyfile(self.config.tide_gauge.file, file_path)
-                self.site_attrs["obs_station"]["file"] = str(
+                self.site_attrs["tide_gauge"]["file"] = str(
                     Path(file_path.relative_to(self.static_path)).as_posix()
                 )
                 if (
@@ -895,23 +888,50 @@ class Database:
 
     def _get_closest_station(self, ref: str = "MLLW"):
         """
-        Finds the closest tide gauge station to the SFINCS domain and retrieves its metadata.
+        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
 
         Args:
             ref (str, optional): The reference level for water level calculations. Defaults to "MLLW".
 
-        Returns:
+        Returns
+        -------
             dict: A dictionary containing the metadata of the closest tide gauge station.
                 The dictionary includes the following keys:
                 - "id": The station ID.
                 - "name": The station name.
                 - "datum": The difference between the station's datum and the reference level.
                 - "datum_name": The name of the datum used by the station.
-                - "msl": The difference between the MSL datum and the reference level.
+                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
                 - "reference": The reference level used for water level calculations.
                 - "lon": The longitude of the station.
                 - "lat": The latitude of the station.
         """
+        # Rest of the code...
+
+    def _get_closest_station(self, ref: str = "MLLW"):
+        """
+        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
+
+        Args:
+            ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
+
+        Returns
+        -------
+            dict: A dictionary containing the metadata of the closest tide gauge station.
+                The dictionary includes the following keys:
+                - "id": The station ID.
+                - "name": The station name.
+                - "datum": The difference between the station's datum and the reference level.
+                - "datum_name": The name of the datum used by the station.
+                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
+                - "reference": The reference level used for water level measurements.
+                - "lon": The longitude of the station.
+                - "lat": The latitude of the station.
+        """
+        # Rest of the code...
+
+    def _get_closest_station(self, ref: str = "MLLW"):
+
         # Get available stations from source
         obs_data = obs.source(self.config.tide_gauge.source)
         obs_data.get_active_stations()
@@ -975,7 +995,7 @@ class Database:
 
     def add_slr(self):
         """
-        Adds sea level rise (SLR) attributes to the site.
+        Add sea level rise (SLR) attributes to the site.
 
         This method adds SLR attributes to the `site_attrs` dictionary. It sets default values for SLR relative to the year 2020 and a vertical offset of 0.
         The units for the vertical offset are obtained from the `sfincs` attribute in the `site_attrs` dictionary.
@@ -992,7 +1012,7 @@ class Database:
 
     def add_obs_points(self):
         """
-        Adds observation points to the site attributes.
+        Add observation points to the site attributes.
 
         This method iterates over the `obs_point` list in the `config` object and appends the model dump of each observation point
         to the `obs_point` attribute in the `site_attrs` dictionary.
@@ -1004,7 +1024,7 @@ class Database:
 
     def add_gui_params(self):
         """
-        Adds GUI parameters to the site attributes dictionary.
+        Add GUI parameters to the site attributes dictionary.
 
         This method reads default units from a template, sets default values for tide, reads default colors from the template,
         derives bins from the config max attributes, and adds visualization layers.
@@ -1060,6 +1080,8 @@ class Database:
             b_max,
         ]
 
+        self.site_attrs["gui"]["mapbox_layers"]["svi_bins"] = [0.05, 0.2, 0.4, 0.6, 0.8]
+
         # Add visualization layers
         # TODO add option to input layer
         self.site_attrs["gui"]["visualization_layers"] = {}
@@ -1079,20 +1101,29 @@ class Database:
 
     def add_general_attrs(self):
         """
-        Adds general attributes to the site_attrs dictionary.
+        Add general attributes to the site_attrs dictionary.
 
         This method adds various attributes related to risk, standard objects, and benefits
         to the site_attrs dictionary.
         """
         self.site_attrs["risk"] = {}
-        self.site_attrs["risk"]["return_periods"] = [1, 2, 5, 10, 25, 50, 100]
-        self.site_attrs["risk"]["flooding_threshold"] = {}
-        self.site_attrs["risk"]["flooding_threshold"][
+        self.site_attrs["risk"]["return_periods"] = [
+            1,
+            2,
+            5,
+            10,
+            25,
+            50,
+            100,
+        ]  # TODO this could be an input?
+        self.site_attrs["flood_frequency"] = {}
+        self.site_attrs["flood_frequency"]["flooding_threshold"] = {}
+        self.site_attrs["flood_frequency"]["flooding_threshold"][
             "value"
-        ] = 0  # TODO change this based on PR merge
-        self.site_attrs["risk"]["flooding_threshold"]["units"] = self.site_attrs[
-            "sfincs"
-        ]["floodmap_units"]
+        ] = 0  # TODO this could be an input?
+        self.site_attrs["flood_frequency"]["flooding_threshold"]["units"] = (
+            self.site_attrs["sfincs"]["floodmap_units"]
+        )
 
         # Copy prob set if given
         if self.config.probabilistic_set:
@@ -1123,7 +1154,7 @@ class Database:
 
     def add_static_files(self):
         """
-        Copies static files from the 'templates' folder to the 'static' folder.
+        Copy static files from the 'templates' folder to the 'static' folder.
 
         This method iterates over a list of folders and copies the contents of each folder from the 'templates' directory
         to the corresponding folder in the 'static' directory.
@@ -1137,7 +1168,7 @@ class Database:
 
     def add_infometrics(self):
         """
-        Copies the infometrics and infographics templates to the appropriate location and modifies the metrics_config.toml files.
+        Copy the infometrics and infographics templates to the appropriate location and modifies the metrics_config.toml files.
 
         This method copies the templates from the 'infometrics' and 'infographics' folders to the 'static/templates' folder in the root directory.
         It then modifies the 'metrics_config.toml' and 'metrics_config_risk.toml' files by updating the 'aggregateBy' attribute with the names
@@ -1163,7 +1194,7 @@ class Database:
 
     def save_site_config(self):
         """
-        Saves the site configuration to a TOML file.
+        Save the site configuration to a TOML file.
 
         This method creates a TOML file at the specified location and saves the site configuration
         using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
@@ -1176,9 +1207,10 @@ class Database:
 
     def _get_default_units(self):
         """
-        Retrieves the default units based on the configured GUI unit system.
+        Retrieve the default units based on the configured GUI unit system.
 
-        Returns:
+        Returns
+        -------
             dict: A dictionary containing the default units.
         """
         type = self.config.gui.unit_system
@@ -1190,9 +1222,10 @@ class Database:
 
     def _get_bin_colors(self):
         """
-        Retrieves the bin colors from the bin_colors.toml file.
+        Retrieve the bin colors from the bin_colors.toml file.
 
-        Returns:
+        Returns
+        -------
             dict: A dictionary containing the bin colors.
         """
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
@@ -1208,12 +1241,13 @@ class Database:
 )
 def main(config_path):
     """
-    Main function for building FloodAdapt model.
+    Build the FloodAdapt model.
 
     Args:
         config_path (str): Path to the configuration file.
 
-    Returns:
+    Returns
+    -------
         None
     """
     print(f"Read FloodAdapt building configuration from {Path(config_path).as_posix()}")
