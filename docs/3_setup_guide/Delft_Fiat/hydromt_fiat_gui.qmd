@@ -8,7 +8,7 @@ execute:
 jupyter: python3
 ---
 
-The Hydromt FIAT Graphical User Interface (GUI), also refered to as **Flood Adapt Model Builder (FIAT)**, facilitates the process of setting up the **Delft FIAT** model, thus making the **Delft FIAT** model creation accessible for users without modeling experience . 
+The Hydromt FIAT Graphical User Interface (GUI), also refered to as **Flood Adapt Model Builder (FIAT)**, facilitates the process of setting up the Delft-FIAT model, thus making the Delft-FIAT model creation accessible for users without modeling experience . 
 
 # Setup Guide
 ## Installation
@@ -175,19 +175,19 @@ Assign the default vulnerability curves to the exposure data.
 
 
 ### Create model
-At this point you are ready to create the **Delft FIAT model**. Verify that data sources in the bottom tab match your model input. If so, create your model (@fig-create_model).
+At this point you are ready to create the Delft-FIAT model. Verify that data sources in the bottom tab match your model input. If so, create your model (@fig-create_model).
 
 ::: {#fig-create_model}
 
 {{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
 
-Create your **Delft FIAT model**. 
+Create your Delft-FIAT model. 
 
 :::
 
 ### Additional features
 #### Social Vulnerability Index (SVI) and Equity
-**Delft FIAT** allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
+Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
 However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (@fig-additional_attr).
 
 *GUI instructions*  
@@ -224,6 +224,6 @@ For a detailed demonstration please refer to @fig-additional_attr.
 
 {{< video ../../_static/videos/hydromt_fiat/SVI_Additional_Attributes_NSI.mp4 >}}
 
-Create your Delft FIAT model. 
+Create your Delft-FIAT model. 
 
 :::
