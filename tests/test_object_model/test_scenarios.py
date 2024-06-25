@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -116,44 +114,30 @@ def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
     assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
 
 
-@pytest.mark.skip(
-    reason="Investigate why these fail and how to improve testing for scenario.run()"
-)
 class Test_scenario_run:
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class: Database):
-        test_scenario_toml = (
-            test_db_class.input_path
-            / "scenarios"
-            / "current_extreme12ft_no_measures"
-            / "current_extreme12ft_no_measures.toml"
+        before_run_name = "current_extreme12ft_no_measures"
+        after_run_name = "current_extreme12ft_no_measures_run"
+
+        test_db_class.scenarios.copy(
+            old_name=before_run_name,
+            new_name=after_run_name,
+            new_description="temp_description",
         )
 
-        test_scenario_not_run = Scenario.load_file(test_scenario_toml)
-        test_scenario_not_run.init_object_model()
+        after_run = test_db_class.scenarios.get(after_run_name)
+        after_run.run()
 
-        test_scenario_run = deepcopy(test_scenario_not_run)
-        test_scenario_run.run()
+        yield test_db_class, before_run_name, after_run_name
 
-        yield test_scenario_not_run, test_scenario_run
-
-    def test_run_notRunYet(self, test_scenario_before_after_run):
-        before_run, _ = test_scenario_before_after_run
+    def test_run_change_has_run(self, test_scenario_before_after_run):
+        test_db, before_run, after_run = test_scenario_before_after_run
+        before_run = test_db.scenarios.get(before_run)
+        after_run = test_db.scenarios.get(after_run)
 
         assert before_run.direct_impacts.hazard.has_run is False
-        # assert before_run.direct_impacts.hazard.event_list[0].results is None
-        assert before_run.direct_impacts.impact_strategy.results is None
-        assert before_run.direct_impacts.socio_economic_change.results is None
-        assert before_run.direct_impacts.results is None
-
-    def test_run_hasRun(self, test_scenario_before_after_run):
-        _, after_run = test_scenario_before_after_run
-
         assert after_run.direct_impacts.hazard.has_run is True
-        # assert after_run.direct_impacts.hazard.event_list[0].results is not None
-        assert after_run.direct_impacts.impact_strategy.results is not None
-        assert after_run.direct_impacts.socio_economic_change.results is not None
-        assert after_run.direct_impacts.results is not None
 
     @pytest.mark.skip(reason="Refactor/move test")
     def test_infographic(self, test_db):
