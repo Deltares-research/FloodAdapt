@@ -45,6 +45,7 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     IWind,
     WindConstant,
     WindFromModel,
+    WindFromTrack,
     WindTimeSeries,
 )
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
@@ -157,6 +158,17 @@ class SfincsAdapter(IHazardAdapter):
         self._postprocess()
 
         self._scenario = None
+
+    def set_timing(self, event: EventModel):
+        """Set model reference times based on event time series."""
+        # Get start and end time of event
+        tstart = event.time.start_time
+        tstop = event.time.end_time
+
+        # Update timing of the model
+        self._model.set_config("tref", tstart)
+        self._model.set_config("tstart", tstart)
+        self._model.set_config("tstop", tstop)
 
     def add_forcing(self, forcing: IForcing):
         """Get forcing data and add it to the sfincs model."""
@@ -358,7 +370,11 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=forcing.path, const_mag=None, const_dir=None
             )
         elif isinstance(forcing, WindFromModel):
-            self._model.setup_wind_forcing_from_grid(wind=forcing.path)
+            # TODO check with @gundula
+            self._add_wind_forcing_from_grid(forcing.path)
+        elif isinstance(forcing, WindFromTrack):
+            # TODO check with @gundula
+            self._set_config_spw(forcing.path)
         else:
             self._logger.warning(
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
@@ -416,10 +432,7 @@ class SfincsAdapter(IHazardAdapter):
                 magnitude=forcing.discharge,
             )
         elif isinstance(forcing, DischargeSynthetic):
-            self._model.setup_discharge_forcing(
-                timeseries=forcing.file,
-                magnitude=None,
-            )
+            self._add_dis_bc(forcing.path)
         else:
             self._logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
@@ -428,14 +441,12 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         if isinstance(forcing, WaterlevelSynthetic):
-            # TODO implement this
-            pass
+            self._add_wl_bc(forcing.data)
         elif isinstance(forcing, WaterlevelFromFile):
-            # TODO implement this
-            pass
+            self._add_wl_bc(forcing.path)
         elif isinstance(forcing, WaterlevelFromModel):
-            # TODO implement this
-            pass
+            # TODO check with @gundula: _add_pressure_forcing_from_grid should also be here?
+            self._turn_off_bnd_press_correction()
         else:
             self._logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
@@ -573,16 +584,6 @@ class SfincsAdapter(IHazardAdapter):
     # (even though python does not care and will allow it anyways, we can still follow the convention just to make it clear)
 
     ### SFINCS SETTERS ###
-    def _set_timing(self, event: EventModel):
-        """Set model reference times based on event time series."""
-        # Get start and end time of event
-        tstart = event.time.start_time
-        tstop = event.time.end_time
-
-        # Update timing of the model
-        self._model.set_config("tref", tstart)
-        self._model.set_config("tstart", tstart)
-        self._model.set_config("tstop", tstop)
 
     def _set_config_spw(self, spw_name: str):
         self._model.set_config("spwfile", spw_name)
@@ -794,7 +795,6 @@ class SfincsAdapter(IHazardAdapter):
         database_path: Path,
         model_dir: Path,
     ):
-        # TODO investigate this. seems to not add any forcing?
         """Add spiderweb forcing to the sfincs model.
 
         Parameters
@@ -809,6 +809,8 @@ class SfincsAdapter(IHazardAdapter):
         historical_hurricane.make_spw_file(
             database_path=database_path, model_dir=model_dir, site=self._site
         )
+        # TODO check with @gundula
+        self._set_config_spw(historical_hurricane.spw_file)
 
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario_name: str = None) -> Path:

@@ -19,3 +19,9 @@ class WindFromModel(IWind):
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
     # Required coordinates: ['time', 'y', 'x']
     path: str
+
+    path: str = None
+
+
+class WindFromTrack(IWind):
+    path: str

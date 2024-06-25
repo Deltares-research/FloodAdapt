@@ -14,6 +14,7 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     IRainfall,
     RainfallConstant,
     RainfallFromModel,
+    RainfallFromTrack,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -26,6 +27,7 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     IWind,
     WindConstant,
     WindFromModel,
+    WindFromTrack,
     WindTimeSeries,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
@@ -129,16 +131,16 @@ class HistoricalEventModel(IEventModel):
 
     _ALLOWED_FORCINGS = [
         RainfallConstant,
-        RainfallSynthetic,
+        # RainfallSynthetic,
         RainfallFromModel,
         WindConstant,
-        WindTimeSeries,
+        # WindTimeSeries,
         WindFromModel,
-        WaterlevelSynthetic,
+        # WaterlevelSynthetic,
         WaterlevelFromFile,
         WaterlevelFromModel,
         DischargeConstant,
-        DischargeSynthetic,
+        # DischargeSynthetic,
     ]
 
 
@@ -147,13 +149,14 @@ class HurricaneEventModel(IEventModel):
 
     _ALLOWED_FORCINGS = [
         RainfallConstant,
-        RainfallSynthetic,
+        # RainfallSynthetic,
         RainfallFromModel,
-        WindConstant,
-        WindTimeSeries,
-        WindFromModel,
-        WaterlevelSynthetic,
-        WaterlevelFromFile,
+        RainfallFromTrack,
+        # WindConstant,
+        # WindTimeSeries,
+        WindFromTrack,
+        # WaterlevelSynthetic,
+        # WaterlevelFromFile,
         WaterlevelFromModel,
         DischargeConstant,
         DischargeSynthetic,

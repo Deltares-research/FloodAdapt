@@ -21,3 +21,7 @@ class RainfallFromModel(IRainfall):
 
 class RainfallFromSPWFile(IRainfall):
     path: str
+
+
+class RainfallFromTrack(IRainfall):
+    path: str
