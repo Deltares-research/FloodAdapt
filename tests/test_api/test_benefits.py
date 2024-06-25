@@ -7,7 +7,7 @@ import flood_adapt.api.benefits as api_benefits
 
 @pytest.fixture(scope="session")
 def get_rng():
-    return np.random.default_rng(2021)
+    yield np.random.default_rng(2021)
 
 
 @pytest.mark.skip(reason="PANOS REFACTOR INCOMING")

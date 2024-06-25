@@ -103,7 +103,7 @@ class TestBenefitScenariosNotCreated:
         )
 
         benefit = Benefit.load_file(benefit_path)
-        return benefit
+        yield benefit
 
     # When benefit analysis is not run yet the has_run_check method should return False
     def test_hasRunCheck_notCreated_false(self, benefit_obj):
@@ -186,7 +186,7 @@ class TestBenefitScenariosCreated:
         benefit = Benefit.load_file(benefit_path)
         # Create missing scenarios
         test_db.create_benefit_scenarios(benefit)
-        return benefit
+        yield benefit
 
     # When benefit analysis is not run yet, the has_run_check method should return False
     def test_hasRunCheck_notRun_false(self, benefit_obj):
@@ -307,7 +307,7 @@ class TestBenefitScenariosRun:
                     )
                 )
 
-        return benefit, aggrs
+        yield benefit, aggrs
 
     # When benefit analysis is not run yet, the has_run_check method should return False
     def test_hasRunCheck_notRun_false(self, prepare_outputs):

@@ -191,7 +191,7 @@ def test_dict():
         "scs": {"file": "scs_rainfall.csv", "type": "type_3"},
         "standard_objects": {...},
     }
-    return config_values
+    yield config_values
 
 
 @pytest.fixture

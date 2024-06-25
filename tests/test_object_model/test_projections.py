@@ -46,7 +46,7 @@ def test_dict():
             "new_development_shapefile": "new_areas.geojson",
         },
     }
-    return config_values
+    yield config_values
 
 
 def test_projection_load_dict(test_dict):

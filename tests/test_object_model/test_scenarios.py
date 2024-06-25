@@ -32,7 +32,7 @@ def test_tomls(test_db) -> list:
         / "current_extreme12ft_no_measures"
         / "current_extreme12ft_no_measures.toml",
     ]
-    return toml_files
+    yield toml_files
 
 
 @pytest.fixture(autouse=True)
@@ -40,7 +40,7 @@ def test_scenarios(test_db, test_tomls) -> dict[str, Scenario]:
     test_scenarios = {
         toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
     }
-    return test_scenarios
+    yield test_scenarios
 
 
 def test_initObjectModel_validInput(test_db, test_scenarios):
@@ -135,7 +135,7 @@ class Test_scenario_run:
         test_scenario_run = deepcopy(test_scenario_not_run)
         test_scenario_run.run()
 
-        return test_scenario_not_run, test_scenario_run
+        yield test_scenario_not_run, test_scenario_run
 
     def test_run_notRunYet(self, test_scenario_before_after_run):
         before_run, _ = test_scenario_before_after_run
