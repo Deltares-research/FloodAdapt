@@ -21,6 +21,6 @@ class TestAPI_Output:
         footprints = api_output.get_fiat_footprints(scenario)
         assert isinstance(footprints, gpd.GeoDataFrame)
 
-    def test_impact_aggr_damages(self, scenario):
+    def test_impact_get_aggregation(self, scenario):
         aggr_areas = api_output.get_aggregation(scenario)
         assert isinstance(aggr_areas, dict)

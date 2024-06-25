@@ -809,8 +809,8 @@ class Database(IDatabase):
         gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_aggregated_damages(self, scenario_name: str) -> dict[GeoDataFrame]:
-        """Get a dictionary with the aggregated damages as geodataframes.
+    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+        """Return a dictionary with the aggregated impacts as geodataframes.
 
         Parameters
         ----------
