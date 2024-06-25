@@ -88,16 +88,17 @@ class Hazard:
                 )
             ]
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
-            self.simulation_paths_offshore = [
-                self.database.scenarios.get_database_path(
-                    get_input_path=False
-                ).joinpath(
-                    self.name,
-                    "Flooding",
-                    "simulations",
-                    self.site.attrs.sfincs.offshore_model,
-                )
-            ]
+            if self.site.attrs.sfincs.offshore_model is not None:
+                self.simulation_paths_offshore = [
+                    self.database.scenarios.get_database_path(
+                        get_input_path=False
+                    ).joinpath(
+                        self.name,
+                        "Flooding",
+                        "simulations",
+                        self.site.attrs.sfincs.offshore_model,
+                    )
+                ]
         elif self._mode == Mode.risk:  # risk mode requires an additional folder layer
             self.simulation_paths = []
             self.simulation_paths_offshore = []
@@ -114,17 +115,18 @@ class Hazard:
                     )
                 )
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
-                self.simulation_paths_offshore.append(
-                    self.database.scenarios.get_database_path(
-                        get_input_path=False
-                    ).joinpath(
-                        self.name,
-                        "Flooding",
-                        "simulations",
-                        subevent.attrs.name,
-                        self.site.attrs.sfincs.offshore_model,
+                if self.site.attrs.sfincs.offshore_model is not None:
+                    self.simulation_paths_offshore.append(
+                        self.database.scenarios.get_database_path(
+                            get_input_path=False
+                        ).joinpath(
+                            self.name,
+                            "Flooding",
+                            "simulations",
+                            subevent.attrs.name,
+                            self.site.attrs.sfincs.offshore_model,
+                        )
                     )
-                )
 
     def has_run_check(self) -> bool:
         """_summary_.
@@ -413,7 +415,12 @@ class Hazard:
             model.add_wl_bc(self.wl_ts)
 
             # ASSUMPTION: Order of the rivers is the same as the site.toml file
-            self.event.add_dis_ts(event_dir=event_dir, site_river=self.site.attrs.river)
+            if self.site.attrs.river is not None:
+                self.event.add_dis_ts(
+                    event_dir=event_dir, site_river=self.site.attrs.river
+                )
+            else:
+                self.event.dis_df = None
             if self.event.dis_df is not None:
                 # Generate and change discharge boundary condition
                 logging.info(
@@ -596,6 +603,10 @@ class Hazard:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event.download_meteo())
             ii (int): Iterator for event set
         """
+        if self.site.attrs.sfincs.offshore_model is None:
+            raise ValueError(
+                f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.event.attrs.template}'"
+            )
         # Determine folders for offshore model
         path_in_offshore = self.database.static_path.joinpath(
             "templates", self.site.attrs.sfincs.offshore_model
@@ -686,7 +697,8 @@ class Hazard:
             # Write flood-depth map geotiff
             self.write_floodmap_geotiff()
             # Write watel-level time-series
-            self.plot_wl_obs()
+            if self.site.attrs.obs_point is not None:
+                self.plot_wl_obs()
             # Write max water-level netcdf
             self.write_water_level_map()
         elif self._mode == Mode.risk:
@@ -805,9 +817,12 @@ class Hazard:
                                 start_time_str=self.event.attrs.time.start_time,
                                 stop_time_str=self.event.attrs.time.end_time,
                                 units=UnitTypesLength(gui_units),
+                                source=self.site.attrs.tide_gauge.source,
                                 file=file,
                             )
-                        except COOPSAPIError as e:
+                        except (
+                            COOPSAPIError
+                        ) as e:  # TODO this should be a generic error!
                             logging.warning(
                                 f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
                             )

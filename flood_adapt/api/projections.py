@@ -35,7 +35,7 @@ def copy_projection(old_name: str, new_name: str, new_description: str) -> None:
 
 
 def get_slr_scn_names() -> list:
-    return Database().get_slr_scn_names()
+    return Database().static.get_slr_scn_names()
 
 
 def interp_slr(slr_scenario: str, year: float) -> float:

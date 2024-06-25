@@ -264,9 +264,8 @@ class SfincsAdapter:
                                 consistent with the coordinates and order orf rivers in the site.toml file."""
                     )
                     raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
+                        f"Incompatible river coordinates for river: {river.name}.\nsite.toml: ({river.x_coordinate}, {river.y_coordinate})\nSFINCS template model ({gdf_locs.geometry[ii + 1].x}, {gdf_locs.geometry[ii + 1].y})."
                     )
-                    break
 
             self.sf_model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False
@@ -342,7 +341,7 @@ class SfincsAdapter:
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    measure_path.parents[2] / "static" / "site" / aggr_dict.file,
+                    measure_path.parents[2] / "static" / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen

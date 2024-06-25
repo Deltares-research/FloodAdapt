@@ -52,7 +52,7 @@ class DbsStatic:
         aggregation_areas = {}
         for aggr_dict in self._database.site.attrs.fiat.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
-                self._database.static_path / "site" / aggr_dict.file,
+                self._database.static_path / aggr_dict.file,
                 engine="pyogrio",
             ).to_crs(4326)
             # Use always the same column name for name labels
@@ -86,12 +86,12 @@ class DbsStatic:
     @cache_method_wrapper
     def get_obs_points(self) -> GeoDataFrame:
         """Get the observation points from the flood hazard model."""
+        names = []
+        descriptions = []
+        lat = []
+        lon = []
         if self._database.site.attrs.obs_point is not None:
             obs_points = self._database.site.attrs.obs_point
-            names = []
-            descriptions = []
-            lat = []
-            lon = []
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)
@@ -135,16 +135,19 @@ class DbsStatic:
 
     @cache_method_wrapper
     def get_slr_scn_names(self) -> list:
-        """Get the names of the sea level rise scenarios from the slr.csv file.
+        """Get the names of the sea level rise scenarios from the file provided.
 
         Returns
         -------
         list
             List of scenario names
         """
-        input_file = self._database.static_path.joinpath("slr", "slr.csv")
+        input_file = self._database.static_path.joinpath(
+            self._database.site.attrs.slr.scenarios.file
+        )
         df = pd.read_csv(input_file)
-        return df.columns[2:].to_list()
+        names = df.columns[2:].to_list()
+        return names
 
     @cache_method_wrapper
     def get_green_infra_table(self, measure_type: str) -> pd.DataFrame:

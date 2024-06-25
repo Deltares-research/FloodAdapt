@@ -18,8 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest" ] 
-        python-version: ["3.11"] 
+        os: ["ubuntu-latest" ]
+        python-version: ["3.11"]
         include:
           - os: ubuntu-latest
             label: linux-64
@@ -43,7 +43,7 @@ jobs:
       - name: Setup env
         run: |
           pip install tomli
-          mamba env create --file=environment_docs.yml
+          mamba env create --file=docs/environment_docs.yml
 
       - name: Setup quarto
         run: |
@@ -54,7 +54,7 @@ jobs:
           chmod +x tmp/quarto.deb
           sudo gdebi -n tmp/quarto.deb
 
-#      - name: Setup api -double check 
+#      - name: Setup api -double check
 #        run: |
 #          export PATH=/usr/share/miniconda3/bin:$PATH
 #          mamba run -n floodadapt_docs python -m pip install tomli-w
