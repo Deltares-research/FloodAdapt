@@ -8,48 +8,21 @@ execute:
 jupyter: python3
 ---
 
-The Hydromt Delft-FIAT Graphical User Interface (GUI), also refered to as **Flood Adapt Model Builder (Delft-FIAT)**, facilitates the process of setting up the Delft-FIAT model, thus making the Delft-FIAT model creation accessible for users without modeling experience . 
+he Delft-FIAT model-builder allows users to rapidly set up a Delft-FIAT model using a 'quick-build' option (and link to that section here) using default modeling choices, or to build a tailored Delft-FIAT model (link to that section here), making the Delft-FIAT model creation accessible for any type of user (incl. users without modeling experience). 
 
-# Setup Guide
-## Installation
-To run the Floodadapt model builder you need to install two tools:
+## Getting started and selecting your model boundary
 
-  1. **HydroMT FIAT**
-  2. **DelftDashboard**
+These are steps that are carried out whether you do quick build or tailored model-building. After you open the Delft-FIAT model-builder you must select a model output directory before you start.
 
-#### HydroMT FIAT
-HydroMT-FIAT is available from pypi and will be added to conda-forge (in progress).
-
-To install hydromt_fiat for usage, do:
-
-  > pip install hydromt_fiat
-
-#### DelftDashboard
-For the Graphical User Interface you additionally need to set up **DelftDashboard**. You can find the installation guide [here](https://github.com/Deltares-research/DelftDashboard/blob/FloodAdapt_ModelBuilders/README.md).
-
-# User Guide
-After you open the GUI you must select a model output directory before you start.
-
-*GUI instructions*
+*Delft-FIAT model-builder instructions*
   
   1. Go to **File** >> **Select Working Directory**.
   2. Select an output folder.
-
-Now you are ready to set up the model.
-
-After creating your model you should end up with a folder structure as describted in the section [Data Input - Folder Structure](data_input.qmd).
-
-## Create Model Boundary
-
-There are multiple options on how to create the model boundaries:
-
-  * Draw polygon/ draw box  
-  * SFINCS model domain 
-  * Upload file (polygon vector file e.g. *.gpkg*, *.geojson*)
+  3. Generate model boundaries
 
 ![Workflow to create model boundaries.](../../_static/figures/Draw_boundaries.svg){#fig-boundaries}
 
-*GUI instructions*
+To select a model boundary, you have four options:
 
   1. Go to the **Model Boundary | Quickbuild** -tab and select any of the options in the drop-down menu to create the boundary (@fig-boundaries).
       a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
@@ -57,7 +30,7 @@ There are multiple options on how to create the model boundaries:
       c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
       d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
 
-  2. As soon you are done click "**Generate boundary**" and your model boundary is established.
+  2. When you are finished, click **"Generate Boundary"**.
 
 For further details please refer to @fig-model_boundaries.
 
@@ -75,11 +48,11 @@ If you set up a model in the United States and do not want to use your own data 
 The **quickbuild** downloads the data from different sources:  
 
 * **Exposure**: National Structure Inventory (NSI)
-* **Vulnerability curves**: FEMA’s Hazus Program
-* **Social vulnerability index**/**equity**: Census api
+* **Vulnerability curves**: FEMA HAZUS database
+* **Socio-economic/equity data'**: US census data
 * **Roads**: Open Street Map (OSM)
 
-*GUI instructions*
+*Step-by-step instructions for the Quick Build*
 
   1. Go to the **Model Boundary | Quickbuild** -tab and select any of the options in the drop-down menu to create the boundary (@fig-quickbuild).
   2. After you generated the model boundaries you can select the quickbuild option.
@@ -107,8 +80,8 @@ There are two different database sources to download the **exposure data** from,
 
 Additionally, you can download **road data** from Open Street Map. 
 
-*GUI instructions*  
-To set up the exposure open the **"Exposure"**-tab on the top panel (@fig-exposure). 
+*Step-by-step instructions for the tailored Delft-FIAT model*  
+To set up the exposure data open the **"Exposure"**-tab on the top panel (@fig-exposure). 
 
   1. Select the **"Asset Location"**-tab at the bottom panel.
   2. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data.
@@ -116,7 +89,7 @@ To set up the exposure open the **"Exposure"**-tab on the top panel (@fig-exposu
   4. ***optional***: Include OSM roads by checking the checkbox "Include OSM roads".
   5. Add to model.
   
-
+ #######After creating your model you should end up with a folder structure as describted in the section [Data Input - Folder Structure] Add this somewhere here
 ![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/Exposure.svg){#fig-exposure}
 
 These are all the necessary steps to set up the exposure for a **simple model**. If you want to update the model or input your own data, please refer to the section *Model from scratch: Advanced model* (in progress). 
@@ -146,10 +119,10 @@ As a next step you must assign the vulnerability curves to the exposure data. Th
 1. **United States: FEMA Hazus Curves**
 2. **Global: JRC Vulnerability Curves**
 
-*GUI instructions*  
+*Delft-FIAT model-builder instructions*  
 To set up the vulnerability curves open the **"Vulnerability"**-tab on the top panel (@fig-vulnerability_curve). 
 
-  1. The GUI will automatically select the correct <u>default curves</u> for your model based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. For detailed information about the default curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
+  1. The Delft-FIAT model-builder will automatically select the correct <u>default curves</u> for your model based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. For detailed information about the default curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
 
   2. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve (@fig-update_curves). 
 
@@ -190,7 +163,7 @@ Create your Delft-FIAT model.
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
 However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (@fig-additional_attr).
 
-*GUI instructions*  
+*Delft-FIAT model-builder instructions*  
 Follow these instructions when setting up a model in the **United States** (@fig-svi)
 
   1. In the top panel, select *"SVI + Equity"*.
@@ -206,7 +179,7 @@ For a detailed demonstration please refer to @fig-additional_attr.
 #### Additional attribtues
 Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be addedd (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
 
-*GUI instructions*  
+*Delft-FIAT model-builder instructions*  
 If you wish to add **SVI** and/or **Equity** follow these intstructions. The same instructions apply for any aggregation layer or additional attribute you wish to add on your model. 
 
   1. In the top panel, select *"Additional Attributes"*.
