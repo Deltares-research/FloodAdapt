@@ -367,7 +367,7 @@ class SyntheticTimeseries(ITimeseries):
 
     def calculate_data(self, time_step: UnitfulTime) -> np.ndarray:
         """Calculate the timeseries data using the timestep provided."""
-        strategy = self.CALCULATION_STRATEGIES.get(self.attrs.shape_type)
+        strategy = SyntheticTimeseries.CALCULATION_STRATEGIES.get(self.attrs.shape_type)
         if strategy is None:
             raise ValueError(f"Unsupported shape type: {self.attrs.shape_type}")
         return strategy.calculate(self.attrs, time_step)

@@ -91,21 +91,21 @@ class IEventModel(BaseModel):
 
     @validator("forcings")
     def check_single_wind(cls, v):
-        wind_count = sum(isinstance(forcing, IWind) for forcing in v)
+        wind_count = sum(issubclass(forcing, IWind) for forcing in v)
         if wind_count > 1:
             raise ValueError("There can be only one Wind forcing")
         return v
 
     @validator("forcings")
     def check_single_rainfall(cls, v):
-        rainfall_count = sum(isinstance(forcing, IRainfall) for forcing in v)
+        rainfall_count = sum(issubclass(forcing, IRainfall) for forcing in v)
         if rainfall_count > 1:
             raise ValueError("There can be only one Rainfall forcing")
         return v
 
     @validator("forcings")
     def check_single_waterlevel(cls, v):
-        waterlevel_count = sum(isinstance(forcing, IWaterlevel) for forcing in v)
+        waterlevel_count = sum(issubclass(forcing, IWaterlevel) for forcing in v)
         if waterlevel_count > 1:
             raise ValueError("There can be only one Waterlevel forcing")
         return v

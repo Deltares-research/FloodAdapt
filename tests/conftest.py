@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 import flood_adapt.config as fa_config
-from flood_adapt.api.static import read_database
+from flood_adapt.dbs_controller import Database
 
 logging.basicConfig(level=logging.ERROR)
 database_root = Path().absolute().parent / "Database"
@@ -117,10 +117,7 @@ def make_db_fixture(scope, clean=True):
         """
         Fixture for setting up and tearing down the database once per scope.
 
-        Every test session:
-            1) Create a snapshot of the database
-            2) Run all tests
-            3) Restore the database from the snapshot
+        dbs = Database(database_root, site_name)
 
         Every scope:
             1) Initialize database controller
@@ -138,7 +135,7 @@ def make_db_fixture(scope, clean=True):
                     assert ...
         """
         # Setup
-        dbs = read_database(database_root, site_name)
+        dbs = Database(database_root, site_name)
 
         # Perform tests
         yield dbs

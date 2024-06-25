@@ -265,7 +265,7 @@ class SfincsAdapter(IHazardAdapter):
             self._set_timing(event.attrs)
 
             # run offshore model or download wl data, copy all required files to the simulation folder
-            event.process()
+            event.process(self._scenario)
 
             for forcing in event.attrs.forcings:
                 self.add_forcing(forcing)
