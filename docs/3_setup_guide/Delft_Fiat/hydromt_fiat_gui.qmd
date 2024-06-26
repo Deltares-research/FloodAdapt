@@ -6,13 +6,14 @@ lightbox: auto
 execute:
   echo: false
 jupyter: python3
+number-sections: true
 ---
 
 he Delft-FIAT model-builder allows users to rapidly set up a Delft-FIAT model using a 'quick-build' option (and link to that section here) using default modeling choices, or to build a tailored Delft-FIAT model (link to that section here), making the Delft-FIAT model creation accessible for any type of user (incl. users without modeling experience). 
 
 # Getting started and selecting your model boundary
 
-These are steps that are carried out whether you do quickbuild (@sec-quickbuild) or tailored model-building (@sec-tailored_model). 
+These are steps that are carried out whether you do **quickbuild** (@sec-quickbuild) or **tailored model-building** (@sec-tailored_model). 
 
 *Step-by-step instructions to get started*  
 
@@ -42,7 +43,7 @@ Create model boundaries using the "Draw Polygon" method.
 
 :::
 
-## Quickbuild {#sec-quickbuild}
+# Quickbuild {#sec-quickbuild}
 If you set up a model in the United States and do not want to use your own data you can simply choose to work with the **quickbuild**. 
 
 The **quickbuild** downloads the data from different sources:  
@@ -69,10 +70,20 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 
 :::
 
-## Tailored Delft-FIAT model {#sec-tailored_model}
+# Tailored Delft-FIAT model {#sec-tailored_model}
 This section explains the creation of a simple Delft-FIAT model configured by the user. The model can be set up at any location worldwide.
 
-### Create the exposure data
+## Create the exposure data
+To setup the exposure data you have multiple options to refine your model, which are described in the following sections:
+
+  - Create a base model with the default data sources (@sec-basemodel)
+  - Update Finished Floor Height (@sec-finished_floor_height) (*optional*)
+  - Update Finished Ground Elevation (@sec-ground_elevation)(*optional*)
+  - Update Maximum Potential Damages (@sec-maximum_potential_damages)(*optional*)
+
+Not all steps are required to build the model, except the creation of the base model. Simply update the data you wish to change and use the default data of the base model for any data you do not have.
+
+### Create a base model with the default data sources: NSI and/or OSM  {#sec-basemodel}
 There are two different database sources to download the **exposure data** from, determined by the location of your model:
 
 1. **United States: National Structure Inventory (NSI)**
@@ -114,7 +125,7 @@ Global exposure setup using OSM exposure and OSM roads .
 
 :::
 
-#### Update Finished Floor Height
+### Update Finished Floor Height {#sec-finished_floor_height}
 To set up the finished floor height open the **"Exposure"**-tab on the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
 
 *Step-by-step instructions to setup/update the Finished Floor Height*  
@@ -134,7 +145,7 @@ Model refinement with user input for finished floor height.
 :::
 
 
-#### Update Ground Elevation
+### Update Ground Elevation {#sec-ground_elevation}
 To set up the ground elevation open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
 
 *Step-by-step instructions to setup/update the Ground Elevation*  
@@ -158,7 +169,7 @@ Model refinement with user input for ground elevation.
 
 :::
 
-#### Update Max. Potential Damages
+### Update Maximum Potential Damages {#sec-maximum_potential_damages}
 To set up the max. potential damages open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel.  
 It is possible to update the *structural* damages and the *content* damage. You can update them one at a time with the following steps. 
 
