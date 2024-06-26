@@ -188,6 +188,7 @@ class ConfigModel(BaseModel):
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SpatialJoinModel] = None
     road_width: Optional[float] = 2.5  # in meters
+    cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
     river: Optional[list[RiverModel]] = []
     obs_point: Optional[list[Obs_pointModel]] = []
@@ -345,13 +346,14 @@ class Database:
         save_projection(projection)
         # If provided use probabilistic set
         # TODO better check if configuration of event set is correct?
-        event_set = self.site_attrs["standard_objects"]["events"][0]
-        if event_set:
-            mode = get_event_mode(event_set)
-            if mode != "risk":
-                self.logger.error(
-                    f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
-                )
+        if len(self.site_attrs["standard_objects"]["events"]) > 0:
+            event_set = self.site_attrs["standard_objects"]["events"][0]
+            if event_set:
+                mode = get_event_mode(event_set)
+                if mode != "risk":
+                    self.logger.error(
+                        f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
+                    )
 
     def read_fiat(self):
         """
@@ -393,37 +395,33 @@ class Database:
         # Read FIAT attributes for site config
         self.site_attrs["fiat"] = {}
         self.site_attrs["fiat"]["exposure_crs"] = self.fiat_model.exposure.crs
-        self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # for now fixed
-        self.site_attrs["fiat"]["non_building_names"] = ["roads"]  #  for now fixed
+        self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # TODO for now fixed
+        self.site_attrs["fiat"]["non_building_names"] = ["roads"]  # TODO for now fixed
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         if not self.config.building_footprints:
             # TODO can we use hydromt-FIAT?
-            rel_path = Path(
-                "templates/fiat/footprints/footprints.gpkg"
-            )  # default location for footprints #TODO how to define this?
-            check_file = self.static_path.joinpath(
-                rel_path
-            ).exists()  # check if file exists
             check_col = (
                 "BF_FID" in self.fiat_model.exposure.exposure_db.columns
             )  # check if it is spatially joined already
-            if not check_file:
-                raise ValueError(
-                    "Buildings footprints path has not been provided. Please specify that by using the field 'building_footprints' in the configuration toml."
-                )
+            add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if "BF_FID" in [attr.name for attr in add_attrs]:
+                ind = [attr.name for attr in add_attrs].index("SVI")
+                footprints = add_attrs[ind]
+                footprints_path = fiat_path.joinpath(footprints.file)
+                check_file = footprints_path.exists()
             if check_file and not check_col:
                 self.logger.error(
-                    f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {self.site_path.joinpath(rel_path).resolve()}"
+                    f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}"
                 )
                 raise NotImplementedError
             if check_file and check_col:
                 self.site_attrs["fiat"]["building_footprints"] = str(
-                    rel_path.as_posix()
+                    Path(footprints_path.relative_to(self.static_path)).as_posix()
                 )
                 self.logger.info(
-                    f"Using the footprints located at {self.static_path.joinpath(rel_path).resolve()}"
+                    f"Using the building footprints located at {footprints_path}"
                 )
         else:
             self.logger.info(
@@ -518,11 +516,14 @@ class Database:
                 .relative_to(self.static_path)
                 .as_posix()
             )
-            aggr.equity.census_data = str(
-                self.static_path.joinpath("templates", "fiat", aggr.equity.census_data)
-                .relative_to(self.static_path)
-                .as_posix()
-            )
+            if aggr.equity is not None:
+                aggr.equity.census_data = str(
+                    self.static_path.joinpath(
+                        "templates", "fiat", aggr.equity.census_data
+                    )
+                    .relative_to(self.static_path)
+                    .as_posix()
+                )
             self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
 
         # Read SVI
@@ -563,6 +564,21 @@ class Database:
         else:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
+                add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+                if "SVI" in [attr.name for attr in add_attrs]:
+                    ind = [attr.name for attr in add_attrs].index("SVI")
+                    svi = add_attrs[ind]
+                    svi_path = fiat_path.joinpath(svi.file)
+                    self.site_attrs["fiat"]["svi"] = {}
+                    self.site_attrs["fiat"]["svi"]["geom"] = str(
+                        Path(svi_path.relative_to(self.static_path)).as_posix()
+                    )
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
+                    self.logger.info(
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
+                    )
+                else:
+                    self.logger.warning("No SVI map found!")
             else:
                 self.logger.warning(
                     "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
@@ -770,6 +786,9 @@ class Database:
 
         The downloaded database is stored in the 'static/cyclone_track_database' directory.
         """
+        if not self.config.cyclones:
+            self.warning.info("No cyclones will be available in the database.")
+            return
         if self.config.cyclone_basin:
             basin = self.config.cyclone_basin
         else:
@@ -1080,7 +1099,14 @@ class Database:
             b_max,
         ]
 
-        self.site_attrs["gui"]["mapbox_layers"]["svi_bins"] = [0.05, 0.2, 0.4, 0.6, 0.8]
+        if "svi" in self.site_attrs["fiat"]:
+            self.site_attrs["gui"]["mapbox_layers"]["svi_bins"] = [
+                0.05,
+                0.2,
+                0.4,
+                0.6,
+                0.8,
+            ]
 
         # Add visualization layers
         # TODO add option to input layer
@@ -1138,7 +1164,7 @@ class Database:
                 "probabilistic event set not provided. Risk scenarios cannot be run."
             )
         self.site_attrs["standard_objects"] = {}
-        if prob_event_name:
+        if self.config.probabilistic_set:
             self.site_attrs["standard_objects"]["events"] = [prob_event_name]
         else:
             self.site_attrs["standard_objects"]["events"] = []
@@ -1150,7 +1176,10 @@ class Database:
         self.site_attrs["benefits"]["current_year"] = 2023
         self.site_attrs["benefits"]["current_projection"] = "current"
         self.site_attrs["benefits"]["baseline_strategy"] = "no_measures"
-        self.site_attrs["benefits"]["event_set"] = prob_event_name
+        if self.config.probabilistic_set:
+            self.site_attrs["benefits"]["event_set"] = prob_event_name
+        else:
+            self.site_attrs["benefits"]["event_set"] = ""
 
     def add_static_files(self):
         """
@@ -1174,6 +1203,7 @@ class Database:
         It then modifies the 'metrics_config.toml' and 'metrics_config_risk.toml' files by updating the 'aggregateBy' attribute with the names
         of the aggregations defined in the 'fiat' section of the 'site_attrs' attribute.
         """
+        # TODO there should be generalized infometric queries with NSI or OSM, and with SVI or without. Then Based on the user input these should be chosen automatically
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
         folders = ["infometrics", "infographics"]
         for folder in folders:
@@ -1282,6 +1312,6 @@ if __name__ == "__main__":
     main(
         [
             "--config_path",
-            r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland.toml",
+            r"c:\Users\athanasi\Github\Database\FA_builder\Cork\config_Cork.toml",
         ]
     )
