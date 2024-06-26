@@ -219,6 +219,14 @@ Model refinement with user input for maximum potential damages.
 
 :::
 
+  ::: {#fig-max_pot_damages}
+
+{{< video ../../_static/videos/hydromt_fiat/Max_potential_damages.mp4 >}}
+
+Model refinement with user input for maximum potential damages. 
+
+:::
+
 ### Assign vulnerability curves
 Delft-FIAT calculates the damages on the bases on vulnerability curves. There are two data sources which the vulnerability curves can be downloaded from, determined by the location of your model:
 
