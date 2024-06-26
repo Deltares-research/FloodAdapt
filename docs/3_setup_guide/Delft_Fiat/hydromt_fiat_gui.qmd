@@ -125,6 +125,15 @@ To set up the finished floor height open the **"Exposure"**-tab on the top panel
   4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the model builder. If you do not wish to change the default settings there is no need to change the settings. 
   5. Click **Add to model**.
 
+::: {#fig-ffh}
+
+{{< video ../../_static/videos/hydromt_fiat/Finished_floor_height.mp4 >}}
+
+Model refinement with user input for finished floor height. 
+
+:::
+
+
 #### Update Ground Elevation
 To set up the ground elevation open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
 
@@ -141,6 +150,14 @@ There are two options in the drop-down menu to set up the ground elevation data:
     b. Select the elevation unit of your file (meters or feet).
     d. Click **Add to model**. 
 
+::: {#fig-ground_elevation}
+
+{{< video ../../_static/videos/hydromt_fiat/Ground_elevation.mp4 >}}
+
+Model refinement with user input for ground elevation. 
+
+:::
+
 #### Update Max. Potential Damages
 To set up the max. potential damages open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel.  
 It is possible to update the *structural* damages and the *content* damage. You can update them one at a time with the following steps. 
@@ -153,6 +170,14 @@ It is possible to update the *structural* damages and the *content* damage. You 
   4. Select the Damage Type either *structural* or *content*, depending on your data.  
   4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the model builder. If you do not wish to change the default settings there is no need to change the settings. 
   5. Click **Add to model**.
+
+  ::: {#fig-max_pot_damages}
+
+{{< video ../../_static/videos/hydromt_fiat/Max_potential_damages.mp4 >}}
+
+Model refinement with user input for maximum potential damages. 
+
+:::
 
 ### Assign vulnerability curves
 As a next step you must assign the vulnerability curves to the exposure data. There are two data sources which the vulnerability curves are downloaded from, determined by the location of your model:
@@ -187,18 +212,6 @@ Assign the default vulnerability curves to the exposure data.
 
 :::
 
-
-### Create model
-At this point you are ready to create the Delft-FIAT model. Verify that data sources in the bottom tab match your model input. If so, create your model (@fig-create_model).
-
-::: {#fig-create_model}
-
-{{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
-
-Create your Delft-FIAT model. 
-
-:::
-
 ### Additional features
 #### Social Vulnerability Index (SVI) and Equity
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
@@ -215,7 +228,15 @@ If your model is setup in a location outside the U.S please refer to the section
 
 ![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/svi_workflow.svg){#fig-svi}
 
-For a detailed demonstration please refer to @fig-additional_attr.
+For a detailed demonstration please refer to @fig-svi_equity.
+
+::: {#fig-svi_equity}
+
+{{< video ../../_static/videos/hydromt_fiat/SVI_and_Equity_detail.mp4 >}}
+
+Add additional attributes to your model. In this example, a land use layer is added to the model, and assets are assigned to the land use category that encompasses each asset. 
+
+:::
 
 #### Additional attribtues
 Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be addedd (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
@@ -236,7 +257,29 @@ For a detailed demonstration please refer to @fig-additional_attr.
 
 ::: {#fig-additional_attr}
 
-{{< video ../../_static/videos/hydromt_fiat/SVI_Additional_Attributes_NSI.mp4 >}}
+{{< video ../../_static/videos/hydromt_fiat/Additional_Attributes_NSI.mp4 >}}
+
+Add additional attributes to your model. In this example, a land use layer is added to the model, and assets are assigned to the land use category that encompasses each asset. 
+
+:::
+
+
+### Create model and visualize the output
+
+::: {#fig-create_model}
+
+{{< video ../../_static/videos/hydromt_fiat/create_model_and_output.mp4 >}}
+
+Finalization of the model and visualization of the output.  
+
+:::
+
+
+At this point you are ready to create the Delft-FIAT model. Verify that data sources in the bottom tab match your model input. If so, create your model (@fig-create_model).
+
+::: {#fig-create_model}
+
+{{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
 
 Create your Delft-FIAT model. 
 
