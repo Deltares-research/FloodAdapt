@@ -28,23 +28,53 @@ Floodwalls and levees are engineered structures designed to provide barriers aga
 * From the Measure drop-down menu, Select "Floowall" or "Levee" 
 * Select one of the "Area type" options and then click "Add Measure". 
 
-If you selected "Draw polygon", you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in @fig-measures_buildingLevel_elevatePoly). When you are finished clicking the polygon, right click or double click to open the measure specification window (see @fig-measures_buildingLevel_fpPoly_spec). 
+If you selected "Draw polyline", you can now begin clicking within the map to draw a polyline where you want to implement your floodwall. When drawing the floodwall or levee, it is useful to turn on the "show grid" and "grid snapper" options so you are clear how your floodwall or levee will be implemented in the hydraulic model. We also recommend turning on the topography layer to ensure that your floodwall or levee ties into high ground, so that water does not flow around the edges of your floodwall or levee.  @fig-measures_floodwall_map shows an example of a polyline representing a floodwall without the grid, grid snapper, and topography visible. @fig-measures_floodwall_snapper_topo shows the same measure with these features enabled. You can see in @fig-measures_floodwall_snapper_topo how the wall will be implemented in the hydraulic model, and that the edges of the wall are tied into high ground.
 
-![**Selecting buildings for applying the elevate measure**](../../_static/images/measure_building_poly_elevate.png){width=70% fig-align=left #fig-measures_buildingLevel_elevatePoly}
 
-In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the "Aggregation area" option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see @fig-measure_building_poly_buyout_specification for the example of buyouts)
 
-![**Specifying information for an elevate measure**](../../_static/images/measure_building_elevate_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_elevate_spec}
+![**Implementing a floodwall in FloodAdapt by drawing a polyline**](../../_static/images/measure_floodwall_map.png){width=50% fig-align=left #fig-measures_floodwall_map}
 
-::: {.callout-note}
-## Elevate properties relative to...
-The elevate properties specification window asks the user to specify what the elevation of the property is relative to. The user can select the datum; in this case, the elevation is the elevation of the finished floor of the property above the specific datum. The user can also select to elevate properties relative to "Base Flood Elevation" (BFE). In this case the elevation is actually a height above this reference. In the U.S, BFE is a regulatory flood level that is related to insurance, and is often used in ordinances on how high new development must be built. In areas of the world where this is not used, the base flood elevation option may not be visible.
+![**Using the "show grid", "grid snapper" and topography layers to better specify your floodwall or levee**](../../_static/images/measure_floodwall_snapper_topo.png){width=50% fig-align=left #fig-measures_floodwall_snapper_topo} 
+
+::: {.callout-tip}
+## Turning on the topography layer
+To turn on the topography layer, go to the top menu bar in FloodAdapt, click the "View" menu, and then from the drop-down menu click "Topography". The topography layer will turn on. To turn the layer back off, again go to "View", and again click "Topography" and the layer will disappear.
 :::
 
-::: {.callout-note}
-## How is elevating properties represented in the modeling?
-The exposed assets have multiple attributes, one of which is the height of the finished floor above the ground. When a user elevates properties, FloodAdapt adjusts this attribute for the selected properties to represent the user specifications. Whether a user specifies a property elevation as an elevation relative to a datum, or a height above a reference level like base flood elevation, FloodAdapt calculates for each selected property the equivalent height above the ground, and assigns this value to the finished floor height attribute of the elevated property. For example, if a user selects 12 feet above datum, and the ground elevation where a property is located is 10 feet above datum, FloodAdapt calculates that the finished floor height of the property as 2 feet, and assigns this as the finished floor height attribute of the elevated property. Similarly, if a user selects 2 feet above BFE, and the BFE at the location of a property is 9 feet, then the property must be raised to 11 feet relative to datum. If the ground elevation at that location is 8 feet, FloodAdapt would calculate that the finished floor height for the elevated property is 3 feet. 
-:::
+Once you have drawn your polyline or selected to import a polyline, a specification window opens (see @fig-measure_floodwall_properties for the example of a floodwall). In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, and the elevation of the floodwall or levee. Once you enter the information and click "OK", your floodwall or levee will show up in the measures window. 
+
+![**Specifying information for a floodwall or levee**](../../_static/images/measure_floodwall_properties.png){width=50% fig-align=left #fig-measure_floodwall_properties} 
+
+### Editing a floodwall or levee
+
+Once you have created a floodwall or levee, you can edit it as long as you have not yet included it in a strategy. You can edit either the geometry or the parameters (the elevation) of the floodwall or levee. 
+
+Here are the steps to edit the **geometry** of a floodwall or levee:
+
+* Select the measure in the "Measures" tab
+* Click "Edit measure"
+* A pop-up window appears asking if you want to edit the geometry or parameters; select "Geometry"
+* The polyline is now 'clickable'
+* Click the orange dots to reshape the polyline. If you have the grid snapper shown, the snapped floodwall or levee will automatically update as you edit the polyline (see @fig-measure_floodwall_edit)
+* When you are finished editing the polyline, click anywhere else on the map
+* A pop-up window asks you if you would like to keep the new geometry; click yes
+* The geometry is now updated
+
+
+
+![**Editing a floodwall or levee**](../../_static/images/measure_floodwall_edit.png){width=70% fig-align=left #fig-measure_floodwall_edit} 
+
+Here are the steps to edit the **parameters** of a floodwall or levee:
+
+* Select the measure in the "Measures" tab
+* Click "Edit measure"
+* A pop-up window appears asking if you want to edit the geometry or parameters; select "Parameters"
+* The specification window opens
+* You may change the description or the elevation of the floodwall or levee
+* When you are finished, click "OK"
+* The parameters are now updated
+
+
 
 ## Pumps
 
