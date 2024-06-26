@@ -2,29 +2,32 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, model_validator
 
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.new_events.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
     IDischarge,  # noqa
 )
-from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
-    IRainfall,
+from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
+    ForcingType,
+    IForcing,
+)
+from flood_adapt.object_model.hazard.new_events.forcing.rainfall import (
+    IRainfall,  # noqa
     RainfallConstant,
     RainfallFromModel,
     RainfallFromTrack,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    IWaterlevel,
+from flood_adapt.object_model.hazard.new_events.forcing.waterlevels import (
+    IWaterlevel,  # noqa
     WaterlevelFromFile,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
-    IWind,
+from flood_adapt.object_model.hazard.new_events.forcing.wind import (
+    IWind,  # noqa
     WindConstant,
     WindFromModel,
     WindFromTrack,
@@ -71,7 +74,7 @@ class TranslationModel(BaseModel):
 
 
 class IEventModel(BaseModel):
-    _ALLOWED_FORCINGS: List[IForcing] = []
+    _ALLOWED_FORCINGS: dict[ForcingType, List[IForcing]] = Field(default_factory=dict)
 
     name: str
     description: Optional[str] = None
@@ -79,88 +82,60 @@ class IEventModel(BaseModel):
     template: Template
     mode: Mode
 
-    forcings: List[IForcing]
+    forcings: dict[ForcingType, IForcing] = Field(
+        default_factory={
+            ForcingType.WATERLEVEL: None,
+            ForcingType.WIND: None,
+            ForcingType.RAINFALL: None,
+            ForcingType.DISCHARGE: None,
+        }
+    )
 
-    @validator("forcings", each_item=True)
-    def check_allowed_forcings(cls, v):
-        if type(v) not in cls._ALLOWED_FORCINGS:
-            raise ValueError(
-                f"Forcing {v} not in allowed forcings {cls._ALLOWED_FORCINGS}"
-            )
-        return v
-
-    @validator("forcings")
-    def check_single_wind(cls, v):
-        wind_count = sum(issubclass(forcing, IWind) for forcing in v)
-        if wind_count > 1:
-            raise ValueError("There can be only one Wind forcing")
-        return v
-
-    @validator("forcings")
-    def check_single_rainfall(cls, v):
-        rainfall_count = sum(issubclass(forcing, IRainfall) for forcing in v)
-        if rainfall_count > 1:
-            raise ValueError("There can be only one Rainfall forcing")
-        return v
-
-    @validator("forcings")
-    def check_single_waterlevel(cls, v):
-        waterlevel_count = sum(issubclass(forcing, IWaterlevel) for forcing in v)
-        if waterlevel_count > 1:
-            raise ValueError("There can be only one Waterlevel forcing")
-        return v
+    @model_validator(mode="after")
+    def validate_forcings(self):
+        for forcing_category, concrete_forcing in self.forcings.items():
+            if forcing_category not in type(self)._ALLOWED_FORCINGS:
+                raise ValueError(
+                    f"Forcing {forcing_category} not in allowed forcings {type(self)._ALLOWED_FORCINGS}"
+                )
+            if concrete_forcing not in type(self)._ALLOWED_FORCINGS[forcing_category]:
+                raise ValueError(
+                    f"Forcing {concrete_forcing} not allowed for forcing category {forcing_category}. Only {', '.join(type(self)._ALLOWED_FORCINGS[forcing_category].__name__)} are allowed"
+                )
+        return self
 
 
 class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
-    _ALLOWED_FORCINGS = [
-        RainfallConstant,
-        RainfallSynthetic,
-        WindConstant,
-        WindTimeSeries,
-        WaterlevelSynthetic,
-        WaterlevelFromFile,
-        DischargeConstant,
-        DischargeSynthetic,
-    ]
+    _ALLOWED_FORCINGS = {
+        ForcingType.RAINFALL: [RainfallConstant, RainfallSynthetic],
+        ForcingType.WIND: [WindConstant, WindTimeSeries],
+        ForcingType.WATERLEVEL: [WaterlevelSynthetic, WaterlevelFromFile],
+        ForcingType.DISCHARGE: [DischargeConstant, DischargeSynthetic],
+    }
 
 
 class HistoricalEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
-    _ALLOWED_FORCINGS = [
-        RainfallConstant,
-        # RainfallSynthetic,
-        RainfallFromModel,
-        WindConstant,
-        # WindTimeSeries,
-        WindFromModel,
-        # WaterlevelSynthetic,
-        WaterlevelFromFile,
-        WaterlevelFromModel,
-        DischargeConstant,
-        # DischargeSynthetic,
-    ]
+    _ALLOWED_FORCINGS = {
+        ForcingType.RAINFALL: [RainfallConstant, RainfallFromModel],
+        ForcingType.WIND: [WindConstant, WindFromModel],
+        ForcingType.WATERLEVEL: [WaterlevelFromFile, WaterlevelFromModel],
+        ForcingType.DISCHARGE: [DischargeConstant],
+    }
 
 
 class HurricaneEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
-    _ALLOWED_FORCINGS = [
-        RainfallConstant,
-        # RainfallSynthetic,
-        RainfallFromModel,
-        RainfallFromTrack,
-        # WindConstant,
-        # WindTimeSeries,
-        WindFromTrack,
-        # WaterlevelSynthetic,
-        # WaterlevelFromFile,
-        WaterlevelFromModel,
-        DischargeConstant,
-        DischargeSynthetic,
-    ]
+    _ALLOWED_FORCINGS = {
+        ForcingType.RAINFALL: [RainfallConstant, RainfallFromModel, RainfallFromTrack],
+        ForcingType.WIND: [WindFromTrack],
+        ForcingType.WATERLEVEL: [WaterlevelFromModel],
+        ForcingType.DISCHARGE: [DischargeConstant, DischargeSynthetic],
+    }
 
     hurricane_translation: TranslationModel
     track_name: str
@@ -169,13 +144,9 @@ class HurricaneEventModel(IEventModel):
 class EventSetModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
-    _ALLOWED_FORCINGS = [
-        RainfallConstant,
-        RainfallSynthetic,
-        WindConstant,
-        WindTimeSeries,
-        WaterlevelSynthetic,
-        WaterlevelFromFile,
-        DischargeConstant,
-        DischargeSynthetic,
-    ]
+    _ALLOWED_FORCINGS = {
+        ForcingType.RAINFALL: [RainfallConstant, RainfallFromModel, RainfallFromTrack],
+        ForcingType.WIND: [WindFromTrack],
+        ForcingType.WATERLEVEL: [WaterlevelFromModel],
+        ForcingType.DISCHARGE: [DischargeConstant, DischargeSynthetic],
+    }

@@ -79,7 +79,7 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
-    csv_file_path: str | Path
+    path: str | Path
     # TODO: Add validation for csv_file_path / contents ?
 
 
@@ -419,6 +419,12 @@ class CSVTimeseries(ITimeseries):
     attrs: CSVTimeseriesModel
 
     @staticmethod
+    def load_file(path: str | Path):
+        obj = CSVTimeseries()
+        obj.attrs = CSVTimeseriesModel(path=path).model_validate()
+        return obj
+
+    @staticmethod
     def read_csv(csvpath: str | Path) -> pd.DataFrame:
         """Read a timeseries file and return a pd.Dataframe.
 
@@ -465,7 +471,7 @@ class CSVTimeseries(ITimeseries):
         time_step: UnitfulTime,
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
-        ts = self.read_csv(self.csv_file_path)
+        ts = self.read_csv(self.attrs.path)
         freq = int(time_step.convert(UnitTypesTime.seconds).value)
         time_range = pd.date_range(
             start=ts.index.min(), end=ts.index.max(), freq=f"{freq}S", inclusive="left"

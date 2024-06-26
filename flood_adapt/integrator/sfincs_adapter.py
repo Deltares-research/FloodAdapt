@@ -21,33 +21,7 @@ from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.dbs_controller import Database
-from flood_adapt.object_model.hazard.event.event import EventModel
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
-    DischargeConstant,
-    DischargeSynthetic,
-    IDischarge,
-)
-from flood_adapt.object_model.hazard.event.forcing.forcing import IForcing
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
-    IRainfall,
-    RainfallConstant,
-    RainfallFromModel,
-    RainfallFromSPWFile,
-    RainfallSynthetic,
-)
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    IWaterlevel,
-    WaterlevelFromFile,
-    WaterlevelFromModel,
-    WaterlevelSynthetic,
-)
-from flood_adapt.object_model.hazard.event.forcing.wind import (
-    IWind,
-    WindConstant,
-    WindFromModel,
-    WindFromTrack,
-    WindTimeSeries,
-)
+from flood_adapt.integrator.interface.hazard_adapter import HazardData, IHazardAdapter
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
 )
@@ -60,9 +34,39 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.hazard.new_events.forcing.discharge import (
+    DischargeConstant,
+    DischargeSynthetic,
+    IDischarge,
+)
+from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
+    ForcingType,
+    IForcing,
+)
+from flood_adapt.object_model.hazard.new_events.forcing.rainfall import (
+    IRainfall,
+    RainfallConstant,
+    RainfallFromModel,
+    RainfallFromSPWFile,
+    RainfallSynthetic,
+)
+from flood_adapt.object_model.hazard.new_events.forcing.waterlevels import (
+    IWaterlevel,
+    WaterlevelFromFile,
+    WaterlevelFromModel,
+    WaterlevelSynthetic,
+)
+from flood_adapt.object_model.hazard.new_events.forcing.wind import (
+    IWind,
+    WindConstant,
+    WindFromModel,
+    WindFromTrack,
+    WindTimeSeries,
+)
+from flood_adapt.object_model.hazard.new_events.new_event_models import IEventModel
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
-from flood_adapt.object_model.interface.hazard_adapter import HazardData, IHazardAdapter
+from flood_adapt.object_model.interface.measures import HazardType
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -145,9 +149,9 @@ class SfincsAdapter(IHazardAdapter):
         """Read the sfincs model."""
         self._model.read()
 
-    def write(self):
+    def write(self, path_out: Union[str, os.PathLike]):
         """Write the sfincs model."""
-        self._model.write()
+        self._model.write(path_out)
 
     def run(self, scenario: Scenario):
         """Run the sfincs model."""
@@ -159,7 +163,7 @@ class SfincsAdapter(IHazardAdapter):
 
         self._scenario = None
 
-    def set_timing(self, event: EventModel):
+    def set_timing(self, event: IEventModel):
         """Set model reference times based on event time series."""
         # Get start and end time of event
         tstart = event.time.start_time
@@ -172,33 +176,35 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_forcing(self, forcing: IForcing):
         """Get forcing data and add it to the sfincs model."""
-        if isinstance(forcing, IRainfall):
-            self._add_forcing_rain(forcing)
-        elif isinstance(forcing, IWind):
-            self._add_forcing_wind(forcing)
-        elif isinstance(forcing, IDischarge):
-            self._add_forcing_discharge(forcing)
-        elif isinstance(forcing, IWaterlevel):
-            self._add_forcing_waterlevels(forcing)
-        else:
-            self._logger.warning(
-                f"Skipping unsupported forcing type {forcing.__class__.__name__}"
-            )
-            return
+        match forcing._type:
+            case ForcingType.WIND:
+                self._add_forcing_wind(forcing)
+            case ForcingType.RAINFALL:
+                self._add_forcing_rain(forcing)
+            case ForcingType.DISCHARGE:
+                self._add_forcing_discharge(forcing)
+            case ForcingType.WATERLEVEL:
+                self._add_forcing_waterlevels(forcing)
+            case _:
+                self._logger.warning(
+                    f"Skipping unsupported forcing type {forcing.__class__.__name__}"
+                )
+                return
 
     def add_measure(self, measure: HazardMeasure):
         """Get measure data and add it to the sfincs model."""
-        if isinstance(measure, FloodWall):
-            self._add_measure_floodwall(measure)
-        elif isinstance(measure, GreenInfrastructure):
-            self._add_measure_greeninfra(measure)
-        elif isinstance(measure, Pump):
-            self._add_measure_pump(measure)
-        else:
-            self._logger.warning(
-                f"Skipping unsupported measure type {measure.__class__.__name__}"
-            )
-            return
+        match measure.attrs.type:
+            case HazardType.floodwall:
+                self._add_measure_floodwall(measure)
+            case HazardType.greening:
+                self._add_measure_greeninfra(measure)
+            case HazardType.pump:
+                self._add_measure_pump(measure)
+            case _:
+                self._logger.warning(
+                    f"Skipping unsupported measure type {measure.__class__.__name__}"
+                )
+                return
 
     def add_projection(self, projection: PhysicalProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
@@ -260,6 +266,7 @@ class SfincsAdapter(IHazardAdapter):
     def _preprocess(self):
         sim_paths = self._get_simulation_paths()
         for ii, name in enumerate(self._scenario.events):
+
             event = Database().events.get(name)
 
             self._set_timing(event.attrs)
@@ -706,7 +713,7 @@ class SfincsAdapter(IHazardAdapter):
         )
 
     def _add_bzs_from_bca(
-        self, event: EventModel, physical_projection: PhysicalProjectionModel
+        self, event: IEventModel, physical_projection: PhysicalProjectionModel
     ):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""

@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from enum import Enum
 
@@ -46,7 +47,7 @@ class IAdapter(ABC):
         pass
 
     @abstractmethod
-    def write(self):
+    def write(self, path: str | os.PathLike):
         pass
 
     @abstractmethod

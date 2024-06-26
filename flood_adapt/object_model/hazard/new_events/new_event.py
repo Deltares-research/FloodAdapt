@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from flood_adapt.object_model.hazard.event.new_event_models import (
+from flood_adapt.object_model.hazard.new_events.new_event_models import (
     EventSetModel,
     HurricaneEventModel,
     IEventModel,
