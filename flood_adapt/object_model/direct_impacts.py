@@ -336,7 +336,7 @@ class DirectImpacts:
         )
         # Save as geopackage
         outpath = self.impacts_path.joinpath(f"Impacts_roads_{self.name}.gpkg")
-        roads.to_file(outpath, format="geopackage")
+        roads.to_file(outpath, driver="GPKG")
 
     def _create_equity(self, metrics_path):
         self._logger.info("Calculating equity weighted risk...")
