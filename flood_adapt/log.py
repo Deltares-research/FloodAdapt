@@ -81,10 +81,12 @@ class FloodAdaptLogging:
                 root_logger.removeHandler(handler)
         logging.shutdown()
 
+    @classmethod
     @contextmanager
     def to_file(
-        self,
-        file_path: str,
+        cls,
+        *,
+        file_path: str = None,
         loglevel: int = logging.DEBUG,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
     ):
@@ -92,8 +94,12 @@ class FloodAdaptLogging:
 
         When the context manager exits (via regular execution or an exception), the file is closed and the handler is removed.
         """
-        self.add_file_handler(file_path, loglevel, formatter)
+        if file_path is None:
+            raise ValueError(
+                "file_path must be provided as a key value pair: 'file_path=<file_path>'."
+            )
+        cls.add_file_handler(file_path, loglevel, formatter)
         try:
             yield
         finally:
-            self.remove_file_handler(file_path)
+            cls.remove_file_handler(file_path)

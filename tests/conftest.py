@@ -16,7 +16,11 @@ database_root = Path().absolute().parent / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
 database_path = database_root / site_name
-snapshot_dir = Path(tempfile.mkdtemp()) / "database_snapshot"
+
+session_tmp_dir = Path(tempfile.mkdtemp())
+snapshot_dir = session_tmp_dir / "database_snapshot"
+logs_dir = Path().absolute().parent / "logs"
+
 fa_config.parse_user_input(
     database_root=database_root,
     database_name=site_name,
@@ -76,11 +80,7 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    log_path = (
-        Path(__file__).parent
-        / "logs"
-        / f"test_run_{datetime.now().strftime('%m-%d_%H-%M')}.log"
-    )
+    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%H-%M')}.log"
     FloodAdaptLogging(
         file_path=log_path,
         loglevel_console=logging.DEBUG,

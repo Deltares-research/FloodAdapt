@@ -70,7 +70,7 @@ class Scenario(IScenario):
 
         # Initiate the logger for all the integrator scripts.
         log_file = self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
-        with FloodAdaptLogging.to_file(log_file):
+        with FloodAdaptLogging.to_file(file_path=log_file):
             self._logger.info(f"FloodAdapt version {__version__}")
             self._logger.info(
                 f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
