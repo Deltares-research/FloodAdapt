@@ -12,14 +12,15 @@ import flood_adapt.config as fa_config
 from flood_adapt.api.static import read_database
 from flood_adapt.log import FloodAdaptLogging
 
-database_root = Path().absolute().parent / "Database"
+project_root = Path(__file__).absolute().parent.parent.parent
+database_root = project_root / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
 database_path = database_root / site_name
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
-logs_dir = Path().absolute().parent / "logs"
+logs_dir = Path(__file__).absolute().parent / "logs"
 
 fa_config.parse_user_input(
     database_root=database_root,
@@ -80,14 +81,13 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%H-%M')}.log"
+    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,
         loglevel_console=logging.DEBUG,
         loglevel_root=logging.DEBUG,
         loglevel_files=logging.DEBUG,
     )
-
     create_snapshot()
 
     yield
@@ -164,3 +164,10 @@ test_db_class = make_db_fixture("class")
 test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    test_name = item.name
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"\nStarting test: {test_name}\n")
