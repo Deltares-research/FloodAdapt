@@ -1,17 +1,17 @@
 import filecmp
-import gc
 import logging
 import os
 import shutil
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 
 import flood_adapt.config as fa_config
 from flood_adapt.api.static import read_database
+from flood_adapt.log import FloodAdaptLogging
 
-logging.basicConfig(level=logging.ERROR)
 database_root = Path().absolute().parent / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
@@ -34,19 +34,6 @@ def create_snapshot():
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
     shutil.copytree(database_path, snapshot_dir)
-
-
-def close_all_loggers():
-    """Close all loggers and their handlers."""
-    for logger in logging.Logger.manager.loggerDict.values():
-        if isinstance(logger, logging.PlaceHolder):
-            continue
-        handlers = logger.handlers
-        for handler in handlers:
-            handler.close()
-            logger.removeHandler(handler)
-    gc.collect()
-    logging.shutdown()
 
 
 def restore_db_from_snapshot():
@@ -89,9 +76,22 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
+    log_path = (
+        Path(__file__).parent
+        / "logs"
+        / f"test_run_{datetime.now().strftime('%m-%d_%H-%M')}.log"
+    )
+    FloodAdaptLogging(
+        file_path=log_path,
+        loglevel_console=logging.DEBUG,
+        loglevel_root=logging.DEBUG,
+        loglevel_files=logging.DEBUG,
+    )
+
     create_snapshot()
 
     yield
+
     if clean:
         restore_db_from_snapshot()
     shutil.rmtree(snapshot_dir)
@@ -146,7 +146,6 @@ def make_db_fixture(scope):
         yield dbs
 
         # Teardown
-        close_all_loggers()
         dbs.reset()
         if clean:
             restore_db_from_snapshot()
