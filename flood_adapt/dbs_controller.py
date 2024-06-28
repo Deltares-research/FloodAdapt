@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from datetime import datetime
@@ -22,6 +21,7 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -99,7 +99,8 @@ class Database(IDatabase):
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
-        logging.info(
+        self._logger = FloodAdaptLogging.getLogger(__name__)
+        self._logger.info(
             f"(Re-)Initializing database to {database_name} at {database_path}"
         )
         self.database_path = database_path
@@ -922,7 +923,7 @@ class Database(IDatabase):
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    print(
+                    self._logger.info(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
 

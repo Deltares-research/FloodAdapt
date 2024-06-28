@@ -19,7 +19,7 @@ def test_scenarios(test_db):
     test_scenarios = {
         toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
     }
-    return test_scenarios
+    yield test_scenarios
 
 
 def test_add_obs_points(test_db, test_scenarios):
