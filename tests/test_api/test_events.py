@@ -37,7 +37,7 @@ def test_dict():
             "shape_peak": {"value": 9.22, "units": "feet"},
         },
     }
-    return test_dict
+    yield test_dict
 
 
 def test_create_synthetic_event_valid_dict(test_db, test_dict):

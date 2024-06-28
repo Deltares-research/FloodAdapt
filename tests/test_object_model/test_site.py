@@ -191,7 +191,7 @@ def test_dict():
         "scs": {"file": "scs_rainfall.csv", "type": "type_3"},
         "standard_objects": {...},
     }
-    return config_values
+    yield config_values
 
 
 @pytest.fixture
@@ -200,13 +200,13 @@ def test_tomls(test_db):
         test_db.static_path / "site" / "site.toml",
         test_db.static_path / "site" / "site_without_river.toml",
     ]
-    return toml_files
+    yield toml_files
 
 
 @pytest.fixture
 def test_sites(test_db, test_tomls):
     test_sites = {toml_file.name: Site.load_file(toml_file) for toml_file in test_tomls}
-    return test_sites
+    yield test_sites
 
 
 def test_loadFile_validFiles(test_tomls):
