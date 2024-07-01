@@ -7,27 +7,26 @@ execute:
   echo: false
 jupyter: python3
 number-sections: true
+format: html
 ---
 
-he Delft-FIAT model-builder allows users to rapidly set up a Delft-FIAT model using a 'quick-build' option (and link to that section here) using default modeling choices, or to build a tailored Delft-FIAT model (link to that section here), making the Delft-FIAT model creation accessible for any type of user (incl. users without modeling experience). 
+The Delft-FIAT model-builder allows users to rapidly set up a Delft-FIAT model using a [quick-build](#sec-quickbuild) option using default modeling choices, or to build a [tailored Delft-FIAT model](#sec-tailored_model), making the Delft-FIAT model creation accessible for any type of user (incl. users without modeling experience). 
 
-# Getting started and selecting your model boundary
+# Getting started and selecting your model boundary {#sec-getting-started}
 
-These are steps that are carried out whether you do **quickbuild** (@sec-quickbuild) or **tailored model-building** (@sec-tailored_model). 
+These are steps that are carried out whether you do [quickbuild](#sec-quickbuild) or [tailored model-building](#sec-tailored_model).  
 
-*Step-by-step instructions to get started*  
+<u>*Step-by-step instructions to get started:*</u> 
 
   1. Go to **File** >> **Select Working Directory**.
   2. Select an output folder.
-  3. Generate model boundaries
+  3. Generate model boundary
 
-To select a model boundary, you have four options:
-
-  1. Go to the **Model Boundary | Quickbuild** -tab and select any of the options in the drop-down menu to create the boundary (@fig-boundaries).
-      a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
-      b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
-      c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
-      d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
+      + Go to the **Model Boundary | Quickbuild**-tab and select any of the options in the drop-down menu to create the boundary (@fig-boundaries).
+          a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
+          b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
+          c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
+          d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
 
   2. When you are finished, click **"Generate Boundary"**.
 
@@ -44,19 +43,20 @@ Create model boundaries using the "Draw Polygon" method.
 :::
 
 # Quickbuild {#sec-quickbuild}
-If you set up a model in the United States and do not want to use your own data you can simply choose to work with the **quickbuild**. 
+The **quickbuild** is a complete Delft-FIAT model which can be set up anywhere in the **United States** with ease. It doesn't require any user input except for defining the model boundary.  
+Additionally to the base model and roads, the [social vulnerability index](#sec-svi) is generated as well as [equity](#sec-svi) is downloaded.
 
-The **quickbuild** downloads the data from different sources:  
+The **quickbuild** obtains the model data from the following sources:  
 
-* **Exposure**: National Structure Inventory (NSI)
-* **Vulnerability curves**: FEMA HAZUS database
-* **Socio-economic/equity data**: US census data
-* **Roads**: Open Street Map (OSM)
+1. **Exposure**: National Structure Inventory (NSI)
+2. **Vulnerability curves**: FEMA HAZUS database
+3. **Socio-economic/equity data**: US census data
+4. **Roads**: Open Street Map (OSM)
 
-*Step-by-step instructions for the Quick Build*
+<u>*Step-by-step instructions for the Quick Build*</u> 
 
-  1. Go to the **Model Boundary | Quickbuild** -tab and select any of the options in the drop-down menu to create the boundary (@fig-quickbuild).
-  2. After you generated the model boundaries you can select the quickbuild option.
+  1. Go to the **Model Boundary | Quickbuild**-tab and select any of the options in the drop-down menu to create the boundary (@sec-getting-started; @fig-quickbuild).
+  2. After you generated the boundary you can select the quickbuild option and the model will be built.
 
 ![Workflow to use the "Quickbuild"-option.](../../_static/figures/quickbuild.svg){#fig-quickbuild}
 
@@ -76,10 +76,10 @@ This section explains the creation of a simple Delft-FIAT model configured by th
 ## Create the exposure data
 To setup the exposure data you have multiple options to refine your model, which are described in the following sections:
 
-  - Create a base model with the default data sources (@sec-basemodel)
-  - Update Finished Floor Height (@sec-finished_floor_height) (*optional*)
-  - Update Finished Ground Elevation (@sec-ground_elevation)(*optional*)
-  - Update Maximum Potential Damages (@sec-maximum_potential_damages)(*optional*)
+  - Create a base model with the default data sources(#sec-basemodel)
+  - [Update Finished Floor Height](#sec-finished_floor_height) (*optional*)
+  - [Update Finished Ground Elevation](#sec-ground_elevation)(*optional*)
+  - [Update Maximum Potential Damages](#sec-maximum_potential_damages)(*optional*)
 
 Not all steps are required to build the model, except the creation of the base model. Simply update the data you wish to change and use the default data of the base model for any data you do not have.
 
@@ -91,7 +91,7 @@ There are two different database sources to download the **exposure data** from,
 
 Additionally, you can download **road data** from Open Street Map. 
 
-*Step-by-step instructions to setup the exposure data*  
+<u>*Step-by-step instructions to setup the exposure data*</u>   
 
 To set up the exposure data open the **"Exposure"**-tab on the top panel (@fig-exposure). 
   1. Generate your model boundaries
@@ -130,7 +130,7 @@ To set up the finished floor height open the **"Exposure"**-tab on the top panel
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
-*Step-by-step instructions to setup/update the Finished Floor Height*  
+<u>*Step-by-step instructions to setup/update the Finished Floor Height*</u>  
 
   1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
   2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
@@ -152,7 +152,7 @@ To set up the ground elevation open the **"Exposure"**-tab on the top panel and 
 
 ![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
-*Step-by-step instructions to setup/update the Ground Elevation*  
+<u>*Step-by-step instructions to setup/update the Ground Elevation*</u>   
 There are two options in the drop-down menu to set up the ground elevation data:
   1. SFINCS Ground Elevation
 
@@ -179,7 +179,7 @@ It is possible to update the *structural* damages and the *content* damage. You 
 
 ![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
-*Step-by-step instructions to setup/update the Max. Potential Damages*  
+<u>*Step-by-step instructions to setup/update the Max. Potential Damages*</u>   
 
   1. Select the file source of your max. potential damage data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
   2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
@@ -230,7 +230,7 @@ Assign the default vulnerability curves to the exposure data.
 :::
 
 ### Additional features
-#### Social Vulnerability Index (SVI) and Equity
+#### Social Vulnerability Index (SVI) and Equity {#sec-svi}
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
 However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (@fig-additional_attr).
 
