@@ -31,7 +31,7 @@ To select a model boundary, you have four options:
 
   2. When you are finished, click **"Generate Boundary"**.
 
-![Workflow to create model boundaries.](../../_static/figures/Draw_boundaries.svg){#fig-boundaries}
+![Workflow to create model boundaries.](../../_static/figures/draw_boundaries.svg){#fig-boundaries}
 
 For further details please refer to @fig-model_boundaries.
 
@@ -58,7 +58,7 @@ The **quickbuild** downloads the data from different sources:
   1. Go to the **Model Boundary | Quickbuild** -tab and select any of the options in the drop-down menu to create the boundary (@fig-quickbuild).
   2. After you generated the model boundaries you can select the quickbuild option.
 
-![Workflow to use the "Quickbuild"-option.](../../_static/figures/Quickbuild.svg){#fig-quickbuild}
+![Workflow to use the "Quickbuild"-option.](../../_static/figures/quickbuild.svg){#fig-quickbuild}
 
 For further details please refer to @fig-nsi_quickbuild.
 
@@ -102,7 +102,7 @@ To set up the exposure data open the **"Exposure"**-tab on the top panel (@fig-e
   6. Add to model.
   
  #######After creating your model you should end up with a folder structure as describted in the section [Data Input - Folder Structure] Add this somewhere here
-![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/Exposure.svg){#fig-exposure}
+![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/exposure.svg){#fig-exposure}
 
 These are all the necessary steps to set up the exposure for a **simple model**. If you want to update the model or input your own data, please refer to the section *Model from scratch: Advanced model* (in progress). 
 
@@ -128,6 +128,8 @@ Global exposure setup using OSM exposure and OSM roads .
 ### Update Finished Floor Height {#sec-finished_floor_height}
 To set up the finished floor height open the **"Exposure"**-tab on the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
 
+![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
+
 *Step-by-step instructions to setup/update the Finished Floor Height*  
 
   1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
@@ -147,6 +149,8 @@ Model refinement with user input for finished floor height.
 
 ### Update Ground Elevation {#sec-ground_elevation}
 To set up the ground elevation open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
+
+![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
 *Step-by-step instructions to setup/update the Ground Elevation*  
 There are two options in the drop-down menu to set up the ground elevation data:
@@ -172,6 +176,8 @@ Model refinement with user input for ground elevation.
 ### Update Maximum Potential Damages {#sec-maximum_potential_damages}
 To set up the max. potential damages open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel.  
 It is possible to update the *structural* damages and the *content* damage. You can update them one at a time with the following steps. 
+
+![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
 *Step-by-step instructions to setup/update the Max. Potential Damages*  
 
@@ -237,7 +243,7 @@ Follow these instructions when setting up a model in the **United States** (@fig
 
 If your model is setup in a location outside the U.S please refer to the section *Additional attributes* for instructions. 
 
-![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/svi_workflow.svg){#fig-svi}
+![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/SVI_additional_attr.svg){#fig-svi}
 
 For a detailed demonstration please refer to @fig-svi_equity.
 
