@@ -137,20 +137,23 @@ Global exposure setup using OSM exposure and OSM roads .
 
 :::
 
-### Update Finished Floor Height {#sec-finished_floor_height}
-To adjust the default finished floor height or import your own data open the **"Exposure"**-tab from the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
+### Refine Finished Floor Height {#sec-finished_floor_height}
+The user has the option to adjust the finished floor height default values of the default model (NSI or OSM) by importing a point- or polygon vector file with different data values for specific areas or assets. Moreover, the user may also import a finished floor height vector file for the whole model domain. 
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
-The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new finished floor height file for the complete model domain. The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to each asset.
+::: {.callout-note}
+The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to each asset.
+:::
 
 <u>*Step-by-step instructions to refine/import the finished floor height*</u>  
 
-1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
-2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
-3. Select the column that holds the finished floor height data. 
-4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. If you do not wish to change the default settings there is no need to change the settings. 
-5. Click **Add to model**.
+1. Open the **"Exposure"**-tab from the top panel and select the **"Finished Floor Height"**-tab in the bottom panel.
+2. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
+3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
+4. Select the column that holds the finished floor height data. 
+5. *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. You can keep the default settings if you don't wish to change the method.
+6. Add to model.
 
 ::: {#fig-ffh}
 
@@ -160,24 +163,22 @@ Model refinement with user input for finished floor height.
 
 :::
 
-
-### Update Ground Elevation {#sec-ground_elevation}
-To set up the ground elevation open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
+### Refine Ground Elevation {#sec-ground_elevation}
+To import ground elevation data, the user must provide a DEM raster file with the updated elevation values. The FloodAdapt Model Builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
 
 ![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
-<u>*Step-by-step instructions to setup/update the Ground Elevation*</u>   
-There are two options in the drop-down menu to set up the ground elevation data:
-  1. SFINCS Ground Elevation
+<u>*Step-by-step instructions to import ground elevation data*</u>   
 
-    a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the FloodAdapt Model Builder will recognize the file automatically.
-    b. Click **Add to model**.
-
-  2. Upload file
-
-    a. Select the file source of your ground elevation data. The file must be a raster file (e.g. *.tif*).
-    b. Select the elevation unit of your file (meters or feet).
-    d. Click **Add to model**. 
+1. Open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
+2. There are two options in the drop-down menu to set up the ground elevation data:
+    1. **SFINCS Ground Elevation**
+        a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the FloodAdapt Model Builder will recognize the file automatically.
+        b. Add to model.
+    2. **Upload file**
+        a. Select the file source of your ground elevation data. The file must be a raster file (e.g. *.tif*).
+        b. Select the elevation unit of your file (meters or feet).
+        c. Add to model. 
 
 ::: {#fig-ground_elevation}
 
@@ -187,22 +188,26 @@ Model refinement with user input for ground elevation.
 
 :::
 
-### Update Maximum Potential Damages {#sec-maximum_potential_damages}
-To set up the max. potential damages open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel.  
-It is possible to update the *structural* damages and the *content* damage. You can update them one at a time with the following steps. 
+### Refine Maximum Potential Damages {#sec-maximum_potential_damages}
+When refining the max. potential damages it is necessary to distinguish between *structure* and *content* damage. The user can update one at a time with the following steps. 
 
-The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new Max. Potential Damages file for the complete model domain. The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon Max. Potential Damages vector file and assigns the new values to each asset.
+::: {.callout-note}
+The FloodAdapt model builder performs a spatial joint of the exposure assets with the point-/polygon max. potential damages vector file and assigns the new values to each asset.
+:::
+
+The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new max. potential Damages file for the complete model domain. 
 
 ![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
 <u>*Step-by-step instructions to setup/update the Max. Potential Damages*</u>   
 
-  1. Select the file source of your max. potential damage data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
-  2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
-  3. Select the column that holds the max. potential damage data (either "strucutral"or "content").
-  4. Select the Damage Type either *structural* or *content*, depending on your data.  
-  4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. If you do not wish to change the default settings there is no need to change the settings. 
-  5. Click **Add to model**.
+  1. open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel. 
+  2. Select the file source of your max. potential damage data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
+  3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
+  4. Select the column that holds the max. potential damage data (either "strucutral"or "content").
+  5. Select the Damage Type either *structural* or *content*, depending on your data.  
+  6.  *optional Settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. You can keep the default settings if you don't wish to change the method.
+  7. Add to model.
 
   ::: {#fig-max_pot_damages}
 
