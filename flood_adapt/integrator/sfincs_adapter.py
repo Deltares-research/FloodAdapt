@@ -47,10 +47,12 @@ class SfincsAdapter:
         self.site = site
 
     def __del__(self):
-        # Close the log file associated with the logger
-        for handler in self._logger.handlers:
-            handler.close()
-        self._logger.handlers.clear()
+        """Close the log file associated with the logger and clean up file handles."""
+        if hasattr(self, "_logger") and hasattr(self._logger, "handlers"):
+            # Close the log file associated with the logger
+            for handler in self._logger.handlers:
+                handler.close()
+            self._logger.handlers.clear()
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
