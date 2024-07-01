@@ -20,8 +20,10 @@ class ForcingSource(str, Enum):
 
     MODEL = "MODEL"
     TRACK = "TRACK"
-    FILE = "FILE"
+    CSV = "CSV"
     SYNTHETIC = "SYNTHETIC"
+    SPW_FILE = "SPW_FILE"
+    CONSTANT = "CONSTANT"
 
 
 class IForcing(BaseModel):

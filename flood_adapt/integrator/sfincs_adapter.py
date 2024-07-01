@@ -53,7 +53,7 @@ from flood_adapt.object_model.hazard.new_events.forcing.rainfall import (
 )
 from flood_adapt.object_model.hazard.new_events.forcing.waterlevels import (
     IWaterlevel,
-    WaterlevelFromFile,
+    WaterlevelFromCSV,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -64,6 +64,7 @@ from flood_adapt.object_model.hazard.new_events.forcing.wind import (
     WindFromTrack,
     WindTimeSeries,
 )
+from flood_adapt.object_model.hazard.new_events.new_event import IEvent
 from flood_adapt.object_model.hazard.new_events.new_event_models import IEventModel
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
@@ -95,7 +96,7 @@ class SfincsAdapter(IHazardAdapter):
     _scenario: Scenario
     _model: SfincsModel
 
-    def __init__(self, site: Site, model_root: str):
+    def __init__(self, model_root: str, site: Site = Database().site):
         """Load overland sfincs model based on a root directory.
 
         Args:
@@ -269,14 +270,16 @@ class SfincsAdapter(IHazardAdapter):
         sim_paths = self._get_simulation_paths()
         for ii, name in enumerate(self._scenario.events):
 
-            event = Database().events.get(name)
+            event: IEvent = Database().events.get(name)
 
-            self._set_timing(event.attrs)
+            self.set_timing(event.attrs)
 
-            # run offshore model or download wl data, copy all required files to the simulation folder
+            # run offshore model or download wl data,
+            # copy all required files to the simulation folder
+            # write forcing data to event object
             event.process(self._scenario)
 
-            for forcing in event.attrs.forcings:
+            for forcing in event.attrs.forcings.values():
                 self.add_forcing(forcing)
 
             for measure in self._scenario.attrs.strategy:
@@ -451,7 +454,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         if isinstance(forcing, WaterlevelSynthetic):
             self._add_wl_bc(forcing.data)
-        elif isinstance(forcing, WaterlevelFromFile):
+        elif isinstance(forcing, WaterlevelFromCSV):
             self._add_wl_bc(forcing.path)
         elif isinstance(forcing, WaterlevelFromModel):
             # TODO check with @gundula: _add_pressure_forcing_from_grid should also be here?
@@ -949,7 +952,7 @@ class SfincsAdapter(IHazardAdapter):
 
         for sim_path in self._get_simulation_paths():
             # read SFINCS model
-            with SfincsAdapter(model_root=sim_path, site=self._site) as model:
+            with SfincsAdapter(model_root=sim_path) as model:
                 # dem file for high resolution flood depth map
                 demfile = Database().static_path.joinpath(
                     "dem", self._site.attrs.dem.filename
@@ -974,7 +977,7 @@ class SfincsAdapter(IHazardAdapter):
         results_path = self._get_result_path()
 
         # TODO investigate: why only read one model?
-        with SfincsAdapter(model_root=sim_paths[0], site=self._site) as model:
+        with SfincsAdapter(model_root=sim_paths[0]) as model:
             zsmax = model.read_zsmax()
             zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
 
@@ -1058,7 +1061,7 @@ class SfincsAdapter(IHazardAdapter):
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
         # TODO investigate why only read one model
-        with SfincsAdapter(model_root=sim_paths[0], site=self._site) as dummymodel:
+        with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
             # read mask and bed level
             mask = dummymodel.get_mask().stack(z=("x", "y"))
             zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
@@ -1066,7 +1069,7 @@ class SfincsAdapter(IHazardAdapter):
         zs_maps = []
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
-            with SfincsAdapter(model_root=str(simulation_path), site=self._site) as sim:
+            with SfincsAdapter(model_root=str(simulation_path)) as sim:
                 zsmax = sim.read_zsmax().load()
                 zs_stacked = zsmax.stack(z=("x", "y"))
                 zs_maps.append(zs_stacked)
@@ -1152,9 +1155,7 @@ class SfincsAdapter(IHazardAdapter):
                 "dem", self._site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
-            with SfincsAdapter(
-                model_root=str(sim_paths[0]), site=self._site
-            ) as dummymodel:
+            with SfincsAdapter(model_root=str(sim_paths[0])) as dummymodel:
                 dummymodel._write_geotiff(
                     zs_rp_single.to_array().squeeze().transpose(),
                     demfile=demfile,
@@ -1168,7 +1169,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         for sim_path in self._get_simulation_paths():
             # read SFINCS model
-            with SfincsAdapter(model_root=sim_path, site=self._site) as model:
+            with SfincsAdapter(model_root=sim_path) as model:
                 df, gdf = model._get_zs_points()
 
             gui_units = UnitTypesLength(self._site.attrs.gui.default_length_units)

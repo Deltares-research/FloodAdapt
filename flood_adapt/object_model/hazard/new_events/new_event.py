@@ -4,7 +4,6 @@ from flood_adapt.object_model.hazard.new_events.new_event_models import (
     EventSetModel,
     HurricaneEventModel,
     IEventModel,
-    SyntheticEventModel,
 )
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 
@@ -24,16 +23,8 @@ class IEvent(ABC):
         pass
 
 
-class SyntheticEvent(IEvent):
-    attrs: SyntheticEventModel
-
-
 class HurricaneEvent(IEvent):
     attrs: HurricaneEventModel
-
-    def process(self):
-        # if *FromModel in forcings, run offshore sfincs model
-        pass
 
 
 class EventSet(IEvent):

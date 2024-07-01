@@ -32,7 +32,7 @@ def test_add_obs_points(test_db, test_scenarios):
         / test_scenario.site_info.attrs.sfincs.overland_model
     )
 
-    model = SfincsAdapter(site=test_scenario.site_info, model_root=path_in)
+    model = SfincsAdapter(model_root=path_in)
 
     model.add_obs_points()
 

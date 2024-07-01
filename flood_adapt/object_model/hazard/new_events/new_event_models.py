@@ -22,7 +22,7 @@ from flood_adapt.object_model.hazard.new_events.forcing.rainfall import (
 )
 from flood_adapt.object_model.hazard.new_events.forcing.waterlevels import (
     IWaterlevel,  # noqa
-    WaterlevelFromFile,
+    WaterlevelFromCSV,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -111,7 +111,7 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
     _ALLOWED_FORCINGS = {
         ForcingType.RAINFALL: [RainfallConstant, RainfallSynthetic],
         ForcingType.WIND: [WindConstant, WindTimeSeries],
-        ForcingType.WATERLEVEL: [WaterlevelSynthetic, WaterlevelFromFile],
+        ForcingType.WATERLEVEL: [WaterlevelSynthetic, WaterlevelFromCSV],
         ForcingType.DISCHARGE: [DischargeConstant, DischargeSynthetic],
     }
 
@@ -122,7 +122,7 @@ class HistoricalEventModel(IEventModel):
     _ALLOWED_FORCINGS = {
         ForcingType.RAINFALL: [RainfallConstant, RainfallFromModel],
         ForcingType.WIND: [WindConstant, WindFromModel],
-        ForcingType.WATERLEVEL: [WaterlevelFromFile, WaterlevelFromModel],
+        ForcingType.WATERLEVEL: [WaterlevelFromCSV, WaterlevelFromModel],
         ForcingType.DISCHARGE: [DischargeConstant],
     }
 

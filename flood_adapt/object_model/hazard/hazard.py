@@ -336,7 +336,7 @@ class Hazard:
                 shutil.rmtree(self.simulation_paths[ii].parent)
 
             # Load overland sfincs model
-            model = SfincsAdapter(model_root=path_in, site=self.site)
+            model = SfincsAdapter(model_root=path_in)
 
             # adjust timing of model
             model.set_timing(self.event.attrs)
@@ -634,7 +634,7 @@ class Hazard:
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)
 
         # Initiate offshore model
-        offshore_model = SfincsAdapter(model_root=path_in_offshore, site=self.site)
+        offshore_model = SfincsAdapter(model_root=path_in_offshore)
 
         # Set timing of offshore model (same as overland model)
         offshore_model.set_timing(self.event.attrs)
@@ -693,9 +693,7 @@ class Hazard:
 
     def postprocess_sfincs_offshore(self, ii: int):
         # Initiate offshore model
-        offshore_model = SfincsAdapter(
-            model_root=self.simulation_paths_offshore[ii], site=self.site
-        )
+        offshore_model = SfincsAdapter(model_root=self.simulation_paths_offshore[ii])
 
         # take the results from offshore model as input for wl bnd
         self.wl_ts = offshore_model.get_wl_df_from_offshore_his_results()
@@ -738,7 +736,7 @@ class Hazard:
     def write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         # read SFINCS model
-        model = SfincsAdapter(model_root=self.simulation_paths[0], site=self.site)
+        model = SfincsAdapter(model_root=self.simulation_paths[0])
         zsmax = model.read_zsmax()
         zsmax.to_netcdf(self.results_dir.joinpath("max_water_level_map.nc"))
         del model
@@ -750,7 +748,7 @@ class Hazard:
         """
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            model = SfincsAdapter(model_root=sim_path)
 
             df, gdf = model.read_zs_points()
 
@@ -864,7 +862,7 @@ class Hazard:
         # Load overland sfincs model
         for sim_path in self.simulation_paths:
             # read SFINCS model
-            model = SfincsAdapter(model_root=sim_path, site=self.site)
+            model = SfincsAdapter(model_root=sim_path)
             # dem file for high resolution flood depth map
             demfile = self.database.static_path.joinpath(
                 "dem", self.site.attrs.dem.filename
@@ -917,9 +915,7 @@ class Hazard:
                 if event.attrs.template == "Historical_hurricane":
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
-        dummymodel = SfincsAdapter(
-            model_root=str(self.simulation_paths[0]), site=self.site
-        )
+        dummymodel = SfincsAdapter(model_root=str(self.simulation_paths[0]))
         mask = dummymodel.get_mask().stack(z=("x", "y"))
         zb = dummymodel.get_bedlevel().stack(z=("x", "y")).to_numpy()
         del dummymodel
@@ -927,7 +923,7 @@ class Hazard:
         zs_maps = []
         for simulation_path in self.simulation_paths:
             # read zsmax data from overland sfincs model
-            sim = SfincsAdapter(model_root=str(simulation_path), site=self.site)
+            sim = SfincsAdapter(model_root=str(simulation_path))
             zsmax = sim.read_zsmax().load()
             zs_stacked = zsmax.stack(z=("x", "y"))
             zs_maps.append(zs_stacked)
@@ -1017,9 +1013,7 @@ class Hazard:
                 "dem", self.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
-            dummymodel = SfincsAdapter(
-                model_root=str(self.simulation_paths[0]), site=self.site
-            )
+            dummymodel = SfincsAdapter(model_root=str(self.simulation_paths[0]))
             dummymodel.write_geotiff(
                 zs_rp_single.to_array().squeeze().transpose(),
                 demfile=demfile,

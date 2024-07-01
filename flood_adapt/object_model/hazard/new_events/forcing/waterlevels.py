@@ -1,6 +1,7 @@
 import pandas as pd
 from pydantic import BaseModel
 
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
     ForcingSource,
     ForcingType,
@@ -21,7 +22,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 class IWaterlevel(IForcing):
     _type = ForcingType.WATERLEVEL
-    _source = None
 
 
 class SurgeModel(BaseModel):
@@ -62,8 +62,8 @@ class WaterlevelSynthetic(IWaterlevel):
         return surge + tide
 
 
-class WaterlevelFromFile(IWaterlevel):
-    _source = ForcingSource.FILE
+class WaterlevelFromCSV(IWaterlevel):
+    _source = ForcingSource.CSV
 
     timeseries: CSVTimeseriesModel
 
@@ -73,6 +73,8 @@ class WaterlevelFromFile(IWaterlevel):
 
 class WaterlevelFromModel(IWaterlevel):
     _source = ForcingSource.MODEL
+    model_path: str  # simpath
 
     def get_data(self) -> pd.DataFrame:
-        pass
+        with SfincsAdapter(model_root=self.model_path) as _offshore_model:
+            return _offshore_model._get_wl_df_from_offshore_his_results()

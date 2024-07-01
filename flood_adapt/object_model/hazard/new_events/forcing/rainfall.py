@@ -2,6 +2,7 @@ import pandas as pd
 from pandas.core.api import DataFrame as DataFrame
 
 from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
+    ForcingSource,
     ForcingType,
     IForcing,
 )
@@ -17,6 +18,8 @@ class IRainfall(IForcing):
 
 
 class RainfallConstant(IRainfall):
+    _source = ForcingSource.CONSTANT
+
     intensity: UnitfulIntensity
 
     def get_data(self) -> DataFrame:
@@ -29,6 +32,7 @@ class RainfallConstant(IRainfall):
 
 
 class RainfallSynthetic(IRainfall):
+    _source = ForcingSource.SYNTHETIC
     timeseries: SyntheticTimeseriesModel
 
     def get_data(self) -> DataFrame:
@@ -38,12 +42,15 @@ class RainfallSynthetic(IRainfall):
 
 
 class RainfallFromModel(IRainfall):
+    _source = ForcingSource.MODEL
     path: str
 
 
 class RainfallFromSPWFile(IRainfall):
+    _source = ForcingSource.SPW_FILE
     path: str
 
 
 class RainfallFromTrack(IRainfall):
+    _source = ForcingSource.TRACK
     path: str
