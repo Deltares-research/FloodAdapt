@@ -21,7 +21,6 @@ These are steps that are carried out whether you do [quickbuild](#sec-quickbuild
   1. Go to **File** >> **Select Working Directory**.
   2. Select an output folder.
   3. Generate model boundary
-
       + Go to the **Model Boundary | Quickbuild**-tab and select any of the options in the drop-down menu to create the boundary (@fig-boundaries).
           a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
           b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
@@ -32,7 +31,11 @@ These are steps that are carried out whether you do [quickbuild](#sec-quickbuild
 
 ![Workflow to create model boundaries.](../../_static/figures/draw_boundaries.svg){#fig-boundaries}
 
-For further details please refer to @fig-model_boundaries.
+::: {.callout-note}
+After the user selected the working directory the FloodAdapt Model Builder generates the folder structure as described in the section [Folder Structure](index.qmd) in the output folder.
+:::
+
+The video tutorial below showcases the model boundary creation in the FloodAdapt Model Builder with the option "Draw Polygon" (@fig-model_boundaries).
 
 ::: {#fig-model_boundaries}
 
@@ -43,8 +46,8 @@ Create model boundaries using the "Draw Polygon" method.
 :::
 
 # Quickbuild {#sec-quickbuild}
-The **quickbuild** is a complete Delft-FIAT model which can be set up anywhere in the **United States** with ease. It doesn't require any user input except for defining the model boundary.  
-Additionally to the base model and roads, the [social vulnerability index](#sec-svi) is generated as well as [equity](#sec-svi) is downloaded.
+The **quickbuild** is a complete Delft-FIAT model which can be set up anywhere in the **United States** with ease. It doesn't require any user input except for defining the [model boundary](#sec-getting-started).  
+The quickbuild sets up the exposure data incl. roads and assigns the corresponding vulnerability curve to each asset. Moreover, the FloodAdapt Model Builder social vlunerability index (SVI) module calculates the [social vulnerability index](#sec-svi) and downloads [equity data (income and population)](#sec-svi).
 
 The **quickbuild** obtains the model data from the following sources:  
 
@@ -53,14 +56,14 @@ The **quickbuild** obtains the model data from the following sources:
 3. **Socio-economic/equity data**: US census data
 4. **Roads**: Open Street Map (OSM)
 
+![Workflow about how to use the "Quickbuild"-option.](../../_static/figures/quickbuild.svg){#fig-quickbuild}
+
 <u>*Step-by-step instructions for the Quick Build*</u> 
 
-  1. Go to the **Model Boundary | Quickbuild**-tab and select any of the options in the drop-down menu to create the boundary (@sec-getting-started; @fig-quickbuild).
-  2. After you generated the boundary you can select the quickbuild option and the model will be built.
+  1. Go to the **Model Boundary | Quickbuild**-tab and create the model boundary (@sec-getting-started; @fig-quickbuild).
+  2. After you generated the boundary you can select the quickbuild option and the Delft-FIAT model is built.
 
-![Workflow to use the "Quickbuild"-option.](../../_static/figures/quickbuild.svg){#fig-quickbuild}
-
-For further details please refer to @fig-nsi_quickbuild.
+The steps are demonstrated in the video tutorial below(@fig-nsi_quickbuild). 
 
 ::: {#fig-nsi_quickbuild}
 
@@ -71,43 +74,52 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 :::
 
 # Tailored Delft-FIAT model {#sec-tailored_model}
-This section explains the creation of a simple Delft-FIAT model configured by the user. The model can be set up at any location worldwide.
+To create a more accurate and refined Delft-FIAT model the user can configure it with their own data. The model can be set up at any location worldwide.
 
 ## Create the exposure data
-To setup the exposure data you have multiple options to refine your model, which are described in the following sections:
+The quality of the Delft-FIAT model is directly influenced by the exposure data. It's favourable to use as much local and regional data as possible/available to improve the accuracy of the model. The FloodAdapt Model Builder enables the user to refine the exposure data. The different options are described in the following sections:
 
-  - Create a base model with the default data sources(#sec-basemodel)
-  - [Update Finished Floor Height](#sec-finished_floor_height) (*optional*)
-  - [Update Finished Ground Elevation](#sec-ground_elevation)(*optional*)
-  - [Update Maximum Potential Damages](#sec-maximum_potential_damages)(*optional*)
-
-Not all steps are required to build the model, except the creation of the base model. Simply update the data you wish to change and use the default data of the base model for any data you do not have.
+  1. [Create a base model with the default data sources](#sec-basemodel)
+  2. [Refine the Finished Floor Height/ Import Finished Floor Height User Input](#sec-finished_floor_height) (*optional*)
+  3. [Refine the Ground Elevation/ Import Ground Elevation User Input](#sec-ground_elevation) (*optional*)
+  4. [Refine the Maximum Potential Damages/Import Maximum Potential Damage User Input](#sec-maximum_potential_damages) (*optional*)
 
 ### Create a base model with the default data sources: NSI and/or OSM  {#sec-basemodel}
-There are two different database sources to download the **exposure data** from, determined by the location of your model:
+Determined by the location of the model boundary, the FloodAdapt Model Builder uses different data sources to download the **building exposure data**:
 
-1. **United States: National Structure Inventory (NSI)**
-2. **Global: Open Street Map (OSM)**
+1. **United States**: National Structure Inventory (NSI)
+2. **Global**: Open Street Map (OSM)
 
-Additionally, you can download **road data** from Open Street Map. 
+Not only does FloodAdapt calculate building impacts, but it also evaluates the non-flooded and flooded state of roads. Thus, in the case of Delft-FIAT being used within FloodAdapt the user is required to add **road data** to the Delft-FIAT model. The FloodAdapt Model Builder allows the user to obtain road information from Open Street Map for any model location worldwide. 
 
-<u>*Step-by-step instructions to setup the exposure data*</u>   
+<u>*Step-by-step instructions to set up the exposure data:*</u>
 
-To set up the exposure data open the **"Exposure"**-tab on the top panel (@fig-exposure). 
-  1. Generate your model boundaries
-  2. Select the **"Asset Location"**-tab at the bottom panel.
-  3. For a U.S. based model start with **NSI** data and for a global model start with **OSM** data.
-  4. ***Only OSM***: Define a <u>damage currency (JRC damage curves default is Euro)</u> and the <u>finished floor height (meters)</u> for all assets (can be updated later on the individual asset level in the Exposure >> Finished Floor Height-tab) .
-  5. ***optional***: Include OSM roads by checking the checkbox "Include OSM roads".
-  6. Add to model.
-  
- #######After creating your model you should end up with a folder structure as describted in the section [Data Input - Folder Structure] Add this somewhere here
+1. Generate your [model boundary](#sec-getting-started).
+2. Open the **"Exposure"**-tab from the top panel (@fig-exposure). From the bottom panel select the **"Asset Location"**-tab.
+3. Select the correct data source for your model. For a **U.S.** based model start with **National Structure Inventory** data. For a **global model** start with **Open Street Map** data.
+
+  + <u>**Only global model (OSM)**</u>:  
+    *Damage currency:* The default JRC damage currency is in **Euro**.
+
+    ::: {.callout-warning}
+    Don't change the default damage currency from Euro to another currency for the global model. As of now there are no conversion tools implemented to convert the output damages into another currency.
+    :::
+
+    *Finished floor height:* Assign a value for the finished floor height to the assets in meters.
+
+    ::: {.callout-tip}
+    The user can refine the finised floor height on the individual asset level in the **Exposure**- >> **Finished Floor Height**-tab.
+    :::
+
+4. Include OSM roads by checking the checkbox "Include OSM roads".
+5. Add to model.
+
 ![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/exposure.svg){#fig-exposure}
-
-These are all the necessary steps to set up the exposure for a **simple model**. If you want to update the model or input your own data, please refer to the section *Model from scratch: Advanced model* (in progress). 
 
 The videos below demonstrate the exposure setup using the NSI data for exposure and OSM data for roads (@fig-nsi_exposure) as well as the exposure setup for a global model, using OSM data (incl. roads; @fig-osm_exposure).
 
+After completing the steps outlined above the "default" exposure for a **base model** is fully established.  
+The following sections of this chapter elaborate on how the user can refine the model or import their own data. 
 ::: {#fig-nsi_exposure}
 
 {{< video ../../_static/videos/hydromt_fiat/Exposure_NSI.mp4 >}}
@@ -126,17 +138,19 @@ Global exposure setup using OSM exposure and OSM roads .
 :::
 
 ### Update Finished Floor Height {#sec-finished_floor_height}
-To set up the finished floor height open the **"Exposure"**-tab on the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
+To adjust the default finished floor height or import your own data open the **"Exposure"**-tab from the top panel and select the **"Finished Floor Height"**-tab in the bottom panel. 
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
-<u>*Step-by-step instructions to setup/update the Finished Floor Height*</u>  
+The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new finished floor height file for the complete model domain. The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to each asset.
 
-  1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
-  2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
-  3. Select the column that holds the finished floor height data. 
-  4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the model builder. If you do not wish to change the default settings there is no need to change the settings. 
-  5. Click **Add to model**.
+<u>*Step-by-step instructions to refine/import the finished floor height*</u>  
+
+1. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
+2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
+3. Select the column that holds the finished floor height data. 
+4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. If you do not wish to change the default settings there is no need to change the settings. 
+5. Click **Add to model**.
 
 ::: {#fig-ffh}
 
@@ -156,7 +170,7 @@ To set up the ground elevation open the **"Exposure"**-tab on the top panel and 
 There are two options in the drop-down menu to set up the ground elevation data:
   1. SFINCS Ground Elevation
 
-    a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the model builder will recognize the file automatically.
+    a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the FloodAdapt Model Builder will recognize the file automatically.
     b. Click **Add to model**.
 
   2. Upload file
@@ -177,6 +191,8 @@ Model refinement with user input for ground elevation.
 To set up the max. potential damages open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel.  
 It is possible to update the *structural* damages and the *content* damage. You can update them one at a time with the following steps. 
 
+The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new Max. Potential Damages file for the complete model domain. The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon Max. Potential Damages vector file and assigns the new values to each asset.
+
 ![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
 <u>*Step-by-step instructions to setup/update the Max. Potential Damages*</u>   
@@ -185,7 +201,7 @@ It is possible to update the *structural* damages and the *content* damage. You 
   2. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
   3. Select the column that holds the max. potential damage data (either "strucutral"or "content").
   4. Select the Damage Type either *structural* or *content*, depending on your data.  
-  4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the model builder. If you do not wish to change the default settings there is no need to change the settings. 
+  4. *optional Settings*: Define the method for the spatial joint of your exposure assets with the new finished floor height. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. If you do not wish to change the default settings there is no need to change the settings. 
   5. Click **Add to model**.
 
   ::: {#fig-max_pot_damages}

@@ -65,7 +65,7 @@ plt.gca().get_legend().set_title('')
 ```
 
 
-## Folder structure
+## Folder structure {#sec-folder_structure}
 We recommened to follow the folder structure as shown below for your model to ensure that Delft-FIAT can find each data file and run smoothly. 
 ```
 ├───📁 FIAT/
