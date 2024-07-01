@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 import subprocess
@@ -15,6 +14,7 @@ from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.eventset import EventSet
@@ -54,6 +54,8 @@ class Hazard:
     has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
+        self._logger = FloodAdaptLogging.getLogger(__name__)
+
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
@@ -228,7 +230,7 @@ class Hazard:
     # no write function is needed since this is only used internally
 
     def preprocess_models(self):
-        logging.info("Preparing hazard models...")
+        self._logger.info("Preparing hazard models...")
         # Preprocess all hazard model input
         self.preprocess_sfincs()
         # add other models here
@@ -239,12 +241,12 @@ class Hazard:
                 os.mkdir(parent)
         if not self.results_dir.exists():
             os.mkdir(self.results_dir)
-        logging.info("Running hazard models...")
+        self._logger.info("Running hazard models...")
         if not self.has_run:
             self.run_sfincs()
 
     def postprocess_models(self):
-        logging.info("Post-processing hazard models...")
+        self._logger.info("Post-processing hazard models...")
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
@@ -255,7 +257,7 @@ class Hazard:
                 try:
                     shutil.rmtree(sim_path)
                 except OSError as e_info:
-                    logging.warning(f"{e_info}\nCould not delete {sim_path}.")
+                    self._logger.warning(f"{e_info}\nCould not delete {sim_path}.")
 
     def run_sfincs(self):
         # Run new model(s)
@@ -345,7 +347,7 @@ class Hazard:
                 or self.event.attrs.rainfall.source == "map"
                 or self.event.attrs.template == "Historical_offshore"
             ):
-                logging.info("Downloading meteo data...")
+                self._logger.info("Downloading meteo data...")
                 meteo_dir = self.database.output_path.joinpath("meteo")
                 if not meteo_dir.is_dir():
                     os.mkdir(self.database.output_path.joinpath("meteo"))
@@ -390,10 +392,12 @@ class Hazard:
             elif (
                 template == "Historical_offshore" or template == "Historical_hurricane"
             ):
-                logging.info("Preparing offshore model to generate tide and surge...")
+                self._logger.info(
+                    "Preparing offshore model to generate tide and surge..."
+                )
                 self.preprocess_sfincs_offshore(ds=ds, ii=ii)
                 # Run the actual SFINCS model
-                logging.info("Running offshore model...")
+                self._logger.info("Running offshore model...")
                 self.run_sfincs_offshore(ii=ii)
                 # add wl_ts to self
                 self.postprocess_sfincs_offshore(ii=ii)
@@ -403,7 +407,7 @@ class Hazard:
                 # offshore model
                 model.turn_off_bnd_press_correction()
 
-            logging.info(
+            self._logger.info(
                 "Adding water level boundary conditions to the overland flood model..."
             )
             # add difference between MSL (vertical datum of offshore nad backend in general) and overland model
@@ -423,7 +427,7 @@ class Hazard:
                 self.event.dis_df = None
             if self.event.dis_df is not None:
                 # Generate and change discharge boundary condition
-                logging.info(
+                self._logger.info(
                     "Adding discharge boundary conditions if applicable to the overland flood model..."
                 )
                 # convert to metric units
@@ -445,7 +449,7 @@ class Hazard:
             )
             if self.event.attrs.template != "Historical_hurricane":
                 if self.event.attrs.rainfall.source == "map":
-                    logging.info(
+                    self._logger.info(
                         "Adding gridded rainfall to the overland flood model..."
                     )
                     # add rainfall increase from projection and event, units area already conform with sfincs when downloaded
@@ -470,12 +474,12 @@ class Hazard:
                         * (1 + self.event.attrs.rainfall.increase / 100.0)
                     )
 
-                    logging.info(
+                    self._logger.info(
                         "Adding rainfall timeseries to the overland flood model..."
                     )
                     model.add_precip_forcing(timeseries=df)
                 elif self.event.attrs.rainfall.source == "constant":
-                    logging.info(
+                    self._logger.info(
                         "Adding constant rainfall to the overland flood model..."
                     )
                     # add unit conversion and rainfall increase from projection, not event since the user can adjust constant rainfall accordingly
@@ -485,7 +489,7 @@ class Hazard:
                     )
                     model.add_precip_forcing(const_precip=const_precipitation)
                 elif self.event.attrs.rainfall.source == "shape":
-                    logging.info(
+                    self._logger.info(
                         "Adding rainfall shape timeseries to the overland flood model..."
                     )
                     if self.event.attrs.rainfall.shape_type == "scs":
@@ -519,12 +523,12 @@ class Hazard:
                     UnitTypesVelocity("m/s")
                 )
                 if self.event.attrs.wind.source == "map":
-                    logging.info(
+                    self._logger.info(
                         "Adding gridded wind field to the overland flood model..."
                     )
                     model.add_wind_forcing_from_grid(ds=ds)
                 elif self.event.attrs.wind.source == "timeseries":
-                    logging.info(
+                    self._logger.info(
                         "Adding wind timeseries to the overland flood model..."
                     )
                     df = pd.read_csv(
@@ -536,7 +540,9 @@ class Hazard:
                     df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=df)
                 elif self.event.attrs.wind.source == "constant":
-                    logging.info("Adding constant wind to the overland flood model...")
+                    self._logger.info(
+                        "Adding constant wind to the overland flood model..."
+                    )
                     model.add_wind_forcing(
                         const_mag=self.event.attrs.wind.constant_speed.value
                         * conversion_factor_wind,
@@ -544,13 +550,13 @@ class Hazard:
                     )
             else:
                 # Copy spw file also to nearshore folder
-                logging.info(
+                self._logger.info(
                     "Adding wind field generated from hurricane track to the overland flood model..."
                 )
                 spw_name = "hurricane.spw"
                 model.set_config_spw(spw_name=spw_name)
                 if self.physical_projection.attrs.rainfall_increase != 0.0:
-                    logging.warning(
+                    self._logger.warning(
                         "Rainfall increase from projection is not applied to hurricane events where the spatial rainfall is derived from the track variables."
                     )
 
@@ -561,7 +567,9 @@ class Hazard:
                         measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
-                        logging.info("Adding floodwall to the overland flood model...")
+                        self._logger.info(
+                            "Adding floodwall to the overland flood model..."
+                        )
                         model.add_floodwall(
                             floodwall=measure.attrs, measure_path=measure_path
                         )
@@ -572,7 +580,7 @@ class Hazard:
                         or measure.attrs.type == "total_storage"
                         or measure.attrs.type == "water_square"
                     ):
-                        logging.info(
+                        self._logger.info(
                             "Adding green infrastructure to the overland flood model..."
                         )
                         model.add_green_infrastructure(
@@ -582,7 +590,9 @@ class Hazard:
 
             # add observation points from site.toml
             model.add_obs_points()
-            logging.info("Adding observation points to the overland flood model...")
+            self._logger.info(
+                "Adding observation points to the overland flood model..."
+            )
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])
@@ -652,14 +662,14 @@ class Hazard:
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
             if event_dir.joinpath(spw_name).is_file():
-                logging.info("Using existing hurricane meteo data.")
+                self._logger.info("Using existing hurricane meteo data.")
                 # copy spw file from event directory to offshore model folder
                 shutil.copy2(
                     event_dir.joinpath(spw_name),
                     self.simulation_paths_offshore[ii].joinpath(spw_name),
                 )
             else:
-                logging.info(
+                self._logger.info(
                     "Generating meteo input to the model from the hurricane track..."
                 )
                 offshore_model.add_spw_forcing(
@@ -672,7 +682,9 @@ class Hazard:
                     self.simulation_paths_offshore[ii].joinpath(spw_name),
                     event_dir.joinpath(spw_name),
                 )
-                logging.info("Finished generating meteo data from hurricane track.")
+                self._logger.info(
+                    "Finished generating meteo data from hurricane track."
+                )
 
         # write sfincs model in output destination
         offshore_model.write_sfincs_model(path_out=self.simulation_paths_offshore[ii])
@@ -823,7 +835,7 @@ class Hazard:
                         except (
                             COOPSAPIError
                         ) as e:  # TODO this should be a generic error!
-                            logging.warning(
+                            self._logger.warning(
                                 f"Could not download tide gauge data for station {self.site.attrs.obs_point[ii].ID}. {e}"
                             )
                         else:
@@ -965,7 +977,7 @@ class Hazard:
             np.copy(zb), len(floodmap_rp), 1
         )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
-        logging.info("Calculating flood risk maps, this may take some time...")
+        self._logger.info("Calculating flood risk maps, this may take some time...")
         for jj in valid_cells:  # looping over all non-masked cells.
             # linear interpolation for all return periods to evaluate
             h[:, jj] = np.interp(
@@ -1067,7 +1079,7 @@ class Hazard:
         # outdata.GetRasterBand(1).WriteArray(freq_dem)
         # outdata.GetRasterBand(1).SetNoDataValue(no_datavalue)  ##if you want these values transparent
         # outdata.SetMetadata({k: str(v) for k, v in scenarioDict.items()})
-        # logging.info("Created geotiff file with flood frequency.")
+        # self._logger.info("Created geotiff file with flood frequency.")
         # print("Created geotiff file with flood frequency.", file=sys.stdout, flush=True)
 
         # outdata.FlushCache()  ##saves to disk!!

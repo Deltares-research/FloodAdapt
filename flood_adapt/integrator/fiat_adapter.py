@@ -2,9 +2,9 @@ import gc
 from pathlib import Path
 from typing import List, Optional, Union
 
-from hydromt.log import setuplog
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -25,8 +25,8 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Load FIAT model based on a root directory."""
         # Load FIAT template
-        self.fiat_logger = setuplog("hydromt_fiat", log_level=10)
-        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self.fiat_logger)
+        self._logger = FloodAdaptLogging.getLogger(__name__)
+        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self._logger)
         self.fiat_model.read()
 
         # Get site information
@@ -52,10 +52,9 @@ class FiatAdapter:
             self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
 
     def __del__(self) -> None:
-        # Close fiat_logger
-        for handler in self.fiat_logger.handlers:
+        for handler in self._logger.handlers:
             handler.close()
-        self.fiat_logger.handlers.clear()
+        self._logger.handlers.clear()
         # Use garbage collector to ensure file handlers are properly cleaned up
         gc.collect()
 

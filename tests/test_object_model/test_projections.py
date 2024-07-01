@@ -20,7 +20,7 @@ def test_projections(test_db):
     test_projections = {
         toml_file.name: Projection.load_file(toml_file) for toml_file in test_tomls
     }
-    return test_projections
+    yield test_projections
 
 
 @pytest.fixture()
@@ -46,7 +46,7 @@ def test_dict():
             "new_development_shapefile": "new_areas.geojson",
         },
     }
-    return config_values
+    yield config_values
 
 
 def test_projection_load_dict(test_dict):

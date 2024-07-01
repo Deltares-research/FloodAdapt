@@ -22,6 +22,7 @@ from numpy import matlib
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.dbs_controller import Database
 from flood_adapt.integrator.interface.hazard_adapter import HazardData, IHazardAdapter
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
 )
@@ -101,18 +102,19 @@ class SfincsAdapter(IHazardAdapter):
             site (Site): Site object with site specific information.
             model_root (str): Root directory of overland sfincs model.
         """
-        self._logger = logging.getLogger(__file__)
+        self._logger = FloodAdaptLogging.getLogger(__file__)
         self._model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
         self._model.read()
         self._site = site
 
     def __del__(self):
-        if hasattr(self, "sf_model") and self._model:
-            self._model = None
-        if hasattr(self, "_logger") and self._logger:
+        """Close the log file associated with the logger and clean up file handles."""
+        if hasattr(self, "_logger") and hasattr(self._logger, "handlers"):
+            # Close the log file associated with the logger
             for handler in self._logger.handlers:
                 handler.close()
             self._logger.handlers.clear()
+        # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
     def __enter__(self):
@@ -766,7 +768,7 @@ class SfincsAdapter(IHazardAdapter):
             gdf_locs.crs = self._model.crs
 
             if len(list_df.columns) != len(gdf_locs):
-                logging.error(
+                self._logger.error(
                     """The number of rivers of the site.toml does not match the
                               number of rivers in the SFINCS model. Please check the number
                               of coordinates in the SFINCS *.src file."""
@@ -781,7 +783,7 @@ class SfincsAdapter(IHazardAdapter):
                     np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
                     and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
                 ):
-                    logging.error(
+                    self._logger.error(
                         """The location and/or order of rivers in the site.toml does not match the
                                 locations and/or order of rivers in the SFINCS model. Please check the
                                 coordinates and their order in the SFINCS *.src file and ensure they are
