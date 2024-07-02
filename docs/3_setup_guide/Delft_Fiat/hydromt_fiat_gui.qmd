@@ -32,7 +32,7 @@ These are steps that are carried out whether you do [quickbuild](#sec-quickbuild
 ![Workflow to create model boundaries.](../../_static/figures/draw_boundaries.svg){#fig-boundaries}
 
 ::: {.callout-note}
-After the user selected the working directory the Delft-FIAT model-builder generates the folder structure as described in the section [Folder Structure](index.qmd) in the output folder.
+After you selected the working directory the Delft-FIAT model-builder generates the folder structure as described in the section [Folder Structure](index.qmd) in the output folder.
 :::
 
 The video tutorial below showcases the model boundary creation in the Delft-FIAT model-builder with the option "Draw Polygon" (@fig-model_boundaries).
@@ -74,10 +74,10 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 :::
 
 # Tailored Delft-FIAT model {#sec-tailored_model}
-To create a more accurate and refined Delft-FIAT model the user can configure it with their own data. The model can be set up at any location worldwide.
+To create a more accurate and refined Delft-FIAT model you can configure it with your own data. The model can be set up at any location worldwide.
 
 ## Create the exposure data
-The quality of the Delft-FIAT model is directly influenced by the exposure data. It's favourable to use as much local and regional data as possible/available to improve the accuracy of the model. The Delft-FIAT model-builder enables the user to refine the exposure data. The different options are described in the following sections:
+The quality of the Delft-FIAT model is directly influenced by the exposure data. It's favourable to use as much local and regional data as possible/available to improve the accuracy of the model. The Delft-FIAT model-builder enables you to refine the exposure data. The different options are described in the following sections:
 
   1. [Create a base model with the default data sources](#sec-basemodel)
   2. [Refine the Finished Floor Height/ Import Finished Floor Height User Input](#sec-finished_floor_height) (*optional*)
@@ -90,7 +90,7 @@ Determined by the location of the model boundary, the Delft-FIAT model-builder u
 1. **United States**: National Structure Inventory (NSI)
 2. **Global**: Open Street Map (OSM)
 
-Not only does FloodAdapt calculate building impacts, but it also evaluates the non-flooded and flooded state of roads. Thus, in the case of Delft-FIAT being used within FloodAdapt the user is required to add **road data** to the Delft-FIAT model. The Delft-FIAT model-builder allows the user to obtain road information from Open Street Map for any model location worldwide. 
+Not only does FloodAdapt calculate building impacts, but it also evaluates the non-flooded and flooded state of roads. Thus, in the case of Delft-FIAT being used within FloodAdapt you must add **road data** to the Delft-FIAT model. The Delft-FIAT model-builder allows you to obtain road information from Open Street Map for any model location worldwide. 
 
 <u>*Step-by-step instructions to set up the exposure data:*</u>
 
@@ -108,7 +108,7 @@ Not only does FloodAdapt calculate building impacts, but it also evaluates the n
     *Finished floor height:* Assign a value (meters) for the finished floor height to all assets at once.
 
     ::: {.callout-tip}
-    The user can refine the finised floor height for the individual assets in the **Exposure**- >> **Finished Floor Height**-tab.
+    You can refine the finised floor height for the individual assets in the **Exposure**- >> **Finished Floor Height**-tab.
     :::
 
 4. Include **OSM roads** by checking the checkbox "Include OSM roads".
@@ -138,10 +138,10 @@ Global exposure setup using OSM exposure and OSM roads .
 
 :::
 
-The following sections in this chapter elaborate on how the user can refine the model or import their own data. 
+The following sections in this chapter elaborate on how you can refine the model or import their own data. 
 
 ### Refine Finished Floor Height {#sec-finished_floor_height}
-The user has the option to **adjust** the finished floor height **default values** of the base model (NSI or OSM) by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets, specific areas or for the whole model domain. 
+You have the option to **adjust** the finished floor height **default values** of the base model (NSI or OSM) by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets, specific areas or for the whole model domain. 
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
@@ -167,7 +167,7 @@ Model refinement with user input for finished floor height.
 :::
 
 ### Refine Ground Elevation {#sec-ground_elevation}
-To import ground elevation data, the user must provide a DEM raster file (e.g. *.tif*) with the updated elevation values. The Delft-FIAT model-builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
+To import ground elevation data, you must provide a DEM raster file (e.g. *.tif*) with the updated elevation values. The Delft-FIAT model-builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
 
 ![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
@@ -192,7 +192,7 @@ Model refinement with user input for ground elevation.
 :::
 
 ### Refine Maximum Potential Damages {#sec-maximum_potential_damages}
-The user has the option to **adjust** the **default values** for the max. potential damages by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets,specific areas or the complete model domain. 
+You have the option to **adjust** the **default values** for the max. potential damages by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets,specific areas or the complete model domain. 
 When refining the max. potential damages it is necessary to distinguish between **structure** and **content** damage.
 
 ::: {.callout-note}
@@ -254,7 +254,7 @@ Assign the default vulnerability curves to the exposure data.
 ### Additional features
 #### Social Vulnerability Index (SVI) and Equity {#sec-svi}
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
-However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (please refer to section [Additional Attributes](#sec-add_attributes)).
+However, you have the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (please refer to section [Additional Attributes](#sec-add_attributes)).
 
 <u>*Step-by-step instructions to get SVI and equity data*</u>  
 Follow these instructions when setting up a model in the **United States**
