@@ -122,7 +122,8 @@ After completing the steps outlined above the "default" exposure for a **base mo
 
 
 After completing the steps outlined above the "default" exposure for a **base model** is fully established.  
-The following sections of this chapter elaborate on how the user can refine the model or import their own data. 
+
+
 ::: {#fig-nsi_exposure}
 
 {{< video ../../_static/videos/hydromt_fiat/Exposure_NSI.mp4 >}}
