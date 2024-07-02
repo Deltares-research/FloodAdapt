@@ -20,12 +20,12 @@ These are steps that are carried out whether you do [quickbuild](#sec-quickbuild
 
   1. Go to **File** >> **Select Working Directory**.
   2. Select an output folder.
-  3. Generate model boundary
-      + Go to the **Model Boundary | Quickbuild**-tab and select any of the options in the drop-down menu to create the boundary (@fig-boundaries).
-          a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
-          b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
-          c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
-          d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
+  3. Go to the **Model Boundary | Quickbuild**-tab
+  4. Generate the model boundary (@fig-boundaries).
+        a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
+        b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
+        c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
+        d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
 
   2. When you are finished, click **"Generate Boundary"**.
 
@@ -102,24 +102,25 @@ Not only does FloodAdapt calculate building impacts, but it also evaluates the n
     *Damage currency:* The default JRC damage currency is in **Euro**.
 
     ::: {.callout-warning}
-    Don't change the default damage currency from Euro to another currency for the global model. As of now there are no conversion tools implemented to convert the output damages into another currency.
+    Don't change the default damage currency from Euro to another currency for the global model.There is no currency converter tool implemented in the FloodAdapt Model Builder yet.
     :::
 
-    *Finished floor height:* Assign a value for the finished floor height to the assets in meters.
+    *Finished floor height:* Assign a value (meters) for the finished floor height to all assets at once.
 
     ::: {.callout-tip}
-    The user can refine the finised floor height on the individual asset level in the **Exposure**- >> **Finished Floor Height**-tab.
+    The user can refine the finised floor height for the individual assets in the **Exposure**- >> **Finished Floor Height**-tab.
     :::
 
-4. Include OSM roads by checking the checkbox "Include OSM roads".
+4. Include **OSM roads** by checking the checkbox "Include OSM roads".
 5. Add to model.
+
+The videos tutorials demonstrate the exposure setup using the NSI data for exposure and OSM data for roads (@fig-nsi_exposure) as well as the exposure setup for a global model, using OSM data (incl. roads; @fig-osm_exposure).
 
 ![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/exposure.svg){#fig-exposure}
 
-The videos below demonstrate the exposure setup using the NSI data for exposure and OSM data for roads (@fig-nsi_exposure) as well as the exposure setup for a global model, using OSM data (incl. roads; @fig-osm_exposure).
-
 After completing the steps outlined above the "default" exposure for a **base model** is fully established.  
-The following sections of this chapter elaborate on how the user can refine the model or import their own data. 
+
+
 ::: {#fig-nsi_exposure}
 
 {{< video ../../_static/videos/hydromt_fiat/Exposure_NSI.mp4 >}}
@@ -137,16 +138,18 @@ Global exposure setup using OSM exposure and OSM roads .
 
 :::
 
+The following sections in this chapter elaborate on how the user can refine the model or import their own data. 
+
 ### Refine Finished Floor Height {#sec-finished_floor_height}
-The user has the option to adjust the finished floor height default values of the default model (NSI or OSM) by importing a point- or polygon vector file with different data values for specific areas or assets. Moreover, the user may also import a finished floor height vector file for the whole model domain. 
+The user has the option to **adjust** the finished floor height **default values** of the base model (NSI or OSM) by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets, specific areas or for the whole model domain. 
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
 ::: {.callout-note}
-The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to each asset.
+The FloodAdapt Model Builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to the intersecting/nearest asset.
 :::
 
-<u>*Step-by-step instructions to refine/import the finished floor height*</u>  
+<u>*Step-by-step instructions to import the finished floor height*</u>  
 
 1. Open the **"Exposure"**-tab from the top panel and select the **"Finished Floor Height"**-tab in the bottom panel.
 2. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
@@ -164,7 +167,7 @@ Model refinement with user input for finished floor height.
 :::
 
 ### Refine Ground Elevation {#sec-ground_elevation}
-To import ground elevation data, the user must provide a DEM raster file with the updated elevation values. The FloodAdapt Model Builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
+To import ground elevation data, the user must provide a DEM raster file (e.g. *.tif*) with the updated elevation values. The FloodAdapt Model Builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
 
 ![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
@@ -173,7 +176,7 @@ To import ground elevation data, the user must provide a DEM raster file with th
 1. Open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
 2. There are two options in the drop-down menu to set up the ground elevation data:
     1. **SFINCS Ground Elevation**
-        a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Open the  subgrid-folder of the SFINCS model, in which the dep_subgrid.tif-file is located. Do not select the file, simply the folder, the FloodAdapt Model Builder will recognize the file automatically.
+        a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Select the  **subgrid-folder** of the SFINCS model, in which the dep_subgrid.tif-file is located. Do <u>not</u> select the file, simply the folder, the FloodAdapt Model Builder will recognize the file automatically.
         b. Add to model.
     2. **Upload file**
         a. Select the file source of your ground elevation data. The file must be a raster file (e.g. *.tif*).
@@ -189,24 +192,23 @@ Model refinement with user input for ground elevation.
 :::
 
 ### Refine Maximum Potential Damages {#sec-maximum_potential_damages}
-When refining the max. potential damages it is necessary to distinguish between *structure* and *content* damage. The user can update one at a time with the following steps. 
+The user has the option to **adjust** the **default values** for the max. potential damages by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets,specific areas or the complete model domain. 
+When refining the max. potential damages it is necessary to distinguish between **structure** and **content** damage.
 
 ::: {.callout-note}
-The FloodAdapt model builder performs a spatial joint of the exposure assets with the point-/polygon max. potential damages vector file and assigns the new values to each asset.
+The FloodAdapt model builder performs a spatial joint of the exposure assets with the point-/polygon max. potential damages vector file and assigns the new values to the intersecting/nearest asset.
 :::
-
-The user has the option to adjust the default values by importing a point- or polygon vector file with different data values for specific areas or to import a new max. potential Damages file for the complete model domain. 
 
 ![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
-<u>*Step-by-step instructions to setup/update the Max. Potential Damages*</u>   
+<u>*Step-by-step instructions to import the Max. Potential Damages*</u>   
 
   1. open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel. 
   2. Select the file source of your max. potential damage data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
   3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
-  4. Select the column that holds the max. potential damage data (either "strucutral"or "content").
+  4. Select the column that holds the max. potential damage data (either "structure"or "content").
   5. Select the Damage Type either *structural* or *content*, depending on your data.  
-  6.  *optional Settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. You can keep the default settings if you don't wish to change the method.
+  6.  *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the FloodAdapt Model Builder. You can keep the default settings if you don't wish to change the method.
   7. Add to model.
 
   ::: {#fig-max_pot_damages}
@@ -218,17 +220,16 @@ Model refinement with user input for maximum potential damages.
 :::
 
 ### Assign vulnerability curves
-As a next step you must assign the vulnerability curves to the exposure data. There are two data sources which the vulnerability curves are downloaded from, determined by the location of your model:
+Delft-FIAT calculates the damages on the bases on vulnerability curves. There are two data sources which the vulnerability curves can be downloaded from, determined by the location of your model:
 
-1. **United States: FEMA Hazus Curves**
-2. **Global: JRC Vulnerability Curves**
+1. **United States:** FEMA Hazus Curves
+2. **Global:** JRC Vulnerability Curves
 
-*Delft-FIAT model-builder instructions*  
-To set up the vulnerability curves open the **"Vulnerability"**-tab on the top panel (@fig-vulnerability_curve). 
+<u>*Step-by-step instructions to assign vulnerability curves*</u>
 
-  1. The Delft-FIAT model-builder will automatically select the correct <u>default curves</u> for your model based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. For detailed information about the default curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
-
-  2. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve (@fig-update_curves). 
+  1. Open the **"Vulnerability"**-tab on the top panel (@fig-vulnerability_curve). 
+  2. The FloodAdapt Model Builder will **automatically** select the **default data source** based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. 
+  3. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve (@fig-update_curves). 
 
 ![Workflow to assign vulnerability curves to assets with option to update default NSI vulnerability curves.](../../_static/figures/vulnerability.svg){#fig-vulnerability_curve}
 
@@ -253,18 +254,16 @@ Assign the default vulnerability curves to the exposure data.
 ### Additional features
 #### Social Vulnerability Index (SVI) and Equity {#sec-svi}
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
-However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (@fig-additional_attr).
+However, the user has the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (please refer to section [Additional Attributes](#sec-add_attributes)).
 
-*Delft-FIAT model-builder instructions*  
-Follow these instructions when setting up a model in the **United States** (@fig-svi)
+<u>*Step-by-step instructions to get SVI and equity data*</u>  
+Follow these instructions when setting up a model in the **United States**
 
-  1. In the top panel, select *"SVI + Equity"*.
+  1. Open the **"SVI + Equity"**-tab on the top panel.
   2. In the bottom panel, select the year you wish to download data frame.
   3. Check the checkboxes to download, SVI and/or Equity data.
 
-If your model is setup in a location outside the U.S please refer to the section *Additional attributes* for instructions. 
-
-![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/SVI_additional_attr.svg){#fig-svi}
+If your model is setup in a location outside the U.S please refer to the section [Additional Attributes](#sec-add_attributes) for instructions. 
 
 For a detailed demonstration please refer to @fig-svi_equity.
 
@@ -276,22 +275,26 @@ Add additional attributes to your model. In this example, a land use layer is ad
 
 :::
 
-#### Additional attribtues
+#### Additional attribtues {#sec-add_attributes}
 Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be addedd (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
 
-*Delft-FIAT model-builder instructions*  
-If you wish to add **SVI** and/or **Equity** follow these intstructions. The same instructions apply for any aggregation layer or additional attribute you wish to add on your model. 
+![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/SVI_additional_attr.svg){#fig-svi}
 
-  1. In the top panel, select *"Additional Attributes"*.
-  2. In the bottom panel *"Add new Source"*, select the **source** of your vector layer and **load** it into the model. 
-  3. In the bottom panel *"Select attribute"*, select the **Attribute ID** from the dropdown menu. If you loaded in your file corretly the drop-down menu includes all columns of your data file. Select the column of the attribute/aggregation you wish to add on your model. 
-  4. In the bottom panel *"Select attribute"*, give your layer a **Label** (free-text). This label will be the header for your new additional attribute/aggregation layer in the output data. 
-  5. In the bottom panel *"Select attribute"*, click **Add** to add the new layer and the layer will appear in the table in the bottom panel *"Overview attribute"*. 
+<u>*Step-by-step instructions to add additional attributes*</u>
+
+If you wish to add any **aggregation** layer or **additional attribute** layer to your model follow these intstructions. The same instructions apply for SVI and/or Equity if you wish to add these to your model. 
+
+  1. Open the **"Additional Attributes"**-tab on the top panel.
+  2. Select the **source** of your vector layer . 
+  3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
+  4. Select the column of the attribute/aggregation you wish to add on your model. 
+  5. Give your layer a **Label** (free-text). This label will be the header for your new additional attribute/aggregation layer in the output data. 
+  5. **Add** the new layer and the layer will appear in the table in the *"Overview attribute"*-table. 
   6. In the bottom panel *"Overview attribute"*, you can check the checkbox **"Display Attribute"** to verify the correct output of the vector layer. 
   7. You can repeat this process for as many layers as you wish.
-  8. As soon you added all the layers you wish to add, select **Add to model** and your new additional attributes/aggregation layer is added to your final model. 
+  8. As soon you added all the layers you wish to add, select **Add to model**.
  
-For a detailed demonstration please refer to @fig-additional_attr.
+For a detailed demonstration please refer to the video tutorial @fig-additional_attr.
 
 ::: {#fig-additional_attr}
 
@@ -304,21 +307,12 @@ Add additional attributes to your model. In this example, a land use layer is ad
 
 ### Create model and visualize the output
 
+At this point you are ready to create the Delft-FIAT model.  Open the **"Create Model"**-tab on the top panel and verify that data sources in the bottom tab match your model input. If so, **create your model** (@fig-create_model).
+
 ::: {#fig-create_model}
 
 {{< video ../../_static/videos/hydromt_fiat/create_model_and_output.mp4 >}}
 
 Finalization of the model and visualization of the output.  
-
-:::
-
-
-At this point you are ready to create the Delft-FIAT model. Verify that data sources in the bottom tab match your model input. If so, create your model (@fig-create_model).
-
-::: {#fig-create_model}
-
-{{< video ../../_static/videos/hydromt_fiat/Create_model_OSM.mp4 >}}
-
-Create your Delft-FIAT model. 
 
 :::
