@@ -123,10 +123,8 @@ def get_database_root() -> Union[Path, None]:
         The path to the root of the database if the DATABASE_ROOT environment variable is set,
         None otherwise.
     """
-    try:
+    if os.environ.get("DATABASE_ROOT", None):
         return Path(os.environ["DATABASE_ROOT"])
-    except KeyError:
-        return None
 
 
 def get_system_folder() -> Union[Path, None]:
@@ -138,10 +136,8 @@ def get_system_folder() -> Union[Path, None]:
     Path or None
         The system folder path if the SYSTEM_FOLDER environment variable is set, otherwise None.
     """
-    try:
+    if os.environ.get("SYSTEM_FOLDER", None):
         return Path(os.environ["SYSTEM_FOLDER"])
-    except KeyError:
-        return None
 
 
 def get_database_name() -> Union[str, None]:
@@ -153,10 +149,7 @@ def get_database_name() -> Union[str, None]:
     str or None
         The database name if the DATABASE_NAME environment variable is set, otherwise None.
     """
-    try:
-        return Path(os.environ["DATABASE_NAME"])
-    except KeyError:
-        return None
+    return os.environ.get("DATABASE_NAME", None)
 
 
 def parse_config(config_path: Path, overwrite: bool = True) -> dict:
