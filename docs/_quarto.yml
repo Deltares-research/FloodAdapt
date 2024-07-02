@@ -109,6 +109,10 @@ website:
           - "3_setup_guide/database.qmd"
           - "3_setup_guide/gui.qmd"
           - "3_setup_guide/risk_analysis.qmd"
+          - section: "Setup Delft FIAT"
+            file: "3_setup_guide/Delft_Fiat/index.qmd"
+            contents:
+            - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
       - section: "Updating FloodAdapt"
         file: "5_update_model/index.qmd"
         contents:

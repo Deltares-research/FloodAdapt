@@ -1,0 +1,92 @@
+---
+title:	Preparing a Delft-FIAT model
+filters:
+  - lightbox
+lightbox: auto
+---
+
+Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It can be used as a stand-alone tool, or integrated with other tools like **FloodAdapt**.  
+
+It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic impacts to buildings, utilities, and roads for input flood maps.
+
+Delft-FIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by you.
+
+::: {.callout-note}
+For a detailed documentation of Delft-FIAT you can visit the [**Delft-FIAT documentation**](https://deltares.github.io/Delft-FIAT/stable/)
+:::
+
+## Input Data
+Delft-FIAT is a calculation engine and does not come pre-populated with data. It is flexible and allows users to input and modify their own exposure, vulnerability, and hazard data. The quality of the estimated damages is entirely dependent on the quality of the data that is input into Delft-FIAT. 
+
+::: {.callout-tip}
+The data input to run Delft-FIAT can be fully configured in the [Delft-FIAT model-builder](hydromt_fiat_gui.qmd). 
+:::
+
+## Exposure Data 
+The **exposure data** describe the assets within the region of interest. Delft-FIAT allows **vector** inputs. 
+
+#### Vector data
+Delft-FIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a Delft-FIAT model with geometry exposure data requires two data types:
+
+- **Geometry file(s)**
+- **CSV file**
+
+## Vulnerability Data
+Vulnerability data in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a percentage of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. The damage function relates the inundation depth to a fraction of total damage per building type (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. 
+
+The Delft-FIAT model-builder obtains these vulnerability curves from two different data sources:
+  1. **United States**: FEMA Hazus Curves
+  2. **Global**: JRC Global flood depth-damage functions
+
+For detailed information about the vulnerability curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
+
+```{python}
+#| echo: false
+#| label: fig-damagefunction
+#| fig-cap: "Example of depth-damage functions."
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+
+
+file_path = Path.cwd()
+
+file_path = Path(file_path.parents[1], "_static", "files", "vulnerability_curves.csv")
+file_path = file_path.resolve()
+data = df = pd.read_csv(file_path, comment='#')
+df = pd.DataFrame({
+    ('water depth'): data.iloc[:, 0],
+    ('STRUCT1'): data.iloc[:, 1],
+    ('STRUCT2'): data.iloc[:, 2],
+
+})
+
+labels=["example building type 1","example building type 1"]
+plt.plot(df['water depth'], df['STRUCT1'])
+plt.plot(df['water depth'], df['STRUCT2'])
+plt.xlabel('Water depth (m)')
+plt.ylabel('Fraction of maximum potential damage')
+plt.legend(labels)
+plt.gca().get_legend().set_title('')
+```
+
+
+## Folder structure {#sec-folder_structure}
+We recommened to follow the folder structure as shown below for your model to ensure that Delft-FIAT can find each data file and run smoothly. 
+```
+├───📁 FIAT/
+    |
+    ├───📁 hazard/
+    │   └───📄 This will be empty
+    |
+    ├───📁 exposure/
+    │   ├───📄 buildings.gpkg
+    │   └───📄 exposure.csv
+    |
+    ├───📁 vulnerability/
+    │   └───📄 vulnerability_curves.csv
+    |
+    └───📄 settings.toml
+
+```
