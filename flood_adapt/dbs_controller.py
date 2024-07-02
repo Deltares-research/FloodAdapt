@@ -23,10 +23,11 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+from flood_adapt.object_model.hazard.interface.events import IEvent
+
+# from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
@@ -60,6 +61,7 @@ class Database(IDatabase):
     _measures: DbsMeasure
     _projections: DbsProjection
     _benefits: DbsBenefit
+    _static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -118,9 +120,7 @@ class Database(IDatabase):
         sfincs_path = self.static_path.joinpath(
             "templates", self._site.attrs.sfincs.overland_model
         )
-        self.static_sfincs_model = SfincsAdapter(
-            model_root=sfincs_path, site=self._site
-        )
+        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path, database=self)
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
@@ -312,6 +312,8 @@ class Database(IDatabase):
             event["template"] == "Synthetic"
             or event["template"] == "Historical_nearshore"
         ):
+            from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+
             gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 event["name"] = "temp_event"
@@ -392,6 +394,8 @@ class Database(IDatabase):
             event["rainfall"]["source"] == "shape"
             or event["rainfall"]["source"] == "timeseries"
         ):
+            from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+
             event["name"] = "temp_event"
             temp_event = EventFactory.get_event(event["template"]).load_dict(event)
             if (

@@ -12,12 +12,10 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class PhysicalProjectionModel(BaseModel):
-    sea_level_rise: Optional[UnitfulLength] = UnitfulLength(
+    sea_level_rise: UnitfulLength = UnitfulLength(
         value=0.0, units=UnitTypesLength.meters
     )
-    subsidence: Optional[UnitfulLength] = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
+    subsidence: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
     rainfall_increase: float = 0.0
     storm_frequency_increase: float = 0.0
 

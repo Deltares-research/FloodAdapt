@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
