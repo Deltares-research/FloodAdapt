@@ -123,7 +123,8 @@ def get_database_root() -> Union[Path, None]:
         The path to the root of the database if the DATABASE_ROOT environment variable is set,
         None otherwise.
     """
-    return os.environ.get("DATABASE_ROOT", None)
+    if os.environ.get("DATABASE_ROOT", None):
+        return Path(os.environ["DATABASE_ROOT"])
 
 
 def get_system_folder() -> Union[Path, None]:
@@ -135,7 +136,9 @@ def get_system_folder() -> Union[Path, None]:
     Path or None
         The system folder path if the SYSTEM_FOLDER environment variable is set, otherwise None.
     """
-    return os.environ.get("SYSTEM_FOLDER", None)
+    if os.environ.get("SYSTEM_FOLDER", None):
+        return Path(os.environ["SYSTEM_FOLDER"])
+
 
 def get_database_name() -> Union[str, None]:
     """
