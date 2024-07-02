@@ -5,23 +5,24 @@ filters:
 lightbox: auto
 ---
 
-Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It can be used as a stand-alone tool, or integrated with other tools such in this case with **FloodAdapt**.  
+Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It can be used as a stand-alone tool, or integrated with other tools like **FloodAdapt**.  
 
 It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic impacts to buildings, utilities, and roads for input flood maps.
 
 Delft-FIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user.
 
-::: {.callout-tip}
+::: {.callout-note}
 For a detailed documentation of Delft-FIAT you can visit the [**Delft-FIAT documentation**](https://deltares.github.io/Delft-FIAT/stable/)
 :::
 
 ## Input Data
-
 Delft-FIAT is a calculation engine and does not come pre-populated with data. It is flexible and allows users to input and modify their own exposure, vulnerability, and hazard data. The quality of the estimated damages is entirely dependent on the quality of the data that is input into Delft-FIAT. 
 
+::: {.callout-tip}
+The data input to run Delft-FIAT can be fully configured in the [FloodAdapt Model Builder](hydromt_fiat_gui.qmd). 
+:::
 
 ## Exposure Data 
-
 The **exposure data** describe the assets within the region of interest. Delft-FIAT allows **vector** inputs. 
 
 #### Vector data
@@ -36,7 +37,7 @@ Vulnerability data in Delft-FIAT are captured in depth-damage curves. These tran
 The FloodAdapt Model Builder obtains these vulnerability curves from two different data sources:
   1. **United States**: FEMA Hazus Curves
   2. **Global**: JRC Global flood depth-damage functions
-  
+
 For detailed information about the vulnerability curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
 
 ```{python}
