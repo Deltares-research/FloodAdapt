@@ -11,7 +11,7 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies
         run: |
-          pip install ruff
+          pip install ruff==0.4.8
       # Include `--format=github` to enable automatic inline annotations.
       - name: Run Ruff
         run: ruff check . --fix
@@ -25,7 +25,7 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies
         run: |
-          pip install black
+          pip install black==24.1.1
       - name: Check black version
         run: black --version
       - name: Run black
