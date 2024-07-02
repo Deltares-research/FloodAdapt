@@ -1,13 +1,10 @@
-from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
+from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
-    ForcingType,
-    IForcing,
+    IWind,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
 
-
-class IWind(IForcing):
-    _type = ForcingType.WIND
+__all__ = ["WindConstant", "WindSynthetic", "WindFromModel", "WindFromTrack"]
 
 
 class WindConstant(IWind):
@@ -17,7 +14,7 @@ class WindConstant(IWind):
     direction: UnitfulDirection
 
 
-class WindTimeSeries(IWind):
+class WindSynthetic(IWind):
     _source = ForcingSource.SYNTHETIC
 
     path: str

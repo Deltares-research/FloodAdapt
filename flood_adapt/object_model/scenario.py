@@ -8,8 +8,7 @@ import tomli_w
 from flood_adapt import __version__
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.hazard import ScenarioModel
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
 
 
 class Scenario(IScenario):

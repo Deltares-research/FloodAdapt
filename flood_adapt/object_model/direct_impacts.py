@@ -22,9 +22,8 @@ from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrateg
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
-from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
+from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 

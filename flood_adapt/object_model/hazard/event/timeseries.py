@@ -1,94 +1,30 @@
 import math
 import os
-from abc import ABC, abstractmethod
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Protocol
+from typing import Any
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import tomli
 import tomli_w
-from pydantic import BaseModel, model_validator
 
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    DEFAULT_DATETIME_FORMAT,
+    TIDAL_PERIOD,
+    CSVTimeseriesModel,
+    ITimeseries,
+    ITimeseriesCalculationStrategy,
+    ShapeType,
+    SyntheticTimeseriesModel,
+)
 from flood_adapt.object_model.io.unitfulvalue import (
-    IUnitFullValue,
     UnitfulTime,
-    UnitTypesIntensity,
     UnitTypesTime,
 )
 
-TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
-DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
-
-
-### ENUMS ###
-class ShapeType(str, Enum):
-    gaussian = "gaussian"
-    constant = "constant"
-    triangle = "triangle"
-    harmonic = "harmonic"
-    scs = "scs"
-
-
-class Scstype(str, Enum):
-    type1 = "type1"
-    type1a = "type1a"
-    type2 = "type2"
-    type3 = "type3"
-
-
-### TIMESERIES MODELS ###
-class ITimeseriesModel(BaseModel):
-    pass
-
-
-class SyntheticTimeseriesModel(ITimeseriesModel):
-    # Required
-    shape_type: ShapeType
-    duration: UnitfulTime
-    peak_time: UnitfulTime
-
-    # Either one of these must be set
-    peak_value: Optional[IUnitFullValue] = None
-    cumulative: Optional[IUnitFullValue] = None
-
-    @model_validator(mode="after")
-    def validate_timeseries_model_start_end_time(self):
-        if self.duration < 0:
-            raise ValueError(
-                f"Timeseries shape duration must be positive, got {self.duration}"
-            )
-        return self
-
-    @model_validator(mode="after")
-    def validate_timeseries_model_value_specification(self):
-        if self.peak_value is None and self.cumulative is None:
-            raise ValueError(
-                "Either peak_value or cumulative must be specified for the timeseries model."
-            )
-        if self.peak_value is not None and self.cumulative is not None:
-            raise ValueError(
-                "Only one of peak_value or cumulative should be specified for the timeseries model."
-            )
-        return self
-
-
-class CSVTimeseriesModel(ITimeseriesModel):
-    path: str | Path
-    # TODO: Add validation for csv_file_path / contents ?
-
 
 ### CALCULATION STRATEGIES ###
-class ITimeseriesCalculationStrategy(Protocol):
-    @abstractmethod
-    def calculate(self, attrs: SyntheticTimeseriesModel) -> np.ndarray: ...
-
-
 class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
@@ -256,105 +192,6 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
 
 ### TIMESERIES ###
-class ITimeseries(ABC):
-    attrs: ITimeseriesModel
-
-    @abstractmethod
-    def calculate_data(self, time_step: UnitfulTime) -> np.ndarray:
-        """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
-        ...
-
-    def to_dataframe(
-        self,
-        start_time: datetime | str,
-        end_time: datetime | str,
-        ts_start_time: UnitfulTime,
-        ts_end_time: UnitfulTime,
-        time_step: UnitfulTime,
-    ) -> pd.DataFrame:
-        """
-        Convert timeseries data to a pandas DataFrame that has time as the index and intensity as the column.
-
-        The dataframe time range is from start_time to end_time with the provided time_step.
-        The timeseries data is added to this range by first
-            - Interpolating the data to the time_step
-            - Filling the missing values with 0.
-
-        Args:
-            start_time (Union[datetime, str]): The start datetime of returned timeseries.
-                start_time is the first index of the dataframe
-            end_time (Union[datetime, str]): The end datetime of returned timeseries.
-                end_time is the last index of the dataframe (date time)
-            time_step (UnitfulTime): The time step between data points.
-
-        Note:
-            - If start_time and end_time are strings, they should be in the format DEFAULT_DATETIME_FORMAT (= "%Y-%m-%d %H:%M:%S")
-
-        Returns
-        -------
-            pd.DataFrame: A pandas DataFrame with time as the index and intensity as the column.
-            The data is interpolated to the time_step and values that fall outside of the timeseries data are filled with 0.
-        """
-        if isinstance(start_time, str):
-            start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
-        if isinstance(end_time, str):
-            end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
-
-        _time_step = int(time_step.convert(UnitTypesTime.seconds).value)
-
-        full_df_time_range = pd.date_range(
-            start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="left"
-        )
-        full_df = pd.DataFrame(index=full_df_time_range)
-        full_df.index.name = "time"
-
-        data = self.calculate_data(time_step=time_step)
-        _time_range = pd.date_range(
-            start=(start_time + ts_start_time.to_timedelta()),
-            end=(start_time + ts_end_time.to_timedelta()),
-            inclusive="left",
-            freq=f"{_time_step}S",
-        )
-        df = pd.DataFrame(data, columns=["intensity"], index=_time_range)
-
-        full_df = df.reindex(full_df.index, method="nearest", limit=1, fill_value=0)
-        return full_df
-
-    @staticmethod
-    def plot(
-        df, xmin: pd.Timestamp, xmax: pd.Timestamp, intensity_units: UnitTypesIntensity
-    ) -> go.Figure:
-        fig = px.line(data_frame=df)
-        fig.update_layout(
-            autosize=False,
-            height=100 * 2,
-            width=280 * 2,
-            margin={"r": 0, "l": 0, "b": 0, "t": 0},
-            font={"size": 10, "color": "black", "family": "Arial"},
-            title_font={"size": 10, "color": "black", "family": "Arial"},
-            legend=None,
-            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-            xaxis_title={"text": "Time"},
-            yaxis_title={"text": f"Rainfall intensity [{intensity_units}]"},
-            showlegend=False,
-            xaxis={"range": [xmin, xmax]},
-        )
-        return fig
-
-    def __eq__(self, other: "ITimeseries") -> bool:
-        if not isinstance(other, ITimeseries):
-            raise NotImplementedError(f"Cannot compare Timeseries to {type(other)}")
-
-        # If the following equation is element-wise True, then allclose returns True.:
-        # absolute(a - b) <= (atol + rtol * absolute(b))
-        return np.allclose(
-            self.calculate_data(DEFAULT_TIMESTEP),
-            other.calculate_data(DEFAULT_TIMESTEP),
-            rtol=1e-2,
-        )
-
-
 class SyntheticTimeseries(ITimeseries):
     CALCULATION_STRATEGIES: dict[ShapeType, ITimeseriesCalculationStrategy] = {
         ShapeType.gaussian: GaussianTimeseriesCalculator(),

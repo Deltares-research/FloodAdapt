@@ -1,20 +1,17 @@
 import pandas as pd
 from pandas.core.api import DataFrame as DataFrame
 
-from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
-    ForcingType,
-    IForcing,
-)
-from flood_adapt.object_model.hazard.new_events.timeseries import (
+from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.hazard.interface.forcing import (
+    IDischarge,
+)
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
 
-
-class IDischarge(IForcing):
-    _type = ForcingType.DISCHARGE
+__all__ = ["DischargeConstant", "DischargeSynthetic", "DischargeFromCSV"]
 
 
 class DischargeConstant(IDischarge):
@@ -36,7 +33,7 @@ class DischargeSynthetic(IDischarge):
         return SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
 
 
-class DischargeFromFile(IDischarge):
+class DischargeFromCSV(IDischarge):
     path: str
 
     def get_data(self) -> DataFrame:

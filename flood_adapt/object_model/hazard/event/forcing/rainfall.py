@@ -1,20 +1,23 @@
 import pandas as pd
 from pandas.core.api import DataFrame as DataFrame
 
-from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
-    ForcingSource,
-    ForcingType,
-    IForcing,
-)
-from flood_adapt.object_model.hazard.new_events.timeseries import (
+from flood_adapt.object_model.hazard.event.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
+    IRainfall,
+)
 from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
 
-
-class IRainfall(IForcing):
-    _type = ForcingType.RAINFALL
+__all__ = [
+    "RainfallConstant",
+    "RainfallSynthetic",
+    "RainfallFromModel",
+    "RainfallFromSPWFile",
+    "RainfallFromTrack",
+]
 
 
 class RainfallConstant(IRainfall):

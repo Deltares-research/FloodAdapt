@@ -123,6 +123,7 @@ ignore = [
 ]
 fixable = [
     "I",
+    "F",
     "D"
 ]
 [tool.ruff.lint.pydocstyle]

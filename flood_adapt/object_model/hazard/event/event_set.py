@@ -9,21 +9,25 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
-class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Synthetic event
+class EventSetModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
     ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = {
-        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
-        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
-        ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
+        ForcingType.RAINFALL: [
+            ForcingSource.CONSTANT,
+            ForcingSource.MODEL,
+            ForcingSource.TRACK,
+        ],
+        ForcingType.WIND: [ForcingSource.TRACK],
+        ForcingType.WATERLEVEL: [ForcingSource.MODEL],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
 
 
-class SyntheticEvent(IEvent):
-    MODEL_TYPE = SyntheticEventModel
+class EventSet(IEvent):
+    MODEL_TYPE = EventSetModel
 
-    attrs: SyntheticEventModel
+    attrs: EventSetModel
 
     def process(self, scenario: IScenario):
         """Synthetic events do not require any processing."""

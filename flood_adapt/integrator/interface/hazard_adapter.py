@@ -1,9 +1,9 @@
 from abc import abstractmethod
 
 from flood_adapt.integrator.interface.model_adapter import IAdapter, ModelData
+from flood_adapt.object_model.hazard.interface.events import IEventModel
+from flood_adapt.object_model.hazard.interface.forcing import IForcing
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
-from flood_adapt.object_model.hazard.new_events.forcing.forcing import IForcing
-from flood_adapt.object_model.hazard.new_events.new_event_models import IEventModel
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 
 

@@ -1,9 +1,9 @@
 import glob
 import os
 import shutil
-import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
@@ -14,40 +14,45 @@ from cht_meteo.meteo import (
 )
 from pyproj import CRS
 
-import flood_adapt.config as FloodAdapt_config
-from flood_adapt.dbs_controller import Database
+# Maybe the way to stop circular imports is to import the database like this instead of importing the class directly
+import flood_adapt.dbs_controller as db
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.new_events.forcing.forcing import (
-    ForcingType,
-)
-from flood_adapt.object_model.hazard.new_events.forcing.waterlevels import (
-    WaterlevelFromModel,
-)
-from flood_adapt.object_model.hazard.new_events.forcing.wind import (
-    WindFromTrack,
-)
-from flood_adapt.object_model.hazard.new_events.new_event import IEvent
-from flood_adapt.object_model.hazard.new_events.new_event_models import (
-    HistoricalEventModel,
-)
-from flood_adapt.object_model.interface.events import (
+from flood_adapt.object_model.hazard.interface.events import (
+    IEvent,
+    IEventModel,
     Mode,
 )
-from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
+    ForcingType,
+)
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite, Obs_pointModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-from flood_adapt.object_model.utils import cd
+
+
+class HistoricalEventModel(IEventModel):
+    """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
+
+    ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = {
+        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.MODEL],
+        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.MODEL],
+        ForcingType.WATERLEVEL: [ForcingSource.CSV, ForcingSource.MODEL],
+        ForcingType.DISCHARGE: [ForcingSource.CONSTANT],
+    }
 
 
 class HistoricalEvent(IEvent):
+    MODEL_TYPE = HistoricalEventModel
+
     attrs: HistoricalEventModel
 
     def __init__(self):
+        self._site: ISite = db.Database().site
         self._logger = FloodAdaptLogging().getLogger(__name__)
-        self._site: ISite = Database().site
 
-    def process(self, scenario: ScenarioModel):
+    def process(self, scenario: IScenario):
         """Preprocess, run and postprocess offshore model to obtain water levels for boundary condition of the overland model."""
         self._scenario = scenario
 
@@ -56,48 +61,31 @@ class HistoricalEvent(IEvent):
         else:
             self._process_single_event(scenario)
 
-    def _process_risk_event(self, scenario: ScenarioModel):
+    def _process_risk_event(self, scenario: IScenario):
         # TODO implement / make a separate class for risk events
         pass
 
-    def _process_single_event(self, scenario: ScenarioModel):
+    def _process_single_event(self, scenario: IScenario):
         if self._site.attrs.sfincs.offshore_model is None:
             raise ValueError(
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
             )
         sim_path = self._get_simulation_path()
-
-        self._logger.info("Preparing offshore model to generate tide and surge...")
-        self._preprocess_sfincs_offshore(sim_path)
-
-        self._logger.info("Running offshore model...")
-        self._run_sfincs_offshore(sim_path)  # TODO check if we can skip this?
-
         self._logger.info("Collecting forcing data ...")
-        forcing_dir = sim_path.joinpath("generated_forcings")
-        os.makedirs(forcing_dir, exist_ok=True)
 
         for forcing in self.attrs.forcings.values():
             if forcing is not None:
-                self._logger.info(f"Writing {forcing._type} data ...")
-                forcing_path = forcing_dir.joinpath(f"{forcing._type}.csv")
+                if forcing._source == ForcingSource.MODEL:
+                    self._preprocess_sfincs_offshore(sim_path)
+                    self._run_sfincs_offshore(sim_path)
 
-                if isinstance(
-                    forcing, WaterlevelFromModel
-                ):  # FIXME make this a method of the forcing?
-                    self._get_waterlevel_at_boundary_from_offshore(sim_path).to_csv(
-                        forcing_path
-                    )
-                elif isinstance(forcing, WindFromTrack):
-                    self._download_observed_wl_data().to_csv(forcing_path)
+                    forcing._model_path = sim_path
+                    self.forcing_data[forcing._type] = forcing.get_data()
+
+                elif forcing._source == ForcingSource.METEO:
+                    self.forcing_data[forcing._type] = self._download_observed_wl_data()
                 else:
-                    forcing.to_csv(forcing_path)
-
-        # turn off pressure correction at the boundaries because the effect of
-        # atmospheric pressure is already included in the water levels from the
-        # offshore model
-        # TODO move line below to sfincsadapter overland code
-        # model.turn_off_bnd_press_correction()
+                    self.forcing_data[forcing._type] = forcing.get_data()
 
     def _preprocess_sfincs_offshore(self, sim_path):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
@@ -105,10 +93,12 @@ class HistoricalEvent(IEvent):
         Args:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event._download_meteo())
         """
+        self._logger.info("Preparing offshore model to generate tide and surge...")
+
         # Download meteo data
-        meteo_dir = Database().output_path.joinpath("meteo")
+        meteo_dir = db.Database().output_path.joinpath("meteo")
         if not meteo_dir.is_dir():
-            os.mkdir(Database().output_path.joinpath("meteo"))
+            os.mkdir(db.Database().output_path.joinpath("meteo"))
 
         ds = self._download_meteo(site=self._site, path=meteo_dir)
         ds = ds.rename({"barometric_pressure": "press"})
@@ -119,7 +109,7 @@ class HistoricalEvent(IEvent):
             shutil.rmtree(sim_path)
         os.makedirs(sim_path, exist_ok=True)
 
-        template_offshore = Database().static_path.joinpath(
+        template_offshore = db.Database().static_path.joinpath(
             "templates", self._site.attrs.sfincs.offshore_model
         )
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
@@ -128,8 +118,8 @@ class HistoricalEvent(IEvent):
 
             # Add water levels
             physical_projection = (
-                Database()
-                .projections.get(self._scenario.projection)
+                db.Database()
+                .projections.get(self._scenario.attrs.projection)
                 .get_physical_projection()
             )
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection)
@@ -138,50 +128,35 @@ class HistoricalEvent(IEvent):
             # TODO make it easier to access and change forcings
             wind_forcing = self.attrs.forcings[ForcingType.WIND]
             if wind_forcing is not None:
+                # Add wind forcing
                 _offshore_model._add_forcing_wind(wind_forcing)
 
-                if isinstance(wind_forcing, WindFromTrack):
-                    # _offshore_model._add_wind_forcing_from_grid(ds=ds)
-                    # line above is done is done in _add_forcing_wind() the adapter
-                    # TODO turn off pressure correction in overland model
+                # Add pressure forcing for the offshore model (this doesnt happen for the overland model)
+                if wind_forcing._source == ForcingSource.TRACK:
                     _offshore_model._add_pressure_forcing_from_grid(ds=ds["press"])
 
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)
 
     def _run_sfincs_offshore(self, sim_path):
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
-
-        with cd(sim_path):
-            sfincs_log = Path(sim_path) / "sfincs.log"
-            with open(sfincs_log, "w") as log_handler:
-                process = subprocess.run(sfincs_exec, stdout=log_handler)
-                if process.returncode != 0:
-                    raise RuntimeError(
-                        f"Running offshore SFINCS model failed. See {sfincs_log} for more information."
-                    )
-
-    def _get_waterlevel_at_boundary_from_offshore(self, sim_path) -> pd.DataFrame:
+        self._logger.info("Running offshore model...")
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            return _offshore_model._get_wl_df_from_offshore_his_results()
+            success = _offshore_model.execute(strict=False)
+
+            if not success:
+                raise RuntimeError(
+                    f"Running offshore SFINCS model failed. See {sim_path} for more information."
+                )
 
     def _get_simulation_path(self) -> Path:
         if self.attrs.mode == Mode.risk:
             pass
         elif self.attrs.mode == Mode.single_event:
             path = (
-                Database()
+                db.Database()
                 .scenarios.get_database_path(get_input_path=False)
                 .joinpath(
-                    self._scenario.name,
+                    self._scenario.attrs.name,
                     "Flooding",
                     "simulations",
                     self._site.attrs.sfincs.offshore_model,
@@ -267,14 +242,15 @@ class HistoricalEvent(IEvent):
             station_data = self._download_obs_point_data(
                 obs_point=obs_point, source=source
             )
-            station_data.rename(columns={"waterlevel": obs_point.ID})
-
-            conversion_factor = UnitfulLength(
+            station_data = station_data.rename(columns={"waterlevel": obs_point.ID})
+            station_data = station_data * UnitfulLength(
                 value=1.0, units=UnitTypesLength("meters")
             ).convert(units)
-            station_data = conversion_factor * station_data
 
-            wl_df = pd.concat([wl_df, station_data], axis=1)
+            if wl_df.empty:
+                wl_df = station_data
+            else:
+                wl_df = wl_df.join(station_data, how="outer")
 
         return wl_df
 
