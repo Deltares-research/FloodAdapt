@@ -33,6 +33,12 @@ Delft-FIAT can be used to assess flood damages to buildings, roads, utilities, a
 ## Vulnerability Data
 Vulnerability data in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a percentage of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. The damage function relates the inundation depth to a fraction of total damage per building type (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. 
 
+The FloodAdapt Model Builder obtains these vulnerability curves from two different data sources:
+  1. **United States**: FEMA Hazus Curves
+  2. **Global**: JRC Global flood depth-damage functions
+  
+For detailed information about the vulnerability curves please refer to the [JRC Global flood depth-damage functions](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) for a global model. For a model in the United States, consult this publication by Rice University describing [FEMA HAZUS curves](https://www.cs.rice.edu/~devika/evac/papers/Hazus_floodII.pdf) in the section on depth-damage functions. 
+
 ```{python}
 #| echo: false
 #| label: fig-damagefunction
