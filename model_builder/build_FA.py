@@ -72,9 +72,9 @@ class SpatialJoinModel(BaseModel):
 
     Attributes
     ----------
-        name (Optional[str]): The name of the model (optional).
-        file (str): The file associated with the model.
-        field_name (str): The field name used for the spatial join.
+    name (Optional[str]): The name of the model (optional).
+    file (str): The file associated with the model.
+    field_name (str): The field name used for the spatial join.
     """
 
     name: Optional[str] = None
@@ -129,14 +129,12 @@ class GuiModel(BaseModel):
 
     Attributes
     ----------
-        unit_system (Optional[UnitSystems]): The unit system used (default: "metric").
         max_flood_depth (float): The last visualization bin will be ">value".
         max_aggr_dmg (float): The last visualization bin will be ">value".
         max_footprint_dmg (float): The last visualization bin will be ">value".
         max_benefits (float): The last visualization bin will be ">value".
     """
 
-    unit_system: Optional[UnitSystems] = "metric"
     max_flood_depth: float
     max_aggr_dmg: float
     max_aggr_dmg: float
@@ -155,25 +153,28 @@ class TideGaugeModel(BaseModel):
 
 class ConfigModel(BaseModel):
     """
-    Configuration model for FloodAdapt.
+    Represents the configuration model for FloodAdapt.
 
     Attributes
     ----------
-        name (str): The name of the study area.
-        description (Optional[str]): The description of the study area.
+        name (str): The name of the configuration.
+        description (Optional[str]): The description of the configuration.
         database_path (Optional[str]): The path to the database.
-        sfincs (str): The SFINCS model path.
-        sfincs_offshore (Optional[str]): The offshore SFINCS model path.
-        fiat (str): The FIAT model path.
-        gui (GuiModel): The GUI configuration.
+        sfincs (str): The SFINCS value.
+        sfincs_offshore (Optional[str]): The offshore SFINCS value.
+        fiat (str): The fiat value.
+        unit_system (UnitSystems): The unit system.
+        gui (GuiModel): The GUI model.
+        tide_gauge (Optional[TideGaugeModel]): The tide gauge model.
         building_footprints (Optional[SpatialJoinModel]): The building footprints model.
-        bfe (Optional[SpatialJoinModel]): The BFE (Base Flood Elevation) model.
-        aggregation (list[AggregationModel]): The aggregation models.
-        svi (Optional[SpatialJoinModel]): The SVI (Social Vulnerability Index) model.
+        bfe (Optional[SpatialJoinModel]): The BFE model.
+        svi (Optional[SpatialJoinModel]): The SVI model.
         road_width (Optional[float]): The road width in meters.
-        cyclone_basin (Optional[Basins]): The cyclone basin to be used.
-        river (Optional[list[RiverModel]]): The river models.
-        obs_point (Optional[list[Obs_pointModel]]): The observation point models.
+        cyclones (Optional[bool]): Indicates if cyclones are enabled.
+        cyclone_basin (Optional[Basins]): The cyclone basin.
+        river (Optional[list[RiverModel]]): The list of river models.
+        obs_point (Optional[list[Obs_pointModel]]): The list of observation point models.
+        probabilistic_set (Optional[str]): The probabilistic set value.
     """
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
@@ -182,6 +183,7 @@ class ConfigModel(BaseModel):
     sfincs: str
     sfincs_offshore: Optional[str] = None
     fiat: str
+    unit_system: UnitSystems
     gui: GuiModel
     tide_gauge: Optional[TideGaugeModel] = None
     building_footprints: Optional[SpatialJoinModel] = None
@@ -872,6 +874,17 @@ class Database:
                     self.site_attrs["water_level"]["reference"]["name"] = station[
                         "reference"
                     ]
+                    self.site_attrs["water_level"]["other"] = []
+                    for name in ["MLLW", "MHHW"]:
+                        wl_info = {}
+                        wl_info["name"] = name
+                        wl_info["height"] = {}
+                        wl_info["height"]["value"] = station[name.lower()]
+                        wl_info["height"]["units"] = self.site_attrs["sfincs"][
+                            "floodmap_units"
+                        ]
+                        self.site_attrs["water_level"]["other"].append(wl_info)
+
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
@@ -910,28 +923,6 @@ class Database:
         Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
 
         Args:
-            ref (str, optional): The reference level for water level calculations. Defaults to "MLLW".
-
-        Returns
-        -------
-            dict: A dictionary containing the metadata of the closest tide gauge station.
-                The dictionary includes the following keys:
-                - "id": The station ID.
-                - "name": The station name.
-                - "datum": The difference between the station's datum and the reference level.
-                - "datum_name": The name of the datum used by the station.
-                - "msl": The difference between the Mean Sea Level (MSL) and the reference level.
-                - "reference": The reference level used for water level calculations.
-                - "lon": The longitude of the station.
-                - "lat": The latitude of the station.
-        """
-        # Rest of the code...
-
-    def _get_closest_station(self, ref: str = "MLLW"):
-        """
-        Find the closest tide gauge station to the SFINCS domain and retrieves its metadata.
-
-        Args:
             ref (str, optional): The reference level for water level measurements. Defaults to "MLLW".
 
         Returns
@@ -947,10 +938,6 @@ class Database:
                 - "lon": The longitude of the station.
                 - "lat": The latitude of the station.
         """
-        # Rest of the code...
-
-    def _get_closest_station(self, ref: str = "MLLW"):
-
         # Get available stations from source
         obs_data = obs.source(self.config.tide_gauge.source)
         obs_data.get_active_stations()
@@ -998,6 +985,8 @@ class Database:
         meta["datum"] = round(datums[names.index(datum_name)]["value"] - ref_value, 3)
         meta["datum_name"] = datum_name
         meta["msl"] = round(datums[names.index("MSL")]["value"] - ref_value, 3)
+        meta["mllw"] = round(datums[names.index("MLLW")]["value"] - ref_value, 3)
+        meta["mhhw"] = round(datums[names.index("MHHW")]["value"] - ref_value, 3)
         meta["reference"] = ref
         meta["lon"] = closest_station.geometry.x.item()
         meta["lat"] = closest_station.geometry.y.item()
@@ -1205,14 +1194,32 @@ class Database:
         """
         # TODO there should be generalized infometric queries with NSI or OSM, and with SVI or without. Then Based on the user input these should be chosen automatically
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
+        if self.config.unit_system == "imperial":
+            self.metrics_folder_name = "US_NSI"
+            self.logger.info(
+                "Default NSI infometrics and infographics will be created."
+            )
+        elif self.config.unit_system == "metric":
+            self.metrics_folder_name = "OSM"
+            self.logger.info(
+                "Default OSM infometrics and infographics will be created."
+            )
         folders = ["infometrics", "infographics"]
         for folder in folders:
-            path_0 = templates_path.joinpath(folder)
+            path_0 = templates_path.joinpath(folder, self.metrics_folder_name)
             path_1 = self.root.joinpath("static", "templates", folder)
             shutil.copytree(path_0, path_1)
+            if folder == "infographics":
+                path_0 = templates_path.joinpath("infographics", "images")
+                path_1 = self.root.joinpath(
+                    "static", "templates", "infographics", "images"
+                )
+                shutil.copytree(path_0, path_1)
 
         files = ["metrics_config.toml", "metrics_config_risk.toml"]
         path = self.root.joinpath("static", "templates", "infometrics")
+
+        # Update aggregation areas in metrics config
         for file in files:
             file = path.joinpath(file)
             attrs = read_toml(file)
@@ -1243,7 +1250,7 @@ class Database:
         -------
             dict: A dictionary containing the default units.
         """
-        type = self.config.gui.unit_system
+        type = self.config.unit_system
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
         default_units = read_toml(
             templates_path.joinpath("default_units", f"{type}.toml")
@@ -1296,10 +1303,10 @@ def main(config_path):
     dbs.update_fiat_elevation()
     dbs.add_rivers()
     dbs.add_obs_points()
-    dbs.add_gui_params()
     dbs.add_cyclone_dbs()
     dbs.add_static_files()
     dbs.add_tide_gauge()
+    dbs.add_gui_params()
     dbs.add_slr()
     dbs.add_general_attrs()
     dbs.save_site_config()
@@ -1312,6 +1319,6 @@ if __name__ == "__main__":
     main(
         [
             "--config_path",
-            r"c:\Users\athanasi\Github\Database\FA_builder\Cork\config_Cork.toml",
+            r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland.toml",
         ]
     )
