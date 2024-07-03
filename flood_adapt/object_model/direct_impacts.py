@@ -516,10 +516,16 @@ class DirectImpacts:
         else:
             ext = ""
 
-        metrics_config_path = self.database.static_path.joinpath(
+        optional_metrics_config_path = self.database.static_path.joinpath(
             "templates",
             "infometrics",
-            f"metrics_config{ext}.toml",
+            f"optional_metrics_config{ext}.toml",
+        )
+
+        mandatory_metrics_config_path = self.database.static_path.joinpath(
+            "templates",
+            "infometrics",
+            f"mandatory_metrics_config{ext}.toml",
         )
 
         # Specify the metrics output path
@@ -531,15 +537,29 @@ class DirectImpacts:
         )
 
         # Write the metrics to file
-        metrics_writer = MetricsFileWriter(metrics_config_path)
+        optional_metrics_writer = MetricsFileWriter(optional_metrics_config_path)
 
-        metrics_writer.parse_metrics_to_file(
+        optional_metrics_writer.parse_metrics_to_file(
             df_results=fiat_results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate=None,
         )
 
-        metrics_writer.parse_metrics_to_file(
+        optional_metrics_writer.parse_metrics_to_file(
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate="all",
+        )
+
+        mandatory_metrics_writer = MetricsFileWriter(mandatory_metrics_config_path)
+
+        mandatory_metrics_writer.parse_metrics_to_file(
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate=None,
+        )
+
+        mandatory_metrics_writer.parse_metrics_to_file(
             df_results=fiat_results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate="all",
