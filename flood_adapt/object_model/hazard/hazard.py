@@ -272,7 +272,9 @@ class Hazard:
 
         run_success = True
         for simulation_path in self.simulation_paths:
-            self._logger.info(f"Running SFINCS model for {'-'.join(simulation_path.parts[-2:])}.")
+            self._logger.info(
+                f"Running SFINCS model for {'-'.join(simulation_path.parts[-2:])}."
+            )
             with cd(simulation_path):
                 sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:

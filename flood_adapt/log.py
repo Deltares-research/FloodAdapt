@@ -67,20 +67,20 @@ class FloodAdaptLogging:
     @classmethod
     def getLogger(cls, name: str = None, level: int = None) -> logging.Logger:
         """Get a logger with the specified name. If no name is provided, return the root logger.
-        
+
         If the logger does not exist, it is created with the specified level. If no level is provided, the logger inherits the level of the root logger.
-        
+
         Parameters
         ----------
         name : str, optional
             The name of the logger. If not provided, the root logger is returned.
         level : int, optional
             The level of the logger. If not provided, the logger inherits the level of the root logger.
-            
+
         Returns
         -------
         logging.Logger
-            The logger with the specified name. 
+            The logger with the specified name.
         """
         if name is None:
             logger = cls._root_logger
