@@ -53,14 +53,11 @@
         font = 30
     [Other.Subtitle]
         font = 25
-	[Other.Y_axis_title]
-		text = "Miles of interruption"
     [Other.Info]
-        text="""Hi im the info for the roads chart<br>
-                I'm a very long sting<br>
-                mostly<br>
-                containing<br>
-                multiple<br>
-                lines"""
+        text="""Thresholds:<br>
+                Pedestrians: 0.05 m<br>
+                Cars: 0.10 m<br>
+                Trucks: 0.25 m<br>
+                Rescue vehicles: 0.40 m"""
         image="{image_path}/info.png"
         scale=0.1

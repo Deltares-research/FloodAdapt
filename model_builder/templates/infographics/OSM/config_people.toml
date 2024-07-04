@@ -1,0 +1,35 @@
+[Charts]
+    [Charts.Flooded]
+        Name = "Flooded"
+        Image = "{image_path}/person.png"
+
+[Slices]
+    [Slices.Flooded_Low_Vulnerability_People]
+        Name = "Flooded low vulnerability people"
+        Query = "FloodedLowVulnerability"
+        Chart = "Flooded"
+        Category = "LowVulnerability"
+    [Slices.Flooded_High_Vulnerability_People]
+        Name = "Flooded high vulnerability people"
+        Query = "FloodedHighVulnerability"
+        Chart = "Flooded"
+        Category = "HighVulnerability"
+
+[Other]
+    [Other.Plot]
+        image_scale = 0.15
+        numbers_font = 20
+        height = 350
+        width = 600
+    [Other.Title]
+        text = "People"
+        font = 30
+    [Other.Subtitle]
+        font = 25
+    [Other.Legend]
+        font = 20
+    [Other.Info]
+        text="""Low vulnerability: SVI < 0<br>
+                High vulnerability: SVI > 0"""
+        image="https://openclipart.org/image/800px/302413"
+        scale=0.1

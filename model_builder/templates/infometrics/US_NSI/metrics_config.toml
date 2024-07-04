@@ -1,28 +1,52 @@
 aggregateBy = []
 
 [[queries]]
-name = "FloodedAll"
-description = "Number of flooded buildings"
+name = "ImpactedBuildingsAll"
+description = "Number of damaged buildings"
 select = "COUNT(*)"
-filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` >= 0.25 AND `Total Damage` > 0"
-long_name = "Flooded Homes (#)"
+filter = "`Primary Object Type` IN ('RES') AND `Total Damage` > 0"
+long_name = "Impacted Homes (#)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedBuildingsHighVulnerability"
+description = "Number of damaged homes with high vulnerability"
+select = "COUNT(*)"
+filter = "`Primary Object Type` IN ('RES') AND `Total Damage` > 0 AND `SVI` >= 0"
+long_name = "Flooded Homes - High SV (#)"
 show_in_metrics_table = "True"
 
 [[queries]]
 name = "FloodedLowVulnerability"
 description = "Number of flooded people with low vulnerability"
-select = "COUNT(*)"
-filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` >= 0.25 AND `Total Damage` > 0 AND `SVI` < 0.7"
+select = "2.32 * COUNT(*)"
+filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` >= 0.25 AND `Total Damage` > 0 AND `SVI` < 0"
 long_name = "Flooded Low Vulnerability"
 show_in_metrics_table = "False"
 
 [[queries]]
 name = "FloodedHighVulnerability"
-description = "Number of flooded homes with high vulnerability"
-select = "COUNT(*)"
-filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` >= 0.25 AND `Total Damage` > 0 AND `SVI` >= 0.7"
+description = "Number of flooded people with high vulnerability"
+select = "2.32 * COUNT(*)"
+filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` >= 0.25 AND `Total Damage` > 0 AND `SVI` >= 0"
 long_name = "Flooded Homes - High SV (#)"
-show_in_metrics_table = "True"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "DisplacedLowVulnerability"
+description = "Number of displaced people with low vulnerability"
+select = "2.32 * COUNT(*)"
+filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` < 0 AND `Total Damage` > 0"
+long_name = "Displaced Low Vulnerability"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "DisplacedHighVulnerability"
+description = "Number of displaced people with high vulnerability"
+select = "2.32 * COUNT(*)"
+filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` >= 0 AND `Total Damage` > 0"
+long_name = "Displaced High Vulnerability"
+show_in_metrics_table = "False"
 
 [[queries]]
 name = "TotalDamageEvent"
@@ -190,22 +214,6 @@ description = "Number of destroyed emergency response buildings"
 select = "COUNT(*)"
 filter = "`Secondary Object Type` IN ('GOV2') AND `Inundation Depth` > 6 AND `Total Damage` > 0"
 long_name = "Destroyed Emergency Buildings"
-show_in_metrics_table = "False"
-
-[[queries]]
-name = "DisplacedLowVulnerability"
-description = "Number of displaced people with low vulnerability"
-select = "COUNT(*)"
-filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` < 0.7 AND `Total Damage` > 0"
-long_name = "Displaced Low Vulnerability"
-show_in_metrics_table = "False"
-
-[[queries]]
-name = "DisplacedHighVulnerability"
-description = "Number of displaced people with high vulnerability"
-select = "COUNT(*)"
-filter = "`Primary Object Type` IN ('RES') AND `Inundation Depth` > 6 AND `SVI` >= 0.7 AND `Total Damage` > 0"
-long_name = "Displaced High Vulnerability"
 show_in_metrics_table = "False"
 
 [[queries]]
