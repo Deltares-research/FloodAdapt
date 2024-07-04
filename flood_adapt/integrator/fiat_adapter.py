@@ -1,4 +1,5 @@
 import gc
+import logging
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -25,7 +26,7 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Load FIAT model based on a root directory."""
         # Load FIAT template
-        self._logger = FloodAdaptLogging.getLogger(__name__)
+        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.ERROR)
         self.fiat_model = FiatModel(root=model_root, mode="r", logger=self._logger)
         self.fiat_model.read()
 
