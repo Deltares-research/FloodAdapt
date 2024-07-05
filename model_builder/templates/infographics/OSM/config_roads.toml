@@ -53,6 +53,8 @@
         font = 30
     [Other.Subtitle]
         font = 25
+	[Other.Y_axis_title]
+		text = "Kilometers of interruption"
     [Other.Info]
         text="""Thresholds:<br>
                 Pedestrians: 0.05 m<br>
