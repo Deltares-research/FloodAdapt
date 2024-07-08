@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Protocol
+from typing import Optional, Protocol, Union
 
 import numpy as np
 import pandas as pd
@@ -11,8 +11,14 @@ import plotly.graph_objects as go
 from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
-    IUnitFullValue,
+    UnitfulArea,
+    UnitfulDirection,
+    UnitfulDischarge,
+    UnitfulHeight,
+    UnitfulIntensity,
+    UnitfulLength,
     UnitfulTime,
+    UnitfulVelocity,
     UnitTypesIntensity,
     UnitTypesTime,
 )
@@ -20,6 +26,13 @@ from flood_adapt.object_model.io.unitfulvalue import (
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
+TIMESERIES_VARIABLE = Union[
+    UnitfulIntensity | UnitfulDischarge | UnitfulVelocity,
+    UnitfulLength,
+    UnitfulHeight,
+    UnitfulArea,
+    UnitfulDirection,
+]
 
 
 ### ENUMS ###
@@ -49,12 +62,12 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     peak_time: UnitfulTime
 
     # Either one of these must be set
-    peak_value: Optional[IUnitFullValue] = None
-    cumulative: Optional[IUnitFullValue] = None
+    peak_value: Optional[TIMESERIES_VARIABLE] = None
+    cumulative: Optional[TIMESERIES_VARIABLE] = None
 
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
-        if self.duration < 0:
+        if self.duration.value < 0:
             raise ValueError(
                 f"Timeseries shape duration must be positive, got {self.duration}"
             )
@@ -62,13 +75,11 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
 
     @model_validator(mode="after")
     def validate_timeseries_model_value_specification(self):
-        if self.peak_value is None and self.cumulative is None:
+        if (self.peak_value is None and self.cumulative is None) or (
+            self.peak_value is not None and self.cumulative is not None
+        ):
             raise ValueError(
                 "Either peak_value or cumulative must be specified for the timeseries model."
-            )
-        if self.peak_value is not None and self.cumulative is not None:
-            raise ValueError(
-                "Only one of peak_value or cumulative should be specified for the timeseries model."
             )
         return self
 
@@ -87,7 +98,7 @@ class ITimeseries(ABC):
     attrs: ITimeseriesModel
 
     @abstractmethod
-    def calculate_data(self, time_step: UnitfulTime) -> np.ndarray:
+    def calculate_data(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> np.ndarray:
         """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
         ...
 
@@ -119,7 +130,7 @@ class ITimeseries(ABC):
 
         Returns
         -------
-            pd.DataFrame: A pandas DataFrame with time as the index and intensity as the column.
+            pd.DataFrame: A pandas DataFrame with time as the index and values as the columns.
             The data is interpolated to the time_step and values that fall outside of the timeseries data are filled with 0.
         """
         if isinstance(start_time, str):
@@ -127,7 +138,7 @@ class ITimeseries(ABC):
         if isinstance(end_time, str):
             end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
 
-        _time_step = int(time_step.convert(UnitTypesTime.seconds).value)
+        _time_step = int(time_step.convert(UnitTypesTime.seconds))
 
         full_df_time_range = pd.date_range(
             start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="left"
@@ -142,7 +153,7 @@ class ITimeseries(ABC):
             inclusive="left",
             freq=f"{_time_step}S",
         )
-        df = pd.DataFrame(data, columns=["intensity"], index=_time_range)
+        df = pd.DataFrame(data, columns=["values"], index=_time_range)
 
         full_df = df.reindex(full_df.index, method="nearest", limit=1, fill_value=0)
         return full_df

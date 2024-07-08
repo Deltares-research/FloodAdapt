@@ -11,6 +11,7 @@ import tomli_w
 
 from flood_adapt.object_model.hazard.interface.timeseries import (
     DEFAULT_DATETIME_FORMAT,
+    DEFAULT_TIMESTEP,
     TIDAL_PERIOD,
     CSVTimeseriesModel,
     ITimeseries,
@@ -29,15 +30,11 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
-        _shape_start = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
-        )
-        _shape_end = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
-        )
+        _duration = attrs.duration.convert(UnitTypesTime.seconds)
+        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
+        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
 
-        _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _timestep = timestep.convert(UnitTypesTime.seconds)
         _scs_path = attrs.scs_file_path
         _scstype = attrs.scs_type
 
@@ -49,8 +46,7 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
         tt_rain = _shape_start + scstype_df.index.to_numpy() * _duration
         rain_series = scstype_df.to_numpy()
         rain_instantaneous = np.diff(rain_series) / np.diff(
-            tt_rain
-            / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds).value
+            tt_rain / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds)
         )  # divide by time in hours to get mm/hour
 
         # interpolate instanetaneous rain intensity timeseries to tt
@@ -67,10 +63,7 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
             * attrs.cumulative.value
             / np.trapz(
                 rain_interp,
-                tt
-                / UnitfulTime(1, UnitTypesTime.hours)
-                .convert(UnitTypesTime.seconds)
-                .value,
+                tt / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds),
             )
         )
         return rainfall
@@ -80,16 +73,12 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
-        _shape_start = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
-        )
-        _shape_end = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
-        )
+        _duration = attrs.duration.convert(UnitTypesTime.seconds)
+        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
+        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
 
         _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _timestep = timestep.convert(UnitTypesTime.seconds)
 
         tt = np.arange(
             _shape_start,
@@ -107,16 +96,12 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
-        _shape_start = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value - _duration / 2
-        )
-        _shape_end = (
-            attrs.peak_time.convert(UnitTypesTime.seconds).value + _duration / 2
-        )
+        _duration = attrs.duration.convert(UnitTypesTime.seconds)
+        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
+        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
 
         _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _timestep = timestep.convert(UnitTypesTime.seconds)
 
         tt = np.arange(
             _shape_start,
@@ -133,13 +118,13 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
-        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds)
+        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds)
         _shape_start = _peak_time - _duration / 2
         _shape_end = _peak_time + _duration / 2
 
         _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _timestep = timestep.convert(UnitTypesTime.seconds)
 
         tt = np.arange(
             _shape_start,
@@ -168,13 +153,13 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds).value
-        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds).value
+        _duration = attrs.duration.convert(UnitTypesTime.seconds)
+        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds)
         _shape_start = _peak_time - _duration / 2
         _shape_end = _peak_time + _duration / 2
 
         _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds).value
+        _timestep = timestep.convert(UnitTypesTime.seconds)
 
         tt = np.arange(
             start=_shape_start,
@@ -185,7 +170,7 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         ts = _peak_value * np.cos(
             omega
             * tt
-            / UnitfulTime(1, UnitTypesTime.days).convert(UnitTypesTime.seconds).value
+            / UnitfulTime(1, UnitTypesTime.days).convert(UnitTypesTime.seconds)
         )
 
         return ts
@@ -202,7 +187,7 @@ class SyntheticTimeseries(ITimeseries):
     }
     attrs: SyntheticTimeseriesModel
 
-    def calculate_data(self, time_step: UnitfulTime) -> np.ndarray:
+    def calculate_data(self, time_step: UnitfulTime = DEFAULT_TIMESTEP) -> np.ndarray:
         """Calculate the timeseries data using the timestep provided."""
         strategy = SyntheticTimeseries.CALCULATION_STRATEGIES.get(self.attrs.shape_type)
         if strategy is None:
@@ -219,8 +204,8 @@ class SyntheticTimeseries(ITimeseries):
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
-            ts_start_time=self.attrs.start_time,
-            ts_end_time=self.attrs.end_time,
+            ts_start_time=self.attrs.peak_time - self.attrs.duration / 2,
+            ts_end_time=self.attrs.peak_time + self.attrs.duration / 2,
         )
 
     @staticmethod
@@ -309,7 +294,7 @@ class CSVTimeseries(ITimeseries):
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
         ts = self.read_csv(self.attrs.path)
-        freq = int(time_step.convert(UnitTypesTime.seconds).value)
+        freq = int(time_step.convert(UnitTypesTime.seconds))
         time_range = pd.date_range(
             start=ts.index.min(), end=ts.index.max(), freq=f"{freq}S", inclusive="left"
         )

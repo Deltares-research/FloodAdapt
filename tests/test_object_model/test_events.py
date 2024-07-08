@@ -263,7 +263,7 @@ def test_constant_rainfall(test_db):
     event = EventFactory.get_event(template).load_file(test_toml)
     event.attrs.rainfall = RainfallModel(
         source="constant",
-        constant_intensity=UnitfulIntensity(value=2.0, units="inch/hr"),
+        constant_intensity=UnitfulIntensity(value=2.0, units="inch_hr"),
     )
     event.add_rainfall_ts()  # also converts to mm/hour!!!
     assert isinstance(event.rain_ts, pd.DataFrame)
@@ -271,7 +271,7 @@ def test_constant_rainfall(test_db):
     assert (
         np.abs(
             event.rain_ts.to_numpy()[0][0]
-            - UnitfulIntensity(value=2, units="inch/hr").value
+            - UnitfulIntensity(value=2, units="inch_hr").value
         )
         < 0.001
     )

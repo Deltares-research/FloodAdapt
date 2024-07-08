@@ -433,7 +433,7 @@ class SfincsAdapter(IHazardAdapter):
         timeseries : Union[str, os.PathLike], optional
             path to file of timeseries file (.csv) which has two columns: time and precipitation, by default None
         const_intensity : float, optional
-            time-invariant precipitation intensity [mm/hr], by default None
+            time-invariant precipitation intensity [mm_hr], by default None
         """
         if isinstance(forcing, RainfallConstant):
             self._model.setup_precip_forcing(
@@ -703,7 +703,7 @@ class SfincsAdapter(IHazardAdapter):
         ----------
         precip : xr.DataArray
             Dataarray which should contain:
-            - precip: precipitation rates [mm/hr]
+            - precip: precipitation rates [mm_hr]
             - spatial_ref: CRS
         """
         self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
@@ -721,7 +721,7 @@ class SfincsAdapter(IHazardAdapter):
         precip : Union[str, os.PathLike], optional
             timeseries file of precipitation (.csv) which has two columns: time and precipitation, by default None
         const_precip : float, optional
-            time-invariant precipitation magnitude [mm/hr], by default None
+            time-invariant precipitation magnitude [mm_hr], by default None
         """
         # Add precipitation to SFINCS model
         self._model.setup_precip_forcing(timeseries=timeseries, magnitude=const_precip)

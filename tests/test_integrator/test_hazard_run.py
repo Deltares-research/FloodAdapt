@@ -270,7 +270,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
-        UnitfulIntensity(value=5.0, units="inch/hr")
+        UnitfulIntensity(value=5.0, units="inch_hr")
     )
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
@@ -294,7 +294,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
-        UnitfulIntensity(value=5.0, units="inch/hr")
+        UnitfulIntensity(value=5.0, units="inch_hr")
     )
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3

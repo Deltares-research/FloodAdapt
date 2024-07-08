@@ -15,18 +15,33 @@ class IUnitFullValue(BaseModel):
     """
     Represents a value with associated units.
 
-    Attributes
-    ----------
-        _DEFAULT_UNIT (Unit): The default unit.
-        _CONVERSION_FACTORS (dict[Unit: float]): A dictionary of conversion factors from the default unit to any unit.
+    Frozen class attributes:
+    ------------------------
+        CONVERSION_FACTORS (dict[Unit: float]): A dictionary of conversion factors from the default unit to any unit.
+        DEFAULT_UNIT (Unit): The default unit.
+
+    Instance attributes:
+    --------------------
         value (float): The numerical value.
         units (Unit): The units of the value.
     """
 
-    _DEFAULT_UNIT: Unit
-    _CONVERSION_FACTORS: dict[Unit:float]
+    DEFAULT_UNIT: Unit = Field(frozen=True, exclude=True, default=None)
+    CONVERSION_FACTORS: dict[Unit, float] = Field(frozen=True, exclude=True, default={})
+
     value: float
     units: Unit
+
+    def __init__(self, *args, **kwargs):
+        if type(self) is IUnitFullValue:
+            raise TypeError(
+                "IUnitFullValue is an abstract class and cannot be instantiated directly."
+            )
+        if args and len(args) == 2:
+            value, units = args
+            super().__init__(value=value, units=units, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
 
     def convert(self, new_units: Unit) -> float:
         """Return the value converted to the new units.
@@ -38,10 +53,10 @@ class IUnitFullValue(BaseModel):
         -------
             float: The converted value.
         """
-        if new_units not in self._CONVERSION_FACTORS:
+        if new_units not in self.CONVERSION_FACTORS:
             raise ValueError(f"Invalid units: {new_units}")
-        in_default_units = self.value * self._CONVERSION_FACTORS[self.units]
-        return in_default_units / self._CONVERSION_FACTORS[new_units]
+        in_default_units = self.value / self.CONVERSION_FACTORS[self.units]
+        return in_default_units * self.CONVERSION_FACTORS[new_units]
 
     def __str__(self):
         return f"{self.value} {self.units.value}"
@@ -51,22 +66,34 @@ class IUnitFullValue(BaseModel):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
-        return type(self)(self.value - other.convert(self.units).value, self.units)
+        return type(self)(
+            value=self.value - other.convert(self.units), units=self.units
+        )
 
     def __add__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
-        return type(self)(self.value + other.convert(self.units).value, self.units)
+        return type(self)(
+            value=self.value + other.convert(self.units), units=self.units
+        )
 
     def __eq__(self, other):
-        if not isinstance(other, type(self)):
+        if not issubclass(type(other), IUnitFullValue):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
+        if not (hasattr(other, "value") and hasattr(other, "units")):
+            raise AttributeError(f"Incomplete UnitfulValue instance: {other}")
+
+        if not isinstance(other.units, type(self.units)):
+            raise TypeError(
+                f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
+            )
+
         return math.isclose(
-            self.value, other.convert(self.units).value, rel_tol=1e-2
+            self.value, other.convert(self.units), rel_tol=1e-2
         )  # 1% relative tolerance for equality. So 1.0 == 1.01 evaluates to True
 
     def __lt__(self, other):
@@ -74,14 +101,14 @@ class IUnitFullValue(BaseModel):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
-        return self.value < other.convert(self.units).value
+        return self.value < other.convert(self.units)
 
     def __gt__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
-        return self.value > other.convert(self.units).value
+        return self.value > other.convert(self.units)
 
     def __ge__(self, other):
         if not isinstance(other, type(self)):
@@ -116,7 +143,7 @@ class IUnitFullValue(BaseModel):
         if isinstance(other, int) or isinstance(other, float):
             return type(self)(self.value / other, self.units)
         elif isinstance(other, type(self)):
-            return self.value / other.convert(self.units).value
+            return self.value / other.convert(self.units)
         else:
             raise TypeError(
                 f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
@@ -124,9 +151,9 @@ class IUnitFullValue(BaseModel):
 
     def __truediv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
-            return type(self)(self.value / other, self.units)
+            return type(self)(value=self.value / other, units=self.units)
         elif isinstance(other, type(self)):
-            return self.value / other.convert(self.units).value
+            return self.value / other.convert(self.units)
         else:
             raise TypeError(
                 f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
@@ -177,8 +204,8 @@ class UnitTypesDischarge(Unit):
 
 
 class UnitTypesIntensity(Unit):
-    inch_hr = "inch/hr"
-    mm_hr = "mm/hr"
+    inch_hr = "inch_hr"
+    mm_hr = "mm_hr"
 
 
 class VerticalReference(str, Enum):
@@ -187,15 +214,22 @@ class VerticalReference(str, Enum):
 
 
 class UnitfulLength(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesLength.meters: 1.0,
-        UnitTypesLength.centimeters: 100.0,
-        UnitTypesLength.millimeters: 1000.0,
-        UnitTypesLength.feet: 3.28084,
-        UnitTypesLength.inch: 1.0 / 0.0254,
-        UnitTypesLength.miles: 1609.344,
-    }
-    _DEFAULT_UNIT = UnitTypesLength.meters
+    CONVERSION_FACTORS: dict[UnitTypesLength, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesLength.meters: 1.0,
+            UnitTypesLength.centimeters: 100.0,
+            UnitTypesLength.millimeters: 1000.0,
+            UnitTypesLength.feet: 3.28084,
+            UnitTypesLength.inch: 1.0 / 0.0254,
+            UnitTypesLength.miles: 1609.344,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesLength = Field(
+        frozen=True, exclude=True, default=UnitTypesLength.meters
+    )
+
     value: float
     units: UnitTypesLength
 
@@ -209,24 +243,37 @@ class UnitfulLengthRefValue(UnitfulLength):
 
 
 class UnitfulArea(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesArea.m2: 10_000,
-        UnitTypesArea.cm2: 10_000,
-        UnitTypesArea.mm2: 1_000_000,
-        UnitTypesArea.sf: 10.764,
-    }
-    _DEFAULT_UNIT = UnitTypesArea.mm2
+    CONVERSION_FACTORS: dict[UnitTypesArea, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesArea.m2: 10_000,
+            UnitTypesArea.cm2: 10_000,
+            UnitTypesArea.mm2: 1_000_000,
+            UnitTypesArea.sf: 10.764,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesArea = Field(
+        frozen=True, exclude=True, default=UnitTypesArea.mm2
+    )
+
     value: float = Field(gt=0.0)
     units: UnitTypesArea
 
 
 class UnitfulVelocity(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesVelocity.mph: 2.236936,
-        UnitTypesVelocity.mps: 1,
-        UnitTypesVelocity.knots: 1.943844,
-    }
-    _DEFAULT_UNIT = UnitTypesVelocity.mps
+    CONVERSION_FACTORS: dict[UnitTypesVelocity, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesVelocity.mph: 2.236936,
+            UnitTypesVelocity.mps: 1,
+            UnitTypesVelocity.knots: 1.943844,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesVelocity = Field(
+        frozen=True, exclude=True, default=UnitTypesVelocity.mps
+    )
 
     value: float = Field(gt=0.0)
     units: UnitTypesVelocity
@@ -238,33 +285,51 @@ class UnitfulDirection(IUnitFullValue):
 
 
 class UnitfulDischarge(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesDischarge.cfs: 0.02832,
-        UnitTypesDischarge.cms: 1,
-    }
-    _DEFAULT_UNIT = UnitTypesDischarge.cms
+    CONVERSION_FACTORS: dict[UnitTypesDischarge, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesDischarge.cfs: 0.02832,
+            UnitTypesDischarge.cms: 1,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesDischarge = Field(
+        frozen=True, exclude=True, default=UnitTypesDischarge.cms
+    )
 
     value: float = Field(gt=0.0)
     units: UnitTypesDischarge
 
 
 class UnitfulIntensity(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesIntensity.inch_hr: 25.39544832,
-        UnitTypesIntensity.mm_hr: 1,
-    }
-    _DEFAULT_UNIT = UnitTypesIntensity.mm_hr
+    CONVERSION_FACTORS: dict[UnitTypesIntensity, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesIntensity.inch_hr: 25.39544832,
+            UnitTypesIntensity.mm_hr: 1,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesIntensity = Field(
+        frozen=True, exclude=True, default=UnitTypesIntensity.mm_hr
+    )
 
     value: float = Field(gt=0.0)
     units: UnitTypesIntensity
 
 
 class UnitfulVolume(IUnitFullValue):
-    _CONVERSION_FACTORS = {
-        UnitTypesVolume.m3: 1.0,
-        UnitTypesVolume.cf: 35.3147,
-    }
-    _DEFAULT_UNIT = UnitTypesVolume.m3
+    CONVERSION_FACTORS: dict[UnitTypesVolume, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesVolume.m3: 1.0,
+            UnitTypesVolume.cf: 35.3147,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesVolume = Field(
+        frozen=True, exclude=True, default=UnitTypesVolume.m3
+    )
 
     value: float = Field(gt=0.0)
     units: UnitTypesVolume
@@ -274,13 +339,19 @@ class UnitfulTime(IUnitFullValue):
     value: float
     units: UnitTypesTime
 
-    _CONVERSION_FACTORS = {
-        UnitTypesTime.days: 1.0 / 24.0,
-        UnitTypesTime.hours: 1.0,
-        UnitTypesTime.minutes: 60.0,
-        UnitTypesTime.seconds: 60.0 * 60.0,
-    }
-    _DEFAULT_UNIT = UnitTypesTime.hours
+    CONVERSION_FACTORS: dict[UnitTypesTime, float] = Field(
+        frozen=True,
+        exclude=True,
+        default={
+            UnitTypesTime.days: 1.0 / 24.0,
+            UnitTypesTime.hours: 1.0,
+            UnitTypesTime.minutes: 60.0,
+            UnitTypesTime.seconds: 60.0 * 60.0,
+        },
+    )
+    DEFAULT_UNIT: UnitTypesTime = Field(
+        frozen=True, exclude=True, default=UnitTypesTime.hours
+    )
 
     def to_timedelta(self) -> timedelta:
         """Convert given time to datetime.deltatime object, relative to UnitfulTime(0, Any).
@@ -290,5 +361,4 @@ class UnitfulTime(IUnitFullValue):
         datetime.timedelta
             datetime.timedelta object with representation: (days, seconds, microseconds)
         """
-        seconds = self.convert(UnitTypesTime.seconds).value
-        return timedelta(seconds=seconds)
+        return timedelta(seconds=self.convert(UnitTypesTime.seconds))

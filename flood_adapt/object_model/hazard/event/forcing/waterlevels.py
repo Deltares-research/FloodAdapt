@@ -60,7 +60,7 @@ class WaterlevelSynthetic(IWaterlevel):
             .load_dict(self.tide.to_timeseries_model())
             .calculate_data()
         )
-        return surge + tide
+        return pd.DataFrame(surge + tide)
 
 
 class WaterlevelFromCSV(IWaterlevel):
@@ -92,7 +92,7 @@ class WaterlevelFromModel(IWaterlevel):
 class WaterlevelFromMeteo(IWaterlevel):
     _source = ForcingSource.METEO
     _meteo_path: str = (
-        None  # path to the meteo data, set this when writing the downloaded meteo data to disk
+        None  # path to the meteo data, set this when writing the downloaded meteo data to disk in event.process()
     )
 
     def get_data(self) -> pd.DataFrame:

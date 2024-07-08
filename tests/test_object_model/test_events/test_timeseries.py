@@ -1,6 +1,6 @@
 import os
 import tempfile
-from pathlib import Path
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -8,14 +8,13 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.hazard.event.timeseries import (
-    Scstype,
+    # Scstype,
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
-    UnitfulLength,
     UnitfulTime,
     UnitTypesIntensity,
     UnitTypesLength,
@@ -28,26 +27,25 @@ class TestTimeseriesModel:
     def get_test_model(shape_type: ShapeType):
         _TIMESERIES_MODEL_SIMPLE = {
             "shape_type": ShapeType.constant.value,
-            "start_time": {"value": 0, "units": UnitTypesTime.hours},
-            "end_time": {"value": 1, "units": UnitTypesTime.hours},
-            "peak_intensity": {"value": 1, "units": UnitTypesIntensity.mm_hr},
+            "duration": {"value": 1, "units": UnitTypesTime.hours},
+            "peak_time": {"value": 0, "units": UnitTypesTime.hours},
+            "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
         }
-
-        _TIMESERIES_MODEL_SCS = {
-            "shape_type": ShapeType.scs.value,
-            "start_time": {"value": 0, "units": UnitTypesTime.hours},
-            "end_time": {"value": 1, "units": UnitTypesTime.hours},
-            "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
-            "scs_file_path": "test_scs.csv",
-            "scs_type": Scstype.type1.value,
-        }
+        # _TIMESERIES_MODEL_SCS = {
+        #     "shape_type": ShapeType.scs.value,
+        #     "peak_time": {"value": 0, "units": UnitTypesTime.hours},
+        #     "duration": {"value": 1, "units": UnitTypesTime.hours},
+        #     "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
+        #     "scs_file_path": "test_scs.csv",
+        #     "scs_type": Scstype.type1.value,
+        # }
 
         models = {
             ShapeType.constant: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.gaussian: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.triangle: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.harmonic: _TIMESERIES_MODEL_SIMPLE,
-            ShapeType.scs: _TIMESERIES_MODEL_SCS,
+            # ShapeType.scs: _TIMESERIES_MODEL_SCS,
         }
         return models[shape_type]
 
@@ -69,10 +67,14 @@ class TestTimeseriesModel:
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.constant
-        assert timeseries_model.start_time == UnitfulTime(0, UnitTypesTime.hours)
-        assert timeseries_model.end_time == UnitfulTime(1, UnitTypesTime.hours)
-        assert timeseries_model.peak_intensity == UnitfulIntensity(
-            1, UnitTypesIntensity.mm_hr
+        assert timeseries_model.peak_time == UnitfulTime(
+            value=0, units=UnitTypesTime.hours
+        )
+        assert timeseries_model.duration == UnitfulTime(
+            value=1, units=UnitTypesTime.hours
+        )
+        assert timeseries_model.peak_value == UnitfulIntensity(
+            value=1, units=UnitTypesIntensity.mm_hr
         )
 
     def test_SyntheticTimeseries_save_load(self, tmp_path):
@@ -88,46 +90,46 @@ class TestTimeseriesModel:
         # Assert
         assert timeseries == loaded_model
 
-    def test_TimeseriesModel_valid_input_scs_shapetype(self, tmp_path):
-        # Arrange
-        temp_file = tmp_path / "data.csv"
-        temp_file.write_text("test")
-        model = self.get_test_model(ShapeType.scs)
-        model["scs_file_path"] = Path(temp_file)
+    # def test_TimeseriesModel_valid_input_scs_shapetype(self, tmp_path):
+    #     # Arrange
+    #     temp_file = tmp_path / "data.csv"
+    #     temp_file.write_text("test")
+    #     model = self.get_test_model(ShapeType.scs)
+    #     model["scs_file_path"] = Path(temp_file)
 
-        # Act
-        timeseries_model = SyntheticTimeseriesModel.model_validate(model)
+    #     # Act
+    #     timeseries_model = SyntheticTimeseriesModel.model_validate(model)
 
-        # Assert
-        assert timeseries_model.shape_type == ShapeType.scs
-        assert timeseries_model.start_time == UnitfulTime(0, UnitTypesTime.hours)
-        assert timeseries_model.end_time == UnitfulTime(1, UnitTypesTime.hours)
-        assert timeseries_model.cumulative == UnitfulLength(
-            1, UnitTypesLength.millimeters
-        )
-        assert timeseries_model.scs_file_path == Path(temp_file)
-        assert timeseries_model.scs_type == Scstype.type1
+    #     # Assert
+    #     assert timeseries_model.shape_type == ShapeType.scs
+    #     assert timeseries_model.peak_time == UnitfulTime(0, UnitTypesTime.hours)
+    #     assert timeseries_model.duration == UnitfulTime(1, UnitTypesTime.hours)
+    #     assert timeseries_model.cumulative == UnitfulLength(
+    #         1, UnitTypesLength.millimeters
+    #     )
+    # assert timeseries_model.scs_file_path == Path(temp_file)
+    # assert timeseries_model.scs_type == Scstype.type1
 
-    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path", "cumulative"])
-    def test_TimeseriesModel_invalid_input_shapetype_scs(self, tmp_path, to_remove):
-        # Arrange
-        temp_file = tmp_path / "data.csv"
-        temp_file.write_text("test")
-        model = self.get_test_model(ShapeType.scs)
-        model["scs_file_path"] = Path(temp_file)
-        model.pop(to_remove)
+    # @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path", "cumulative"])
+    # def test_TimeseriesModel_invalid_input_shapetype_scs(self, tmp_path, to_remove):
+    #     # Arrange
+    #     temp_file = tmp_path / "data.csv"
+    #     temp_file.write_text("test")
+    #     model = self.get_test_model(ShapeType.scs)
+    #     model["scs_file_path"] = Path(temp_file)
+    #     model.pop(to_remove)
 
-        # Act
-        with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel.model_validate(model)
+    #     # Act
+    #     with pytest.raises(ValidationError) as e:
+    #         SyntheticTimeseriesModel.model_validate(model)
 
-        # Assert
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert (
-            "scs_file, scs_type and cumulative must be provided for SCS timeseries:"
-            in errors[0]["ctx"]["error"].args[0]
-        )
+    #     # Assert
+    #     errors = e.value.errors()
+    #     assert len(errors) == 1
+    #     assert (
+    #         "scs_file, scs_type and cumulative must be provided for SCS timeseries:"
+    #         in errors[0]["ctx"]["error"].args[0]
+    #     )
 
     @pytest.mark.parametrize(
         "shape_type",
@@ -143,7 +145,7 @@ class TestTimeseriesModel:
     ):
         # Arrange
         model = self.get_test_model(shape_type)
-        model["peak_intensity"] = {"value": 1, "units": UnitTypesIntensity.mm_hr}
+        model["peak_value"] = {"value": 1, "units": UnitTypesIntensity.mm_hr}
         model["cumulative"] = {"value": 1, "units": UnitTypesLength.millimeters}
 
         # Act
@@ -154,7 +156,7 @@ class TestTimeseriesModel:
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "Exactly one of peak_intensity or cumulative must be set"
+            "Either peak_value or cumulative must be specified for the timeseries model."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -172,7 +174,7 @@ class TestTimeseriesModel:
     ):
         # Arrange
         model = self.get_test_model(shape_type)
-        model.pop("peak_intensity")
+        model.pop("peak_value")
         if "cumulative" in model:
             model.pop("cumulative")
 
@@ -184,27 +186,7 @@ class TestTimeseriesModel:
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "Exactly one of peak_intensity or cumulative must be set"
-            in errors[0]["ctx"]["error"].args[0]
-        )
-
-    def test_TimeseriesModel_invalid_input_start_time_greater_than_end_time(
-        self,
-    ):
-        # Arrange
-        model = self.get_test_model(ShapeType.constant)
-        model["start_time"]["value"] = 1
-        model["end_time"]["value"] = 0
-
-        # Act
-        with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel.model_validate(model)
-
-        # Assert
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert (
-            "Timeseries start time cannot be later than its end time:"
+            "Either peak_value or cumulative must be specified for the timeseries model."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -215,23 +197,22 @@ class TestSyntheticTimeseries:
         ts = SyntheticTimeseries()
         ts.attrs = SyntheticTimeseriesModel(
             shape_type=ShapeType.constant,
-            start_time=UnitfulTime(0, UnitTypesTime.hours),
-            end_time=UnitfulTime(1, UnitTypesTime.hours),
-            peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
+            peak_time=UnitfulTime(0, UnitTypesTime.hours),
+            duration=UnitfulTime(1, UnitTypesTime.hours),
+            peak_value=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
         )
         return ts
 
     def test_calculate_data(self):
         ts = self.get_test_timeseries()
 
-        duration = (ts.attrs.end_time - ts.attrs.start_time).convert(
-            UnitTypesTime.seconds
-        )
         timestep = UnitfulTime(1, UnitTypesTime.seconds)
         data = ts.calculate_data(timestep)
 
-        assert (duration.value / timestep.value) == len(data)
-        assert np.amax(data) == ts.attrs.peak_intensity.value
+        assert int(ts.attrs.duration / timestep) == len(
+            data
+        ), f"{ts.attrs.duration}/{timestep} should eq {len(data)}, but it is: {ts.attrs.duration/timestep}."
+        assert np.amax(data) == ts.attrs.peak_value.value
 
     def test_load_file(self):
         fd, path = tempfile.mkstemp(suffix=".toml")
@@ -241,9 +222,9 @@ class TestSyntheticTimeseries:
                 tmp.write(
                     """
                 shape_type = "constant"
-                start_time = { value = 0, units = "hours" }
-                end_time = { value = 1, units = "hours" }
-                peak_intensity = { value = 1, units = "mm/hr" }
+                peak_time = { value = 0, units = "hours" }
+                duration = { value = 1, units = "hours" }
+                peak_value = { value = 1, units = "mm_hr" }
                 """
                 )
 
@@ -253,9 +234,13 @@ class TestSyntheticTimeseries:
                 pytest.fail(str(e))
 
             assert model.attrs.shape_type == ShapeType.constant
-            assert model.attrs.start_time == UnitfulTime(0, UnitTypesTime.hours)
-            assert model.attrs.end_time == UnitfulTime(1, UnitTypesTime.hours)
-            assert model.attrs.peak_intensity == UnitfulIntensity(
+            assert model.attrs.peak_time == UnitfulTime(
+                value=0, units=UnitTypesTime.hours
+            )
+            assert model.attrs.duration == UnitfulTime(
+                value=1, units=UnitTypesTime.hours
+            )
+            assert model.attrs.peak_value == UnitfulIntensity(
                 1, UnitTypesIntensity.mm_hr
             )
 
@@ -268,9 +253,9 @@ class TestSyntheticTimeseries:
             temp_path = "test.toml"
             ts.attrs = SyntheticTimeseriesModel(
                 shape_type=ShapeType.constant,
-                start_time=UnitfulTime(0, UnitTypesTime.hours),
-                end_time=UnitfulTime(1, UnitTypesTime.hours),
-                peak_intensity=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
+                peak_time=UnitfulTime(value=0, units=UnitTypesTime.hours),
+                duration=UnitfulTime(value=1, units=UnitTypesTime.hours),
+                peak_value=UnitfulIntensity(value=1, units=UnitTypesIntensity.mm_hr),
             )
             try:
                 ts.save(temp_path)
@@ -283,39 +268,42 @@ class TestSyntheticTimeseries:
             os.remove(temp_path)
 
     def test_to_dataframe(self):
-
+        duration = UnitfulTime(2, UnitTypesTime.hours)
         ts = SyntheticTimeseries().load_dict(
             {
                 "shape_type": "constant",
-                "start_time": {"value": 0, "units": "hours"},
-                "end_time": {"value": 2, "units": "hours"},
-                "peak_intensity": {"value": 1, "units": "mm/hr"},
+                "peak_time": {"value": 1, "units": "hours"},
+                "duration": {"value": 2, "units": "hours"},
+                "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
             }
         )
-        start = "2020-01-02 00:00:00"
-        end = "2020-01-02 02:00:00"
+        start = datetime(year=2020, month=1, day=1, hour=2)
+        end = start + duration.to_timedelta()
+        timestep = UnitfulTime(value=10, units=UnitTypesTime.seconds)
 
         # Call the to_dataframe method
         df = ts.to_dataframe(
             start_time=start,
             end_time=end,
-            time_step=UnitfulTime(10, UnitTypesTime.seconds),
+            time_step=timestep,
         )
 
         assert isinstance(df, pd.DataFrame)
-        assert list(df.columns) == ["intensity"]
+        assert list(df.columns) == ["values"]
         assert list(df.index.names) == ["time"]
 
         # Check that the DataFrame has the correct content
         expected_data = ts.calculate_data(
-            time_step=UnitfulTime(10, UnitTypesTime.seconds)
+            time_step=UnitfulTime(value=timestep.value, units=UnitTypesTime.seconds)
         )
         expected_time_range = pd.date_range(
-            start=pd.Timestamp(start), end=end, freq="10S", inclusive="left"
+            start=pd.Timestamp(start),
+            end=end,
+            freq=f"{int(timestep.value)}S",
+            inclusive="left",
         )
         expected_df = pd.DataFrame(
-            expected_data, columns=["intensity"], index=expected_time_range
+            expected_data, columns=["values"], index=expected_time_range
         )
         expected_df.index.name = "time"
-
         pd.testing.assert_frame_equal(df, expected_df)

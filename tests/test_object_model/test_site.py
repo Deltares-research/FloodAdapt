@@ -55,7 +55,7 @@ def test_dict():
             "default_velocity_units": "knots",
             "default_direction_units": "deg N",
             "default_discharge_units": "cfs",
-            "default_intensity_units": "inch/hr",
+            "default_intensity_units": "inch_hr",
             "default_cumulative_units": "inch",
             "tide_harmonic_amplitude": {"value": 3.0, "units": "feet"},
             "mapbox_layers": {

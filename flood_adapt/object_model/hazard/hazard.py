@@ -448,7 +448,7 @@ class Hazard:
 #                 value=1.0, units=self.site.attrs.gui.default_intensity_units
 #             )
 #             conversion_factor_precip = gui_units_precip.convert(
-#                 UnitTypesIntensity("mm/hr")
+#                 UnitTypesIntensity("mm_hr")
 #             )
 #             if self.event.attrs.template != "Historical_hurricane":
 #                 if self.event.attrs.rainfall.source == "map":
@@ -487,7 +487,7 @@ class Hazard:
 #                     )
 #                     # add unit conversion and rainfall increase from projection, not event since the user can adjust constant rainfall accordingly
 #                     const_precipitation = (
-#                         self.event.attrs.rainfall.constant_intensity.convert("mm/hr")
+#                         self.event.attrs.rainfall.constant_intensity.convert("mm_hr")
 #                         * (1 + self.physical_projection.attrs.rainfall_increase / 100.0)
 #                     )
 #                     model.add_precip_forcing(const_precip=const_precipitation)
