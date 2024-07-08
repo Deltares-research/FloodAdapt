@@ -78,9 +78,16 @@ Here are the steps to edit the **parameters** of a floodwall or levee:
 
 ## Pumps
 
-Buyouts refer to the purchase and subsequent removal of a property, usually one that is high risk or has experienced repetitive flooding. To implement the buyout measure, go to the [Measures](../measures/index.qmd) tab, select "Buildings" for the Category, and then from the Measure drop-down menu, select "Buyout properties". Select one of the "Area type" options and then click "Add Measure". If you selected "Draw polygon" for the Area type, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure. When you are finished clicking the polygon, right click or double click to open the measure specification window. If you select "Aggregation area" the specification window will automatically open when you click "Add measure" and you will additionally choose an aggregation area to apply the measure (see @fig-measure_building_poly_buyout_specification). 
+Pumps remove water from low-lying areas or drainage systems to mitigate flooding. They are needed when gravity alone cannot allow for floodwaters to escape, or in combination with floodwalls which - without the inclusion of pumps - can trap rainwater within the area shielded by the floodwall. To implement floodwalls or levees in FloodAdapt:
 
-In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected "Aggregation area" - the aggregation area where the measure should be applied. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab. 
+* Go to the [Measures](../measures/index.qmd) tab
+* Select "Hydraulic" for the Category
+* From the Measure drop-down menu, Select "pump" 
+* Select one of the "Area type" options and then click "Add Measure". 
+
+If you selected "Draw polyline", you can now click on the map. While FloodAdapt allows you to click multiple points in your polyline, the only points that will be retained for a pump are the first and last point. The first point will be treated as the 'intake' location (where the water will enter the pump) and the last point will be treated as the 'outtake' location (where the water will be pumped to). When drawing pump intake/outtake points, it is useful to turn on the "show grid" option so you are sure your intake and outtake points do not fall within the same model grid cell. When you have finished clicking your intake/outtake points, double-click on the last point to open the specification window.
+
+In the specification window, you enter a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected "Aggregation area" - the aggregation area where the measure should be applied. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab. 
 
 ![**Specifying information for a buyout measure**](../../_static/images/measure_building_poly_buyout_specification.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
 
