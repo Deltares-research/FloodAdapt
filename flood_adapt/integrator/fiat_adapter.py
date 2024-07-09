@@ -26,8 +26,8 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Load FIAT model based on a root directory."""
         # Load FIAT template
-        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.ERROR)
-        self.fiat_model = FiatModel(root=model_root, mode="r", logger=self._logger)
+        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.INFO)
+        self.fiat_model = FiatModel(root=model_root, mode="r")
         self.fiat_model.read()
 
         # Get site information

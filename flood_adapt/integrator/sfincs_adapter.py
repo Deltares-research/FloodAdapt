@@ -42,8 +42,8 @@ class SfincsAdapter:
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.ERROR)
-        self.sf_model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
+        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.INFO)
+        self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
         self.site = site
 
