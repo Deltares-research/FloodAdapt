@@ -80,7 +80,7 @@ class IUnitFullValue(BaseModel):
         )
 
     def __eq__(self, other):
-        if not issubclass(type(other), IUnitFullValue):
+        if not isinstance(other, IUnitFullValue):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
@@ -223,7 +223,7 @@ class UnitfulLength(IUnitFullValue):
             UnitTypesLength.millimeters: 1000.0,
             UnitTypesLength.feet: 3.28084,
             UnitTypesLength.inch: 1.0 / 0.0254,
-            UnitTypesLength.miles: 1609.344,
+            UnitTypesLength.miles: 1 / 1609.344,
         },
     )
     DEFAULT_UNIT: UnitTypesLength = Field(
@@ -306,7 +306,7 @@ class UnitfulIntensity(IUnitFullValue):
         frozen=True,
         exclude=True,
         default={
-            UnitTypesIntensity.inch_hr: 25.39544832,
+            UnitTypesIntensity.inch_hr: 1 / 25.39544832,
             UnitTypesIntensity.mm_hr: 1,
         },
     )
