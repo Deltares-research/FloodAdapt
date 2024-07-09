@@ -182,9 +182,15 @@ def test_download_wl_timeseries(test_db):
     station_id = 8665530
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
-
+    site_toml = test_db.static_path / "site" / "site.toml"
+    site = Site.load_file(site_toml)
     wl_df = HistoricalNearshore.download_wl_data(
-        station_id, start_time_str, stop_time_str, units="feet", file=None
+        station_id,
+        start_time_str,
+        stop_time_str,
+        units="feet",
+        source=site.attrs.tide_gauge.source,
+        file=None,
     )
 
     assert wl_df.index[0] == datetime.strptime(start_time_str, "%Y%m%d %H%M%S")

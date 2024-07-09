@@ -1,5 +1,4 @@
 import gc
-import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
@@ -14,6 +13,7 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
@@ -32,31 +32,27 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 from flood_adapt.object_model.site import Site
 
-# from flood_adapt.object_model.validate.config import validate_existence_root_folder
-
-logger = logging.getLogger(__name__)
-
 
 class SfincsAdapter:
+
     def __init__(self, site: Site, model_root: Optional[str] = None):
         """Load overland sfincs model based on a root directory.
 
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        self.sfincs_logger = logging.getLogger(__name__)
-        self.sfincs_logger.handlers = []  # To ensure logging file path has reset
-        self.sf_model = SfincsModel(
-            root=model_root, mode="r+", logger=self.sfincs_logger
-        )
+        self._logger = FloodAdaptLogging.getLogger(__name__)
+        self.sf_model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
         self.sf_model.read()
         self.site = site
 
     def __del__(self):
-        # Close the log file associated with the logger
-        for handler in self.sfincs_logger.handlers:
-            handler.close()
-        self.sfincs_logger.handlers.clear()
+        """Close the log file associated with the logger and clean up file handles."""
+        if hasattr(self, "_logger") and hasattr(self._logger, "handlers"):
+            # Close the log file associated with the logger
+            for handler in self._logger.handlers:
+                handler.close()
+            self._logger.handlers.clear()
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
@@ -242,7 +238,7 @@ class SfincsAdapter:
             gdf_locs.crs = self.sf_model.crs
 
             if len(list_df.columns) != len(gdf_locs):
-                logging.error(
+                self._logger.error(
                     """The number of rivers of the site.toml does not match the
                               number of rivers in the SFINCS model. Please check the number
                               of coordinates in the SFINCS *.src file."""
@@ -257,16 +253,15 @@ class SfincsAdapter:
                     np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
                     and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
                 ):
-                    logging.error(
+                    self._logger.error(
                         """The location and/or order of rivers in the site.toml does not match the
                                 locations and/or order of rivers in the SFINCS model. Please check the
                                 coordinates and their order in the SFINCS *.src file and ensure they are
                                 consistent with the coordinates and order orf rivers in the site.toml file."""
                     )
                     raise ValueError(
-                        "River coordinates in site.toml and SFINCS template model not compatible"
+                        f"Incompatible river coordinates for river: {river.name}.\nsite.toml: ({river.x_coordinate}, {river.y_coordinate})\nSFINCS template model ({gdf_locs.geometry[ii + 1].x}, {gdf_locs.geometry[ii + 1].y})."
                     )
-                    break
 
             self.sf_model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False
@@ -302,9 +297,9 @@ class SfincsAdapter:
                 for height in gdf_floodwall["z"]
             ]
             gdf_floodwall["z"] = heights
-            logging.info("Using floodwall height from shape file.")
+            self._logger.info("Using floodwall height from shape file.")
         except Exception:
-            logging.warning(
+            self._logger.warning(
                 f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
                 Using uniform height of {floodwall.elevation.convert(UnitTypesLength("meters"))} meters instead."""
             )

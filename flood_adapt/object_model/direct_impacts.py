@@ -1,4 +1,3 @@
-import logging
 import shutil
 import subprocess
 import time
@@ -18,6 +17,7 @@ from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
 import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
@@ -41,6 +41,7 @@ class DirectImpacts:
     has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
+        self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
         self.database = database
         self.scenario = scenario
@@ -121,7 +122,7 @@ class DirectImpacts:
         self.hazard = Hazard(scenario, database, results_dir)
 
     def preprocess_models(self):
-        logging.info("Preparing impact models...")
+        self._logger.info("Preparing impact models...")
         # Preprocess all impact model input
         start_time = time.time()
         self.preprocess_fiat()
@@ -129,7 +130,7 @@ class DirectImpacts:
         print(f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds")
 
     def run_models(self):
-        logging.info("Running impact models...")
+        self._logger.info("Running impact models...")
         start_time = time.time()
         return_code = self.run_fiat()
         end_time = time.time()
@@ -140,10 +141,10 @@ class DirectImpacts:
             self.__setattr__("has_run", True)
 
     def postprocess_models(self):
-        logging.info("Post-processing impact models...")
+        self._logger.info("Post-processing impact models...")
         # Preprocess all impact model input
         self.postprocess_fiat()
-        logging.info("Impact models post-processing complete!")
+        self._logger.info("Impact models post-processing complete!")
 
     def preprocess_fiat(self):
         """Update FIAT model based on scenario information and then runs the FIAT model."""
@@ -308,17 +309,17 @@ class DirectImpacts:
         if self.site_info.attrs.fiat.roads_file_name:
             self._create_roads(fiat_results_df)
 
-        logging.info("Post-processing complete!")
+        self._logger.info("Post-processing complete!")
 
         # If site config is set to not keep FIAT simulation, then delete folder
         if not self.site_info.attrs.fiat.save_simulation:
             try:
                 shutil.rmtree(self.fiat_path)
             except OSError as e_info:
-                logging.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
+                self._logger.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
 
     def _create_roads(self, fiat_results_df):
-        logging.info("Saving road impacts...")
+        self._logger.info("Saving road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
             self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
@@ -335,10 +336,10 @@ class DirectImpacts:
         )
         # Save as geopackage
         outpath = self.impacts_path.joinpath(f"Impacts_roads_{self.name}.gpkg")
-        roads.to_file(outpath, format="geopackage")
+        roads.to_file(outpath, driver="GPKG")
 
     def _create_equity(self, metrics_path):
-        logging.info("Calculating equity weighted risk...")
+        self._logger.info("Calculating equity weighted risk...")
         # Get metrics tables
         metrics_fold = metrics_path.parent
         # loop through metrics aggregated files
@@ -402,7 +403,7 @@ class DirectImpacts:
             metrics_new.to_csv(file)
 
     def _create_aggregation(self, metrics_path):
-        logging.info("Saving impacts on aggregation areas...")
+        self._logger.info("Saving impacts on aggregation areas...")
 
         # Define where aggregated results are saved
         output_fold = self.impacts_path
@@ -439,7 +440,7 @@ class DirectImpacts:
             )
 
     def _create_footprints(self, fiat_results_df):
-        logging.info("Saving impacts on building footprints...")
+        self._logger.info("Saving impacts on building footprints...")
 
         # Get footprints file paths from site.toml
         # TODO ensure that if this does not happen we get same file name output from FIAT?
@@ -508,17 +509,23 @@ class DirectImpacts:
 
     def _create_infometrics(self, fiat_results_df) -> Path:
         # Get the metrics configuration
-        logging.info("Calculating infometrics...")
+        self._logger.info("Calculating infometrics...")
 
         if self.hazard.event_mode == "risk":
             ext = "_risk"
         else:
             ext = ""
 
-        metrics_config_path = self.database.static_path.joinpath(
+        optional_metrics_config_path = self.database.static_path.joinpath(
             "templates",
             "infometrics",
-            f"metrics_config{ext}.toml",
+            f"optional_metrics_config{ext}.toml",
+        )
+
+        mandatory_metrics_config_path = self.database.static_path.joinpath(
+            "templates",
+            "infometrics",
+            f"mandatory_metrics_config{ext}.toml",
         )
 
         # Specify the metrics output path
@@ -530,15 +537,29 @@ class DirectImpacts:
         )
 
         # Write the metrics to file
-        metrics_writer = MetricsFileWriter(metrics_config_path)
+        optional_metrics_writer = MetricsFileWriter(optional_metrics_config_path)
 
-        metrics_writer.parse_metrics_to_file(
+        optional_metrics_writer.parse_metrics_to_file(
             df_results=fiat_results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate=None,
         )
 
-        metrics_writer.parse_metrics_to_file(
+        optional_metrics_writer.parse_metrics_to_file(
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate="all",
+        )
+
+        mandatory_metrics_writer = MetricsFileWriter(mandatory_metrics_config_path)
+
+        mandatory_metrics_writer.parse_metrics_to_file(
+            df_results=fiat_results_df,
+            metrics_path=metrics_outputs_path,
+            write_aggregate=None,
+        )
+
+        mandatory_metrics_writer.parse_metrics_to_file(
             df_results=fiat_results_df,
             metrics_path=metrics_outputs_path,
             write_aggregate="all",
@@ -547,7 +568,7 @@ class DirectImpacts:
         return metrics_outputs_path
 
     def _create_infographics(self, mode, metrics_path):
-        logging.info("Creating infographics...")
+        self._logger.info("Creating infographics...")
 
         # Get the infographic
         InforgraphicFactory.create_infographic_file_writer(

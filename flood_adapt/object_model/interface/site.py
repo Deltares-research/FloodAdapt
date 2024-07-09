@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -32,15 +32,21 @@ class Floodmap_type(str, Enum):
     water_depth = "water_depth"
 
 
+class TideGaugeSource(str, Enum):
+    """The accepted input for the variable source in tide_gauge."""
+
+    file = "file"
+    noaa_coops = "noaa_coops"
+
+
 class SfincsModel(BaseModel):
     """The accepted input for the variable sfincs in Site."""
 
     csname: str
     cstype: Cstype
     version: Optional[str] = ""
-    offshore_model: str
+    offshore_model: Optional[str] = None
     overland_model: str
-    ambient_air_pressure: float
     floodmap_units: UnitTypesLength
     save_simulation: Optional[bool] = False
 
@@ -55,7 +61,6 @@ class VerticalReferenceModel(BaseModel):
 class WaterLevelReferenceModel(BaseModel):
     """The accepted input for the variable water_level in Site."""
 
-    reference: VerticalReferenceModel
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
     other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
@@ -67,11 +72,18 @@ class Cyclone_track_databaseModel(BaseModel):
     file: str
 
 
+class SlrScenariosModel(BaseModel):
+    """The accepted input for the variable slr.scenarios ."""
+
+    file: str
+    relative_to_year: int
+
+
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
     vertical_offset: UnitfulLength
-    relative_to_year: int
+    scenarios: Optional[SlrScenariosModel] = None
 
 
 class DamageType(str, Enum):
@@ -135,8 +147,13 @@ class GuiModel(BaseModel):
 class RiskModel(BaseModel):
     """The accepted input for the variable risk in Site."""
 
-    flooding_threshold: UnitfulLength
     return_periods: list
+
+
+class FloodFrequencyModel(BaseModel):
+    """The accepted input for the variable flood_frequency in Site."""
+
+    flooding_threshold: UnitfulLength
 
 
 class DemModel(BaseModel):
@@ -196,22 +213,27 @@ class RiverModel(BaseModel):
     y_coordinate: float
 
 
-class Obs_stationModel(BaseModel):
-    """The accepted input for the variable obs_station in Site.
+class TideGaugeModel(BaseModel):
+    """The accepted input for the variable tide_gauge in Site.
 
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
-    name: Union[int, str]
+    name: Optional[Union[int, str]] = None
     description: Optional[str] = ""
-    ID: int
+    source: TideGaugeSource
+    ID: int  # This is the only attribute that is currently used in FA!
     file: Optional[str] = None  # for locally stored data
-    lat: float
-    lon: float
-    mllw: Optional[UnitfulLength] = None
-    mhhw: Optional[UnitfulLength] = None
-    localdatum: Optional[UnitfulLength] = None
-    msl: Optional[UnitfulLength] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+
+    @model_validator(mode="after")
+    def validate_selection_type(self) -> "TideGaugeModel":
+        if self.source == "file" and self.file is None:
+            raise ValueError(
+                "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
+            )
+        return self
 
 
 class Obs_pointModel(BaseModel):
@@ -265,15 +287,19 @@ class SiteModel(BaseModel):
     lon: float
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
-    cyclone_track_database: Cyclone_track_databaseModel
+    cyclone_track_database: Optional[Cyclone_track_databaseModel] = None
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
+    # TODO what should the default be
+    flood_frequency: Optional[FloodFrequencyModel] = {
+        "flooding_threshold": UnitfulLength(value=0.0, units="meters")
+    }
     dem: DemModel
     fiat: FiatModel
-    river: Optional[list[RiverModel]] = []
-    obs_station: Optional[Obs_stationModel] = None
-    obs_point: Optional[list[Obs_pointModel]] = []
+    tide_gauge: Optional[TideGaugeModel] = None
+    river: Optional[list[RiverModel]] = None
+    obs_point: Optional[list[Obs_pointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
 

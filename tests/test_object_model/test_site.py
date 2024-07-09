@@ -2,10 +2,10 @@ import pytest
 
 from flood_adapt.object_model.interface.site import (
     DemModel,
-    Obs_stationModel,
     RiverModel,
     SfincsModel,
     SiteModel,
+    TideGaugeModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import (
@@ -191,7 +191,7 @@ def test_dict():
         "scs": {"file": "scs_rainfall.csv", "type": "type_3"},
         "standard_objects": {...},
     }
-    return config_values
+    yield config_values
 
 
 @pytest.fixture
@@ -200,13 +200,13 @@ def test_tomls(test_db):
         test_db.static_path / "site" / "site.toml",
         test_db.static_path / "site" / "site_without_river.toml",
     ]
-    return toml_files
+    yield toml_files
 
 
 @pytest.fixture
 def test_sites(test_db, test_tomls):
     test_sites = {toml_file.name: Site.load_file(toml_file) for toml_file in test_tomls}
-    return test_sites
+    yield test_sites
 
 
 def test_loadFile_validFiles(test_tomls):
@@ -240,7 +240,7 @@ def test_loadFile_tomlFile_no_river(test_sites):
     assert isinstance(test_site.attrs.name, str)
     assert isinstance(test_site.attrs.sfincs, SfincsModel)
     assert isinstance(test_site.attrs.dem, DemModel)
-    assert isinstance(test_site.attrs.obs_station, Obs_stationModel)
+    assert isinstance(test_site.attrs.tide_gauge, TideGaugeModel)
     assert test_site.attrs.lat == 32.77
     assert test_site.attrs.slr.vertical_offset.value == 0.6
     assert test_site.attrs.fiat.exposure_crs == "EPSG:4326"

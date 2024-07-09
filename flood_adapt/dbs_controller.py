@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from datetime import datetime
@@ -22,6 +21,7 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -99,7 +99,8 @@ class Database(IDatabase):
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
-        logging.info(
+        self._logger = FloodAdaptLogging.getLogger(__name__)
+        self._logger.info(
             f"(Re-)Initializing database to {database_name} at {database_path}"
         )
         self.database_path = database_path
@@ -131,6 +132,10 @@ class Database(IDatabase):
         self._benefits = DbsBenefit(self)
 
         self._init_done = True
+
+    def reset(self):
+        self._instance = None
+        self._init_done = False
 
     # Property methods
     @property
@@ -187,7 +192,9 @@ class Database(IDatabase):
         ValueError
             if the year to evaluate is outside of the time range in the slr.csv file
         """
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self.input_path.parent.joinpath(
+            "static", self.site.attrs.slr.scenarios.file
+        )
         df = pd.read_csv(input_file)
         if year > df["year"].max() or year < df["year"].min():
             raise ValueError(
@@ -195,7 +202,7 @@ class Database(IDatabase):
             )
         else:
             slr = np.interp(year, df["year"], df[slr_scenario])
-            ref_year = self.site.attrs.slr.relative_to_year
+            ref_year = self.site.attrs.slr.scenarios.relative_to_year
             if ref_year > df["year"].max() or ref_year < df["year"].min():
                 raise ValueError(
                     f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -211,7 +218,9 @@ class Database(IDatabase):
 
     # TODO: should probably be moved to frontend
     def plot_slr_scenarios(self) -> str:
-        input_file = self.input_path.parent.joinpath("static", "slr", "slr.csv")
+        input_file = self.input_path.parent.joinpath(
+            "static", self.site.attrs.slr.scenarios.file
+        )
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
         try:
@@ -232,7 +241,7 @@ class Database(IDatabase):
         ) as e:
             print(e)
 
-        ref_year = self.site.attrs.slr.relative_to_year
+        ref_year = self.site.attrs.slr.scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():
             raise ValueError(
                 f"The reference year {ref_year} is outside the range of the available SLR scenarios"
@@ -383,6 +392,7 @@ class Database(IDatabase):
             event["rainfall"]["source"] == "shape"
             or event["rainfall"]["source"] == "timeseries"
         ):
+            event["name"] = "temp_event"
             temp_event = EventFactory.get_event(event["template"]).load_dict(event)
             if (
                 temp_event.attrs.rainfall.source == "shape"
@@ -460,6 +470,11 @@ class Database(IDatabase):
     ) -> (
         str
     ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if any(df.empty for df in input_river_df) and any(
+            river["source"] == "timeseries" for river in event["river"]
+        ):
+            return ""
+        event["name"] = "temp_event"
         temp_event = EventFactory.get_event(event["template"]).load_dict(event)
         event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
         temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
@@ -795,8 +810,8 @@ class Database(IDatabase):
         gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_aggregated_damages(self, scenario_name: str) -> dict[GeoDataFrame]:
-        """Get a dictionary with the aggregated damages as geodataframes.
+    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+        """Return a dictionary with the aggregated impacts as geodataframes.
 
         Parameters
         ----------
@@ -881,6 +896,10 @@ class Database(IDatabase):
         """
         scenario = self._scenarios.get(scenario_name)
 
+        # Dont do anything if the hazard model has already been run in itself
+        if scenario.direct_impacts.hazard.has_run_check():
+            return
+
         simulations = list(
             self.input_path.parent.joinpath("output", "Scenarios").glob("*")
         )
@@ -904,7 +923,7 @@ class Database(IDatabase):
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    print(
+                    self._logger.info(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
 
