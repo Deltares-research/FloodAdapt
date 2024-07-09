@@ -1216,9 +1216,8 @@ class Database:
                 )
                 shutil.copytree(path_0, path_1)
 
-        files = ["metrics_config.toml", "metrics_config_risk.toml"]
         path = self.root.joinpath("static", "templates", "infometrics")
-
+        files = list(path.glob("*metrics_config*.toml"))
         # Update aggregation areas in metrics config
         for file in files:
             file = path.joinpath(file)
