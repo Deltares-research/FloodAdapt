@@ -10,18 +10,6 @@ from flood_adapt.object_model.tipping_point import TippingPoint
 from flood_adapt.object_model.interface.tipping_points import ITipPoint
 
 
-@pytest.fixture
-def test_db():
-    # Mock the database setup or configure a test database
-    read_database(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt-Database",
-        "charleston_full",
-    )
-    set_system_folder(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt-Database\\system"
-    )
-
-
 @pytest.fixture()
 def tp_dict():
     # Setup
@@ -33,7 +21,7 @@ def tp_dict():
         "projection": "current",
         "sealevelrise": [0.5, 1.0, 1.5],
         "tipping_point_metric": [
-            ("FloodedAll", 34195.0, "greater"),
+            ("TotalDamageEvent", 110974525.0, "greater"),
             ("FullyFloodedRoads", 2000, "greater"),
         ],
     }

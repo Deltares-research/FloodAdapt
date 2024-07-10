@@ -110,13 +110,12 @@ class TippingPoint(ITipPoint):
 
         # create subdirectories for each scenario and .toml files
         for scenario in scenarios.keys():
-            if not (Database().input_path / "scenarios" / scenario).exists():
-                (Database().input_path / "scenarios" / scenario).mkdir(parents=True)
 
             scenario_obj = Scenario.load_dict(
                 scenarios[scenario], Database().input_path
             )
             scen_exists = self.check_scenarios_exist(scenario_obj)
+
             if scen_exists:
                 # make a dict with name and object
                 self.scenarios[scen_exists[0]] = {
@@ -164,7 +163,9 @@ class TippingPoint(ITipPoint):
         tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
             drop=True
         )
-        tp_results.to_csv(tp_path / "tipping_point_results.csv")
+        tp_results[["name", "tipping point reached"]].to_csv(
+            tp_path / "tipping_point_results.csv"
+        )
 
     def scenario_has_run(self, scenario_obj):
         # TODO: once has_run is refactored (external) we change below to make it more direct
@@ -186,6 +187,9 @@ class TippingPoint(ITipPoint):
             index_col=0,
         )
         # if any tipping point is reached, return True
+        # TODO: maybe change to different approach if more than one tipping
+        # point is being assessed (instead of any, maybe you want to check
+        # which TPs are reached and return a dict with the results)
         return any(
             self.evaluate_tipping_point(
                 info_df.loc[metric[0], "Value"],
@@ -235,3 +239,33 @@ class TippingPoint(ITipPoint):
 # TODO: post processing stuff still to be done
 # make html & plots
 # write to file
+
+if __name__ == "__main__":
+    from flood_adapt.config import set_system_folder
+
+    database = read_database(
+        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database",
+        "charleston_test",
+    )
+    set_system_folder(
+        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
+    )
+
+    tp_dict = {
+        "name": "tipping_point_test",
+        "description": "",
+        "event_set": "extreme12ft",
+        "strategy": "no_measures",
+        "projection": "current",
+        "sealevelrise": [0.5, 1.0, 1.5],
+        "tipping_point_metric": [
+            ("TotalDamageEvent", 110974525.0, "greater"),
+            ("FullyFloodedRoads", 2301, "greater"),
+        ],
+    }
+    # load
+    test_point = TippingPoint.load_dict(tp_dict)
+    # create scenarios for tipping points
+    test_point.create_tp_scenarios()
+    # run all scenarios
+    test_point.run_tp_scenarios()
