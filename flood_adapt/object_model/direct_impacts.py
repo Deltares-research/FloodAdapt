@@ -537,19 +537,21 @@ class DirectImpacts:
         )
 
         # Write the metrics to file
-        optional_metrics_writer = MetricsFileWriter(optional_metrics_config_path)
+        # Check if optional metrics exist
+        if metrics_outputs_path.exists():
+            optional_metrics_writer = MetricsFileWriter(optional_metrics_config_path)
 
-        optional_metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
-            metrics_path=metrics_outputs_path,
-            write_aggregate=None,
-        )
+            optional_metrics_writer.parse_metrics_to_file(
+                df_results=fiat_results_df,
+                metrics_path=metrics_outputs_path,
+                write_aggregate=None,
+            )
 
-        optional_metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
-            metrics_path=metrics_outputs_path,
-            write_aggregate="all",
-        )
+            optional_metrics_writer.parse_metrics_to_file(
+                df_results=fiat_results_df,
+                metrics_path=metrics_outputs_path,
+                write_aggregate="all",
+            )
 
         mandatory_metrics_writer = MetricsFileWriter(mandatory_metrics_config_path)
 
