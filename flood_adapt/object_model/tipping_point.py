@@ -3,24 +3,21 @@ import shutil
 from pathlib import Path
 from typing import Any, Union
 
-import geopandas as gpd
-import numpy as np
-import numpy_financial as npf
 import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.api.static import read_database
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.tipping_points import (
-    TippingPointModel,
     ITipPoint,
+    TippingPointModel,
     TippingPointStatus,
 )
-from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-from flood_adapt.api.static import read_database
+from flood_adapt.object_model.scenario import Scenario
 
 """
 This script implements a Tipping Point model to analyze the impact of sea level rise (SLR)
@@ -206,8 +203,7 @@ class TippingPoint(ITipPoint):
 
     ### standard functions ###
     def load_file(filepath: Union[str, Path]) -> "TippingPoint":
-        """create risk event from toml file"""
-
+        """Create risk event from toml file"""
         obj = TippingPoint()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -215,14 +211,13 @@ class TippingPoint(ITipPoint):
         return obj
 
     def load_dict(dct: Union[str, Path]) -> "TippingPoint":
-        """create risk event from toml file"""
-
+        """Create risk event from toml file"""
         obj = TippingPoint()
         obj.attrs = TippingPointModel.model_validate(dct)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save tipping point to a toml file"""
+        """Save tipping point to a toml file"""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
