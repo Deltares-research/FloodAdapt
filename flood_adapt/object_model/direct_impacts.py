@@ -550,6 +550,11 @@ class DirectImpacts:
                     metrics_path=metrics_outputs_path,
                     write_aggregate="all",
                 )
+            else:
+                if "mandatory" in metric_file.name.lower():
+                    raise FileNotFoundError(
+                        f"Mandatory metric configuration file {metric_file} does not exist!"
+                    )
 
         return metrics_outputs_path
 
