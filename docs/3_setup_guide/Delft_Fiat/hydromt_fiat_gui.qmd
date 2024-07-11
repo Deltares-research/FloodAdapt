@@ -24,7 +24,7 @@ The initial steps to set up a Delft-FIAT model with the Delft-FIAT model builder
   4. Generate the model boundary (@fig-boundaries).
         a) **Draw polygon**: Click on the map and draw a valid polygon. Double click will end the drawing process.
         b) **Draw box**: Click on the map and draw a box. Double click will end the drawing process.
-        c) **SFINCS model domain**: If you aleady created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
+        c) **SFINCS model domain**: If you already created a SFINCS model you can select the **/gis-folder**. Do <u>not</u> select the region file itself. It will be recognized automatically by the model.
         d) **Upload file**: You can upload your own boundary in form of a vector file (e.g. *.gpkg*, *.geojson*) with a valid polygon shape. 
 
   2. When you are finished, click **"Generate Boundary"**.
@@ -108,7 +108,7 @@ Not only does FloodAdapt calculate building impacts, but it also evaluates the n
     *Finished floor height:* Assign a value (meters) for the finished floor height to all assets at once.
 
     ::: {.callout-tip}
-    You can refine the finised floor height for the individual assets in the **Exposure**- >> **Finished Floor Height**-tab.
+    You can refine the finished floor height for the individual assets in the **Exposure**- >> **Finished Floor Height**-tab.
     :::
 
 4. Include **OSM roads** by checking the checkbox "Include OSM roads".
@@ -274,12 +274,12 @@ Add additional attributes to your model. In this example, a land use layer is ad
 
 :::
 
-#### Additional attribtues {#sec-add_attributes}
+#### Additional attributes {#sec-add_attributes}
 Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be added to your model (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same geographical location of your model. 
 
 ![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/SVI_additional_attr.svg){#fig-svi}
 
-If you wish to add any **aggregation** layer or **additional attribute** layer to your model follow these intstructions. The same instructions apply for any SVI and/or equity layer. 
+If you wish to add any **aggregation** layer or **additional attribute** layer to your model follow these instructions. The same instructions apply for any SVI and/or equity layer. 
 
 <u>*Step-by-step instructions: Add additional attributes*</u>
 
