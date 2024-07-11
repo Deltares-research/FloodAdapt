@@ -14,7 +14,7 @@ The Delft-FIAT model builder allows users to rapidly set up a Delft-FIAT model u
 
 # Getting started and selecting your model boundary {#sec-getting-started}
 
-The initial steps to set up a Delft-FIAT model with the Delft-FIAT model builder are the same whether you set up a [quickbuild model](#sec-quickbuild) or [tailored model](#sec-tailored_model).  
+The initial steps to set up a Delft-FIAT model with the Delft-FIAT model builder are the same whether you set up a [quickbuild](#sec-quickbuild) or [tailored](#sec-tailored_model) model.  
 
 <u>*Step-by-step instructions: Get started*</u> 
 
