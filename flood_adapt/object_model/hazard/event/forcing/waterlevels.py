@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 from pydantic import BaseModel
 
@@ -54,13 +56,22 @@ class WaterlevelSynthetic(IWaterlevel):
     tide: TideModel
 
     def get_data(self) -> pd.DataFrame:
-        surge = SyntheticTimeseries().load_dict(self.surge.timeseries).calculate_data()
-        tide = (
-            SyntheticTimeseries()
-            .load_dict(self.tide.to_timeseries_model())
-            .calculate_data()
-        )
-        return pd.DataFrame(surge + tide)
+        surge = SyntheticTimeseries().load_dict(self.surge.timeseries)
+        tide = SyntheticTimeseries().load_dict(self.tide.to_timeseries_model())
+        surge_start = surge.attrs.peak_time - surge.attrs.duration / 2
+        surge_end = surge_start + surge.attrs.duration
+
+        tide_start = tide.attrs.peak_time - tide.attrs.duration / 2
+        tide_end = tide_start + tide.attrs.duration
+
+        # TODO `START` should be the start time of the event / some defined default value
+        START = datetime(2021, 1, 1, 0, 0, 0)
+        start = START + min(surge_start, tide_start).to_timedelta()
+        end = start + max(surge_end, tide_end).to_timedelta()
+
+        wl_df = surge.to_dataframe(start, end) + tide.to_dataframe(start, end)
+
+        return wl_df
 
 
 class WaterlevelFromCSV(IWaterlevel):

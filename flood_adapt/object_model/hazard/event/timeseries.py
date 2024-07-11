@@ -198,7 +198,7 @@ class SyntheticTimeseries(ITimeseries):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: UnitfulTime,
+        time_step: UnitfulTime = DEFAULT_TIMESTEP,
     ) -> pd.DataFrame:
         return super().to_dataframe(
             start_time=start_time,

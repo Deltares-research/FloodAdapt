@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import tomli
 from pydantic import BaseModel
 
 
@@ -39,14 +40,14 @@ class IForcing(BaseModel):
         self.get_data().to_csv(path)
 
     @classmethod
-    @abstractmethod
-    def load_file(self, path: str | os.PathLike):
-        pass
+    def load_file(cls, path: str | os.PathLike):
+        with open(path, mode="rb") as fp:
+            toml_data = tomli.load(fp)
+        return cls.load_dict(toml_data)
 
     @classmethod
-    @abstractmethod
-    def load_dict(self, attrs):
-        pass
+    def load_dict(cls, attrs):
+        return cls.model_validate(attrs)
 
     @abstractmethod
     def get_data(self) -> pd.DataFrame:
