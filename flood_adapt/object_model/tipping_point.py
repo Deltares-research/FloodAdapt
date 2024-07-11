@@ -231,7 +231,7 @@ class TippingPoint(ITipPoint):
         return attrs_1 == attrs_2
 
 
-# TODO: post processing stuff still to be done
+# TODO: post processing stuff still to be done for frontend
 # make html & plots
 # write to file
 
