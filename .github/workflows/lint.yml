@@ -32,10 +32,12 @@ jobs:
         run: black --check .
 
   typos:
-    name: Spell Check with Typos
+    name: Spell Check with Typos 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
         uses: actions/checkout@v3
       - name: Check spelling
         uses: crate-ci/typos@master
+        with:
+          paths-ignore: 'docs/_static/**'
