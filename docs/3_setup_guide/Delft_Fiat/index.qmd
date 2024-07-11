@@ -19,7 +19,7 @@ For a detailed documentation of Delft-FIAT you can visit the [**Delft-FIAT docum
 Delft-FIAT is a calculation engine and does not come pre-populated with data. It is flexible and allows users to input and modify their own exposure, vulnerability, and hazard data. The quality of the estimated damages is entirely dependent on the quality of the data that is input into Delft-FIAT. 
 
 ::: {.callout-tip}
-The data input to run Delft-FIAT can be fully configured in the [Delft-FIAT model-builder](hydromt_fiat_gui.qmd). 
+The data input to run Delft-FIAT can be fully configured in the [Delft-FIAT model builder](hydromt_fiat_gui.qmd). 
 :::
 
 ## Exposure Data 
@@ -34,7 +34,8 @@ Delft-FIAT can be used to assess flood damages to buildings, roads, utilities, a
 ## Vulnerability Data
 Vulnerability data in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a percentage of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth, also referred to as water depth, during a flood event. Different assets incur different degrees of damage at varying inundation levels. The damage function relates the inundation depth to a fraction of total damage per building type (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. 
 
-The Delft-FIAT model-builder obtains these vulnerability curves from two different data sources:
+The Delft-FIAT model builder obtains these vulnerability curves from two different data sources:
+
   1. **United States**: FEMA Hazus Curves
   2. **Global**: JRC Global flood depth-damage functions
 
