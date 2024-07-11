@@ -41,10 +41,10 @@ Outputs:
 
 
 class TippingPoint(ITipPoint):
-    """Class holding all information related to tipping points analysis"""
+    """Class holding all information related to tipping points analysis."""
 
     def __init__(self):
-        """Initiation function when object is created through file or dict options"""
+        """Initiate function when object is created through file or dict options."""
         self.site_toml_path = Path(Database().static_path) / "site" / "site.toml"
         self.results_path = Database().output_path / "tipping_points"
         self.scenarios = {}
@@ -64,7 +64,7 @@ class TippingPoint(ITipPoint):
         return self
 
     def slr_projections(self, slr):
-        """Create projections for sea level rise value"""
+        """Create projections for sea level rise value."""
         new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
         proj = Database().projections.get(self.attrs.projection)
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
@@ -87,7 +87,7 @@ class TippingPoint(ITipPoint):
         return db_list
 
     def create_tp_scenarios(self):
-        """Create scenarios for each sea level rise value inside the tipping_point folder"""
+        """Create scenarios for each sea level rise value inside the tipping_point folder."""
         self.create_tp_obj()
         # create projections based on SLR values
         for i, slr in enumerate(self.attrs.sealevelrise):
@@ -135,20 +135,22 @@ class TippingPoint(ITipPoint):
         )  # for later when we have a database_tp: TODO: Database().tipping_points.save(self)
 
     def run_tp_scenarios(self):
-        """Run all scenarios to determine tipping points"""
+        """Run all scenarios to determine tipping points."""
         for name, scenario in self.scenarios.items():
             scenario_obj = scenario["object"]
-            # check if scenario has been run, if yes skip it
+
+            if self.attrs.status == TippingPointStatus.reached:
+                self.scenarios[name]["tipping point reached"] = True
+                continue
+
             if not self.scenario_has_run(scenario_obj):
                 scenario_obj.run()
 
-            # if the status is reached, save the SLR and the metric value
+            # Check the tipping point status
             if self.check_tipping_point(scenario_obj):
                 self.attrs.status = TippingPointStatus.reached
                 self.scenarios[name]["tipping point reached"] = True
-                break
             else:
-                self.attrs.status = TippingPointStatus.not_reached
                 self.scenarios[name]["tipping point reached"] = False
 
         tp_path = self.results_path.joinpath(self.attrs.name)
@@ -175,8 +177,7 @@ class TippingPoint(ITipPoint):
         return False
 
     def check_tipping_point(self, scenario: Scenario):
-        """Load results and check if the tipping point is reached"""
-        # already optimised for multiple metrics
+        """Load results and check if the tipping point is reached."""
         info_df = pd.read_csv(
             scenario.init_object_model().direct_impacts.results_path.joinpath(
                 f"Infometrics_{scenario.direct_impacts.name}.csv"
@@ -197,13 +198,13 @@ class TippingPoint(ITipPoint):
         )
 
     def evaluate_tipping_point(self, current_value, threshold, operator):
-        """Compare current value with threshold for tipping point"""
+        """Compare current value with threshold for tipping point."""
         operations = {"greater": lambda x, y: x >= y, "less": lambda x, y: x <= y}
         return operations[operator](current_value, threshold)
 
     ### standard functions ###
     def load_file(filepath: Union[str, Path]) -> "TippingPoint":
-        """Create risk event from toml file"""
+        """Create risk event from toml file."""
         obj = TippingPoint()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -211,13 +212,13 @@ class TippingPoint(ITipPoint):
         return obj
 
     def load_dict(dct: Union[str, Path]) -> "TippingPoint":
-        """Create risk event from toml file"""
+        """Create risk event from toml file."""
         obj = TippingPoint()
         obj.attrs = TippingPointModel.model_validate(dct)
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save tipping point to a toml file"""
+        """Save tipping point to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
@@ -239,11 +240,11 @@ if __name__ == "__main__":
     from flood_adapt.config import set_system_folder
 
     database = read_database(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database",
+        r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database",
         "charleston_test",
     )
     set_system_folder(
-        rf"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
+        r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
     )
 
     tp_dict = {

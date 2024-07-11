@@ -1,14 +1,14 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
 from enum import Enum
+from typing import Any, Optional, Union
 
 import pandas as pd
 from pydantic import BaseModel
 
 
 class TippingPointMetrics(str, Enum):
-    """class describing the accepted input for the variable metric_type in TippingPoint"""
+    """class describing the accepted input for the variable metric_type in TippingPoint."""
 
     # based on what I have found in floodadapt - but can be changed
     FloodedAll = "FloodedAll"
@@ -44,7 +44,7 @@ class TippingPointMetrics(str, Enum):
 
 
 class TippingPointStatus(str, Enum):
-    """class describing the accepted input for the variable metric_type in TippingPoint"""
+    """class describing the accepted input for the variable metric_type in TippingPoint."""
 
     reached = "reached"
     not_reached = "not_reached"
@@ -52,14 +52,14 @@ class TippingPointStatus(str, Enum):
 
 
 class TippingPointOperator(str, Enum):
-    """class describing the accepted input for the variable operator in TippingPoint"""
+    """class describing the accepted input for the variable operator in TippingPoint."""
 
     greater = "greater"
     less = "less"
 
 
 class TippingPointModel(BaseModel):
-    """BaseModel describing the expected variables and data types of a Tipping Point analysis object"""
+    """BaseModel describing the expected variables and data types of a Tipping Point analysis object."""
 
     name: str
     description: Optional[str] = ""
@@ -82,21 +82,21 @@ class ITipPoint(ABC):
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Tipping Point attributes from toml file"""
+        """Get Tipping Point attributes from toml file."""
         ...
 
     @staticmethod  # copping from benefits.py
     @abstractmethod
     def load_dict(data: dict[str, Any]):
-        """get Tipping Point attributes from an object, e.g. when initialized from GUI"""
+        """Get Tipping Point attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Tipping Point attributes to a toml file"""
+        """Save Tipping Point attributes to a toml file."""
         ...
 
     @abstractmethod
     def check_scenarios_exist(self) -> pd.DataFrame:
-        """Check which scenarios are needed for this tipping point calculation and if they have already been created"""
+        """Check which scenarios are needed for this tipping point calculation and if they have already been created."""
         ...

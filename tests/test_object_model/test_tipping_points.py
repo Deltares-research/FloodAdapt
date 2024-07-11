@@ -1,6 +1,10 @@
+from pathlib import Path
+
 import pytest
 
-from flood_adapt.object_model.tipping_point import TippingPoint
+from flood_adapt.dbs_controller import Database
+from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.tipping_point import TippingPoint, TippingPointStatus
 
 
 class TestTippingPoints:
@@ -25,6 +29,11 @@ class TestTippingPoints:
         test_point.create_tp_scenarios()
         return test_point
 
+    @pytest.fixture()
+    def run_tp_scenarios(self, created_tp_scenarios):
+        created_tp_scenarios.run_tp_scenarios()
+        return created_tp_scenarios
+
     def test_createTippingPoints_scenariosAlreadyExist_notDuplicated(
         self, test_db, tp_dict
     ):
@@ -36,6 +45,27 @@ class TestTippingPoints:
     def test_run_scenarios(self, test_db, created_tp_scenarios):
         created_tp_scenarios.run_tp_scenarios()
         assert created_tp_scenarios is not None
+
+    def test_slr_projections_creation(self, test_db, tp_dict):
+        test_point = TippingPoint.load_dict(tp_dict)
+        for slr in test_point.attrs.sealevelrise:
+            test_point.slr_projections(slr)
+            projection_path = (
+                Path(Database().input_path)
+                / "projections"
+                / f"{test_point.attrs.projection}_slr{str(slr).replace('.', '')}"
+                / f"{test_point.attrs.projection}_slr{str(slr).replace('.', '')}.toml"
+            )
+            assert projection_path.exists()
+
+    def test_scenario_tippingpoint_reached(self, test_db, run_tp_scenarios):
+        for name, scenario in run_tp_scenarios.scenarios.items():
+            assert (
+                "tipping point reached" in scenario
+            ), f"Key 'tipping point reached' not found in scenario: {name}"
+            assert isinstance(
+                scenario["tipping point reached"], bool
+            ), f"Value for 'tipping point reached' is not boolean in scenario: {name}"
 
 
 class TestTippingPointInvalidInputs:
@@ -72,6 +102,25 @@ class TestTippingPointInvalidInputs:
     def test_load_dict_with_invalid_inputs(self, invalid_tp_dict):
         with pytest.raises(ValueError):
             TippingPoint.load_dict(invalid_tp_dict)
+
+    def test_edge_cases_empty_sealevelrise(self, test_db):
+        tp_dict = {
+            "name": "tipping_point_test",
+            "description": "",
+            "event_set": "extreme12ft",
+            "strategy": "no_measures",
+            "projection": "current",
+            "sealevelrise": [],
+            "tipping_point_metric": [
+                ("TotalDamageEvent", 110974525.0, "greater"),
+                ("FullyFloodedRoads", 2305, "greater"),
+            ],
+        }
+        test_point = TippingPoint.load_dict(tp_dict)
+        test_point.create_tp_scenarios()
+        assert (
+            len(test_point.scenarios) == 0
+        ), "Scenarios should not be created for empty sealevelrise list"
 
 
 # database = read_database(
