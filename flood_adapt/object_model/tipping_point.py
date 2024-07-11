@@ -7,7 +7,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
-from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.api.static import read_database
 from flood_adapt.dbs_controller import Database
