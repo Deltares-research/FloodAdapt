@@ -1,5 +1,5 @@
 ---
-title:	Delft-FIAT model-builder
+title:	Delft-FIAT model builder
 filters:
   - lightbox
 lightbox: auto
@@ -10,13 +10,13 @@ number-sections: true
 format: html
 ---
 
-The Delft-FIAT model-builder allows users to rapidly set up a Delft-FIAT model using a [quick-build](#sec-quickbuild) option using default modeling choices, or to build a [tailored Delft-FIAT model](#sec-tailored_model), making the Delft-FIAT model creation accessible for any type of user (incl. users without modeling experience). 
+The Delft-FIAT model builder allows users to rapidly set up a Delft-FIAT model using a [quick-build](#sec-quickbuild) option using default modeling choices, or to build a [tailored Delft-FIAT model](#sec-tailored_model), making the Delft-FIAT model creation accessible for any type of user, especially users without modeling experience. 
 
 # Getting started and selecting your model boundary {#sec-getting-started}
 
-These are steps that are carried out whether you do [quickbuild](#sec-quickbuild) or [tailored model-building](#sec-tailored_model).  
+The initial steps to set up a Delft-FIAT model with the Delft-FIAT model builder are the same whether you set up a [quickbuild model](#sec-quickbuild) or [tailored model](#sec-tailored_model).  
 
-<u>*Step-by-step instructions to get started:*</u> 
+<u>*Step-by-step instructions: Get started*</u> 
 
   1. Go to **File** >> **Select Working Directory**.
   2. Select an output folder.
@@ -32,10 +32,10 @@ These are steps that are carried out whether you do [quickbuild](#sec-quickbuild
 ![Workflow to create model boundaries.](../../_static/figures/draw_boundaries.svg){#fig-boundaries}
 
 ::: {.callout-note}
-After you selected the working directory the Delft-FIAT model-builder generates the folder structure as described in the section [Folder Structure](index.qmd) in the output folder.
+After you selected the working directory the Delft-FIAT model builder generates the folder structure as described in the section [Folder Structure](index.qmd) in the output folder.
 :::
 
-The video tutorial below showcases the model boundary creation in the Delft-FIAT model-builder with the option "Draw Polygon" (@fig-model_boundaries).
+The video tutorial below showcases the model boundary creation in the Delft-FIAT model builder with the option "Draw Polygon" (@fig-model_boundaries).
 
 ::: {#fig-model_boundaries}
 
@@ -47,7 +47,7 @@ Create model boundaries using the "Draw Polygon" method.
 
 # Quickbuild {#sec-quickbuild}
 The **quickbuild** is a complete Delft-FIAT model which can be set up anywhere in the **United States** with ease. It doesn't require any user input except for defining the [model boundary](#sec-getting-started).  
-The quickbuild sets up the exposure data incl. roads and assigns the corresponding vulnerability curve to each asset. Moreover, the Delft-FIAT model-builder social vlunerability index (SVI) module calculates the [social vulnerability index](#sec-svi) and downloads [equity data (income and population)](#sec-svi).
+The quickbuild sets up the exposure data incl. roads and assigns the corresponding vulnerability curve to each asset. Moreover, the social vlunerability index (SVI) module of the Delft-FIAT model builder calculates the [social vulnerability index](#sec-svi) and downloads [equity data (income and population)](#sec-svi).
 
 The **quickbuild** obtains the model data from the following sources:  
 
@@ -58,10 +58,10 @@ The **quickbuild** obtains the model data from the following sources:
 
 ![Workflow about how to use the "Quickbuild"-option.](../../_static/figures/quickbuild.svg){#fig-quickbuild}
 
-<u>*Step-by-step instructions for the Quick Build*</u> 
+<u>*Step-by-step instructions: Quick Build*</u> 
 
   1. Go to the **Model Boundary | Quickbuild**-tab and create the model boundary (@sec-getting-started; @fig-quickbuild).
-  2. After you generated the boundary you can select the quickbuild option and the Delft-FIAT model is built.
+  2. After you generated the boundary you can select the **quickbuild** option and the Delft-FIAT model is built.
 
 The steps are demonstrated in the video tutorial below(@fig-nsi_quickbuild). 
 
@@ -77,7 +77,7 @@ Quickbuild option in the United States using NSI exposure, FEMA Hazus Damage Cur
 To create a more accurate and refined Delft-FIAT model you can configure it with your own data. The model can be set up at any location worldwide.
 
 ## Create the exposure data
-The quality of the Delft-FIAT model is directly influenced by the exposure data. It's favourable to use as much local and regional data as possible/available to improve the accuracy of the model. The Delft-FIAT model-builder enables you to refine the exposure data. The different options are described in the following sections:
+The quality of the Delft-FIAT model is directly influenced by the exposure data. It's favourable to use as much local and regional data as possible/available to improve the accuracy of the model. The Delft-FIAT model builder enables you to refine the exposure data. The different options are described in the following sections:
 
   1. [Create a base model with the default data sources](#sec-basemodel)
   2. [Refine the Finished Floor Height/ Import Finished Floor Height User Input](#sec-finished_floor_height) (*optional*)
@@ -85,14 +85,14 @@ The quality of the Delft-FIAT model is directly influenced by the exposure data.
   4. [Refine the Maximum Potential Damages/Import Maximum Potential Damage User Input](#sec-maximum_potential_damages) (*optional*)
 
 ### Create a base model with the default data sources: NSI and/or OSM  {#sec-basemodel}
-Determined by the location of the model boundary, the Delft-FIAT model-builder uses different data sources to download the **building exposure data**:
+Determined by the location of the model boundary, the Delft-FIAT model builder uses different data sources to download the **building exposure data**:
 
 1. **United States**: National Structure Inventory (NSI)
 2. **Global**: Open Street Map (OSM)
 
-Not only does FloodAdapt calculate building impacts, but it also evaluates the non-flooded and flooded state of roads. Thus, in the case of Delft-FIAT being used within FloodAdapt you must add **road data** to the Delft-FIAT model. The Delft-FIAT model-builder allows you to obtain road information from Open Street Map for any model location worldwide. 
+Not only does FloodAdapt calculate building impacts, but it also evaluates the non-flooded and flooded state of roads. Thus, in the case of Delft-FIAT being used within FloodAdapt you must add **road data** to the Delft-FIAT model. The Delft-FIAT model builder allows you to obtain road information from Open Street Map for any model location worldwide. 
 
-<u>*Step-by-step instructions to set up the exposure data:*</u>
+<u>*Step-by-step instructions: Set up the exposure data*</u>
 
 1. Generate your [model boundary](#sec-getting-started).
 2. Open the **"Exposure"**-tab from the top panel (@fig-exposure). From the bottom panel select the **"Asset Location"**-tab.
@@ -102,7 +102,7 @@ Not only does FloodAdapt calculate building impacts, but it also evaluates the n
     *Damage currency:* The default JRC damage currency is in **Euro**.
 
     ::: {.callout-warning}
-    Don't change the default damage currency from Euro to another currency for the global model.There is no currency converter tool implemented in the Delft-FIAT model-builder yet.
+    Don't change the default damage currency from Euro to another currency.There is no currency converter tool implemented in the Delft-FIAT model builder yet.
     :::
 
     *Finished floor height:* Assign a value (meters) for the finished floor height to all assets at once.
@@ -114,7 +114,7 @@ Not only does FloodAdapt calculate building impacts, but it also evaluates the n
 4. Include **OSM roads** by checking the checkbox "Include OSM roads".
 5. Add to model.
 
-The videos tutorials demonstrate the exposure setup using the NSI data for exposure and OSM data for roads (@fig-nsi_exposure) as well as the exposure setup for a global model, using OSM data (incl. roads; @fig-osm_exposure).
+The video tutorials demonstrate the exposure setup using the NSI exposure and OSM roads (@fig-nsi_exposure) as well as the exposure setup for a global model, using OSM data (incl. roads; @fig-osm_exposure).
 
 ![Workflow to setup exposure data with NSI (National Structure Inventory) or OSM (Open Street Map) as data source.](../../_static/figures/exposure.svg){#fig-exposure}
 
@@ -141,21 +141,21 @@ Global exposure setup using OSM exposure and OSM roads .
 The following sections in this chapter elaborate on how you can refine the model or import their own data. 
 
 ### Refine Finished Floor Height {#sec-finished_floor_height}
-You have the option to **adjust** the finished floor height **default values** of the base model (NSI or OSM) by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets, specific areas or for the whole model domain. 
+You have the option to **adjust** the finished floor height **default values** of the base model (NSI or OSM) by importing a point- or polygon vector file (e.g. *.gpkg*, *.geojson*) with different data values for individual assets, specific areas or the whole model domain. 
 
 ![Workflow to refine the finished floor height.](../../_static/figures/finished_floor_height.svg){#fig-finished_floor_height}
 
 ::: {.callout-note}
-The Delft-FIAT model-builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to the intersecting/nearest asset.
+The Delft-FIAT model builder performs a spatial joint of the exposure assets with the point-/polygon finished floor height vector file and assigns the new values to the intersecting/nearest asset.
 :::
 
-<u>*Step-by-step instructions to import the finished floor height*</u>  
+<u>*Step-by-step instructions: Import the finished floor height*</u>  
 
 1. Open the **"Exposure"**-tab from the top panel and select the **"Finished Floor Height"**-tab in the bottom panel.
 2. Select the file source of your finished floor height data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
 3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
 4. Select the column that holds the finished floor height data. 
-5. *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the Delft-FIAT model-builder. You can keep the default settings if you don't wish to change the method.
+5. *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the Delft-FIAT model builder. You can keep the default settings if you don't wish to change the method.
 6. Add to model.
 
 ::: {#fig-ffh}
@@ -167,16 +167,16 @@ Model refinement with user input for finished floor height.
 :::
 
 ### Refine Ground Elevation {#sec-ground_elevation}
-To import ground elevation data, you must provide a DEM raster file (e.g. *.tif*) with the updated elevation values. The Delft-FIAT model-builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
+To import ground elevation data, you must provide a DEM raster file (e.g. *.tif*) with the updated elevation values. The Delft-FIAT model builder calculates the mean value from the pixels within the shape of each asset and assigns this value to the associated asset.   
 
 ![Workflow to refine the ground elevation.](../../_static/figures/ground_elevation.svg){#fig-ground_elevation}
 
-<u>*Step-by-step instructions to import ground elevation data*</u>   
+<u>*Step-by-step instructions: Import ground elevation data*</u>   
 
 1. Open the **"Exposure"**-tab on the top panel and select the **"Ground Elevation"**-tab in the bottom panel.
 2. There are two options in the drop-down menu to set up the ground elevation data:
     1. **SFINCS Ground Elevation**
-        a. If you have already a SFINCS model you can use the same ground elevation from your SFINCS model. Select the  **subgrid-folder** of the SFINCS model, in which the dep_subgrid.tif-file is located. Do <u>not</u> select the file, simply the folder, the Delft-FIAT model-builder will recognize the file automatically.
+        a. If you have already a SFINCS model set up, you can use the same ground elevation from your SFINCS model. Select the  **subgrid-folder** of the SFINCS model, in which the dep_subgrid.tif-file is located. Do <u>not</u> select the file, simply the folder, the Delft-FIAT model builder will recognize the file automatically.
         b. Add to model.
     2. **Upload file**
         a. Select the file source of your ground elevation data. The file must be a raster file (e.g. *.tif*).
@@ -196,19 +196,19 @@ You have the option to **adjust** the **default values** for the max. potential 
 When refining the max. potential damages it is necessary to distinguish between **structure** and **content** damage.
 
 ::: {.callout-note}
-The Delft-FIAT model-builder performs a spatial joint of the exposure assets with the point-/polygon max. potential damages vector file and assigns the new values to the intersecting/nearest asset.
+The Delft-FIAT model builder performs a spatial joint of the exposure assets with the point-/polygon max. potential damages vector file and assigns the new values to the intersecting/nearest asset.
 :::
 
 ![Workflow to refine the fmaximum potential damage (structure/content).](../../_static/figures/max_potential_damages.svg){#fig-max_potential_damages}
 
-<u>*Step-by-step instructions to import the Max. Potential Damages*</u>   
+<u>*Step-by-step instructions: Import the Max. Potential Damages*</u>   
 
-  1. open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel. 
+  1. Open the **"Exposure"**-tab on the top panel and select the **"Max. Potential Damages"**-tab in the bottom panel. 
   2. Select the file source of your max. potential damage data. The file must be a point- or polygon vector file (e.g. *.gpkg*, *.geojson*).
   3. Load the file. This will load the data columns in your file into the **Attribute ID** drop-down menu.
   4. Select the column that holds the max. potential damage data (either "structure"or "content").
-  5. Select the Damage Type either *structural* or *content*, depending on your data.  
-  6.  *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the Delft-FIAT model-builder. You can keep the default settings if you don't wish to change the method.
+  5. Select the damage type you wish to update, either *structure* or *content*.  
+  6.  *optional settings*: Define the method for the spatial joint. The default for point data is *'nearest'* and for polygon data *'intersection'*. The default will be automatically selected by the Delft-FIAT model builder. You can keep the default settings if you don't wish to change the method.
   7. Add to model.
 
   ::: {#fig-max_pot_damages}
@@ -225,10 +225,10 @@ Delft-FIAT calculates the damages on the bases on vulnerability curves. There ar
 1. **United States:** FEMA Hazus Curves
 2. **Global:** JRC Vulnerability Curves
 
-<u>*Step-by-step instructions to assign vulnerability curves*</u>
+<u>*Step-by-step instructions: Assign vulnerability curves*</u>
 
   1. Open the **"Vulnerability"**-tab on the top panel (@fig-vulnerability_curve). 
-  2. The Delft-FIAT model-builder will **automatically** select the **default data source** based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. 
+  2. The Delft-FIAT model builder will **automatically** select the **default data source** based upon your exposure data (NSI or global). Therefore, you only need to add the curves to the model without further adjustment. 
   3. ***Only NSI***: If desired, you can specify different curves from the default  by selecting "Specify different damage curves". First, select the asset you want to assign another damage curve to and second, select a new damage curve (@fig-update_curves). 
 
 ![Workflow to assign vulnerability curves to assets with option to update default NSI vulnerability curves.](../../_static/figures/vulnerability.svg){#fig-vulnerability_curve}
@@ -256,8 +256,7 @@ Assign the default vulnerability curves to the exposure data.
 Delft-FIAT allows you to evaluate the equitible distribution of damages and benefits by using the **social vulnerability index** and **equity**. If your model site is located in the United States, SVI data can be calculated based upon recent literature. 
 However, you have the freedom to upload any social vulnerability index and/or equity layer in form of a **vector file** (e.g. *.gpkg*, *.geojson*) and assign a value to each asset that overlaps the layer at any location (please refer to section [Additional Attributes](#sec-add_attributes)).
 
-<u>*Step-by-step instructions to get SVI and equity data*</u>  
-Follow these instructions when setting up a model in the **United States**
+<u>*Step-by-step instructions: Download SVI and equity data (United States)*</u>  
 
   1. Open the **"SVI + Equity"**-tab on the top panel.
   2. In the bottom panel, select the year you wish to download data frame.
@@ -276,13 +275,13 @@ Add additional attributes to your model. In this example, a land use layer is ad
 :::
 
 #### Additional attribtues {#sec-add_attributes}
-Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be addedd (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same location of your model. 
+Not only social vulnerability and/or equity can be linked to the exposure data. Any additional layer (e.g. landuse, administrative boundaries or others) can be added to your model (@fig-svi). The additional attribute layer must be a **vector file** (e.g. *.gpkg*, *.geojson*) in the same geographical location of your model. 
 
 ![Adding SVI/Equity and additional attributes (e.g. landuse) to the model](../../_static/figures/SVI_additional_attr.svg){#fig-svi}
 
-<u>*Step-by-step instructions to add additional attributes*</u>
+If you wish to add any **aggregation** layer or **additional attribute** layer to your model follow these intstructions. The same instructions apply for any SVI and/or equity layer. 
 
-If you wish to add any **aggregation** layer or **additional attribute** layer to your model follow these intstructions. The same instructions apply for SVI and/or Equity if you wish to add these to your model. 
+<u>*Step-by-step instructions: Add additional attributes*</u>
 
   1. Open the **"Additional Attributes"**-tab on the top panel.
   2. Select the **source** of your vector layer . 
