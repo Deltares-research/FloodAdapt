@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flood-adapt"
-description = "A software package support ystem which can be used to assess the benefits and costs of flood resilience measures"
+description = "A software package support system which can be used to assess the benefits and costs of flood resilience measures"
 readme = "README.md"
 authors = [
     { name = "Gundula Winter", email = "Gundula.Winter@deltares.nl" },
