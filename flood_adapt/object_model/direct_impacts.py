@@ -292,6 +292,10 @@ class DirectImpacts:
         # Create the infometrics files
         metrics_path = self._create_infometrics(fiat_results_df)
 
+        source_folder = f"{self.database.output_path}\\Scenarios\\"
+        destination_folder = f"{self.database.database_path}\\temp\\"
+        shutil.copytree(source_folder, destination_folder)
+
         # Create the infographic files
         self._create_infographics(self.hazard.event_mode, metrics_path)
 

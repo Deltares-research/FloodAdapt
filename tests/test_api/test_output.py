@@ -18,9 +18,6 @@ class TestAPI_Output:
 
     def test_impact_metrics(self, scenario):
         metrics = api_output.get_infometrics(scenario)
-        source_folder = f"{database_path}\\output\\Scenarios\\{scenario}\\"
-        destination_folder = f"{database_root}\\temp\\"
-        shutil.copytree(source_folder, destination_folder)
         assert isinstance(metrics, pd.DataFrame)
 
     def test_impact_footprints(self, scenario):
