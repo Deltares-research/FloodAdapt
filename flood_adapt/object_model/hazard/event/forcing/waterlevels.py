@@ -1,11 +1,11 @@
+import os
 from datetime import datetime
 
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseries,
-    CSVTimeseriesModel,
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
@@ -77,26 +77,28 @@ class WaterlevelSynthetic(IWaterlevel):
 class WaterlevelFromCSV(IWaterlevel):
     _source = ForcingSource.CSV
 
-    timeseries: CSVTimeseriesModel
+    path: os.PathLike | str
 
     def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(
-            CSVTimeseries().load_file(self.timeseries.path).calculate_data()
-        )
+        return CSVTimeseries.read_csv(self.path)
 
 
 class WaterlevelFromModel(IWaterlevel):
     _source = ForcingSource.MODEL
-    _model_path: str = (
-        None  # simpath of the offshore model, set this when running the offshore model
-    )
+    model_path: str | os.PathLike | None = Field(default=None)
+    # simpath of the offshore model, set this when running the offshore model
 
     def get_data(self) -> pd.DataFrame:
         # Note that this does not run the offshore simulation, it only tries to read the results from the model.
         # Running the model is done in the process method of the event.
+        if self.model_path is None:
+            raise ValueError(
+                "Model path is not set. Run the offshore model first using event.process() method."
+            )
+
         from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
-        with SfincsAdapter(model_root=self._model_path) as _offshore_model:
+        with SfincsAdapter(model_root=self.model_path) as _offshore_model:
             return _offshore_model._get_wl_df_from_offshore_his_results()
 
 

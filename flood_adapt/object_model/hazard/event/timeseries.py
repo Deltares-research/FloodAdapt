@@ -240,10 +240,10 @@ class SyntheticTimeseries(ITimeseries):
 class CSVTimeseries(ITimeseries):
     attrs: CSVTimeseriesModel
 
-    @staticmethod
-    def load_file(path: str | Path):
-        obj = CSVTimeseries()
-        obj.attrs = CSVTimeseriesModel(path=path).model_validate()
+    @classmethod
+    def load_file(cls, path: str | Path):
+        obj = cls()
+        obj.attrs = CSVTimeseriesModel.model_validate({"path": path})
         return obj
 
     @staticmethod
@@ -262,9 +262,8 @@ class CSVTimeseries(ITimeseries):
         pd.DataFrame
             Dataframe with time as index and waterlevel as first column.
         """
-        df = pd.read_csv(csvpath, index_col=0, header=None)
+        df = pd.read_csv(csvpath, index_col=0, parse_dates=True)
         df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index, format=DEFAULT_DATETIME_FORMAT)
         return df
 
     def to_dataframe(
@@ -290,10 +289,11 @@ class CSVTimeseries(ITimeseries):
 
     def calculate_data(
         self,
-        time_step: UnitfulTime,
+        time_step: UnitfulTime = DEFAULT_TIMESTEP,
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
         ts = self.read_csv(self.attrs.path)
+
         freq = int(time_step.convert(UnitTypesTime.seconds))
         time_range = pd.date_range(
             start=ts.index.min(), end=ts.index.max(), freq=f"{freq}S", inclusive="left"

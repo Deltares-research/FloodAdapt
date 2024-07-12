@@ -1,7 +1,7 @@
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 from typing import Optional, Protocol, Union
 
 import numpy as np
@@ -85,7 +85,7 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
-    path: str | Path
+    path: str | os.PathLike
     # TODO: Add validation for csv_file_path / contents ?
 
 
