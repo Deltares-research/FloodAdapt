@@ -43,7 +43,12 @@ class FloodAdaptLogging:
         formatter: logging.Formatter = None,
     ) -> None:
         """Add a file handler to the logger that directs outputs to a the file."""
-        if not os.path.exists(file_path):
+        if not file_path:
+            raise ValueError("file_path must be provided.")
+        elif not os.path.dirname(file_path):
+            file_path = os.path.join(os.getcwd(), file_path)
+
+        if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         file_handler = logging.FileHandler(filename=file_path, mode="a")

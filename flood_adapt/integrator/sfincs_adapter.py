@@ -55,13 +55,6 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
     IForcing,
 )
-
-# from flood_adapt.object_model.hazard.event.historical import (
-#     Historical,
-# )
-# from flood_adapt.object_model.hazard.event.synthetic import (
-#     Synthetic,
-# )
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
@@ -100,13 +93,18 @@ class SfincsAdapter(IHazardAdapter):
     _scenario: IScenario
     _model: SfincsModel
 
-    def __init__(self, model_root: str, database: IDatabase):
+    def __init__(self, model_root: str, database: IDatabase = None):
         """Load overland sfincs model based on a root directory.
 
         Args:
             database (IDatabase): Reference to the database containing all objectmodels and site specific information.
             model_root (str): Root directory of overland sfincs model.
         """
+        if database is None:
+            import flood_adapt.dbs_controller as db
+
+            database = db.Database()
+
         self._logger = FloodAdaptLogging.getLogger(__file__)
         self._database = database
         self._model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
@@ -131,7 +129,7 @@ class SfincsAdapter(IHazardAdapter):
             SfincsAdapter: The SfincsAdapter object.
 
         Usage:
-            with SfincsAdapter(site, model_root) as model:
+            with SfincsAdapter(model_root) as model:
                 model.read()
                 ...
         """
@@ -141,7 +139,7 @@ class SfincsAdapter(IHazardAdapter):
         """Exit the context manager, close loggers and free resources. Always gets called when exiting the context manager, even if an exception occurred.
 
         Usage:
-            with SfincsAdapter(model_root, database) as model:
+            with SfincsAdapter(model_root) as model:
                 model.read()
                 ...
         """
@@ -159,7 +157,8 @@ class SfincsAdapter(IHazardAdapter):
 
     def write(self, path_out: Union[str, os.PathLike]):
         """Write the sfincs model."""
-        self._model.write(path_out)
+        with cd(path_out):
+            self._model.write()
 
     def execute(self, sim_path=None, strict=True) -> bool:
         """
@@ -194,8 +193,14 @@ class SfincsAdapter(IHazardAdapter):
 
         with cd(sim_path):
             sfincs_log = "sfincs.log"
-            with FloodAdaptLogging.to_file(sfincs_log):
-                process = subprocess.run(sfincs_exec, stdout=self._logger)
+            with FloodAdaptLogging.to_file(file_path=sfincs_log):
+                process = subprocess.run(
+                    sfincs_exec,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                self._logger.debug(process.stdout)
 
         if process.returncode != 0:
             # Remove all files in the simulation folder except for the log files
@@ -212,7 +217,7 @@ class SfincsAdapter(IHazardAdapter):
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {sim_path}.")
             else:
-                self._logger.warning(f"SFINCS model failed to run in {sim_path}.")
+                self._logger.error(f"SFINCS model failed to run in {sim_path}.")
 
         return process.returncode == 0
 

@@ -5,6 +5,7 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
+import flood_adapt.dbs_controller as db
 from flood_adapt import __version__
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
@@ -20,13 +21,9 @@ class Scenario(IScenario):
 
     def init_object_model(self) -> "Scenario":
         """Create a Direct Impact object."""
-        from flood_adapt.dbs_controller import (
-            Database,  # TODO: Fix circular import and move to top of file. There is too much entanglement between classes to fix this now
-        )
-
         self._logger = FloodAdaptLogging.getLogger(__name__)
 
-        database = Database()
+        database = db.Database()
         self.site_info = database.site
         self.results_path = database.scenarios.get_database_path(
             get_input_path=False

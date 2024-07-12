@@ -5,13 +5,13 @@ from typing import Union
 from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-# from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.dbs_controller import Database
+import flood_adapt.dbs_controller as db
+from flood_adapt.object_model.interface.database import IDatabase
 
 # upon start up of FloodAdapt
 
 
-def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Database:
+def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDatabase:
     """Given a path and a site name returns a IDatabase object.
 
     Parameters
@@ -25,7 +25,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
     -------
     IDatabase
     """
-    return Database(database_path, site_name)
+    return db.Database(database_path, site_name)
 
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
@@ -41,7 +41,7 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
     list[GeoDataFrame]
         list of GeoDataFrames with the aggregation areas
     """
-    return Database().static.get_aggregation_areas()
+    return db.Database().static.get_aggregation_areas()
 
 
 def get_obs_points() -> GeoDataFrame:
@@ -58,11 +58,11 @@ def get_obs_points() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrame with observation points from the site.toml.
     """
-    return Database().static.get_obs_points()
+    return db.Database().static.get_obs_points()
 
 
 def get_model_boundary() -> GeoDataFrame:
-    return Database().static.get_model_boundary()
+    return db.Database().static.get_model_boundary()
 
 
 def get_model_grid() -> QuadtreeGrid:
@@ -77,7 +77,7 @@ def get_model_grid() -> QuadtreeGrid:
     QuadtreeGrid
         QuadtreeGrid with the model grid
     """
-    return Database().static.get_model_grid()
+    return db.Database().static.get_model_grid()
 
 
 @staticmethod
@@ -94,7 +94,9 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
+        return db.Database().static.get_static_map(
+            db.Database().site.attrs.fiat.svi.geom
+        )
     except Exception:
         return None
 
@@ -116,7 +118,7 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
         GeoDataFrame with the static map
     """
     try:
-        return Database().static.get_static_map(path)
+        return db.Database().static.get_static_map(path)
     except Exception:
         return None
 
@@ -133,11 +135,11 @@ def get_buildings() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the buildings from FIAT exposure
     """
-    return Database().static.get_buildings()
+    return db.Database().static.get_buildings()
 
 
 def get_property_types() -> list:
-    return Database().static.get_property_types()
+    return db.Database().static.get_property_types()
 
 
 def get_hazard_measure_types():
