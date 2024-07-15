@@ -2,12 +2,18 @@
     [Charts.Homes]
         Name = "Homes"
         Image = "{image_path}/house.png"
-    [Charts.Commercial]
-        Name = "Commercial"
+    [Charts.Businesses]
+        Name = "Businesses"
         Image = "{image_path}/cart.png"
-    [Charts.Industry]
-        Name = "Industry facilities"
-        Image = "{image_path}/factory.png"
+    [Charts.Health]
+        Name = "Health facilities"
+        Image = "{image_path}/hospital.png"
+    [Charts.Schools]
+        Name = "Schools"
+        Image = "{image_path}/school.png"
+    [Charts.Emergency]
+        Name = "Emergency facilities"
+        Image = "{image_path}/firetruck.png"
 
 
 [Categories]
@@ -37,35 +43,65 @@
         Query = "ResidentialDestroyedCount"
         Chart = "Homes"
         Category = "Destroyed"
-    [Slices.Minor_Commercial]
-        Name = "Minor Commercial"
+    [Slices.Minor_Businesses]
+        Name = "Minor Businesses"
         Query = "CommercialMinorCount"
-        Chart = "Commercial"
+        Chart = "Businesses"
         Category = "Minor"
-    [Slices.Major_Commercial]
-        Name = "Major Commercial"
+    [Slices.Major_Businesses]
+        Name = "Major Businesses"
         Query = "CommercialMajorCount"
-        Chart = "Commercial"
+        Chart = "Businesses"
         Category = "Major"
-    [Slices.Destroyed_Commercial]
-        Name = "Destroyed Commercial"
+    [Slices.Destroyed_Businesses]
+        Name = "Destroyed Businesses"
         Query = "CommercialDestroyedCount"
-        Chart = "Commercial"
+        Chart = "Businesses"
         Category = "Destroyed"
-    [Slices.Minor_Industry]
-        Name = "Minor Industry"
-        Query = "IndustryMinorCount"
-        Chart = "Industry facilities"
+    [Slices.Minor_Health]
+        Name = "Minor Health"
+        Query = "HealthMinorCount"
+        Chart = "Health facilities"
         Category = "Minor"
-    [Slices.Major_Industry]
-        Name = "Major Industry"
-        Query = "IndustryMajorCount"
-        Chart = "Industry facilities"
+    [Slices.Major_Health]
+        Name = "Major Health"
+        Query = "HealthMajorCount"
+        Chart = "Health facilities"
         Category = "Major"
-    [Slices.Destroyed_Industry]
-        Name = "Destroyed Industry"
-        Query = "IndustryDestroyedCount"
-        Chart = "Industry facilities"
+    [Slices.Destroyed_Health]
+        Name = "Destroyed Health"
+        Query = "HealthDestroyedCount"
+        Chart = "Health facilities"
+        Category = "Destroyed"
+    [Slices.Minor_Schools]
+        Name = "Minor Schools"
+        Query = "SchoolsMinorCount"
+        Chart = "Schools"
+        Category = "Minor"
+    [Slices.Major_Schools]
+        Name = "Major Schools"
+        Query = "SchoolsMajorCount"
+        Chart = "Schools"
+        Category = "Major"
+    [Slices.Destroyed_Schools]
+        Name = "Destroyed Schools"
+        Query = "SchoolsDestroyedCount"
+        Chart = "Schools"
+        Category = "Destroyed"
+    [Slices.Minor_Emergency]
+        Name = "Minor Emergency"
+        Query = "EmergencyMinorCount"
+        Chart = "Emergency facilities"
+        Category = "Minor"
+    [Slices.Major_Emergency]
+        Name = "Major Emergency"
+        Query = "EmergencyMajorCount"
+        Chart = "Emergency facilities"
+        Category = "Major"
+    [Slices.Destroyed_Emergency]
+        Name = "Destroyed Emergency"
+        Query = "EmergencyDestroyedCount"
+        Chart = "Emergency facilities"
         Category = "Destroyed"
 
 [Other]
@@ -82,9 +118,9 @@
     [Other.Legend]
         font = 20
     [Other.Info]
-        text="""Inundation depth thresholds:<br>
-                Minor: 0.25 m<br>
-                Major: 2.0 m<br>
-                Destroyed: >2.0 m"""
+        text="""Thresholds:<br>
+                Minor: <= 1 feet<br>
+                Major: > 1 and <= 6 feet<br>
+                Destroyed: > 6 feet<br>"""
         image="https://openclipart.org/image/800px/302413"
         scale=0.1

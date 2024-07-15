@@ -118,6 +118,9 @@
     [Other.Legend]
         font = 20
     [Other.Info]
-        text="Hi im the info for the charts plot"
+        text="""Thresholds:<br>
+                Minor: <= 1 feet<br>
+                Major: > 1 and <= 6 feet<br>
+                Destroyed: > 6 feet<br>"""
         image="https://openclipart.org/image/800px/302413"
         scale=0.1
