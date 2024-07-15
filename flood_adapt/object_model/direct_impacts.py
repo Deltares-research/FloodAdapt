@@ -293,7 +293,8 @@ class DirectImpacts:
         metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
-        self._create_infographics(self.hazard.event_mode, metrics_path)
+        if self.site_info.attrs.fiat.infographics:
+            self._create_infographics(self.hazard.event_mode, metrics_path)
 
         if self.hazard.event_mode == "risk":
             # Calculate equity based damages
@@ -517,7 +518,11 @@ class DirectImpacts:
             ext = ""
 
         # Get options for metric configurations
-        metric_types = ["mandatory", "infographic", "additional"]
+        metric_types = ["mandatory", "additional"]  # these are checked always
+
+        if self.site_info.attrs.fiat.infographics:  # if infographics are created
+            metric_types += ["infographic"]
+
         metric_config_paths = [
             self.database.static_path.joinpath(
                 "templates", "infometrics", f"{name}_metrics_config{ext}.toml"
