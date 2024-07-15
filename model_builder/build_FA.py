@@ -195,6 +195,7 @@ class ConfigModel(BaseModel):
     river: Optional[list[RiverModel]] = []
     obs_point: Optional[list[Obs_pointModel]] = []
     probabilistic_set: Optional[str] = None
+    infographics: Optional[bool] = False
 
 
 def read_toml(fn: str) -> dict:
@@ -1194,27 +1195,48 @@ class Database:
         """
         # TODO there should be generalized infometric queries with NSI or OSM, and with SVI or without. Then Based on the user input these should be chosen automatically
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
-        if self.config.unit_system == "imperial":
-            self.metrics_folder_name = "US_NSI"
-            self.logger.info(
-                "Default NSI infometrics and infographics will be created."
-            )
-        elif self.config.unit_system == "metric":
-            self.metrics_folder_name = "OSM"
-            self.logger.info(
-                "Default OSM infometrics and infographics will be created."
-            )
-        folders = ["infometrics", "infographics"]
-        for folder in folders:
-            path_0 = templates_path.joinpath(folder, self.metrics_folder_name)
-            path_1 = self.root.joinpath("static", "templates", folder)
-            shutil.copytree(path_0, path_1)
-            if folder == "infographics":
-                path_0 = templates_path.joinpath("infographics", "images")
-                path_1 = self.root.joinpath(
-                    "static", "templates", "infographics", "images"
+
+        # Create template folder
+        path_im = self.root.joinpath("static", "templates", "infometrics")
+        path_im.mkdir()
+
+        # Copy mandatory metric configs
+        path_im_temp = templates_path.joinpath("infometrics")
+        for file in path_im_temp.glob("*.toml"):
+            shutil.copy(file, path_im)
+
+        # If infographics are going to be created in FA, get template metric configurations
+        if self.config.infographics:
+            self.site_attrs["fiat"]["infographics"] = "True"
+            if self.config.unit_system == "imperial":
+                self.metrics_folder_name = "US_NSI"
+                self.logger.info(
+                    "Default NSI infometrics and infographics will be created."
                 )
-                shutil.copytree(path_0, path_1)
+            elif self.config.unit_system == "metric":
+                self.metrics_folder_name = "OSM"
+                self.logger.info(
+                    "Default OSM infometrics and infographics will be created."
+                )
+
+            # Copy metrics config for infographics
+            path_0 = templates_path.joinpath("infometrics", self.metrics_folder_name)
+            for file in path_0.glob("*.toml"):
+                shutil.copy(file, path_im)
+
+            # Copy infographics config
+            path_ig_temp = templates_path.joinpath(
+                "infographics", self.metrics_folder_name
+            )
+            path_ig = self.root.joinpath("static", "templates", "infographics")
+            shutil.copytree(path_ig_temp, path_ig)
+
+            # Copy images
+            path_0 = templates_path.joinpath("infographics", "images")
+            path_1 = self.root.joinpath("static", "templates", "infographics", "images")
+            shutil.copytree(path_0, path_1)
+        else:
+            self.site_attrs["fiat"]["infographics"] = "False"
 
         path = self.root.joinpath("static", "templates", "infometrics")
         files = list(path.glob("*metrics_config*.toml"))
@@ -1308,8 +1330,8 @@ def main(config_path):
     dbs.add_gui_params()
     dbs.add_slr()
     dbs.add_general_attrs()
-    dbs.save_site_config()
     dbs.add_infometrics()
+    dbs.save_site_config()
     dbs.create_standard_objects()
     dbs.logger.info("FloodAdapt database creation finished!")
 
