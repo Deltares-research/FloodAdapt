@@ -37,6 +37,7 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     IWaterlevel,
     WaterlevelFromCSV,
+    WaterlevelFromGauged,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -489,9 +490,9 @@ class SfincsAdapter(IHazardAdapter):
             return
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
-        if isinstance(forcing, WaterlevelSynthetic):
-            self._add_wl_bc(forcing.get_data())
-        elif isinstance(forcing, WaterlevelFromCSV):
+        if isinstance(
+            forcing, (WaterlevelSynthetic, WaterlevelFromCSV, WaterlevelFromGauged)
+        ):
             self._add_wl_bc(forcing.get_data())
         elif isinstance(forcing, WaterlevelFromModel):
             self._add_wl_bc(forcing.get_data())

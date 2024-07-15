@@ -18,6 +18,10 @@ from pyproj import CRS
 import flood_adapt.dbs_controller as db
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+    WaterlevelFromGauged,
+    WaterlevelFromModel,
+)
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -26,6 +30,7 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
+    IWaterlevel,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite, Obs_pointModel
@@ -75,34 +80,37 @@ class HistoricalEvent(IEvent):
 
         for forcing in self.attrs.forcings.values():
             if forcing is not None:
-                if forcing._source == ForcingSource.MODEL:
-                    self._preprocess_sfincs_offshore(sim_path)
+                if isinstance(forcing, (WaterlevelFromModel)):
+                    self._preprocess_sfincs_offshore(sim_path, forcing)
                     self._run_sfincs_offshore(sim_path)
+                    forcing.path = sim_path
+                elif isinstance(forcing, WaterlevelFromGauged):
+                    out_path = sim_path / "waterlevels.csv"
+                    self._get_observed_wl_data(out_path=out_path)
+                    forcing.path = out_path
 
-                    forcing._model_path = sim_path
-                    self.forcing_data[forcing._type] = forcing.get_data()
+                self.forcing_data[forcing._type] = forcing.get_data()
 
-                elif forcing._source == ForcingSource.METEO:
-                    self.forcing_data[forcing._type] = self._download_observed_wl_data()
-                else:
-                    self.forcing_data[forcing._type] = forcing.get_data()
-
-    def _preprocess_sfincs_offshore(self, sim_path):
+    def _preprocess_sfincs_offshore(
+        self, sim_path: str | os.PathLike, forcing: IWaterlevel
+    ):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
         Args:
             ds (xr.DataArray): DataArray with meteo information (downloaded using event._download_meteo())
         """
-        self._logger.info("Preparing offshore model to generate tide and surge...")
+        self._logger.info("Preparing offshore model to generate water levels...")
 
-        # Download meteo data
-        meteo_dir = db.Database().output_path.joinpath("meteo")
-        if not meteo_dir.is_dir():
-            os.mkdir(db.Database().output_path.joinpath("meteo"))
+        if forcing._source == ForcingSource.MODEL:
+            # Download meteo data
+            meteo_dir = db.Database().output_path.joinpath("meteo")
+            if not meteo_dir.is_dir():
+                os.mkdir(db.Database().output_path.joinpath("meteo"))
 
-        ds = self._download_meteo(site=self._site, path=meteo_dir)
-        ds = ds.rename({"barometric_pressure": "press"})
-        ds = ds.rename({"precipitation": "precip"})
+            self._download_meteo(site=self._site, path=meteo_dir)
+            ds = self._read_meteo(meteo_dir)
+        else:
+            ds = None
 
         # Initialize
         if os.path.exists(sim_path):
@@ -131,7 +139,7 @@ class HistoricalEvent(IEvent):
                 # Add wind forcing
                 _offshore_model._add_forcing_wind(wind_forcing)
 
-                # Add pressure forcing for the offshore model (this doesnt happen for the overland model)
+                # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                 if wind_forcing._source == ForcingSource.TRACK:
                     _offshore_model._add_pressure_forcing_from_grid(ds=ds["press"])
 
@@ -166,7 +174,7 @@ class HistoricalEvent(IEvent):
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
 
-    def _download_meteo(self, path: Path):
+    def _download_meteo(self, meteo_dir: Path):
         params = ["wind", "barometric_pressure", "precipitation"]
         lon = self._site.attrs.lon
         lat = self._site.attrs.lat
@@ -182,24 +190,31 @@ class HistoricalEvent(IEvent):
             name=name,
             source=gfs_source,
             parameters=params,
-            path=path,
+            path=meteo_dir,
             x_range=[lon - 10, lon + 10],
             y_range=[lat - 10, lat + 10],
             crs=CRS.from_epsg(4326),
         )
 
         # Download and collect data
-        t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
-        t1 = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+        t0 = self.attrs.time.start_time
+        if not isinstance(t0, datetime):
+            t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
+
+        t1 = self.attrs.time.end_time
+        if not isinstance(t1, datetime):
+            t1 = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
+
         time_range = [t0, t1]
 
         gfs_conus.download(time_range)
 
+    def _read_meteo(self, meteo_dir: Path) -> xr.Dataset:
         # Create an empty list to hold the datasets
         datasets = []
 
         # Loop over each file and create a new dataset with a time coordinate
-        for filename in sorted(glob.glob(str(path.joinpath("*.nc")))):
+        for filename in sorted(glob.glob(str(meteo_dir.joinpath("*.nc")))):
             # Open the file as an xarray dataset
             ds = xr.open_dataset(filename)
 
@@ -216,18 +231,23 @@ class HistoricalEvent(IEvent):
         # Concatenate the datasets along the new time coordinate
         ds = xr.concat(datasets, dim="time")
         ds.raster.set_crs(4326)
+        ds = ds.rename({"barometric_pressure": "press"})
+        ds = ds.rename({"precipitation": "precip"})
 
         return ds
 
-    def _download_observed_wl_data(
+    def _get_observed_wl_data(
         self,
         units: UnitTypesLength = UnitTypesLength("meters"),
         source: str = "noaa_coops",
+        out_path: str | os.PathLike = None,
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
         Parameters
         ----------
+        path: str | os.PathLike
+            Path to store the observed/imported waterlevel data.
         station_id : int
             NOAA observation station ID.
 
@@ -239,9 +259,12 @@ class HistoricalEvent(IEvent):
         wl_df = pd.DataFrame()
 
         for obs_point in self._site.attrs.obs_point:
-            station_data = self._download_obs_point_data(
-                obs_point=obs_point, source=source
-            )
+            if obs_point.file:
+                station_data = self._read_imported_waterlevels(obs_point.file)
+            else:
+                station_data = self._download_obs_point_data(
+                    obs_point=obs_point, source=source
+                )
             station_data = station_data.rename(columns={"waterlevel": obs_point.ID})
             station_data = station_data * UnitfulLength(
                 value=1.0, units=UnitTypesLength("meters")
@@ -252,46 +275,40 @@ class HistoricalEvent(IEvent):
             else:
                 wl_df = wl_df.join(station_data, how="outer")
 
+        if out_path is not None:
+            wl_df.to_csv(Path(out_path))
+
         return wl_df
 
     def _download_obs_point_data(
         self, obs_point: Obs_pointModel, source: str = "noaa_coops"
     ):
-        if obs_point.file is not None:
-            df_temp = HistoricalEvent.read_csv(obs_point.file)
-            startindex = df_temp.index.get_loc(
-                self.attrs.time.start_time, method="nearest"
-            )
-            stopindex = df_temp.index.get_loc(
-                self.attrs.time.end_time, method="nearest"
-            )
-            df = df_temp.iloc[startindex:stopindex, :]
-        else:
-            # Get NOAA data
-            source_obj = cht_station.source(source)
-            df = source_obj.get_data(
-                obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time
-            )
-            df = pd.DataFrame(df)  # Convert series to dataframe
-            df = df.rename(columns={"v": 1})
+        # Get NOAA data
+        source_obj = cht_station.source(source)
+        df = source_obj.get_data(
+            obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time
+        )
+        df = pd.DataFrame(df)  # Convert series to dataframe
+        df = df.rename(columns={"v": 1})
 
         return df
 
-    @staticmethod
-    def read_csv(csvpath: str | Path) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.Dataframe.
+    def _read_imported_waterlevels(self, path: str | os.PathLike):
+        """Read waterlevels from an imported csv file.
 
         Parameters
         ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file
+        path : str | os.PathLike
+            Path to the csv file.
 
         Returns
         -------
         pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
+            Dataframe with time as index and the waterlevel for each observation station as columns.
         """
-        df = pd.read_csv(csvpath, index_col=0, header=None)
-        df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
+        df_temp = pd.read_csv(path, index_col=0, parse_dates=True)
+        df_temp.index.names = ["time"]
+        startindex = df_temp.index.get_loc(self.attrs.time.start_time, method="nearest")
+        stopindex = df_temp.index.get_loc(self.attrs.time.end_time, method="nearest")
+        df = df_temp.iloc[startindex:stopindex, :]
         return df

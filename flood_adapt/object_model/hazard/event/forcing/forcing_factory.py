@@ -20,7 +20,6 @@ from .rainfall import (
 )
 from .waterlevels import (
     WaterlevelFromCSV,
-    WaterlevelFromMeteo,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -34,7 +33,6 @@ FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
         ForcingSource.SYNTHETIC: WaterlevelSynthetic,
         ForcingSource.SPW_FILE: None,
         ForcingSource.CONSTANT: None,
-        ForcingSource.METEO: WaterlevelFromMeteo,
     },
     ForcingType.RAINFALL: {
         ForcingSource.MODEL: RainfallFromModel,

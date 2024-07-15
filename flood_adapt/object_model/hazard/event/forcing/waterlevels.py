@@ -23,7 +23,6 @@ __all__ = [
     "WaterlevelSynthetic",
     "WaterlevelFromCSV",
     "WaterlevelFromModel",
-    "WaterlevelFromMeteo",
 ]
 
 
@@ -85,28 +84,29 @@ class WaterlevelFromCSV(IWaterlevel):
 
 class WaterlevelFromModel(IWaterlevel):
     _source = ForcingSource.MODEL
-    model_path: str | os.PathLike | None = Field(default=None)
+    path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
     def get_data(self) -> pd.DataFrame:
         # Note that this does not run the offshore simulation, it only tries to read the results from the model.
         # Running the model is done in the process method of the event.
-        if self.model_path is None:
+        if self.path is None:
             raise ValueError(
                 "Model path is not set. Run the offshore model first using event.process() method."
             )
 
         from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
-        with SfincsAdapter(model_root=self.model_path) as _offshore_model:
+        with SfincsAdapter(model_root=self.path) as _offshore_model:
             return _offshore_model._get_wl_df_from_offshore_his_results()
 
 
-class WaterlevelFromMeteo(IWaterlevel):
-    _source = ForcingSource.METEO
-    _meteo_path: str = (
-        None  # path to the meteo data, set this when writing the downloaded meteo data to disk in event.process()
-    )
+class WaterlevelFromGauged(IWaterlevel):
+    _source = ForcingSource.GAUGED
+    # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
+    path: os.PathLike | str | None = Field(default=None)
 
     def get_data(self) -> pd.DataFrame:
-        return pd.read_csv(self._meteo_path)  # read the meteo data from disk
+        df = pd.read_csv(self.path, index_col=0, parse_dates=True)
+        df.index.names = ["time"]
+        return df

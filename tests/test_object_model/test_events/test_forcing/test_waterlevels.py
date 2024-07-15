@@ -8,6 +8,7 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelFromCSV,
+    WaterlevelFromGauged,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -60,15 +61,15 @@ class TestWaterlevelFromCSV:
         df.to_csv(path)
 
         # Act
-        ts = WaterlevelFromCSV(path=path).get_data()
+        wl_df = WaterlevelFromCSV(path=path).get_data()
 
         # Assert
-        assert isinstance(ts, pd.DataFrame)
-        assert not ts.empty
-        assert ts["values"].max() == pytest.approx(2, rel=1e-2)
-        assert ts["values"].min() == pytest.approx(1, rel=1e-2)
-        assert len(ts["values"]) == 2
-        assert len(ts.index) == 2
+        assert isinstance(wl_df, pd.DataFrame)
+        assert not wl_df.empty
+        assert wl_df["values"].max() == pytest.approx(2, rel=1e-2)
+        assert wl_df["values"].min() == pytest.approx(1, rel=1e-2)
+        assert len(wl_df["values"]) == 2
+        assert len(wl_df.index) == 2
 
 
 class TestWaterlevelFromModel:
@@ -86,7 +87,33 @@ class TestWaterlevelFromModel:
             offshore_model.execute()
 
         # Act
-        ts = WaterlevelFromModel(model_path=test_path).get_data()
+        wl_df = WaterlevelFromModel(path=test_path).get_data()
 
         # Assert
-        assert isinstance(ts, pd.DataFrame)
+        assert isinstance(wl_df, pd.DataFrame)
+        # TODO more asserts?
+
+
+class TestWaterlevelFromGauged:
+    def test_waterlevel_from_gauge_get_data(self, test_db: IDatabase, tmp_path):
+        # Arrange
+        data = {
+            "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
+            "values": [1, 2],
+        }
+        df = pd.DataFrame(data)
+        df = df.set_index("time")
+
+        path = tmp_path / "test.csv"
+        df.to_csv(path)
+
+        # Act
+        wl_df = WaterlevelFromGauged(path=path).get_data()
+
+        # Assert
+        assert isinstance(wl_df, pd.DataFrame)
+        assert not wl_df.empty
+        assert wl_df["values"].max() == pytest.approx(2, rel=1e-2)
+        assert wl_df["values"].min() == pytest.approx(1, rel=1e-2)
+        assert len(wl_df["values"]) == 2
+        assert len(wl_df.index) == 2

@@ -25,9 +25,10 @@ class ForcingSource(str, Enum):
     TRACK = "TRACK"
     CSV = "CSV"
     SYNTHETIC = "SYNTHETIC"
-    SPW_FILE = "SPW_FILE"
+    GAUGED = "GAUGED"
     CONSTANT = "CONSTANT"
     METEO = "METEO"
+    SPW_FILE = "SPW_FILE"
 
 
 class IForcing(BaseModel):
