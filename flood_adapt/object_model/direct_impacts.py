@@ -518,10 +518,10 @@ class DirectImpacts:
             ext = ""
 
         # Get options for metric configurations
-        if self.site_info.attrs.fiat.infographics:
-            metric_types = ["mandatory", "infographic", "additional"]
-        else:
-            metric_types = ["mandatory", "additional"]
+        metric_types = ["mandatory", "additional"]  # these are checked always
+
+        if self.site_info.attrs.fiat.infographics:  # if infographics are created
+            metric_types += ["infographic"]
 
         metric_config_paths = [
             self.database.static_path.joinpath(
