@@ -1,3 +1,4 @@
+import argparse
 import logging
 import shutil
 from enum import Enum
@@ -7,7 +8,6 @@ from typing import Optional, Union
 from urllib.request import urlretrieve
 
 import cht_observations.observation_stations as obs
-import click
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -1389,11 +1389,7 @@ class Database:
         return bin_colors
 
 
-@click.command()
-@click.option(
-    "--config_path", default="config.toml", help="Full path to the config toml file."
-)
-def main(config_path):
+def main(config_path: str):
     """
     Build the FloodAdapt model.
 
@@ -1433,10 +1429,13 @@ def main(config_path):
 
 
 if __name__ == "__main__":
-    main(
-        [
-            "--config_path",
-            # r"c:\Users\athanasi\Github\Database\FA_builder\Rio\config_Rio.toml",
-            r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland.toml",
-        ]
+    parser = argparse.ArgumentParser(
+        description="Run the FloodAdapt database creation script."
     )
+    parser.add_argument(
+        "--config_path", type=str, help="Path to the configuration file", required=True
+    )
+
+    args = parser.parse_args()
+
+    main(args.config_path)
