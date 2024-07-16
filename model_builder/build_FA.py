@@ -399,21 +399,24 @@ class Database:
         self.site_attrs["fiat"] = {}
         self.site_attrs["fiat"]["exposure_crs"] = self.fiat_model.exposure.crs
         self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # TODO for now fixed
-        self.site_attrs["fiat"]["non_building_names"] = ["roads"]  # TODO for now fixed
+        self.site_attrs["fiat"]["non_building_names"] = ["road"]  # TODO for now fixed
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         if not self.config.building_footprints:
-            # TODO can we use hydromt-FIAT?
             check_col = (
                 "BF_FID" in self.fiat_model.exposure.exposure_db.columns
             )  # check if it is spatially joined already
+            # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-            if "BF_FID" in [attr.name for attr in add_attrs]:
-                ind = [attr.name for attr in add_attrs].index("SVI")
-                footprints = add_attrs[ind]
-                footprints_path = fiat_path.joinpath(footprints.file)
-                check_file = footprints_path.exists()
+            if add_attrs:
+                if "BF_FID" in [attr.name for attr in add_attrs]:
+                    ind = [attr.name for attr in add_attrs].index("SVI")
+                    footprints = add_attrs[ind]
+                    footprints_path = fiat_path.joinpath(footprints.file)
+                    check_file = footprints_path.exists()
+            else:
+                check_file = False
             if check_file and not check_col:
                 self.logger.error(
                     f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}"
@@ -426,11 +429,39 @@ class Database:
                 self.logger.info(
                     f"Using the building footprints located at {footprints_path}"
                 )
+            # check if geometries are  already footprints
+            build_ind = self.fiat_model.exposure.geom_names.index("buildings")
+            build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
+            if isinstance(build_geoms.geometry[0], Polygon):
+                # copy footprints to new location
+                path0 = Path(self.fiat_model.root).joinpath(
+                    self.fiat_model.config["exposure"]["geom"]["file1"]
+                )
+                path1 = Path(self.fiat_model.root).joinpath(
+                    "building_footprints", "building_footprints.gpkg"
+                )
+                if not path1.parent.exists():
+                    path1.parent.mkdir()
+                shutil.copyfile(path0, path1)
+
+                # make geometries points
+                build_geoms["geometry"] = build_geoms["geometry"].centroid
+                build_geoms.to_file(path0)
+
+                # add column for connection
+                exposure = self.fiat_model.exposure.exposure_db.set_index("Object ID")
+                build_geoms["BF_FID"] = build_geoms["Object ID"]
+                build_geoms = build_geoms.set_index("Object ID")
+                build_geoms["Extraction Method"] = "centroid"
+                exposure["BF_FID"] = build_geoms["BF_FID"]
+                exposure["Extraction Method"] = build_geoms["Extraction Method"]
+                exposure.reset_index().to_csv(exposure_csv_path, index=False)
         else:
             self.logger.info(
                 f"Using building footprints from {self.config.building_footprints.file}."
             )
             # Spatially join buildings and map
+            # TODO use hydromt method instead
             buildings_joined, building_footprints = spatial_join(
                 buildings,
                 self.config.building_footprints.file,
@@ -512,22 +543,52 @@ class Database:
 
         # Read aggregation areas
         self.site_attrs["fiat"]["aggregation"] = []
-        for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
-            # Make sure paths are correct
-            aggr.file = str(
-                self.static_path.joinpath("templates", "fiat", aggr.file)
-                .relative_to(self.static_path)
-                .as_posix()
-            )
-            if aggr.equity is not None:
-                aggr.equity.census_data = str(
-                    self.static_path.joinpath(
-                        "templates", "fiat", aggr.equity.census_data
-                    )
+
+        # If there are no aggregation areas make a schematic one from the region file
+        # TODO make aggregation areas not mandatory
+        if not self.fiat_model.spatial_joins["aggregation_areas"]:
+            region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
+            if region_path.exists():
+                region = gpd.read_file(region_path)
+                region = region.explode().reset_index()
+                region["id"] = np.arange(len(region)) + 1
+                aggregation_path = Path(self.fiat_model.root).joinpath(
+                    "exposure", "aggregation_areas", "region.gpkg"
+                )
+                if not aggregation_path.parent.exists():
+                    aggregation_path.parent.mkdir()
+                region[["id", "geometry"]].to_file(aggregation_path, index=False)
+                aggr = {}
+                aggr["name"] = "region"
+                aggr["file"] = str(
+                    aggregation_path.relative_to(self.static_path).as_posix()
+                )
+                aggr["field_name"] = "id"
+                self.site_attrs["fiat"]["aggregation"].append(aggr)
+                self.logger.warning(
+                    "No aggregation areas were available in the FIAT model, so the region file will be used as a mock aggregation area."
+                )
+            else:
+                self.logger.error(
+                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
+                )
+        else:
+            for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
+                # Make sure paths are correct
+                aggr.file = str(
+                    self.static_path.joinpath("templates", "fiat", aggr.file)
                     .relative_to(self.static_path)
                     .as_posix()
                 )
-            self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
+                if aggr.equity is not None:
+                    aggr.equity.census_data = str(
+                        self.static_path.joinpath(
+                            "templates", "fiat", aggr.equity.census_data
+                        )
+                        .relative_to(self.static_path)
+                        .as_posix()
+                    )
+                self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
 
         # Read SVI
         if self.config.svi:
@@ -588,25 +649,35 @@ class Database:
                 )
 
         # Make sure that FIAT roads are polygons
-        roads_path = fiat_path.joinpath("exposure", "roads.gpkg")
-        roads = gpd.read_file(roads_path)
-
-        # TODO do we need the lanes column?
-        if "Segment Length [m]" not in exposure_csv.columns:
-            self.logger.warning(
-                "'Segment Length [m]' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
+        if "roads" in self.fiat_model.exposure.geom_names:
+            roads_ind = self.fiat_model.exposure.geom_names.index("roads")
+            roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
+            roads_path = Path(self.fiat_model.root).joinpath(
+                self.fiat_model.config["exposure"]["geom"]["file2"]
             )
 
-        # TODO should this should be performed through hydromt-FIAT?
-        if not isinstance(roads.geometry[0], Polygon):
-            roads = roads.to_crs(roads.estimate_utm_crs())
-            roads.geometry = roads.geometry.buffer(self.config.road_width, cap_style=2)
-            roads = roads.to_crs(4326)
-            if roads_path.exists():
-                roads_path.unlink()
-            roads.to_file(roads_path)
-            self.logger.info(
-                f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
+            # TODO do we need the lanes column?
+            if "Segment Length" not in exposure_csv.columns:
+                self.logger.warning(
+                    "'Segment Length' column not present in the FIAT exposure csv. Road impact infometrics cannot be produced."
+                )
+
+            # TODO should this should be performed through hydromt-FIAT?
+            if not isinstance(roads.geometry[0], Polygon):
+                roads = roads.to_crs(roads.estimate_utm_crs())
+                roads.geometry = roads.geometry.buffer(
+                    self.config.road_width, cap_style=2
+                )
+                roads = roads.to_crs(4326)
+                if roads_path.exists():
+                    roads_path.unlink()
+                roads.to_file(roads_path)
+                self.logger.info(
+                    f"FIAT road objects transformed from lines to polygons assuming a road width of {self.config.road_width} meters."
+                )
+        else:
+            self.logger.warning(
+                "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
 
     def read_sfincs(self):
@@ -695,16 +766,41 @@ class Database:
         location in the FloodAdapt model. The filenames and units of the DEM files are
         stored in the `site_attrs` dictionary.
         """
-        # TODO if files not found in SFINCS model, user can provide them!
         tiles_sfincs = Path(self.sfincs.root).joinpath("tiles")
-        if tiles_sfincs.exists():
-            fa_path1 = self.root.joinpath("static", "dem", "tiles")
-            shutil.move(tiles_sfincs, fa_path1)
+        fa_path1 = self.root.joinpath("static", "dem", "tiles")
+
+        # check for subgrid file
         fn = "dep_subgrid.tif"
         subgrid_sfincs = Path(self.sfincs.root).joinpath("subgrid", fn)
         if subgrid_sfincs.exists():
             fa_path2 = self.root.joinpath("static", "dem", fn)
-            shutil.move(subgrid_sfincs, fa_path2)
+        else:
+            self.logger.error(
+                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
+            )
+
+        # Check if tiles already exist in the SFINCS model
+        if tiles_sfincs.exists():
+            shutil.move(tiles_sfincs, fa_path1)
+            self.logger.info(
+                "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
+            )
+        else:
+            fa_path1.mkdir(parents=True)
+            # Make tiles
+            self.sfincs.setup_tiles(
+                path=fa_path1,
+                datasets_dep=[{"elevtn": subgrid_sfincs}],
+                zoom_range=[0, 13],
+                fmt="png",
+            )
+            self.logger.info(
+                f"Tiles were created using the {subgrid_sfincs} as the elevation map."
+            )
+        # Copy subgrid file
+        shutil.copy(subgrid_sfincs, fa_path2)
+
+        # add site configs
         self.site_attrs["dem"] = {}
         self.site_attrs["dem"]["filename"] = fn
         self.site_attrs["dem"][
@@ -1340,6 +1436,7 @@ if __name__ == "__main__":
     main(
         [
             "--config_path",
+            # r"c:\Users\athanasi\Github\Database\FA_builder\Rio\config_Rio.toml",
             r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland.toml",
         ]
     )
