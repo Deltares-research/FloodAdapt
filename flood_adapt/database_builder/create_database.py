@@ -592,7 +592,7 @@ class Database:
 
         # Read SVI
         if self.config.svi:
-            # TODO is the SVI a mandatory input for FA? And how do we expect to get it? From CDC?
+            # TODO if SVI map is provided use a threshold input as well to update the metrics
             buildings_joined, svi = spatial_join(
                 buildings,
                 self.config.svi.file,
@@ -848,13 +848,13 @@ class Database:
         )
 
         exposure.loc[
-            exposure["Primary Object Type"] == "roads", "Ground Floor Height"
+            exposure["Primary Object Type"] == "road", "Ground Floor Height"
         ] = 0
         exposure = exposure.merge(
             roads[["Object ID", "elev"]], on="Object ID", how="left"
         )
-        exposure.loc[exposure["Primary Object Type"] == "roads", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] == "roads", "elev"]
+        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
+            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
         )
         del exposure["elev"]
 
@@ -869,8 +869,8 @@ class Database:
         exposure = exposure.merge(
             points[["Object ID", "elev"]], on="Object ID", how="left"
         )
-        exposure.loc[exposure["Primary Object Type"] != "roads", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] != "roads", "elev"]
+        exposure.loc[exposure["Primary Object Type"] != "road", "Ground Elevation"] = (
+            exposure.loc[exposure["Primary Object Type"] != "road", "elev"]
         )
         del exposure["elev"]
 
