@@ -1,4 +1,3 @@
-import argparse
 import logging
 import shutil
 from enum import Enum
@@ -1429,13 +1428,12 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Run the FloodAdapt database creation script."
-    )
-    parser.add_argument(
-        "--config_path", type=str, help="Path to the configuration file", required=True
-    )
-
-    args = parser.parse_args()
-
-    main(args.config_path)
+    while True:
+        path = input("Provide the path to the database creation configuration toml: \n")
+        try:
+            main(path)
+        except Exception as e:
+            print(e)
+            quit = input("do you want to quit? (y/n)")
+            if quit == "y":
+                exit()
