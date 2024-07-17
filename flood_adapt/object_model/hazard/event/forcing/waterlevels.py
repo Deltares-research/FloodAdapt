@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 import pandas as pd
 from pydantic import BaseModel, Field
@@ -13,6 +12,10 @@ from flood_adapt.object_model.hazard.event.timeseries import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWaterlevel,
+)
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    DEFAULT_TIMESTEP,
+    REFERENCE_TIME,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -57,18 +60,34 @@ class WaterlevelSynthetic(IWaterlevel):
     def get_data(self) -> pd.DataFrame:
         surge = SyntheticTimeseries().load_dict(self.surge.timeseries)
         tide = SyntheticTimeseries().load_dict(self.tide.to_timeseries_model())
-        surge_start = surge.attrs.peak_time - surge.attrs.duration / 2
-        surge_end = surge_start + surge.attrs.duration
 
-        tide_start = tide.attrs.peak_time - tide.attrs.duration / 2
-        tide_end = tide_start + tide.attrs.duration
+        start_tide = REFERENCE_TIME + tide.attrs.start_time.to_timedelta()
+        end_tide = start_tide + tide.attrs.duration.to_timedelta()
+        tide_ts = tide.calculate_data()
 
-        # TODO `START` should be the start time of the event / some defined default value
-        START = datetime(2021, 1, 1, 0, 0, 0)
-        start = START + min(surge_start, tide_start).to_timedelta()
-        end = start + max(surge_end, tide_end).to_timedelta()
+        time_tide = pd.date_range(
+            start=start_tide, end=end_tide, freq=DEFAULT_TIMESTEP.to_timedelta()
+        )
+        tide_df = pd.DataFrame(tide_ts, index=time_tide)
 
-        wl_df = surge.to_dataframe(start, end) + tide.to_dataframe(start, end)
+        start_surge = REFERENCE_TIME + surge.attrs.start_time.to_timedelta()
+        end_surge = start_surge + surge.attrs.duration.to_timedelta()
+        surge_ts = surge.calculate_data()
+
+        time_surge = pd.date_range(
+            start=start_surge, end=end_surge, freq=DEFAULT_TIMESTEP.to_timedelta()
+        )
+        surge_df = pd.DataFrame(surge_ts, index=time_surge)
+
+        wl_df = surge_df.add(tide_df, axis="index")
+
+        import matplotlib.pyplot as plt
+
+        plt.figure()
+        plt.plot(tide_ts, label="tide")
+        plt.plot(surge_ts, label="surge")
+        plt.legend()
+        plt.show()
 
         return wl_df
 

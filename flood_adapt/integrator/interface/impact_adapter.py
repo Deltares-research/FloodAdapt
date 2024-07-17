@@ -17,7 +17,7 @@ class IImpactAdapter(IAdapter):
         A impactmeasure is a measure that affects the impact model, i.e. a measure that affects the water levels, wind, rain, discharge.
         For example a measure could be a dike, a land use change, a change in the river channel, etc.
 
-        HazardMeasures contain all information needed to implement the measure in the impact model. (geospatial files, parameters, etc.)
+        ImpactMeasures contain all information needed to implement the measure in the impact model. (geospatial files, parameters, etc.)
 
         """
         pass

@@ -18,10 +18,12 @@ from pyproj import CRS
 import flood_adapt.dbs_controller as db
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromModel
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelFromGauged,
     WaterlevelFromModel,
 )
+from flood_adapt.object_model.hazard.event.forcing.wind import WindFromModel
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -30,7 +32,6 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
-    IWaterlevel,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import ISite, Obs_pointModel
@@ -60,57 +61,59 @@ class HistoricalEvent(IEvent):
     def process(self, scenario: IScenario):
         """Preprocess, run and postprocess offshore model to obtain water levels for boundary condition of the overland model."""
         self._scenario = scenario
+        self.meteo_ds = None
+        sim_path = self._get_simulation_path()
+
+        require_offshore_run = any(
+            forcing._source == ForcingSource.MODEL
+            for forcing in self.attrs.forcings.values()
+        )
+        if require_offshore_run:
+            meteo_dir = db.Database().output_path.joinpath("meteo")
+            self._download_meteo(meteo_dir)
+            self.meteo_ds = self.read_meteo(meteo_dir)
+
+            self._preprocess_sfincs_offshore(sim_path)
+            self._run_sfincs_offshore(sim_path)
 
         if self.attrs.mode == Mode.risk:
-            self._process_risk_event(scenario)
+            self._process_risk_event()
         else:
-            self._process_single_event(scenario)
+            self._process_single_event(sim_path)
 
-    def _process_risk_event(self, scenario: IScenario):
+    def _process_risk_event(self):
         # TODO implement / make a separate class for risk events
         pass
 
-    def _process_single_event(self, scenario: IScenario):
+    def _process_single_event(self, sim_path: str | os.PathLike):
         if self._site.attrs.sfincs.offshore_model is None:
             raise ValueError(
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
             )
-        sim_path = self._get_simulation_path()
-        self._logger.info("Collecting forcing data ...")
 
+        self._logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
+            # FIXME added temp implementations here to make forcing.get_data() succeed,
+            # move this to the forcings themselves?
             if forcing is not None:
-                if isinstance(forcing, (WaterlevelFromModel)):
-                    self._preprocess_sfincs_offshore(sim_path, forcing)
-                    self._run_sfincs_offshore(sim_path)
+                if isinstance(
+                    forcing, (WaterlevelFromModel, RainfallFromModel, WindFromModel)
+                ):
                     forcing.path = sim_path
                 elif isinstance(forcing, WaterlevelFromGauged):
                     out_path = sim_path / "waterlevels.csv"
                     self._get_observed_wl_data(out_path=out_path)
                     forcing.path = out_path
 
-                self.forcing_data[forcing._type] = forcing.get_data()
-
-    def _preprocess_sfincs_offshore(
-        self, sim_path: str | os.PathLike, forcing: IWaterlevel
-    ):
+    def _preprocess_sfincs_offshore(self, sim_path: str | os.PathLike):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
+        This function is reused for ForcingSources: MODEL, TRACK, and GAUGED.
+
         Args:
-            ds (xr.DataArray): DataArray with meteo information (downloaded using event._download_meteo())
+            sim_path path to the root of the offshore model
         """
-        self._logger.info("Preparing offshore model to generate water levels...")
-
-        if forcing._source == ForcingSource.MODEL:
-            # Download meteo data
-            meteo_dir = db.Database().output_path.joinpath("meteo")
-            if not meteo_dir.is_dir():
-                os.mkdir(db.Database().output_path.joinpath("meteo"))
-
-            self._download_meteo(site=self._site, path=meteo_dir)
-            ds = self._read_meteo(meteo_dir)
-        else:
-            ds = None
+        self._logger.info("Preparing offshore model to generate waterlevels...")
 
         # Initialize
         if os.path.exists(sim_path):
@@ -133,7 +136,6 @@ class HistoricalEvent(IEvent):
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection)
 
             # Add wind and if applicable pressure forcing from meteo data
-            # TODO make it easier to access and change forcings
             wind_forcing = self.attrs.forcings[ForcingType.WIND]
             if wind_forcing is not None:
                 # Add wind forcing
@@ -141,7 +143,9 @@ class HistoricalEvent(IEvent):
 
                 # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                 if wind_forcing._source == ForcingSource.TRACK:
-                    _offshore_model._add_pressure_forcing_from_grid(ds=ds["press"])
+                    _offshore_model._add_pressure_forcing_from_grid(
+                        ds=self.meteo_ds["press"]
+                    )
 
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)
@@ -209,7 +213,8 @@ class HistoricalEvent(IEvent):
 
         gfs_conus.download(time_range)
 
-    def _read_meteo(self, meteo_dir: Path) -> xr.Dataset:
+    @staticmethod
+    def read_meteo(meteo_dir: Path) -> xr.Dataset:
         # Create an empty list to hold the datasets
         datasets = []
 
@@ -246,10 +251,10 @@ class HistoricalEvent(IEvent):
 
         Parameters
         ----------
-        path: str | os.PathLike
-            Path to store the observed/imported waterlevel data.
         station_id : int
             NOAA observation station ID.
+        out_path: str | os.PathLike
+            Path to store the observed/imported waterlevel data.
 
         Returns
         -------
@@ -283,7 +288,7 @@ class HistoricalEvent(IEvent):
     def _download_obs_point_data(
         self, obs_point: Obs_pointModel, source: str = "noaa_coops"
     ):
-        # Get NOAA data
+        """Download waterlevel data from NOAA station using station_id, start and stop time."""
         source_obj = cht_station.source(source)
         df = source_obj.get_data(
             obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time

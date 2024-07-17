@@ -61,6 +61,9 @@ class IUnitFullValue(BaseModel):
     def __str__(self):
         return f"{self.value} {self.units.value}"
 
+    def __repr__(self) -> str:
+        return super().__repr__()
+
     def __sub__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError(

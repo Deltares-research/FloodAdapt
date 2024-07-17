@@ -12,7 +12,7 @@ import tomli_w
 from flood_adapt.object_model.hazard.interface.timeseries import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
-    TIDAL_PERIOD,
+    REFERENCE_TIME,
     CSVTimeseriesModel,
     ITimeseries,
     ITimeseriesCalculationStrategy,
@@ -73,22 +73,18 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds)
-        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
-        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
-
-        _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds)
-
-        tt = np.arange(
-            _shape_start,
-            _shape_end,
-            step=_timestep,
+        tt = pd.date_range(
+            start=REFERENCE_TIME,
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            freq=timestep.to_timedelta(),
         )
-        mean = (_shape_start + _shape_end) / 2
-        sigma = (_shape_end - _shape_start) / 6
+        tt_seconds = (tt - REFERENCE_TIME).total_seconds()
+
+        mean = ((attrs.start_time + attrs.end_time) / 2).to_timedelta().total_seconds()
+        sigma = ((attrs.end_time - attrs.start_time) / 6).to_timedelta().total_seconds()
+
         # 99.7% of the rain will fall within a duration of 6 sigma
-        ts = _peak_value * np.exp(-0.5 * ((tt - mean) / sigma) ** 2)
+        ts = attrs.peak_value.value * np.exp(-0.5 * ((tt_seconds - mean) / sigma) ** 2)
         return ts
 
 
@@ -96,19 +92,17 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds)
-        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
-        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
-
-        _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds)
-
-        tt = np.arange(
-            _shape_start,
-            _shape_end,
-            step=_timestep,
+        tt = pd.date_range(
+            start=REFERENCE_TIME,
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            freq=timestep.to_timedelta(),
         )
-        ts = np.where((tt > _shape_start) & (tt < _shape_end), _peak_value, 0)
+        ts = np.where(
+            (tt >= REFERENCE_TIME)
+            & (tt <= (REFERENCE_TIME + attrs.duration.to_timedelta())),
+            attrs.peak_value.value,
+            0,
+        )
         return ts
 
 
@@ -118,29 +112,30 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds)
-        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds)
-        _shape_start = _peak_time - _duration / 2
-        _shape_end = _peak_time + _duration / 2
-
-        _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds)
-
-        tt = np.arange(
-            _shape_start,
-            _shape_end,
-            step=_timestep,
+        tt = pd.date_range(
+            start=REFERENCE_TIME,
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            freq=timestep.to_timedelta(),
         )
+        tt_seconds = (tt - REFERENCE_TIME).total_seconds()
 
-        ascending_slope = _peak_value / (_peak_time - _shape_start)
-        descending_slope = -_peak_value / (_shape_end - _peak_time)
+        ascending_slope = (
+            attrs.peak_value.value
+            / (attrs.peak_time - attrs.start_time).to_timedelta().total_seconds()
+        )
+        descending_slope = (
+            -attrs.peak_value.value
+            / (attrs.end_time - attrs.peak_time).to_timedelta().total_seconds()
+        )
+        peak_time = (REFERENCE_TIME + attrs.peak_time.to_timedelta()).total_seconds()
 
         ts = np.piecewise(
-            tt,
-            [tt < _peak_time, tt >= _peak_time],
+            tt_seconds,
+            [tt_seconds < peak_time, tt_seconds >= peak_time],
             [
-                lambda x: ascending_slope * (x - _shape_start),
-                lambda x: descending_slope * (x - _peak_time) + _peak_value,
+                lambda x: ascending_slope
+                * (x - attrs.start_time.convert(UnitTypesTime.seconds)),
+                lambda x: descending_slope * (x - peak_time) + attrs.peak_value.value,
                 0,
             ],
         )
@@ -153,27 +148,21 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(UnitTypesTime.seconds)
-        _peak_time = attrs.peak_time.convert(UnitTypesTime.seconds)
-        _shape_start = _peak_time - _duration / 2
-        _shape_end = _peak_time + _duration / 2
 
-        _peak_value = attrs.peak_value.value
-        _timestep = timestep.convert(UnitTypesTime.seconds)
-
-        tt = np.arange(
-            start=_shape_start,
-            stop=_shape_end,
-            step=_timestep,
+        tt = pd.date_range(
+            start=REFERENCE_TIME,
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            freq=timestep.to_timedelta(),
         )
-        omega = 2 * math.pi / (TIDAL_PERIOD / UnitfulTime(1, UnitTypesTime.days))
-        ts = _peak_value * np.cos(
-            omega
-            * tt
-            / UnitfulTime(1, UnitTypesTime.days).convert(UnitTypesTime.seconds)
+        tt_seconds = (tt - REFERENCE_TIME).total_seconds()
+
+        omega = 2 * math.pi / attrs.duration.convert(UnitTypesTime.seconds)
+        phase_shift = attrs.peak_time.convert(UnitTypesTime.seconds)
+        one_period_ts = attrs.peak_value.value * np.cos(
+            omega * (tt_seconds - phase_shift)
         )
 
-        return ts
+        return one_period_ts
 
 
 ### TIMESERIES ###
@@ -204,8 +193,8 @@ class SyntheticTimeseries(ITimeseries):
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
-            ts_start_time=self.attrs.peak_time - self.attrs.duration / 2,
-            ts_end_time=self.attrs.peak_time + self.attrs.duration / 2,
+            ts_start_time=self.attrs.start_time,
+            ts_end_time=self.attrs.end_time,
         )
 
     @staticmethod

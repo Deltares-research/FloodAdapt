@@ -24,6 +24,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
+REFERENCE_TIME = datetime(2021, 1, 1, 0, 0, 0)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
@@ -82,6 +83,20 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
                 "Either peak_value or cumulative must be specified for the timeseries model."
             )
         return self
+
+    @property
+    def start_time(self) -> UnitfulTime:
+        return self.peak_time - self.duration / 2
+
+    @property
+    def end_time(self) -> UnitfulTime:
+        return self.peak_time + self.duration / 2
+
+    def __str__(self):
+        return f"shape_type: {self.shape_type}, start: {self.start_time}, end: {self.end_time}, duration: {self.duration}, peak time: {self.peak_time}, peak value: {self.peak_value}, cumulative: {self.cumulative}"
+
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
@@ -147,11 +162,11 @@ class ITimeseries(ABC):
         full_df.index.name = "time"
 
         data = self.calculate_data(time_step=time_step)
+
         _time_range = pd.date_range(
             start=(start_time + ts_start_time.to_timedelta()),
             end=(start_time + ts_end_time.to_timedelta()),
-            inclusive="left",
-            freq=f"{_time_step}S",
+            periods=len(data),
         )
         df = pd.DataFrame(data, columns=["values"], index=_time_range)
 
@@ -179,6 +194,12 @@ class ITimeseries(ABC):
             xaxis={"range": [xmin, xmax]},
         )
         return fig
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.attrs})"
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.attrs})"
 
     def __eq__(self, other: "ITimeseries") -> bool:
         if not isinstance(other, ITimeseries):

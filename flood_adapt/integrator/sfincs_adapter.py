@@ -106,7 +106,7 @@ class SfincsAdapter(IHazardAdapter):
 
             database = db.Database()
 
-        self._logger = FloodAdaptLogging.getLogger(__file__)
+        self._logger = FloodAdaptLogging.getLogger(__name__)
         self._database = database
         self._model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
         self._model.read()
@@ -446,15 +446,12 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=None,
                 magnitude=forcing.intensity,
             )
+
         elif isinstance(forcing, RainfallSynthetic):
-            self._model.setup_precip_forcing(
-                timeseries=forcing.path,
-                magnitude=None,
-            )
+            self._model.add_precip_forcing(timeseries=forcing.get_data())
+
         elif isinstance(forcing, RainfallFromModel):
-            # TODO: check how to add this to the model
-            data = self._get_wl_df_from_offshore_his_results()
-            self._model.setup_precip_forcing_from_grid(precip=data)
+            self._model.setup_precip_forcing_from_grid(precip=forcing.get_data())
 
         elif isinstance(forcing, RainfallFromSPWFile):
             # TODO: check how to add this to the model
@@ -501,7 +498,6 @@ class SfincsAdapter(IHazardAdapter):
             self._logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
-            return
 
     ### MEASURES HELPERS ###
     def _add_measure_floodwall(self, floodwall: FloodWall):
@@ -698,21 +694,6 @@ class SfincsAdapter(IHazardAdapter):
             - spatial_ref: CRS
         """
         self._model.setup_pressure_forcing_from_grid(press=ds)
-
-    def _add_precip_forcing_from_grid(self, ds: xr.DataArray):
-        # if self.event.attrs.template != "Historical_hurricane":
-        # if self.event.attrs.rainfall.source == "map":
-        # to overland
-        """Add spatially varying precipitation to sfincs model.
-
-        Parameters
-        ----------
-        precip : xr.DataArray
-            Dataarray which should contain:
-            - precip: precipitation rates [mm_hr]
-            - spatial_ref: CRS
-        """
-        self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
 
     def _add_precip_forcing(
         self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None

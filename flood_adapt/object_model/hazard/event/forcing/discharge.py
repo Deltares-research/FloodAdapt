@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from pandas.core.api import DataFrame as DataFrame
 
@@ -30,11 +32,13 @@ class DischargeSynthetic(IDischarge):
     timeseries: SyntheticTimeseriesModel
 
     def get_data(self) -> DataFrame:
-        return SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
+        return pd.DataFrame(
+            SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
+        )
 
 
 class DischargeFromCSV(IDischarge):
-    path: str
+    path: str | os.PathLike
 
     def get_data(self) -> DataFrame:
-        return CSVTimeseries(self.path).calculate_data()
+        return pd.DataFrame(CSVTimeseries.load_file(self.path).calculate_data())

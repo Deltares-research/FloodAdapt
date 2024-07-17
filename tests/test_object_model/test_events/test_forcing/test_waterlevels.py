@@ -26,16 +26,16 @@ class TestWaterlevelSynthetic:
         surge_model = SurgeModel(
             timeseries=SyntheticTimeseriesModel(
                 shape_type=ShapeType.constant,
-                duration=UnitfulTime(4, "hours"),
-                peak_time=UnitfulTime(2, "hours"),
+                duration=UnitfulTime(12, "hours"),
+                peak_time=UnitfulTime(6, "hours"),
                 peak_value=UnitfulLength(2, "meters"),
             )
         )
 
         tide_model = TideModel(
             harmonic_amplitude=UnitfulLength(1, "meters"),
-            harmonic_period=UnitfulTime(4, "hours"),
-            harmonic_phase=UnitfulTime(2, "hours"),
+            harmonic_period=UnitfulTime(12, "hours"),
+            harmonic_phase=UnitfulTime(6, "hours"),
         )
 
         # Act

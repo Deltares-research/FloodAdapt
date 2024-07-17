@@ -21,14 +21,16 @@ class ForcingType(str, Enum):
 class ForcingSource(str, Enum):
     """Enum class for the different sources of forcing parameters."""
 
-    MODEL = "MODEL"
-    TRACK = "TRACK"
-    CSV = "CSV"
-    SYNTHETIC = "SYNTHETIC"
-    GAUGED = "GAUGED"
-    CONSTANT = "CONSTANT"
-    METEO = "METEO"
-    SPW_FILE = "SPW_FILE"
+    MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
+    TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
+    SPW_FILE = "SPW_FILE"  # == TRACK ?
+    CSV = "CSV"  # user imported data
+
+    SYNTHETIC = "SYNTHETIC"  # synthetic data
+    CONSTANT = "CONSTANT"  # synthetic data
+
+    GAUGED = "GAUGED"  # data downloaded from a gauge
+    METEO = "METEO"  # external hindcast data
 
 
 class IForcing(BaseModel):

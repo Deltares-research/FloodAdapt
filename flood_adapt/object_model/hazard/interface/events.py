@@ -34,6 +34,7 @@ class Template(str, Enum):
     Hurricane = "Historical_hurricane"
     Historical_nearshore = "Historical_nearshore"
     Historical_offshore = "Historical_offshore"
+    Historical = "Historical"
 
 
 class TimeModel(BaseModel):
