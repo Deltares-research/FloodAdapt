@@ -191,8 +191,8 @@ class ConfigModel(BaseModel):
     road_width: Optional[float] = 2.5  # in meters
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
-    river: Optional[list[RiverModel]] = []
-    obs_point: Optional[list[Obs_pointModel]] = []
+    river: Optional[list[RiverModel]] = None
+    obs_point: Optional[list[Obs_pointModel]] = None
     probabilistic_set: Optional[str] = None
     infographics: Optional[bool] = False
 
@@ -703,7 +703,8 @@ class Database:
         self.site_attrs["sfincs"]["cstype"] = self.sfincs.crs.type_name.split(" ")[
             0
         ].lower()
-        self.site_attrs["sfincs"]["offshore_model"] = "offshore"
+        if self.config.sfincs_offshore:
+            self.site_attrs["sfincs"]["offshore_model"] = "offshore"
         self.site_attrs["sfincs"]["overland_model"] = "overland"
         fiat_units = self.fiat_model.config["vulnerability"]["unit"]
         if fiat_units == "ft":
@@ -1121,10 +1122,10 @@ class Database:
         This method iterates over the `obs_point` list in the `config` object and appends the model dump of each observation point
         to the `obs_point` attribute in the `site_attrs` dictionary.
         """
-        self.site_attrs["obs_point"] = []
-
-        for op in self.config.obs_point:
-            self.site_attrs["obs_point"].append(op.model_dump())
+        if self.config.obs_point is not None:
+            self.site_attrs["obs_point"] = []
+            for op in self.config.obs_point:
+                self.site_attrs["obs_point"].append(op.model_dump())
 
     def add_gui_params(self):
         """
@@ -1428,12 +1429,15 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    while True:
-        path = input("Provide the path to the database creation configuration toml: \n")
-        try:
-            main(path)
-        except Exception as e:
-            print(e)
-            quit = input("do you want to quit? (y/n)")
-            if quit == "y":
-                exit()
+    main(
+        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_2.toml"
+    )
+    # while True:
+    #     path = input("Provide the path to the database creation configuration toml: \n")
+    #     try:
+    #         main(path)
+    #     except Exception as e:
+    #         print(e)
+    #         quit = input("do you want to quit? (y/n)")
+    #         if quit == "y":
+    #             exit()
