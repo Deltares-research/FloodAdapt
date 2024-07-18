@@ -1,7 +1,6 @@
 import os
-import shutil
 from pathlib import Path
-from typing import Any, Union
+from typing import Union
 
 import pandas as pd
 import plotly.graph_objects as go
