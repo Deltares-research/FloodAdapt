@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
+from scipy.interpolate import interp1d
 
 from flood_adapt.api.static import read_database
 from flood_adapt.dbs_controller import Database
@@ -161,7 +162,16 @@ class TippingPoint(ITipPoint):
         tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
             drop=True
         )
-        tp_results[["name", "tipping point reached"]].to_csv(
+        tp_results["sea level"] = [
+            float(i) / 10 for i in self.attrs.sealevelrise
+        ]  # TODO: hardcoded for SLR in Meters, fix later
+        # calculate the sea level at the tipping point threshold
+        # TODO: not super clear but maybe talk to @luuk about how to better show the table
+        self.calculate_sea_level_at_threshold(tp_results)
+
+        tp_results["strategy"] = self.attrs.strategy
+        # SAVE
+        tp_results.drop(columns=["object"]).to_csv(
             tp_path / "tipping_point_results.csv"
         )
 
@@ -183,6 +193,12 @@ class TippingPoint(ITipPoint):
             ),
             index_col=0,
         )
+        # add to self.scenarios the results of the value metric for the given tipping point metric
+        for metric in self.attrs.tipping_point_metric:
+            self.scenarios[scenario.attrs.name][f"{metric[0]}_value"] = info_df.loc[
+                metric[0], "Value"
+            ]
+
         # if any tipping point is reached, return True
         # TODO: maybe change to different approach if more than one tipping
         # point is being assessed (instead of any, maybe you want to check
@@ -200,6 +216,60 @@ class TippingPoint(ITipPoint):
         """Compare current value with threshold for tipping point."""
         operations = {"greater": lambda x, y: x >= y, "less": lambda x, y: x <= y}
         return operations[operator](current_value, threshold)
+
+    def calculate_sea_level_at_threshold(self, tp_results):
+        for metric in self.attrs.tipping_point_metric:
+            metric_name, threshold, operator = metric
+            # Remove NaN values to prevent interpolation errors
+            valid_data = tp_results[["sea level", f"{metric_name}_value"]].dropna()
+
+            x = valid_data["sea level"].values
+            y = valid_data[f"{metric_name}_value"].values
+
+            # Create a linear interpolation function
+            interpolation_function = interp1d(y, x, fill_value="extrapolate")
+
+            tp_results[f"{metric_name}_ATP"] = interpolation_function(threshold)
+
+    # create a function that plots the results from tp_path / "tipping_point_results.csv" against the SLR values
+    def plot_results(self):
+        tp_path = self.results_path.joinpath(self.attrs.name)
+        tp_results = pd.read_csv(tp_path / "tipping_point_results.csv")
+
+        for metric in self.attrs.tipping_point_metric:
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=self.attrs.sealevelrise,
+                    y=tp_results[f"{metric[0]}_value"],
+                    mode="lines+markers",
+                    name=f"{metric[0]}",
+                )
+            )
+
+            fig.add_shape(
+                type="line",
+                x0=0,
+                x1=1,
+                y0=metric[1],
+                y1=metric[1],
+                xref="paper",
+                yref="y",
+                line=dict(
+                    color="Red",
+                    width=2,
+                    dash="dash",
+                ),
+                name=f"{metric[0]} threshold",
+            )
+            fig.update_layout(
+                title=f"Tipping Point Analysis for {self.attrs.name}",
+                xaxis_title="Sea Level Rise (m)",
+                yaxis_title="Value",
+            )
+
+            fig.show()
 
     ### standard functions ###
     def load_file(filepath: Union[str, Path]) -> "TippingPoint":
@@ -252,10 +322,10 @@ if __name__ == "__main__":
         "event_set": "extreme12ft",
         "strategy": "no_measures",
         "projection": "current",
-        "sealevelrise": [0.5, 1.0, 1.5],
+        "sealevelrise": [0.5, 1.0, 1.5, 2],
         "tipping_point_metric": [
-            ("TotalDamageEvent", 110974525.0, "greater"),
-            ("FullyFloodedRoads", 2301, "greater"),
+            ("TotalDamageEvent", 130074525.0, "greater"),
+            ("FullyFloodedRoads", 2501, "greater"),
         ],
     }
     # load
@@ -264,3 +334,5 @@ if __name__ == "__main__":
     test_point.create_tp_scenarios()
     # run all scenarios
     test_point.run_tp_scenarios()
+
+    test_point.plot_results()

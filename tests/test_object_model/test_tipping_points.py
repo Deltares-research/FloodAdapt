@@ -16,7 +16,7 @@ class TestTippingPoints:
             "event_set": "extreme12ft",
             "strategy": "no_measures",
             "projection": "current",
-            "sealevelrise": [0.5, 1.0, 1.5],
+            "sealevelrise": [0.5, 0.75, 1.0, 1.5],
             "tipping_point_metric": [
                 ("TotalDamageEvent", 110974525.0, "greater"),
                 ("FullyFloodedRoads", 2305, "greater"),
@@ -66,6 +66,11 @@ class TestTippingPoints:
             assert isinstance(
                 scenario["tipping point reached"], bool
             ), f"Value for 'tipping point reached' is not boolean in scenario: {name}"
+
+
+# TODO create test for tipping point reached being true and another for false
+
+# TODO: check if the tipping point reached is indeed correct
 
 
 class TestTippingPointInvalidInputs:
