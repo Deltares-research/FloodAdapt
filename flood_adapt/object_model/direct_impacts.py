@@ -566,6 +566,17 @@ class DirectImpacts:
     def _create_infographics(self, mode, metrics_path):
         self._logger.info("Creating infographics...")
 
+        # Check if infographics config file exists
+        if mode == "risk":
+            config_path = self.database.static_path.joinpath(
+                "templates", "Infographics", "config_risk_charts.toml"
+            )
+            if not config_path.exists():
+                self._logger.warning(
+                    "Risk infographic cannot be created, since 'config_risk_charts.toml' is not available"
+                )
+                return
+
         # Get the infographic
         InforgraphicFactory.create_infographic_file_writer(
             infographic_mode=mode,
