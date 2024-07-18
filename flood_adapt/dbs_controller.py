@@ -169,6 +169,20 @@ class Database(IDatabase):
     @property
     def benefits(self) -> DbsBenefit:
         return self._benefits
+    
+    def cleanup(self, days_old: int = 7):
+        """Remove zips in base_path/temp that are older than the given number of days.
+
+        Parameters
+        ----------
+        days_old : int, optional
+            Number of days, by default 7
+        """
+        temp_path = self.base_path / "temp"
+        for file in temp_path.glob("*.zip"):
+            if (datetime.datetime.now() - file.stat().st_mtime).days > days_old:
+                file.unlink()
+
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
         r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.

@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from typing import Any, Union
 
@@ -27,14 +28,14 @@ class Scenario(IScenario):
 
         self._logger = FloodAdaptLogging.getLogger(__name__)
 
-        database = Database()
-        self.site_info = database.site
-        self.results_path = database.scenarios.get_database_path(
+        self.database = Database()
+        self.site_info = self.database.site
+        self.results_path = self.database.scenarios.get_database_path(
             get_input_path=False
         ).joinpath(self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
-            database=database,
+            database=self.database,
             results_path=self.results_path,
         )
         return self
@@ -68,31 +69,47 @@ class Scenario(IScenario):
         self.init_object_model()
         os.makedirs(self.results_path, exist_ok=True)
 
-        # Initiate the logger for all the integrator scripts.
-        log_file = self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
-        with FloodAdaptLogging.to_file(file_path=log_file):
-            self._logger.info(f"FloodAdapt version {__version__}")
-            self._logger.info(
-                f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
-            )
-            # preprocess model input data first, then run, then post-process
-            if not self.direct_impacts.hazard.has_run:
-                self.direct_impacts.hazard.preprocess_models()
-                self.direct_impacts.hazard.run_models()
-                self.direct_impacts.hazard.postprocess_models()
-            else:
-                print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
-            if not self.direct_impacts.has_run:
-                self.direct_impacts.preprocess_models()
-                self.direct_impacts.run_models()
-                self.direct_impacts.postprocess_models()
-            else:
-                print(
-                    f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+        try:
+            # Initiate the logger for all the integrator scripts.
+            log_file = self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
+            with FloodAdaptLogging.to_file(file_path=log_file):
+                self._logger.info(f"FloodAdapt version {__version__}")
+                self._logger.info(
+                    f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
                 )
-            self._logger.info(
-                f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
-            )
+                # preprocess model input data first, then run, then post-process
+                if not self.direct_impacts.hazard.has_run:
+                    self.direct_impacts.hazard.preprocess_models()
+                    self.direct_impacts.hazard.run_models()
+                    self.direct_impacts.hazard.postprocess_models()
+                else:
+                    print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+                if not self.direct_impacts.has_run:
+                    self.direct_impacts.preprocess_models()
+                    self.direct_impacts.run_models()
+                    self.direct_impacts.postprocess_models()
+                else:
+                    print(
+                        f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+                    )
+                self._logger.info(
+                    f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
+                )
+        except Exception:
+            # Zip the folder
+            shutil.make_archive(self.results_path, 'zip', self.results_path)
+
+            # Create the tmp directory if it doesn't exist
+            tmp_dir = self.database.base_path / 'temp'
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+
+            # Move the zip file to the tmp directory
+            zip_file = self.results_path.with_suffix('.zip')
+            shutil.move(zip_file, tmp_dir)
+
+            # Remove the folder
+            shutil.rmtree(self.results_path)
+
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):
