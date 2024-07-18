@@ -410,7 +410,7 @@ class Database:
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
                 if "BF_FID" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("SVI")
+                    ind = [attr.name for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
                     footprints_path = fiat_path.joinpath(footprints.file)
                     check_file = footprints_path.exists()
@@ -1304,6 +1304,8 @@ class Database:
         # If infographics are going to be created in FA, get template metric configurations
         if self.config.infographics:
             self.site_attrs["fiat"]["infographics"] = "True"
+
+            # Check what type of infographics should be used
             if self.config.unit_system == "imperial":
                 self.metrics_folder_name = "US_NSI"
                 self.logger.info(
@@ -1315,14 +1317,21 @@ class Database:
                     "Default OSM infometrics and infographics will be created."
                 )
 
+            if "svi" in self.site_attrs["fiat"]:
+                svi_folder_name = "with_SVI"
+            else:
+                svi_folder_name = "without_SVI"
+
             # Copy metrics config for infographics
-            path_0 = templates_path.joinpath("infometrics", self.metrics_folder_name)
+            path_0 = templates_path.joinpath(
+                "infometrics", self.metrics_folder_name, svi_folder_name
+            )
             for file in path_0.glob("*.toml"):
                 shutil.copy(file, path_im)
 
             # Copy infographics config
             path_ig_temp = templates_path.joinpath(
-                "infographics", self.metrics_folder_name
+                "infographics", self.metrics_folder_name, svi_folder_name
             )
             path_ig = self.root.joinpath("static", "templates", "infographics")
             shutil.copytree(path_ig_temp, path_ig)
@@ -1430,7 +1439,7 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     main(
-        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_2.toml"
+        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_3.toml"
     )
     # while True:
     #     path = input("Provide the path to the database creation configuration toml: \n")
