@@ -201,6 +201,7 @@ class FiatModel(BaseModel):
     new_development_file_name: Optional[str] = None
     save_simulation: Optional[bool] = False
     svi: Optional[SVIModel] = None
+    infographics: Optional[bool] = False
 
 
 class RiverModel(BaseModel):
