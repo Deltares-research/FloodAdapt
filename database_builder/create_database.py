@@ -150,6 +150,10 @@ class TideGaugeModel(BaseModel):
     datum_name: Optional[str] = None
 
 
+class SviModel(SpatialJoinModel):
+    threshold: float
+
+
 class ConfigModel(BaseModel):
     """
     Represents the configuration model for FloodAdapt.
@@ -187,7 +191,7 @@ class ConfigModel(BaseModel):
     tide_gauge: Optional[TideGaugeModel] = None
     building_footprints: Optional[SpatialJoinModel] = None
     bfe: Optional[SpatialJoinModel] = None
-    svi: Optional[SpatialJoinModel] = None
+    svi: Optional[SviModel] = None
     road_width: Optional[float] = 2.5  # in meters
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
@@ -1352,6 +1356,12 @@ class Database:
             attrs["aggregateBy"] = [
                 aggr["name"] for aggr in self.site_attrs["fiat"]["aggregation"]
             ]
+            # replace the SVI threshold if needed
+            if self.config.svi:
+                for i, query in enumerate(attrs["queries"]):
+                    query["filter"] = query["filter"].replace(
+                        "SVI_threshold", str(self.config.svi.threshold)
+                    )
             with open(file, "wb") as f:
                 tomli_w.dump(attrs, f)
 
@@ -1438,15 +1448,12 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    main(
-        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_3.toml"
-    )
-    # while True:
-    #     path = input("Provide the path to the database creation configuration toml: \n")
-    #     try:
-    #         main(path)
-    #     except Exception as e:
-    #         print(e)
-    #         quit = input("do you want to quit? (y/n)")
-    #         if quit == "y":
-    #             exit()
+    while True:
+        path = input("Provide the path to the database creation configuration toml: \n")
+        try:
+            main(path)
+        except Exception as e:
+            print(e)
+            quit = input("do you want to quit? (y/n)")
+            if quit == "y":
+                exit()
