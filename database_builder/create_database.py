@@ -23,10 +23,7 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.object_model.interface.site import (
-    Obs_pointModel,
-    RiverModel,
-)
+from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
@@ -154,6 +151,10 @@ class SviModel(SpatialJoinModel):
     threshold: float
 
 
+class SlrModelDef(SlrModel):
+    vertical_offset: Optional[UnitfulLength] = UnitfulLength(value=0, units="meters")
+
+
 class ConfigModel(BaseModel):
     """
     Represents the configuration model for FloodAdapt.
@@ -188,11 +189,14 @@ class ConfigModel(BaseModel):
     fiat: str
     unit_system: UnitSystems
     gui: GuiModel
+    building_footprints: SpatialJoinModel
+    slr: Optional[SlrModelDef] = (
+        SlrModelDef()
+    )  # = SlrModel(vertical_offset=UnitfulLength(value=0, units="meters"))
     tide_gauge: Optional[TideGaugeModel] = None
-    building_footprints: Optional[SpatialJoinModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviModel] = None
-    road_width: Optional[float] = 2.5  # in meters
+    road_width: Optional[float] = 2  # in meters
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
     river: Optional[list[RiverModel]] = None
@@ -595,7 +599,6 @@ class Database:
 
         # Read SVI
         if self.config.svi:
-            # TODO if SVI map is provided use a threshold input as well to update the metrics
             buildings_joined, svi = spatial_join(
                 buildings,
                 self.config.svi.file,
@@ -889,8 +892,8 @@ class Database:
 
         The downloaded database is stored in the 'static/cyclone_track_database' directory.
         """
-        if not self.config.cyclones:
-            self.warning.info("No cyclones will be available in the database.")
+        if not self.config.cyclones or not self.config.sfincs_offshore:
+            self.logger.warning("No cyclones will be available in the database.")
             return
         if self.config.cyclone_basin:
             basin = self.config.cyclone_basin
@@ -901,7 +904,11 @@ class Database:
         self.logger.info(f"Downloading cyclone track database from {url}")
         fn = self.root.joinpath("static", "cyclone_track_database", name)
         fn.parent.mkdir()
-        urlretrieve(url, fn)
+        try:
+            urlretrieve(url, fn)
+        except Exception as e:
+            print(e)
+            self.logger.error(f"Could not retrieve cyclone track database from {url}")
         self.site_attrs["cyclone_track_database"] = {}
         self.site_attrs["cyclone_track_database"]["file"] = name
 
@@ -939,8 +946,9 @@ class Database:
         self.site_attrs["water_level"]["reference"]["height"]["units"] = (
             self.site_attrs["sfincs"]["floodmap_units"]
         )
+        self.site_attrs["water_level"]["other"] = []
 
-        zero_wl_msg = "A 0 value will be used for both MSL and Datum levels. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes."
+        zero_wl_msg = "A 0 value will be used for both MSL and Datum levels. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
 
         # Then check if there is any extra configurations given
         if self.config.tide_gauge is None:
@@ -975,7 +983,6 @@ class Database:
                     self.site_attrs["water_level"]["reference"]["name"] = station[
                         "reference"
                     ]
-                    self.site_attrs["water_level"]["other"] = []
                     for name in ["MLLW", "MHHW"]:
                         wl_info = {}
                         wl_info["name"] = name
@@ -1110,14 +1117,32 @@ class Database:
         The units for the vertical offset are obtained from the `sfincs` attribute in the `site_attrs` dictionary.
         """
         # TODO better default values
-        # TODO slr projections csv should not be mandatory!
         self.site_attrs["slr"] = {}
-        self.site_attrs["slr"]["relative_to_year"] = 2020
+        vertical_offset = self.config.slr.vertical_offset.model_copy()
+        # Make sure units are consistent
         self.site_attrs["slr"]["vertical_offset"] = {}
-        self.site_attrs["slr"]["vertical_offset"]["value"] = 0
+        self.site_attrs["slr"]["vertical_offset"]["value"] = vertical_offset.convert(
+            self.site_attrs["sfincs"]["floodmap_units"]
+        )
         self.site_attrs["slr"]["vertical_offset"]["units"] = self.site_attrs["sfincs"][
             "floodmap_units"
         ]
+        # If slr scenarios are given put them in the correct locations
+        if self.config.slr.scenarios:
+            self.site_attrs["slr"]["scenarios"] = self.config.slr.scenarios
+            slr_path = self.static_path.joinpath("slr")
+            slr_path.mkdir()
+            new_file = slr_path.joinpath(Path(self.config.slr.scenarios.file).name)
+            # copy file
+            shutil.copyfile(self.config.slr.scenarios.file, new_file)
+            # add site attributes
+            self.site_attrs["slr"]["scenarios"] = {}
+            self.site_attrs["slr"]["scenarios"]["file"] = new_file.relative_to(
+                self.static_path
+            ).as_posix()
+            self.site_attrs["slr"]["scenarios"][
+                "relative_to_year"
+            ] = self.config.slr.scenarios.relative_to_year
 
     def add_obs_points(self):
         """
@@ -1140,9 +1165,26 @@ class Database:
         """
         # Read default units from template
         self.site_attrs["gui"] = self._get_default_units()
-        # Get default value for tide?
+        # Check if the water level attribute include info on MHHW and MSL
+        other = [attr["name"] for attr in self.site_attrs["water_level"]["other"]]
+        if "MHHW" in other:
+            amplitude = (
+                self.site_attrs["water_level"]["other"][other.index("MHHW")]["height"][
+                    "value"
+                ]
+                - self.site_attrs["water_level"]["msl"]["height"]["value"]
+            )
+            self.logger.info(
+                f"The default tidal amplitude in the GUI will be {amplitude} {self.site_attrs['gui']['default_length_units']}, calculated as the difference between MHHW and MSL from the tide gauge data."
+            )
+        else:
+            amplitude = 0.0
+            self.logger.warning(
+                "The default tidal amplitude in the GUI will be 0.0, since no tide-gauge water levels are available. You can change this in the site.toml with the 'gui.tide_harmonic_amplitude' attribute."
+            )
+
         self.site_attrs["gui"]["tide_harmonic_amplitude"] = {
-            "value": 0.0,  # TODO where should this come from?
+            "value": amplitude,  # TODO where should this come from?
             "units": self.site_attrs["gui"]["default_length_units"],
         }
         # Read default colors from template
@@ -1454,6 +1496,6 @@ if __name__ == "__main__":
             main(path)
         except Exception as e:
             print(e)
-            quit = input("do you want to quit? (y/n)")
-            if quit == "y":
-                exit()
+        quit = input("do you want to quit? (y/n)")
+        if quit == "y":
+            exit()
