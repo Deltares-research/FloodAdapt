@@ -603,4 +603,4 @@ class Benefit(IBenefit):
             path for saving the toml file
         """
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.model_dump(self.attrs, f, exclude_none=True)
