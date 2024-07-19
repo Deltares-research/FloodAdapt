@@ -28,6 +28,7 @@ dependencies = [
     "cht-meteo",
     "cht-observations@ git+https://github.com/deltares/cht_observations.git",
     "cht-tide",
+    "dask<2024.7.0", # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
     "fiat-toolbox",
     "geojson",
     "geopandas",
@@ -123,6 +124,7 @@ ignore = [
 ]
 fixable = [
     "I",
+    "F",
     "D"
 ]
 [tool.ruff.lint.pydocstyle]
