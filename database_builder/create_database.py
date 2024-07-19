@@ -23,8 +23,8 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel, SlrModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
+from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
 
 
@@ -199,7 +199,6 @@ class ConfigModel(BaseModel):
     road_width: Optional[float] = 2  # in meters
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
-    river: Optional[list[RiverModel]] = None
     obs_point: Optional[list[Obs_pointModel]] = None
     probabilistic_set: Optional[str] = None
     infographics: Optional[bool] = False
@@ -762,8 +761,35 @@ class Database:
         If `self.config.river` is empty, a dummy river is added with default values.
         Otherwise, the rivers specified in `self.config.river` are added.
         """
-        if self.config.river:
-            self.site_attrs["river"] = self.config.river
+        if "dis" not in self.sfincs.forcing:
+            self.logger.warning("No rivers found in the SFINCS model.")
+            return
+        river_locs = self.sfincs.forcing["dis"].vector.to_gdf()
+        river_locs.crs = self.sfincs.crs
+        self.site_attrs["river"] = []
+
+        for i, row in river_locs.iterrows():
+            river = {}
+            river["name"] = f"river_{i}"
+            river["description"] = f"river_{i}"
+            river["x_coordinate"] = row.geometry.x
+            river["y_coordinate"] = row.geometry.y
+            mean_dis = UnitfulDischarge(
+                value=self.sfincs.forcing["dis"]
+                .sel(index=i)
+                .to_numpy()
+                .mean(),  # in m3/s
+                units="m3/s",
+            )
+            if self.config.unit_system == "imperial":
+                mean_dis.value = mean_dis.convert("cfs")
+                mean_dis.units = "cfs"
+            river["mean_discharge"] = mean_dis
+            self.site_attrs["river"].append(river)
+        self.logger.warning(
+            f"{len(river_locs)} river(s) were identified from the SFINCS model and will be available in FloodAdapt for discharge input."
+        )
+        # TODO add rivers in the SFINCS model through the config?
 
     def add_dem(self):
         """
@@ -1482,6 +1508,7 @@ def main(config_path: str):
     dbs.add_tide_gauge()
     dbs.add_gui_params()
     dbs.add_slr()
+    # TODO add scs rainfall curves
     dbs.add_general_attrs()
     dbs.add_infometrics()
     dbs.save_site_config()
