@@ -137,10 +137,10 @@ class TippingPoint(ITipPoint):
         """Run all scenarios to determine tipping points."""
         for name, scenario in self.scenarios.items():
             scenario_obj = scenario["object"]
-
-            if self.attrs.status == TippingPointStatus.reached:
-                self.scenarios[name]["tipping point reached"] = True
-                continue
+            # commented out to run every scenario - TODO: uncomment if you want to skip scenarios once
+            # if self.attrs.status == TippingPointStatus.reached:
+            #     self.scenarios[name]["tipping point reached"] = True
+            #     continue
 
             if not self.scenario_has_run(scenario_obj):
                 scenario_obj.run()
@@ -152,27 +152,8 @@ class TippingPoint(ITipPoint):
             else:
                 self.scenarios[name]["tipping point reached"] = False
 
-        tp_path = self.results_path.joinpath(self.attrs.name)
-
-        # Save results - make directory if it doesn't exist
-        if not tp_path.is_dir():
-            tp_path.mkdir(parents=True)
-
-        tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
-            drop=True
-        )
-        tp_results["sea level"] = [
-            float(i) / 10 for i in self.attrs.sealevelrise
-        ]  # TODO: hardcoded for SLR in Meters, fix later
-        # calculate the sea level at the tipping point threshold
-        # TODO: not super clear but maybe talk to @luuk about how to better show the table
-        self.calculate_sea_level_at_threshold(tp_results)
-
-        tp_results["strategy"] = self.attrs.strategy
-        # SAVE
-        tp_results.drop(columns=["object"]).to_csv(
-            tp_path / "tipping_point_results.csv"
-        )
+        # prepare the csv file for the pathway generator
+        self.prepare_tp_results()
 
     def scenario_has_run(self, scenario_obj):
         # TODO: once has_run is refactored (external) we change below to make it more direct
@@ -217,18 +198,67 @@ class TippingPoint(ITipPoint):
         return operations[operator](current_value, threshold)
 
     def calculate_sea_level_at_threshold(self, tp_results):
+        tp_results["ATP"] = "False"
         for metric in self.attrs.tipping_point_metric:
             metric_name, threshold, operator = metric
-            # Remove NaN values to prevent interpolation errors
-            valid_data = tp_results[["sea level", f"{metric_name}_value"]].dropna()
+            valid_data = tp_results[tp_results["Metric"] == f"{metric_name}"].dropna()
 
-            x = valid_data["sea level"].values
-            y = valid_data[f"{metric_name}_value"].values
+            x = valid_data["sea level"]
+            y = valid_data["Value"]
 
             # Create a linear interpolation function
             interpolation_function = interp1d(y, x, fill_value="extrapolate")
 
-            tp_results[f"{metric_name}_ATP"] = interpolation_function(threshold)
+            new_rows = pd.DataFrame(
+                {
+                    "sea level": interpolation_function(threshold),
+                    "strategy": valid_data.iloc[0]["strategy"],
+                    "Metric": metric_name.value,
+                    "Value": threshold,
+                    "ATP": "True",
+                },
+                index=[0],
+            )
+            tp_results = pd.concat([tp_results, new_rows], ignore_index=True)
+        tp_results = tp_results.sort_values(by=["Metric", "sea level"])
+        return tp_results
+
+    def prepare_tp_results(self):
+
+        tp_path = self.results_path.joinpath(self.attrs.name)
+        # Save results - make directory if it doesn't exist
+        if not tp_path.is_dir():
+            tp_path.mkdir(parents=True)
+
+        # Convert the scenarios dictionary to a DataFrame
+        tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
+            drop=True
+        )
+
+        # Add 'sea level' column with hardcoded conversion
+        tp_results["sea level"] = [
+            float(i) / 10 for i in self.attrs.sealevelrise
+        ]  # TODO: fix later if needed
+
+        # Add 'strategy' column
+        tp_results["strategy"] = self.attrs.strategy
+
+        # Melt the DataFrame to long format
+        tp_results_long = pd.melt(
+            tp_results,
+            id_vars=["sea level", "strategy"],
+            value_vars=[col for col in tp_results.columns if col.endswith("_value")],
+            var_name="Metric",
+            value_name="Value",
+        )
+
+        # Clean up the 'Metric' column
+        tp_results_long["Metric"] = tp_results_long["Metric"].str.replace("_value", "")
+
+        # Calculate the sea level at the tipping point threshold
+        tp_results_long = self.calculate_sea_level_at_threshold(tp_results_long)
+
+        tp_results_long.to_csv(tp_path / "tipping_point_results.csv")
 
     # create a function that plots the results from tp_path / "tipping_point_results.csv" against the SLR values
     def plot_results(self):
@@ -236,12 +266,13 @@ class TippingPoint(ITipPoint):
         tp_results = pd.read_csv(tp_path / "tipping_point_results.csv")
 
         for metric in self.attrs.tipping_point_metric:
+            metric_data = tp_results[tp_results["Metric"] == metric[0]]
             fig = go.Figure()
 
             fig.add_trace(
                 go.Scatter(
-                    x=self.attrs.sealevelrise,
-                    y=tp_results[f"{metric[0]}_value"],
+                    x=metric_data["sea level"],
+                    y=metric_data["Value"],
                     mode="lines+markers",
                     name=f"{metric[0]}",
                 )
@@ -324,7 +355,7 @@ if __name__ == "__main__":
         "sealevelrise": [0.5, 1.0, 1.5, 2],
         "tipping_point_metric": [
             ("TotalDamageEvent", 130074525.0, "greater"),
-            ("FullyFloodedRoads", 2501, "greater"),
+            ("DisplacedHighVulnerability", 1000, "greater"),
         ],
     }
     # load

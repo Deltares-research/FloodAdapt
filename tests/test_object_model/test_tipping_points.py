@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.dbs_controller import Database
-from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.tipping_point import TippingPoint, TippingPointStatus
+from flood_adapt.object_model.tipping_point import TippingPoint
 
 
 class TestTippingPoints:
@@ -118,7 +117,7 @@ class TestTippingPointInvalidInputs:
             "sealevelrise": [],
             "tipping_point_metric": [
                 ("TotalDamageEvent", 110974525.0, "greater"),
-                ("FullyFloodedRoads", 2305, "greater"),
+                ("DisplacedHighVulnerability", 900, "greater"),
             ],
         }
         test_point = TippingPoint.load_dict(tp_dict)
