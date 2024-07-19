@@ -286,11 +286,11 @@ class TippingPoint(ITipPoint):
                 y1=metric[1],
                 xref="paper",
                 yref="y",
-                line=dict(
-                    color="Red",
-                    width=2,
-                    dash="dash",
-                ),
+                line={
+                    "color": "Red",
+                    "width": 3,
+                    "dash": "dash",
+                },
                 name=f"{metric[0]} threshold",
             )
             fig.update_layout(
