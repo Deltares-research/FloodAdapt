@@ -55,8 +55,8 @@ class WindFromCSV(IWind):
         return df
 
 
-class WindFromModel(IWind):
-    _source = ForcingSource.MODEL
+class WindFromMeteo(IWind):
+    _source = ForcingSource.METEO
 
     path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
@@ -67,7 +67,7 @@ class WindFromModel(IWind):
     def get_data(self) -> xr.DataArray:
         if self.path is None:
             raise ValueError(
-                "Model path is not set. First, download the meteo data using event.process() method."
+                "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
             )
 
         from flood_adapt.object_model.hazard.event.historical import HistoricalEvent

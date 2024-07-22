@@ -1,6 +1,5 @@
 import shutil
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
@@ -141,10 +140,6 @@ class TestWaterlevelSynthetic:
         wl_df = WaterlevelSynthetic(surge=surge_model, tide=tide_model).get_data()
 
         # Assert
-        plt.figure()
-        plt.plot(wl_df)
-        plt.show()
-
         assert isinstance(wl_df, pd.DataFrame)
         assert not wl_df.empty
         assert (

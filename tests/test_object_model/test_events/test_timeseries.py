@@ -1,6 +1,5 @@
 import os
 import tempfile
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -8,11 +7,11 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.object_model.hazard.event.timeseries import (
-    # Scstype,
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.hazard.interface.timeseries import REFERENCE_TIME
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulTime,
@@ -209,9 +208,9 @@ class TestSyntheticTimeseries:
         timestep = UnitfulTime(1, UnitTypesTime.seconds)
         data = ts.calculate_data(timestep)
 
-        assert int(ts.attrs.duration / timestep) == len(
-            data
-        ), f"{ts.attrs.duration}/{timestep} should eq {len(data)}, but it is: {ts.attrs.duration/timestep}."
+        assert (
+            ts.attrs.duration / timestep == len(data) - 1
+        ), f"{ts.attrs.duration}/{timestep} should eq {ts.attrs.duration/timestep}, but it is: {len(data) - 1}."
         assert np.amax(data) == ts.attrs.peak_value.value
 
     def test_load_file(self):
@@ -277,7 +276,7 @@ class TestSyntheticTimeseries:
                 "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
             }
         )
-        start = datetime(year=2020, month=1, day=1, hour=2)
+        start = REFERENCE_TIME
         end = start + duration.to_timedelta()
         timestep = UnitfulTime(value=10, units=UnitTypesTime.seconds)
 
@@ -297,10 +296,9 @@ class TestSyntheticTimeseries:
             time_step=UnitfulTime(value=timestep.value, units=UnitTypesTime.seconds)
         )
         expected_time_range = pd.date_range(
-            start=pd.Timestamp(start),
+            start=REFERENCE_TIME,
             end=end,
-            freq=f"{int(timestep.value)}S",
-            inclusive="left",
+            freq=timestep.to_timedelta(),
         )
         expected_df = pd.DataFrame(
             expected_data, columns=["values"], index=expected_time_range

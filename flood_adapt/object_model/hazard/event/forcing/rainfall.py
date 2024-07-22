@@ -39,15 +39,15 @@ class RainfallSynthetic(IRainfall):
         )
 
 
-class RainfallFromModel(IRainfall):
-    _source = ForcingSource.MODEL
+class RainfallFromMeteo(IRainfall):
+    _source = ForcingSource.METEO
     path: str | os.PathLike | None = Field(default=None)
-    # simpath of the offshore model, set this when running the offshore model
+    # path to the meteo data, set this when downloading it
 
     def get_data(self) -> xr.DataArray:
         if self.path is None:
             raise ValueError(
-                "Model path is not set. Run the offshore model first using event.process() method."
+                "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
             )
 
         from flood_adapt.object_model.hazard.event.historical import HistoricalEvent

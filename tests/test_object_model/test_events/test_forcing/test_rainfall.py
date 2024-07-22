@@ -7,7 +7,7 @@ import xarray as xr
 
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromModel,
+    RainfallFromMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
@@ -60,7 +60,7 @@ class TestRainfallSynthetic:
         assert rf_df.min().min() == pytest.approx(2, rel=1e-2), f"{rf_df.min()} != 2"
 
 
-class TestRainfallFromModel:
+class TestRainfallFromMeteo:
     def test_rainfall_from_model_get_data(self, test_db, tmp_path):
         # Arrange
         test_path = tmp_path / "test_wl_from_model"
@@ -83,7 +83,7 @@ class TestRainfallFromModel:
         event._download_meteo(test_path)
 
         # Act
-        wl_df = RainfallFromModel(path=test_path).get_data()
+        wl_df = RainfallFromMeteo(path=test_path).get_data()
         print(wl_df)
 
         # Assert

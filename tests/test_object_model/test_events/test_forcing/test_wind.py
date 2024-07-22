@@ -8,7 +8,7 @@ import xarray as xr
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindFromCSV,
-    WindFromModel,
+    WindFromMeteo,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.events import Mode, Template, TimeModel
@@ -61,7 +61,7 @@ class TestWindFromModel:
         event._download_meteo(test_path)
 
         # Act
-        wind_df = WindFromModel(path=test_path).get_data()
+        wind_df = WindFromMeteo(path=test_path).get_data()
 
         # Assert
         assert isinstance(wind_df, xr.Dataset)

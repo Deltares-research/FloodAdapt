@@ -30,7 +30,7 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     IRainfall,
     RainfallConstant,
-    RainfallFromModel,
+    RainfallFromMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -43,7 +43,7 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     IWind,
     WindConstant,
-    WindFromModel,
+    WindFromMeteo,
     WindFromTrack,
     WindSynthetic,
 )
@@ -418,7 +418,7 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_wind_forcing(
                 timeseries=forcing.path, const_mag=None, const_dir=None
             )
-        elif isinstance(forcing, WindFromModel):
+        elif isinstance(forcing, WindFromMeteo):
             # TODO check with @gundula
             self._add_wind_forcing_from_grid(forcing.path)
         elif isinstance(forcing, WindFromTrack):
@@ -449,7 +449,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, RainfallSynthetic):
             self._model.add_precip_forcing(timeseries=forcing.get_data())
 
-        elif isinstance(forcing, RainfallFromModel):
+        elif isinstance(forcing, RainfallFromMeteo):
             self._model.setup_precip_forcing_from_grid(precip=forcing.get_data())
         else:
             self._logger.warning(

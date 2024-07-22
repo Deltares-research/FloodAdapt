@@ -287,9 +287,8 @@ class CSVTimeseries(ITimeseries):
         """Interpolate the timeseries data using the timestep provided."""
         ts = self.read_csv(self.attrs.path)
 
-        freq = int(time_step.convert(UnitTypesTime.seconds))
         time_range = pd.date_range(
-            start=ts.index.min(), end=ts.index.max(), freq=f"{freq}S", inclusive="left"
+            start=ts.index.min(), end=ts.index.max(), freq=time_step.to_timedelta()
         )
         interpolated_df = ts.reindex(time_range).interpolate(method="linear")
         return interpolated_df.to_numpy()

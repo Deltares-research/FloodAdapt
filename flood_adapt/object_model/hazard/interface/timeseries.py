@@ -168,7 +168,6 @@ class ITimeseries(ABC):
             start=start_time,
             end=end_time,
             freq=time_step.to_timedelta(),
-            inclusive="left",
         )
         full_df = pd.DataFrame(index=full_df_time_range)
         full_df.index.name = "time"

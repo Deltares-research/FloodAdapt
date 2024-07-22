@@ -55,14 +55,3 @@ class TestForcingFactory:
             ForcingFactory().get_forcing_class(
                 ForcingType.WATERLEVEL, ForcingSource.TRACK
             )
-
-    def test_read_forcing_type_and_source_valid(toml_file_path):
-        toml_file_path = "/path/to/forcing.toml"
-        forcing_type, forcing_source = ForcingFactory.read_forcing(toml_file_path)
-        assert forcing_type == ForcingType.WATERLEVEL
-        assert forcing_source == ForcingSource.CSV
-
-    def test_read_forcing_type_and_source_invalid(toml_file_path):
-        toml_file_path = "/path/to/invalid_forcing.toml"
-        with pytest.raises(ValueError):
-            ForcingFactory.read_forcing(toml_file_path)

@@ -13,7 +13,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 from .discharge import DischargeFromCSV, DischargeSynthetic
 from .rainfall import (
     RainfallConstant,
-    RainfallFromModel,
+    RainfallFromMeteo,
     RainfallFromTrack,
     RainfallSynthetic,
 )
@@ -22,7 +22,7 @@ from .waterlevels import (
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
-from .wind import WindConstant, WindFromModel, WindFromTrack, WindSynthetic
+from .wind import WindConstant, WindFromMeteo, WindFromTrack, WindSynthetic
 
 FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
     ForcingType.WATERLEVEL: {
@@ -33,14 +33,14 @@ FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
         ForcingSource.CONSTANT: None,
     },
     ForcingType.RAINFALL: {
-        ForcingSource.MODEL: RainfallFromModel,
+        ForcingSource.METEO: RainfallFromMeteo,
         ForcingSource.TRACK: RainfallFromTrack,
         ForcingSource.CSV: None,
         ForcingSource.SYNTHETIC: RainfallSynthetic,
         ForcingSource.CONSTANT: RainfallConstant,
     },
     ForcingType.WIND: {
-        ForcingSource.MODEL: WindFromModel,
+        ForcingSource.METEO: WindFromMeteo,
         ForcingSource.TRACK: WindFromTrack,
         ForcingSource.CSV: None,
         ForcingSource.SYNTHETIC: WindSynthetic,

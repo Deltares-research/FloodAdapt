@@ -18,12 +18,12 @@ from pyproj import CRS
 import flood_adapt.dbs_controller as db
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromModel
+from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelFromGauged,
     WaterlevelFromModel,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindFromModel
+from flood_adapt.object_model.hazard.event.forcing.wind import WindFromMeteo
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -97,7 +97,7 @@ class HistoricalEvent(IEvent):
             # move this to the forcings themselves?
             if forcing is not None:
                 if isinstance(
-                    forcing, (WaterlevelFromModel, RainfallFromModel, WindFromModel)
+                    forcing, (WaterlevelFromModel, RainfallFromMeteo, WindFromMeteo)
                 ):
                     forcing.path = sim_path
                 elif isinstance(forcing, WaterlevelFromGauged):
