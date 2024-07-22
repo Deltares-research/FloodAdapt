@@ -23,7 +23,6 @@ class ForcingSource(str, Enum):
 
     MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
     TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
-    SPW_FILE = "SPW_FILE"  # == TRACK ?
     CSV = "CSV"  # user imported data
 
     SYNTHETIC = "SYNTHETIC"  # synthetic data
@@ -39,9 +38,6 @@ class IForcing(BaseModel):
     _type: ForcingType = None
     _source: ForcingSource = None
 
-    def to_csv(self, path: str | os.PathLike):
-        self.get_data().to_csv(path)
-
     @classmethod
     def load_file(cls, path: str | os.PathLike):
         with open(path, mode="rb") as fp:
@@ -52,10 +48,9 @@ class IForcing(BaseModel):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
-    @abstractmethod
     def get_data(self) -> pd.DataFrame:
-        """Return the forcing data as a pandas DataFrame."""
-        pass
+        """Return the forcing data as a pandas DataFrame if applicable."""
+        return
 
 
 class IDischarge(IForcing):

@@ -1,8 +1,17 @@
+import shutil
+from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
+import xarray as xr
 
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
+    WindFromCSV,
+    WindFromModel,
 )
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.interface.events import Mode, Template, TimeModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulVelocity,
@@ -28,24 +37,60 @@ class TestWindConstant:
         assert wind_df["dir"].iloc[0] == 90
 
 
-# class TestWindFromCSV:
-#     def test_wind_from_csv_get_data(self, tmp_path):
-#         # Arrange
-#         path = Path(tmp_path) / "wind/test.csv"
+class TestWindFromModel:
+    def test_wind_from_model_get_data(self, tmp_path, test_db):
+        # Arrange
+        test_path = tmp_path / "test_wl_from_model"
 
-#         # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
-#         # Required coordinates: ['time', 'y', 'x']
+        if test_path.exists():
+            shutil.rmtree(test_path)
 
-#         data = {
-#             "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
-#             "wind_u": [1, 2],
-#             "wind_v": [2, 3],
-#         }
+        attrs = {
+            "name": "test",
+            "time": TimeModel(
+                start_time=datetime.strptime(
+                    "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
+                ),
+                end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+            ),
+            "template": Template.Historical,
+            "mode": Mode.single_event,
+        }
 
-#         # Act
-#         wind_df = WindFromCSV(path=path).get_data()
+        event = HistoricalEvent.load_dict(attrs)
+        event._download_meteo(test_path)
 
-#         # Assert
-#         assert isinstance(wind_df, pd.DataFrame)
-#         assert not wind_df.empty
-# Add additional assertions as needed
+        # Act
+        wind_df = WindFromModel(path=test_path).get_data()
+
+        # Assert
+        assert isinstance(wind_df, xr.Dataset)
+
+        # TODO more asserts
+
+
+class TestWindFromCSV:
+    def test_wind_from_csv_get_data(self, tmp_path):
+        # Arrange
+        path = Path(tmp_path) / "wind/test.csv"
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True)
+
+        # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
+        # Required coordinates: ['time', 'y', 'x']
+
+        data = pd.DataFrame(
+            {
+                "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
+                "wind_u": [1, 2],
+                "wind_v": [2, 3],
+            }
+        )
+        data.to_csv(path)
+
+        # Act
+        wind_df = WindFromCSV(path=path).get_data()
+
+        # Assert
+        assert isinstance(wind_df, pd.DataFrame)
+        assert not wind_df.empty

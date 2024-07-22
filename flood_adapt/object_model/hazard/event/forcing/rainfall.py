@@ -59,8 +59,8 @@ class RainfallFromModel(IRainfall):
         ]  # use `.to_dataframe()` to convert to pd.DataFrame
 
 
-class RainfallFromSPWFile(IRainfall):
-    _source = ForcingSource.SPW_FILE
+class RainfallFromTrack(IRainfall):
+    _source = ForcingSource.TRACK
 
     path: str | os.PathLike | None = Field(default=None)
     # path to spw file, set this when creating it

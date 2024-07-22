@@ -24,16 +24,29 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
+MAX_TIDAL_CYCLES = 20
 REFERENCE_TIME = datetime(2021, 1, 1, 0, 0, 0)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
-    UnitfulIntensity | UnitfulDischarge | UnitfulVelocity,
-    UnitfulLength,
-    UnitfulHeight,
-    UnitfulArea,
-    UnitfulDirection,
+    UnitfulIntensity
+    | UnitfulDischarge
+    | UnitfulVelocity
+    | UnitfulLength
+    | UnitfulHeight
+    | UnitfulArea
+    | UnitfulDirection
 ]
+
+
+def stringify_basemodel(basemodel: BaseModel):
+    result = ""
+    for field in basemodel.__pydantic_fields_set__:
+        if isinstance(getattr(basemodel, field), BaseModel):
+            result += f"{field}: {stringify_basemodel(getattr(basemodel, field))}, "
+        else:
+            result += f"{field}: {getattr(basemodel, field)}, "
+    return f"{basemodel.__class__.__name__}({result[:-2]})"
 
 
 ### ENUMS ###
@@ -53,7 +66,11 @@ class Scstype(str, Enum):
 
 
 class ITimeseriesModel(BaseModel):
-    pass
+    def __str__(self):
+        return stringify_basemodel(self)
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class SyntheticTimeseriesModel(ITimeseriesModel):
@@ -91,12 +108,6 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     @property
     def end_time(self) -> UnitfulTime:
         return self.peak_time + self.duration / 2
-
-    def __str__(self):
-        return f"shape_type: {self.shape_type}, start: {self.start_time}, end: {self.end_time}, duration: {self.duration}, peak time: {self.peak_time}, peak value: {self.peak_value}, cumulative: {self.cumulative}"
-
-    def __repr__(self) -> str:
-        return super().__repr__()
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
@@ -148,27 +159,28 @@ class ITimeseries(ABC):
             pd.DataFrame: A pandas DataFrame with time as the index and values as the columns.
             The data is interpolated to the time_step and values that fall outside of the timeseries data are filled with 0.
         """
-        if isinstance(start_time, str):
+        if not isinstance(start_time, datetime):
             start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
-        if isinstance(end_time, str):
+        if not isinstance(end_time, datetime):
             end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
 
-        _time_step = int(time_step.convert(UnitTypesTime.seconds))
-
         full_df_time_range = pd.date_range(
-            start=start_time, end=end_time, freq=f"{_time_step}S", inclusive="left"
+            start=start_time,
+            end=end_time,
+            freq=time_step.to_timedelta(),
+            inclusive="left",
         )
         full_df = pd.DataFrame(index=full_df_time_range)
         full_df.index.name = "time"
 
         data = self.calculate_data(time_step=time_step)
 
-        _time_range = pd.date_range(
+        ts_time_range = pd.date_range(
             start=(start_time + ts_start_time.to_timedelta()),
             end=(start_time + ts_end_time.to_timedelta()),
-            periods=len(data),
+            freq=time_step.to_timedelta(),
         )
-        df = pd.DataFrame(data, columns=["values"], index=_time_range)
+        df = pd.DataFrame(data, columns=["values"], index=ts_time_range)
 
         full_df = df.reindex(full_df.index, method="nearest", limit=1, fill_value=0)
         return full_df

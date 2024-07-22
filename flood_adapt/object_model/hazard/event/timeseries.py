@@ -12,6 +12,7 @@ import tomli_w
 from flood_adapt.object_model.hazard.interface.timeseries import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
+    MAX_TIDAL_CYCLES,
     REFERENCE_TIME,
     CSVTimeseriesModel,
     ITimeseries,
@@ -127,15 +128,17 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
             -attrs.peak_value.value
             / (attrs.end_time - attrs.peak_time).to_timedelta().total_seconds()
         )
-        peak_time = (REFERENCE_TIME + attrs.peak_time.to_timedelta()).total_seconds()
+        peak_time = attrs.peak_time.to_timedelta().total_seconds()
+        start_time = attrs.start_time.to_timedelta().total_seconds()
 
         ts = np.piecewise(
             tt_seconds,
             [tt_seconds < peak_time, tt_seconds >= peak_time],
             [
-                lambda x: ascending_slope
-                * (x - attrs.start_time.convert(UnitTypesTime.seconds)),
-                lambda x: descending_slope * (x - peak_time) + attrs.peak_value.value,
+                lambda x: np.maximum(ascending_slope * (x - start_time), 0),
+                lambda x: np.maximum(
+                    descending_slope * (x - peak_time) + attrs.peak_value.value, 0
+                ),
                 0,
             ],
         )
@@ -148,10 +151,9 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
         attrs: SyntheticTimeseriesModel,
         timestep: UnitfulTime,
     ) -> np.ndarray:
-
         tt = pd.date_range(
             start=REFERENCE_TIME,
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES),
             freq=timestep.to_timedelta(),
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
@@ -162,7 +164,9 @@ class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
             omega * (tt_seconds - phase_shift)
         )
 
-        return one_period_ts
+        # Repeat ts to cover the entire duration
+        continuous_ts = np.tile(one_period_ts, MAX_TIDAL_CYCLES)[: len(tt_seconds)]
+        return continuous_ts
 
 
 ### TIMESERIES ###

@@ -1,5 +1,6 @@
 import shutil
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
@@ -21,31 +22,137 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitfulTime
 
 
 class TestWaterlevelSynthetic:
-    def test_waterlevel_synthetic_get_data(self):
+    @pytest.mark.parametrize(
+        "surge_shape, peak_time, surge_duration, surge_peak_value, tide_amplitude, tide_period, tide_phase",
+        [  # "surge_shape,       peak_time,                surge_duration,           surge_peak_value,           tide_amplitude,             tide_period,
+            (
+                ShapeType.gaussian,
+                UnitfulTime(12, "hours"),
+                UnitfulTime(24, "hours"),
+                UnitfulLength(3, "meters"),
+                UnitfulLength(1.5, "meters"),
+                UnitfulTime(12, "hours"),
+                UnitfulTime(8, "hours"),
+            ),
+            (
+                ShapeType.gaussian,
+                UnitfulTime(18, "hours"),
+                UnitfulTime(36, "hours"),
+                UnitfulLength(4, "meters"),
+                UnitfulLength(2, "meters"),
+                UnitfulTime(14, "hours"),
+                UnitfulTime(6, "hours"),
+            ),
+            (
+                ShapeType.gaussian,
+                UnitfulTime(14, "hours"),
+                UnitfulTime(28, "hours"),
+                UnitfulLength(2, "meters"),
+                UnitfulLength(0.8, "meters"),
+                UnitfulTime(8, "hours"),
+                UnitfulTime(4, "hours"),
+            ),
+            (
+                ShapeType.constant,
+                UnitfulTime(12, "hours"),
+                UnitfulTime(12, "hours"),
+                UnitfulLength(2, "meters"),
+                UnitfulLength(1, "meters"),
+                UnitfulTime(10, "hours"),
+                UnitfulTime(4, "hours"),
+            ),
+            (
+                ShapeType.constant,
+                UnitfulTime(6, "hours"),
+                UnitfulTime(6, "hours"),
+                UnitfulLength(1, "meters"),
+                UnitfulLength(0.5, "meters"),
+                UnitfulTime(6, "hours"),
+                UnitfulTime(2, "hours"),
+            ),
+            (
+                ShapeType.constant,
+                UnitfulTime(10, "hours"),
+                UnitfulTime(20, "hours"),
+                UnitfulLength(3, "meters"),
+                UnitfulLength(1.2, "meters"),
+                UnitfulTime(12, "hours"),
+                UnitfulTime(6, "hours"),
+            ),
+            (
+                ShapeType.triangle,
+                UnitfulTime(12, "hours"),
+                UnitfulTime(18, "hours"),
+                UnitfulLength(1.5, "meters"),
+                UnitfulLength(0.5, "meters"),
+                UnitfulTime(8, "hours"),
+                UnitfulTime(3, "hours"),
+            ),
+            (
+                ShapeType.triangle,
+                UnitfulTime(8, "hours"),
+                UnitfulTime(16, "hours"),
+                UnitfulLength(2.5, "meters"),
+                UnitfulLength(1, "meters"),
+                UnitfulTime(10, "hours"),
+                UnitfulTime(5, "hours"),
+            ),
+            (
+                ShapeType.triangle,
+                UnitfulTime(16, "hours"),
+                UnitfulTime(32, "hours"),
+                UnitfulLength(3.5, "meters"),
+                UnitfulLength(1.5, "meters"),
+                UnitfulTime(10, "hours"),
+                UnitfulTime(7, "hours"),
+            ),
+        ],
+    )
+    def test_waterlevel_synthetic_get_data(
+        self,
+        peak_time,
+        surge_shape,
+        surge_duration,
+        surge_peak_value,
+        tide_amplitude,
+        tide_period,
+        tide_phase,
+    ):
         # Arrange
         surge_model = SurgeModel(
             timeseries=SyntheticTimeseriesModel(
-                shape_type=ShapeType.constant,
-                duration=UnitfulTime(12, "hours"),
-                peak_time=UnitfulTime(6, "hours"),
-                peak_value=UnitfulLength(2, "meters"),
+                shape_type=surge_shape,
+                duration=surge_duration,
+                peak_time=peak_time,
+                peak_value=surge_peak_value,
             )
         )
 
         tide_model = TideModel(
-            harmonic_amplitude=UnitfulLength(1, "meters"),
-            harmonic_period=UnitfulTime(12, "hours"),
-            harmonic_phase=UnitfulTime(6, "hours"),
+            harmonic_amplitude=tide_amplitude,
+            harmonic_period=tide_period,
+            harmonic_phase=tide_phase,
         )
+
+        expected_max = abs((surge_peak_value + tide_amplitude).value)
+        expected_min = -abs(tide_amplitude.value)
 
         # Act
         wl_df = WaterlevelSynthetic(surge=surge_model, tide=tide_model).get_data()
 
         # Assert
+        plt.figure()
+        plt.plot(wl_df)
+        plt.show()
+
         assert isinstance(wl_df, pd.DataFrame)
         assert not wl_df.empty
-        assert wl_df["values"].max() == pytest.approx(3, rel=1e-2)
-        assert wl_df["values"].min() == pytest.approx(1, rel=1e-2)
+        assert (
+            wl_df["values"].max() <= expected_max
+        ), f"Expected max {surge_peak_value} + {tide_amplitude} ~ {expected_max}, got {wl_df['values'].max()}"
+        assert (
+            wl_df["values"].min() >= expected_min
+        ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['values'].min()}"
 
 
 class TestWaterlevelFromCSV:

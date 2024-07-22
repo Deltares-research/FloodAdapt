@@ -31,7 +31,13 @@ class WindSynthetic(IWind):
 
 
 class WindFromTrack(IWind):
-    pass
+    _source = ForcingSource.TRACK
+
+    path: str | os.PathLike | None = Field(default=None)
+    # path to spw file, set this when creating it
+
+    def get_data(self) -> pd.DataFrame:
+        return self.path
 
 
 class WindFromCSV(IWind):
@@ -68,16 +74,4 @@ class WindFromModel(IWind):
 
         # ASSUMPTION: the download has been done already, see HistoricalEvent.download_meteo().
         # TODO add to read_meteo to run download if not already downloaded.
-        return HistoricalEvent.read_meteo(self.path)[
-            "wind"
-        ]  # use `.to_dataframe()` to convert to pd.DataFrame
-
-
-class WindFromSPWFile(IWind):
-    _source = ForcingSource.SPW_FILE
-
-    path: str | os.PathLike | None = Field(default=None)
-    # path to spw file, set this when creating it
-
-    def get_data(self) -> pd.DataFrame:
-        return self.path
+        return HistoricalEvent.read_meteo(self.path)[["wind_u", "wind_v"]]

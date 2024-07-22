@@ -5,7 +5,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, List, Optional
 
-import pandas as pd
 import tomli
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -113,7 +112,6 @@ class IEvent(ABC):
     MODEL_TYPE: IEventModel
 
     attrs: IEventModel
-    forcing_data: dict[ForcingType, pd.DataFrame]
 
     @classmethod
     def load_file(cls, path: str | os.PathLike):
@@ -138,6 +136,7 @@ class IEvent(ABC):
         - Write output as pd.DataFrame to self.forcing_data[ForcingType]
         """
         for forcing in self.attrs.forcings.values():
+            forcing.process(self.attrs.time)
             self.forcing_data[forcing._type] = forcing.get_data()
 
 

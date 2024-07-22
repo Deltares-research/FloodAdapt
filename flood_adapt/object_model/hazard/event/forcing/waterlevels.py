@@ -15,6 +15,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     DEFAULT_TIMESTEP,
+    MAX_TIDAL_CYCLES,
     REFERENCE_TIME,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
@@ -61,33 +62,35 @@ class WaterlevelSynthetic(IWaterlevel):
         surge = SyntheticTimeseries().load_dict(self.surge.timeseries)
         tide = SyntheticTimeseries().load_dict(self.tide.to_timeseries_model())
 
+        # Calculate Tide time series
         start_tide = REFERENCE_TIME + tide.attrs.start_time.to_timedelta()
-        end_tide = start_tide + tide.attrs.duration.to_timedelta()
-        tide_ts = tide.calculate_data()
+        end_tide = start_tide + tide.attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES
 
+        tide_ts = tide.calculate_data()  # + msl + slr
         time_tide = pd.date_range(
             start=start_tide, end=end_tide, freq=DEFAULT_TIMESTEP.to_timedelta()
         )
         tide_df = pd.DataFrame(tide_ts, index=time_tide)
 
+        # Calculate Surge time series
         start_surge = REFERENCE_TIME + surge.attrs.start_time.to_timedelta()
         end_surge = start_surge + surge.attrs.duration.to_timedelta()
         surge_ts = surge.calculate_data()
-
         time_surge = pd.date_range(
             start=start_surge, end=end_surge, freq=DEFAULT_TIMESTEP.to_timedelta()
         )
         surge_df = pd.DataFrame(surge_ts, index=time_surge)
 
-        wl_df = surge_df.add(tide_df, axis="index")
+        # Reindex the shorter DataFrame to match the longer one
+        if len(tide_df) > len(surge_df):
+            surge_df = surge_df.reindex(tide_df.index).fillna(0)
+        else:
+            tide_df = tide_df.reindex(surge_df.index).fillna(0)
 
-        import matplotlib.pyplot as plt
-
-        plt.figure()
-        plt.plot(tide_ts, label="tide")
-        plt.plot(surge_ts, label="surge")
-        plt.legend()
-        plt.show()
+        # Combine
+        wl_df = tide_df.add(surge_df, axis="index")
+        wl_df.columns = ["values"]
+        wl_df.index.name = "time"
 
         return wl_df
 

@@ -31,7 +31,6 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     IRainfall,
     RainfallConstant,
     RainfallFromModel,
-    RainfallFromSPWFile,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -452,10 +451,6 @@ class SfincsAdapter(IHazardAdapter):
 
         elif isinstance(forcing, RainfallFromModel):
             self._model.setup_precip_forcing_from_grid(precip=forcing.get_data())
-
-        elif isinstance(forcing, RainfallFromSPWFile):
-            # TODO: check how to add this to the model
-            pass
         else:
             self._logger.warning(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
