@@ -180,7 +180,7 @@ class Database(IDatabase):
         """
         temp_path = self.base_path / "temp"
         for file in temp_path.glob("*.zip"):
-            if (datetime.datetime.now() - file.stat().st_mtime).days > days_old:
+            if (datetime.now() - datetime.fromtimestamp(file.stat().st_mtime)).days > days_old:
                 file.unlink()
 
 

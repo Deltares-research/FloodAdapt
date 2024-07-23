@@ -26,6 +26,15 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
     """
     return Database(database_path, site_name)
 
+def cleanup_database(days_old: int = 7):
+    """Remove zips in base_path/temp that are older than the given number of days.
+
+    Parameters
+    ----------
+    days_old : int, optional
+        Number of days, by default 7
+    """
+    Database().cleanup(days_old)
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
     # TODO should this return a list of geojson? if yes what form?
