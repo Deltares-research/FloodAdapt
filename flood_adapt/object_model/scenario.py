@@ -83,7 +83,9 @@ class Scenario(IScenario):
                     self.direct_impacts.hazard.run_models()
                     self.direct_impacts.hazard.postprocess_models()
                 else:
-                    print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+                    print(
+                        f"Hazard for scenario '{self.attrs.name}' has already been run."
+                    )
                 if not self.direct_impacts.has_run:
                     self.direct_impacts.preprocess_models()
                     self.direct_impacts.run_models()
@@ -97,19 +99,18 @@ class Scenario(IScenario):
                 )
         except Exception:
             # Zip the folder
-            shutil.make_archive(self.results_path, 'zip', self.results_path)
+            shutil.make_archive(self.results_path, "zip", self.results_path)
 
             # Create the tmp directory if it doesn't exist
-            tmp_dir = self.database.base_path / 'temp'
+            tmp_dir = self.database.base_path / "temp"
             tmp_dir.mkdir(parents=True, exist_ok=True)
 
             # Move the zip file to the tmp directory
-            zip_file = self.results_path.with_suffix('.zip')
+            zip_file = self.results_path.with_suffix(".zip")
             shutil.move(zip_file, tmp_dir)
 
             # Remove the folder
             shutil.rmtree(self.results_path)
-
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):
