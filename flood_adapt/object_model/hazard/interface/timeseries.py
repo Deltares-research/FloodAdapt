@@ -1,8 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
-from enum import Enum
-from typing import Optional, Protocol, Union
+from typing import Optional, Protocol
 
 import numpy as np
 import pandas as pd
@@ -10,33 +9,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulArea,
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulHeight,
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulTime,
-    UnitfulVelocity,
-    UnitTypesIntensity,
-    UnitTypesTime,
+from flood_adapt.object_model.hazard.interface.models import (
+    DEFAULT_DATETIME_FORMAT,
+    DEFAULT_TIMESTEP,
+    TIMESERIES_VARIABLE,
+    ShapeType,
 )
-
-TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
-MAX_TIDAL_CYCLES = 20
-REFERENCE_TIME = datetime(2021, 1, 1, 0, 0, 0)
-DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
-TIMESERIES_VARIABLE = Union[
-    UnitfulIntensity
-    | UnitfulDischarge
-    | UnitfulVelocity
-    | UnitfulLength
-    | UnitfulHeight
-    | UnitfulArea
-    | UnitfulDirection
-]
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulTime,
+)
 
 
 def stringify_basemodel(basemodel: BaseModel):
@@ -47,22 +28,6 @@ def stringify_basemodel(basemodel: BaseModel):
         else:
             result += f"{field}: {getattr(basemodel, field)}, "
     return f"{basemodel.__class__.__name__}({result[:-2]})"
-
-
-### ENUMS ###
-class ShapeType(str, Enum):
-    gaussian = "gaussian"
-    constant = "constant"
-    triangle = "triangle"
-    harmonic = "harmonic"
-    scs = "scs"
-
-
-class Scstype(str, Enum):
-    type1 = "type1"
-    type1a = "type1a"
-    type2 = "type2"
-    type3 = "type3"
 
 
 class ITimeseriesModel(BaseModel):
@@ -186,7 +151,10 @@ class ITimeseries(ABC):
 
     @staticmethod
     def plot(
-        df, xmin: pd.Timestamp, xmax: pd.Timestamp, intensity_units: UnitTypesIntensity
+        df,
+        xmin: pd.Timestamp,
+        xmax: pd.Timestamp,
+        timeseries_variable: TIMESERIES_VARIABLE,
     ) -> go.Figure:
         fig = px.line(data_frame=df)
         fig.update_layout(
@@ -200,7 +168,9 @@ class ITimeseries(ABC):
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title={"text": "Time"},
-            yaxis_title={"text": f"Rainfall intensity [{intensity_units}]"},
+            yaxis_title={
+                "text": f"{timeseries_variable.__class__.__name__} [{timeseries_variable}]"
+            },
             showlegend=False,
             xaxis={"range": [xmin, xmax]},
         )

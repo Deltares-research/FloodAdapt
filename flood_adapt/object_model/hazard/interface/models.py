@@ -1,0 +1,128 @@
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Union
+
+from pydantic import BaseModel, field_validator
+
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulArea,
+    UnitfulDirection,
+    UnitfulDischarge,
+    UnitfulHeight,
+    UnitfulIntensity,
+    UnitfulLength,
+    UnitfulTime,
+    UnitfulVelocity,
+    UnitTypesTime,
+)
+
+### CONSTANTS ###
+REFERENCE_TIME = datetime(2021, 1, 1, 0, 0, 0)
+TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
+MAX_TIDAL_CYCLES = 20
+DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
+TIMESERIES_VARIABLE = Union[
+    UnitfulIntensity
+    | UnitfulDischarge
+    | UnitfulVelocity
+    | UnitfulLength
+    | UnitfulHeight
+    | UnitfulArea
+    | UnitfulDirection
+]
+
+
+### ENUMS ###
+class ShapeType(str, Enum):
+    gaussian = "gaussian"
+    constant = "constant"
+    triangle = "triangle"
+    harmonic = "harmonic"
+    scs = "scs"
+
+
+class Scstype(str, Enum):
+    type1 = "type1"
+    type1a = "type1a"
+    type2 = "type2"
+    type3 = "type3"
+
+
+class Mode(str, Enum):
+    """Class describing the accepted input for the variable mode in Event."""
+
+    single_event = "single_event"
+    risk = "risk"
+
+
+class Template(str, Enum):
+    """Class describing the accepted input for the variable template in Event."""
+
+    Synthetic = "Synthetic"
+    Hurricane = "Historical_hurricane"
+    Historical_nearshore = "Historical_nearshore"
+    Historical_offshore = "Historical_offshore"
+    Historical = "Historical"
+
+
+class ForcingType(str, Enum):
+    """Enum class for the different types of forcing parameters."""
+
+    WIND = "WIND"
+    RAINFALL = "RAINFALL"
+    DISCHARGE = "DISCHARGE"
+    WATERLEVEL = "WATERLEVEL"
+
+
+class ForcingSource(str, Enum):
+    """Enum class for the different sources of forcing parameters."""
+
+    MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
+    TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
+    CSV = "CSV"  # user imported data
+
+    SYNTHETIC = "SYNTHETIC"  # synthetic data
+    CONSTANT = "CONSTANT"  # synthetic data
+
+    GAUGED = "GAUGED"  # data downloaded from a gauge
+    METEO = "METEO"  # external hindcast data
+
+
+### MODELS ###
+class TimeModel(BaseModel):
+    start_time: datetime = REFERENCE_TIME
+    end_time: datetime = REFERENCE_TIME + timedelta(days=1)
+    time_step: timedelta = timedelta(minutes=10)
+
+    @field_validator("start_time", "end_time", mode="before")
+    @classmethod
+    def try_parse_datetime(cls, value: str | datetime) -> datetime:
+        SUPPORTED_DATETIME_FORMATS = [
+            "%Y%m%d %H%M%S",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M:%S.%f",
+            "%Y-%m-%d %H:%M:%S.%f%z",
+        ]
+        if not isinstance(value, datetime):
+            for fmt in SUPPORTED_DATETIME_FORMATS:
+                try:
+                    value = datetime.strptime(value, fmt)
+                    break
+                except Exception:
+                    pass
+
+        if not isinstance(value, datetime):
+            raise ValueError(
+                f"Could not parse start time: {value}. Supported formats are {', '.join(SUPPORTED_DATETIME_FORMATS)}"
+            )
+        return value
+
+
+def default_forcings() -> dict[ForcingType, list[None]]:
+    return {
+        ForcingType.WATERLEVEL: None,
+        ForcingType.WIND: None,
+        ForcingType.RAINFALL: None,
+        ForcingType.DISCHARGE: None,
+    }

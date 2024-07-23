@@ -43,13 +43,31 @@ class IAdapter(ABC):
         pass
 
     @abstractmethod
-    def read(self):
+    def read(self, path: str | os.PathLike):
+        """Read the model configuration from a path or other source."""
         pass
 
     @abstractmethod
     def write(self, path: str | os.PathLike):
+        """Write the current model configuration to a path or other destination."""
         pass
 
     @abstractmethod
     def run(self):
+        """Perform the whole workflow (preprocess, execute and postprocess) of running the model."""
+        pass
+
+    @abstractmethod
+    def preprocess(self):
+        """Prepare the model for execution."""
+        pass
+
+    @abstractmethod
+    def execute(self):
+        """Execute a model run without any further processing."""
+        pass
+
+    @abstractmethod
+    def postprocess(self):
+        """Process the model output."""
         pass

@@ -4,9 +4,11 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.interface.forcing import (
-    ForcingSource,
-    IWind,
+from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
+from flood_adapt.object_model.hazard.interface.forcing import IWind
+from flood_adapt.object_model.hazard.interface.models import ForcingSource
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
 
@@ -17,17 +19,16 @@ class WindConstant(IWind):
     speed: UnitfulVelocity
     direction: UnitfulDirection
 
-    def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(
-            {
-                "mag": [self.speed.value],
-                "dir": [self.direction.value],
-            }
-        )
-
 
 class WindSynthetic(IWind):
-    pass
+    _source = ForcingSource.SYNTHETIC
+
+    timeseries: SyntheticTimeseriesModel
+
+    def get_data(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
+        )
 
 
 class WindFromTrack(IWind):

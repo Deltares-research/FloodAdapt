@@ -9,15 +9,17 @@ import pandas as pd
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
     MAX_TIDAL_CYCLES,
     REFERENCE_TIME,
+    ShapeType,
+)
+from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseriesModel,
     ITimeseries,
     ITimeseriesCalculationStrategy,
-    ShapeType,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import (

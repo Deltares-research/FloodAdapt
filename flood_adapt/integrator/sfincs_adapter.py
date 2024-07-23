@@ -23,25 +23,20 @@ import flood_adapt.config as FloodAdapt_config
 from flood_adapt.integrator.interface.hazard_adapter import HazardData, IHazardAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
-    DischargeConstant,
     DischargeSynthetic,
-    IDischarge,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
-    IRainfall,
     RainfallConstant,
     RainfallFromMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    IWaterlevel,
     WaterlevelFromCSV,
     WaterlevelFromGauged,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
-    IWind,
     WindConstant,
     WindFromMeteo,
     WindFromTrack,
@@ -50,11 +45,16 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
 from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEvent,
 )
-from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel, Mode
+from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
+    IDischarge,
     IForcing,
+    IRainfall,
+    IWaterlevel,
+    IWind,
 )
+from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
@@ -151,12 +151,12 @@ class SfincsAdapter(IHazardAdapter):
         return False
 
     ### HAZARD ADAPTER METHODS ###
-    def read(self):
-        """Read the sfincs model."""
+    def read(self, path: str | os.PathLike):
+        """Read the sfincs model from the current model root."""
         self._model.read()
 
     def write(self, path_out: Union[str, os.PathLike]):
-        """Write the sfincs model."""
+        """Write the sfincs model configuration to a directory."""
         with cd(path_out):
             self._model.write()
 
@@ -223,13 +223,75 @@ class SfincsAdapter(IHazardAdapter):
 
     def run(self, scenario: IScenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
-        self._scenario = scenario
+        try:
+            self._scenario = scenario
+            self.preprocess()
+            self.process()
+            self.postprocess()
 
-        self._preprocess()
-        self._process()
-        self._postprocess()
+        finally:
+            self._scenario = None
 
-        self._scenario = None
+    def preprocess(self):
+        sim_paths = self._get_simulation_paths()
+        events = (
+            [self._scenario.attrs.event]
+            if isinstance(list, self._scenario.attrs.event)
+            else self._scenario.attrs.event
+        )
+        for ii, name in enumerate(events):
+            event: IEvent = self._database.events.get(name)
+
+            self.set_timing(event.attrs)
+
+            # run offshore model or download wl data,
+            # copy all required files to the simulation folder
+            # write forcing data to event object
+            event.process(self._scenario)
+
+            for forcing in event.attrs.forcings.values():
+                self.add_forcing(forcing)
+
+            for measure in self._scenario.attrs.strategy:
+                self.add_measure(measure)
+
+            for projection in self._scenario.attrs.projection:
+                self.add_projection(projection)
+
+            # add observation points from site.toml
+            self._add_obs_points()
+
+            # write sfincs model in output destination
+            self._write_sfincs_model(path_out=sim_paths[ii])
+
+    def process(self):
+        sim_paths = self._get_simulation_paths()
+        results = []
+        for simulation_path in sim_paths:
+            results.append(self.execute(simulation_path))
+
+        # Indicator that hazard has run
+        # TODO add func to store this in the dbs scenario
+        self._scenario.has_run = all(results)
+
+    def postprocess(self):
+        if not self.has_run_check(self._scenario):
+            raise RuntimeError("SFINCS was not run successfully!")
+
+        mode = self._database.events.get(self._scenario.attrs.event).get_mode()
+        if mode == Mode.single_event:
+            # Write flood-depth map geotiff
+            self._write_floodmap_geotiff()
+            # Write watel-level time-series
+            self._plot_wl_obs()
+            # Write max water-level netcdf
+            self._write_water_level_map()
+        elif mode == Mode.risk:
+            # Write max water-level netcdfs per return period
+            self._calculate_rp_floodmaps()
+
+        # Save flood map paths in object
+        self._get_flood_map_path()
 
     def set_timing(self, event: IEventModel):
         """Set model reference times based on event time series."""
@@ -331,66 +393,6 @@ class SfincsAdapter(IHazardAdapter):
         return self._model.quadtree
 
     ### PRIVATE METHODS - Should not be called from outside of this class ###
-    def _preprocess(self):
-        sim_paths = self._get_simulation_paths()
-        events = (
-            [self._scenario.attrs.event]
-            if isinstance(list, self._scenario.attrs.event)
-            else self._scenario.attrs.event
-        )
-        for ii, name in enumerate(events):
-            event: IEvent = self._database.events.get(name)
-
-            self.set_timing(event.attrs)
-
-            # run offshore model or download wl data,
-            # copy all required files to the simulation folder
-            # write forcing data to event object
-            event.process(self._scenario)
-
-            for forcing in event.attrs.forcings.values():
-                self.add_forcing(forcing)
-
-            for measure in self._scenario.attrs.strategy:
-                self.add_measure(measure)
-
-            for projection in self._scenario.attrs.projection:
-                self.add_projection(projection)
-
-            # add observation points from site.toml
-            self._add_obs_points()
-
-            # write sfincs model in output destination
-            self._write_sfincs_model(path_out=sim_paths[ii])
-
-    def _process(self):
-        sim_paths = self._get_simulation_paths()
-        results = []
-        for simulation_path in sim_paths:
-            results.append(self.execute(simulation_path))
-
-        # Indicator that hazard has run
-        # TODO add func to store this in the dbs scenario
-        self._scenario.has_run = all(results)
-
-    def _postprocess(self):
-        if not self.has_run_check(self._scenario):
-            raise RuntimeError("SFINCS was not run successfully!")
-
-        mode = self._database.events.get(self._scenario.attrs.event).get_mode()
-        if mode == Mode.single_event:
-            # Write flood-depth map geotiff
-            self._write_floodmap_geotiff()
-            # Write watel-level time-series
-            self._plot_wl_obs()
-            # Write max water-level netcdf
-            self._write_water_level_map()
-        elif mode == Mode.risk:
-            # Write max water-level netcdfs per return period
-            self._calculate_rp_floodmaps()
-
-        # Save flood map paths in object
-        self._get_flood_map_path()
 
     ### FORCING HELPERS ###
     def _add_forcing_wind(
@@ -468,13 +470,14 @@ class SfincsAdapter(IHazardAdapter):
             time-invariant discharge magnitude [m3/s], by default None
         """
         # TODO investigate where to include rivers from site.toml
-        if isinstance(forcing, DischargeConstant):
-            self._model.setup_discharge_forcing(
-                timeseries=None,
-                magnitude=forcing.discharge,
-            )
-        elif isinstance(forcing, DischargeSynthetic):
-            self._add_dis_bc(forcing.path)
+
+        # TODO check with @gundula for constant discharge hydromt_sfincs function
+        # if isinstance(forcing, DischargeConstant):
+        #     self._model.setup_discharge_forcing(
+        #         timeseries=forcing.get_data(),
+        #     )
+        if isinstance(forcing, DischargeSynthetic):
+            self._add_dis_bc(forcing.get_data())
         else:
             self._logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
@@ -768,7 +771,7 @@ class SfincsAdapter(IHazardAdapter):
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def _add_dis_bc(self, list_df: pd.DataFrame, site_river: list):
+    def _add_dis_bc(self, list_df: pd.DataFrame, site_river: list = None):
         # Should always be called if rivers in site > 0
         # then use site as default values, and overwrite if discharge is provided.
         """Add discharge to overland sfincs model based on new discharge time series.
@@ -780,6 +783,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         # Determine bnd points from reference overland model
         # ASSUMPTION: Order of the rivers is the same as the site.toml file
+        site_river = site_river or self._site.attrs.river
         if np.any(list_df):
             gdf_locs = self._model.forcing["dis"].vector.to_gdf()
             gdf_locs.crs = self._model.crs
@@ -849,8 +853,9 @@ class SfincsAdapter(IHazardAdapter):
     def _get_simulation_paths(self) -> tuple[list[Path], list[Path]]:
         simulation_paths = []
         simulation_paths_offshore = []
-        event = self._database.events.get(self._scenario.attrs.event)
-        mode = event.get_mode()
+        event: IEvent = self._database.events.get(self._scenario.attrs.event)
+        mode = event.attrs.mode
+
         results_path = self._get_result_path()
 
         if mode == Mode.single_event:

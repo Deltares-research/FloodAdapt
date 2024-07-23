@@ -8,9 +8,12 @@ from flood_adapt.object_model.hazard.event.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.forcing import (
-    ForcingSource,
     IRainfall,
+)
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingSource,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
 
@@ -19,14 +22,6 @@ class RainfallConstant(IRainfall):
     _source = ForcingSource.CONSTANT
 
     intensity: UnitfulIntensity
-
-    def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(
-            {
-                "intensity": [self.intensity.value],
-                "time": [0],
-            }
-        )
 
 
 class RainfallSynthetic(IRainfall):
@@ -43,6 +38,12 @@ class RainfallFromMeteo(IRainfall):
     _source = ForcingSource.METEO
     path: str | os.PathLike | None = Field(default=None)
     # path to the meteo data, set this when downloading it
+
+    def process(self, time: TimeModel):
+        # download the meteo data
+        from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+
+        HistoricalEvent.download_meteo(t0=time.start_time, t1=time.end_time)
 
     def get_data(self) -> xr.DataArray:
         if self.path is None:
@@ -66,4 +67,4 @@ class RainfallFromTrack(IRainfall):
     # path to spw file, set this when creating it
 
     def get_data(self) -> pd.DataFrame:
-        return self.path
+        return self.path  # TODO implement

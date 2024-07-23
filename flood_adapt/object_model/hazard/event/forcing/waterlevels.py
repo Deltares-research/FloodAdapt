@@ -5,29 +5,21 @@ from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseries,
-    ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.forcing import (
-    ForcingSource,
-    IWaterlevel,
-)
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.forcing import IWaterlevel
+from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
     MAX_TIDAL_CYCLES,
     REFERENCE_TIME,
+    ForcingSource,
+    ShapeType,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulTime,
 )
-
-__all__ = [
-    "WaterlevelSynthetic",
-    "WaterlevelFromCSV",
-    "WaterlevelFromModel",
-]
 
 
 class SurgeModel(BaseModel):
@@ -64,7 +56,8 @@ class WaterlevelSynthetic(IWaterlevel):
 
         # Calculate Tide time series
         start_tide = REFERENCE_TIME + tide.attrs.start_time.to_timedelta()
-        end_tide = start_tide + tide.attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES
+        total_duration = tide.attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES
+        end_tide = start_tide + total_duration
 
         tide_ts = tide.calculate_data()  # + msl + slr
         time_tide = pd.date_range(

@@ -11,24 +11,18 @@ from flood_adapt.object_model.hazard.event.timeseries import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
 )
+from flood_adapt.object_model.hazard.interface.models import ForcingSource
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
-
-__all__ = ["DischargeConstant", "DischargeSynthetic", "DischargeFromCSV"]
 
 
 class DischargeConstant(IDischarge):
+    _source = ForcingSource.CONSTANT
     discharge: UnitfulDischarge
-
-    def get_data(self) -> DataFrame:
-        return pd.DataFrame(
-            {
-                "discharge": [self.discharge.value],
-                "time": [0],
-            }
-        )
 
 
 class DischargeSynthetic(IDischarge):
+    _source = ForcingSource.SYNTHETIC
+
     timeseries: SyntheticTimeseriesModel
 
     def get_data(self) -> DataFrame:
@@ -38,6 +32,8 @@ class DischargeSynthetic(IDischarge):
 
 
 class DischargeFromCSV(IDischarge):
+    _source = ForcingSource.CSV
+
     path: str | os.PathLike
 
     def get_data(self) -> DataFrame:

@@ -1,6 +1,5 @@
 import os
 from abc import abstractmethod
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -8,28 +7,11 @@ import pandas as pd
 import tomli
 from pydantic import BaseModel
 
-
-class ForcingType(str, Enum):
-    """Enum class for the different types of forcing parameters."""
-
-    WIND = "WIND"
-    RAINFALL = "RAINFALL"
-    DISCHARGE = "DISCHARGE"
-    WATERLEVEL = "WATERLEVEL"
-
-
-class ForcingSource(str, Enum):
-    """Enum class for the different sources of forcing parameters."""
-
-    MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
-    TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
-    CSV = "CSV"  # user imported data
-
-    SYNTHETIC = "SYNTHETIC"  # synthetic data
-    CONSTANT = "CONSTANT"  # synthetic data
-
-    GAUGED = "GAUGED"  # data downloaded from a gauge
-    METEO = "METEO"  # external hindcast data
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingSource,
+    ForcingType,
+    TimeModel,
+)
 
 
 class IForcing(BaseModel):
@@ -48,8 +30,18 @@ class IForcing(BaseModel):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
+    def process(self, start_time: TimeModel):
+        """Generate the forcing data and store the result in the forcing.
+
+        The default implementation is to do nothing. If the forcing data needs to be created/downloaded/computed as it is not directly stored in the forcing instance, this method should be overridden.
+        """
+        return
+
     def get_data(self) -> pd.DataFrame:
-        """Return the forcing data as a pandas DataFrame if applicable."""
+        """If applicable, return the forcing/timeseries data as a (pd.DataFrame | xr.DataSet | arrayLike) data structure.
+
+        The default implementation is to return None, if it makes sense to return an arrayLike datastructure, return it, otherwise return None.
+        """
         return
 
 

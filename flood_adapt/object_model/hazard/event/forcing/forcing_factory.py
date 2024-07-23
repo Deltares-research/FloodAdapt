@@ -4,13 +4,15 @@ from typing import Any
 import tomli
 
 from flood_adapt.object_model.hazard.interface.forcing import (
-    ForcingSource,
-    ForcingType,
     IForcing,
     IForcingFactory,
 )
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingSource,
+    ForcingType,
+)
 
-from .discharge import DischargeFromCSV, DischargeSynthetic
+from .discharge import DischargeConstant, DischargeFromCSV, DischargeSynthetic
 from .rainfall import (
     RainfallConstant,
     RainfallFromMeteo,
@@ -19,6 +21,7 @@ from .rainfall import (
 )
 from .waterlevels import (
     WaterlevelFromCSV,
+    WaterlevelFromGauged,
     WaterlevelFromModel,
     WaterlevelSynthetic,
 )
@@ -31,6 +34,7 @@ FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
         ForcingSource.CSV: WaterlevelFromCSV,
         ForcingSource.SYNTHETIC: WaterlevelSynthetic,
         ForcingSource.CONSTANT: None,
+        ForcingSource.GAUGED: WaterlevelFromGauged,
     },
     ForcingType.RAINFALL: {
         ForcingSource.METEO: RainfallFromMeteo,
@@ -51,7 +55,7 @@ FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
         ForcingSource.TRACK: None,
         ForcingSource.CSV: DischargeFromCSV,
         ForcingSource.SYNTHETIC: DischargeSynthetic,
-        ForcingSource.CONSTANT: None,
+        ForcingSource.CONSTANT: DischargeConstant,
     },
 }
 
