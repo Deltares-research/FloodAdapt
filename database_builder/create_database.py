@@ -189,7 +189,7 @@ class ConfigModel(BaseModel):
     fiat: str
     unit_system: UnitSystems
     gui: GuiModel
-    building_footprints: SpatialJoinModel
+    building_footprints: Optional[SpatialJoinModel] = None
     slr: Optional[SlrModelDef] = (
         SlrModelDef()
     )  # = SlrModel(vertical_offset=UnitfulLength(value=0, units="meters"))
@@ -409,6 +409,7 @@ class Database:
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
+        # TODO with OSM data get the footprints automatically from model builder
         if not self.config.building_footprints:
             check_col = (
                 "BF_FID" in self.fiat_model.exposure.exposure_db.columns
@@ -435,7 +436,7 @@ class Database:
                 self.logger.info(
                     f"Using the building footprints located at {footprints_path}"
                 )
-            # check if geometries are  already footprints
+            # check if geometries are already footprints
             build_ind = self.fiat_model.exposure.geom_names.index("buildings")
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
             if isinstance(build_geoms.geometry[0], Polygon):
@@ -462,6 +463,12 @@ class Database:
                 exposure["BF_FID"] = build_geoms["BF_FID"]
                 exposure["Extraction Method"] = build_geoms["Extraction Method"]
                 exposure.reset_index().to_csv(exposure_csv_path, index=False)
+            else:
+                if not check_file and not check_col:
+                    self.logger.error(
+                        "No building footprints are available. These are needed in FloodAdapt."
+                    )
+                raise ValueError
         else:
             self.logger.info(
                 f"Using building footprints from {self.config.building_footprints.file}."
@@ -557,7 +564,7 @@ class Database:
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
-                region["id"] = np.arange(len(region)) + 1
+                region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
                     "exposure", "aggregation_areas", "region.gpkg"
                 )
@@ -571,6 +578,18 @@ class Database:
                 )
                 aggr["field_name"] = "id"
                 self.site_attrs["fiat"]["aggregation"].append(aggr)
+
+                # Add column in FIAT
+                buildings_joined, _ = spatial_join(
+                    buildings,
+                    region,
+                    "id",
+                    rename="Aggregation Label: region",
+                )
+                exposure_csv = exposure_csv.merge(
+                    buildings_joined, on="Object ID", how="left"
+                )
+                exposure_csv.to_csv(exposure_csv_path, index=False)
                 self.logger.warning(
                     "No aggregation areas were available in the FIAT model, so the region file will be used as a mock aggregation area."
                 )
