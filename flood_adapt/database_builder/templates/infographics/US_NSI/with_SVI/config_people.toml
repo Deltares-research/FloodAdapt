@@ -52,6 +52,9 @@
     [Other.Info]
         text="""Thresholds:<br>
                 Impacted: <= 6 feet<br>
-                Displaced: > 6 feet<br>"""
+                Displaced: > 6 feet<br>
+				'Since some homes do not have an SVI,<br>
+				total number of homes might be different <br>
+				between this and the above graph.'"""
         image="https://openclipart.org/image/800px/302413"
         scale=0.1

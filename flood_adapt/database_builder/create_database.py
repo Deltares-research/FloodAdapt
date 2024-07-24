@@ -1433,6 +1433,14 @@ class Database:
             for file in path_0.glob("*.toml"):
                 shutil.copy(file, path_im)
 
+            # Copy additional risk config
+            file = templates_path.joinpath(
+                "infometrics",
+                self.metrics_folder_name,
+                "metrics_additional_risk_configs.toml",
+            )
+            shutil.copy(file, path_im)
+
             # Copy infographics config
             path_ig_temp = templates_path.joinpath(
                 "infographics", self.metrics_folder_name, svi_folder_name
@@ -1554,12 +1562,15 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    while True:
-        path = input("Provide the path to the database creation configuration toml: \n")
-        try:
-            main(path)
-        except Exception as e:
-            print(e)
-        quit = input("do you want to quit? (y/n)")
-        if quit == "y":
-            exit()
+    main(
+        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_4.toml"
+    )
+    # while True:
+    #     path = input("Provide the path to the database creation configuration toml: \n")
+    #     try:
+    #         main(path)
+    #     except Exception as e:
+    #         print(e)
+    #     quit = input("do you want to quit? (y/n)")
+    #     if quit == "y":
+    #         exit()
