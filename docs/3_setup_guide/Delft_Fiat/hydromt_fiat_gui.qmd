@@ -281,7 +281,7 @@ How to change the damage curve assignment (U.S. only):
   * Click "Specify different damage curves". A pop-up window appears. In the pop-up window: 
     * Select from the left panel the secondary object type for which you want to change the damage curve 
     * Select a damage curve from the upper right panel (source is HAZUS database); the damage curve will be plotted in the lower right panel
-    * Click "Selct Source" underneath the upper right panel to assign the selected damage curve. 
+    * Click "Select Source" underneath the upper right panel to assign the selected damage curve. 
     * Continue the above procedure for all secondary object types for which you would like to change the curve. 
     * When finished, click "OK" to close the pop-up window. 
   * Click "Add to model" to complete.   
@@ -316,7 +316,7 @@ When a social vulnerability index layer is added to your Delft-FIAT model, Flood
 
 ::: {.callout-note}
 ##### Where do I obtain an SVI layer?
-SVI layers can come from many sources, but a standard open data source in the U.S. is the Center for Disease Control. They have made SVI layers publically available at the census tract or county scale. SVI layers can be [downloaded from their website](https://www.atsdr.cdc.gov/placeandhealth/svi/data_documentation_download.html). For "File Type", you will need to choose the file type "ESRI Geodatabase (map data)", and we recommend selecting census tract for the "Geography Type". 
+SVI layers can come from many sources, but a standard open data source in the U.S. is the Center for Disease Control. They have made SVI layers publicly available at the census tract or county scale. SVI layers can be [downloaded from their website](https://www.atsdr.cdc.gov/placeandhealth/svi/data_documentation_download.html). For "File Type", you will need to choose the file type "ESRI Geodatabase (map data)", and we recommend selecting census tract for the "Geography Type". 
 :::
 
 ::: {.callout-tip}
