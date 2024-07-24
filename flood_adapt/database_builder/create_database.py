@@ -23,6 +23,7 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
@@ -294,7 +295,7 @@ class Database:
             rmtree(root)
         root.mkdir(parents=True)
 
-        self.logger = logger(root.joinpath("floodadapt_builder.log"))
+        self.logger = FloodAdaptLogging().getLogger(__name__)
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
@@ -1506,33 +1507,38 @@ def main(config_path: str):
     -------
         None
     """
+    # TODO make this compatible with dictionary as well
     print(f"Read FloodAdapt building configuration from {Path(config_path).as_posix()}")
     config = read_config(config_path)
     if not config.database_path:
         config.database_path = str(Path(config_path).parent)
     # Create a Database object
     dbs = Database(config)
-    # Workflow to create the database using the object methods
-    dbs.make_folder_structure()
-    dbs.read_fiat()
-    dbs.read_sfincs()
-    if config.sfincs_offshore:
-        dbs.read_offshore_sfincs()
-    dbs.add_dem()
-    dbs.update_fiat_elevation()
-    dbs.add_rivers()
-    dbs.add_obs_points()
-    dbs.add_cyclone_dbs()
-    dbs.add_static_files()
-    dbs.add_tide_gauge()
-    dbs.add_gui_params()
-    dbs.add_slr()
-    # TODO add scs rainfall curves
-    dbs.add_general_attrs()
-    dbs.add_infometrics()
-    dbs.save_site_config()
-    dbs.create_standard_objects()
-    dbs.logger.info("FloodAdapt database creation finished!")
+    # Open logger file
+    with FloodAdaptLogging.to_file(
+        file_path=dbs.root.joinpath("floodadapt_builder.log")
+    ):
+        # Workflow to create the database using the object methods
+        dbs.make_folder_structure()
+        dbs.read_fiat()
+        dbs.read_sfincs()
+        if config.sfincs_offshore:
+            dbs.read_offshore_sfincs()
+        dbs.add_dem()
+        dbs.update_fiat_elevation()
+        dbs.add_rivers()
+        dbs.add_obs_points()
+        dbs.add_cyclone_dbs()
+        dbs.add_static_files()
+        dbs.add_tide_gauge()
+        dbs.add_gui_params()
+        dbs.add_slr()
+        # TODO add scs rainfall curves
+        dbs.add_general_attrs()
+        dbs.add_infometrics()
+        dbs.save_site_config()
+        dbs.create_standard_objects()
+        dbs.logger.info("FloodAdapt database creation finished!")
 
 
 if __name__ == "__main__":

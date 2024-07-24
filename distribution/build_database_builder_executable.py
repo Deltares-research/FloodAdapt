@@ -17,7 +17,7 @@ DIST_ROOT = Path(__file__).resolve().parents[0]
 PROJECT_NAME = "FloodAdapt_Database_Builder"
 BUILD_DIR = Path(DIST_ROOT, "build")
 DIST_DIR = Path(DIST_ROOT, "dist")
-SRC_DIR = Path(PROJECT_ROOT)
+SRC_DIR = Path(PROJECT_ROOT) / "flood_adapt"
 SITE_PACKAGES_PATH = Path(sys.executable).parent / "Lib" / "site-packages"
 
 
@@ -42,8 +42,8 @@ def copy_shapely_libs():
 
 
 def run_pyinstaller() -> None:
-    entry_point = SRC_DIR / "create_database.py"
-    spec_path = SRC_DIR / "distribution"
+    entry_point = SRC_DIR / "database_builder" / "create_database.py"
+    spec_path = DIST_ROOT
 
     command = [
         str(entry_point),
