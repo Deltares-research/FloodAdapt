@@ -273,6 +273,7 @@ def spatial_join(
     if not isinstance(layer, gpd.GeoDataFrame):
         layer = gpd.read_file(layer)
     layer = layer[[field_name, "geometry"]]
+    layer = layer.to_crs(objects.crs)
     # Spatial join of the layers
     objects_joined = objects.sjoin(layer)
     # if needed filter out unused objects in the layer
@@ -480,7 +481,7 @@ class Database:
                     self.logger.error(
                         "No building footprints are available. These are needed in FloodAdapt."
                     )
-                raise ValueError
+                    raise ValueError
         else:
             self.logger.info(
                 f"Using building footprints from {self.config.building_footprints.file}."
@@ -1563,7 +1564,7 @@ def main(config_path: str):
 
 if __name__ == "__main__":
     main(
-        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_4.toml"
+        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland_OSM\config_Maryland_OSM_2.toml"
     )
     # while True:
     #     path = input("Provide the path to the database creation configuration toml: \n")

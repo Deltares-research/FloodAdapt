@@ -54,7 +54,7 @@
     [Other.Subtitle]
         font = 25
 	[Other.Y_axis_title]
-		text = "Feet of interruption"
+		text = "Miles of interruption"
     [Other.Info]
         text="""Thresholds:<br>
                 Pedestrians: 0.3 feet<br>

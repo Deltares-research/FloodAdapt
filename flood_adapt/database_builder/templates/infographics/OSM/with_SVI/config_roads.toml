@@ -54,12 +54,12 @@
     [Other.Subtitle]
         font = 25
 	[Other.Y_axis_title]
-		text = "Feet of interruption"
+		text = "Kilometers of interruption"
     [Other.Info]
         text="""Thresholds:<br>
-                Pedestrians: 0.3 feet<br>
-                Cars: 0.5 feet<br>
-                Trucks: 1 feet<br>
-                Rescue vehicles: 2 feet"""
+                Pedestrians: 0.05 m<br>
+                Cars: 0.10 m<br>
+                Trucks: 0.25 m<br>
+                Rescue vehicles: 0.40 m"""
         image="{image_path}/info.png"
         scale=0.1

@@ -1,4 +1,4 @@
-flood_map_colors = ['#BED2FF', '#B4D79E', '#1F80B8', '#081D58']
+flood_map_colors = ['#D7ECFB', '#8ABDDD', '#1C73A4', '#081D58']
 aggregation_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
 footprints_dmg_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
 svi_colors = ['#FFFFFF', '#FEE9CE', '#FDBB84', '#FC844E', '#E03720', '#860000']
