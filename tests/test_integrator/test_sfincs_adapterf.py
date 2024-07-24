@@ -1,10 +1,13 @@
+import os
 from unittest import mock
 
 import pandas as pd
 import pytest
 
+from flood_adapt.api.static import read_database
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
+    DischargeConstant,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
@@ -32,24 +35,18 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-@pytest.fixture(scope="class")
-def mock_sfincs_adapter(test_db_class) -> SfincsAdapter:
-    overland_path = test_db_class.static_path / "templates" / "overland"
-    adapter = SfincsAdapter(model_root=overland_path)
-    adapter._logger = mock.Mock()
-    adapter._logger.handlers = []  # Mock the handlers attribute as an empty list
-
-    return adapter
-
-
 class TestAddForcing:
-    @pytest.fixture(scope="class")
-    def sfincs_adapter(self, mock_sfincs_adapter):
-        mock_sfincs_adapter._add_forcing_wind = mock.Mock()
-        mock_sfincs_adapter._add_forcing_rain = mock.Mock()
-        mock_sfincs_adapter._add_forcing_discharge = mock.Mock()
-        mock_sfincs_adapter._add_forcing_waterlevels = mock.Mock()
-        return mock_sfincs_adapter
+    @pytest.fixture()
+    def sfincs_adapter(self, test_db) -> SfincsAdapter:
+        overland_path = test_db.static_path / "templates" / "overland"
+        adapter = SfincsAdapter(model_root=overland_path)
+        adapter._logger = mock.Mock()
+        adapter._logger.handlers = []
+        adapter._add_forcing_wind = mock.Mock()
+        adapter._add_forcing_rain = mock.Mock()
+        adapter._add_forcing_discharge = mock.Mock()
+        adapter._add_forcing_waterlevels = mock.Mock()
+        return adapter
 
     def test_add_forcing_wind(self, sfincs_adapter):
         forcing = mock.Mock(spec=IForcing)
@@ -85,12 +82,16 @@ class TestAddForcing:
 
 
 class TestAddForcingWind:
-    @pytest.fixture(scope="class")
-    def sfincs_adapter(self, mock_sfincs_adapter):
-        mock_sfincs_adapter._model = mock.Mock()
-        mock_sfincs_adapter._add_wind_forcing_from_grid = mock.Mock()
-        mock_sfincs_adapter._set_config_spw = mock.Mock()
-        return mock_sfincs_adapter
+    @pytest.fixture()
+    def sfincs_adapter(self, test_db) -> SfincsAdapter:
+        overland_path = test_db.static_path / "templates" / "overland"
+        adapter = SfincsAdapter(model_root=overland_path)
+        adapter._logger = mock.Mock()
+        adapter._logger.handlers = []
+        adapter._model = mock.Mock()
+        adapter._add_wind_forcing_from_grid = mock.Mock()
+        adapter._set_config_spw = mock.Mock()
+        return adapter
 
     def test_add_forcing_wind_constant(self, sfincs_adapter):
         forcing = WindConstant(
@@ -145,10 +146,14 @@ class TestAddForcingWind:
 
 
 class TestAddForcingRain:
-    @pytest.fixture(scope="class")
-    def sfincs_adapter(self, mock_sfincs_adapter):
-        # mock_sfincs_adapter._model = mock.Mock()
-        return mock_sfincs_adapter
+    @pytest.fixture()
+    def sfincs_adapter(self, test_db) -> SfincsAdapter:
+        overland_path = test_db.static_path / "templates" / "overland"
+        adapter = SfincsAdapter(model_root=overland_path)
+        adapter._logger = mock.Mock()
+        adapter._logger.handlers = []
+        adapter._model = mock.Mock()
+        return adapter
 
     def test_add_forcing_rain_constant(self, sfincs_adapter):
         forcing = RainfallConstant(intensity=UnitfulIntensity(10, "mm_hr"))
@@ -194,129 +199,187 @@ class TestAddForcingRain:
 
 
 class TestAddForcingDischarge:
-    @pytest.fixture(scope="class")
-    def sfincs_adapter_2_rivers(self, test_db_class) -> SfincsAdapter:
-        overland_path = test_db_class.static_path / "templates" / "overland_2_rivers"
-        adapter = SfincsAdapter(model_root=overland_path)
+    @pytest.fixture()
+    def test_db_2_rivers(self, test_db):
+        # This is here because the site.toml file is not read again after the database is created, and its hardcoded to read `site.toml`
+        os.remove(test_db.static_path / "site" / "site.toml")
+        os.rename(
+            test_db.static_path / "site" / "site_2_rivers.toml",
+            test_db.static_path / "site" / "site.toml",
+        )
+
+        test_db.reset()
+        test_db = read_database(test_db.static_path.parents[1], "charleston_test")
+        return test_db
+
+    @pytest.fixture()
+    def test_db_0_rivers(self, test_db):
+        # This is here because the site.toml file is not read again after the database is created, and its hardcoded to read `site.toml`
+        os.remove(test_db.static_path / "site" / "site.toml")
+        os.rename(
+            test_db.static_path / "site" / "site_0_rivers.toml",
+            test_db.static_path / "site" / "site.toml",
+        )
+
+        test_db.reset()
+        test_db = read_database(test_db.static_path.parents[1], "charleston_test")
+        return test_db
+
+    @pytest.fixture()
+    def sfincs_adapter_2_rivers(self, test_db_2_rivers) -> SfincsAdapter:
+        test_db = test_db_2_rivers
+        overland_2_rivers_path = test_db.static_path / "templates" / "overland_2_rivers"
+
+        adapter = SfincsAdapter(model_root=overland_2_rivers_path)
+        adapter._logger = mock.Mock()
+        adapter._logger.handlers = []
+
+        return adapter
+
+    @pytest.fixture()
+    def sfincs_adapter_0_rivers(self, test_db_0_rivers) -> SfincsAdapter:
+        test_db = test_db_0_rivers
+        overland_0_rivers_path = test_db.static_path / "templates" / "overland_0_rivers"
+
+        adapter = SfincsAdapter(model_root=overland_0_rivers_path)
+        adapter._logger = mock.Mock()
+        adapter._logger.handlers = []
 
         return adapter
 
     def test_add_forcing_discharge_synthetic(self, sfincs_adapter_2_rivers):
+        # Arrange
         sfincs_adapter = sfincs_adapter_2_rivers
         sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
+        gdf_locs = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
 
         forcing = mock.Mock(spec=DischargeSynthetic)
+        time = pd.date_range(start="2023-01-01", periods=3, freq="D")
         forcing.get_data.return_value = pd.DataFrame(
-            {
-                "time": [0, 1, 2],
-                "discharge": [10, 20, 30],
-            }
+            index=time,
+            data={
+                "discharge1": [10, 20, 30],
+                "discharge2": [10, 20, 30],
+            },
         )
-
+        # Act
         sfincs_adapter._add_forcing_discharge(forcing)
 
-        sfincs_adapter._model.setup_discharge_forcing.assert_called_once_with(
-            timeseries=forcing.get_data(), locations=mock.ANY, merge=False
-        )
+        # Assert
+        sfincs_adapter._model.setup_discharge_forcing.assert_called_once
+        call_args = sfincs_adapter._model.setup_discharge_forcing.call_args
+
+        assert call_args[1]["timeseries"].equals(forcing.get_data())
+        assert all(call_args[1]["locations"] == gdf_locs)
+        assert not call_args[1]["merge"]
 
     def test_add_forcing_discharge_unsupported(self, sfincs_adapter_2_rivers):
+        # Arrange
         sfincs_adapter = sfincs_adapter_2_rivers
 
         class UnsupportedDischarge(IDischarge):
             pass
 
         sfincs_adapter._logger.warning = mock.Mock()
-
         forcing = UnsupportedDischarge()
 
+        # Act
         sfincs_adapter._add_forcing_discharge(forcing)
 
+        # Assert
         sfincs_adapter._logger.warning.assert_called_once_with(
             f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
         )
 
-    def test_add_dis_bc_no_rivers(self, sfincs_adapter_2_rivers):
-        sfincs_adapter = sfincs_adapter_2_rivers
+    def test_add_dis_bc_no_rivers(self, sfincs_adapter_0_rivers):
+        # Arrange
+        sfincs_adapter = sfincs_adapter_0_rivers
+        forcing = mock.Mock(spec=DischargeConstant)
+        time = pd.date_range(start="2023-01-01", periods=3, freq="D")
+        ret_val = pd.DataFrame(
+            index=time,
+            data={},
+        )
+        forcing.get_data.return_value = ret_val
         sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
-        sfincs_adapter._site = mock.Mock()
-        sfincs_adapter._site.attrs.river = []
 
-        list_df = pd.DataFrame(
-            {
-                "time": pd.date_range(start="2023-01-01", periods=3, freq="D"),
-                "discharge": [10, 20, 30],
-            }
-        )
+        # Act
+        sfincs_adapter._add_dis_bc(ret_val)
 
-        sfincs_adapter._add_dis_bc(list_df)
-
-        sfincs_adapter._model.setup_discharge_forcing.assert_called_once_with(
-            timeseries=list_df, locations=mock.ANY, merge=False
-        )
+        # Assert
+        assert sfincs_adapter._model.setup_discharge_forcing.call_count == 0
 
     def test_add_dis_bc_matching_rivers(self, sfincs_adapter_2_rivers):
+        # Arrange
         sfincs_adapter = sfincs_adapter_2_rivers
-        list_df = pd.DataFrame(
-            {
-                "time": pd.date_range(start="2023-01-01", periods=3, freq="D"),
+        sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
+
+        forcing = mock.Mock(spec=DischargeConstant)
+        time = pd.date_range(start="2023-01-01", periods=3, freq="D")
+        ret_val = pd.DataFrame(
+            index=time,
+            data={
                 "discharge1": [10, 20, 30],
-                "discharge2": [15, 25, 35],
-            }
+                "discharge2": [10, 20, 30],
+            },
         )
-        sfincs_adapter._site = mock.Mock()
-        sfincs_adapter._site.attrs.river = [
-            mock.Mock(name="River1", x_coordinate=1, y_coordinate=1),
-            mock.Mock(name="River2", x_coordinate=2, y_coordinate=2),
-        ]
-        gdf_locs = mock.Mock()
-        gdf_locs.geometry = [mock.Mock(x=1, y=1), mock.Mock(x=2, y=2)]
-        gdf_locs.__len__ = mock.Mock(return_value=2)  # Ensure len(gdf_locs) works
-        sfincs_adapter._model.forcing["dis"].vector.to_gdf = mock.Mock(
-            return_value=gdf_locs
+        forcing.get_data.return_value = ret_val
+        gdf_locs = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
+
+        # Act
+        sfincs_adapter._add_dis_bc(ret_val)
+
+        # Assert
+        sfincs_adapter._model.setup_discharge_forcing.assert_called_once
+        call_args = sfincs_adapter._model.setup_discharge_forcing.call_args
+
+        assert call_args[1]["timeseries"].equals(forcing.get_data())
+        assert all(call_args[1]["locations"] == gdf_locs)
+        assert not call_args[1]["merge"]
+
+    def test_add_dis_bc_mismatched_coordinates(self, test_db_2_rivers):
+        forcing = mock.Mock(spec=DischargeConstant)
+        time = pd.date_range(start="2023-01-01", periods=3, freq="D")
+        overland_2_rivers_path = (
+            test_db_2_rivers.static_path / "templates" / "overland_2_rivers"
         )
 
-        sfincs_adapter._add_dis_bc(list_df)
+        with open(overland_2_rivers_path / "sfincs.src", "w") as f:
+            f.write("10	20\n")
+            f.write("40	50\n")
 
-        sfincs_adapter._model.setup_discharge_forcing.assert_called_once_with(
-            timeseries=list_df, locations=gdf_locs, merge=False
-        )
+        sfincs_adapter = SfincsAdapter(model_root=overland_2_rivers_path)
+        sfincs_adapter._logger = mock.Mock()
+        sfincs_adapter._logger.handlers = []
 
-    def test_add_dis_bc_mismatched_coordinates(self, sfincs_adapter_2_rivers):
-        sfincs_adapter = sfincs_adapter_2_rivers
-        list_df = pd.DataFrame(
-            {
-                "time": pd.date_range(start="2023-01-01", periods=3, freq="D"),
+        ret_val = pd.DataFrame(
+            index=time,
+            data={
                 "discharge1": [10, 20, 30],
-                "discharge2": [15, 25, 35],
-            }
+                "discharge2": [10, 20, 30],
+            },
         )
-        sfincs_adapter._site = mock.Mock()
-        sfincs_adapter._site.attrs.river = [
-            mock.Mock(name="River1", x_coordinate=1, y_coordinate=1),
-            mock.Mock(name="River2", x_coordinate=2, y_coordinate=2),
-        ]
-        gdf_locs = mock.Mock()
-        gdf_locs.geometry = [mock.Mock(x=1, y=1), mock.Mock(x=3, y=3)]
-        gdf_locs.__len__ = mock.Mock(return_value=2)  # Ensure len(gdf_locs) works
-        sfincs_adapter._model.forcing["dis"].vector.to_gdf = mock.Mock(
-            return_value=gdf_locs
+        forcing.get_data.return_value = ret_val
+
+        expected_message = (
+            r"Incompatible river coordinates for river: .+\.\n"
+            r"site.toml: \(.+\)\n"
+            r"SFINCS template model \(.+\)."
         )
 
-        with pytest.raises(
-            ValueError, match="Incompatible river coordinates for river"
-        ):
-            sfincs_adapter._add_dis_bc(list_df)
+        with pytest.raises(ValueError, match=expected_message):
+            sfincs_adapter._add_dis_bc(ret_val)
 
     def test_add_dis_bc_mismatched_number_of_rivers(self, sfincs_adapter_2_rivers):
         sfincs_adapter = sfincs_adapter_2_rivers
-
         list_df = pd.DataFrame(
-            {
-                "time": pd.date_range(start="2023-01-01", periods=3, freq="D"),
+            index=pd.date_range(start="2023-01-01", periods=3, freq="D"),
+            data={
                 "discharge1": [10, 20, 30],
                 "discharge2": [15, 25, 35],
                 "discharge3": [15, 25, 35],
-            }
+                "discharge4": [15, 25, 35],
+            },
         )
 
         with pytest.raises(

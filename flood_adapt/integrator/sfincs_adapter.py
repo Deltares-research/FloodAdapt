@@ -788,12 +788,13 @@ class SfincsAdapter(IHazardAdapter):
             gdf_locs = self._model.forcing["dis"].vector.to_gdf()
             gdf_locs.crs = self._model.crs
 
-            if len(list_df.columns) != len(gdf_locs):
+            if len(list_df.columns) != len(gdf_locs.geometry):
                 self._logger.error(
                     """The number of rivers of the site.toml does not match the
-                              number of rivers in the SFINCS model. Please check the number
-                              of coordinates in the SFINCS *.src file."""
+                    number of rivers in the SFINCS model. Please check the number
+                    of coordinates in the SFINCS *.src file."""
                 )
+
                 raise ValueError(
                     "Number of rivers in site.toml and SFINCS template model not compatible"
                 )
