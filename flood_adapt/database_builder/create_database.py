@@ -1,4 +1,3 @@
-import logging
 import shutil
 from enum import Enum
 from pathlib import Path
@@ -27,40 +26,6 @@ from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
-
-
-def logger(log_path):
-    """
-    Create and configure a logger.
-
-    Args:
-        log_path (str): The path to the log file.
-
-    Returns
-    -------
-        logging.Logger: The configured logger object.
-    """
-    # Create a root logger and set the minimum logging level.
-    logger = logging.getLogger("FloodAdapt")
-    logger.setLevel(logging.INFO)
-    # Create a file handler and set the required logging level.
-    fh = logging.FileHandler(filename=log_path, mode="w")
-    fh.setLevel(logging.DEBUG)
-    # Create a console handler and set the required logging level.
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)  # Can be also set to WARNING
-    # Create a formatter and add to the file and console handlers.
-    formatter = logging.Formatter(
-        fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %I:%M:%S %p",
-    )
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # Add the file and console handlers to the root logger.
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    return logger
 
 
 class SpatialJoinModel(BaseModel):
@@ -134,12 +99,24 @@ class GuiModel(BaseModel):
 
     max_flood_depth: float
     max_aggr_dmg: float
-    max_aggr_dmg: float
     max_footprint_dmg: float
     max_benefits: float
 
 
 class TideGaugeModel(BaseModel):
+    """
+    Represents a tide gauge model.
+
+    Attributes
+    ----------
+        source (str): The source of the tide gauge data.
+        file (Optional[str]): The file associated with the tide gauge data (default: None).
+        max_distance (Optional[float]): The maximum distance (default: None).
+        msl (Optional[float]): The mean sea level (default: None).
+        datum (Optional[float]): The datum (default: None).
+        datum_name (Optional[str]): The name of the datum (default: None).
+    """
+
     source: str
     file: Optional[str] = None
     max_distance: Optional[float] = None
@@ -149,10 +126,26 @@ class TideGaugeModel(BaseModel):
 
 
 class SviModel(SpatialJoinModel):
+    """
+    Represents a model for the Social Vulnerability Index (SVI).
+
+    Attributes
+    ----------
+        threshold (float): The threshold value for the SVI model to specify vulnerability.
+    """
+
     threshold: float
 
 
 class SlrModelDef(SlrModel):
+    """
+    Represents a sea level rise (SLR) model definition.
+
+    Attributes
+    ----------
+        vertical_offset (Optional[UnitfulLength]): The vertical offset of the SLR model, measured in meters.
+    """
+
     vertical_offset: Optional[UnitfulLength] = UnitfulLength(value=0, units="meters")
 
 
@@ -162,24 +155,44 @@ class ConfigModel(BaseModel):
 
     Attributes
     ----------
-        name (str): The name of the configuration.
-        description (Optional[str]): The description of the configuration.
-        database_path (Optional[str]): The path to the database.
-        sfincs (str): The SFINCS value.
-        sfincs_offshore (Optional[str]): The offshore SFINCS value.
-        fiat (str): The fiat value.
-        unit_system (UnitSystems): The unit system.
-        gui (GuiModel): The GUI model.
-        tide_gauge (Optional[TideGaugeModel]): The tide gauge model.
-        building_footprints (Optional[SpatialJoinModel]): The building footprints model.
-        bfe (Optional[SpatialJoinModel]): The BFE model.
-        svi (Optional[SpatialJoinModel]): The SVI model.
-        road_width (Optional[float]): The road width in meters.
-        cyclones (Optional[bool]): Indicates if cyclones are enabled.
-        cyclone_basin (Optional[Basins]): The cyclone basin.
-        river (Optional[list[RiverModel]]): The list of river models.
-        obs_point (Optional[list[Obs_pointModel]]): The list of observation point models.
-        probabilistic_set (Optional[str]): The probabilistic set value.
+    name : str
+        The name of the site.
+    description : Optional[str], default ""
+        The description of the site.
+    database_path : Optional[str], default None
+        The path to the database where all the sites are located.
+    sfincs : str
+        The SFINCS model path.
+    sfincs_offshore : Optional[str], default None
+        The offshore SFINCS model path.
+    fiat : str
+        The FIAT model path.
+    unit_system : UnitSystems
+        The unit system.
+    gui : GuiModel
+        The GUI model representing scaling values for the layers.
+    building_footprints : Optional[SpatialJoinModel], default None
+        The building footprints model.
+    slr : Optional[SlrModelDef], default SlrModelDef()
+        The sea level rise model.
+    tide_gauge : Optional[TideGaugeModel], default None
+        The tide gauge model.
+    bfe : Optional[SpatialJoinModel], default None
+        The BFE model.
+    svi : Optional[SviModel], default None
+        The SVI model.
+    road_width : Optional[float], default 2
+        The road width in meters.
+    cyclones : Optional[bool], default True
+        Indicates if cyclones are enabled.
+    cyclone_basin : Optional[Basins], default None
+        The cyclone basin.
+    obs_point : Optional[list[Obs_pointModel]], default None
+        The list of observation point models.
+    probabilistic_set : Optional[str], default None
+        The probabilistic set path.
+    infographics : Optional[bool], default False
+        Indicates if infographics are enabled.
     """
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
@@ -191,13 +204,11 @@ class ConfigModel(BaseModel):
     unit_system: UnitSystems
     gui: GuiModel
     building_footprints: Optional[SpatialJoinModel] = None
-    slr: Optional[SlrModelDef] = (
-        SlrModelDef()
-    )  # = SlrModel(vertical_offset=UnitfulLength(value=0, units="meters"))
+    slr: Optional[SlrModelDef] = SlrModelDef()
     tide_gauge: Optional[TideGaugeModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviModel] = None
-    road_width: Optional[float] = 2  # in meters
+    road_width: Optional[float] = 2
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
     obs_point: Optional[list[Obs_pointModel]] = None
@@ -1114,6 +1125,7 @@ class Database:
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance} meters from the SFINCS domain"
         )
         # Check if user provided max distance
+        # TODO make sure units are explicit for max_distance
         if self.config.tide_gauge.max_distance is not None:
             if distance > self.config.tide_gauge.max_distance:
                 self.logger.warning(
