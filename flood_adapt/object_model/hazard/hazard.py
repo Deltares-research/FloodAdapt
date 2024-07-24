@@ -1,45 +1,64 @@
-# import os
-# import shutil
-# import subprocess
-# from pathlib import Path
-# from typing import List
+import os
+from enum import Enum
+from pathlib import Path
 
-# import numpy as np
-# import pandas as pd
-# import plotly.express as px
-# import plotly.graph_objects as go
-# import xarray as xr
-# from noaa_coops.station import COOPSAPIError
-# from numpy import matlib
-
-# import flood_adapt.config as FloodAdapt_config
-# from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-# from flood_adapt.log import FloodAdaptLogging
-# from flood_adapt.object_model.hazard.event.event import Event
-# from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-# from flood_adapt.object_model.hazard.event.event_set import EventSet
-# from flood_adapt.object_model.hazard.event.historical_nearshore import (
-#     HistoricalNearshore,
-# )
-# from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-# from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-# from flood_adapt.object_model.interface.events import Mode
-# from flood_adapt.object_model.interface.scenarios import ScenarioModel
-# from flood_adapt.object_model.io.unitfulvalue import (
-#     UnitfulDischarge,
-#     UnitfulIntensity,
-#     UnitfulLength,
-#     UnitfulVelocity,
-#     UnitTypesDischarge,
-#     UnitTypesIntensity,
-#     UnitTypesLength,
-#     UnitTypesVelocity,
-# )
-# from flood_adapt.object_model.utils import cd
+from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 
 
-class Hazard:
-    pass
+class FloodMapType(str, Enum):
+    """Enum class for the type of flood map."""
+
+    WATER_LEVEL = "water_level"  # TODO make caps, but hydromt_fiat expects lowercase
+
+
+class FloodMap:
+    _type: FloodMapType = FloodMapType.WATER_LEVEL
+
+    name: str
+    path: Path | os.PathLike
+    mode: Mode
+    event_set: EventSet
+    physical_projection: PhysicalProjection
+    hazard_strategy: HazardStrategy
+
+    def __init__(self, scenario_name: str) -> None:
+        import flood_adapt.dbs_controller as db
+
+        self.name = scenario_name
+        self._database = db.Database()
+        self.path = (
+            self._database.scenarios.get_database_path(get_input_path=False)
+            / scenario_name
+            / "Flooding"
+            / "max_water_level_map.nc"
+        )
+
+    @property
+    def has_run(self) -> bool:
+        return self.path.exists()
+
+    @property
+    def scenario(self):
+        return self._database.scenarios.get(self.name)
+
+    @property
+    def mode(self):
+        return self._database.events.get(self.scenario.attrs.event).attrs.mode
+
+    @property
+    def hazard_strategy(self):
+        return self._database.strategies.get(
+            self.scenario.attrs.strategy
+        ).get_hazard_strategy()
+
+    @property
+    def physical_projection(self):
+        return self._database.projections.get(
+            self.scenario.attrs.projection
+        ).get_physical_projection()
 
 
 #     """All information related to the hazard of the scenario.

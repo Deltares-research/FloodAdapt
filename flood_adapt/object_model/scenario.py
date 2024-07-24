@@ -7,6 +7,7 @@ import tomli_w
 
 import flood_adapt.dbs_controller as db
 from flood_adapt import __version__
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
@@ -73,11 +74,14 @@ class Scenario(IScenario):
             )
             # preprocess model input data first, then run, then post-process
             if not self.direct_impacts.hazard.has_run:
-                self.direct_impacts.hazard.preprocess_models()
-                self.direct_impacts.hazard.run_models()
-                self.direct_impacts.hazard.postprocess_models()
+                template_path = Path(
+                    db.Database().static_path / "templates" / "overland"
+                )
+                with SfincsAdapter(model_root=template_path) as sfincs_adapter:
+                    sfincs_adapter.run(self)
             else:
                 print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+
             if not self.direct_impacts.has_run:
                 self.direct_impacts.preprocess_models()
                 self.direct_impacts.run_models()

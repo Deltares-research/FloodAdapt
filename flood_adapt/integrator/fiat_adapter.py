@@ -8,7 +8,7 @@ from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.hazard.hazard import Hazard
+from flood_adapt.object_model.hazard.hazard import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
@@ -58,19 +58,17 @@ class FiatAdapter:
         # Use garbage collector to ensure file handlers are properly cleaned up
         gc.collect()
 
-    def set_hazard(self, hazard: Hazard) -> None:
-        map_fn = hazard.flood_map_path
-        map_type = hazard.site.attrs.fiat.floodmap_type
-        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
-        is_risk = hazard.event_mode == Mode.risk
+    def set_hazard(self, floodmap: FloodMap) -> None:
+        var = "zsmax" if floodmap.mode == Mode.risk else "risk_maps"
+        is_risk = floodmap.mode == Mode.risk
 
-        # Add the hazard data to a data catalog with the unit conversion
+        # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
 
         self.fiat_model.setup_hazard(
-            map_fn=map_fn,
-            map_type=map_type,
+            map_fn=floodmap.path,
+            map_type=floodmap._type,
             rp=None,
             crs=None,  # change this in new version
             nodata=-999,  # change this in new version

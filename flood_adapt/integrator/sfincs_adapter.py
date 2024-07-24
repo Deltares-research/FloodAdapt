@@ -20,7 +20,7 @@ from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
-from flood_adapt.integrator.interface.hazard_adapter import HazardData, IHazardAdapter
+from flood_adapt.integrator.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
@@ -74,15 +74,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesVolume,
 )
 from flood_adapt.object_model.utils import cd
-
-
-class SfincsData(HazardData):
-    flood_map = "flood_map"
-    boundary = "boundary"
-    water_level_map = "water_level_map"
-    mask = "mask"
-    bed_level = "bed_level"
-    grid = "grid"
 
 
 class SfincsAdapter(IHazardAdapter):
@@ -158,7 +149,7 @@ class SfincsAdapter(IHazardAdapter):
     def write(self, path_out: Union[str, os.PathLike]):
         """Write the sfincs model configuration to a directory."""
         with cd(path_out):
-            self._model.write()
+            self._write_sfincs_model(path_out)
 
     def execute(self, sim_path=None, strict=True) -> bool:
         """
@@ -218,7 +209,8 @@ class SfincsAdapter(IHazardAdapter):
                 raise RuntimeError(f"SFINCS model failed to run in {sim_path}.")
             else:
                 self._logger.error(f"SFINCS model failed to run in {sim_path}.")
-
+        else:
+            self._write_water_level_map()
         return process.returncode == 0
 
     def run(self, scenario: IScenario):
@@ -234,11 +226,11 @@ class SfincsAdapter(IHazardAdapter):
 
     def preprocess(self):
         sim_paths = self._get_simulation_paths()
-        events = (
-            [self._scenario.attrs.event]
-            if isinstance(list, self._scenario.attrs.event)
-            else self._scenario.attrs.event
-        )
+        if not isinstance(self._scenario.attrs.event, list):
+            events = [self._scenario.attrs.event]
+        else:
+            events = self._scenario.attrs.event
+
         for ii, name in enumerate(events):
             event: IEvent = self._database.events.get(name)
 
@@ -252,20 +244,36 @@ class SfincsAdapter(IHazardAdapter):
             for forcing in event.attrs.forcings.values():
                 self.add_forcing(forcing)
 
-            for measure in self._scenario.attrs.strategy:
+            strategy = self._database.strategies.get(self._scenario.attrs.strategy)
+            measures = [
+                self._database.measures.get(name) for name in strategy.attrs.measures
+            ]
+            for measure in measures:
                 self.add_measure(measure)
 
-            for projection in self._scenario.attrs.projection:
-                self.add_projection(projection)
+            self.add_projection(
+                self._database.projections.get(self._scenario.attrs.projection)
+            )
 
             # add observation points from site.toml
             self._add_obs_points()
 
             # write sfincs model in output destination
+            if event.attrs.mode == Mode.single_event:
+                sim_paths = sim_paths[0]
+            elif event.attrs.mode == Mode.risk:
+                sim_paths = sim_paths[1]
+
             self._write_sfincs_model(path_out=sim_paths[ii])
 
     def process(self):
         sim_paths = self._get_simulation_paths()
+        event = self._database.events.get(self._scenario.attrs.event)
+        if event.attrs.mode == Mode.single_event:
+            sim_paths = sim_paths[0]
+        elif event.attrs.mode == Mode.risk:
+            sim_paths = sim_paths[1]
+
         results = []
         for simulation_path in sim_paths:
             results.append(self.execute(simulation_path))
@@ -275,10 +283,10 @@ class SfincsAdapter(IHazardAdapter):
         self._scenario.has_run = all(results)
 
     def postprocess(self):
-        if not self.has_run_check(self._scenario):
+        if not self.has_run_check():
             raise RuntimeError("SFINCS was not run successfully!")
 
-        mode = self._database.events.get(self._scenario.attrs.event).get_mode()
+        mode = self._database.events.get(self._scenario.attrs.event).attrs.mode
         if mode == Mode.single_event:
             # Write flood-depth map geotiff
             self._write_floodmap_geotiff()
@@ -306,6 +314,9 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_forcing(self, forcing: IForcing):
         """Get forcing data and add it to the sfincs model."""
+        if forcing is None:
+            return
+
         match forcing._type:
             case ForcingType.WIND:
                 self._add_forcing_wind(forcing)
@@ -323,6 +334,9 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_measure(self, measure: HazardMeasure):
         """Get measure data and add it to the sfincs model."""
+        if measure is None:
+            return
+
         match measure.attrs.type:
             case HazardType.floodwall:
                 self._add_measure_floodwall(measure)
@@ -338,13 +352,14 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_projection(self, projection: PhysicalProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
-        self._add_wl_bc(self.get_water_levels() + projection.attrs.sea_level_rise)
-
+        self._logger.warning("Skipping projection as its not implemented yet..")
+        # TODO how to add slr to model without overwriting the existing waterlevel data
+        # self._add_wl_bc(self.get_water_levels() + projection.attrs.sea_level_rise)
         # TODO investigate how/if to add subsidence to model
         # projection.attrs.subsidence
 
-        rainfall = self.get_rainfall() + projection.attrs.rainfall_increase
-        self._add_precip_forcing(rainfall)
+        # rainfall = self.get_rainfall() + projection.attrs.rainfall_increase
+        # self._add_precip_forcing(rainfall)
 
         # TODO investigate how/if to add storm frequency increase to model
         # projection.attrs.storm_frequency_increase
@@ -899,7 +914,7 @@ class SfincsAdapter(IHazardAdapter):
     def _get_flood_map_path(self) -> list[Path]:
         """_summary_."""
         results_path = self._get_result_path()
-        mode = self._database.events.get(self._scenario.attrs.event).get_mode()
+        mode = self._database.events.get(self._scenario.attrs.event).attrs.mode
 
         if mode == Mode.single_event:
             map_fn = [results_path.joinpath("max_water_level_map.nc")]
@@ -991,13 +1006,18 @@ class SfincsAdapter(IHazardAdapter):
     def _write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         # read SFINCS model
-        sim_paths = self._get_simulation_paths()
         results_path = self._get_result_path()
-
-        # TODO investigate: why only read one model?
-        with SfincsAdapter(model_root=sim_paths[0]) as model:
-            zsmax = model.read_zsmax()
+        event = self._database.events.get(self._scenario.attrs.event)
+        # TODO fix get_simulation_paths to return the correct simulation path instead of both the overland and offshore paths
+        if event.attrs.mode == Mode.single_event:
+            zsmax = self._model.read_zsmax()
             zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
+        elif event.attrs.mode == Mode.risk:
+            pass
+            # sim_paths = self._get_simulation_paths()
+            # with SfincsAdapter(model_root=sim_paths[0]) as model:
+            #     zsmax = model.read_zsmax()
+            #     zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
 
     def _write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
@@ -1028,7 +1048,7 @@ class SfincsAdapter(IHazardAdapter):
             path_out (Path): new root of sfincs model
         """
         # Change model root to new folder
-        self._model.set_root(path_out, mode="w+")
+        self._model.set_root(root=path_out, mode="w+")
 
         # Write sfincs files in output folder
         self._model.write()
