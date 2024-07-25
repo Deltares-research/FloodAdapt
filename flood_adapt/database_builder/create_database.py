@@ -579,6 +579,7 @@ class Database:
                 buildings_joined.groupby("Object ID")
                 .max(self.config.bfe.field_name)
                 .sort_values(by=["Object ID"])
+                .reset_index()
             )
             # Create folder
             bfe_folder = self.static_path.joinpath("bfe")
