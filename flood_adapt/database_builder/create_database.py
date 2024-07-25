@@ -124,10 +124,9 @@ class TideGaugeModel(BaseModel):
 
     source: str
     file: Optional[str] = None
-    max_distance: Optional[float] = None
-    msl: Optional[float] = None
-    datum: Optional[float] = None
-    datum_name: Optional[str] = None
+    max_distance: Optional[UnitfulLength] = None
+    # TODO add option to add MSL and Datum?
+    ref: Optional[str] = None
 
 
 class SviModel(SpatialJoinModel):
@@ -196,7 +195,7 @@ class ConfigModel(BaseModel):
         The list of observation point models.
     probabilistic_set : Optional[str], default None
         The probabilistic set path.
-    infographics : Optional[bool], default False
+    infographics : Optional[bool], default True
         Indicates if infographics are enabled.
     """
 
@@ -215,12 +214,12 @@ class ConfigModel(BaseModel):
     tide_gauge: Optional[TideGaugeModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviModel] = None
-    road_width: Optional[float] = 2
+    road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
     obs_point: Optional[list[Obs_pointModel]] = None
     probabilistic_set: Optional[str] = None
-    infographics: Optional[bool] = False
+    infographics: Optional[bool] = True
 
 
 def read_toml(fn: str) -> dict:
@@ -601,7 +600,7 @@ class Database:
             self.site_attrs["fiat"]["bfe"]["field_name"] = self.config.bfe.field_name
         else:
             self.logger.warning(
-                "No base flood elevation provided. Elevating building with respect to base flood elevation will not be possible."
+                "No base flood elevation provided. Elevating building relative to base flood elevation will not be possible in FloodAdapt."
             )
 
         # Read aggregation areas
@@ -642,7 +641,7 @@ class Database:
                 )
                 exposure_csv.to_csv(self.exposure_csv_path, index=False)
                 self.logger.warning(
-                    "No aggregation areas were available in the FIAT model, so the region file will be used as a mock aggregation area."
+                    "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
                 )
             else:
                 self.logger.error(
@@ -665,6 +664,9 @@ class Database:
                         .as_posix()
                     )
                 self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
+            self.logger.info(
+                f"The aggregation types {[aggr.name for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
+            )
 
         # Read SVI
         if self.config.svi:
@@ -674,6 +676,7 @@ class Database:
                 self.config.svi.file,
                 self.config.svi.field_name,
                 rename="SVI",
+                filter=True,
             )
             # Add column to exposure
             if "SVI" in exposure_csv.columns:
@@ -701,6 +704,9 @@ class Database:
                 Path(geo_path.relative_to(self.static_path)).as_posix()
             )
             self.site_attrs["fiat"]["svi"]["field_name"] = "SVI"
+            self.logger.info(
+                f"An SVI map can be shown in FloodAdapt GUI using '{self.config.svi.field_name}' column from {self.config.svi.file}"
+            )
         else:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
@@ -743,7 +749,7 @@ class Database:
             if not isinstance(roads.geometry[0], Polygon):
                 roads = roads.to_crs(roads.estimate_utm_crs())
                 roads.geometry = roads.geometry.buffer(
-                    self.config.road_width, cap_style=2
+                    self.config.road_width / 2, cap_style=2
                 )
                 roads = roads.to_crs(4326)
                 if roads_path.exists():
@@ -775,6 +781,7 @@ class Database:
         # Then read the model with hydromt-SFINCS
         self.sfincs = SfincsModel(root=sfincs_path, mode="r+")
         self.sfincs.read()
+        self.logger.info(f"Reading overland SFINCS model from {sfincs_path}.")
 
         self.site_attrs["sfincs"] = {}
         self.site_attrs["sfincs"]["csname"] = self.sfincs.crs.name
@@ -799,12 +806,18 @@ class Database:
         2. Connects the boundary points of the overland model to the output points of the offshore model.
 
         """
+        if not self.config.sfincs_offshore:
+            self.logger.warning(
+                "No offshore SFINCS model was provided. Some event types will not be available in FloodAdapt"
+            )
+            return
+
         path = self.config.sfincs_offshore
         # TODO check if extents of offshore cover overland
         # First copy sfincs model to database
         sfincs_offshore_path = self.root.joinpath("static", "templates", "offshore")
         shutil.copytree(path, sfincs_offshore_path)
-
+        self.logger.info(f"Reading offshore SFINCS model from {path}.")
         # Connect boundary points of overland to output points of offshore
         fn = Path(self.sfincs.root).joinpath("sfincs.bnd")
         bnd = pd.read_csv(fn, sep=" ", lineterminator="\n", header=None)
@@ -824,6 +837,9 @@ class Database:
             sep="\t",
             index=False,
             header=False,
+        )
+        self.logger.info(
+            "Output points of the offshore SFINCS model were reconfigured to the boundary points of the overland SFINCS model."
         )
 
     def add_rivers(self):
@@ -1030,7 +1046,7 @@ class Database:
         ]["floodmap_units"]
 
         self.site_attrs["water_level"]["localdatum"] = {}
-        self.site_attrs["water_level"]["localdatum"]["name"] = "Datum"
+        self.site_attrs["water_level"]["localdatum"]["name"] = "MSL"
         self.site_attrs["water_level"]["localdatum"]["height"] = {}
         self.site_attrs["water_level"]["localdatum"]["height"]["value"] = 0.0
         self.site_attrs["water_level"]["localdatum"]["height"]["units"] = (
@@ -1038,7 +1054,7 @@ class Database:
         )
 
         self.site_attrs["water_level"]["reference"] = {}
-        self.site_attrs["water_level"]["reference"]["name"] = "Datum"
+        self.site_attrs["water_level"]["reference"]["name"] = "MSL"
         self.site_attrs["water_level"]["reference"]["height"] = {}
         self.site_attrs["water_level"]["reference"]["height"]["value"] = 0.0
         self.site_attrs["water_level"]["reference"]["height"]["units"] = (
@@ -1046,7 +1062,7 @@ class Database:
         )
         self.site_attrs["water_level"]["other"] = []
 
-        zero_wl_msg = "A 0 value will be used for both MSL and Datum levels. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
+        zero_wl_msg = "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
 
         # Then check if there is any extra configurations given
         if self.config.tide_gauge is None:
@@ -1056,7 +1072,11 @@ class Database:
             self.logger.warning(zero_wl_msg)
         else:
             if self.config.tide_gauge.source != "file":
-                station = self._get_closest_station()
+                if self.config.tide_gauge.ref is not None:
+                    ref = self.config.tide_gauge.ref
+                else:
+                    ref = "MLLW"
+                station = self._get_closest_station(ref)
                 if station is not None:
                     # Add tide_gauge information in site toml
                     self.site_attrs["tide_gauge"] = {}
@@ -1105,24 +1125,7 @@ class Database:
                 self.site_attrs["tide_gauge"]["file"] = str(
                     Path(file_path.relative_to(self.static_path)).as_posix()
                 )
-                if (
-                    self.config.tide_gauge.msl is not None
-                    and self.config.tide_gauge.datum is not None
-                ):
-                    self.site_attrs["water_level"]["msl"]["height"][
-                        "value"
-                    ] = self.config.tide_gauge.msl
-                    self.site_attrs["water_level"]["localdatum"][
-                        "name"
-                    ] = self.config.tide_gauge.datum
-                    self.site_attrs["water_level"]["localdatum"]["height"][
-                        "value"
-                    ] = self.config.tide_gauge.datum_name
-                    self.site_attrs["water_level"]["reference"][
-                        "name"
-                    ] = self.config.tide_gauge.update_forward_ref
-                else:
-                    self.logger.warning(zero_wl_msg)
+                self.logger.warning(zero_wl_msg)
 
     def _get_closest_station(self, ref: str = "MLLW"):
         """
@@ -1162,15 +1165,21 @@ class Database:
             .item(),
             0,
         )
+        units = self.site_attrs["sfincs"]["floodmap_units"]
+        distance = UnitfulLength(value=distance, units="meters")
         self.logger.info(
-            f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance} meters from the SFINCS domain"
+            f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.convert(units)} {units} from the SFINCS domain"
         )
         # Check if user provided max distance
         # TODO make sure units are explicit for max_distance
         if self.config.tide_gauge.max_distance is not None:
-            if distance > self.config.tide_gauge.max_distance:
+            units_new = self.config.tide_gauge.max_distance.units
+            distance_new = UnitfulLength(
+                value=distance.convert(units_new), units=units_new
+            )
+            if distance_new.value > self.config.tide_gauge.max_distance.value:
                 self.logger.warning(
-                    f"This distance is larger than the 'max_distance' value of {self.config.tide_gauge.max_distance} meters provided in the config file. The station cannot be used."
+                    f"This distance is larger than the 'max_distance' value of {self.config.tide_gauge.max_distance.value} {units_new} provided in the config file. The station cannot be used."
                 )
                 return None
 
@@ -1251,6 +1260,7 @@ class Database:
         to the `obs_point` attribute in the `site_attrs` dictionary.
         """
         if self.config.obs_point is not None:
+            self.logger.info("Observation points were provided in the config file.")
             self.site_attrs["obs_point"] = []
             for op in self.config.obs_point:
                 self.site_attrs["obs_point"].append(op.model_dump())
@@ -1603,8 +1613,7 @@ def main(config: str | dict):
         dbs.make_folder_structure()
         dbs.read_fiat()
         dbs.read_sfincs()
-        if config.sfincs_offshore:
-            dbs.read_offshore_sfincs()
+        dbs.read_offshore_sfincs()
         dbs.add_dem()
         dbs.update_fiat_elevation()
         dbs.add_rivers()
