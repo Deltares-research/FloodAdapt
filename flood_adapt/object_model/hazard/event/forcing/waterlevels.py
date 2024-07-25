@@ -50,6 +50,11 @@ class WaterlevelSynthetic(IWaterlevel):
     surge: SurgeModel
     tide: TideModel
 
+    # amp = self.attrs.tide.harmonic_amplitude.value
+    # omega = 2 * math.pi / (12.4 / 24)
+    # time_shift = float(self.attrs.time.duration_before_t0) * 3600
+    # tide = amp * np.cos(omega * (tt - phase) / 86400)
+
     def get_data(self) -> pd.DataFrame:
         surge = SyntheticTimeseries().load_dict(self.surge.timeseries)
         tide = SyntheticTimeseries().load_dict(self.tide.to_timeseries_model())

@@ -858,6 +858,40 @@ class SfincsAdapter(IHazardAdapter):
         self._set_config_spw(historical_hurricane.spw_file)
 
     ### PRIVATE GETTERS ###
+    def read_zsmax(self):
+        """Read zsmax file and return absolute maximum water level over entire simulation."""
+        self.sf_model.read_results()
+        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
+        zsmax.attrs["units"] = "m"
+        return zsmax
+
+    def read_zs_points(self):
+        """Read water level (zs) timeseries at observation points.
+
+        Names are allocated from the site.toml.
+        See also add_obs_points() above.
+        """
+        self.sf_model.read_results()
+        da = self.sf_model.results["point_zs"]
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+
+        # get station names from site.toml
+        if self.site.attrs.obs_point is not None:
+            names = []
+            descriptions = []
+            obs_points = self.site.attrs.obs_point
+            for pt in obs_points:
+                names.append(pt.name)
+                descriptions.append(pt.description)
+
+        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
+        gdf = gpd.GeoDataFrame(
+            pt_df,
+            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
+            crs=self.sf_model.crs,
+        )
+        return df, gdf
+
     def _get_result_path(self, scenario_name: str = None) -> Path:
         if scenario_name is None:
             scenario_name = self._scenario.attrs.name
@@ -1010,7 +1044,7 @@ class SfincsAdapter(IHazardAdapter):
         event = self._database.events.get(self._scenario.attrs.event)
         # TODO fix get_simulation_paths to return the correct simulation path instead of both the overland and offshore paths
         if event.attrs.mode == Mode.single_event:
-            zsmax = self._model.read_zsmax()
+            zsmax = self.read_zsmax()
             zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
         elif event.attrs.mode == Mode.risk:
             pass
