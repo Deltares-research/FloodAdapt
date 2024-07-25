@@ -1433,6 +1433,7 @@ class Database:
 
         # Copy prob set if given
         if self.config.probabilistic_set:
+            self.config.probabilistic_set = path_check(self.config.probabilistic_set)
             self.logger.info(
                 f"{self.site_attrs['name']} probabilistic event set imported from {self.config.probabilistic_set}"
             )
