@@ -303,12 +303,14 @@ class Database:
         overwrite (bool, optional): Whether to overwrite an existing database folder. Defaults to True.
     """
 
-    def __init__(self, config: ConfigModel, overwrite=True):
+    def __init__(self, config: ConfigModel, overwrite=False):
         self.config = config
         root = Path(config.database_path).joinpath(config.name)
 
         if root.exists() and not overwrite:
-            raise ValueError(f"There is already a Database folder in '{root}'")
+            raise ValueError(
+                f"There is already a Database folder in '{root.as_posix()}'."
+            )
         if root.exists() and overwrite:
             rmtree(root)
         root.mkdir(parents=True)
