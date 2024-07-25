@@ -331,6 +331,7 @@ class Database:
 
     def __init__(self, config: ConfigModel, overwrite=False):
         self.config = config
+        config.database_path = path_check(config.database_path)
         root = Path(config.database_path).joinpath(config.name)
 
         if root.exists() and not overwrite:
