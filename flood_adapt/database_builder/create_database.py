@@ -13,6 +13,7 @@ import rioxarray as rxr
 import tomli
 import tomli_w
 import xarray as xr
+from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
@@ -57,6 +58,10 @@ class UnitSystems(str, Enum):
 
     imperial = "imperial"
     metric = "metric"
+
+
+class FootprintsOptions(str, Enum):
+    OSM = "OSM"
 
 
 class Basins(str, Enum):
@@ -203,7 +208,9 @@ class ConfigModel(BaseModel):
     fiat: str
     unit_system: UnitSystems
     gui: GuiModel
-    building_footprints: Optional[SpatialJoinModel] = None
+    building_footprints: Optional[SpatialJoinModel | FootprintsOptions] = (
+        FootprintsOptions.OSM
+    )
     slr: Optional[SlrModelDef] = SlrModelDef()
     tide_gauge: Optional[TideGaugeModel] = None
     bfe: Optional[SpatialJoinModel] = None
@@ -377,6 +384,38 @@ class Database:
                         f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
                     )
 
+    def _join_building_footprints(self, building_footprints, field_name):
+        buildings = self.buildings
+        exposure_csv = pd.read_csv(self.exposure_csv_path)
+        buildings_joined, building_footprints = spatial_join(
+            buildings,
+            building_footprints,
+            field_name,
+            rename="BF_FID",
+            filter=True,
+        )
+        # Make sure in case of multiple values that the first is kept
+        buildings_joined = (
+            buildings_joined.groupby("Object ID").first().sort_values(by=["Object ID"])
+        )
+        # Create folder
+        bf_folder = Path(self.fiat_model.root).joinpath(
+            "exposure", "building_footprints"
+        )
+        bf_folder.mkdir()
+        # Save the spatial file for future use
+        geo_path = bf_folder.joinpath("building_footprints.gpkg")
+        building_footprints.to_file(geo_path)
+        # Save to exposure csv
+        exposure_csv = exposure_csv.merge(buildings_joined, on="Object ID", how="left")
+        exposure_csv.to_csv(self.exposure_csv_path, index=False)
+        # Save site attributes
+        rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
+        self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
+        self.logger.info(
+            f"Building footprints saved at {self.static_path.joinpath(rel_path).resolve().as_posix()}"
+        )
+
     def read_fiat(self):
         """
         Read the FIAT model and extracts relevant information for the site configuration.
@@ -394,7 +433,7 @@ class Database:
         10. Ensures that FIAT roads are represented as polygons.
         """
         path = self.config.fiat
-        self.logger.info(f"Reading in FIAT model from {path}")
+        self.logger.info(f"Reading FIAT model from {path}.")
         # First copy FIAT model to database
         fiat_path = self.root.joinpath("static", "templates", "fiat")
         shutil.copytree(path, fiat_path)
@@ -405,12 +444,11 @@ class Database:
 
         # Read in geometries of buildings
         ind = self.fiat_model.exposure.geom_names.index("buildings")
-        buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
-        exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
-        exposure_csv = pd.read_csv(exposure_csv_path)
+        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+        self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
 
         # Get center of area of interest
-        center = buildings.dissolve().centroid.to_crs(4326)[0]
+        center = self.buildings.dissolve().centroid.to_crs(4326)[0]
         self.site_attrs["lat"] = center.y
         self.site_attrs["lon"] = center.x
 
@@ -422,8 +460,11 @@ class Database:
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
-        # TODO with OSM data get the footprints automatically from model builder
-        if not self.config.building_footprints:
+        # TODO restructure footprint options with less if statements
+
+        # First check if the config has a spatial join provided for building footprints
+        footprints_found = False
+        if not isinstance(self.config.building_footprints, SpatialJoinModel):
             check_col = (
                 "BF_FID" in self.fiat_model.exposure.exposure_db.columns
             )  # check if it is spatially joined already
@@ -439,7 +480,7 @@ class Database:
                 check_file = False
             if check_file and not check_col:
                 self.logger.error(
-                    f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}"
+                    f"Exposure csv is missing the 'BF_FID' column to connect to the footprints located at {footprints_path}."
                 )
                 raise NotImplementedError
             if check_file and check_col:
@@ -447,78 +488,74 @@ class Database:
                     Path(footprints_path.relative_to(self.static_path)).as_posix()
                 )
                 self.logger.info(
-                    f"Using the building footprints located at {footprints_path}"
+                    f"Using the building footprints located at {footprints_path}."
                 )
+                footprints_found = True
             # check if geometries are already footprints
             build_ind = self.fiat_model.exposure.geom_names.index("buildings")
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
             if isinstance(build_geoms.geometry[0], Polygon):
-                # copy footprints to new location
                 path0 = Path(self.fiat_model.root).joinpath(
                     self.fiat_model.config["exposure"]["geom"]["file1"]
                 )
-                path1 = Path(self.fiat_model.root).joinpath(
-                    "building_footprints", "building_footprints.gpkg"
-                )
-                if not path1.parent.exists():
-                    path1.parent.mkdir()
-                shutil.copyfile(path0, path1)
+                # copy footprints to new location
+                if not footprints_found:
+                    path1 = Path(self.fiat_model.root).joinpath(
+                        "building_footprints", "building_footprints.gpkg"
+                    )
+                    if not path1.parent.exists():
+                        path1.parent.mkdir()
+                    shutil.copyfile(path0, path1)
 
                 # make geometries points
                 build_geoms["geometry"] = build_geoms["geometry"].centroid
                 build_geoms.to_file(path0)
 
                 # add column for connection
-                exposure = self.fiat_model.exposure.exposure_db.set_index("Object ID")
-                build_geoms["BF_FID"] = build_geoms["Object ID"]
-                build_geoms = build_geoms.set_index("Object ID")
-                build_geoms["Extraction Method"] = "centroid"
-                exposure["BF_FID"] = build_geoms["BF_FID"]
-                exposure["Extraction Method"] = build_geoms["Extraction Method"]
-                exposure.reset_index().to_csv(exposure_csv_path, index=False)
-            else:
-                if not check_file and not check_col:
-                    self.logger.error(
-                        "No building footprints are available. These are needed in FloodAdapt."
+                if not footprints_found:
+                    exposure = self.fiat_model.exposure.exposure_db.set_index(
+                        "Object ID"
                     )
-                    raise ValueError
+                    build_geoms["BF_FID"] = build_geoms["Object ID"]
+                    build_geoms = build_geoms.set_index("Object ID")
+                    build_geoms["Extraction Method"] = "centroid"
+                    exposure["BF_FID"] = build_geoms["BF_FID"]
+                    exposure["Extraction Method"] = build_geoms["Extraction Method"]
+                    exposure.reset_index().to_csv(self.exposure_csv_path, index=False)
+                    footprints_found = True
+
+            # Use other method to get Footprint
+            if not footprints_found:
+                if self.config.building_footprints == "OSM":
+                    self.logger.info(
+                        "Building footprint data will be downloaded from Open Street Maps."
+                    )
+                    region_path = Path(self.fiat_model.root).joinpath(
+                        "exposure", "region.gpkg"
+                    )
+                    if not region_path.exists():
+                        self.logger.error("No region file found in the FIAT model.")
+                    region = gpd.read_file(region_path).to_crs(4326)
+                    polygon = Polygon(region.boundary.to_numpy()[0])
+                    footprints = get_buildings_from_osm(polygon)
+                    footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
+                    footprints = footprints[["BF_FID", "geometry"]]
+                    self._join_building_footprints(footprints, "BF_FID")
+                    footprints_found = True
+            if not footprints_found:
+                self.logger.error(
+                    "No building footprints are available. These are needed in FloodAdapt."
+                )
+                raise ValueError
         else:
             self.logger.info(
                 f"Using building footprints from {self.config.building_footprints.file}."
             )
             # Spatially join buildings and map
             # TODO use hydromt method instead
-            buildings_joined, building_footprints = spatial_join(
-                buildings,
+            self._join_building_footprints(
                 self.config.building_footprints.file,
                 self.config.building_footprints.field_name,
-                rename="BF_FID",
-                filter=True,
-            )
-            # Make sure in case of multiple values that the first is kept
-            buildings_joined = (
-                buildings_joined.groupby("Object ID")
-                .first()
-                .sort_values(by=["Object ID"])
-            )
-            # Create folder
-            bf_folder = Path(self.fiat_model.root).joinpath(
-                "exposure", "building_footprints"
-            )
-            bf_folder.mkdir()
-            # Save the spatial file for future use
-            geo_path = bf_folder.joinpath("building_footprints.gpkg")
-            building_footprints.to_file(geo_path)
-            # Save to exposure csv
-            exposure_csv = exposure_csv.merge(
-                buildings_joined, on="Object ID", how="left"
-            )
-            exposure_csv.to_csv(exposure_csv_path, index=False)
-            # Save site attributes
-            rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
-            self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
-            self.logger.info(
-                f"Building footprints saved at {self.static_path.joinpath(rel_path).resolve().as_posix()}"
             )
 
         # TODO check how this naming of output geoms should become more explicit!
@@ -536,7 +573,7 @@ class Database:
             )
             # Spatially join buildings and map
             buildings_joined, bfe = spatial_join(
-                buildings, self.config.bfe.file, self.config.bfe.field_name
+                self.buildings, self.config.bfe.file, self.config.bfe.field_name
             )
             # Make sure in case of multiple values that the max is kept
             buildings_joined = (
@@ -573,6 +610,7 @@ class Database:
         # If there are no aggregation areas make a schematic one from the region file
         # TODO make aggregation areas not mandatory
         if not self.fiat_model.spatial_joins["aggregation_areas"]:
+            exposure_csv = pd.read_csv(self.exposure_csv_path)
             region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
             if region_path.exists():
                 region = gpd.read_file(region_path)
@@ -594,7 +632,7 @@ class Database:
 
                 # Add column in FIAT
                 buildings_joined, _ = spatial_join(
-                    buildings,
+                    self.buildings,
                     region,
                     "id",
                     rename="Aggregation Label: region",
@@ -602,7 +640,7 @@ class Database:
                 exposure_csv = exposure_csv.merge(
                     buildings_joined, on="Object ID", how="left"
                 )
-                exposure_csv.to_csv(exposure_csv_path, index=False)
+                exposure_csv.to_csv(self.exposure_csv_path, index=False)
                 self.logger.warning(
                     "No aggregation areas were available in the FIAT model, so the region file will be used as a mock aggregation area."
                 )
@@ -630,8 +668,9 @@ class Database:
 
         # Read SVI
         if self.config.svi:
+            exposure_csv = pd.read_csv(self.exposure_csv_path)
             buildings_joined, svi = spatial_join(
-                buildings,
+                self.buildings,
                 self.config.svi.file,
                 self.config.svi.field_name,
                 rename="SVI",
@@ -649,7 +688,7 @@ class Database:
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on="Object ID", how="left"
             )
-            exposure_csv.to_csv(exposure_csv_path, index=False)
+            exposure_csv.to_csv(self.exposure_csv_path, index=False)
             # Create folder
             svi_folder = self.root.joinpath("static", "templates", "fiat", "svi")
             svi_folder.mkdir()
@@ -687,6 +726,7 @@ class Database:
 
         # Make sure that FIAT roads are polygons
         if "roads" in self.fiat_model.exposure.geom_names:
+            exposure_csv = pd.read_csv(self.exposure_csv_path)
             roads_ind = self.fiat_model.exposure.geom_names.index("roads")
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
             roads_path = Path(self.fiat_model.root).joinpath(
@@ -1517,7 +1557,7 @@ class Database:
         return bin_colors
 
 
-def main(config_path: str):
+def main(config: str | dict):
     """
     Build the FloodAdapt model.
 
@@ -1528,11 +1568,31 @@ def main(config_path: str):
     -------
         None
     """
-    # TODO make this compatible with dictionary as well
-    print(f"Read FloodAdapt building configuration from {Path(config_path).as_posix()}")
-    config = read_config(config_path)
-    if not config.database_path:
-        config.database_path = str(Path(config_path).parent)
+    # First check if input is dictionary or path
+    if isinstance(config, str):
+        config_path = config
+        config = read_config(config_path)
+        print(
+            f"Reading FloodAdapt building configuration from {Path(config_path).as_posix()}"
+        )
+        # If database path is not given use the location of the config file
+        if not config.database_path:
+            dbs_path = Path(config_path).parent.joinpath("Database")
+            if not dbs_path.exists():
+                dbs_path.mkdir()
+            config.database_path = str(dbs_path.as_posix())
+            print(
+                f"'database_path' attribute is not provided in the config file. The database will be save at '{config.database_path}'"
+            )
+    elif isinstance(config, dict):
+        config = ConfigModel.model_validate(config)
+        print("Reading FloodAdapt building configuration from input dictionary.")
+        # If database path is not given raise error
+        if not config.database_path:
+            raise ValueError(
+                "'database_path' attribute needs to be provided in the config file, for the database to be saved."
+            )
+
     # Create a Database object
     dbs = Database(config)
     # Open logger file
@@ -1563,15 +1623,12 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    main(
-        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland_OSM\config_Maryland_OSM_2.toml"
-    )
-    # while True:
-    #     path = input("Provide the path to the database creation configuration toml: \n")
-    #     try:
-    #         main(path)
-    #     except Exception as e:
-    #         print(e)
-    #     quit = input("do you want to quit? (y/n)")
-    #     if quit == "y":
-    #         exit()
+    while True:
+        path = input("Provide the path to the database creation configuration toml: \n")
+        try:
+            main(path)
+        except Exception as e:
+            print(e)
+        quit = input("do you want to quit? (y/n)")
+        if quit == "y":
+            exit()
