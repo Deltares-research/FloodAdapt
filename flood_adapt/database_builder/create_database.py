@@ -1671,15 +1671,12 @@ def main(config: str | dict):
 
 
 if __name__ == "__main__":
-    main(
-        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_1.toml"
-    )
-    # while True:
-    #     path = input("Provide the path to the database creation configuration toml: \n")
-    #     try:
-    #         main(path)
-    #     except Exception as e:
-    #         print(e)
-    #     quit = input("do you want to quit? (y/n)")
-    #     if quit == "y":
-    #         exit()
+    while True:
+        path = input("Provide the path to the database creation configuration toml: \n")
+        try:
+            main(path)
+        except Exception as e:
+            print(e)
+        quit = input("do you want to quit? (y/n)")
+        if quit == "y":
+            exit()
