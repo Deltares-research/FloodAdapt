@@ -28,6 +28,8 @@ from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
 
+config_path = None
+
 
 class SpatialJoinModel(BaseModel):
     """
@@ -294,6 +296,30 @@ def spatial_join(
     return objects_joined, layer
 
 
+def path_check(path: str) -> str:
+    """
+    Check if the given path is absolute and return the absolute path.
+
+    Args:
+        path (str): The path to be checked.
+
+    Returns
+    -------
+        str: The absolute path.
+
+    Raises
+    ------
+        ValueError: If the path is not absolute and no config_path is provided.
+    """
+    path = Path(path)
+    if not path.is_absolute():
+        if config_path is not None:
+            path = Path(config_path).parent.joinpath(path).resolve()
+        else:
+            raise ValueError(f"Value '{path}' should be an absolute path.")
+    return str(path)
+
+
 class Database:
     """
     Represents a FloodAdapt database.
@@ -433,6 +459,7 @@ class Database:
         9. Handles the inclusion of SVI (Social Vulnerability Index).
         10. Ensures that FIAT roads are represented as polygons.
         """
+        self.config.fiat = path_check(self.config.fiat)
         path = self.config.fiat
         self.logger.info(f"Reading FIAT model from {path}.")
         # First copy FIAT model to database
@@ -549,8 +576,11 @@ class Database:
                 )
                 raise ValueError
         else:
+            self.config.building_footprints.file = path_check(
+                self.config.building_footprints.file
+            )
             self.logger.info(
-                f"Using building footprints from {self.config.building_footprints.file}."
+                f"Using building footprints from {Path(self.config.building_footprints.file).as_posix()}."
             )
             # Spatially join buildings and map
             # TODO use hydromt method instead
@@ -569,8 +599,9 @@ class Database:
         # Add base flood elevation information
         if self.config.bfe:
             # TODO can we use hydromt-FIAT?
+            self.config.bfe.file = path_check(self.config.bfe.file)
             self.logger.info(
-                f"Using map from {self.config.bfe.file} as base flood elevation."
+                f"Using map from {Path(self.config.bfe.file).as_posix()} as base flood elevation."
             )
             # Spatially join buildings and map
             buildings_joined, bfe = spatial_join(
@@ -673,6 +704,7 @@ class Database:
 
         # Read SVI
         if self.config.svi:
+            self.config.svi.file = path_check(self.config.svi.file)
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             buildings_joined, svi = spatial_join(
                 self.buildings,
@@ -684,12 +716,12 @@ class Database:
             # Add column to exposure
             if "SVI" in exposure_csv.columns:
                 self.logger.info(
-                    f"'SVI' column in the FIAT exposure csv will be replaced by {self.config.svi.file}."
+                    f"'SVI' column in the FIAT exposure csv will be replaced by {Path(self.config.svi.file).as_posix()}."
                 )
                 del exposure_csv["SVI"]
             else:
                 self.logger.info(
-                    f"'SVI' column in the FIAT exposure csv will be filled by {self.config.svi.file}."
+                    f"'SVI' column in the FIAT exposure csv will be filled by {Path(self.config.svi.file).as_posix()}."
                 )
             exposure_csv = exposure_csv.merge(
                 buildings_joined, on="Object ID", how="left"
@@ -708,7 +740,7 @@ class Database:
             )
             self.site_attrs["fiat"]["svi"]["field_name"] = "SVI"
             self.logger.info(
-                f"An SVI map can be shown in FloodAdapt GUI using '{self.config.svi.field_name}' column from {self.config.svi.file}"
+                f"An SVI map can be shown in FloodAdapt GUI using '{self.config.svi.field_name}' column from {Path(self.config.svi.file).as_posix()}"
             )
         else:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
@@ -775,6 +807,7 @@ class Database:
         2. Reads the model using hydromt-SFINCS.
         3. Sets the necessary attributes for the site configuration.
         """
+        self.config.sfincs = path_check(self.config.sfincs)
         path = self.config.sfincs
 
         # First copy sfincs model to database
@@ -814,7 +847,7 @@ class Database:
                 "No offshore SFINCS model was provided. Some event types will not be available in FloodAdapt"
             )
             return
-
+        self.config.sfincs_offshore = path_check(self.config.sfincs_offshore)
         path = self.config.sfincs_offshore
         # TODO check if extents of offshore cover overland
         # First copy sfincs model to database
@@ -1117,6 +1150,7 @@ class Database:
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
+                self.config.tide_gauge.file = path_check(self.config.tide_gauge.file)
                 self.site_attrs["tide_gauge"] = {}
                 self.site_attrs["tide_gauge"]["source"] = "file"
                 file_path = Path(self.static_path).joinpath(
@@ -1240,6 +1274,7 @@ class Database:
         ]
         # If slr scenarios are given put them in the correct locations
         if self.config.slr.scenarios:
+            self.config.slr.scenarios.file = path_check(self.config.slr.scenarios.file)
             self.site_attrs["slr"]["scenarios"] = self.config.slr.scenarios
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
@@ -1583,6 +1618,7 @@ def main(config: str | dict):
     """
     # First check if input is dictionary or path
     if isinstance(config, str):
+        global config_path
         config_path = config
         config = read_config(config_path)
         print(
@@ -1635,12 +1671,15 @@ def main(config: str | dict):
 
 
 if __name__ == "__main__":
-    while True:
-        path = input("Provide the path to the database creation configuration toml: \n")
-        try:
-            main(path)
-        except Exception as e:
-            print(e)
-        quit = input("do you want to quit? (y/n)")
-        if quit == "y":
-            exit()
+    main(
+        r"c:\Users\athanasi\Github\Database\FA_builder\Maryland\config_Maryland_1.toml"
+    )
+    # while True:
+    #     path = input("Provide the path to the database creation configuration toml: \n")
+    #     try:
+    #         main(path)
+    #     except Exception as e:
+    #         print(e)
+    #     quit = input("do you want to quit? (y/n)")
+    #     if quit == "y":
+    #         exit()
