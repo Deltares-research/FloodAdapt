@@ -1679,9 +1679,6 @@ def main(config: str | dict):
 
 
 if __name__ == "__main__":
-    main(
-        r"c:\Users\athanasi\Project_files\Maryland_workshop\Maryland_example\config_Maryland_1.toml"
-    )
     while True:
         path = input("Provide the path to the database creation configuration toml: \n")
         try:
