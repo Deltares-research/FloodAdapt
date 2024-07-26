@@ -462,7 +462,7 @@ class Database:
         """
         self.config.fiat = path_check(self.config.fiat)
         path = self.config.fiat
-        self.logger.info(f"Reading FIAT model from {path}.")
+        self.logger.info(f"Reading FIAT model from {Path(path).as_posix()}.")
         # First copy FIAT model to database
         fiat_path = self.root.joinpath("static", "templates", "fiat")
         shutil.copytree(path, fiat_path)
@@ -818,7 +818,9 @@ class Database:
         # Then read the model with hydromt-SFINCS
         self.sfincs = SfincsModel(root=sfincs_path, mode="r+")
         self.sfincs.read()
-        self.logger.info(f"Reading overland SFINCS model from {sfincs_path}.")
+        self.logger.info(
+            f"Reading overland SFINCS model from {sfincs_path.as_posix()}."
+        )
 
         self.site_attrs["sfincs"] = {}
         self.site_attrs["sfincs"]["csname"] = self.sfincs.crs.name
@@ -854,7 +856,7 @@ class Database:
         # First copy sfincs model to database
         sfincs_offshore_path = self.root.joinpath("static", "templates", "offshore")
         shutil.copytree(path, sfincs_offshore_path)
-        self.logger.info(f"Reading offshore SFINCS model from {path}.")
+        self.logger.info(f"Reading offshore SFINCS model from {Path(path).as_posix()}.")
         # Connect boundary points of overland to output points of offshore
         fn = Path(self.sfincs.root).joinpath("sfincs.bnd")
         bnd = pd.read_csv(fn, sep=" ", lineterminator="\n", header=None)
