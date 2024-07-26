@@ -1,3 +1,4 @@
+import os
 import shutil
 from enum import Enum
 from pathlib import Path
@@ -942,6 +943,9 @@ class Database:
         # Check if tiles already exist in the SFINCS model
         if tiles_sfincs.exists():
             shutil.move(tiles_sfincs, fa_path1)
+            # Make sure name of tile indices is correct
+            if fa_path1.joinpath("index").exists():
+                os.rename(fa_path1.joinpath("index"), fa_path1.joinpath("indices"))
             self.logger.info(
                 "Tiles were already available in the SFINCS model and will directly be used in FloodAdapt."
             )
@@ -1675,6 +1679,9 @@ def main(config: str | dict):
 
 
 if __name__ == "__main__":
+    main(
+        r"c:\Users\athanasi\Project_files\Maryland_workshop\Maryland_example\config_Maryland_1.toml"
+    )
     while True:
         path = input("Provide the path to the database creation configuration toml: \n")
         try:
