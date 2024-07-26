@@ -72,7 +72,7 @@ class HistoricalEvent(IEvent):
         )
 
         if require_offshore_run:
-            self.download_meteo(self.attrs.time.start_time, self.attrs.time.end_time)
+            self.download_meteo()
             self.meteo_ds = self.read_meteo()
 
             self._preprocess_sfincs_offshore(sim_path)
@@ -182,20 +182,20 @@ class HistoricalEvent(IEvent):
 
     def download_meteo(
         self,
-        t0: datetime | str,
-        t1: datetime | str,
+        *,
+        t0: datetime | str = None,
+        t1: datetime | str = None,
         meteo_dir: Path = None,
         lat: float = None,
         lon: float = None,
     ):
         params = ["wind", "barometric_pressure", "precipitation"]
-
         DEFAULT_METEO_PATH = self.database.output_path.joinpath("meteo")
         meteo_dir = meteo_dir or DEFAULT_METEO_PATH
-
-        if lat is None or lon is None:
-            lat = lat or self.database.site.attrs.lat
-            lon = lon or self.database.site.attrs.lon
+        t0 = t0 or self.attrs.time.start_time
+        t1 = t1 or self.attrs.time.end_time
+        lat = lat or self.database.site.attrs.lat
+        lon = lon or self.database.site.attrs.lon
 
         # Download the actual datasets
         gfs_source = MeteoSource(
@@ -226,12 +226,18 @@ class HistoricalEvent(IEvent):
         gfs_conus.download(time_range)
 
     def read_meteo(
-        self, t0: datetime | str, t1: datetime | str, meteo_dir: Path = None
+        self,
+        *,
+        t0: datetime | str = None,
+        t1: datetime | str = None,
+        meteo_dir: Path = None,
     ) -> xr.Dataset:
         # Create an empty list to hold the datasets
         datasets = []
-        if meteo_dir is None:
-            meteo_dir = self.database.output_path.joinpath("meteo")
+        meteo_dir = meteo_dir or self.database.output_path.joinpath("meteo")
+        t0 = t0 or self.attrs.time.start_time
+        t1 = t1 or self.attrs.time.end_time
+
         if not isinstance(t0, datetime):
             t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
         if not isinstance(t1, datetime):
@@ -240,7 +246,7 @@ class HistoricalEvent(IEvent):
         if not meteo_dir.exists():
             meteo_dir.mkdir(parents=True)
 
-        self.download_meteo(t0, t1, meteo_dir=meteo_dir)
+        self.download_meteo(t0=t0, t1=t1, meteo_dir=meteo_dir)
 
         # Loop over each file and create a new dataset with a time coordinate
         for filename in sorted(glob.glob(str(meteo_dir.joinpath("*.nc")))):

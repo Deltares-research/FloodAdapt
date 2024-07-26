@@ -30,11 +30,7 @@ class TestWindConstant:
         wind_df = WindConstant(speed=speed, direction=direction).get_data()
 
         # Assert
-        assert isinstance(wind_df, pd.DataFrame)
-        assert not wind_df.empty
-        assert len(wind_df) == 1
-        assert wind_df["mag"].iloc[0] == 10
-        assert wind_df["dir"].iloc[0] == 90
+        assert wind_df is None
 
 
 class TestWindFromModel:
@@ -58,7 +54,7 @@ class TestWindFromModel:
         }
 
         event = HistoricalEvent.load_dict(attrs)
-        event._download_meteo(test_path)
+        event.download_meteo(meteo_dir=test_path)
 
         # Act
         wind_df = WindFromMeteo(path=test_path).get_data()

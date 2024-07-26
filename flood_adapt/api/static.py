@@ -5,7 +5,7 @@ from typing import Union
 from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-import flood_adapt.dbs_controller as db
+from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.database import IDatabase
 
 # upon start up of FloodAdapt
@@ -25,7 +25,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDa
     -------
     IDatabase
     """
-    return db.Database(database_path, site_name)
+    return Database(database_path, site_name)
 
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
@@ -41,7 +41,7 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
     list[GeoDataFrame]
         list of GeoDataFrames with the aggregation areas
     """
-    return db.Database().static.get_aggregation_areas()
+    return Database().static.get_aggregation_areas()
 
 
 def get_obs_points() -> GeoDataFrame:
@@ -58,11 +58,11 @@ def get_obs_points() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrame with observation points from the site.toml.
     """
-    return db.Database().static.get_obs_points()
+    return Database().static.get_obs_points()
 
 
 def get_model_boundary() -> GeoDataFrame:
-    return db.Database().static.get_model_boundary()
+    return Database().static.get_model_boundary()
 
 
 def get_model_grid() -> QuadtreeGrid:
@@ -77,7 +77,7 @@ def get_model_grid() -> QuadtreeGrid:
     QuadtreeGrid
         QuadtreeGrid with the model grid
     """
-    return db.Database().static.get_model_grid()
+    return Database().static.get_model_grid()
 
 
 @staticmethod
@@ -94,9 +94,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
         GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return db.Database().static.get_static_map(
-            db.Database().site.attrs.fiat.svi.geom
-        )
+        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
     except Exception:
         return None
 
@@ -118,7 +116,7 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
         GeoDataFrame with the static map
     """
     try:
-        return db.Database().static.get_static_map(path)
+        return Database().static.get_static_map(path)
     except Exception:
         return None
 
@@ -135,11 +133,11 @@ def get_buildings() -> GeoDataFrame:
     GeoDataFrame
         GeoDataFrames with the buildings from FIAT exposure
     """
-    return db.Database().static.get_buildings()
+    return Database().static.get_buildings()
 
 
 def get_property_types() -> list:
-    return db.Database().static.get_property_types()
+    return Database().static.get_property_types()
 
 
 def get_hazard_measure_types():

@@ -29,11 +29,7 @@ class TestDischargeConstant:
         discharge_df = DischargeConstant(discharge=discharge).get_data()
 
         # Assert
-        assert isinstance(discharge_df, pd.DataFrame)
-        assert not discharge_df.empty
-        assert len(discharge_df) == 1
-        assert discharge_df["discharge"].iloc[0] == 100
-        assert discharge_df["time"].iloc[0] == 0
+        assert discharge_df is None
 
 
 class TestDischargeSynthetic:

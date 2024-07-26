@@ -75,4 +75,4 @@ class WindFromMeteo(IWind):
 
         # ASSUMPTION: the download has been done already, see HistoricalEvent.download_meteo().
         # TODO add to read_meteo to run download if not already downloaded.
-        return HistoricalEvent.read_meteo(self.path)[["wind_u", "wind_v"]]
+        return HistoricalEvent.read_meteo(meteo_dir=self.path)[["wind_u", "wind_v"]]

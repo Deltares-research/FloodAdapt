@@ -174,6 +174,7 @@ class UnitTypesLength(Unit):
 
 class UnitTypesArea(Unit):
     m2 = "m2"
+    dm2 = "dm2"
     cm2 = "cm2"
     mm2 = "mm2"
     sf = "sf"
@@ -250,14 +251,15 @@ class UnitfulArea(IUnitFullValue):
         frozen=True,
         exclude=True,
         default={
-            UnitTypesArea.m2: 10_000,
+            UnitTypesArea.m2: 1,
+            UnitTypesArea.dm2: 100,
             UnitTypesArea.cm2: 10_000,
-            UnitTypesArea.mm2: 1_000_000,
+            UnitTypesArea.mm2: 10_00000,
             UnitTypesArea.sf: 10.764,
         },
     )
     DEFAULT_UNIT: UnitTypesArea = Field(
-        frozen=True, exclude=True, default=UnitTypesArea.mm2
+        frozen=True, exclude=True, default=UnitTypesArea.m2
     )
 
     value: float = Field(gt=0.0)
@@ -327,7 +329,7 @@ class UnitfulVolume(IUnitFullValue):
         exclude=True,
         default={
             UnitTypesVolume.m3: 1.0,
-            UnitTypesVolume.cf: 35.3147,
+            UnitTypesVolume.cf: 35.3146667,
         },
     )
     DEFAULT_UNIT: UnitTypesVolume = Field(

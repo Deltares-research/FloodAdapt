@@ -26,17 +26,13 @@ from flood_adapt.object_model.io.unitfulvalue import (
 class TestRainfallConstant:
     def test_rainfall_constant_get_data(self):
         # Arrange
-        intensity = UnitfulIntensity(1, "mm_hr")
+        intensity = UnitfulIntensity(1, "mm/hr")
 
         # Act
         rf_df = RainfallConstant(intensity=intensity).get_data()
 
         # Assert
-        assert isinstance(rf_df, pd.DataFrame)
-        assert not rf_df.empty
-        assert len(rf_df) == 1
-        assert rf_df["intensity"].iloc[0] == 1
-        assert rf_df["time"].iloc[0] == 0
+        assert rf_df is None
 
 
 class TestRainfallSynthetic:
@@ -80,11 +76,10 @@ class TestRainfallFromMeteo:
         }
 
         event = HistoricalEvent.load_dict(attrs)
-        event._download_meteo(test_path)
+        event.download_meteo(meteo_dir=test_path)
 
         # Act
         wl_df = RainfallFromMeteo(path=test_path).get_data()
-        print(wl_df)
 
         # Assert
         assert isinstance(wl_df, xr.DataArray)

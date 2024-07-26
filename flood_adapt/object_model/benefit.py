@@ -41,9 +41,20 @@ class Benefit(IBenefit):
 
     @property
     def results(self):
+        if hasattr(self, "_results"):
+            return self._results
         if not self.has_run:
-            return None
-        return self.get_output()
+            raise RuntimeError(
+                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
+            )
+
+        results_toml = self.results_path.joinpath("results.toml")
+        results_html = self.results_path.joinpath("benefits.html")
+        with open(results_toml, mode="rb") as fp:
+            results = tomli.load(fp)
+        results["html"] = str(results_html)
+        self._results = results
+        return results
 
     def _init(self):
         """Initialize function called when object is created through the load_file or load_dict methods."""
@@ -67,23 +78,7 @@ class Benefit(IBenefit):
         )
         return check
 
-    def get_output(self) -> dict:
-        """Read the benefit analysis results and the path of the html output.
-
-        Returns
-        -------
-        dict
-            results of benefit calculation
-        """
-        if not self.has_run_check():
-            raise RuntimeError(
-                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
-            )
-        results_toml = self.results_path.joinpath("results.toml")
-        results_html = self.results_path.joinpath("benefits.html")
-        with open(results_toml, mode="rb") as fp:
-            self.results = tomli.load(fp)
-        self.results["html"] = str(results_html)
+    def get_output(self) -> dict:  # TODO deprecate
         return self.results
 
     def check_scenarios(self) -> pd.DataFrame:
@@ -199,7 +194,9 @@ class Benefit(IBenefit):
         self.cba_aggregation()
         # Updates results
         self.has_run_check()
-        self.get_output()
+
+        # Cache results
+        self.results
 
     def cba(self):
         """Cost-benefit analysis for the whole study area."""

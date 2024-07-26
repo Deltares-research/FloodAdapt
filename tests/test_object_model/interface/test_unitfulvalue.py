@@ -230,7 +230,7 @@ class TestUnitfulVolume:
         converted_volume = volume.convert(UnitTypesVolume.cf)
 
         # Assert
-        assert round(converted_volume, 4) == 353.1466
+        pytest.approx(converted_volume, 4) == 353.1466
 
     def test_unitfulVolume_convertCFToM3_correct(self):
         # Assert

@@ -11,7 +11,7 @@ from flood_adapt.object_model.hazard.event.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import REFERENCE_TIME
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulTime,
@@ -223,7 +223,7 @@ class TestSyntheticTimeseries:
                 shape_type = "constant"
                 peak_time = { value = 0, units = "hours" }
                 duration = { value = 1, units = "hours" }
-                peak_value = { value = 1, units = "mm_hr" }
+                peak_value = { value = 1, units = "mm/hr" }
                 """
                 )
 

@@ -18,17 +18,23 @@ class Scenario(IScenario):
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
 
-    def init_object_model(self) -> "Scenario":
-        """Create a Direct Impact object."""
+    @property
+    def results_path(self) -> Path:
+        return self.database.scenarios.get_database_path(get_input_path=False).joinpath(
+            self.attrs.name
+        )
+
+    @property
+    def site_info(self):
+        return self.database.site
+
+    def __init__(self) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
 
-        self.site_info = self.database.site
-        self.results_path = self.database.scenarios.get_database_path(
-            get_input_path=False
-        ).joinpath(self.attrs.name)
+    def init_object_model(self) -> "Scenario":
+        """Create a Direct Impact object."""
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
-            database=self.database,
             results_path=self.results_path,
         )
         return self
