@@ -1,5 +1,5 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -17,6 +17,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
     default_forcings,
 )
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
@@ -54,7 +55,7 @@ class IEventModel(BaseModel):
         return self
 
 
-class IEvent(ABC):
+class IEvent(IDatabaseUser):
     MODEL_TYPE: IEventModel
 
     attrs: IEventModel

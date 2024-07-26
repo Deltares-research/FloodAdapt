@@ -3,7 +3,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple
+from typing import List
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
@@ -14,8 +14,6 @@ from cht_meteo.meteo import (
 )
 from pyproj import CRS
 
-# Maybe the way to stop circular imports is to import the database like this instead of importing the class directly
-import flood_adapt.dbs_controller as db
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
@@ -34,32 +32,8 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import ISite, Obs_pointModel
+from flood_adapt.object_model.interface.site import Obs_pointModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-
-
-def run_once_with_unique_args(func: Callable) -> Callable:
-    """Run the function only once for each unique combination of arguments, otherwise return the result from earlier immediately."""
-
-    def wrapper(self, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
-        if not hasattr(self, "_called_args"):
-            self._called_args = {}
-
-        args_key = (
-            str(args) + str(sorted(kwargs.items())) if args or kwargs else "no_args"
-        )
-        if args_key in self._called_args.get(func.__name__, set()):
-            return  # Return immediately if the function has been called with these arguments
-
-        if func.__name__ not in self._called_args:
-            self._called_args[func.__name__] = set()
-
-        result = func(self, *args, **kwargs)
-        self._called_args[func.__name__].add(args_key)
-
-        return result
-
-    return wrapper
 
 
 class HistoricalEventModel(IEventModel):
@@ -79,8 +53,11 @@ class HistoricalEvent(IEvent):
     attrs: HistoricalEventModel
 
     def __init__(self):
-        self._site: ISite = db.Database().site
         self._logger = FloodAdaptLogging().getLogger(__name__)
+
+    @property
+    def site(self):
+        return self.database.site
 
     def process(self, scenario: IScenario):
         """Preprocess, run and postprocess offshore model to obtain water levels for boundary condition of the overland model."""
@@ -111,7 +88,7 @@ class HistoricalEvent(IEvent):
         pass
 
     def _process_single_event(self, sim_path: str | os.PathLike):
-        if self._site.attrs.sfincs.offshore_model is None:
+        if self.site.attrs.sfincs.offshore_model is None:
             raise ValueError(
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
             )
@@ -147,19 +124,17 @@ class HistoricalEvent(IEvent):
             shutil.rmtree(sim_path)
         os.makedirs(sim_path, exist_ok=True)
 
-        template_offshore = db.Database().static_path.joinpath(
-            "templates", self._site.attrs.sfincs.offshore_model
+        template_offshore = self.database.static_path.joinpath(
+            "templates", self.site.attrs.sfincs.offshore_model
         )
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
             # Edit offshore model
             _offshore_model.set_timing(self.attrs)
 
             # Add water levels
-            physical_projection = (
-                db.Database()
-                .projections.get(self._scenario.attrs.projection)
-                .get_physical_projection()
-            )
+            physical_projection = self.database.projections.get(
+                self._scenario.attrs.projection
+            ).get_physical_projection()
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection)
 
             # Add wind and if applicable pressure forcing from meteo data
@@ -193,23 +168,20 @@ class HistoricalEvent(IEvent):
         if self.attrs.mode == Mode.risk:
             pass
         elif self.attrs.mode == Mode.single_event:
-            path = (
-                db.Database()
-                .scenarios.get_database_path(get_input_path=False)
-                .joinpath(
-                    self._scenario.attrs.name,
-                    "Flooding",
-                    "simulations",
-                    self._site.attrs.sfincs.offshore_model,
-                )
+            path = self.database.scenarios.get_database_path(
+                get_input_path=False
+            ).joinpath(
+                self._scenario.attrs.name,
+                "Flooding",
+                "simulations",
+                self.site.attrs.sfincs.offshore_model,
             )
             return path
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
 
-    @staticmethod
-    @run_once_with_unique_args
     def download_meteo(
+        self,
         t0: datetime | str,
         t1: datetime | str,
         meteo_dir: Path = None,
@@ -218,13 +190,12 @@ class HistoricalEvent(IEvent):
     ):
         params = ["wind", "barometric_pressure", "precipitation"]
 
-        DEFAULT_METEO_PATH = db.Database().output_path.joinpath("meteo")
+        DEFAULT_METEO_PATH = self.database.output_path.joinpath("meteo")
         meteo_dir = meteo_dir or DEFAULT_METEO_PATH
 
         if lat is None or lon is None:
-            dbs = db.Database()
-            lat = lat or dbs.site.attrs.lat
-            lon = lon or dbs.site.attrs.lon
+            lat = lat or self.database.site.attrs.lat
+            lon = lon or self.database.site.attrs.lon
 
         # Download the actual datasets
         gfs_source = MeteoSource(
@@ -254,14 +225,13 @@ class HistoricalEvent(IEvent):
 
         gfs_conus.download(time_range)
 
-    @staticmethod
     def read_meteo(
-        t0: datetime | str, t1: datetime | str, meteo_dir: Path = None
+        self, t0: datetime | str, t1: datetime | str, meteo_dir: Path = None
     ) -> xr.Dataset:
         # Create an empty list to hold the datasets
         datasets = []
         if meteo_dir is None:
-            meteo_dir = db.Database().output_path.joinpath("meteo")
+            meteo_dir = self.database.output_path.joinpath("meteo")
         if not isinstance(t0, datetime):
             t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
         if not isinstance(t1, datetime):
@@ -270,7 +240,7 @@ class HistoricalEvent(IEvent):
         if not meteo_dir.exists():
             meteo_dir.mkdir(parents=True)
 
-        HistoricalEvent.download_meteo(t0, t1, meteo_dir=meteo_dir)
+        self.download_meteo(t0, t1, meteo_dir=meteo_dir)
 
         # Loop over each file and create a new dataset with a time coordinate
         for filename in sorted(glob.glob(str(meteo_dir.joinpath("*.nc")))):
@@ -317,7 +287,7 @@ class HistoricalEvent(IEvent):
         """
         wl_df = pd.DataFrame()
 
-        for obs_point in self._site.attrs.obs_point:
+        for obs_point in self.site.attrs.obs_point:
             if obs_point.file:
                 station_data = self._read_imported_waterlevels(obs_point.file)
             else:

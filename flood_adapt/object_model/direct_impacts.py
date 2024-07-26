@@ -24,11 +24,12 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 )
 from flood_adapt.object_model.hazard.hazard import FloodMap
 from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
-class DirectImpacts:
+class DirectImpacts(IDatabaseUser):
     """All information related to the direct impacts of the scenario.
 
     Includes methods to run the impact model or check if it has already been run.
@@ -40,10 +41,9 @@ class DirectImpacts:
     hazard: FloodMap
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
+    def __init__(self, scenario: ScenarioModel, results_path: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
-        self.database = database
         self.scenario = scenario
         self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
@@ -53,7 +53,8 @@ class DirectImpacts:
 
         # Get site config
         self.site_toml_path = self.database.static_path / "site" / "site.toml"
-        self.site_info = database.site
+        self.site_info = self.database.site
+
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.fiat_path = self.impacts_path.joinpath("fiat_model")

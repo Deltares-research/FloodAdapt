@@ -1,13 +1,15 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from enum import Enum
+
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
 class ModelData(str, Enum):
     pass
 
 
-class IAdapter(ABC):
+class IAdapter(IDatabaseUser):
     @abstractmethod
     def __enter__(self):
         """Use the adapter as a context manager to handle opening/closing of the model and attached resources.

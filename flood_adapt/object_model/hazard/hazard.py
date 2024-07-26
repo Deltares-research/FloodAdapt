@@ -6,6 +6,7 @@ from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
 class FloodMapType(str, Enum):
@@ -14,7 +15,7 @@ class FloodMapType(str, Enum):
     WATER_LEVEL = "water_level"  # TODO make caps, but hydromt_fiat expects lowercase
 
 
-class FloodMap:
+class FloodMap(IDatabaseUser):
     _type: FloodMapType = FloodMapType.WATER_LEVEL
 
     name: str
@@ -25,12 +26,9 @@ class FloodMap:
     hazard_strategy: HazardStrategy
 
     def __init__(self, scenario_name: str) -> None:
-        import flood_adapt.dbs_controller as db
-
         self.name = scenario_name
-        self._database = db.Database()
         self.path = (
-            self._database.scenarios.get_database_path(get_input_path=False)
+            self.database.scenarios.get_database_path(get_input_path=False)
             / scenario_name
             / "Flooding"
             / "max_water_level_map.nc"
@@ -42,21 +40,21 @@ class FloodMap:
 
     @property
     def scenario(self):
-        return self._database.scenarios.get(self.name)
+        return self.database.scenarios.get(self.name)
 
     @property
     def mode(self):
-        return self._database.events.get(self.scenario.attrs.event).attrs.mode
+        return self.database.events.get(self.scenario.attrs.event).attrs.mode
 
     @property
     def hazard_strategy(self):
-        return self._database.strategies.get(
+        return self.database.strategies.get(
             self.scenario.attrs.strategy
         ).get_hazard_strategy()
 
     @property
     def physical_projection(self):
-        return self._database.projections.get(
+        return self.database.projections.get(
             self.scenario.attrs.projection
         ).get_physical_projection()
 

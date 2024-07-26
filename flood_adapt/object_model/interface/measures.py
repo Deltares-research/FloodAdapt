@@ -1,10 +1,11 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator, validator
 
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulHeight,
@@ -207,7 +208,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-class IMeasure(ABC):
+class IMeasure(IDatabaseUser):
     """A class for a FloodAdapt measure."""
 
     attrs: MeasureModel
@@ -220,7 +221,9 @@ class IMeasure(ABC):
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike] = None
+    ):
         """Get Measure attributes from an object, e.g. when initialized from GUI."""
         ...
 

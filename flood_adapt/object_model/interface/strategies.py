@@ -1,8 +1,10 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
+
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
 class StrategyModel(BaseModel):
@@ -11,9 +13,8 @@ class StrategyModel(BaseModel):
     measures: Optional[list[str]] = []
 
 
-class IStrategy(ABC):
+class IStrategy(IDatabaseUser):
     attrs: StrategyModel
-    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
     @abstractmethod
@@ -25,7 +26,7 @@ class IStrategy(ABC):
     @abstractmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike],
+        database_input_path: Union[str, os.PathLike] = None,
         validate: bool = True,
     ):
         """Get Strategy attributes from an object, e.g. when initialized from GUI."""

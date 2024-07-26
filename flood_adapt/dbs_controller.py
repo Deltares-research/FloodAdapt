@@ -101,9 +101,10 @@ class Database(IDatabase):
             return  # Skip re-initialization
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
+        re_option = "re-" if self._init_done else ""
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self._logger.info(
-            f"(Re-)Initializing database to {database_name} at {database_path}"
+            f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
         self.database_path = database_path
         self.database_name = database_name

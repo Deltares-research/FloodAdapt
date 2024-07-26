@@ -5,7 +5,6 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
-import flood_adapt.dbs_controller as db
 from flood_adapt import __version__
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
@@ -18,20 +17,18 @@ class Scenario(IScenario):
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
-    database_input_path: Union[str, os.PathLike]
 
     def init_object_model(self) -> "Scenario":
         """Create a Direct Impact object."""
         self._logger = FloodAdaptLogging.getLogger(__name__)
 
-        database = db.Database()
-        self.site_info = database.site
-        self.results_path = database.scenarios.get_database_path(
+        self.site_info = self.database.site
+        self.results_path = self.database.scenarios.get_database_path(
             get_input_path=False
         ).joinpath(self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
-            database=database,
+            database=self.database,
             results_path=self.results_path,
         )
         return self
@@ -43,16 +40,15 @@ class Scenario(IScenario):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = ScenarioModel.model_validate(toml)
-        # if scenario is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any], database_input_path: os.PathLike):
+    def load_dict(
+        data: dict[str, Any], database_input_path: os.PathLike = None
+    ):  # TODO deprecate database_input_path
         """Create Scenario from object, e.g. when initialized from GUI."""
         obj = Scenario()
         obj.attrs = ScenarioModel.model_validate(data)
-        obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
@@ -75,7 +71,7 @@ class Scenario(IScenario):
             # preprocess model input data first, then run, then post-process
             if not self.direct_impacts.hazard.has_run:
                 template_path = Path(
-                    db.Database().static_path / "templates" / "overland"
+                    self.database.static_path / "templates" / "overland"
                 )
                 with SfincsAdapter(model_root=template_path) as sfincs_adapter:
                     sfincs_adapter.run(self)

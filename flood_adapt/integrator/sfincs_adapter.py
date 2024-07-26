@@ -62,7 +62,6 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import HazardType
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.interface.scenarios import IScenario
@@ -78,29 +77,33 @@ from flood_adapt.object_model.utils import cd
 
 class SfincsAdapter(IHazardAdapter):
     _logger: logging.Logger
-    _database: IDatabase
 
     _site: ISite
     _scenario: IScenario
     _model: SfincsModel
 
-    def __init__(self, model_root: str, database: IDatabase = None):
+    _database_instance = None
+
+    @property
+    def database(self):
+        if self._database_instance is not None:
+            return self._database_instance
+        from flood_adapt.dbs_controller import Database  # noqa
+
+        self._database_instance = Database()
+        return self._database_instance
+
+    def __init__(self, model_root: str):
         """Load overland sfincs model based on a root directory.
 
         Args:
             database (IDatabase): Reference to the database containing all objectmodels and site specific information.
             model_root (str): Root directory of overland sfincs model.
         """
-        if database is None:
-            import flood_adapt.dbs_controller as db
-
-            database = db.Database()
-
         self._logger = FloodAdaptLogging.getLogger(__name__)
-        self._database = database
-        self._model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
+        self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)
         self._model.read()
-        self._site = database.site
+        self._site = self.database.site
 
     def __del__(self):
         """Close the log file associated with the logger and clean up file handles."""
@@ -144,12 +147,20 @@ class SfincsAdapter(IHazardAdapter):
     ### HAZARD ADAPTER METHODS ###
     def read(self, path: str | os.PathLike):
         """Read the sfincs model from the current model root."""
+        if Path(self._model.root) != Path(path):
+            self._model.set_root(root=path, mode="r")
         self._model.read()
 
     def write(self, path_out: Union[str, os.PathLike]):
         """Write the sfincs model configuration to a directory."""
+        if not isinstance(path_out, Path):
+            path_out = Path(path_out)
+        if not path_out.exists():
+            path_out.mkdir(parents=True)
+
         with cd(path_out):
-            self._write_sfincs_model(path_out)
+            self._model.set_root(root=path_out, mode="w")
+            self._model.write()
 
     def execute(self, sim_path=None, strict=True) -> bool:
         """
@@ -232,7 +243,7 @@ class SfincsAdapter(IHazardAdapter):
             events = self._scenario.attrs.event
 
         for ii, name in enumerate(events):
-            event: IEvent = self._database.events.get(name)
+            event: IEvent = self.database.events.get(name)
 
             self.set_timing(event.attrs)
 
@@ -244,15 +255,15 @@ class SfincsAdapter(IHazardAdapter):
             for forcing in event.attrs.forcings.values():
                 self.add_forcing(forcing)
 
-            strategy = self._database.strategies.get(self._scenario.attrs.strategy)
+            strategy = self.database.strategies.get(self._scenario.attrs.strategy)
             measures = [
-                self._database.measures.get(name) for name in strategy.attrs.measures
+                self.database.measures.get(name) for name in strategy.attrs.measures
             ]
             for measure in measures:
                 self.add_measure(measure)
 
             self.add_projection(
-                self._database.projections.get(self._scenario.attrs.projection)
+                self.database.projections.get(self._scenario.attrs.projection)
             )
 
             # add observation points from site.toml
@@ -268,7 +279,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def process(self):
         sim_paths = self._get_simulation_paths()
-        event = self._database.events.get(self._scenario.attrs.event)
+        event = self.database.events.get(self._scenario.attrs.event)
         if event.attrs.mode == Mode.single_event:
             sim_paths = sim_paths[0]
         elif event.attrs.mode == Mode.risk:
@@ -286,7 +297,7 @@ class SfincsAdapter(IHazardAdapter):
         if not self.has_run_check():
             raise RuntimeError("SFINCS was not run successfully!")
 
-        mode = self._database.events.get(self._scenario.attrs.event).attrs.mode
+        mode = self.database.events.get(self._scenario.attrs.event).attrs.mode
         if mode == Mode.single_event:
             # Write flood-depth map geotiff
             self._write_floodmap_geotiff()
@@ -522,7 +533,7 @@ class SfincsAdapter(IHazardAdapter):
             floodwall information
         """
         # HydroMT function: get geodataframe from filename
-        polygon_file = self._database.input_path.joinpath(floodwall.attrs.polygon_file)
+        polygon_file = self.database.input_path.joinpath(floodwall.attrs.polygon_file)
         gdf_floodwall = self._model.data_catalog.get_geodataframe(
             polygon_file, geom=self._model.region, crs=self._model.crs
         )
@@ -562,7 +573,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.attrs.selection_type == "polygon":
-            polygon_file = self._database.input_path.joinpath(
+            polygon_file = self.database.input_path.joinpath(
                 green_infrastructure.attrs.polygon_file
             )
         elif green_infrastructure.attrs.selection_type == "aggregation_area":
@@ -577,7 +588,7 @@ class SfincsAdapter(IHazardAdapter):
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    self._database.static_path / "site" / aggr_dict.file,
+                    self.database.static_path / "site" / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
@@ -617,7 +628,7 @@ class SfincsAdapter(IHazardAdapter):
         pump : PumpModel
             pump information
         """
-        polygon_file = self._database.input_path.joinpath(pump.attrs.polygon_file)
+        polygon_file = self.database.input_path.joinpath(pump.attrs.polygon_file)
         # HydroMT function: get geodataframe from filename
         gdf_pump = self._model.data_catalog.get_geodataframe(
             polygon_file, geom=self._model.region, crs=self._model.crs
@@ -741,8 +752,10 @@ class SfincsAdapter(IHazardAdapter):
 
         if len(df_ts.columns) == 1:
             # Go from 1 timeseries to timeseries for all boundary points
+            name = df_ts.columns[0]
             for i in range(1, len(gdf_locs)):
-                df_ts[i + 1] = df_ts[1]
+                df_ts[i + 1] = df_ts[name]
+            df_ts.columns = range(1, len(gdf_locs) + 1)
 
         # HydroMT function: set waterlevel forcing from time series
         self._model.set_forcing_1d(
@@ -837,7 +850,6 @@ class SfincsAdapter(IHazardAdapter):
     def _add_forcing_spw(
         self,
         historical_hurricane: HurricaneEvent,
-        database_path: Path,
         model_dir: Path,
     ):
         """Add spiderweb forcing to the sfincs model.
@@ -852,58 +864,26 @@ class SfincsAdapter(IHazardAdapter):
             Output path of the model
         """
         historical_hurricane.make_spw_file(
-            database_path=database_path, model_dir=model_dir, site=self._site
+            database_path=self.database.base_path,
+            model_dir=model_dir,
+            site=self.database.site,
         )
         # TODO check with @gundula
         self._set_config_spw(historical_hurricane.spw_file)
 
     ### PRIVATE GETTERS ###
-    def read_zsmax(self):
-        """Read zsmax file and return absolute maximum water level over entire simulation."""
-        self.sf_model.read_results()
-        zsmax = self.sf_model.results["zsmax"].max(dim="timemax")
-        zsmax.attrs["units"] = "m"
-        return zsmax
-
-    def read_zs_points(self):
-        """Read water level (zs) timeseries at observation points.
-
-        Names are allocated from the site.toml.
-        See also add_obs_points() above.
-        """
-        self.sf_model.read_results()
-        da = self.sf_model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
-
-        # get station names from site.toml
-        if self.site.attrs.obs_point is not None:
-            names = []
-            descriptions = []
-            obs_points = self.site.attrs.obs_point
-            for pt in obs_points:
-                names.append(pt.name)
-                descriptions.append(pt.description)
-
-        pt_df = pd.DataFrame({"Name": names, "Description": descriptions})
-        gdf = gpd.GeoDataFrame(
-            pt_df,
-            geometry=gpd.points_from_xy(da.point_x.values, da.point_y.values),
-            crs=self.sf_model.crs,
-        )
-        return df, gdf
-
     def _get_result_path(self, scenario_name: str = None) -> Path:
         if scenario_name is None:
             scenario_name = self._scenario.attrs.name
-        path = self._database.scenarios.get_database_path(
-            get_input_path=False
-        ).joinpath(scenario_name, "Flooding")
+        path = self.database.scenarios.get_database_path(get_input_path=False).joinpath(
+            scenario_name, "Flooding"
+        )
         return path
 
     def _get_simulation_paths(self) -> tuple[list[Path], list[Path]]:
         simulation_paths = []
         simulation_paths_offshore = []
-        event: IEvent = self._database.events.get(self._scenario.attrs.event)
+        event: IEvent = self.database.events.get(self._scenario.attrs.event)
         mode = event.attrs.mode
 
         results_path = self._get_result_path()
@@ -948,7 +928,7 @@ class SfincsAdapter(IHazardAdapter):
     def _get_flood_map_path(self) -> list[Path]:
         """_summary_."""
         results_path = self._get_result_path()
-        mode = self._database.events.get(self._scenario.attrs.event).attrs.mode
+        mode = self.database.events.get(self._scenario.attrs.event).attrs.mode
 
         if mode == Mode.single_event:
             map_fn = [results_path.joinpath("max_water_level_map.nc")]
@@ -1021,7 +1001,7 @@ class SfincsAdapter(IHazardAdapter):
             # read SFINCS model
             with SfincsAdapter(model_root=sim_path) as model:
                 # dem file for high resolution flood depth map
-                demfile = self._database.static_path.joinpath(
+                demfile = self.database.static_path.joinpath(
                     "dem", self._site.attrs.dem.filename
                 )
 
@@ -1041,16 +1021,16 @@ class SfincsAdapter(IHazardAdapter):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         # read SFINCS model
         results_path = self._get_result_path()
-        event = self._database.events.get(self._scenario.attrs.event)
+        event = self.database.events.get(self._scenario.attrs.event)
         # TODO fix get_simulation_paths to return the correct simulation path instead of both the overland and offshore paths
         if event.attrs.mode == Mode.single_event:
-            zsmax = self.read_zsmax()
+            zsmax = self._get_zsmax()
             zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
         elif event.attrs.mode == Mode.risk:
             pass
             # sim_paths = self._get_simulation_paths()
             # with SfincsAdapter(model_root=sim_paths[0]) as model:
-            #     zsmax = model.read_zsmax()
+            #     zsmax = model._get_zsmax()
             #     zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
 
     def _write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
@@ -1074,18 +1054,6 @@ class SfincsAdapter(IHazardAdapter):
             hmin=0.01,
             floodmap_fn=str(floodmap_fn),
         )
-
-    def _write_sfincs_model(self, path_out: Path):
-        """Write all the files for the sfincs model.
-
-        Args:
-            path_out (Path): new root of sfincs model
-        """
-        # Change model root to new folder
-        self._model.set_root(root=path_out, mode="w+")
-
-        # Write sfincs files in output folder
-        self._model.write()
 
     def _downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
@@ -1121,8 +1089,8 @@ class SfincsAdapter(IHazardAdapter):
         floodmap_rp = self._site.attrs.risk.return_periods
         result_path = self.get_result_path()
         sim_paths, offshore_sim_paths = self._get_simulation_paths()
-        event_set = self._database.events.get(self._scenario.attrs.event)
-        phys_proj = self._database.projections.get(self._scenario.attrs.projection)
+        event_set = self.database.events.get(self._scenario.attrs.event)
+        phys_proj = self.database.projections.get(self._scenario.attrs.projection)
         frequencies = event_set.attrs.frequency
 
         # adjust storm frequency for hurricane events
@@ -1142,7 +1110,7 @@ class SfincsAdapter(IHazardAdapter):
         for simulation_path in sim_paths:
             # read zsmax data from overland sfincs model
             with SfincsAdapter(model_root=str(simulation_path)) as sim:
-                zsmax = sim.read_zsmax().load()
+                zsmax = sim._get_zsmax().load()
                 zs_stacked = zsmax.stack(z=("x", "y"))
                 zs_maps.append(zs_stacked)
 
@@ -1223,7 +1191,7 @@ class SfincsAdapter(IHazardAdapter):
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = self._database.static_path.joinpath(
+            demfile = self.database.static_path.joinpath(
                 "dem", self._site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
@@ -1296,7 +1264,7 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
                 # check if event is historic
-                event = self._database.events.get(self._scenario.attrs.event)
+                event = self.database.events.get(self._scenario.attrs.event)
                 if event.attrs.timing == "historical":
                     # check if observation station has a tide gauge ID
                     # if yes to both download tide gauge data and add to plot
@@ -1305,7 +1273,7 @@ class SfincsAdapter(IHazardAdapter):
                         or self._site.attrs.obs_point[ii].file is not None
                     ):
                         if self._site.attrs.obs_point[ii].file is not None:
-                            file = self._database.static_path.joinpath(
+                            file = self.database.static_path.joinpath(
                                 self._site.attrs.obs_point[ii].file
                             )
                         else:
