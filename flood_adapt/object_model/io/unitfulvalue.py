@@ -207,8 +207,8 @@ class UnitTypesDischarge(Unit):
 
 
 class UnitTypesIntensity(Unit):
-    inch_hr = "inch_hr"
-    mm_hr = "mm_hr"
+    inch_hr = "inch/hr"
+    mm_hr = "mm/hr"
 
 
 class VerticalReference(str, Enum):
