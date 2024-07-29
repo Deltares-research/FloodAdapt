@@ -2,8 +2,9 @@ name: Build and Publish Sphinx docs to Wiki
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
