@@ -114,7 +114,7 @@ def create_env(
     if prefix:
         env_location = os.path.join(prefix, env_name)
         prefix_option = f"--prefix {env_location}"
-        activate_command = f"conda activate {env_location}"
+        activate_command = f"conda activate -p {env_location}"
         conda_run_opt = f"-p {env_location}"
     else:
         env_location = env_name
@@ -155,6 +155,7 @@ def create_env(
 
     os.remove("_environment.yml")
     print(f"Environment {env_name} created successfully!")
+
     print(f"Activate it with:\n\n\t{activate_command}\n")
 
 
