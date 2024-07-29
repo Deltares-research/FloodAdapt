@@ -24,13 +24,20 @@ jobs:
         pip install sphinx sphinx_rtd_theme
 
     - name: Build docs
-      run: make -C flood_adapt/api html
+      run: |
+        # Change to the directory where the Makefile is located
+        cd flood_adapt/api
+        # Build the documentation
+        make html
 
     - name: Publish to Wiki
       run: |
+        # Clone the Wiki repository
         git clone https://github.com/${{ github.repository }}.wiki.git
-        cp -r _build/html/* .wiki
+        # Copy the built documentation to the Wiki repo
+        cp -r flood_adapt/api/_build/html/* .wiki
         cd .wiki
+        # Commit and push the changes
         git add .
         git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
         git push
