@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root ..
+          python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root ./FloodAdapt
 
       - name: Build docs
         run: |
