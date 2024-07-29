@@ -149,6 +149,12 @@ def create_env(
         print(process.stdout.readline())
     print(process.stdout.read())
 
+    if process.returncode != 0:
+        print(process.stderr.read())
+        raise RuntimeError(
+            f"Environment creation failed with return code {process.returncode}"
+        )
+
     os.remove("_environment.yml")
     print(f"Environment {env_name} created successfully!")
     print(f"Activate it with:\n\n\t{activate_command}\n")
