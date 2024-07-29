@@ -15,11 +15,11 @@ import sys
 from pathlib import Path
 
 ROOT_PATH = Path(__file__).resolve().parents[2]
-API_REFERENCE_PATH = ROOT_PATH / "api_reference"
+DEV_DOCS_PATH = ROOT_PATH / "dev_docs"
 SRC_PATH = ROOT_PATH / "flood_adapt"
 MODULE_PATHS = [SRC_PATH / module for module in ["integrator", "object_model", "api"]]
 
-for path in [ROOT_PATH, API_REFERENCE_PATH, SRC_PATH, *MODULE_PATHS]:
+for path in [ROOT_PATH, DEV_DOCS_PATH, SRC_PATH, *MODULE_PATHS]:
     assert path.exists(), f"Path does not exist: {path}"
     sys.path.insert(0, os.path.abspath(path))
 
@@ -29,8 +29,19 @@ project = "FloodAdapt-API"
 copyright = "2024, Adrichem"
 author = "Adrichem"
 
+
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+def get_floodadapt_version():
+    version = None
+    with open(ROOT_PATH / "flood_adapt" / "__init__.py", "r") as f:
+        for line in f:
+            if line.startswith("__version__"):
+                version = line.split("=")[1].strip().strip('"')
+    assert version, "Could not find version in __init__.py"
+    return version
+
+
+release = get_floodadapt_version()
 
 
 # -- General configuration ---------------------------------------------------
