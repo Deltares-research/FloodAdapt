@@ -9,14 +9,19 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
+
 import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("../.."))
+ROOT_PATH = Path(__file__).resolve().parents[2]
+API_REFERENCE_PATH = ROOT_PATH / "api_reference"
+SRC_PATH = ROOT_PATH / "flood_adapt"
+MODULE_PATHS = [SRC_PATH / module for module in ["integrator", "object_model", "api"]]
 
+for path in [ROOT_PATH, API_REFERENCE_PATH, SRC_PATH, *MODULE_PATHS]:
+    assert path.exists(), f"Path does not exist: {path}"
+    sys.path.insert(0, os.path.abspath(path))
 
 # -- Project information -----------------------------------------------------
 

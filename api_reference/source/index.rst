@@ -1,8 +1,3 @@
-.. FloodAdapt-API documentation master file, created by
-   sphinx-quickstart on Thu Apr 18 17:28:21 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to FloodAdapt-API's documentation!
 ==========================================
 
@@ -16,7 +11,7 @@ API Reference
    :maxdepth: 1
    :caption: Contents:
 
-   startup
+   static
    events
    projections
    measures
@@ -24,7 +19,6 @@ API Reference
    scenarios
    output
    benefits
-
 
 Indices and tables
 ==================
