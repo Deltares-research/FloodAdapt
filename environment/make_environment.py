@@ -157,8 +157,8 @@ def create_env(
 if __name__ == "__main__":
     args = parse_args()
     if args.project_root:
-        print(f"Using project root: {args.project_root}")
         PROJECT_ROOT = Path(args.project_root).resolve()
+        print(f"Using project root: {PROJECT_ROOT}")
         WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
         assert (
