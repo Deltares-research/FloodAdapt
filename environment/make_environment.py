@@ -11,9 +11,8 @@ except Exception:
     import yaml  # noQA
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_ROOT = PROJECT_ROOT / "FloodAdapt"
-WHEELS_DIR = BACKEND_ROOT / "environment" / "geospatial-wheels"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
 SUBPROCESS_KWARGS = {
     "shell": True,
@@ -63,6 +62,12 @@ def parse_args():
         dest="optional_deps",
         help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
     )
+    parser.add_argument(
+        "--project-root",
+        default=None,
+        dest="project_root",
+        help="The root directory of the project. Default is 2 levels above this script. Usually named 'FloodAdapt'.",
+    )
 
     args = parser.parse_args()
     return args
@@ -101,9 +106,9 @@ def create_env(
     editable: bool = False,
     optional_deps: str = None,
 ):
-    if not BACKEND_ROOT.exists():
+    if not PROJECT_ROOT.exists():
         raise FileNotFoundError(
-            f"The FloodAdapt repository was not found in the expected location: {BACKEND_ROOT}"
+            f"The FloodAdapt repository was not found in the expected location: {PROJECT_ROOT}"
         )
 
     write_env_yml(env_name)
@@ -123,7 +128,7 @@ def create_env(
         "conda activate",
         create_command,
         activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        f"pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
     ]
     command = " && ".join(command_list)
 
@@ -150,6 +155,9 @@ def create_env(
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.project_root:
+        PROJECT_ROOT = Path(args.project_root)
+        WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
     create_env(
         env_name=args.env_name,
