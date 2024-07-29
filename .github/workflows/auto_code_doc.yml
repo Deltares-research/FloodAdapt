@@ -11,42 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install sphinx sphinx_rtd_theme
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx_rtd_theme
 
-    - name: Build docs
-      run: |
-        # Change to the directory where the Makefile is located
-        cd flood_adapt/api
+      - name: Build docs
+        run: |
+          make dev_docs html
 
-        # Build the documentation
-        make html
-
-        # Verify the build output
-        ls -la build/html
-
-    - name: Publish to Wiki
-      run: |
-        # Clone the Wiki repository into a directory named '.wiki'
-        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
-
-        # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/build/html/* .wiki/
-
-        # Set up Git to use the GitHub Actions token for authentication
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
-        
-        # Commit and push the changes
-        git add .
-        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
-        git push
+      - name: Publish to Wiki
+        uses: peaceiris/actions-gh-pages@v3.9.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: flood_adapt/api/build/html
+          destination_dir: wiki
+          keep_files: false
+          full_commit_message: Deploy documentation to Wiki
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+          repo: ${{ github.repository }}.wiki
