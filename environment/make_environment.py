@@ -10,7 +10,6 @@ except Exception:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
     import yaml  # noQA
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
@@ -97,6 +96,39 @@ def check_and_delete_conda_env(env_name, prefix=None):
             subprocess.run(f"conda env remove -n {env_name} -y", **SUBPROCESS_KWARGS)
 
 
+def install_OGR_dependencies(env_name: str, prefix_option: str):
+    if sys.platform.startswith("win"):
+        write_env_yml(env_name)
+        create_command = f"conda env create -f _environment.yml {prefix_option}"
+        process = subprocess.Popen(
+            create_command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+
+        while process.poll() is None:
+            print(process.stdout.readline())
+
+    elif sys.platform == "linux":
+        subprocess.run("sudo apt-get install gdal-bin", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo apt-get install libgdal-dev", **SUBPROCESS_KWARGS)
+        subprocess.run(
+            "export CPLUS_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS
+        )
+        subprocess.run("export C_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS)
+        subprocess.run("ogrinfo --version", **SUBPROCESS_KWARGS)
+
+        subprocess.run(
+            "pip install GDAL==$(ogrinfo --version | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')",
+            **SUBPROCESS_KWARGS,
+        )
+        # TODO more deps
+    else:
+        raise NotImplementedError(f"Platform {sys.platform} not supported.")
+
+
 def create_env(
     env_name: str,
     prefix: str = None,
@@ -108,7 +140,6 @@ def create_env(
             f"The FloodAdapt repository was not found in the expected location: {PROJECT_ROOT}"
         )
 
-    write_env_yml(env_name)
     check_and_delete_conda_env(env_name, prefix=prefix)
 
     if prefix:
@@ -122,12 +153,12 @@ def create_env(
         activate_command = f"conda activate {env_name}"
         conda_run_opt = f"-n {env_name}"
 
-    create_command = f"conda env create -f _environment.yml {prefix_option}"
+    install_OGR_dependencies(env_name, prefix_option)
+
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
 
     command_list = [
-        create_command,
         f"conda run {conda_run_opt} pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
     ]
     command = " && ".join(command_list)
