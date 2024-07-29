@@ -32,10 +32,9 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: flood_adapt/api/build/html
-          destination_dir: wiki
+          publish_dir: ./docs/api
+          destination_dir: ./${{ env.DOC_VERSION }}
           keep_files: false
-          full_commit_message: Deploy documentation to Wiki
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
-          repo: ${{ github.repository }}.wiki
+          full_commit_message: Deploy API documentation to Wiki
+          # user_name: github-actions[bot]
+          # user_email: github-actions[bot]@users.noreply.github.com
