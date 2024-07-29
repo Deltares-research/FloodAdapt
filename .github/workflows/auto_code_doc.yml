@@ -29,13 +29,15 @@ jobs:
         cd flood_adapt/api
         # Build the documentation
         make html
+        # Verify the build output
+        ls -la build/html
 
     - name: Publish to Wiki
       run: |
         # Clone the Wiki repository
         git clone https://github.com/${{ github.repository }}.wiki.git
         # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/_build/html/* .wiki
+        cp -r flood_adapt/api/build/html/* .wiki
         cd .wiki
         # Commit and push the changes
         git add .
