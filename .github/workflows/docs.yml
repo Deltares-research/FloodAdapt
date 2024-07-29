@@ -44,6 +44,11 @@ jobs:
         run: |
           pip install tomli
           mamba env create --file=docs/environment_docs.yml
+          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          mamba activate floodadapt_docs
+          pip install . --no-deps
+          SRC_VERSION=$(mamba run -n floodadapt_docs python -c "from flood_adapt import __version__; print(__version__)")
+          echo "DOC_VERSION=${SRC_VERSION}" >> $GITHUB_ENV
 
       - name: Setup quarto
         run: |
