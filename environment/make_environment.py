@@ -65,6 +65,7 @@ def parse_args():
     parser.add_argument(
         "--project-root",
         default=None,
+        type=str,
         dest="project_root",
         help="The root directory of the project. Default is 2 levels above this script. Usually named 'FloodAdapt'.",
     )
@@ -156,8 +157,19 @@ def create_env(
 if __name__ == "__main__":
     args = parse_args()
     if args.project_root:
-        PROJECT_ROOT = Path(args.project_root)
+        print(f"Using project root: {args.project_root}")
+        PROJECT_ROOT = Path(args.project_root).resolve()
         WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
+
+        assert (
+            PROJECT_ROOT.exists()
+        ), f"Project root does not exist: {PROJECT_ROOT}. Please verify your project root."
+        assert (
+            PROJECT_ROOT / "flood_adapt"
+        ).exists(), f"Project root {PROJECT_ROOT} does not contain the flood_adapt package. Please verify your project root."
+        assert (
+            WHEELS_DIR.exists()
+        ), f"Wheels directory does not exist: {WHEELS_DIR}. Please verify your project root."
 
     create_env(
         env_name=args.env_name,
