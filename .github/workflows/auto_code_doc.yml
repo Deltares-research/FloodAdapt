@@ -21,12 +21,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python ./environment/make_environment.py -n api_docs
-          conda run -n api_docs pip install sphinx sphinx_rtd_theme
+          python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs
 
       - name: Build docs
         run: |
-          mamba run -n api_docs make -C ./dev_docs html
+          mamba run -n ./environment/api_docs make -C ./dev_docs html
 
       - name: Publish to Wiki
         uses: peaceiris/actions-gh-pages@v3.9.3

@@ -67,6 +67,8 @@ docs = [
     "matplotlib",
     "quartodoc",
     "regex",
+    "sphinx",
+    "sphinx_rtd_theme"
 ]
 all = [
     "flood-adapt[build,dev,docs]",
