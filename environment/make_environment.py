@@ -20,12 +20,8 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
+    "start_new_session": True,
 }
-
-try:
-    subprocess.run("conda info", **SUBPROCESS_KWARGS)
-except subprocess.CalledProcessError:
-    subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
 
 def parse_args():
@@ -115,21 +111,24 @@ def create_env(
     write_env_yml(env_name)
     check_and_delete_conda_env(env_name, prefix=prefix)
 
-    env_location = os.path.join(prefix, env_name) if prefix else env_name
-    prefix_option = f"--prefix {env_location}" if prefix else ""
+    if prefix:
+        env_location = os.path.join(prefix, env_name)
+        prefix_option = f"--prefix {env_location}"
+        activate_command = f"conda activate {env_location}"
+        conda_run_opt = f"-p {env_location}"
+    else:
+        env_location = env_name
+        prefix_option = ""
+        activate_command = f"conda activate {env_name}"
+        conda_run_opt = f"-n {env_name}"
+
     create_command = f"conda env create -f _environment.yml {prefix_option}"
-
-    activate_option = env_location if prefix else env_name
-    activate_command = f"conda activate {activate_option}"
-
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
 
     command_list = [
-        "conda activate",
         create_command,
-        activate_command,
-        f"pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        f"conda run {conda_run_opt} pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
     ]
     command = " && ".join(command_list)
 
@@ -161,6 +160,8 @@ def create_env(
 
 if __name__ == "__main__":
     args = parse_args()
+    subprocess.run("conda init", **SUBPROCESS_KWARGS)
+
     if args.project_root:
         PROJECT_ROOT = Path(args.project_root).resolve()
         print(f"Using project root: {PROJECT_ROOT}")

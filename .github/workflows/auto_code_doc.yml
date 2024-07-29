@@ -18,13 +18,19 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Initialize conda
         run: |
           conda init
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+
+      - name: Install dependencies
+        run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh
           python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root .
 
       - name: Build docs
         run: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh
           conda run -p ./environment/api_docs make -C ./dev_docs html
 
       - name: Publish to Wiki
