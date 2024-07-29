@@ -1680,11 +1680,13 @@ def main(config: str | dict):
 
 if __name__ == "__main__":
     while True:
-        path = input("Provide the path to the database creation configuration toml: \n")
+        path = input(
+            "Please provide the path to the database creation configuration toml: \n"
+        )
         try:
             main(path)
         except Exception as e:
             print(e)
-        quit = input("do you want to quit? (y/n)")
+        quit = input("Do you want to quit? (y/n)")
         if quit == "y":
             exit()
