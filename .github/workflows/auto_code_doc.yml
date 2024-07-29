@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m environment/make_environment.py -n api_docs
+          python -m ./environment/make_environment.py -n api_docs
           conda run -n api_docs pip install sphinx sphinx_rtd_theme
 
       - name: Build docs
