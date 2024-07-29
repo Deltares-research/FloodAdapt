@@ -39,13 +39,13 @@ jobs:
         # Clone the Wiki repository into a directory named '.wiki'
         git clone https://github.com/${{ github.repository }}.wiki.git .wiki
 
-        # Ensure the '.wiki' directory was created and is valid
-        if [ ! -d ".wiki" ]; then echo ".wiki directory does not exist"; exit 1; fi
-
         # Copy the built documentation to the Wiki repo
         cp -r flood_adapt/api/build/html/* .wiki/
-        cd .wiki
 
+        # Set up Git to use the GitHub Actions token for authentication
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        
         # Commit and push the changes
         git add .
         git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
