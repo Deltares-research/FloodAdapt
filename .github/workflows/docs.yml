@@ -68,8 +68,9 @@ jobs:
           source /usr/share/miniconda3/etc/profile.d/conda.sh
           conda activate floodadapt_docs
           quarto render docs/ --execute
+          pip install . --no-deps
           echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
-
+          
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         uses: peaceiris/actions-gh-pages@v3.9.3
