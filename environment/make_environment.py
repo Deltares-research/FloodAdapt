@@ -126,6 +126,7 @@ def create_env(
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
 
     command_list = [
+        "conda init",
         "conda activate",
         create_command,
         activate_command,
@@ -147,7 +148,6 @@ def create_env(
 
     while process.poll() is None:
         print(process.stdout.readline())
-    print(process.stdout.read())
 
     if process.returncode != 0:
         print(process.stderr.read())
