@@ -6,6 +6,8 @@ channels:
 dependencies:
 - jupyter
 - jupyter-cache
+- jupyterlab
+- notebook
 - nbformat
 - matplotlib
 - numpy
