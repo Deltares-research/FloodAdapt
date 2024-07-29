@@ -32,7 +32,7 @@ jobs:
         run: black --check .
 
   typos:
-    name: Spell Check with Typos
+    name: Spell Check with Typos 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
