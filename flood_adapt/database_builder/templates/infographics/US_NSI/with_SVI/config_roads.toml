@@ -1,0 +1,65 @@
+[Charts]
+    [Charts.Flooded_roads]
+        Name = "Flooded Roads"
+
+[Categories]
+    [Categories.Slightly_Flooded]
+        Name = "Slightly Flooded"
+        Color = "#D5DEE1"
+        Image = "{image_path}/walking_person.png"
+    [Categories.Minor_Flooded]
+        Name = "Minor Flooded"
+        Color = "#88A2AA"
+        Image = "{image_path}/car.png"
+    [Categories.Major_Flooded]
+        Name = "Major Flooded"
+        Color = "#88A2AA"
+        Image = "{image_path}/truck.png"
+    [Categories.Fully_Flooded]
+        Name = "Fully Flooded"
+        Color = "#88A2AA"
+        Image = "{image_path}/ambulance.png"
+
+[Slices]
+    [Slices.Slightly_Flooded]
+        Name = "Slightly Flooded"
+        Query = "SlightlyFloodedRoads"
+        Chart = "Flooded Roads"
+        Category = "Slightly Flooded"
+    [Slices.Minor_Flooded]
+        Name = "Minor Flooded"
+        Query = "MinorFloodedRoads"
+        Chart = "Flooded Roads"
+        Category = "Minor Flooded"
+    [Slices.Major_Flooded]
+        Name = "Major Flooded"
+        Query = "MajorFloodedRoads"
+        Chart = "Flooded Roads"
+        Category = "Major Flooded"
+    [Slices.Fully_Flooded]
+        Name = "Fully Flooded"
+        Query = "FullyFloodedRoads"
+        Chart = "Flooded Roads"
+        Category = "Fully Flooded"
+
+[Other]
+    [Other.Plot]
+        image_scale = 0.1
+        numbers_font = 20
+        height = 350
+        width = 600
+    [Other.Title]
+        text = "Interrupted roads"
+        font = 30
+    [Other.Subtitle]
+        font = 25
+	[Other.Y_axis_title]
+		text = "Miles of interruption"
+    [Other.Info]
+        text="""Thresholds:<br>
+                Pedestrians: 0.3 feet<br>
+                Cars: 0.5 feet<br>
+                Trucks: 1 feet<br>
+                Rescue vehicles: 2 feet"""
+        image="{image_path}/info.png"
+        scale=0.1

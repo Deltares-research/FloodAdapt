@@ -1,0 +1,121 @@
+[Charts]
+    [Charts.2Y]
+        Name = "2Y"
+        Image = "{image_path}/house.png"
+    [Charts.5Y]
+        Name = "5Y"
+        Image = "{image_path}/house.png"
+    [Charts.10Y]
+        Name = "10Y"
+        Image = "{image_path}/house.png"
+    [Charts.25Y]
+        Name = "25Y"
+        Image = "{image_path}/house.png"
+	[Charts.50Y]
+        Name = "50Y"
+        Image = "{image_path}/house.png"
+	[Charts.100Y]
+        Name = "100Y"
+        Image = "{image_path}/house.png"
+
+[Categories]
+    [Categories.LowVulnerability]
+        Name = "LowVulnerability"
+        Color = "#D5DEE1"
+    [Categories.HighVulnerability]
+        Name = "HighVulnerability"
+        Color = "#88A2AA"
+
+[Slices]
+    [Slices.Low_Vulnerability_2Y]
+        Name = "2Y Low Vulnerability"
+        Query = "ImpactedHomes2YLowSVI"
+        Chart = "2Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_2Y]
+        Name = "2Y High Vulnerability"
+        Query = "ImpactedHomes2YHighSVI"
+        Chart = "2Y"
+        Category = "HighVulnerability"
+    [Slices.Low_Vulnerability_5Y]
+        Name = "5Y Low Vulnerability"
+        Query = "ImpactedHomes5YLowSVI"
+        Chart = "5Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_5Y]
+        Name = "5Y High Vulnerability"
+        Query = "ImpactedHomes5YHighSVI"
+        Chart = "5Y"
+        Category = "HighVulnerability"
+    [Slices.Low_Vulnerability_10Y]
+        Name = "10Y Low Vulnerability"
+        Query = "ImpactedHomes10YLowSVI"
+        Chart = "10Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_10Y]
+        Name = "10Y High Vulnerability"
+        Query = "ImpactedHomes10YHighSVI"
+        Chart = "10Y"
+        Category = "HighVulnerability"
+    [Slices.Low_Vulnerability_25Y]
+        Name = "25Y Low Vulnerability"
+        Query = "ImpactedHomes25YLowSVI"
+        Chart = "25Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_25Y]
+        Name = "25Y High Vulnerability"
+        Query = "ImpactedHomes25YHighSVI"
+        Chart = "25Y"
+        Category = "HighVulnerability"
+    [Slices.Low_Vulnerability_50Y]
+        Name = "50Y Low Vulnerability"
+        Query = "ImpactedHomes50YLowSVI"
+        Chart = "50Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_50Y]
+        Name = "50Y High Vulnerability"
+        Query = "ImpactedHomes50YHighSVI"
+        Chart = "50Y"
+        Category = "HighVulnerability"
+    [Slices.Low_Vulnerability_100Y]
+        Name = "100Y Low Vulnerability"
+        Query = "ImpactedHomes100YLowSVI"
+        Chart = "100Y"
+        Category = "LowVulnerability"
+    [Slices.High_Vulnerability_100Y]
+        Name = "100Y High Vulnerability"
+        Query = "ImpactedHomes100YHighSVI"
+        Chart = "100Y"
+        Category = "HighVulnerability"
+
+[Other]
+    [Other.Expected_Damages]
+        title = "Expected annual damages"
+        image = "{image_path}/money.png"
+        image_scale = 1.3
+        title_font_size = 25
+        numbers_font_size = 20
+        height = 300
+
+    [Other.Flooded]
+        title = "Number of homes with a high chance of being flooded in a 30-year period"
+        image = "{image_path}/house.png"
+        image_scale = 0.7
+        title_font_size = 25
+        numbers_font_size = 20
+        height = 300
+
+    [Other.Return_Periods]
+        title = "Buildings impacted"
+        font_size = 25
+        image_scale = 0.2
+        numbers_font = 15
+        subtitle_font = 22
+        legend_font = 20
+        plot_height = 300
+
+    [Other.Info]
+        text="""Thresholds:<br>
+                Impacted: >= 0.25 feet<br>"""
+        image="https://openclipart.org/image/800px/302413"
+        scale=0.1

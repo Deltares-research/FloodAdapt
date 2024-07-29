@@ -1,0 +1,90 @@
+[Charts]
+    [Charts.Homes]
+        Name = "Homes"
+        Image = "{image_path}/house.png"
+    [Charts.Commercial]
+        Name = "Commercial"
+        Image = "{image_path}/cart.png"
+    [Charts.Industry]
+        Name = "Industrial facilities"
+        Image = "{image_path}/factory.png"
+
+
+[Categories]
+    [Categories.Minor]
+        Name = "Minor"
+        Color = "#ffa500"
+    [Categories.Major]
+        Name = "Major"
+        Color = "#ff0000"
+    [Categories.Destroyed]
+        Name = "Destroyed"
+        Color = "#000000"
+
+[Slices]
+    [Slices.Minor_Homes]
+        Name = "Minor Homes"
+        Query = "ResidentialMinorCount"
+        Chart = "Homes"
+        Category = "Minor"
+    [Slices.Major_Homes]
+        Name = "Major Homes"
+        Query = "ResidentialMajorCount"
+        Chart = "Homes"
+        Category = "Major"
+    [Slices.Destroyed_Homes]
+        Name = "Destroyed Homes"
+        Query = "ResidentialDestroyedCount"
+        Chart = "Homes"
+        Category = "Destroyed"
+    [Slices.Minor_Commercial]
+        Name = "Minor Commercial"
+        Query = "CommercialMinorCount"
+        Chart = "Commercial"
+        Category = "Minor"
+    [Slices.Major_Commercial]
+        Name = "Major Commercial"
+        Query = "CommercialMajorCount"
+        Chart = "Commercial"
+        Category = "Major"
+    [Slices.Destroyed_Commercial]
+        Name = "Destroyed Commercial"
+        Query = "CommercialDestroyedCount"
+        Chart = "Commercial"
+        Category = "Destroyed"
+    [Slices.Minor_Industry]
+        Name = "Minor Industrial"
+        Query = "IndustrialMinorCount"
+        Chart = "Industrial facilities"
+        Category = "Minor"
+    [Slices.Major_Industrial]
+        Name = "Major Industrial"
+        Query = "IndustrialMajorCount"
+        Chart = "Industrial facilities"
+        Category = "Major"
+    [Slices.Destroyed_Industrial]
+        Name = "Destroyed Industrial"
+        Query = "IndustrialDestroyedCount"
+        Chart = "Industrial facilities"
+        Category = "Destroyed"
+
+[Other]
+    [Other.Plot]
+        image_scale = 0.15
+        numbers_font = 20
+        height = 350
+        width = 1200
+    [Other.Title]
+        text = "Building damage"
+        font = 30
+    [Other.Subtitle]
+        font = 25
+    [Other.Legend]
+        font = 20
+    [Other.Info]
+        text="""Inundation depth thresholds:<br>
+                Minor: 0.25 m<br>
+                Major: 2.0 m<br>
+                Destroyed: >2.0 m"""
+        image="https://openclipart.org/image/800px/302413"
+        scale=0.1

@@ -1,0 +1,57 @@
+aggregateBy = []
+
+[[queries]]
+name = "FloodedHomes"
+description = "Homes likely to flood (Inundation Depth > 0.05) in 30 year period"
+select = "COUNT(*)"
+filter = "`Exceedance Probability` > 50 AND `Primary Object Type` = 'residential'"
+long_name = "Homes likely to flood in 30-year period (#)"
+show_in_metrics_table = "False"
+
+[[queries]]
+name = "ImpactedHomes2Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 2-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (2Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP2"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedHomes5Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 5-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (5Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP5"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedHomes10Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 10-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (10Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP10"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedHomes25Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 25-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (25Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP25"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedHomes50Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 50-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (50Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP50"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "ImpactedHomes100Y"
+description = "Homes impacted (Inundation Depth > 0.25) in the 100-year event"
+select = "COUNT(*)"
+filter = "`Inundation Depth (100Y)` >= 0.1 AND `Primary Object Type` = 'residential'"
+long_name = "Flooded homes RP100"
+show_in_metrics_table = "True"

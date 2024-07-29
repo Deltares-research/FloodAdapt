@@ -1,0 +1,57 @@
+[Charts]
+    [Charts.Impacted]
+        Name = "Impacted"
+        Image = "{image_path}/house.png"
+    [Charts.Displaced]
+        Name = "Displaced"
+        Image = "{image_path}/house.png"
+
+[Categories]
+    [Categories.LowVulnerability]
+        Name = "LowVulnerability"
+        Color = "#D5DEE1"
+    [Categories.HighVulnerability]
+        Name = "HighVulnerability"
+        Color = "#88A2AA"
+
+[Slices]
+    [Slices.Flooded_Low_Vulnerability_People]
+        Name = "Flooded low vulnerability homes"
+        Query = "FloodedLowVulnerability"
+        Chart = "Impacted"
+        Category = "LowVulnerability"
+    [Slices.Flooded_High_Vulnerability_People]
+        Name = "Flooded high vulnerability homes"
+        Query = "FloodedHighVulnerability"
+        Chart = "Impacted"
+        Category = "HighVulnerability"
+    [Slices.Displaced_Low_Vulnerability_People]
+        Name = "Displaced low vulnerability homes"
+        Query = "DisplacedLowVulnerability"
+        Chart = "Displaced"
+        Category = "LowVulnerability"
+    [Slices.Displaced_High_Vulnerability_People]
+        Name = "Displaced high vulnerability homes"
+        Query = "DisplacedHighVulnerability"
+        Chart = "Displaced"
+        Category = "HighVulnerability"
+
+[Other]
+    [Other.Plot]
+        image_scale = 0.15
+        numbers_font = 20
+        height = 350
+        width = 600
+    [Other.Title]
+        text = "Homes"
+        font = 30
+    [Other.Subtitle]
+        font = 25
+    [Other.Legend]
+        font = 20
+    [Other.Info]
+        text="""Thresholds:<br>
+                Impacted: <= 6 feet<br>
+                Displaced: > 6 feet<br>"""
+        image="https://openclipart.org/image/800px/302413"
+        scale=0.1

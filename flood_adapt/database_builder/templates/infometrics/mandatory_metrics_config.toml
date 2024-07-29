@@ -1,0 +1,9 @@
+aggregateBy = []
+
+[[queries]]
+name = "TotalDamageEvent"
+description = "Total building damage"
+select = "SUM(`Total Damage`)"
+filter = ""
+long_name = "Building damage ($)"
+show_in_metrics_table = "True"
