@@ -22,12 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m environment/make_environment.py -n api_docs
-          conda activate api_docs
           conda run -n api_docs pip install sphinx sphinx_rtd_theme
 
       - name: Build docs
         run: |
-          make -C ./dev_docs html
+          mamba run -n api_docs make -C ./dev_docs html
 
       - name: Publish to Wiki
         uses: peaceiris/actions-gh-pages@v3.9.3
@@ -37,5 +36,3 @@ jobs:
           destination_dir: ./${{ env.DOC_VERSION }}
           keep_files: false
           full_commit_message: Deploy API documentation to Wiki
-          # user_name: github-actions[bot]
-          # user_email: github-actions[bot]@users.noreply.github.com
