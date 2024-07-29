@@ -13,7 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -24,12 +23,10 @@ jobs:
           python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs
 
       - name: Build docs
-        needs: Install dependencies
         run: |
           conda run -n ./environment/api_docs make -C ./dev_docs html
 
       - name: Publish to Wiki
-        needs: Build docs
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
