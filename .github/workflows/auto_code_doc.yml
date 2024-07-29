@@ -1,4 +1,4 @@
-name: Build and Publish Sphinx docs to Wiki
+name: API Documentation
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Build docs
         run: |
-          make dev_docs html
+          make -C ./dev_docs html
 
       - name: Publish to Wiki
         uses: peaceiris/actions-gh-pages@v3.9.3
