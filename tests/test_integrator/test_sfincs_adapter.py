@@ -37,12 +37,31 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWind,
 )
 from flood_adapt.object_model.hazard.interface.models import ForcingType
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
+from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.measures import HazardType, IMeasure
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulIntensity,
+    UnitfulLength,
     UnitfulVelocity,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
 )
+
+
+@pytest.fixture()
+def default_sfincs_adapter(test_db) -> SfincsAdapter:
+    overland_path = test_db.static_path / "templates" / "overland"
+    adapter = SfincsAdapter(model_root=overland_path)
+    adapter._logger = mock.Mock()
+    adapter._logger.handlers = []
+    return adapter
 
 
 class TestAddForcing:
@@ -53,59 +72,55 @@ class TestAddForcing:
     To validate that hydromt_sfincs accepts the data that is returned by the forcing, the mocked methods should be tested separately.
     """
 
-    @pytest.fixture()
-    def sfincs_adapter(self, test_db) -> SfincsAdapter:
-        overland_path = test_db.static_path / "templates" / "overland"
-        adapter = SfincsAdapter(model_root=overland_path)
-        adapter._logger = mock.Mock()
-        adapter._logger.handlers = []
-        adapter._add_forcing_wind = mock.Mock()
-        adapter._add_forcing_rain = mock.Mock()
-        adapter._add_forcing_discharge = mock.Mock()
-        adapter._add_forcing_waterlevels = mock.Mock()
-        return adapter
-
-    def test_add_forcing_wind(self, sfincs_adapter):
-        forcing = mock.Mock(spec=IForcing)
-        forcing._type = ForcingType.WIND
-        sfincs_adapter.add_forcing(forcing)
-        sfincs_adapter._add_forcing_wind.assert_called_once_with(forcing)
-
-    def test_add_forcing_rain(self, sfincs_adapter):
-        forcing = mock.Mock(spec=IForcing)
-        forcing._type = ForcingType.RAINFALL
-        sfincs_adapter.add_forcing(forcing)
-        sfincs_adapter._add_forcing_rain.assert_called_once_with(forcing)
-
-    def test_add_forcing_discharge(self, sfincs_adapter):
-        forcing = mock.Mock(spec=IForcing)
-        forcing._type = ForcingType.DISCHARGE
-        sfincs_adapter.add_forcing(forcing)
-        sfincs_adapter._add_forcing_discharge.assert_called_once_with(forcing)
-
-    def test_add_forcing_waterlevels(self, sfincs_adapter):
-        forcing = mock.Mock(spec=IForcing)
-        forcing._type = ForcingType.WATERLEVEL
-        sfincs_adapter.add_forcing(forcing)
-        sfincs_adapter._add_forcing_waterlevels.assert_called_once_with(forcing)
-
-    def test_add_forcing_unsupported(self, sfincs_adapter):
-        forcing = mock.Mock(spec=IForcing)
-        forcing._type = "unsupported_type"
-        sfincs_adapter.add_forcing(forcing)
-        sfincs_adapter._logger.warning.assert_called_once_with(
-            f"Skipping unsupported forcing type {forcing.__class__.__name__}"
-        )
-
-    class TestAddForcingWind:
+    class TestDispatch:
         @pytest.fixture()
-        def sfincs_adapter(self, test_db) -> SfincsAdapter:
-            overland_path = test_db.static_path / "templates" / "overland"
-            adapter = SfincsAdapter(model_root=overland_path)
-            adapter._logger = mock.Mock()
-            adapter._logger.handlers = []
+        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+            adapter = default_sfincs_adapter
+
+            adapter._add_forcing_wind = mock.Mock()
+            adapter._add_forcing_rain = mock.Mock()
+            adapter._add_forcing_discharge = mock.Mock()
+            adapter._add_forcing_waterlevels = mock.Mock()
+            return adapter
+
+        def test_add_forcing_wind(self, sfincs_adapter):
+            forcing = mock.Mock(spec=IForcing)
+            forcing._type = ForcingType.WIND
+            sfincs_adapter.add_forcing(forcing)
+            sfincs_adapter._add_forcing_wind.assert_called_once_with(forcing)
+
+        def test_add_forcing_rain(self, sfincs_adapter):
+            forcing = mock.Mock(spec=IForcing)
+            forcing._type = ForcingType.RAINFALL
+            sfincs_adapter.add_forcing(forcing)
+            sfincs_adapter._add_forcing_rain.assert_called_once_with(forcing)
+
+        def test_add_forcing_discharge(self, sfincs_adapter):
+            forcing = mock.Mock(spec=IForcing)
+            forcing._type = ForcingType.DISCHARGE
+            sfincs_adapter.add_forcing(forcing)
+            sfincs_adapter._add_forcing_discharge.assert_called_once_with(forcing)
+
+        def test_add_forcing_waterlevels(self, sfincs_adapter):
+            forcing = mock.Mock(spec=IForcing)
+            forcing._type = ForcingType.WATERLEVEL
+            sfincs_adapter.add_forcing(forcing)
+            sfincs_adapter._add_forcing_waterlevels.assert_called_once_with(forcing)
+
+        def test_add_forcing_unsupported(self, sfincs_adapter):
+            forcing = mock.Mock(spec=IForcing)
+            forcing._type = "unsupported_type"
+            sfincs_adapter.add_forcing(forcing)
+            sfincs_adapter._logger.warning.assert_called_once_with(
+                f"Skipping unsupported forcing type {forcing.__class__.__name__}"
+            )
+
+    class TestWind:
+        @pytest.fixture()
+        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+            adapter = default_sfincs_adapter
             adapter._model = mock.Mock()
-            adapter._add_wind_forcing_from_grid = mock.Mock()
+            adapter._set_wind_forcing = mock.Mock()
             adapter._set_config_spw = mock.Mock()
             return adapter
 
@@ -139,9 +154,7 @@ class TestAddForcing:
             forcing.path = "path/to/meteo/grid"
 
             sfincs_adapter._add_forcing_wind(forcing)
-            sfincs_adapter._add_wind_forcing_from_grid.assert_called_once_with(
-                forcing.path
-            )
+            sfincs_adapter._set_wind_forcing.assert_called_once_with(forcing.path)
 
         def test_add_forcing_wind_from_track(self, sfincs_adapter):
             forcing = mock.Mock(spec=WindFromTrack)
@@ -163,18 +176,17 @@ class TestAddForcing:
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
             )
 
-    class TestAddForcingRainfall:
+    class TestRainfall:
         @pytest.fixture()
-        def sfincs_adapter(self, test_db) -> SfincsAdapter:
-            overland_path = test_db.static_path / "templates" / "overland"
-            adapter = SfincsAdapter(model_root=overland_path)
-            adapter._logger = mock.Mock()
-            adapter._logger.handlers = []
+        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+            adapter = default_sfincs_adapter
             adapter._model = mock.Mock()
             return adapter
 
         def test_add_forcing_rain_constant(self, sfincs_adapter):
-            forcing = RainfallConstant(intensity=UnitfulIntensity(10, "mm_hr"))
+            forcing = RainfallConstant(
+                intensity=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr)
+            )
             sfincs_adapter._add_forcing_rain(forcing)
 
             sfincs_adapter._model.setup_precip_forcing.assert_called_once_with(
@@ -215,64 +227,39 @@ class TestAddForcing:
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
             )
 
-    class TestAddForcingDischarge:
+    class TestDischarge:
         @pytest.fixture()
-        def test_db_2_rivers(self, test_db):
-            # This is here because the site.toml file is not read again after the database is created, and its hardcoded to read `site.toml`
+        def sfincs_adapter_0_rivers(self, test_db) -> SfincsAdapter:
             os.remove(test_db.static_path / "site" / "site.toml")
             os.rename(
-                test_db.static_path / "site" / "site_2_rivers.toml",
+                test_db.static_path / "site" / "site_without_river.toml",
                 test_db.static_path / "site" / "site.toml",
             )
 
             test_db.reset()
             test_db = read_database(test_db.static_path.parents[1], "charleston_test")
-            return test_db
 
-        @pytest.fixture()
-        def test_db_0_rivers(self, test_db):
-            # This is here because the site.toml file is not read again after the database is created, and its hardcoded to read `site.toml`
-            os.remove(test_db.static_path / "site" / "site.toml")
-            os.rename(
-                test_db.static_path / "site" / "site_0_rivers.toml",
-                test_db.static_path / "site" / "site.toml",
-            )
+            overland_path = test_db.static_path / "templates" / "overland_0_rivers"
 
-            test_db.reset()
-            test_db = read_database(test_db.static_path.parents[1], "charleston_test")
-            return test_db
-
-        @pytest.fixture()
-        def sfincs_adapter_2_rivers(self, test_db_2_rivers) -> SfincsAdapter:
-            test_db = test_db_2_rivers
-            overland_2_rivers_path = (
-                test_db.static_path / "templates" / "overland_2_rivers"
-            )
-
-            adapter = SfincsAdapter(model_root=overland_2_rivers_path)
+            adapter = SfincsAdapter(model_root=overland_path)
             adapter._logger = mock.Mock()
             adapter._logger.handlers = []
 
             return adapter
 
         @pytest.fixture()
-        def sfincs_adapter_0_rivers(self, test_db_0_rivers) -> SfincsAdapter:
-            test_db = test_db_0_rivers
-            overland_0_rivers_path = (
-                test_db.static_path / "templates" / "overland_0_rivers"
-            )
+        def sfincs_adapter_1_rivers(self, test_db) -> SfincsAdapter:
+            overland_path = test_db.static_path / "templates" / "overland"
 
-            adapter = SfincsAdapter(model_root=overland_0_rivers_path)
+            adapter = SfincsAdapter(model_root=overland_path)
             adapter._logger = mock.Mock()
             adapter._logger.handlers = []
-
             return adapter
 
-        def test_add_forcing_discharge_synthetic(self, sfincs_adapter_2_rivers):
+        def test_add_forcing_discharge_synthetic(self, sfincs_adapter_1_rivers):
             # Arrange
-            sfincs_adapter = sfincs_adapter_2_rivers
+            sfincs_adapter = sfincs_adapter_1_rivers
             sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
-            gdf_locs = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
 
             forcing = mock.Mock(spec=DischargeSynthetic)
             time = pd.date_range(start="2023-01-01", periods=3, freq="D")
@@ -280,7 +267,6 @@ class TestAddForcing:
                 index=time,
                 data={
                     "discharge1": [10, 20, 30],
-                    "discharge2": [10, 20, 30],
                 },
             )
             # Act
@@ -291,12 +277,12 @@ class TestAddForcing:
             call_args = sfincs_adapter._model.setup_discharge_forcing.call_args
 
             assert call_args[1]["timeseries"].equals(forcing.get_data())
-            assert all(call_args[1]["locations"] == gdf_locs)
+            assert all(call_args[1]["locations"] == mock.ANY)
             assert not call_args[1]["merge"]
 
-        def test_add_forcing_discharge_unsupported(self, sfincs_adapter_2_rivers):
+        def test_add_forcing_discharge_unsupported(self, sfincs_adapter_1_rivers):
             # Arrange
-            sfincs_adapter = sfincs_adapter_2_rivers
+            sfincs_adapter = sfincs_adapter_1_rivers
 
             class UnsupportedDischarge(IDischarge):
                 pass
@@ -312,7 +298,7 @@ class TestAddForcing:
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
 
-        def test_add_dis_bc_no_rivers(self, sfincs_adapter_0_rivers):
+        def test_set_discharge_forcing_no_rivers(self, sfincs_adapter_0_rivers):
             # Arrange
             sfincs_adapter = sfincs_adapter_0_rivers
             forcing = mock.Mock(spec=DischargeConstant)
@@ -325,51 +311,46 @@ class TestAddForcing:
             sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
 
             # Act
-            sfincs_adapter._add_dis_bc(ret_val)
+            sfincs_adapter._set_discharge_forcing(ret_val)
 
             # Assert
             assert sfincs_adapter._model.setup_discharge_forcing.call_count == 0
 
-        def test_add_dis_bc_matching_rivers(self, sfincs_adapter_2_rivers):
+        def test_set_discharge_forcing_matching_rivers(self, sfincs_adapter_1_rivers):
             # Arrange
-            sfincs_adapter = sfincs_adapter_2_rivers
+            sfincs_adapter = sfincs_adapter_1_rivers
             sfincs_adapter._model.setup_discharge_forcing = mock.Mock()
 
-            forcing = mock.Mock(spec=DischargeConstant)
+            forcing = mock.Mock(spec=DischargeSynthetic)
             time = pd.date_range(start="2023-01-01", periods=3, freq="D")
             ret_val = pd.DataFrame(
                 index=time,
                 data={
                     "discharge1": [10, 20, 30],
-                    "discharge2": [10, 20, 30],
                 },
             )
             forcing.get_data.return_value = ret_val
-            gdf_locs = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
 
             # Act
-            sfincs_adapter._add_dis_bc(ret_val)
+            sfincs_adapter._add_forcing_discharge(forcing)
 
             # Assert
             sfincs_adapter._model.setup_discharge_forcing.assert_called_once
             call_args = sfincs_adapter._model.setup_discharge_forcing.call_args
 
             assert call_args[1]["timeseries"].equals(forcing.get_data())
-            assert all(call_args[1]["locations"] == gdf_locs)
+            assert all(call_args[1]["locations"] == mock.ANY)
             assert not call_args[1]["merge"]
 
-        def test_add_dis_bc_mismatched_coordinates(self, test_db_2_rivers):
-            forcing = mock.Mock(spec=DischargeConstant)
+        def test_set_discharge_forcing_mismatched_coordinates(self, test_db):
+            forcing = mock.Mock(spec=DischargeSynthetic)
             time = pd.date_range(start="2023-01-01", periods=3, freq="D")
-            overland_2_rivers_path = (
-                test_db_2_rivers.static_path / "templates" / "overland_2_rivers"
-            )
+            overland_path = test_db.static_path / "templates" / "overland"
 
-            with open(overland_2_rivers_path / "sfincs.src", "w") as f:
-                f.write("10	20\n")
-                f.write("40	50\n")
+            with open(overland_path / "sfincs.src", "w") as f:
+                f.write("10\t20\n")
 
-            sfincs_adapter = SfincsAdapter(model_root=overland_2_rivers_path)
+            sfincs_adapter = SfincsAdapter(model_root=overland_path)
             sfincs_adapter._logger = mock.Mock()
             sfincs_adapter._logger.handlers = []
 
@@ -377,7 +358,6 @@ class TestAddForcing:
                 index=time,
                 data={
                     "discharge1": [10, 20, 30],
-                    "discharge2": [10, 20, 30],
                 },
             )
             forcing.get_data.return_value = ret_val
@@ -389,10 +369,12 @@ class TestAddForcing:
             )
 
             with pytest.raises(ValueError, match=expected_message):
-                sfincs_adapter._add_dis_bc(ret_val)
+                sfincs_adapter._set_discharge_forcing(ret_val)
 
-        def test_add_dis_bc_mismatched_river_count(self, sfincs_adapter_2_rivers):
-            sfincs_adapter = sfincs_adapter_2_rivers
+        def test_set_discharge_forcing_mismatched_river_count(
+            self, sfincs_adapter_1_rivers
+        ):
+            sfincs_adapter = sfincs_adapter_1_rivers
             list_df = pd.DataFrame(
                 index=pd.date_range(start="2023-01-01", periods=3, freq="D"),
                 data={
@@ -407,14 +389,12 @@ class TestAddForcing:
                 ValueError,
                 match="Number of rivers in site.toml and SFINCS template model not compatible",
             ):
-                sfincs_adapter._add_dis_bc(list_df)
+                sfincs_adapter._set_discharge_forcing(list_df)
 
-    class TestAddForcingWaterLevel:
+    class TestWaterLevel:
         @pytest.fixture()
-        def sfincs_adapter(self, test_db) -> SfincsAdapter:
-            overland_path = test_db.static_path / "templates" / "overland"
-            adapter = SfincsAdapter(model_root=overland_path)
-            return adapter
+        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+            return default_sfincs_adapter
 
         @pytest.mark.parametrize(
             "forcing_cls",
@@ -425,7 +405,7 @@ class TestAddForcing:
             ],
         )
         def test_add_forcing_waterlevels_simple(self, sfincs_adapter, forcing_cls):
-            sfincs_adapter._add_wl_bc = mock.Mock()
+            sfincs_adapter._set_waterlevel_forcing = mock.Mock()
 
             forcing = mock.Mock(spec=forcing_cls)
             forcing.get_data.return_value = pd.DataFrame(
@@ -434,10 +414,12 @@ class TestAddForcing:
             )
             sfincs_adapter._add_forcing_waterlevels(forcing)
 
-            sfincs_adapter._add_wl_bc.assert_called_once_with(forcing.get_data())
+            sfincs_adapter._set_waterlevel_forcing.assert_called_once_with(
+                forcing.get_data()
+            )
 
         def test_add_forcing_waterlevels_model(self, sfincs_adapter):
-            sfincs_adapter._add_wl_bc = mock.Mock()
+            sfincs_adapter._set_waterlevel_forcing = mock.Mock()
             sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
 
             forcing = mock.Mock(spec=WaterlevelFromModel)
@@ -447,7 +429,9 @@ class TestAddForcing:
             )
             sfincs_adapter._add_forcing_waterlevels(forcing)
 
-            sfincs_adapter._add_wl_bc.assert_called_once_with(forcing.get_data())
+            sfincs_adapter._set_waterlevel_forcing.assert_called_once_with(
+                forcing.get_data()
+            )
             sfincs_adapter._turn_off_bnd_press_correction.assert_called_once()
 
         def test_add_forcing_waterlevels_unsupported(self, sfincs_adapter):
@@ -463,18 +447,170 @@ class TestAddForcing:
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
 
-        def test_add_wl_bc(self, sfincs_adapter):
+        def test_set_waterlevel_forcing(self, sfincs_adapter):
+            sfincs_adapter._model.set_forcing_1d = mock.Mock()
             forcing = mock.Mock(spec=WaterlevelSynthetic)
             forcing.get_data.return_value = pd.DataFrame(
                 data={"waterlevel": [1, 2, 3]},
                 index=pd.date_range("2023-01-01", periods=3, freq="D"),
             )
 
-            sfincs_adapter._add_wl_bc(forcing.get_data())
+            sfincs_adapter._set_waterlevel_forcing(forcing.get_data())
 
-            sfincs_adapter._model.setup_waterlevel_forcing.assert_called_once_with(
-                timeseries=forcing.get_data()
+            sfincs_adapter._model.set_forcing_1d.assert_called_once_with(
+                name="bzs", df_ts=forcing.get_data(), gdf_locs=mock.ANY, merge=False
             )
+
+
+class TestAddMeasure:
+    """Class to test the add_measure method of the SfincsAdapter class."""
+
+    class TestDispatch:
+        @pytest.fixture()
+        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+            adapter = default_sfincs_adapter
+
+            adapter._add_measure_floodwall = mock.Mock()
+            adapter._add_measure_greeninfra = mock.Mock()
+            adapter._add_measure_pump = mock.Mock()
+            adapter._logger.warning = mock.Mock()
+
+            return adapter
+
+        def test_add_measure_pump(self, sfincs_adapter):
+            measure = mock.Mock(spec=Pump)
+            measure.attrs = mock.Mock()
+            measure.attrs.type = HazardType.pump
+            sfincs_adapter.add_measure(measure)
+            sfincs_adapter._add_measure_pump.assert_called_once_with(measure)
+
+        def test_add_measure_greeninfra(self, sfincs_adapter):
+            measure = mock.Mock(spec=GreenInfrastructure)
+            measure.attrs = mock.Mock()
+            measure.attrs.type = HazardType.greening
+            sfincs_adapter.add_measure(measure)
+            sfincs_adapter._add_measure_greeninfra.assert_called_once_with(measure)
+
+        def test_add_measure_floodwall(self, sfincs_adapter):
+            measure = mock.Mock(spec=FloodWall)
+            measure.attrs = mock.Mock()
+            measure.attrs.type = HazardType.floodwall
+            sfincs_adapter.add_measure(measure)
+            sfincs_adapter._add_measure_floodwall.assert_called_once_with(measure)
+
+        def test_add_measure_unsupported(self, sfincs_adapter):
+            class UnsupportedMeasure(IMeasure):
+                pass
+
+            measure = mock.Mock(spec=UnsupportedMeasure)
+            measure.attrs = mock.Mock()
+            measure.attrs.type = "UnsupportedMeasure"
+            sfincs_adapter.add_measure(measure)
+            sfincs_adapter._logger.warning.assert_called_once_with(
+                f"Skipping unsupported measure type {measure.__class__.__name__}"
+            )
+
+    class TestFloodwall:
+        @pytest.fixture()
+        def sfincs_adapter(self, test_db) -> SfincsAdapter:
+            overland_path = test_db.static_path / "templates" / "overland"
+            adapter = SfincsAdapter(model_root=overland_path)
+            adapter._logger = mock.Mock()
+            adapter._logger.handlers = []
+
+            return adapter, test_db
+
+        def test_add_measure_floodwall(self, sfincs_adapter):
+            sfincs_adapter, test_db = sfincs_adapter
+            sfincs_adapter._model.setup_structures = mock.Mock()
+            floodwall = test_db.measures.get("seawall")
+
+            sfincs_adapter._add_measure_floodwall(floodwall)
+            sfincs_adapter._model.setup_structures.assert_called_once_with(
+                structures=mock.ANY,
+                stype="weir",
+                merge=True,
+            )
+
+    class TestPump:
+        @pytest.fixture()
+        def sfincs_adapter(self, test_db) -> SfincsAdapter:
+            overland_path = test_db.static_path / "templates" / "overland"
+            adapter = SfincsAdapter(model_root=overland_path)
+            adapter._logger = mock.Mock()
+            adapter._logger.handlers = []
+
+            return adapter, test_db
+
+        def test_add_measure_pump(self, sfincs_adapter):
+            sfincs_adapter, test_db = sfincs_adapter
+            sfincs_adapter._model.setup_drainage_structures = mock.Mock()
+            pump = test_db.measures.get("pump")
+
+            sfincs_adapter._add_measure_pump(pump)
+
+            sfincs_adapter._model.setup_drainage_structures.assert_called_once_with(
+                structures=mock.ANY,
+                stype="pump",
+                discharge=pump.attrs.discharge.convert(UnitTypesDischarge("m3/s")),
+                merge=True,
+            )
+
+    class TestGreenInfrastructure:
+        @pytest.fixture()
+        def sfincs_adapter(self, test_db) -> SfincsAdapter:
+            overland_path = test_db.static_path / "templates" / "overland"
+            adapter = SfincsAdapter(model_root=overland_path)
+            adapter._logger = mock.Mock()
+            adapter._logger.handlers = []
+
+            return adapter, test_db
+
+        def test_add_measure_greeninfra(self, sfincs_adapter):
+            sfincs_adapter, test_db = sfincs_adapter
+            sfincs_adapter._model.setup_storage_volume = mock.Mock()
+            green_infra = test_db.measures.get("green_infra")
+
+            sfincs_adapter._add_measure_greeninfra(green_infra)
+            sfincs_adapter._model.setup_storage_volume.assert_called_once_with(
+                storage_locs=mock.ANY,  # This would be the exploded geodataframe
+                volume=1,
+                height=None,
+                merge=True,
+            )
+
+
+class TestAddProjection:
+    """Class to test the add_projection method of the SfincsAdapter class."""
+
+    def test_add_slr(self, default_sfincs_adapter):
+        adapter = default_sfincs_adapter
+        adapter._set_waterlevel_forcing(
+            pd.DataFrame(
+                index=pd.date_range("2023-01-01", periods=3, freq="D"),
+                data={"waterlevel": [1, 2, 3]},
+            )
+        )
+
+        wl_df_before = adapter.get_water_levels()
+
+        projection = PhysicalProjection(
+            data={
+                "sea_level_rise": UnitfulLength(value=10, units="meters"),
+                "subsidence": UnitfulLength(value=1, units="meters"),
+                "rainfall_increase": 1,
+                "storm_frequency_increase": 1,
+            }
+        )
+
+        adapter.add_projection(projection)
+
+        wl_df_expected = wl_df_before.apply(
+            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
+        )
+        wl_df_after = adapter.get_water_levels()
+
+        assert wl_df_expected.equals(wl_df_after)
 
 
 class TestAddObsPoint:
