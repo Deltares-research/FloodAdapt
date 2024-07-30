@@ -470,13 +470,13 @@ ul.task-list li input[type="checkbox"] {
 <p>FloodAdapt can simulate different types of building-level adaptation actions: <a href="#elevate">elevate</a>, <a href="#buyout">buyout</a>, and <a href="#floodproof">floodproof</a> properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.</p>
 <div id="fig-measures_buildingLevel" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_buildingLevel.png" class="lightbox" title="Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/measures_buildingLevel.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_buildingLevel.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties"><img src="../../_static/images/measures_buildingLevel.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties</strong></figcaption>
 </figure>
 </div>
 <div id="fig-measures_buildingLevel_GUI" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_buildingLevel_GUI.png" class="lightbox" title="Selection of Building measures in the Measures tab, shown here for the example of elevating buildings" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/measures_buildingLevel_GUI.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measures_buildingLevel_GUI.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Selection of Building measures in the Measures tab, shown here for the example of elevating buildings"><img src="../../_static/images/measures_buildingLevel_GUI.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Selection of Building measures in the Measures tab, shown here for the example of elevating buildings</strong></figcaption>
 </figure>
 </div>
@@ -493,14 +493,14 @@ ul.task-list li input[type="checkbox"] {
 <p>Elevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the <a href="../../4_user_guide/measures/index.html">Measures</a> tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Elevate properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in <a href="#fig-measures_buildingLevel_elevatePoly">Figure&nbsp;3</a>). When you are finished clicking the polygon, right click or double click to open the measure specification window (see <a href="#fig-measures_buildingLevel_fpPoly_spec">Figure&nbsp;7</a>).</p>
 <div id="fig-measures_buildingLevel_elevatePoly" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_building_poly_elevate.png" class="lightbox" title="Selecting buildings for applying the elevate measure" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/measure_building_poly_elevate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measure_building_poly_elevate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Selecting buildings for applying the elevate measure"><img src="../../_static/images/measure_building_poly_elevate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Selecting buildings for applying the elevate measure</strong></figcaption>
 </figure>
 </div>
 <p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see <a href="#fig-measure_building_poly_buyout_specification">Figure&nbsp;5</a> for the example of buyouts)</p>
 <div id="fig-measures_buildingLevel_elevate_spec" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_building_elevate_specification.png" class="lightbox" title="Specifying information for an elevate measure" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/measure_building_elevate_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_building_elevate_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Specifying information for an elevate measure"><img src="../../_static/images/measure_building_elevate_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Specifying information for an elevate measure</strong></figcaption>
 </figure>
 </div>
@@ -537,7 +537,7 @@ How is elevating properties represented in the modeling?
 <p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected “Aggregation area” - the aggregation area where the measure should be applied. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab.</p>
 <div id="fig-measure_building_poly_buyout_specification" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_building_poly_buyout_specification.png" class="lightbox" title="Specifying information for a buyout measure" data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/measure_building_poly_buyout_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_building_poly_buyout_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Specifying information for a buyout measure"><img src="../../_static/images/measure_building_poly_buyout_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Specifying information for a buyout measure</strong></figcaption>
 </figure>
 </div>
@@ -561,14 +561,14 @@ How are buyouts represented in the modeling?
 <p>To implement floodproofing to buildings in FloodAdapt, go to the <a href="../../4_user_guide/measures/index.html">Measures</a> tab, select “Buildings” for the Category, and then from the Measure drop-down menu, select “Floodproof properties”. Select one of the “Area type” options and then click “Add Measure”. If you selected “Draw polygon”, you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in <a href="#fig-measures_buildingLevel_fpPoly">Figure&nbsp;6</a>). When you are finished clicking the polygon, right click or double click to open the measure specification window (see <a href="#fig-measures_buildingLevel_fpPoly_spec">Figure&nbsp;7</a>).</p>
 <div id="fig-measures_buildingLevel_fpPoly" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_building_poly_fp.png" class="lightbox" title="Selecting buildings for applying the floodproofing measure" data-gallery="quarto-lightbox-gallery-6"><img src="../../_static/images/measure_building_poly_fp.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measure_building_poly_fp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Selecting buildings for applying the floodproofing measure"><img src="../../_static/images/measure_building_poly_fp.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Selecting buildings for applying the floodproofing measure</strong></figcaption>
 </figure>
 </div>
 <p>In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the height of the floodproofing, and the property type that the measure should be applied to. The floodproofing height ensures that damages only occur when the inundation depth is greater than the floodproofing height. When these entries are complete, the user can click ‘OK’ and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the “Aggregation area” option for selecting buildings, the specification window will automatically open when they click “Add measure” and they will additionally be asked to choose an aggregation area (see <a href="#fig-measure_building_poly_buyout_specification">Figure&nbsp;5</a> for the example of buyouts)</p>
 <div id="fig-measures_buildingLevel_fpPoly_spec" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_building_poly_fp_specification.png" class="lightbox" title="Specifying information for a floodproofing measure" data-gallery="quarto-lightbox-gallery-7"><img src="../../_static/images/measure_building_poly_fp_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_building_poly_fp_specification.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Specifying information for a floodproofing measure"><img src="../../_static/images/measure_building_poly_fp_specification.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;7: <strong>Specifying information for a floodproofing measure</strong></figcaption>
 </figure>
 </div>
@@ -962,7 +962,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","loop":true,"selector":".lightbox","closeEffect":"zoom","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"loop":true,"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","openEffect":"zoom"});</script>
 
 
 
