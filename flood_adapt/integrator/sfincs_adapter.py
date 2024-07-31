@@ -93,7 +93,8 @@ class SfincsAdapter(IHazardAdapter):
         self._logger = FloodAdaptLogging.getLogger(__name__)
         if database is not None:
             FloodAdaptLogging.deprecation_warning(
-                version="0.2.0", reason="the `database` parameter is deprecated."
+                version="0.2.0",
+                reason="the `database` parameter is deprecated. Use the database attribute instead.",
             )
 
         self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)

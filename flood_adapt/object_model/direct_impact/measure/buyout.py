@@ -34,7 +34,7 @@ class Buyout(ImpactMeasure, IBuyout):
         if database_input_path is not None:
             FloodAdaptLogging.deprecation_warning(
                 version="0.2.0",
-                reason="`database_input_path` is deprecated. Use the database attribute instead.",
+                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
             )
 
         obj = Buyout()

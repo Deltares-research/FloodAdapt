@@ -1,6 +1,6 @@
 from abc import ABC
 
-from deprecated import deprecated
+from flood_adapt.log import FloodAdaptLogging
 
 
 class IDatabaseUser(ABC):
@@ -17,10 +17,10 @@ class IDatabaseUser(ABC):
         self._database_instance = Database()
         return self._database_instance
 
-    @deprecated(
-        version="0.2.0",
-        reason="`database_input_path` is deprecated. Use the database attribute instead.",
-    )
     @property
     def database_input_path(self):
+        FloodAdaptLogging.deprecation_warning(
+            version="0.2.0",
+            reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
+        )
         return self.database.input_path

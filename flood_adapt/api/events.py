@@ -4,9 +4,9 @@ from typing import Any, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
-from deprecated import deprecated
 
 import flood_adapt.dbs_controller as db
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
@@ -27,8 +27,11 @@ def get_event_mode(name: str) -> str:
     return EventFactory.get_mode(filename)
 
 
-@deprecated(version="0.1.0", reason="Use flood_adapt.api.events.create_event instead")
 def create_synthetic_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
+    FloodAdaptLogging.deprecation_warning(
+        version="0.2.0",
+        reason="`create_synthetic_event` is deprecated. Use `create_event` instead.",
+    )
     return create_event(attrs)
 
 

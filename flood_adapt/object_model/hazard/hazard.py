@@ -2,8 +2,7 @@ import os
 from enum import Enum
 from pathlib import Path
 
-from deprecated import deprecated
-
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
@@ -40,9 +39,12 @@ class FloodMap(IDatabaseUser):
     def has_run(self) -> bool:
         return self.path.exists()
 
-    @deprecated(version="0.2.0", reason="Use has_run instead.")
     @property
     def has_run_check(self):
+        FloodAdaptLogging.deprecation_warning(
+            version="0.2.0",
+            reason="`has_run_check` parameter is deprecated. Use has_run instead.",
+        )
         return self.has_run
 
     @property

@@ -49,7 +49,7 @@ class DirectImpacts(IDatabaseUser):
         if results_path is not None:
             FloodAdaptLogging.deprecation_warning(
                 version="0.2.0",
-                reason="results_path is deprecated and will be removed in future versions.",
+                reason="`results_path` parameter is deprecated. Use the `results_path` property instead.",
             )
 
         self.set_socio_economic_change(scenario.projection)

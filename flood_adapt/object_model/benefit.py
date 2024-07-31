@@ -9,9 +9,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
-from deprecated import deprecated
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
 
@@ -79,8 +79,11 @@ class Benefit(IBenefit):
         )
         return check
 
-    @deprecated(version="0.1.0", reason="Use self.results instead")
     def get_output(self) -> dict:
+        FloodAdaptLogging.deprecation_warning(
+            version="0.2.0",
+            reason="`get_output` is deprecated. Use self.results instead",
+        )
         return self.results
 
     def check_scenarios(self) -> pd.DataFrame:
