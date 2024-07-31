@@ -16,7 +16,6 @@ from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
-from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
@@ -42,6 +41,7 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindFromTrack,
     WindSynthetic,
 )
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEvent,
 )
@@ -72,6 +72,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesVolume,
 )
+from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.utils import cd
 
 
@@ -143,15 +144,16 @@ class SfincsAdapter(IHazardAdapter):
             self._model.set_root(root=path, mode="r")
         self._model.read()
 
-    def write(self, path_out: Union[str, os.PathLike]):
+    def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True):
         """Write the sfincs model configuration to a directory."""
         if not isinstance(path_out, Path):
             path_out = Path(path_out)
         if not path_out.exists():
             path_out.mkdir(parents=True)
 
+        write_mode = "w+" if overwrite else "w"
         with cd(path_out):
-            self._model.set_root(root=path_out, mode="w")
+            self._model.set_root(root=path_out, mode=write_mode)
             self._model.write()
 
     def execute(self, sim_path=None, strict=True) -> bool:
@@ -262,21 +264,10 @@ class SfincsAdapter(IHazardAdapter):
             self._add_obs_points()
 
             # write sfincs model in output destination
-            if event.attrs.mode == Mode.single_event:
-                sim_paths = sim_paths[0]
-            elif event.attrs.mode == Mode.risk:
-                sim_paths = sim_paths[1]
-
             self.write(path_out=sim_paths[ii])
 
     def process(self):
         sim_paths = self._get_simulation_paths()
-        event = self.database.events.get(self._scenario.attrs.event)
-        if event.attrs.mode == Mode.single_event:
-            sim_paths = sim_paths[0]
-        elif event.attrs.mode == Mode.risk:
-            sim_paths = sim_paths[1]
-
         results = []
         for simulation_path in sim_paths:
             results.append(self.execute(simulation_path))
@@ -353,9 +344,12 @@ class SfincsAdapter(IHazardAdapter):
                 )
                 return
 
-    def add_projection(self, projection: PhysicalProjection):
+    def add_projection(self, projection: Projection | PhysicalProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
-        if projection.attrs.sea_level_rise is not None:
+        if not isinstance(projection, PhysicalProjection):
+            projection = projection.get_physical_projection()
+
+        if projection.attrs.sea_level_rise:
             wl_df = self.get_water_levels()
             new_wl_df = wl_df.apply(
                 lambda x: x + projection.attrs.sea_level_rise.convert("meters")
@@ -918,14 +912,12 @@ class SfincsAdapter(IHazardAdapter):
             / scenario_name
         )
 
-    def _get_simulation_paths(self) -> tuple[list[Path], list[Path]]:
+    def _get_simulation_paths(self) -> list[Path]:
         simulation_paths = []
-        simulation_paths_offshore = []
         event: IEvent = self.database.events.get(self._scenario.attrs.event)
         mode = event.attrs.mode
 
         results_path = self._get_result_path()
-
         if mode == Mode.single_event:
             simulation_paths.append(
                 results_path.joinpath(
@@ -933,16 +925,7 @@ class SfincsAdapter(IHazardAdapter):
                     self.database.site.attrs.sfincs.overland_model,
                 )
             )
-            # Create a folder name for the offshore model (will not be used if offshore model is not created)
-            simulation_paths_offshore.append(
-                results_path.joinpath(
-                    "simulations",
-                    self.database.site.attrs.sfincs.offshore_model,
-                )
-            )
-
-        # TODO investigate
-        elif mode == Mode.risk:  # risk mode requires an additional folder layer
+        elif mode == Mode.risk:
             for subevent in event.get_subevents():
                 simulation_paths.append(
                     results_path.joinpath(
@@ -951,7 +934,24 @@ class SfincsAdapter(IHazardAdapter):
                         self.database.site.attrs.sfincs.overland_model,
                     )
                 )
+        return simulation_paths
 
+    def _get_simulation_paths_offshore(self) -> list[Path]:
+        simulation_paths_offshore = []
+        event: IEvent = self.database.events.get(self._scenario.attrs.event)
+        mode = event.attrs.mode
+
+        results_path = self._get_result_path()
+        # Create a folder name for the offshore model (will not be used if offshore model is not created)
+        if mode == Mode.single_event:  # risk mode requires an additional folder layer
+            simulation_paths_offshore.append(
+                results_path.joinpath(
+                    "simulations",
+                    self.database.site.attrs.sfincs.offshore_model,
+                )
+            )
+        elif mode == Mode.risk:  # risk mode requires an additional folder layer
+            for subevent in event.get_subevents():
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 simulation_paths_offshore.append(
                     results_path.joinpath(
@@ -960,8 +960,7 @@ class SfincsAdapter(IHazardAdapter):
                         self.database.site.attrs.sfincs.offshore_model,
                     )
                 )
-
-        return simulation_paths, simulation_paths_offshore
+        return simulation_paths_offshore
 
     def _get_flood_map_path(self) -> list[Path]:
         """_summary_."""
@@ -1034,8 +1033,8 @@ class SfincsAdapter(IHazardAdapter):
     ### OUTPUT HELPERS ###
     def _write_floodmap_geotiff(self):
         results_path = self._get_result_path()
-
-        for sim_path in self._get_simulation_paths():
+        sim_paths = self._get_simulation_paths()
+        for sim_path in sim_paths:
             # read SFINCS model
             with SfincsAdapter(model_root=sim_path) as model:
                 # dem file for high resolution flood depth map
@@ -1130,7 +1129,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         floodmap_rp = self.database.site.attrs.risk.return_periods
         result_path = self.get_result_path()
-        sim_paths, offshore_sim_paths = self._get_simulation_paths()
+        sim_paths = self._get_simulation_paths()
         event_set = self.database.events.get(self._scenario.attrs.event)
         phys_proj = self.database.projections.get(self._scenario.attrs.projection)
         frequencies = event_set.attrs.frequency
@@ -1311,52 +1310,26 @@ class SfincsAdapter(IHazardAdapter):
 
                 # check if event is historic
                 event = self.database.events.get(self._scenario.attrs.event)
-                if event.attrs.timing == "historical":
-                    # check if observation station has a tide gauge ID
-                    # if yes to both download tide gauge data and add to plot
-                    if (
-                        isinstance(self.database.site.attrs.obs_point[ii].ID, int)
-                        or self.database.site.attrs.obs_point[ii].file is not None
-                    ):
-                        if self.database.site.attrs.obs_point[ii].file is not None:
-                            file = self.database.static_path.joinpath(
-                                self.database.site.attrs.obs_point[ii].file
+                if isinstance(event, HistoricalEvent):
+                    df_gauge = event._get_observed_wl_data(
+                        station_id=self.database.site.attrs.obs_point[ii].ID,
+                        units=UnitTypesLength(gui_units),
+                    )
+                    if df_gauge is not None:
+                        # If data is available, add to plot
+                        fig.add_trace(
+                            go.Scatter(
+                                x=pd.DatetimeIndex(df_gauge.index),
+                                y=df_gauge[1]
+                                + self.database.site.attrs.water_level.msl.height.convert(
+                                    gui_units
+                                ),
+                                line_color="#ea6404",
                             )
-                        else:
-                            file = None
-
-                        try:
-                            # TODO move download functionality to here ?
-                            from flood_adapt.object_model.hazard.event.historical import (
-                                HistoricalEvent,
-                            )
-
-                            df_gauge = HistoricalEvent._download_wl_data(
-                                station_id=self.database.site.attrs.obs_point[ii].ID,
-                                start_time_str=event.attrs.time.start_time,
-                                stop_time_str=event.attrs.time.end_time,
-                                units=UnitTypesLength(gui_units),
-                                file=file,
-                            )
-                        except COOPSAPIError as e:
-                            self._logger.warning(
-                                f"Could not download tide gauge data for station {self.database.site.attrs.obs_point[ii].ID}. {e}"
-                            )
-                        else:
-                            # If data is available, add to plot
-                            fig.add_trace(
-                                go.Scatter(
-                                    x=pd.DatetimeIndex(df_gauge.index),
-                                    y=df_gauge[1]
-                                    + self.database.site.attrs.water_level.msl.height.convert(
-                                        gui_units
-                                    ),
-                                    line_color="#ea6404",
-                                )
-                            )
-                            fig["data"][0]["name"] = "model"
-                            fig["data"][1]["name"] = "measurement"
-                            fig.update_layout(showlegend=True)
+                        )
+                        fig["data"][0]["name"] = "model"
+                        fig["data"][1]["name"] = "measurement"
+                        fig.update_layout(showlegend=True)
 
                 # write html to results folder
                 station_name = gdf.iloc[ii]["Name"]

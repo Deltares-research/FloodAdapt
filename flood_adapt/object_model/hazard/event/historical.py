@@ -12,9 +12,9 @@ from cht_meteo.meteo import (
     MeteoGrid,
     MeteoSource,
 )
+from noaa_coops.station import COOPSAPIError
 from pyproj import CRS
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -118,6 +118,7 @@ class HistoricalEvent(IEvent):
             sim_path path to the root of the offshore model
         """
         self._logger.info("Preparing offshore model to generate waterlevels...")
+        from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
         # Initialize
         if os.path.exists(sim_path):
@@ -156,6 +157,8 @@ class HistoricalEvent(IEvent):
 
     def _run_sfincs_offshore(self, sim_path):
         self._logger.info("Running offshore model...")
+        from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
             success = _offshore_model.execute(strict=False)
 
@@ -275,14 +278,15 @@ class HistoricalEvent(IEvent):
         self,
         units: UnitTypesLength = UnitTypesLength("meters"),
         source: str = "noaa_coops",
+        station_id: int = None,
         out_path: str | os.PathLike = None,
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
         Parameters
         ----------
-        station_id : int
-            NOAA observation station ID.
+        station_id : int | None
+            NOAA observation station ID. If None, all observation stations in the site are downloaded.
         out_path: str | os.PathLike
             Path to store the observed/imported waterlevel data.
 
@@ -292,14 +296,28 @@ class HistoricalEvent(IEvent):
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
         wl_df = pd.DataFrame()
+        if station_id is None:
+            station_ids = [obs_point.ID for obs_point in self.site.attrs.obs_point]
+        elif isinstance(station_id, int):
+            station_ids = [station_id]
 
-        for obs_point in self.site.attrs.obs_point:
+        obs_points = [p for p in self.site.attrs.obs_point if p.ID in station_ids]
+        if not obs_points:
+            self._logger.warning(
+                f"Could not find observation stations with ID {station_id}."
+            )
+            return None
+
+        for obs_point in obs_points:
             if obs_point.file:
                 station_data = self._read_imported_waterlevels(obs_point.file)
             else:
                 station_data = self._download_obs_point_data(
                     obs_point=obs_point, source=source
                 )
+                # Skip if data could not be downloaded
+                if station_data is None:
+                    continue
             station_data = station_data.rename(columns={"waterlevel": obs_point.ID})
             station_data = station_data * UnitfulLength(
                 value=1.0, units=UnitTypesLength("meters")
@@ -317,15 +335,36 @@ class HistoricalEvent(IEvent):
 
     def _download_obs_point_data(
         self, obs_point: Obs_pointModel, source: str = "noaa_coops"
-    ):
-        """Download waterlevel data from NOAA station using station_id, start and stop time."""
-        source_obj = cht_station.source(source)
-        df = source_obj.get_data(
-            obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time
-        )
-        df = pd.DataFrame(df)  # Convert series to dataframe
-        df = df.rename(columns={"v": 1})
+    ) -> pd.DataFrame | None:
+        """Download waterlevel data from NOAA station using station_id, start and stop time.
 
+        Parameters
+        ----------
+        obs_point : Obs_pointModel
+            Observation point model.
+        source : str
+            Source of the data.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and the waterlevel of the observation station as the column.
+        None
+            If the data could not be downloaded.
+        """
+        try:
+            source_obj = cht_station.source(source)
+            df = source_obj.get_data(
+                obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time
+            )
+            df = pd.DataFrame(df)  # Convert series to dataframe
+            df = df.rename(columns={"v": 1})
+
+        except COOPSAPIError as e:
+            self._logger.warning(
+                f"Could not download tide gauge data for station {obs_point.ID}. {e}"
+            )
+            return None
         return df
 
     def _read_imported_waterlevels(self, path: str | os.PathLike):

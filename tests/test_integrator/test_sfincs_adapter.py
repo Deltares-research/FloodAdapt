@@ -593,6 +593,9 @@ class TestAddProjection:
         )
 
         wl_df_before = adapter.get_water_levels()
+        wl_df_expected = wl_df_before.apply(
+            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
+        )
 
         projection = PhysicalProjection(
             data={
@@ -602,12 +605,7 @@ class TestAddProjection:
                 "storm_frequency_increase": 1,
             }
         )
-
         adapter.add_projection(projection)
-
-        wl_df_expected = wl_df_before.apply(
-            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
-        )
         wl_df_after = adapter.get_water_levels()
 
         assert wl_df_expected.equals(wl_df_after)

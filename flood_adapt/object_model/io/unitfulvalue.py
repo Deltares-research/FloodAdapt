@@ -162,6 +162,9 @@ class IUnitFullValue(BaseModel):
                 f"Cannot divide self: {type(self).__name__} with other: {type(other).__name__}. Only {type(self).__name__}, int and float are allowed."
             )
 
+    def __bool__(self):
+        return self.value == 0.0
+
 
 class UnitTypesLength(Unit):
     meters = "meters"
