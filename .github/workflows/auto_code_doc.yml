@@ -35,10 +35,12 @@ jobs:
 
         # Verify the build output
         ls -la build/html
+        echo $(realpath .)
 
-    - name: Update wiki
-      uses: orlovm/Wiki-Action@v1
+    - name: Wiki Update
+      uses: spenserblack/actions-wiki@v0.3.0
       with:
-        path: 'flood_adapt/api/build/html'
         token: ${{ secrets.GITHUB_TOKEN }}
+        path: .flood_adapt/api/build/html
+  
       
