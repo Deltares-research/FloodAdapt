@@ -900,16 +900,15 @@ class SfincsAdapter(IHazardAdapter):
         - try to return the path from self._scenario
         - return the path from self._model.root
         """
-        if scenario_name is not None:
-            pass
-        elif hasattr(self, "_scenario"):
-            scenario_name = self._scenario.attrs.name
-        else:
-            scenario_name = self._model.root
+        if scenario_name is None:
+            if hasattr(self, "_scenario"):
+                scenario_name = self._scenario.attrs.name
+            else:
+                scenario_name = self._model.root
 
         return (
             self.database.scenarios.get_database_path(get_input_path=False)
-            / scenario_name
+            / scenario_name / "Flooding"
         )
 
     def _get_simulation_paths(self) -> list[Path]:

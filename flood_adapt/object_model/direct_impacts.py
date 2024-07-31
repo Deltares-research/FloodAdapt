@@ -41,24 +41,40 @@ class DirectImpacts(IDatabaseUser):
     hazard: FloodMap
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, results_path: Path) -> None:
+    def __init__(self, scenario: ScenarioModel, results_path: Path=None) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
         self.scenario = scenario
-        self.results_path = results_path
+        
+        if results_path is not None:
+            self._logger.warning(
+                "results_path is deprecated and will be removed in future versions."
+            )
+
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
 
         self.hazard = FloodMap(scenario.name)
 
-        # Get site config
-        self.site_toml_path = self.database.static_path / "site" / "site.toml"
-        self.site_info = self.database.site
+    @property
+    def results_path(self) -> Path:
+        return self.database.scenarios.get_database_path(get_input_path=False) / self.name
 
-        # Define results path
-        self.impacts_path = self.results_path.joinpath("Impacts")
-        self.fiat_path = self.impacts_path.joinpath("fiat_model")
-        self.has_run = self.has_run_check()
+    @property
+    def impacts_path(self) -> Path:
+        return self.results_path / "Impacts"
+    
+    @property
+    def fiat_path(self) -> Path:
+        return self.impacts_path / "fiat_model"
+    
+    @property
+    def has_run(self) -> bool:
+        return self.has_run_check()
+    
+    @property
+    def site_info(self):
+        return self.database.site
 
     def has_run_check(self) -> bool:
         """Check if the direct impact has been run.
@@ -68,9 +84,7 @@ class DirectImpacts(IDatabaseUser):
         bool
             _description_
         """
-        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
-
-        return check
+        return self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def fiat_has_run_check(self) -> bool:
         """Check if fiat has run as expected.
@@ -137,11 +151,7 @@ class DirectImpacts(IDatabaseUser):
         start_time = time.time()
         return_code = self.run_fiat()
         end_time = time.time()
-        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
-
-        # Indicator that direct impacts have run
-        if return_code == 0:
-            self.__setattr__("has_run", True)
+        self._logger.info(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
     def postprocess_models(self):
         self._logger.info("Post-processing impact models...")
@@ -241,7 +251,7 @@ class DirectImpacts(IDatabaseUser):
                     ids=ids_existing,
                 )
             else:
-                print("Impact measure type not recognized!")
+                self._logger.warning(f"Impact measure type not recognized: {measure.attrs.type}")
 
         # setup hazard for fiat
         fa.set_hazard(self.hazard)
@@ -296,7 +306,8 @@ class DirectImpacts(IDatabaseUser):
         metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
-        self._create_infographics(self.hazard.mode, metrics_path)
+        if self.site_info.attrs.fiat.infographics:
+            self._create_infographics(self.hazard.event_mode, metrics_path)
 
         if self.hazard.mode == Mode.risk:
             # Calculate equity based damages

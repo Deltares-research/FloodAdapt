@@ -29,9 +29,9 @@ fa_config.parse_user_input(
 )
 
 #### DEBUGGING ####
-# To disable resetting the database after tests: set clean=false
+# To disable resetting the database after tests: set CLEAN = False
 # Only for debugging purposes, should always be set to true when pushing to github
-clean = True
+CLEAN = True
 
 
 def create_snapshot():
@@ -92,7 +92,7 @@ def session_setup_teardown():
 
     yield
 
-    if clean:
+    if CLEAN:
         restore_db_from_snapshot()
     shutil.rmtree(SNAPSHOT_DIR)
 
@@ -147,7 +147,7 @@ def make_db_fixture(scope):
 
         # Teardown
         dbs.reset()
-        if clean:
+        if CLEAN:
             restore_db_from_snapshot()
 
     return _db_fixture
