@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
@@ -41,10 +41,6 @@ jobs:
 
         # Copy the built documentation to the Wiki repo
         cp -r flood_adapt/api/build/html/* .wiki/
-
-        # Set up Git to use the GitHub Actions token for authentication
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
         
         # Commit and push the changes
         git add .
