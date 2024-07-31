@@ -591,12 +591,7 @@ class TestAddProjection:
                 data={"waterlevel": [1, 2, 3]},
             )
         )
-
-        wl_df_before = adapter.get_water_levels()
-        wl_df_expected = wl_df_before.apply(
-            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
-        )
-
+        
         projection = PhysicalProjection(
             data={
                 "sea_level_rise": UnitfulLength(value=10, units="meters"),
@@ -605,6 +600,12 @@ class TestAddProjection:
                 "storm_frequency_increase": 1,
             }
         )
+
+        wl_df_before = adapter.get_water_levels()
+        wl_df_expected = wl_df_before.apply(
+            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
+        )
+
         adapter.add_projection(projection)
         wl_df_after = adapter.get_water_levels()
 

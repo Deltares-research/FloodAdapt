@@ -15,8 +15,9 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
 )
+from flood_adapt.object_model.interface.site import SiteModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
-
+from flood_adapt.object_model.hazard.event.meteo import read_meteo
 
 class RainfallConstant(IRainfall):
     _source = ForcingSource.CONSTANT
@@ -39,23 +40,13 @@ class RainfallFromMeteo(IRainfall):
     path: str | os.PathLike | None = Field(default=None)
     # path to the meteo data, set this when downloading it
 
-    def process(self, time: TimeModel):
-        # download the meteo data
-        from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-
-        HistoricalEvent.download_meteo(t0=time.start_time, t1=time.end_time)
-
     def get_data(self) -> xr.DataArray:
         if self.path is None:
             raise ValueError(
                 "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
             )
-
-        from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-
-        # ASSUMPTION: the download has been done already, see HistoricalEvent.download_meteo().
-        # TODO add to read_meteo to run download if not already downloaded.
-        return HistoricalEvent.read_meteo(meteo_dir=self.path)[
+        
+        return read_meteo(meteo_dir=self.path)[
             "precip"
         ]  # use `.to_dataframe()` to convert to pd.DataFrame
 

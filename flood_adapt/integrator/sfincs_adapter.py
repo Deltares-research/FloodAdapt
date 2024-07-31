@@ -214,8 +214,7 @@ class SfincsAdapter(IHazardAdapter):
                 raise RuntimeError(f"SFINCS model failed to run in {sim_path}.")
             else:
                 self._logger.error(f"SFINCS model failed to run in {sim_path}.")
-        else:
-            self._write_water_level_map()
+
         return process.returncode == 0
 
     def run(self, scenario: IScenario):

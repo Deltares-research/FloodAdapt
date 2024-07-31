@@ -81,5 +81,5 @@ class Test_scenario_run:
         before_run = test_db.scenarios.get(before_run)
         after_run = test_db.scenarios.get(after_run)
 
-        assert not before_run.direct_impacts.hazard
-        assert after_run.direct_impacts.hazard
+        assert not before_run.direct_impacts.hazard.has_run
+        assert after_run.direct_impacts.hazard.has_run

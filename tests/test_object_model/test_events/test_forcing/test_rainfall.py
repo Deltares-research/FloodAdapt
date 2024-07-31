@@ -11,6 +11,7 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.interface.events import Mode, Template, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -63,20 +64,15 @@ class TestRainfallFromMeteo:
 
         if test_path.exists():
             shutil.rmtree(test_path)
-        attrs = {
-            "name": "test",
-            "time": TimeModel(
-                start_time=datetime.strptime(
-                    "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
-                ),
-                end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+        
+        time = TimeModel(
+            start_time=datetime.strptime(
+                "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
             ),
-            "template": Template.Historical,
-            "mode": Mode.single_event,
-        }
-
-        event = HistoricalEvent.load_dict(attrs)
-        event.download_meteo(meteo_dir=test_path)
+            end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+        )
+        site = test_db.site.attrs
+        download_meteo(meteo_dir=test_path, time=time, site=site)
 
         # Act
         wl_df = RainfallFromMeteo(path=test_path).get_data()

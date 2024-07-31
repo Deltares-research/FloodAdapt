@@ -163,7 +163,7 @@ class IUnitFullValue(BaseModel):
             )
 
     def __bool__(self):
-        return self.value == 0.0
+        return self.value != 0.0
 
 
 class UnitTypesLength(Unit):

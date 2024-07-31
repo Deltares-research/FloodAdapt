@@ -12,6 +12,7 @@ from cht_meteo.meteo import (
     MeteoGrid,
     MeteoSource,
 )
+from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
 from noaa_coops.station import COOPSAPIError
 from pyproj import CRS
 
@@ -183,96 +184,19 @@ class HistoricalEvent(IEvent):
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
 
-    def download_meteo(
-        self,
-        *,
-        t0: datetime | str = None,
-        t1: datetime | str = None,
-        meteo_dir: Path = None,
-        lat: float = None,
-        lon: float = None,
-    ):
-        params = ["wind", "barometric_pressure", "precipitation"]
-        DEFAULT_METEO_PATH = self.database.output_path.joinpath("meteo")
-        meteo_dir = meteo_dir or DEFAULT_METEO_PATH
-        t0 = t0 or self.attrs.time.start_time
-        t1 = t1 or self.attrs.time.end_time
-        lat = lat or self.database.site.attrs.lat
-        lon = lon or self.database.site.attrs.lon
-
-        # Download the actual datasets
-        gfs_source = MeteoSource(
-            "gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None
+    def download_meteo(self):
+        download_meteo(
+            time=self.attrs.time,
+            meteo_dir=self.database.output_path / "meteo",
+            site=self.database.site.attrs,
         )
 
-        # Create subset
-        name = "gfs_anl_0p50_us_southeast"
-        gfs_conus = MeteoGrid(
-            name=name,
-            source=gfs_source,
-            parameters=params,
-            path=meteo_dir,
-            x_range=[lon - 10, lon + 10],
-            y_range=[lat - 10, lat + 10],
-            crs=CRS.from_epsg(4326),
+    def read_meteo(self) -> xr.Dataset:
+        return read_meteo(
+            time=self.attrs.time,
+            meteo_dir=self.database.output_path / "meteo",
+            site=self.database.site.attrs,
         )
-
-        # Download and collect data
-        if not isinstance(t0, datetime):
-            t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
-
-        if not isinstance(t1, datetime):
-            t1 = datetime.strptime(t1, "%Y%m%d %H%M%S")
-
-        time_range = [t0, t1]
-
-        gfs_conus.download(time_range)
-
-    def read_meteo(
-        self,
-        *,
-        t0: datetime | str = None,
-        t1: datetime | str = None,
-        meteo_dir: Path = None,
-    ) -> xr.Dataset:
-        # Create an empty list to hold the datasets
-        datasets = []
-        meteo_dir = meteo_dir or self.database.output_path.joinpath("meteo")
-        t0 = t0 or self.attrs.time.start_time
-        t1 = t1 or self.attrs.time.end_time
-
-        if not isinstance(t0, datetime):
-            t0 = datetime.strptime(t0, "%Y%m%d %H%M%S")
-        if not isinstance(t1, datetime):
-            t1 = datetime.strptime(t1, "%Y%m%d %H%M%S")
-
-        if not meteo_dir.exists():
-            meteo_dir.mkdir(parents=True)
-
-        self.download_meteo(t0=t0, t1=t1, meteo_dir=meteo_dir)
-
-        # Loop over each file and create a new dataset with a time coordinate
-        for filename in sorted(glob.glob(str(meteo_dir.joinpath("*.nc")))):
-            # Open the file as an xarray dataset
-            ds = xr.open_dataset(filename)
-
-            # Extract the timestring from the filename and convert to pandas datetime format
-            time_str = filename.split(".")[-2]
-            time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
-
-            # Add the time coordinate to the dataset
-            ds["time"] = time
-
-            # Append the dataset to the list
-            datasets.append(ds)
-
-        # Concatenate the datasets along the new time coordinate
-        ds = xr.concat(datasets, dim="time")
-        ds.raster.set_crs(4326)
-        ds = ds.rename({"barometric_pressure": "press"})
-        ds = ds.rename({"precipitation": "precip"})
-
-        return ds
 
     def _get_observed_wl_data(
         self,

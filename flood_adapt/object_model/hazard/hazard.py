@@ -39,6 +39,11 @@ class FloodMap(IDatabaseUser):
         return self.path.exists()
 
     @property
+    def has_run_check(self):
+        self._logger.warning("FloodMap.has_run_check is deprecated and will be removed. Use FloodMap.has_run instead.")
+        return self.has_run
+
+    @property
     def scenario(self):
         return self.database.scenarios.get(self.name)
 

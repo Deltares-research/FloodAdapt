@@ -12,6 +12,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingType,
     TimeModel,
 )
+from flood_adapt.object_model.interface.site import SiteModel
 
 
 class IForcing(BaseModel):
@@ -30,7 +31,7 @@ class IForcing(BaseModel):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
-    def process(self, start_time: TimeModel):
+    def process(self, time: TimeModel, site: SiteModel):
         """Generate the forcing data and store the result in the forcing.
 
         The default implementation is to do nothing. If the forcing data needs to be created/downloaded/computed as it is not directly stored in the forcing instance, this method should be overridden.

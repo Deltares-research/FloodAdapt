@@ -11,6 +11,7 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindFromMeteo,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.interface.events import Mode, Template, TimeModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -33,7 +34,7 @@ class TestWindConstant:
         assert wind_df is None
 
 
-class TestWindFromModel:
+class TestWindFromMeteo:
     def test_wind_from_model_get_data(self, tmp_path, test_db):
         # Arrange
         test_path = tmp_path / "test_wl_from_model"
@@ -41,20 +42,19 @@ class TestWindFromModel:
         if test_path.exists():
             shutil.rmtree(test_path)
 
-        attrs = {
-            "name": "test",
-            "time": TimeModel(
-                start_time=datetime.strptime(
-                    "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
-                ),
-                end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+        time = TimeModel(
+            start_time=datetime.strptime(
+                "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
             ),
-            "template": Template.Historical,
-            "mode": Mode.single_event,
-        }
+            end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+        )
+        site = test_db.site.attrs
 
-        event = HistoricalEvent.load_dict(attrs)
-        event.download_meteo(meteo_dir=test_path)
+        download_meteo(
+            time=time,
+            meteo_dir=test_path,
+            site=site,
+        )
 
         # Act
         wind_df = WindFromMeteo(path=test_path).get_data()

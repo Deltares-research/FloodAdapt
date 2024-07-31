@@ -4,12 +4,14 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
+from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import IWind
-from flood_adapt.object_model.hazard.interface.models import ForcingSource
+from flood_adapt.object_model.hazard.interface.models import ForcingSource, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.site import SiteModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
 
 
@@ -71,8 +73,8 @@ class WindFromMeteo(IWind):
                 "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
             )
 
-        from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+        from flood_adapt.object_model.hazard.event.meteo import read_meteo
 
-        # ASSUMPTION: the download has been done already, see HistoricalEvent.download_meteo().
+        # ASSUMPTION: the download has been done already, see meteo.download_meteo().
         # TODO add to read_meteo to run download if not already downloaded.
-        return HistoricalEvent.read_meteo(meteo_dir=self.path)[["wind_u", "wind_v"]]
+        return read_meteo(meteo_dir=self.path)[["wind_u", "wind_v"]]
