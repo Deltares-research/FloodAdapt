@@ -35,6 +35,8 @@ jobs:
         ls -la build/html
 
     - name: Publish to Wiki
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Clone the Wiki repository into a directory named '.wiki'
         git clone https://github.com/${{ github.repository }}.wiki.git .wiki
