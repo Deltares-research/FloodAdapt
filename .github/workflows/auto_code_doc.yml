@@ -41,10 +41,11 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Clone the Wiki repository into a directory named '.wiki'
-        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
+        git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
         # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/build/html/* .wiki/
+        cp -r flood_adapt/api/build/html/* ../wiki/
+        cd ../wiki/ 
         
         # Commit and push the changes
         git add .
