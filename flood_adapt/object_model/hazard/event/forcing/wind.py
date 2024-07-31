@@ -4,14 +4,12 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import IWind
-from flood_adapt.object_model.hazard.interface.models import ForcingSource, TimeModel
+from flood_adapt.object_model.hazard.interface.models import ForcingSource
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.site import SiteModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVelocity
 
 

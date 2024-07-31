@@ -10,9 +10,8 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindFromCSV,
     WindFromMeteo,
 )
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.meteo import download_meteo
-from flood_adapt.object_model.hazard.interface.events import Mode, Template, TimeModel
+from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulVelocity,
@@ -43,9 +42,7 @@ class TestWindFromMeteo:
             shutil.rmtree(test_path)
 
         time = TimeModel(
-            start_time=datetime.strptime(
-                "2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"
-            ),
+            start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
         )
         site = test_db.site.attrs

@@ -41,15 +41,15 @@ class DirectImpacts(IDatabaseUser):
     hazard: FloodMap
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, results_path: Path=None) -> None:
+    def __init__(self, scenario: ScenarioModel, results_path: Path = None) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
         self.scenario = scenario
-        
+
         if results_path is not None:
             FloodAdaptLogging.deprecation_warning(
                 version="0.2.0",
-                reason="results_path is deprecated and will be removed in future versions."
+                reason="results_path is deprecated and will be removed in future versions.",
             )
 
         self.set_socio_economic_change(scenario.projection)
@@ -59,20 +59,22 @@ class DirectImpacts(IDatabaseUser):
 
     @property
     def results_path(self) -> Path:
-        return self.database.scenarios.get_database_path(get_input_path=False) / self.name
+        return (
+            self.database.scenarios.get_database_path(get_input_path=False) / self.name
+        )
 
     @property
     def impacts_path(self) -> Path:
         return self.results_path / "Impacts"
-    
+
     @property
     def fiat_path(self) -> Path:
         return self.impacts_path / "fiat_model"
-    
+
     @property
     def has_run(self) -> bool:
         return self.has_run_check()
-    
+
     @property
     def site_info(self):
         return self.database.site
@@ -150,9 +152,11 @@ class DirectImpacts(IDatabaseUser):
     def run_models(self):
         self._logger.info("Running impact models...")
         start_time = time.time()
-        return_code = self.run_fiat()
+        _ = self.run_fiat()
         end_time = time.time()
-        self._logger.info(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
+        self._logger.info(
+            f"Running FIAT took {str(round(end_time - start_time, 2))} seconds"
+        )
 
     def postprocess_models(self):
         self._logger.info("Post-processing impact models...")
@@ -252,7 +256,9 @@ class DirectImpacts(IDatabaseUser):
                     ids=ids_existing,
                 )
             else:
-                self._logger.warning(f"Impact measure type not recognized: {measure.attrs.type}")
+                self._logger.warning(
+                    f"Impact measure type not recognized: {measure.attrs.type}"
+                )
 
         # setup hazard for fiat
         fa.set_hazard(self.hazard)

@@ -31,14 +31,15 @@ class FloodWall(HazardMeasure, IFloodWall):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[
-            str, os.PathLike, None
-        ] = None,
+        database_input_path: Union[str, os.PathLike, None] = None,
     ) -> IFloodWall:
         """Create Floodwall from object, e.g. when initialized from GUI."""
         if database_input_path is not None:
-            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
-        
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` is deprecated. Use the database attribute instead.",
+            )
+
         obj = FloodWall()
         obj.attrs = FloodWallModel.model_validate(data)
         return obj

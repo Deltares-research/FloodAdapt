@@ -4,13 +4,14 @@ from typing import Any, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
+from deprecated import deprecated
 
 import flood_adapt.dbs_controller as db
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
-from deprecated import deprecated
+
 
 def get_events() -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API

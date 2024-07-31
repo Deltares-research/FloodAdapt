@@ -92,8 +92,10 @@ class SfincsAdapter(IHazardAdapter):
         """
         self._logger = FloodAdaptLogging.getLogger(__name__)
         if database is not None:
-            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="the `database` parameter is deprecated.")
-        
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0", reason="the `database` parameter is deprecated."
+            )
+
         self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)
         self._model.read()
 
@@ -906,7 +908,8 @@ class SfincsAdapter(IHazardAdapter):
 
         return (
             self.database.scenarios.get_database_path(get_input_path=False)
-            / scenario_name / "Flooding"
+            / scenario_name
+            / "Flooding"
         )
 
     def _get_simulation_paths(self) -> list[Path]:

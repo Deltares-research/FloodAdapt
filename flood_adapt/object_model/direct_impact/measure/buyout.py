@@ -28,14 +28,15 @@ class Buyout(ImpactMeasure, IBuyout):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[
-            str, os.PathLike, None
-        ] = None,
+        database_input_path: Union[str, os.PathLike, None] = None,
     ) -> IBuyout:
         """Create Buyout from object, e.g. when initialized from GUI."""
         if database_input_path is not None:
-            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
-            
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` is deprecated. Use the database attribute instead.",
+            )
+
         obj = Buyout()
         obj.attrs = BuyoutModel.model_validate(data)
         return obj

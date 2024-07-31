@@ -1,29 +1,24 @@
+import glob
 from datetime import datetime
 from pathlib import Path
-import glob
 
-from pyproj import CRS
-import xarray as xr
 import pandas as pd
+import xarray as xr
 from cht_meteo.meteo import (
     MeteoGrid,
     MeteoSource,
 )
+from pyproj import CRS
 
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.site import SiteModel
 
-def download_meteo(
-    meteo_dir: Path,
-    time: TimeModel,
-    site: SiteModel
-):
+
+def download_meteo(meteo_dir: Path, time: TimeModel, site: SiteModel):
     params = ["wind", "barometric_pressure", "precipitation"]
 
     # Download the actual datasets
-    gfs_source = MeteoSource(
-        "gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None
-    )
+    gfs_source = MeteoSource("gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None)
 
     # Create subset
     name = "gfs_anl_0p50_us_southeast"
@@ -49,14 +44,13 @@ def download_meteo(
 
     gfs_conus.download(time_range)
 
+
 def read_meteo(
-    meteo_dir: Path,
-    time: TimeModel = None,
-    site: SiteModel = None
+    meteo_dir: Path, time: TimeModel = None, site: SiteModel = None
 ) -> xr.Dataset:
     if time is not None and site is not None:
         download_meteo(time=time, meteo_dir=meteo_dir, site=site)
-    
+
     # Create an empty list to hold the datasets
     datasets = []
     # Loop over each file and create a new dataset with a time coordinate

@@ -4,20 +4,19 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
+from flood_adapt.object_model.hazard.event.meteo import read_meteo
 from flood_adapt.object_model.hazard.event.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     IRainfall,
 )
 from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
 )
-from flood_adapt.object_model.interface.site import SiteModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity
-from flood_adapt.object_model.hazard.event.meteo import read_meteo
+
 
 class RainfallConstant(IRainfall):
     _source = ForcingSource.CONSTANT
@@ -45,7 +44,7 @@ class RainfallFromMeteo(IRainfall):
             raise ValueError(
                 "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
             )
-        
+
         return read_meteo(meteo_dir=self.path)[
             "precip"
         ]  # use `.to_dataframe()` to convert to pd.DataFrame

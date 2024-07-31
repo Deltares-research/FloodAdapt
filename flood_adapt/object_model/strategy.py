@@ -86,9 +86,7 @@ class Strategy(IStrategy):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[
-            str, os.PathLike
-        ] = None,
+        database_input_path: Union[str, os.PathLike] = None,
         validate: bool = True,
     ):
         """_summary_.
@@ -109,8 +107,11 @@ class Strategy(IStrategy):
             _description_
         """
         if database_input_path is not None:
-            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
-            
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` is deprecated. Use the database attribute instead.",
+            )
+
         obj = Strategy()
         obj.attrs = StrategyModel.model_validate(data)
         # Need to ensure that the strategy can be created

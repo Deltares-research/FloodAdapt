@@ -9,11 +9,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import tomli
 import tomli_w
+from deprecated import deprecated
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
-from deprecated import deprecated
+
 
 class Benefit(IBenefit):
     """Object holding all attributes and methods related to a benefit analysis."""

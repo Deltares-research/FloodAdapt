@@ -1,20 +1,12 @@
-import glob
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
 from typing import List
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
 import xarray as xr
-from cht_meteo.meteo import (
-    MeteoGrid,
-    MeteoSource,
-)
-from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
 from noaa_coops.station import COOPSAPIError
-from pyproj import CRS
 
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
@@ -23,6 +15,7 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelFromModel,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindFromMeteo
+from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,

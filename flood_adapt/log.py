@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from contextlib import contextmanager
 
 
@@ -134,5 +135,10 @@ class FloodAdaptLogging:
     def deprecation_warning(cls, version: str, reason: str):
         """Log a deprecation warning with reason and the version that will remove it."""
         cls.getLogger().warning(
-            f"DeprecationWarning: {reason}. This will be removed in version {version}."
+            f"DeprecationWarning: {reason}. This will be removed in version {version}.",
+        )
+        warnings.warn(
+            f"DeprecationWarning: {reason}. This will be removed in version {version}.",
+            DeprecationWarning,
+            stacklevel=2,
         )

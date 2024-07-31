@@ -55,16 +55,8 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
     peak_model = wl.max().max()
 
     event = test_db.events.get(test_scenario.attrs.event)
-    surge_peak = (
-        event.attrs.surge.shape_peak.convert(
-            "meters"
-        )
-    )
-    tide_amp = (
-        event.attrs.tide.harmonic_amplitude.convert(
-            "meters"
-        )
-    )
+    surge_peak = event.attrs.surge.shape_peak.convert("meters")
+    tide_amp = event.attrs.tide.harmonic_amplitude.convert("meters")
     localdatum = test_db.attrs.water_level.localdatum.height.convert(
         "meters"
     ) - test_db.site.attrs.water_level.msl.height.convert("meters")

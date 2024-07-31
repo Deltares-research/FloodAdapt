@@ -2,12 +2,14 @@ import os
 from enum import Enum
 from pathlib import Path
 
+from deprecated import deprecated
+
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
-from deprecated import deprecated
+
 
 class FloodMapType(str, Enum):
     """Enum class for the type of flood map."""

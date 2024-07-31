@@ -591,7 +591,7 @@ class TestAddProjection:
                 data={"waterlevel": [1, 2, 3]},
             )
         )
-        
+
         projection = PhysicalProjection(
             data={
                 "sea_level_rise": UnitfulLength(value=10, units="meters"),

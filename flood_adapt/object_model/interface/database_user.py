@@ -1,5 +1,7 @@
 from abc import ABC
+
 from deprecated import deprecated
+
 
 class IDatabaseUser(ABC):
     """Abstract class for FloodAdapt classes that need to use / interact with the FloodAdapt database."""
@@ -15,7 +17,10 @@ class IDatabaseUser(ABC):
         self._database_instance = Database()
         return self._database_instance
 
-    @deprecated(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
+    @deprecated(
+        version="0.2.0",
+        reason="`database_input_path` is deprecated. Use the database attribute instead.",
+    )
     @property
     def database_input_path(self):
         return self.database.input_path
