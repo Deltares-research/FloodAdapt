@@ -36,18 +36,9 @@ jobs:
         # Verify the build output
         ls -la build/html
 
-    - name: Publish to Wiki
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Clone the Wiki repository into a directory named '.wiki'
-        git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
-
-        # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/build/html/* ../wiki/
-        cd ../wiki/ 
-        
-        # Commit and push the changes
-        git add .
-        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
-        git push
+    - name: Update wiki
+      uses: orlovm/Wiki-Action@v1
+      with:
+        path: 'build/html'
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
