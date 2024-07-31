@@ -32,9 +32,11 @@ class Pump(HazardMeasure, IPump):
         data: dict[str, Any],
         database_input_path: Union[
             str, os.PathLike, None
-        ] = None,  # TODO deprecate database_input_path
+        ] = None,
     ) -> IPump:
         """Create Floodwall from object, e.g. when initialized from GUI."""
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
         obj = Pump()
         obj.attrs = PumpModel.model_validate(data)
         return obj

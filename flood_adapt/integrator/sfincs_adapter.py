@@ -83,7 +83,7 @@ class SfincsAdapter(IHazardAdapter):
     _scenario: IScenario
     _model: SfincsModel
 
-    def __init__(self, model_root: str, database=None):  # TODO deprecate database
+    def __init__(self, model_root: str, database=None):
         """Load overland sfincs model based on a root directory.
 
         Args:
@@ -92,9 +92,8 @@ class SfincsAdapter(IHazardAdapter):
         """
         self._logger = FloodAdaptLogging.getLogger(__name__)
         if database is not None:
-            self._logger.warning(
-                "The database parameter is deprecated and will be removed in the future."
-            )
+            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="the `database` parameter is deprecated.")
+        
         self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)
         self._model.read()
 

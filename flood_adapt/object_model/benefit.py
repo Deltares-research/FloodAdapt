@@ -13,7 +13,7 @@ from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
-
+from deprecated import deprecated
 
 class Benefit(IBenefit):
     """Object holding all attributes and methods related to a benefit analysis."""
@@ -78,7 +78,8 @@ class Benefit(IBenefit):
         )
         return check
 
-    def get_output(self) -> dict:  # TODO deprecate
+    @deprecated(version="0.1.0", reason="Use self.results instead")
+    def get_output(self) -> dict:
         return self.results
 
     def check_scenarios(self) -> pd.DataFrame:

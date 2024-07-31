@@ -129,3 +129,10 @@ class FloodAdaptLogging:
             yield
         finally:
             cls.remove_file_handler(file_path)
+
+    @classmethod
+    def deprecation_warning(cls, version: str, reason: str):
+        """Log a deprecation warning with reason and the version that will remove it."""
+        cls.getLogger().warning(
+            f"DeprecationWarning: {reason}. This will be removed in version {version}."
+        )

@@ -7,7 +7,7 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
-
+from deprecated import deprecated
 
 class FloodMapType(str, Enum):
     """Enum class for the type of flood map."""
@@ -38,9 +38,9 @@ class FloodMap(IDatabaseUser):
     def has_run(self) -> bool:
         return self.path.exists()
 
+    @deprecated(version="0.2.0", reason="Use has_run instead.")
     @property
     def has_run_check(self):
-        self._logger.warning("FloodMap.has_run_check is deprecated and will be removed. Use FloodMap.has_run instead.")
         return self.has_run
 
     @property

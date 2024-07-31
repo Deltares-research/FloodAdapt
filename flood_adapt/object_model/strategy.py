@@ -5,6 +5,7 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
@@ -87,7 +88,7 @@ class Strategy(IStrategy):
         data: dict[str, Any],
         database_input_path: Union[
             str, os.PathLike
-        ] = None,  # TODO deprecate database_input_path
+        ] = None,
         validate: bool = True,
     ):
         """_summary_.
@@ -107,6 +108,9 @@ class Strategy(IStrategy):
         IStrategy
             _description_
         """
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
+            
         obj = Strategy()
         obj.attrs = StrategyModel.model_validate(data)
         # Need to ensure that the strategy can be created

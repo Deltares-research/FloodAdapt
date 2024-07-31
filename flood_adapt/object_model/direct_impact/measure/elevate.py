@@ -29,9 +29,11 @@ class Elevate(ImpactMeasure, IElevate):
         data: dict[str, Any],
         database_input_path: Union[
             str, os.PathLike, None
-        ] = None,  # TODO deprecate database_input_path
+        ] = None,
     ) -> IElevate:
         """Create Elevate from object, e.g. when initialized from GUI."""
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(version="0.2.0", reason="`database_input_path` is deprecated. Use the database attribute instead.")
         obj = Elevate()
         obj.attrs = ElevateModel.model_validate(data)
         return obj

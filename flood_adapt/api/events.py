@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
-
+from deprecated import deprecated
 
 def get_events() -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
@@ -24,6 +24,11 @@ def get_event(name: str) -> IEvent:
 def get_event_mode(name: str) -> str:
     filename = db.Database().events.get_database_path() / f"{name}" / f"{name}.toml"
     return EventFactory.get_mode(filename)
+
+
+@deprecated(version="0.1.0", reason="Use flood_adapt.api.events.create_event instead")
+def create_synthetic_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
+    return create_event(attrs)
 
 
 def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
