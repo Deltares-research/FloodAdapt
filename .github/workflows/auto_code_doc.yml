@@ -39,6 +39,6 @@ jobs:
     - name: Update wiki
       uses: orlovm/Wiki-Action@v1
       with:
-        path: 'build/html'
+        path: 'flood_adapt/api/build/html'
         token: ${{ secrets.GITHUB_TOKEN }}
       
