@@ -93,4 +93,3 @@ call pytest tests --junitxml="report.xml"]]></param>
     <cleanup />
   </settings>
 </build-type>
-

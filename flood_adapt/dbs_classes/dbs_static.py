@@ -30,7 +30,6 @@ def cache_method_wrapper(func: Callable) -> Callable:
 
 
 class DbsStatic:
-
     _cached_data: dict[str, Any] = {}
     _database: IDatabase = None
 

@@ -121,6 +121,7 @@ ignore = [
 
     "E501",
     "E741",
+    "NPY201"
 ]
 fixable = [
     "I",
