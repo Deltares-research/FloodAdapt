@@ -112,6 +112,8 @@ def install_OGR_dependencies(env_name: str, prefix_option: str):
             print(process.stdout.readline())
 
     elif sys.platform == "linux":
+        subprocess.run("sudo add-apt-repository ppa:ubuntugis/ppa", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo add-get update", **SUBPROCESS_KWARGS)
         subprocess.run("sudo apt-get install gdal-bin", **SUBPROCESS_KWARGS)
         subprocess.run("sudo apt-get install libgdal-dev", **SUBPROCESS_KWARGS)
         subprocess.run(
@@ -199,15 +201,11 @@ if __name__ == "__main__":
         print(f"Using project root: {PROJECT_ROOT}")
         WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
-        assert (
-            PROJECT_ROOT.exists()
-        ), f"Project root does not exist: {PROJECT_ROOT}. Please verify your project root."
+        assert PROJECT_ROOT.exists(), f"Project root does not exist: {PROJECT_ROOT}. Please verify your project root."
         assert (
             PROJECT_ROOT / "flood_adapt"
         ).exists(), f"Project root {PROJECT_ROOT} does not contain the flood_adapt package. Please verify your project root."
-        assert (
-            WHEELS_DIR.exists()
-        ), f"Wheels directory does not exist: {WHEELS_DIR}. Please verify your project root."
+        assert WHEELS_DIR.exists(), f"Wheels directory does not exist: {WHEELS_DIR}. Please verify your project root."
 
     create_env(
         env_name=args.env_name,
