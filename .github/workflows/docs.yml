@@ -45,7 +45,6 @@ jobs:
           pip install tomli
           mamba env create --file=docs/environment_docs.yml
           
-
       - name: Setup Quarto
         run: |
           sudo apt update
