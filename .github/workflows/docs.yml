@@ -59,7 +59,7 @@ jobs:
       - name: Generate docs
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
-          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          source /usr/share/miniconda/etc/profile.d/conda.sh
           mamba run -n floodadapt_docs quarto render docs/ --execute
 
       - name: Upload to GitHub Pages
@@ -71,7 +71,3 @@ jobs:
           destination_dir: ./${{ env.DOC_VERSION }}
           keep_files: false
           full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
-
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
