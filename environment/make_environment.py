@@ -113,7 +113,7 @@ def install_OGR_dependencies(env_name: str, prefix_option: str):
 
     elif sys.platform == "linux":
         subprocess.run("sudo add-apt-repository ppa:ubuntugis/ppa", **SUBPROCESS_KWARGS)
-        subprocess.run("sudo add-get update", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo apt-get update", **SUBPROCESS_KWARGS)
         subprocess.run("sudo apt-get install gdal-bin", **SUBPROCESS_KWARGS)
         subprocess.run("sudo apt-get install libgdal-dev", **SUBPROCESS_KWARGS)
         subprocess.run(
