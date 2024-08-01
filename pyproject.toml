@@ -51,10 +51,9 @@ dynamic = [
 dev = [
     "pytest",
     "pytest-cov",
-    "black      == 24.1.1",
-    "pre-commit == 3.7.1",
-    "ruff       == 0.4.8",
-    "typos      == 1.22.7",
+    "pre-commit == 3.8.0",
+    "ruff       == 0.5.5",
+    "typos      == 1.23.6",
 ]
 build = [
     "build",
