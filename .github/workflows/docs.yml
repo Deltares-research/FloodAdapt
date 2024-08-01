@@ -59,7 +59,7 @@ jobs:
       - name: Generate docs
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
-          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          source /usr/share/miniconda/etc/profile.d/conda.sh
           conda activate floodadapt_docs
           quarto render docs/ --execute
           echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
