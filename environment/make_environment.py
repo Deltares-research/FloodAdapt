@@ -143,7 +143,8 @@ def create_env(
         )
 
     check_and_delete_conda_env(env_name, prefix=prefix)
-
+    print(prefix)
+    print(env_name)
     if prefix:
         env_location = os.path.join(prefix, env_name)
         prefix_option = f"--prefix {env_location}"
