@@ -3,6 +3,7 @@ title:	Setting up a Delft-FIAT model
 filters:
   - lightbox
 lightbox: auto
+jupyter: python3
 ---
 
 [Delft-FIAT](https://deltares.github.io/Delft-FIAT/stable/) is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the 'baseline' Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. @fig-DF_concept shows the flood impact modeling concept on which Delft-FIAT is based. It relates a **hazard** (the flood waters), **exposure** (buildings or roads that might be flooded), and **vulnerability** (the propensity of assets to be damaged when flooded).
