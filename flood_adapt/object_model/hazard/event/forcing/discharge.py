@@ -1,4 +1,5 @@
 import os
+from typing import ClassVar
 
 import pandas as pd
 
@@ -15,12 +16,12 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
 
 
 class DischargeConstant(IDischarge):
-    _source = ForcingSource.CONSTANT
+    _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
     discharge: UnitfulDischarge
 
 
 class DischargeSynthetic(IDischarge):
-    _source = ForcingSource.SYNTHETIC
+    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
 
     timeseries: SyntheticTimeseriesModel
 
@@ -31,7 +32,7 @@ class DischargeSynthetic(IDischarge):
 
 
 class DischargeFromCSV(IDischarge):
-    _source = ForcingSource.CSV
+    _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: str | os.PathLike
 

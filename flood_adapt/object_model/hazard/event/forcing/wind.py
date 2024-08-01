@@ -1,4 +1,5 @@
 import os
+from typing import ClassVar
 
 import pandas as pd
 import xarray as xr
@@ -14,14 +15,14 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulDirection, UnitfulVe
 
 
 class WindConstant(IWind):
-    _source = ForcingSource.CONSTANT
+    _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
 
     speed: UnitfulVelocity
     direction: UnitfulDirection
 
 
 class WindSynthetic(IWind):
-    _source = ForcingSource.SYNTHETIC
+    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
 
     timeseries: SyntheticTimeseriesModel
 
@@ -32,7 +33,7 @@ class WindSynthetic(IWind):
 
 
 class WindFromTrack(IWind):
-    _source = ForcingSource.TRACK
+    _source: ClassVar[ForcingSource] = ForcingSource.TRACK
 
     path: str | os.PathLike | None = Field(default=None)
     # path to spw file, set this when creating it
@@ -42,7 +43,7 @@ class WindFromTrack(IWind):
 
 
 class WindFromCSV(IWind):
-    _source = ForcingSource.CSV
+    _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: str | os.PathLike
 
@@ -57,7 +58,7 @@ class WindFromCSV(IWind):
 
 
 class WindFromMeteo(IWind):
-    _source = ForcingSource.METEO
+    _source: ClassVar[ForcingSource] = ForcingSource.METEO
 
     path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model

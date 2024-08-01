@@ -1,7 +1,7 @@
 import os
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 import tomli
@@ -15,11 +15,11 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.interface.site import SiteModel
 
 
-class IForcing(BaseModel):
+class IForcing(BaseModel, ABC):
     """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
 
-    _type: ForcingType = None
-    _source: ForcingSource = None
+    _type: ClassVar[ForcingType]
+    _source: ClassVar[ForcingSource]
 
     @classmethod
     def load_file(cls, path: str | os.PathLike):
@@ -45,21 +45,29 @@ class IForcing(BaseModel):
         """
         return
 
+    def model_dump(self, **kwargs: Any) -> dict[str, Any]:
+        """Override the default model_dump to include class variables `_type` and `_source`."""
+        data = super().model_dump(**kwargs)
+        # Add the class variables to the serialized data
+        data["_type"] = self._type.value if self._type else None
+        data["_source"] = self._source.value if self._source else None
+        return data
+
 
 class IDischarge(IForcing):
-    _type = ForcingType.DISCHARGE
+    _type: ClassVar[ForcingType] = ForcingType.DISCHARGE
 
 
 class IRainfall(IForcing):
-    _type = ForcingType.RAINFALL
+    _type: ClassVar[ForcingType] = ForcingType.RAINFALL
 
 
 class IWind(IForcing):
-    _type = ForcingType.WIND
+    _type: ClassVar[ForcingType] = ForcingType.WIND
 
 
 class IWaterlevel(IForcing):
-    _type = ForcingType.WATERLEVEL
+    _type: ClassVar[ForcingType] = ForcingType.WATERLEVEL
 
 
 class IForcingFactory:

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any
 
 import tomli
 
@@ -17,14 +17,13 @@ from flood_adapt.object_model.hazard.event.synthetic import (
 )
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
-    IEventFactory,
     IEventModel,
     Mode,
     Template,
 )
 
 
-class EventFactory(IEventFactory):
+class EventFactory:
     """Factory class for creating events.
 
     This class is used to create events based on a template.
@@ -46,7 +45,7 @@ class EventFactory(IEventFactory):
     }
 
     @staticmethod
-    def get_event_and_class(template: Template) -> Tuple[IEvent, IEventModel]:
+    def get_event_from_template(template: Template) -> IEvent:
         """Get the event class corresponding to the template.
 
         Parameters
@@ -61,10 +60,10 @@ class EventFactory(IEventFactory):
         """
         if template not in EventFactory._EVENT_TEMPLATES:
             raise ValueError(f"Invalid event template: {template}")
-        return EventFactory._EVENT_TEMPLATES[template]
+        return EventFactory._EVENT_TEMPLATES[template][0]
 
     @staticmethod
-    def get_template(filepath: Path) -> Template:
+    def read_template(filepath: Path) -> Template:
         """Get event template from toml file."""
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -73,7 +72,7 @@ class EventFactory(IEventFactory):
         return toml.get("template")
 
     @staticmethod
-    def get_mode(filepath: Path) -> Mode:
+    def read_mode(filepath: Path) -> Mode:
         """Get event mode from toml file."""
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -95,8 +94,8 @@ class EventFactory(IEventFactory):
         Event
             Event object
         """
-        template = Template(EventFactory.get_template(toml_file))
-        event_type, _ = EventFactory.get_event_and_class(template)
+        template = Template(EventFactory.read_template(toml_file))
+        event_type = EventFactory.get_event_from_template(template)
         return event_type.load_file(toml_file)
 
     @staticmethod
@@ -113,9 +112,9 @@ class EventFactory(IEventFactory):
         IEvent
             Event object based on template
         """
-        if issubclass(attrs, IEventModel):
+        if issubclass(type(attrs), IEventModel):
             template = attrs.template
         else:
             template = attrs.get("template")
 
-        return EventFactory.get_event_class(template).load_dict(attrs)
+        return EventFactory.get_event_from_template(template).load_dict(attrs)

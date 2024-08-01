@@ -1,4 +1,5 @@
 import os
+from typing import ClassVar
 
 import pandas as pd
 from pydantic import BaseModel, Field
@@ -45,7 +46,7 @@ class TideModel(BaseModel):
 
 
 class WaterlevelSynthetic(IWaterlevel):
-    _source = ForcingSource.SYNTHETIC
+    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
 
     surge: SurgeModel
     tide: TideModel
@@ -94,7 +95,7 @@ class WaterlevelSynthetic(IWaterlevel):
 
 
 class WaterlevelFromCSV(IWaterlevel):
-    _source = ForcingSource.CSV
+    _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: os.PathLike | str
 
@@ -103,7 +104,7 @@ class WaterlevelFromCSV(IWaterlevel):
 
 
 class WaterlevelFromModel(IWaterlevel):
-    _source = ForcingSource.MODEL
+    _source: ClassVar[ForcingSource] = ForcingSource.MODEL
     path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
@@ -122,7 +123,7 @@ class WaterlevelFromModel(IWaterlevel):
 
 
 class WaterlevelFromGauged(IWaterlevel):
-    _source = ForcingSource.GAUGED
+    _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
     # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
     path: os.PathLike | str | None = Field(default=None)
 

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Union
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_serializer, field_validator
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulArea,
@@ -118,11 +118,7 @@ class TimeModel(BaseModel):
             )
         return value
 
-
-def default_forcings() -> dict[ForcingType, list[None]]:
-    return {
-        ForcingType.WATERLEVEL: None,
-        ForcingType.WIND: None,
-        ForcingType.RAINFALL: None,
-        ForcingType.DISCHARGE: None,
-    }
+    @field_serializer("time_step")
+    @classmethod
+    def serialize_time_step(cls, value: timedelta) -> float:
+        return value.total_seconds()

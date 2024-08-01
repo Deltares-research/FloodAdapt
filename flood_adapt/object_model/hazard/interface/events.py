@@ -1,11 +1,16 @@
 import os
-from abc import abstractmethod
-from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, ClassVar, List, Optional
 
 import tomli
-from pydantic import BaseModel, Field, model_validator
+import tomli_w
+from pydantic import (
+    BaseModel,
+    Field,
+    field_serializer,
+    model_validator,
+)
 
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -15,16 +20,13 @@ from flood_adapt.object_model.hazard.interface.models import (
     Mode,
     Template,
     TimeModel,
-    default_forcings,
 )
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 class IEventModel(BaseModel):
-    ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = Field(
-        default_factory=default_forcings, frozen=True
-    )
+    ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]]
 
     name: str
     description: Optional[str] = None
@@ -32,7 +34,19 @@ class IEventModel(BaseModel):
     template: Template
     mode: Mode
 
-    forcings: dict[ForcingType, IForcing] = Field(default_factory=default_forcings)
+    forcings: dict[ForcingType, IForcing] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    def create_forcings(self):
+        if "forcings" in self:
+            forcings = {}
+            for ftype, forcing_attrs in self["forcings"].items():
+                if isinstance(forcing_attrs, IForcing):
+                    forcings[ftype] = forcing_attrs
+                else:
+                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
+            self["forcings"] = forcings
+        return self
 
     @model_validator(mode="after")
     def validate_forcings(self):
@@ -41,22 +55,41 @@ class IEventModel(BaseModel):
                 continue
             _type = concrete_forcing._type
             _source = concrete_forcing._source
+
             # Check type
-            if concrete_forcing._type not in type(self).ALLOWED_FORCINGS:
+            if concrete_forcing._type not in self.__class__.ALLOWED_FORCINGS:
+                allowed_types = ", ".join(
+                    t.value for t in self.__class__.ALLOWED_FORCINGS.keys()
+                )
                 raise ValueError(
-                    f"Forcing {_type} not in allowed forcings {type(self).ALLOWED_FORCINGS}"
+                    f"Forcing type {_type.value} is not allowed. Allowed types are: {allowed_types}"
                 )
 
             # Check source
-            if _source not in type(self).ALLOWED_FORCINGS[_type]:
+            if _source not in self.__class__.ALLOWED_FORCINGS[_type]:
+                allowed_sources = ", ".join(
+                    s.value for s in self.__class__.ALLOWED_FORCINGS[_type]
+                )
                 raise ValueError(
-                    f"Forcing {concrete_forcing} not allowed for forcing category {_type}. Only {', '.join(type(self).ALLOWED_FORCINGS[_type].__name__)} are allowed"
+                    f"Forcing source {_source.value} is not allowed for forcing type {_type.value}. "
+                    f"Allowed sources are: {allowed_sources}"
                 )
         return self
 
+    @field_serializer("forcings")
+    @classmethod
+    def serialize_forcings(
+        cls, value: dict[ForcingType, IForcing]
+    ) -> dict[str, dict[str, Any]]:
+        return {
+            type.name: forcing.model_dump(exclude_none=True)
+            for type, forcing in value.items()
+            if type
+        }
+
 
 class IEvent(IDatabaseUser):
-    MODEL_TYPE: IEventModel
+    MODEL_TYPE: ClassVar[IEventModel]
 
     attrs: IEventModel
 
@@ -72,6 +105,10 @@ class IEvent(IDatabaseUser):
         obj.attrs = cls.MODEL_TYPE.model_validate(data)
         return obj
 
+    def save(self, path: str | os.PathLike):
+        with open(path, "wb") as f:
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
+
     def process(self, scenario: IScenario):
         """
         Process the event to generate forcing data.
@@ -83,26 +120,15 @@ class IEvent(IDatabaseUser):
         - Write output as pd.DataFrame to self.forcing_data[ForcingType]
         """
         for forcing in self.attrs.forcings.values():
-            forcing.process(self.attrs.time)
+            forcing.process(self.attrs.time, self.database.site)
 
-
-class IEventFactory:
-    @abstractmethod
-    def get_event_class(self, template: Template) -> IEvent:
-        pass
-
-    @abstractmethod
-    def get_template(self, filepath: Path) -> Template:
-        pass
-
-    @abstractmethod
-    def get_mode(self, filepath: Path) -> Mode:
-        pass
-
-    @abstractmethod
-    def load_file(self, toml_file: Path) -> IEvent:
-        pass
-
-    @abstractmethod
-    def load_dict(self, attrs: dict[str, Any]) -> IEvent:
-        pass
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        _self = self.attrs.model_dump(
+            exclude=["name", "description"], exclude_none=True
+        )
+        _other = other.attrs.model_dump(
+            exclude=["name", "description"], exclude_none=True
+        )
+        return _self == _other

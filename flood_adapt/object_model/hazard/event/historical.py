@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List
+from typing import ClassVar, List
 
 import cht_observations.observation_stations as cht_station
 import pandas as pd
@@ -33,10 +33,14 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLen
 class HistoricalEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
-    ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = {
+    ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.MODEL],
         ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.MODEL],
-        ForcingType.WATERLEVEL: [ForcingSource.CSV, ForcingSource.MODEL],
+        ForcingType.WATERLEVEL: [
+            ForcingSource.CSV,
+            ForcingSource.MODEL,
+            ForcingSource.GAUGED,
+        ],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT],
     }
 
