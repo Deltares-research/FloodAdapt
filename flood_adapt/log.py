@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from contextlib import contextmanager
 
 
@@ -43,7 +44,12 @@ class FloodAdaptLogging:
         formatter: logging.Formatter = None,
     ) -> None:
         """Add a file handler to the logger that directs outputs to a the file."""
-        if not os.path.exists(file_path):
+        if not file_path:
+            raise ValueError("file_path must be provided.")
+        elif not os.path.dirname(file_path):
+            file_path = os.path.join(os.getcwd(), file_path)
+
+        if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         file_handler = logging.FileHandler(filename=file_path, mode="a")
@@ -124,3 +130,15 @@ class FloodAdaptLogging:
             yield
         finally:
             cls.remove_file_handler(file_path)
+
+    @classmethod
+    def deprecation_warning(cls, version: str, reason: str):
+        """Log a deprecation warning with reason and the version that will remove it."""
+        cls.getLogger().warning(
+            f"DeprecationWarning: {reason}. This will be removed in version {version}.",
+        )
+        warnings.warn(
+            f"DeprecationWarning: {reason}. This will be removed in version {version}.",
+            DeprecationWarning,
+            stacklevel=2,
+        )

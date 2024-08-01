@@ -1,9 +1,11 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Optional, Union
 
 import pandas as pd
 from pydantic import BaseModel, Field
+
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
 class CurrentSituationModel(BaseModel):
@@ -27,9 +29,8 @@ class BenefitModel(BaseModel):
     annual_maint_cost: Optional[float] = None
 
 
-class IBenefit(ABC):
+class IBenefit(IDatabaseUser):
     attrs: BenefitModel
-    database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
     has_run: bool = False

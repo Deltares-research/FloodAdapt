@@ -6,10 +6,10 @@ import tomli
 import tomli_w
 
 from flood_adapt import __version__
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.hazard import ScenarioModel
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
 
 
 class Scenario(IScenario):
@@ -17,24 +17,24 @@ class Scenario(IScenario):
 
     attrs: ScenarioModel
     direct_impacts: DirectImpacts
-    database_input_path: Union[str, os.PathLike]
+
+    @property
+    def results_path(self) -> Path:
+        return self.database.scenarios.get_database_path(get_input_path=False).joinpath(
+            self.attrs.name
+        )
+
+    @property
+    def site_info(self):
+        return self.database.site
+
+    def __init__(self) -> None:
+        self._logger = FloodAdaptLogging.getLogger(__name__)
 
     def init_object_model(self) -> "Scenario":
         """Create a Direct Impact object."""
-        from flood_adapt.dbs_controller import (
-            Database,  # TODO: Fix circular import and move to top of file. There is too much entanglement between classes to fix this now
-        )
-
-        self._logger = FloodAdaptLogging.getLogger(__name__)
-
-        database = Database()
-        self.site_info = database.site
-        self.results_path = database.scenarios.get_database_path(
-            get_input_path=False
-        ).joinpath(self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
-            database=database,
             results_path=self.results_path,
         )
         return self
@@ -46,16 +46,18 @@ class Scenario(IScenario):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = ScenarioModel.model_validate(toml)
-        # if scenario is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
         return obj
 
     @staticmethod
-    def load_dict(data: dict[str, Any], database_input_path: os.PathLike):
+    def load_dict(data: dict[str, Any], database_input_path: os.PathLike = None):
         """Create Scenario from object, e.g. when initialized from GUI."""
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
+            )
         obj = Scenario()
         obj.attrs = ScenarioModel.model_validate(data)
-        obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
@@ -77,11 +79,14 @@ class Scenario(IScenario):
             )
             # preprocess model input data first, then run, then post-process
             if not self.direct_impacts.hazard.has_run:
-                self.direct_impacts.hazard.preprocess_models()
-                self.direct_impacts.hazard.run_models()
-                self.direct_impacts.hazard.postprocess_models()
+                template_path = Path(
+                    self.database.static_path / "templates" / "overland"
+                )
+                with SfincsAdapter(model_root=template_path) as sfincs_adapter:
+                    sfincs_adapter.run(self)
             else:
                 print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+
             if not self.direct_impacts.has_run:
                 self.direct_impacts.preprocess_models()
                 self.direct_impacts.run_models()

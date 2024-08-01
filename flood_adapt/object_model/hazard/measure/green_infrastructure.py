@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 from typing import Any, Union
 
 import geopandas as gpd
@@ -7,6 +6,7 @@ import pyproj
 import tomli
 import tomli_w
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.measure.hazard_measure import (
     HazardMeasure,
 )
@@ -25,7 +25,6 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
 
     attrs: GreenInfrastructureModel
-    database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
@@ -34,18 +33,21 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = GreenInfrastructureModel.model_validate(toml)
-        # if measure is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
         return obj
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
+        data: dict[str, Any],
+        database_input_path: Union[str, os.PathLike, None] = None,
     ) -> IGreenInfrastructure:
         """Create Green Infrastructure from object, e.g. when initialized from GUI."""
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
+            )
         obj = GreenInfrastructure()
         obj.attrs = GreenInfrastructureModel.model_validate(data)
-        obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):

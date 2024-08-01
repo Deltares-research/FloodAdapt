@@ -1,8 +1,10 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
+
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
 class ScenarioModel(BaseModel):
@@ -15,9 +17,8 @@ class ScenarioModel(BaseModel):
     strategy: str
 
 
-class IScenario(ABC):
+class IScenario(IDatabaseUser):
     attrs: ScenarioModel
-    database_input_path: Union[str, os.PathLike]
 
     @staticmethod
     @abstractmethod
@@ -27,7 +28,9 @@ class IScenario(ABC):
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(
+        data: dict[str, Any], database_input_path: Union[str, os.PathLike] = None
+    ):
         """Get Scenario attributes from an object, e.g. when initialized from GUI."""
         ...
 

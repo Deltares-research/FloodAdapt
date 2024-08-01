@@ -54,21 +54,14 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
     wl = pd.read_csv(fn_bc, index_col=0, delim_whitespace=True, header=None)
     peak_model = wl.max().max()
 
-    surge_peak = (
-        test_scenario.direct_impacts.hazard.event.attrs.surge.shape_peak.convert(
-            "meters"
-        )
-    )
-    tide_amp = (
-        test_scenario.direct_impacts.hazard.event.attrs.tide.harmonic_amplitude.convert(
-            "meters"
-        )
-    )
-    localdatum = test_scenario.site_info.attrs.water_level.localdatum.height.convert(
+    event = test_db.events.get(test_scenario.attrs.event)
+    surge_peak = event.attrs.surge.shape_peak.convert("meters")
+    tide_amp = event.attrs.tide.harmonic_amplitude.convert("meters")
+    localdatum = test_db.attrs.water_level.localdatum.height.convert(
         "meters"
-    ) - test_scenario.site_info.attrs.water_level.msl.height.convert("meters")
+    ) - test_db.site.attrs.water_level.msl.height.convert("meters")
 
-    slr_offset = test_scenario.site_info.attrs.slr.vertical_offset.convert("meters")
+    slr_offset = test_db.site.attrs.slr.vertical_offset.convert("meters")
 
     assert np.abs(peak_model - (surge_peak + tide_amp + slr_offset - localdatum)) < 0.01
 

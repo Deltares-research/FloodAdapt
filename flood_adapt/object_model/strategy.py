@@ -5,6 +5,7 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
@@ -19,14 +20,13 @@ class Strategy(IStrategy):
     """Strategy class that holds all the information for a specific strategy."""
 
     attrs: StrategyModel
-    database_input_path: Union[str, os.PathLike]
 
     def get_measures(self) -> list[Union[ImpactMeasure, HazardMeasure]]:
         """Get the measures paths and types."""
         assert self.attrs.measures is not None
         # Get measure paths using a database structure
         measure_paths = [
-            Path(self.database_input_path)
+            Path(self.database.input_path)
             / "measures"
             / measure
             / "{}.toml".format(measure)
@@ -77,8 +77,6 @@ class Strategy(IStrategy):
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         obj.attrs = StrategyModel.model_validate(toml)
-        # if strategy is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
         # Need to ensure that the strategy can be created
         if validate:
             obj.get_impact_strategy(validate=True)
@@ -88,7 +86,7 @@ class Strategy(IStrategy):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike],
+        database_input_path: Union[str, os.PathLike] = None,
         validate: bool = True,
     ):
         """_summary_.
@@ -108,9 +106,14 @@ class Strategy(IStrategy):
         IStrategy
             _description_
         """
+        if database_input_path is not None:
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
+            )
+
         obj = Strategy()
         obj.attrs = StrategyModel.model_validate(data)
-        obj.database_input_path = database_input_path
         # Need to ensure that the strategy can be created
         if validate:
             obj.get_impact_strategy(validate=True)

@@ -1,9 +1,10 @@
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulLengthRefValue,
@@ -12,12 +13,10 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class PhysicalProjectionModel(BaseModel):
-    sea_level_rise: Optional[UnitfulLength] = UnitfulLength(
+    sea_level_rise: UnitfulLength = UnitfulLength(
         value=0.0, units=UnitTypesLength.meters
     )
-    subsidence: Optional[UnitfulLength] = UnitfulLength(
-        value=0.0, units=UnitTypesLength.meters
-    )
+    subsidence: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
     rainfall_increase: float = 0.0
     storm_frequency_increase: float = 0.0
 
@@ -38,7 +37,7 @@ class ProjectionModel(BaseModel):
     socio_economic_change: SocioEconomicChangeModel
 
 
-class IProjection(ABC):
+class IProjection(IDatabaseUser):
     attrs: ProjectionModel
 
     @staticmethod

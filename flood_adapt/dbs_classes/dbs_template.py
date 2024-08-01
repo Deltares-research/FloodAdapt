@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Union
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario

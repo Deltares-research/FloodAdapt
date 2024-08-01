@@ -1,6 +1,5 @@
 import os
 import shutil
-from pathlib import Path
 from typing import Any, Union
 
 import geopandas as gpd
@@ -12,37 +11,55 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 
 
 class Benefit(IBenefit):
     """Object holding all attributes and methods related to a benefit analysis."""
 
     attrs: BenefitModel
-    database_input_path: Union[str, os.PathLike]
-    results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
-    has_run: bool = False
+
+    @property
+    def results_path(self):
+        return self.database.benefits.get_database_path(get_input_path=False).joinpath(
+            self.attrs.name
+        )
+
+    @property
+    def site_info(self):
+        return self.database.site
+
+    @property
+    def unit(self):
+        return self.site_info.attrs.fiat.damage_unit
+
+    @property
+    def has_run(self):
+        return self.has_run_check()
+
+    @property
+    def results(self):
+        if hasattr(self, "_results"):
+            return self._results
+        if not self.has_run:
+            raise RuntimeError(
+                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
+            )
+
+        results_toml = self.results_path.joinpath("results.toml")
+        results_html = self.results_path.joinpath("benefits.html")
+        with open(results_toml, mode="rb") as fp:
+            results = tomli.load(fp)
+        results["html"] = str(results_html)
+        self._results = results
+        return results
 
     def _init(self):
         """Initialize function called when object is created through the load_file or load_dict methods."""
-        # Get output path based on database path
-        self.results_path = Path(self.database_input_path).parent.joinpath(
-            "output", "Benefits", self.attrs.name
-        )
-        self.check_scenarios()
-        self.has_run = self.has_run_check()
-        if self.has_run:
-            self.get_output()
-        # Get site config
-        self.site_toml_path = (
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
-        )
-        self.site_info = Site.load_file(self.site_toml_path)
-        # Get monetary units
-        self.unit = self.site_info.attrs.fiat.damage_unit
+        self.check_scenarios()  # @panos this func returns something but we ignore it?
 
     def has_run_check(self) -> bool:
         """Check if the benefit analysis has already been run.
@@ -63,22 +80,10 @@ class Benefit(IBenefit):
         return check
 
     def get_output(self) -> dict:
-        """Read the benefit analysis results and the path of the html output.
-
-        Returns
-        -------
-        dict
-            results of benefit calculation
-        """
-        if not self.has_run_check():
-            raise RuntimeError(
-                f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
-            )
-        results_toml = self.results_path.joinpath("results.toml")
-        results_html = self.results_path.joinpath("benefits.html")
-        with open(results_toml, mode="rb") as fp:
-            self.results = tomli.load(fp)
-        self.results["html"] = str(results_html)
+        FloodAdaptLogging.deprecation_warning(
+            version="0.2.0",
+            reason="`get_output` is deprecated. Use self.results instead",
+        )
         return self.results
 
     def check_scenarios(self) -> pd.DataFrame:
@@ -120,7 +125,7 @@ class Benefit(IBenefit):
         # but the way it is set-up now there will be issues with cyclic imports
         scenarios_avail = []
         for scenario_path in list(
-            self.database_input_path.joinpath("scenarios").glob("*")
+            self.database.input_path.joinpath("scenarios").glob("*")
         ):
             scenarios_avail.append(
                 Scenario.load_file(scenario_path.joinpath(f"{scenario_path.name}.toml"))
@@ -130,7 +135,7 @@ class Benefit(IBenefit):
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scenario_obj = Scenario.load_dict(scn_dict, self.database_input_path)
+            scenario_obj = Scenario.load_dict(scn_dict, self.database.input_path)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]
@@ -194,7 +199,9 @@ class Benefit(IBenefit):
         self.cba_aggregation()
         # Updates results
         self.has_run_check()
-        self.get_output()
+
+        # Cache results
+        self.results
 
     def cba(self):
         """Cost-benefit analysis for the whole study area."""
@@ -202,7 +209,7 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        results_path = self.database.input_path.parent.joinpath("output", "Scenarios")
 
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
@@ -280,7 +287,7 @@ class Benefit(IBenefit):
 
     def cba_aggregation(self):
         """Zonal Benefits analysis for the different aggregation areas."""
-        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        results_path = self.database.input_path.parent.joinpath("output", "Scenarios")
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
@@ -372,7 +379,7 @@ class Benefit(IBenefit):
                 for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
                 if n.name == aggr_name
             ][0]
-            aggr_areas_path = self.database_input_path.parent.joinpath(
+            aggr_areas_path = self.database.input_path.parent.joinpath(
                 "static", self.site_info.attrs.fiat.aggregation[ind].file
             )
 
@@ -566,22 +573,17 @@ class Benefit(IBenefit):
             toml = tomli.load(fp)
         obj.attrs = BenefitModel.model_validate(toml)
         # if benefits is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
         obj._init()
         return obj
 
     @staticmethod
-    def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike]
-    ) -> IBenefit:
+    def load_dict(data: dict[str, Any]) -> IBenefit:
         """Create a Benefit object from a dictionary, e.g. when initialized from GUI.
 
         Parameters
         ----------
         data : dict[str, Any]
             a dictionary with the Benefit attributes
-        database_input_path : Union[str, os.PathLike]
-            the path where the FloodAdapt database is located
 
         Returns
         -------
@@ -590,7 +592,6 @@ class Benefit(IBenefit):
         """
         obj = Benefit()
         obj.attrs = BenefitModel.model_validate(data)
-        obj.database_input_path = Path(database_input_path)
         obj._init()
         return obj
 

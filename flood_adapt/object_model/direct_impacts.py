@@ -22,13 +22,14 @@ from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrateg
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
-from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
+from flood_adapt.object_model.hazard.hazard import FloodMap
+from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
-class DirectImpacts:
+class DirectImpacts(IDatabaseUser):
     """All information related to the direct impacts of the scenario.
 
     Includes methods to run the impact model or check if it has already been run.
@@ -37,25 +38,46 @@ class DirectImpacts:
     name: str
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
-    hazard: Hazard
+    hazard: FloodMap
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
+    def __init__(self, scenario: ScenarioModel, results_path: Path = None) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
-        self.database = database
         self.scenario = scenario
-        self.results_path = results_path
+
+        if results_path is not None:
+            FloodAdaptLogging.deprecation_warning(
+                version="0.2.0",
+                reason="`results_path` parameter is deprecated. Use the `results_path` property instead.",
+            )
+
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
-        self.set_hazard(scenario, database, self.results_path.joinpath("Flooding"))
-        # Get site config
-        self.site_toml_path = self.database.static_path / "site" / "site.toml"
-        self.site_info = database.site
-        # Define results path
-        self.impacts_path = self.results_path.joinpath("Impacts")
-        self.fiat_path = self.impacts_path.joinpath("fiat_model")
-        self.has_run = self.has_run_check()
+
+        self.hazard = FloodMap(scenario.name)
+
+    @property
+    def results_path(self) -> Path:
+        return (
+            self.database.scenarios.get_database_path(get_input_path=False) / self.name
+        )
+
+    @property
+    def impacts_path(self) -> Path:
+        return self.results_path / "Impacts"
+
+    @property
+    def fiat_path(self) -> Path:
+        return self.impacts_path / "fiat_model"
+
+    @property
+    def has_run(self) -> bool:
+        return self.has_run_check()
+
+    @property
+    def site_info(self):
+        return self.database.site
 
     def has_run_check(self) -> bool:
         """Check if the direct impact has been run.
@@ -65,9 +87,7 @@ class DirectImpacts:
         bool
             _description_
         """
-        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
-
-        return check
+        return self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def fiat_has_run_check(self) -> bool:
         """Check if fiat has run as expected.
@@ -111,7 +131,7 @@ class DirectImpacts:
             strategy
         ).get_impact_strategy()
 
-    def set_hazard(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
+    def set_hazard(self, scenario: ScenarioModel) -> None:
         """Set the Hazard object of the scenario.
 
         Parameters
@@ -119,7 +139,7 @@ class DirectImpacts:
         scenario : str
             Name of the scenario
         """
-        self.hazard = Hazard(scenario, database, results_dir)
+        self.hazard = FloodMap(scenario.name)
 
     def preprocess_models(self):
         self._logger.info("Preparing impact models...")
@@ -132,13 +152,11 @@ class DirectImpacts:
     def run_models(self):
         self._logger.info("Running impact models...")
         start_time = time.time()
-        return_code = self.run_fiat()
+        _ = self.run_fiat()
         end_time = time.time()
-        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
-
-        # Indicator that direct impacts have run
-        if return_code == 0:
-            self.__setattr__("has_run", True)
+        self._logger.info(
+            f"Running FIAT took {str(round(end_time - start_time, 2))} seconds"
+        )
 
     def postprocess_models(self):
         self._logger.info("Post-processing impact models...")
@@ -149,7 +167,7 @@ class DirectImpacts:
     def preprocess_fiat(self):
         """Update FIAT model based on scenario information and then runs the FIAT model."""
         # Check if hazard is already run
-        if not self.hazard.has_run:
+        if not self.hazard:
             raise ValueError(
                 "Hazard for this scenario has not been run yet! FIAT cannot be initiated."
             )
@@ -238,7 +256,9 @@ class DirectImpacts:
                     ids=ids_existing,
                 )
             else:
-                print("Impact measure type not recognized!")
+                self._logger.warning(
+                    f"Impact measure type not recognized: {measure.attrs.type}"
+                )
 
         # setup hazard for fiat
         fa.set_hazard(self.hazard)
@@ -283,7 +303,7 @@ class DirectImpacts:
         shutil.copy(self.fiat_path.joinpath("output", "output.csv"), fiat_results_path)
 
         # Add exceedance probability if needed (only for risk)
-        if self.hazard.event_mode == "risk":
+        if self.hazard.mode == Mode.risk:
             fiat_results_df = self._add_exeedance_probability(fiat_results_path)
 
         # Get the results dataframe
@@ -296,7 +316,7 @@ class DirectImpacts:
         if self.site_info.attrs.fiat.infographics:
             self._create_infographics(self.hazard.event_mode, metrics_path)
 
-        if self.hazard.event_mode == "risk":
+        if self.hazard.mode == Mode.risk:
             # Calculate equity based damages
             self._create_equity(metrics_path)
 
@@ -512,7 +532,7 @@ class DirectImpacts:
         # Get the metrics configuration
         self._logger.info("Calculating infometrics...")
 
-        if self.hazard.event_mode == "risk":
+        if self.hazard.mode == Mode.risk:
             ext = "_risk"
         else:
             ext = ""

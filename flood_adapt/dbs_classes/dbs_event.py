@@ -2,16 +2,14 @@ from pathlib import Path
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.eventset import EventSet
-from flood_adapt.object_model.interface.events import IEvent, Mode
+from flood_adapt.object_model.hazard.interface.events import IEvent
 
 
 class DbsEvent(DbsTemplate):
     _type = "event"
     _folder_name = "events"
-    _object_model_class = Event
+    _object_model_class = IEvent
 
     def get(self, name: str) -> IEvent:
         """Return an event object.
@@ -34,14 +32,7 @@ class DbsEvent(DbsTemplate):
             raise ValueError(f"{self._type.capitalize()} '{name}' does not exist.")
 
         # Load event
-        mode = Event.get_mode(event_path)
-        if mode == Mode.single_event:
-            # parse event config file to get event template
-            template = Event.get_template(event_path)
-            # use event template to get the associated event child class
-            return EventFactory.get_event(template).load_file(event_path)
-        elif mode == Mode.risk:
-            return EventSet.load_file(event_path)
+        return EventFactory.load_file(event_path)
 
     def list_objects(self) -> dict[str, Any]:
         """Return a dictionary with info on the events that currently exist in the database.

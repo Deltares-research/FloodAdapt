@@ -3,7 +3,7 @@ from typing import Any
 import geopandas as gpd
 import pandas as pd
 
-from flood_adapt.dbs_controller import Database
+import flood_adapt.dbs_controller as db
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -19,11 +19,11 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 def get_measures() -> dict[str, Any]:
-    return Database().measures.list_objects()
+    return db.Database().measures.list_objects()
 
 
 def get_measure(name: str) -> IMeasure:
-    return Database().measures.get(name)
+    return db.Database().measures.get(name)
 
 
 def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
@@ -44,7 +44,7 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         Measure object.
     """
     # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
-    database_path = Database().input_path
+    database_path = db.Database().input_path
 
     if type == "elevate_properties":
         return Elevate.load_dict(attrs, database_path)
@@ -61,19 +61,19 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
 
 
 def save_measure(measure: IMeasure) -> None:
-    Database().measures.save(measure)
+    db.Database().measures.save(measure)
 
 
 def edit_measure(measure: IMeasure) -> None:
-    Database().measures.edit(measure)
+    db.Database().measures.edit(measure)
 
 
 def delete_measure(name: str) -> None:
-    Database().measures.delete(name)
+    db.Database().measures.delete(name)
 
 
 def copy_measure(old_name: str, new_name: str, new_description: str) -> None:
-    Database().measures.copy(old_name, new_name, new_description)
+    db.Database().measures.copy(old_name, new_name, new_description)
 
 
 # Green infrastructure
@@ -90,4 +90,4 @@ def calculate_volume(
 
 
 def get_green_infra_table(measure_type: str) -> pd.DataFrame:
-    return Database().static.get_green_infra_table(measure_type)
+    return db.Database().static.get_green_infra_table(measure_type)
