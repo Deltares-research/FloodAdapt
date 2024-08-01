@@ -97,7 +97,7 @@ $navbar-hl: $links ;
     margin-top: -50px !important;
     margin-left: -50px;
     background-color: #2980b9;
-    height: 100px;  
+    height: 100px;
 }
 
 // Search window
@@ -124,7 +124,7 @@ $navbar-hl: $links ;
     color: #2980b9;
     font-weight: bold;
     font-size: 16px;
-    margin:15px;    
+    margin:15px;
 }
 
 .sidebar-item-text.sidebar-link.active{
@@ -148,9 +148,9 @@ $navbar-hl: $links ;
     color: black;
     font-size: 15px;
     font-weight: normal;
-} 
+}
 
-// Style 2nd level selection 
+// Style 2nd level selection
 .collapse.list-unstyled.sidebar-section a:hover{
     background-color:rgb(192, 192, 192);
     width:100%;
@@ -166,13 +166,13 @@ $navbar-hl: $links ;
     width:100%;
     padding: 5px;
     margin-left: -20px;
-} 
+}
 
 .sidebar-item{
     position: relative;
     padding-right: -50px
 }
-// Style content 
+// Style content
 
 
 .content {
