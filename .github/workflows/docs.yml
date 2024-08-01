@@ -44,7 +44,8 @@ jobs:
         run: |
           pip install tomli
           mamba env create --file=docs/environment_docs.yml
-
+          conda activate floodadapt_docs
+          
       - name: Setup Quarto
         run: |
           sudo apt update
@@ -57,7 +58,6 @@ jobs:
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
           source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate floodadapt_docs
           quarto render docs/ --execute
           echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
