@@ -5,11 +5,9 @@ channels:
 
 dependencies:
 - python=3.10
-- jupyter
 - jupyter-cache
 - jupyterlab
 - notebook
-- nbformat
 - matplotlib
 - numpy
 - pandas
@@ -19,3 +17,5 @@ dependencies:
 - tomli
 - pip:
   - quartodoc
+  - nbformat
+  - jupyter
