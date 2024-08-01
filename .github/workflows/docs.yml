@@ -60,7 +60,7 @@ jobs:
           export PATH=/home/runner/miniconda3/bin:$PATH
           source /home/runner/miniconda3/etc/profile.d/conda.sh
           conda activate floodadapt_docs
-          conda info --envs
+          conda install --force-reinstall jupyter nbformat
           quarto render docs/ --execute
           echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
