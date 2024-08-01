@@ -12,32 +12,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
 
-      - name: Initialize conda
-        run: |
-          conda init
-          source /usr/share/miniconda/etc/profile.d/conda.sh
+    - name: Initialize conda
+      run: |
+        conda init
+        source /usr/share/miniconda/etc/profile.d/conda.sh
 
-      - name: Install dependencies
-        run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root .
+    - name: Install dependencies
+      run: |
+        source /usr/share/miniconda/etc/profile.d/conda.sh
+        python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root .
 
-      - name: Build docs
-        run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda run -p ./environment/api_docs make -C ./dev_docs html
+    - name: Build docs
+      run: |
+        source /usr/share/miniconda/etc/profile.d/conda.sh
+        conda run -p ./environment/api_docs make -C ./dev_docs html
 
-      - name: Publish to Wiki
-        uses: peaceiris/actions-gh-pages@v3.9.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/api
-          destination_dir: ./${{ env.DOC_VERSION }}
-          keep_files: false
-          full_commit_message: Deploy API documentation to Wiki
+    - name: Publish to Wiki
+      run: |
+        # Clone the Wiki repository into a directory named '.wiki'
+        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
+
+        # Copy the built documentation to the Wiki repo
+        cp -r flood_adapt/api/build/html/* .wiki/
+
+        # Set up Git to use the GitHub Actions token for authentication
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+        # Commit and push the changes
+        git add .
+        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
+        git push
