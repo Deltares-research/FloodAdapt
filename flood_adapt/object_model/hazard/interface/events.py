@@ -1,4 +1,5 @@
 import os
+from abc import abstractmethod
 from typing import Any, ClassVar, List, Optional
 
 import tomli
@@ -109,18 +110,20 @@ class IEvent(IDatabaseUser):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    def process(self, scenario: IScenario):
+    @abstractmethod
+    def process(self, scenario: IScenario = None):
         """
         Process the event to generate forcing data.
 
-        This is the simplest implementation of the process method. For more complicated events, overwrite this method in the subclass.
+        The simplest implementation of the process method is to do nothing.
+        Some forcings are just data classes that do not require processing as they contain all information as attributes.
+        For more complicated events, overwrite this method in the subclass and implement the necessary steps to generate the forcing data.
 
-        - Read event- & scenario models to see what forcings are needed
-        - Compute forcing data (via synthetic functions or running offshore)
-        - Write output as pd.DataFrame to self.forcing_data[ForcingType]
+        - Read event- ( and possibly scenario) to see what forcings are needed
+        - Prepare forcing data (download, run offshore model, etc.)
+        - Set forcing data in forcing objects if necessary
         """
-        for forcing in self.attrs.forcings.values():
-            forcing.process(self.attrs.time, self.database.site)
+        ...
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

@@ -837,8 +837,8 @@ class SfincsAdapter(IHazardAdapter):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
         sb = SfincsBoundary()
-        sb.read_flow_boundary_points(Path(self._model.root).joinpath("sfincs.bnd"))
-        sb.read_astro_boundary_conditions(Path(self._model.root).joinpath("sfincs.bca"))
+        sb.read_flow_boundary_points(Path(self._model.root) / "sfincs.bnd")
+        sb.read_astro_boundary_conditions(Path(self._model.root) / "sfincs.bca")
 
         times = pd.date_range(
             start=event.time.start_time,
@@ -921,19 +921,17 @@ class SfincsAdapter(IHazardAdapter):
         results_path = self._get_result_path()
         if mode == Mode.single_event:
             simulation_paths.append(
-                results_path.joinpath(
-                    "simulations",
-                    self.database.site.attrs.sfincs.overland_model,
-                )
+                results_path
+                / "simulations"
+                / self.database.site.attrs.sfincs.overland_model
             )
         elif mode == Mode.risk:
             for subevent in event.get_subevents():
                 simulation_paths.append(
-                    results_path.joinpath(
-                        "simulations",
-                        subevent.attrs.name,
-                        self.database.site.attrs.sfincs.overland_model,
-                    )
+                    results_path
+                    / "simulations"
+                    / subevent.attrs.name
+                    / self.database.site.attrs.sfincs.overland_model
                 )
         return simulation_paths
 
@@ -946,20 +944,20 @@ class SfincsAdapter(IHazardAdapter):
         # Create a folder name for the offshore model (will not be used if offshore model is not created)
         if mode == Mode.single_event:  # risk mode requires an additional folder layer
             simulation_paths_offshore.append(
-                results_path.joinpath(
-                    "simulations",
-                    self.database.site.attrs.sfincs.offshore_model,
+                simulation_paths_offshore.append(
+                    results_path
+                    / "simulations"
+                    / self.database.site.attrs.sfincs.offshore_model
                 )
             )
         elif mode == Mode.risk:  # risk mode requires an additional folder layer
             for subevent in event.get_subevents():
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 simulation_paths_offshore.append(
-                    results_path.joinpath(
-                        "simulations",
-                        subevent.attrs.name,
-                        self.database.site.attrs.sfincs.offshore_model,
-                    )
+                    results_path
+                    / "simulations"
+                    / subevent.attrs.name
+                    / self.database.site.attrs.sfincs.offshore_model
                 )
         return simulation_paths_offshore
 
@@ -969,12 +967,12 @@ class SfincsAdapter(IHazardAdapter):
         mode = self.database.events.get(self._scenario.attrs.event).attrs.mode
 
         if mode == Mode.single_event:
-            map_fn = [results_path.joinpath("max_water_level_map.nc")]
+            map_fn = [results_path / "max_water_level_map.nc"]
 
         elif mode == Mode.risk:
             map_fn = []
             for rp in self.database.site.attrs.risk.return_periods:
-                map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
+                map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
 
         return map_fn
 
@@ -987,7 +985,7 @@ class SfincsAdapter(IHazardAdapter):
             time series of water level.
         """
         ds_his = utils.read_sfincs_his_results(
-            Path(self._model.root).joinpath("sfincs_his.nc"),
+            Path(self._model.root) / "sfincs_his.nc",
             crs=self._model.crs.to_epsg(),
         )
         wl_df = pd.DataFrame(
@@ -1039,8 +1037,10 @@ class SfincsAdapter(IHazardAdapter):
             # read SFINCS model
             with SfincsAdapter(model_root=sim_path) as model:
                 # dem file for high resolution flood depth map
-                demfile = self.database.static_path.joinpath(
-                    "dem", self.database.site.attrs.dem.filename
+                demfile = (
+                    self.database.static_path
+                    / "dem"
+                    / self.database.site.attrs.dem.filename
                 )
 
                 # read max. water level
@@ -1050,9 +1050,8 @@ class SfincsAdapter(IHazardAdapter):
                 model._write_geotiff(
                     zsmax,
                     demfile=demfile,
-                    floodmap_fn=results_path.joinpath(
-                        f"FloodMap_{self._scenario.attrs.name}.tif"
-                    ),
+                    floodmap_fn=results_path
+                    / f"FloodMap_{self._scenario.attrs.name}.tif",
                 )
 
     def _write_water_level_map(self):
@@ -1067,13 +1066,12 @@ class SfincsAdapter(IHazardAdapter):
         # TODO fix get_simulation_paths to return the correct simulation path instead of both the overland and offshore paths
         if mode == Mode.single_event:
             zsmax = self._get_zsmax()
-            zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
+            zsmax.to_netcdf(results_path / "max_water_level_map.nc")
         elif mode == Mode.risk:
-            pass
-            # sim_paths = self._get_simulation_paths()
-            # with SfincsAdapter(model_root=sim_paths[0]) as model:
-            #     zsmax = model._get_zsmax()
-            #     zsmax.to_netcdf(results_path.joinpath("max_water_level_map.nc"))
+            sim_paths = self._get_simulation_paths()
+            with SfincsAdapter(model_root=sim_paths[0]) as model:
+                zsmax = model._get_zsmax()
+                zsmax.to_netcdf(results_path / "max_water_level_map.nc")
 
     def _write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
         # read DEM and convert units to metric units used by SFINCS
@@ -1228,20 +1226,22 @@ class SfincsAdapter(IHazardAdapter):
                 zsmax.raster.crs
             )  # , inplace=True)
             zs_rp_single = zs_rp_single.to_dataset(name="risk_map")
-            fn_rp = result_path.joinpath(f"RP_{rp:04d}_maps.nc")
+            fn_rp = result_path / f"RP_{rp:04d}_maps.nc"
             zs_rp_single.to_netcdf(fn_rp)
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = self.database.static_path.joinpath(
-                "dem", self.database.site.attrs.dem.filename
+            demfile = (
+                self.database.static_path
+                / "dem"
+                / self.database.site.attrs.dem.filename
             )
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=str(sim_paths[0])) as dummymodel:
                 dummymodel._write_geotiff(
                     zs_rp_single.to_array().squeeze().transpose(),
                     demfile=demfile,
-                    floodmap_fn=result_path.joinpath(f"RP_{rp:04d}_maps.tif"),
+                    floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
                 )
 
     def _plot_wl_obs(self):
@@ -1335,4 +1335,4 @@ class SfincsAdapter(IHazardAdapter):
                 # write html to results folder
                 station_name = gdf.iloc[ii]["Name"]
                 results_path = self._get_result_path()
-                fig.write_html(results_path.joinpath(f"{station_name}_timeseries.html"))
+                fig.write_html(results_path / f"{station_name}_timeseries.html")

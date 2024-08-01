@@ -25,6 +25,6 @@ class SyntheticEvent(IEvent):
 
     attrs: SyntheticEventModel
 
-    def process(self, scenario: IScenario):
+    def process(self, scenario: IScenario = None):
         """Synthetic events do not require any processing."""
         return

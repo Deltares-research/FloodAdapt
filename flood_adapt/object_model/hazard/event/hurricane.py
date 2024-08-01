@@ -50,7 +50,7 @@ class HurricaneEvent(IEvent):
     attrs: HurricaneEventModel
 
     def process(self, scenario: IScenario):
-        """Synthetic events do not require any processing."""
+        """Prepare HurricaneEvent forcings."""
         return
 
     def make_spw_file(self, model_dir: Path):

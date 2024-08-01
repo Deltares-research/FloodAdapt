@@ -58,7 +58,13 @@ class HistoricalEvent(IEvent):
         return self.database.site
 
     def process(self, scenario: IScenario):
-        """Preprocess, run and postprocess offshore model to obtain water levels for boundary condition of the overland model."""
+        """Prepare the forcings of the historical event.
+
+        If the forcings require it, this function will:
+        - download meteo data: download the meteo data from the meteo source and store it in the output directory.
+        - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
+
+        """
         self._scenario = scenario
         self.meteo_ds = None
         sim_path = self._get_simulation_path()
@@ -169,15 +175,13 @@ class HistoricalEvent(IEvent):
         if self.attrs.mode == Mode.risk:
             pass
         elif self.attrs.mode == Mode.single_event:
-            path = self.database.scenarios.get_database_path(
-                get_input_path=False
-            ).joinpath(
-                self._scenario.attrs.name,
-                "Flooding",
-                "simulations",
-                self.site.attrs.sfincs.offshore_model,
+            return (
+                self.database.scenarios.get_database_path(get_input_path=False)
+                / self._scenario.attrs.name
+                / "Flooding"
+                / "simulations"
+                / self.site.attrs.sfincs.offshore_model
             )
-            return path
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
 
