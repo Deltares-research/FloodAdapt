@@ -3,9 +3,9 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main] 
+    branches: [main]
   workflow_dispatch:
-  
+
 permissions:
   contents: write
 
@@ -30,10 +30,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Miniforge3
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: ${{ matrix.python-version }}
           miniforge-variant: Miniforge3
@@ -59,12 +59,12 @@ jobs:
       - name: Generate docs
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
-          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          source /usr/share/miniconda/etc/profile.d/conda.sh
           mamba run -n floodadapt_docs quarto render docs/ --execute
 
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
-        uses: peaceiris/actions-gh-pages@v3.9.3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
