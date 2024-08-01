@@ -44,10 +44,12 @@ jobs:
         run: |
           pip install tomli
           mamba env create -n floodadapt_docs --file=docs/environment_docs.yml
-          conda info --envs
           
       - name: Setup Quarto
         run: |
+          export PATH=/home/runner/miniconda3/bin:$PATH
+          source /home/runner/miniconda3/etc/profile.d/conda.sh
+          conda activate floodadapt_docs
           sudo apt update
           sudo apt install -y curl gdebi-core
           mkdir -p tmp
@@ -61,8 +63,7 @@ jobs:
           source /home/runner/miniconda3/etc/profile.d/conda.sh
           conda activate floodadapt_docs
           quarto render docs/ --execute
-          echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
-
+          
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         uses: peaceiris/actions-gh-pages@v4
