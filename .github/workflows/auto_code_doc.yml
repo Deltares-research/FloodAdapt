@@ -30,6 +30,9 @@ jobs:
         activate-environment: floodadapt_docs
         environment-file: docs/environment_docs.yml
 
+    - name: debug
+      run: conda env list
+
     - name: Build wiki
       run: |
         make -C ./dev_docs html
