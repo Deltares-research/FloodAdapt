@@ -36,10 +36,19 @@ jobs:
         # Verify the build output
         ls -la build/html
 
-    - name: Wiki Update
-      uses: spenserblack/actions-wiki@v0.3.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        path: flood_adapt/api/build/html
-  
-      
+    - name: Publish to Wiki
+      run: |
+        # Clone the Wiki repository into a directory named '.wiki'
+        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
+
+        # Copy the built documentation to the Wiki repo
+        cp -r flood_adapt/api/build/html/* .wiki/
+
+        # Set up Git to use the GitHub Actions token for authentication
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+        # Commit and push the changes
+        git add .
+        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
+        git push

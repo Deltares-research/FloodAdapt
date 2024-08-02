@@ -11,27 +11,26 @@ Don't feel like reading? No problem! Check out our video about how to add a hurr
 {{< video https://www.youtube.com/watch?v=ojzx3JHeGws >}}
 :::
 
-The historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the **Events** tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The user can see all hurricanes within a specified distance of the site, or between specified years. 
+The historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the **Events** tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The user can see all hurricanes within a specified distance of the site, or between specified years.
 
 ::: {.callout-note}
 ## Hurricanes far offshore
-It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type. 
+It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type.
 :::
 
 ![**Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window**](../../../_static/images/popup_hurricaneSelector.png){#fig-hurricaneSelector}
 
-The historical hurricane event template window is shown in @fig-hurricaneTemplate. After a user selects a hurricane from the hurricane selector window, the event name and description of the hurricane and the timing will be automatically filled in. The user can edit these if desired. 
+The historical hurricane event template window is shown in @fig-hurricaneTemplate. After a user selects a hurricane from the hurricane selector window, the event name and description of the hurricane and the timing will be automatically filled in. The user can edit these if desired.
 
 ::: {.callout-tip}
 ## Editing the hurricane start and stop time
-The autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall. 
+The autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.
 :::
 
-Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. 
+Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.
 
 The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.
 
-The river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge. 
+The river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge.
 
 ![**Event template window for a historical hurricane.**](../../../_static/images/popup_hurricaneTemplate.png){#fig-hurricaneTemplate}
-
