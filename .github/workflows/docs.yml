@@ -42,9 +42,12 @@ jobs:
 
       - name: Setup env
         run: |
-          pip install tomli
-          mamba env create -n floodadapt_docs --file=docs/environment_docs.yml
-          
+                pip install tomli
+                mamba env create --file=docs/environment_docs.yml
+                mamba run -n floodadapt_docs pip install . --no-deps
+                VERSION=$(mamba run -n floodadapt_docs python -c "from flood_adapt import __version__; print(__version__)")
+                echo "DOC_VERSION=${VERSION}" >> $GITHUB_ENV
+
       - name: Setup Quarto
         run: |
           sudo apt update
@@ -52,16 +55,13 @@ jobs:
           mkdir -p tmp
           curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-linux-amd64.deb --output tmp/quarto.deb
           sudo gdebi -n tmp/quarto.deb
-          conda info --envs
 
       - name: Generate docs
         run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          source /home/runner/miniconda3/etc/profile.d/conda.sh
-          conda activate floodadapt_docs
-          quarto render docs/ --execute
-          echo "DOC_VERSION=$(mamba run -n floodadapt_docs python -c 'from floodadapt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
-          
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          mamba run -n floodadapt_docs quarto render docs/ --execute
+
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         uses: peaceiris/actions-gh-pages@v4
