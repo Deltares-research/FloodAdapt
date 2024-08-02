@@ -12,34 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Miniforge3
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: '3.x'
+        python-version: ${{ matrix.python-version }}
+        miniforge-variant: Miniforge3
+        miniforge-version: latest
+        use-mamba: true
 
-    - name: Initialize conda
+    - name: Setup env
       run: |
-        conda init
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-
-    - name: Install dependencies
-      run: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-        python ./environment/make_environment.py --name api_docs --prefix ./environment -d docs --project-root .
-
-    - name: Build docs
-      run: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda run -p ./environment/api_docs make -C ./dev_docs html
+        pip install tomli
+        mamba env create --file=docs/environment_docs.yml
+        mamba run -n floodadapt_docs pip install . --no-deps
+        mamba run -p floodadapt_docs make -C ./dev_docs html
 
     - name: Publish to Wiki
       run: |
-        # Clone the Wiki repository into a directory named '.wiki'
-        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
+        git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
         # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/build/html/* .wiki/
+        cp -r dev_docs/build/html/* ../wiki
+        cd ../wiki
 
         # Set up Git to use the GitHub Actions token for authentication
         git config user.name 'github-actions[bot]'
