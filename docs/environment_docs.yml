@@ -15,6 +15,7 @@ dependencies:
 - pandas
 - pip
 - regex
+- sphinx
 - setuptools>=61.0.0
 - tomli
 - pip:
