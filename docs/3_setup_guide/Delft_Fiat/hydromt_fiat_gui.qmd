@@ -5,7 +5,6 @@ filters:
 lightbox: auto
 execute:
   echo: false
-jupyter: python3
 number-sections: false
 format: html
 ---
