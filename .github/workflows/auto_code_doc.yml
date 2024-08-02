@@ -42,15 +42,17 @@ jobs:
       env:
         github_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # Set up Git to use the GitHub Actions token for authentication
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
         git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
         # Copy the built documentation to the Wiki repo
         cp -r dev_docs/build/* ../wiki
         cd ../wiki
 
-        # Set up Git to use the GitHub Actions token for authentication
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
 
         # Commit and push the changes
         git add .
