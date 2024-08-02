@@ -38,14 +38,18 @@ jobs:
       run: |
         sphinx-build ./dev_docs/source ./dev_docs/build
 
+    - name: checkout wiki
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository }}.wiki.git
+        path: ../wiki
+
     - name: Publish to Wiki
       env:
         github_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global  user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-        git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
         # Copy the built documentation to the Wiki repo
         cp -r dev_docs/build/* ../wiki
