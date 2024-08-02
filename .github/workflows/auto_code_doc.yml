@@ -33,7 +33,7 @@ jobs:
 
     - name: Build wiki
       run: |
-        sphinx-build ./dev_docs ./dev_docs/build -M html -W
+        sphinx-build ./dev_docs ./dev_docs/build -W
 
     - name: Publish to Wiki
       run: |
