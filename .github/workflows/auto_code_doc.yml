@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,6 +40,8 @@ jobs:
         sphinx-build ./dev_docs/source ./dev_docs/build
 
     - name: Publish to Wiki
+      env:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
