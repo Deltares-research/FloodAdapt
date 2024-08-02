@@ -27,6 +27,7 @@ author = "Read the Docs core team"
 
 extensions = [
     "sphinx.ext.duration",
+    "sphinx_markdown_builder",
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",

@@ -35,7 +35,7 @@ jobs:
 
     - name: Build wiki
       run: |
-        sphinx-build ./dev_docs/source ./dev_docs/wiki
+        sphinx-build -M markdown ./dev_docs/source ./dev_docs/wiki
         ls ./dev_docs/wiki
 
     - name: Publish to Wiki
