@@ -33,7 +33,7 @@ jobs:
 
     - name: Build wiki
       run: |
-        make -C ./dev_docs html
+        sphinx
 
     - name: Publish to Wiki
       run: |
