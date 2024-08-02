@@ -37,24 +37,12 @@ jobs:
     - name: Build wiki
       run: |
         sphinx-build ./dev_docs/source ./dev_docs/build
-
-    - name: Publish to Wiki
-      env:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Set up Git to use the GitHub Actions token for authentication
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
-
-        git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
-
-        # Copy the built documentation to the Wiki repo
-        cp -r dev_docs/build/* ../wiki
-        cd ../wiki
-
-
-
-        # Commit and push the changes
-        git add .
-        git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
-        git push
+    - name: Sync Wiki
+      uses: joeizzard/action-wiki-sync@master
+      with:
+          username: Deltares-research
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+          wiki_folder: dev_docs/build
+          commit_username: 'github-actions[bot]'
+          commit_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Update Wiki'
