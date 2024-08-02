@@ -36,4 +36,4 @@ The **secondary occupancy type** can be optional, but will sometimes be required
 
 **Vulnerability data** in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.
 
-![Example of depth-damage functions](../../_static/figures/damage_curves.svg){#fig-damagefunction}
+![Example of depth-damage functions.](../../_static/figures/damage_curves.svg){#fig-damagefunction}
