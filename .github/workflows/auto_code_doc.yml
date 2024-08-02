@@ -40,7 +40,7 @@ jobs:
         git clone https://github.com/${{ github.repository }}.wiki.git ../wiki
 
         # Copy the built documentation to the Wiki repo
-        cp -r dev_docs/build/html/* ../wiki
+        cp -r dev_docs/build/* ../wiki
         cd ../wiki
 
         # Set up Git to use the GitHub Actions token for authentication
