@@ -50,4 +50,4 @@ jobs:
         # Commit and push the changes
         git add .
         git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
-        git push
+        git push origin master
