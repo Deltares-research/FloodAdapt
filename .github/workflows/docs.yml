@@ -42,11 +42,11 @@ jobs:
 
       - name: Setup env
         run: |
-                pip install tomli
-                mamba env create --file=docs/environment_docs.yml
-                mamba run -n floodadapt_docs pip install . --no-deps
-                VERSION=$(mamba run -n floodadapt_docs python -c "from flood_adapt import __version__; print(__version__)")
-                echo "DOC_VERSION=${VERSION}" >> $GITHUB_ENV
+          pip install tomli
+          mamba env create --file=docs/environment_docs.yml
+          mamba run -n floodadapt_docs pip install . --no-deps
+          VERSION=$(mamba run -n floodadapt_docs python -c "from flood_adapt import __version__; print(__version__)")
+          echo "DOC_VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Setup Quarto
         run: |
