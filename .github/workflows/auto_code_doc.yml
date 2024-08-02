@@ -20,6 +20,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Setup Miniforge3
       uses: conda-incubator/setup-miniconda@v3
@@ -31,18 +33,9 @@ jobs:
         activate-environment: floodadapt_docs
         environment-file: docs/environment_docs.yml
 
-    - name: debug
-      run: conda env list
-
     - name: Build wiki
       run: |
-        sphinx-build ./dev_docs/source ./dev_docs/build
-
-    - name: checkout wiki
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ github.repository }}.wiki.git
-        path: ../wiki
+        sphinx-build ./dev_docs/source ./dev_docs/wiki
 
     - name: Publish to Wiki
       env:
@@ -52,12 +45,9 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
         # Copy the built documentation to the Wiki repo
-        cp -r dev_docs/build/* ../wiki
-        cd ../wiki
-
+        cd dev_docs/wiki
 
         # Commit and push the changes
-        git config --global --add safe.directory .
         git add .
         git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
         git push
