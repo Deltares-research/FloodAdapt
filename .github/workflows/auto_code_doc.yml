@@ -22,12 +22,11 @@ jobs:
         miniforge-variant: Miniforge3
         miniforge-version: latest
         use-mamba: true
+        activate-environment: floodadapt_docs
+        environment-file: docs/environment_docs.yml
 
-    - name: Setup env
+    - name: Build wiki
       run: |
-        pip install tomli
-        mamba env create --file=docs/environment_docs.yml
-        conda activate floodadapt_docs
         make -C ./dev_docs html
 
     - name: Publish to Wiki
