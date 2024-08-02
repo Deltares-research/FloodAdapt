@@ -27,8 +27,8 @@ jobs:
       run: |
         pip install tomli
         mamba env create --file=docs/environment_docs.yml
-        mamba run -n floodadapt_docs pip install . --no-deps
-        mamba run -p floodadapt_docs make -C ./dev_docs html
+        conda activate floodadapt_docs
+        make -C ./dev_docs html
 
     - name: Publish to Wiki
       run: |
