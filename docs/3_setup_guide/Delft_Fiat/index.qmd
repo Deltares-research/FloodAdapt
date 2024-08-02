@@ -36,35 +36,4 @@ The **secondary occupancy type** can be optional, but will sometimes be required
 
 **Vulnerability data** in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.
 
-
-
-```{python}
-#| echo: false
-#| label: fig-damagefunction
-#| fig-cap: "Example of depth-damage functions."
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from pathlib import Path
-
-
-file_path = Path.cwd()
-
-file_path = Path(file_path.parents[1], "_static", "files", "vulnerability_curves.csv")
-file_path = file_path.resolve()
-data = df = pd.read_csv(file_path, comment='#')
-df = pd.DataFrame({
-    ('water depth'): data.iloc[:, 0],
-    ('STRUCT1'): data.iloc[:, 1],
-    ('STRUCT2'): data.iloc[:, 2],
-
-})
-
-labels=["example building type 1","example building type 1"]
-plt.plot(df['water depth'], df['STRUCT1'])
-plt.plot(df['water depth'], df['STRUCT2'])
-plt.xlabel('Water depth (m)')
-plt.ylabel('Fraction of maximum potential damage')
-plt.legend(labels)
-plt.gca().get_legend().set_title('')
-```
+![Example of depth-damage functions.](../../_static/figures/damage_curves.svg){#fig-damagefunction}
