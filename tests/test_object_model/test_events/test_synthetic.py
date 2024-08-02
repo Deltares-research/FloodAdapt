@@ -1,11 +1,7 @@
 from datetime import datetime
-from pathlib import Path
-from typing import Any
-from unittest import mock
 
 import pytest
 
-from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -33,19 +29,18 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-class TestEventSet:
+class TestSyntheticEvent:
+    # TODO add test for for eventmodel validators
     @pytest.fixture()
-    def test_event(self):
+    def test_event_all_synthetic(self):
         attrs = {
-            "name": "test_eventset_synthetic",
+            "name": "test_historical_nearshore",
             "time": TimeModel(
                 start_time=datetime(2020, 1, 1),
                 end_time=datetime(2020, 1, 2),
             ),
             "template": Template.Synthetic,
-            "mode": Mode.risk,
-            "sub_events": ["event_0001", "event_0039", "event_0078"],
-            "frequency": [0.5, 0.2, 0.02],
+            "mode": Mode.single_event,
             "forcings": {
                 "WIND": WindConstant(
                     speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
@@ -79,54 +74,30 @@ class TestEventSet:
         return attrs
 
     @pytest.fixture()
-    def test_synthetic_eventset(self, test_event: dict[str, Any]):
-        return EventSet.load_dict(test_event)
+    def test_event(self, test_event_all_synthetic):
+        return SyntheticEvent.load_dict(test_event_all_synthetic)
 
-    @pytest.fixture()
-    def test_scenario(self, test_db, test_synthetic_eventset: EventSet):
-        test_db.events.save(test_synthetic_eventset)
+    def test_save_event_toml(self, test_event_all_synthetic, tmp_path):
+        path = tmp_path / "test_event.toml"
+        test_event = SyntheticEvent.load_dict(test_event_all_synthetic)
+        test_event.save(path)
+        assert path.exists()
 
-        scn = test_db.scenarios.get("current_test_set_no_measures")
-        scn.attrs.name = "current_test_set_synthetic_no_measures"
-        scn.attrs.event = test_synthetic_eventset.attrs.name
+    def test_load_dict(self, test_event_all_synthetic):
+        loaded_event = SyntheticEvent.load_dict(test_event_all_synthetic)
 
-        test_db.scenarios.save(scn)
+        assert loaded_event.attrs.name == test_event_all_synthetic["name"]
+        assert loaded_event.attrs.time == test_event_all_synthetic["time"]
+        assert loaded_event.attrs.template == test_event_all_synthetic["template"]
+        assert loaded_event.attrs.mode == test_event_all_synthetic["mode"]
+        assert loaded_event.attrs.forcings == test_event_all_synthetic["forcings"]
 
-        return test_db, scn, test_synthetic_eventset
+    def test_load_file(self, test_event_all_synthetic, tmp_path):
+        path = tmp_path / "test_event.toml"
+        saved_event = SyntheticEvent.load_dict(test_event_all_synthetic)
+        saved_event.save(path)
+        assert path.exists()
 
-    def test_get_subevent_paths(self, test_db, test_synthetic_eventset: EventSet):
-        subevent_paths = test_synthetic_eventset.get_sub_event_paths()
-        assert len(subevent_paths) == len(test_synthetic_eventset.attrs.sub_events)
+        loaded_event = SyntheticEvent.load_file(path)
 
-    def test_get_subevents_create_sub_events(
-        self, test_db, test_synthetic_eventset: EventSet
-    ):
-        subevent_paths = test_synthetic_eventset.get_sub_event_paths()
-
-        subevents = test_synthetic_eventset.get_subevents()
-
-        assert len(subevents) == len(test_synthetic_eventset.attrs.sub_events)
-        assert all(subevent_path.exists() for subevent_path in subevent_paths)
-
-        assert test_synthetic_eventset.attrs.mode == Mode.risk
-        assert all(subevent.attrs.mode == Mode.single_event for subevent in subevents)
-
-    def test_eventset_synthetic_process(self, test_scenario: tuple):
-        test_db, scn, test_eventset = test_scenario
-        SyntheticEvent.process = mock.Mock()
-        test_eventset.process(scn)
-
-        assert SyntheticEvent.process.call_count == len(test_eventset.attrs.sub_events)
-
-    def test_calculate_rp_floodmaps(self, test_scenario: tuple):
-        test_db, scn, test_eventset = test_scenario
-
-        scn.run()
-        output_path = (
-            Path(test_db.scenarios.get_database_path(get_input_path=False))
-            / scn.attrs.name
-        )
-
-        for rp in test_db.site.attrs.risk.return_periods:
-            assert (output_path / f"RP_{rp:04d}_maps.nc").exists()
-            assert (output_path / f"RP_{rp:04d}_maps.tif").exists()
+        assert loaded_event == saved_event

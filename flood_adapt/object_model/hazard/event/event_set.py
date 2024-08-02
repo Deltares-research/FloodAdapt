@@ -1,9 +1,10 @@
 import shutil
-from typing import List
+from pathlib import Path
+from typing import ClassVar, List
 
 from pydantic import Field
+from typing_extensions import Annotated
 
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
@@ -17,19 +18,24 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 class EventSetModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
-    ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = {
+    ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
             ForcingSource.MODEL,
             ForcingSource.TRACK,
+            ForcingSource.SYNTHETIC,
         ],
-        ForcingType.WIND: [ForcingSource.TRACK],
-        ForcingType.WATERLEVEL: [ForcingSource.MODEL],
+        ForcingType.WIND: [
+            ForcingSource.TRACK,
+            ForcingSource.CONSTANT,
+            ForcingSource.SYNTHETIC,
+        ],
+        ForcingType.WATERLEVEL: [ForcingSource.MODEL, ForcingSource.SYNTHETIC],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
 
     sub_events: List[str]
-    frequency: List[float] = Field(gt=0, lt=1)
+    frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
 
 
 class EventSet(IEvent):
@@ -49,21 +55,30 @@ class EventSet(IEvent):
         Then, it will call the process function of the subevents.
 
         """
+        # @gundula, run offshore only once and then copy results?
+        # Same for downloading meteo data
+        # I dont think I've seen any code that changes the forcings of the subevents wrt eachother, is that correct?
+        # So, just run the first subevent and then copy the results to the other subevents ?
         for sub_event in self.get_subevents():
             sub_event.process(scenario)
 
-    def get_subevents(self) -> List[IEvent]:
+    def get_sub_event_paths(self) -> List[Path]:
         base_path = self.database.events.get_database_path() / self.attrs.name
-        base_event = self.attrs.model_dump(exclude={"sub_events", "frequency", "mode"})
-        base_event.attrs.mode = Mode.single_event
-
-        sub_event_paths = [
+        return [
             base_path / sub_name / f"{sub_name}.toml"
             for sub_name in self.attrs.sub_events
         ]
-        if not all(path.exists() for path in sub_event_paths):
+
+    def get_subevents(self) -> List[IEvent]:
+        from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+
+        paths = self.get_sub_event_paths()
+        base_event = self.attrs.model_dump(exclude={"sub_events", "frequency", "mode"})
+        base_event["mode"] = Mode.single_event
+
+        if not all(path.exists() for path in paths):
             # something went wrong, we need to recreate the subevents
-            for path in sub_event_paths:
+            for path in paths:
                 if path.parent.exists():
                     shutil.rmtree(path.parent)
 
@@ -71,10 +86,14 @@ class EventSet(IEvent):
                 sub_event = EventFactory.load_dict(base_event)
                 sub_event.attrs.name = sub_name
 
-                subdir = base_path / sub_name
+                subdir = (
+                    self.database.events.get_database_path()
+                    / self.attrs.name
+                    / sub_name
+                )
                 subdir.mkdir(parents=True, exist_ok=True)
                 toml_path = subdir / f"{sub_name}.toml"
 
                 sub_event.save(toml_path)
 
-        return [EventFactory.load_file(path) for path in sub_event_paths]
+        return [EventFactory.load_file(path) for path in paths]

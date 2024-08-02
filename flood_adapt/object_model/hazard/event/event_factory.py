@@ -3,6 +3,9 @@ from typing import Any
 
 import tomli
 
+from flood_adapt.object_model.hazard.event.event_set import (
+    EventSet,
+)
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
     HistoricalEventModel,
@@ -36,6 +39,7 @@ class EventFactory:
 
     _EVENT_TEMPLATES = {
         Template.Hurricane: (HurricaneEvent, HurricaneEventModel),
+        Template.Historical: (HistoricalEvent, HistoricalEventModel),
         Template.Historical_nearshore: (HistoricalEvent, HistoricalEventModel),
         Template.Historical_offshore: (HistoricalEvent, HistoricalEventModel),
         Template.Synthetic: (SyntheticEvent, SyntheticEventModel),
@@ -94,8 +98,12 @@ class EventFactory:
         Event
             Event object
         """
-        template = Template(EventFactory.read_template(toml_file))
-        event_type = EventFactory.get_event_from_template(template)
+        mode = EventFactory.read_mode(toml_file)
+        if mode == Mode.risk:
+            event_type = EventSet
+        elif mode == Mode.single_event:
+            template = Template(EventFactory.read_template(toml_file))
+            event_type = EventFactory.get_event_from_template(template)
         return event_type.load_file(toml_file)
 
     @staticmethod
@@ -113,8 +121,13 @@ class EventFactory:
             Event object based on template
         """
         if issubclass(type(attrs), IEventModel):
+            mode = attrs.mode
             template = attrs.template
         else:
+            mode = attrs.get("mode")
             template = attrs.get("template")
 
-        return EventFactory.get_event_from_template(template).load_dict(attrs)
+        if mode == Mode.risk:
+            return EventSet.load_dict(attrs)
+        elif mode == Mode.single_event:
+            return EventFactory.get_event_from_template(template).load_dict(attrs)

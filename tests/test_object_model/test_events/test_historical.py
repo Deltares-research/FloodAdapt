@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 import pandas as pd
@@ -55,11 +56,13 @@ class TestHistoricalEvent:
         return attrs
 
     @pytest.fixture()
-    def test_event_no_waterlevels(self, test_event_all_constant_no_waterlevels):
+    def test_event_no_waterlevels(
+        self, test_event_all_constant_no_waterlevels: dict[str, Any]
+    ):
         return HistoricalEvent.load_dict(test_event_all_constant_no_waterlevels)
 
     @pytest.fixture()
-    def test_scenario(self, test_db, test_event_no_waterlevels):
+    def test_scenario(self, test_db, test_event_no_waterlevels: HistoricalEvent):
         test_db.events.save(test_event_no_waterlevels)
         scn = Scenario.load_dict(
             {
@@ -71,13 +74,15 @@ class TestHistoricalEvent:
         )
         return scn
 
-    def test_save_event_toml(self, test_event_all_constant_no_waterlevels, tmp_path):
+    def test_save_event_toml(
+        self, test_event_all_constant_no_waterlevels: dict[str, Any], tmp_path: Path
+    ):
         path = tmp_path / "test_event.toml"
         test_event = HistoricalEvent.load_dict(test_event_all_constant_no_waterlevels)
         test_event.save(path)
         assert path.exists()
 
-    def test_load_dict(self, test_event_all_constant_no_waterlevels):
+    def test_load_dict(self, test_event_all_constant_no_waterlevels: dict[str, Any]):
         loaded_event = HistoricalEvent.load_dict(test_event_all_constant_no_waterlevels)
 
         assert loaded_event.attrs.name == test_event_all_constant_no_waterlevels["name"]
@@ -92,7 +97,9 @@ class TestHistoricalEvent:
             == test_event_all_constant_no_waterlevels["forcings"]
         )
 
-    def test_load_file(self, test_event_all_constant_no_waterlevels, tmp_path):
+    def test_load_file(
+        self, test_event_all_constant_no_waterlevels: dict[str, Any], tmp_path: Path
+    ):
         path = tmp_path / "test_event.toml"
         saved_event = HistoricalEvent.load_dict(test_event_all_constant_no_waterlevels)
         saved_event.save(path)
@@ -102,34 +109,18 @@ class TestHistoricalEvent:
 
         assert loaded_event == saved_event
 
-    def test_process_without_offshore_run(
-        self, tmp_path, test_scenario, test_event_no_waterlevels
+    def test_process_without_waterlevels_should_call_nothing(
+        self, test_scenario: Scenario, test_event_no_waterlevels: HistoricalEvent
     ):
         # Arrange
-        event: HistoricalEvent = test_event_no_waterlevels
-        path = Path(tmp_path) / "gauge_data.csv"
-        time = pd.date_range(
-            start=event.attrs.time.start_time,
-            end=event.attrs.time.end_time,
-            freq=event.attrs.time.time_step,
-        )
-        data = pd.DataFrame(
-            index=time,
-            data={
-                "value": range(len(time)),
-            },
-        )
-        data.to_csv(path)
-        test_event_no_waterlevels.attrs.forcings["WATERLEVEL"] = WaterlevelFromGauged(
-            path=path
-        )
+        event = test_event_no_waterlevels
 
         # Mocking
         event.download_meteo = mock.Mock()
         event.read_meteo = mock.Mock()
+        event._get_observed_wl_data = mock.Mock()
         event._preprocess_sfincs_offshore = mock.Mock()
         event._run_sfincs_offshore = mock.Mock()
-        event._process_single_event = mock.Mock()
 
         # Act
         event.process(test_scenario)
@@ -139,5 +130,53 @@ class TestHistoricalEvent:
         event.read_meteo.assert_not_called()
         event._preprocess_sfincs_offshore.assert_not_called()
         event._run_sfincs_offshore.assert_not_called()
+        event._get_observed_wl_data.assert_not_called()
 
-        event._process_single_event.assert_called_once()
+    @pytest.mark.skip(
+        reason="noaa-coops gives a KeyError. cht_oservations needs an update?"
+    )
+    def test_process_gauged(
+        self,
+        tmp_path: Path,
+        test_scenario: Scenario,
+        test_event_no_waterlevels: HistoricalEvent,
+    ):
+        # Arrange
+        event = test_event_no_waterlevels
+        path = Path(tmp_path) / "gauge_data.csv"
+        test_path = Path(tmp_path) / "observed_wl_data.csv"
+
+        time = pd.date_range(
+            start=event.attrs.time.start_time,
+            end=event.attrs.time.end_time,
+            freq=event.attrs.time.time_step,
+        )
+        gauge_ts = pd.DataFrame(
+            index=time,
+            data={
+                "value": range(len(time)),
+            },
+        )
+        gauge_ts.to_csv(path)
+        test_event_no_waterlevels.attrs.forcings["WATERLEVEL"] = WaterlevelFromGauged(
+            path=path
+        )
+
+        # Mocking
+        event.download_meteo = mock.Mock()
+        event.read_meteo = mock.Mock()
+        event._preprocess_sfincs_offshore = mock.Mock()
+        event._run_sfincs_offshore = mock.Mock()
+        event.process = mock.Mock()
+
+        # Act
+        event.process(test_scenario)
+        _ = event._get_observed_wl_data(out_path=test_path)
+
+        # Assert
+        event.download_meteo.assert_not_called()
+        event.read_meteo.assert_not_called()
+        event._preprocess_sfincs_offshore.assert_not_called()
+        event._run_sfincs_offshore.assert_not_called()
+
+        assert event.attrs.forcings["WATERLEVEL"] == WaterlevelFromGauged()

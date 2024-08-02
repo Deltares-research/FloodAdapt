@@ -82,16 +82,6 @@ class HistoricalEvent(IEvent):
             self._preprocess_sfincs_offshore(sim_path)
             self._run_sfincs_offshore(sim_path)
 
-        if self.attrs.mode == Mode.risk:
-            self._process_risk_event()
-        else:
-            self._process_single_event(sim_path)
-
-    def _process_risk_event(self):
-        # TODO implement / make a separate class for risk events
-        pass
-
-    def _process_single_event(self, sim_path: str | os.PathLike):
         if self.site.attrs.sfincs.offshore_model is None:
             raise ValueError(
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
@@ -173,7 +163,14 @@ class HistoricalEvent(IEvent):
 
     def _get_simulation_path(self) -> Path:
         if self.attrs.mode == Mode.risk:
-            pass
+            return (
+                self.database.scenarios.get_database_path(get_input_path=False)
+                / self._scenario.attrs.name
+                / "Flooding"
+                / "simulations"
+                / self.attrs.name
+                / self.site.attrs.sfincs.offshore_model
+            )
         elif self.attrs.mode == Mode.single_event:
             return (
                 self.database.scenarios.get_database_path(get_input_path=False)
@@ -280,7 +277,9 @@ class HistoricalEvent(IEvent):
         try:
             source_obj = cht_station.source(source)
             df = source_obj.get_data(
-                obs_point.ID, self.attrs.time.start_time, self.attrs.time.end_time
+                id=obs_point.ID,
+                tstart=self.attrs.time.start_time,
+                tstop=self.attrs.time.end_time,
             )
             df = pd.DataFrame(df)  # Convert series to dataframe
             df = df.rename(columns={"v": 1})

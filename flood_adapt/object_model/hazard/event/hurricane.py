@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import ClassVar, List
 
 import pyproj
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -29,7 +29,7 @@ class TranslationModel(BaseModel):
 class HurricaneEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
-    ALLOWED_FORCINGS: dict[ForcingType, List[ForcingSource]] = {
+    ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
             ForcingSource.MODEL,
