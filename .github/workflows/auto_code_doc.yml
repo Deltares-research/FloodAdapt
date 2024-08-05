@@ -1,52 +1,54 @@
-name: Build and Publish Sphinx docs to Wiki
+name: API Documentation
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions: write-all
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Checkout code
+      uses: actions/checkout@v4
       with:
-        python-version: '3.x'
+        submodules: true
 
-    - name: Install dependencies
+    - name: Setup Miniforge3
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        miniforge-variant: Miniforge3
+        miniforge-version: latest
+        use-mamba: true
+        activate-environment: floodadapt_docs
+        environment-file: docs/environment_docs.yml
+
+    - name: Build wiki
       run: |
-        python -m pip install --upgrade pip
-        pip install sphinx sphinx_rtd_theme
-
-    - name: Build docs
-      run: |
-        # Change to the directory where the Makefile is located
-        cd flood_adapt/api
-
-        # Build the documentation
-        make html
-
-        # Verify the build output
-        ls -la build/html
+        sphinx-build -M markdown ./dev_docs/source ./dev_docs/wiki
+        ls ./dev_docs/wiki
 
     - name: Publish to Wiki
+      env:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Clone the Wiki repository into a directory named '.wiki'
-        git clone https://github.com/${{ github.repository }}.wiki.git .wiki
+        git config --global  user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
         # Copy the built documentation to the Wiki repo
-        cp -r flood_adapt/api/build/html/* .wiki/
-
-        # Set up Git to use the GitHub Actions token for authentication
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        cd dev_docs/wiki
 
         # Commit and push the changes
         git add .
         git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'Update Wiki'
-        git push
+        git push origin master
