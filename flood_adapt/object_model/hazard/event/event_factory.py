@@ -131,3 +131,27 @@ class EventFactory:
             return EventSet.load_dict(attrs)
         elif mode == Mode.single_event:
             return EventFactory.get_event_from_template(template).load_dict(attrs)
+
+    def list_allowed_forcings(template):
+        return EventFactory.get_event_from_template(
+            template
+        ).attrs.list_allowed_forcings()
+
+    def get_template_description(template):
+        match template:
+            case (
+                Template.Historical
+                | Template.Historical_nearshore
+                | Template.Historical_offshore
+            ):
+                return """
+                        Select a time period for a historic event. This method can use offshore wind and pressure fields for \n
+                        the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. \n
+                        These water levels are used together with rainfall and river discharge input to simulate flooding in the site area.
+                        """
+            case Template.Hurricane:
+                return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
+            case Template.Synthetic:
+                return "Customize a synthetic event by specifying the waterlevels, wind, rainfall and river discharges without being based on a historical event."
+            case _:
+                raise ValueError(f"Invalid event template: {template}")

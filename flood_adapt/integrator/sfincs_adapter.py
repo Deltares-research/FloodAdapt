@@ -1057,7 +1057,7 @@ class SfincsAdapter(IHazardAdapter):
     def _write_water_level_map(self, sim_path: Path = None):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         results_path = self._get_result_path()
-        sim_paths = [sim_path] or self._get_simulation_paths()
+        sim_paths = [sim_path] if sim_path else self._get_simulation_paths()
         # Why only 1 model?
         with SfincsAdapter(model_root=sim_paths[0]) as model:
             zsmax = model._get_zsmax()

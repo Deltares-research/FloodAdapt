@@ -313,12 +313,12 @@ class Database(IDatabase):
             event["template"] == "Synthetic"
             or event["template"] == "Historical_nearshore"
         ):
-            from flood_adapt.object_model.hazard.event.synthetic import Synthetic
+            from flood_adapt.object_model.hazard.event.synthetic import SyntheticEvent
 
             gui_units = self.site.attrs.gui.default_length_units
             if event["template"] == "Synthetic":
                 event["name"] = "temp_event"
-                temp_event = Synthetic.load_dict(event)
+                temp_event = SyntheticEvent.load_dict(event)
                 temp_event.add_tide_and_surge_ts()
                 wl_df = temp_event.tide_surge_ts
                 wl_df.index = np.arange(
@@ -398,7 +398,7 @@ class Database(IDatabase):
             from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
             event["name"] = "temp_event"
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
+            temp_event = EventFactory.load_dict(event["template"]).load_dict(event)
             if (
                 temp_event.attrs.rainfall.source == "shape"
                 and temp_event.attrs.rainfall.shape_type == "scs"
@@ -902,13 +902,10 @@ class Database(IDatabase):
         scenario = self._scenarios.get(scenario_name)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.direct_impacts.hazard.has_run_check():
+        if scenario.direct_impacts.hazard.has_run():
             return
 
-        simulations = list(
-            self.input_path.parent.joinpath("output", "Scenarios").glob("*")
-        )
-
+        simulations = self.scenarios.list_objects()["objects"]
         scns_simulated = [self._scenarios.get(sim.name) for sim in simulations]
 
         for scn in scns_simulated:

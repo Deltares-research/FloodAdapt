@@ -286,6 +286,7 @@ class SiteModel(BaseModel):
     description: Optional[str] = ""
     lat: float
     lon: float
+    crs: str = "EPSG:4326"
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
     cyclone_track_database: Optional[Cyclone_track_databaseModel] = None

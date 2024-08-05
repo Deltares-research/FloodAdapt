@@ -8,8 +8,10 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 import flood_adapt.dbs_controller as db
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.event.gauge_data import get_observed_wl_data
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
+from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
@@ -24,7 +26,7 @@ def get_event(name: str) -> IEvent:
 
 def get_event_mode(name: str) -> str:
     filename = db.Database().events.get_database_path() / f"{name}" / f"{name}.toml"
-    return EventFactory.get_mode(filename)
+    return EventFactory.read_mode(filename)
 
 
 def create_synthetic_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
@@ -52,8 +54,28 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
     return EventFactory.load_dict(attrs)
 
 
+def list_forcing_types() -> list[str]:
+    return ForcingFactory.list_forcing_types()
+
+
+def list_forcings() -> list[str]:
+    return ForcingFactory.list_forcings()
+
+
+def list_allowed_forcings(template: Template):
+    return EventFactory.list_allowed_forcings(template)
+
+
+def get_template_description(template: Template) -> str:
+    return EventFactory.get_template_description(template)
+
+
 def save_event_toml(event: IEvent) -> None:
     db.Database().events.save(event)
+
+
+def save_event_additional(event: IEvent) -> None:
+    db.Database().events.save_additional(event)
 
 
 def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
@@ -75,8 +97,13 @@ def copy_event(old_name: str, new_name: str, new_description: str) -> None:
 def download_wl_data(
     station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
 ) -> pd.DataFrame:
-    return HistoricalEvent.download_wl_data(
-        station_id, start_time, end_time, units, source, file
+    return get_observed_wl_data(
+        time=TimeModel(start_time=start_time, end_time=end_time),
+        site=db.Database().site.attrs,
+        station_id=station_id,
+        units=units,
+        source=source,
+        out_path=file,
     )
 
 

@@ -87,7 +87,9 @@ def session_setup_teardown():
         loglevel_console=logging.DEBUG,
         loglevel_root=logging.DEBUG,
         loglevel_files=logging.DEBUG,
+        ignore_warnings=[DeprecationWarning],
     )
+
     create_snapshot()
 
     yield

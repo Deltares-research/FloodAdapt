@@ -18,6 +18,7 @@ class FloodAdaptLogging:
         loglevel_root: int = logging.INFO,
         loglevel_files: int = logging.DEBUG,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
+        ignore_warnings: list[type[Warning]] = None,
     ) -> None:
         """Initialize the logging system for the FloodAdapt."""
         self._formatter = formatter
@@ -35,6 +36,10 @@ class FloodAdaptLogging:
         console_handler.setLevel(loglevel_console)
         console_handler.setFormatter(formatter)
         self._root_logger.addHandler(console_handler)
+
+        if ignore_warnings:
+            for warn_type in ignore_warnings:
+                self.configure_warnings("ignore", category=warn_type)
 
     @classmethod
     def add_file_handler(
@@ -134,11 +139,27 @@ class FloodAdaptLogging:
     @classmethod
     def deprecation_warning(cls, version: str, reason: str):
         """Log a deprecation warning with reason and the version that will remove it."""
-        cls.getLogger().warning(
-            f"DeprecationWarning: {reason}. This will be removed in version {version}.",
-        )
         warnings.warn(
             f"DeprecationWarning: {reason}. This will be removed in version {version}.",
             DeprecationWarning,
             stacklevel=2,
         )
+
+    @classmethod
+    def configure_warnings(
+        cls, action: str = "default", category: type[Warning] = None
+    ):
+        """
+        Configure the behavior of Python warnings.
+
+        Parameters
+        ----------
+        action : str, optional
+            The action to take on warnings. Common actions include 'ignore', 'default', 'error', 'always', etc.
+            The default is 'default', which shows warnings once per triggering location.
+        category : type[Warning], optional
+            The category of warnings to configure. If not provided, all warnings are configured.
+            categories include DeprecationWarning, UserWarning, RuntimeWarning, etc.
+
+        """
+        warnings.simplefilter(action=action, category=category)

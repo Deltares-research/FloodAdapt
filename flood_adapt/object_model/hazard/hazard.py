@@ -20,7 +20,7 @@ class FloodMap(IDatabaseUser):
     _type: FloodMapType = FloodMapType.WATER_LEVEL
 
     name: str
-    path: Path | os.PathLike
+    path: Path | os.PathLike | list[Path | os.PathLike]
     mode: Mode
     event_set: EventSet
     physical_projection: PhysicalProjection
@@ -28,16 +28,29 @@ class FloodMap(IDatabaseUser):
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name
-        self.path = (
+        base_dir = (
             self.database.scenarios.get_database_path(get_input_path=False)
             / scenario_name
             / "Flooding"
-            / "max_water_level_map.nc"
         )
+
+        if self.mode == Mode.single_event:
+            self.path = base_dir / "max_water_level_map.nc"
+        elif self.mode == Mode.risk:
+            self.path = list(
+                base_dir.glob("RP_*_maps.nc")
+            )  # TODO: check if this is correct
 
     @property
     def has_run(self) -> bool:
-        return self.path.exists()
+        if self.mode == Mode.single_event:
+            return self.path.exists()
+        elif self.mode == Mode.risk:
+            check_files = [RP_map.exists() for RP_map in self.path]
+            check_rps = len(self.path) == len(
+                self.database.site.attrs.risk.return_periods
+            )
+            return all(check_files) & check_rps
 
     @property
     def has_run_check(self):
@@ -49,23 +62,42 @@ class FloodMap(IDatabaseUser):
 
     @property
     def scenario(self):
-        return self.database.scenarios.get(self.name)
+        if hasattr(self, "_scenario"):
+            return self._scenario
+        self._scenario = self.database.scenarios.get(self.name)
+        return self._scenario
 
     @property
     def mode(self):
-        return self.database.events.get(self.scenario.attrs.event).attrs.mode
+        if hasattr(self, "_mode"):
+            return self._mode
+        self._mode = self.database.events.get(self.scenario.attrs.event).attrs.mode
+        return self._mode
+
+    @property
+    def crs(self):
+        if hasattr(self, "_crs"):
+            return self._crs
+        self._crs = self.database.site.attrs.crs
+        return self._crs
 
     @property
     def hazard_strategy(self):
-        return self.database.strategies.get(
+        if hasattr(self, "_hazard_strategy"):
+            return self._hazard_strategy
+        self._hazard_strategy = self.database.strategies.get(
             self.scenario.attrs.strategy
         ).get_hazard_strategy()
+        return self._hazard_strategy
 
     @property
     def physical_projection(self):
-        return self.database.projections.get(
+        if hasattr(self, "_physical_projection"):
+            return self._physical_projection
+        self._physical_projection = self.database.projections.get(
             self.scenario.attrs.projection
         ).get_physical_projection()
+        return self._physical_projection
 
 
 #     """All information related to the hazard of the scenario.

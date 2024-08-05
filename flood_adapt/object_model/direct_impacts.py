@@ -55,7 +55,11 @@ class DirectImpacts(IDatabaseUser):
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
 
-        self.hazard = FloodMap(scenario.name)
+        # self.hazard = FloodMap(scenario.name)
+
+    @property
+    def hazard(self) -> FloodMap:
+        return FloodMap(self.name)
 
     @property
     def results_path(self) -> Path:
@@ -131,15 +135,15 @@ class DirectImpacts(IDatabaseUser):
             strategy
         ).get_impact_strategy()
 
-    def set_hazard(self, scenario: ScenarioModel) -> None:
-        """Set the Hazard object of the scenario.
+    # def set_hazard(self, scenario: ScenarioModel) -> None:
+    #     """Set the Hazard object of the scenario.
 
-        Parameters
-        ----------
-        scenario : str
-            Name of the scenario
-        """
-        self.hazard = FloodMap(scenario.name)
+    #     Parameters
+    #     ----------
+    #     scenario : str
+    #         Name of the scenario
+    #     """
+    #     self.hazard = FloodMap(scenario.name)
 
     def preprocess_models(self):
         self._logger.info("Preparing impact models...")
@@ -167,7 +171,7 @@ class DirectImpacts(IDatabaseUser):
     def preprocess_fiat(self):
         """Update FIAT model based on scenario information and then runs the FIAT model."""
         # Check if hazard is already run
-        if not self.hazard:
+        if not self.hazard.has_run:
             raise ValueError(
                 "Hazard for this scenario has not been run yet! FIAT cannot be initiated."
             )
@@ -314,7 +318,7 @@ class DirectImpacts(IDatabaseUser):
 
         # Create the infographic files
         if self.site_info.attrs.fiat.infographics:
-            self._create_infographics(self.hazard.event_mode, metrics_path)
+            self._create_infographics(self.hazard.mode, metrics_path)
 
         if self.hazard.mode == Mode.risk:
             # Calculate equity based damages

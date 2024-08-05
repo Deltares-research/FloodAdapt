@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import tomli
 
@@ -119,3 +119,18 @@ class ForcingFactory(IForcingFactory):
         return ForcingFactory.get_forcing_class(
             ForcingType(_type), ForcingSource(_source)
         ).model_validate(attrs)
+
+    @staticmethod
+    def list_forcing_types() -> List[str]:
+        """List all available forcing types."""
+        return [ftype.value for ftype in FORCING_TYPES.keys()]
+
+    @staticmethod
+    def list_forcings() -> List[str]:
+        """List all available forcing classes."""
+        forcing_classes = set()
+        for source_map in FORCING_TYPES.values():
+            for forcing in source_map.values():
+                if forcing is not None:
+                    forcing_classes.add(forcing.__name__)
+        return sorted(forcing_classes)

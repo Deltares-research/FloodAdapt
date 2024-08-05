@@ -71,7 +71,7 @@ class FiatAdapter:
             map_fn=floodmap.path,
             map_type=floodmap._type,
             rp=None,
-            crs=None,  # change this in new version
+            crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
             nodata=-999,  # change this in new version
             var=var,
             chunks="auto",

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -14,6 +16,88 @@ from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.strategy import Strategy
 
 test_database = Path().absolute() / "tests" / "test_database"
+
+
+@pytest.fixture()
+def test_attrs():
+    strat_attrs = {
+        "name": "new_strategy",
+        "description": "new_unsaved_strategy",
+        "measures": [
+            "seawall",
+            "raise_property_aggregation_area",
+            "buyout",
+            "floodproof",
+        ],
+    }
+    yield strat_attrs
+
+
+@pytest.fixture()
+def test_seawall():
+    attrs = {
+        "name": "seawall",
+        "description": "seawall",
+        "type": "floodwall",
+        "selection_type": "polygon",
+        "polygon_file": "seawall.geojson",
+        "elevation": {
+            "value": 12,
+            "units": "feet",
+        },
+    }
+    return attrs
+
+
+@pytest.fixture()
+def test_raise_property_aggregation_area():
+    attrs = {
+        "name": "raise_property_aggregation_area",
+        "description": "raise_property_aggregation_area",
+        "type": "elevate_properties",
+        "elevation": {
+            "value": 1,
+            "units": "feet",
+            "type": "floodmap",
+        },
+        "selection_type": "aggregation_area",
+        "aggregation_area_type": "aggr_lvl_2",
+        "aggregation_area_name": "name5",
+        "property_type": "RES",
+    }
+    return attrs
+
+
+@pytest.fixture()
+def test_buyout():
+    attrs = {
+        "name": "buyout",
+        "description": "buyout",
+        "type": "buyout_properties",
+        "selection_type": "aggregation_area",
+        "aggregation_area_type": "aggr_lvl_2",
+        "aggregation_area_name": "name1",
+        "property_type": "RES",
+    }
+    return attrs
+
+
+@pytest.fixture()
+def test_floodproof():
+    attrs = {
+        "name": "floodproof",
+        "description": "floodproof",
+        "type": "floodproof_properties",
+        "selection_type": "aggregation_area",
+        "aggregation_area_type": "aggr_lvl_2",
+        "aggregation_area_name": "name3",
+        "elevation": {
+            "value": 3,
+            "units": "feet",
+        },
+        "property_type": "RES",
+    }
+    return attrs
 
 
 def test_strategy_comb_read(test_db):

@@ -1,5 +1,6 @@
 import os
 from abc import abstractmethod
+from pathlib import Path
 from typing import Any, ClassVar, List, Optional
 
 import tomli
@@ -88,6 +89,13 @@ class IEventModel(BaseModel):
             if type
         }
 
+    @classmethod
+    def list_allowed_forcings(cls) -> List[str]:
+        return [
+            f"{k.value}: {', '.join([s.value for s in v])}"
+            for k, v in cls.ALLOWED_FORCINGS.items()
+        ]
+
 
 class IEvent(IDatabaseUser):
     MODEL_TYPE: ClassVar[IEventModel]
@@ -106,9 +114,11 @@ class IEvent(IDatabaseUser):
         obj.attrs = cls.MODEL_TYPE.model_validate(data)
         return obj
 
-    def save(self, path: str | os.PathLike):
+    def save(self, path: str | os.PathLike, additional: bool = False):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
+        if additional:
+            self.save_additional(Path(path).parent)
 
     @abstractmethod
     def process(self, scenario: IScenario = None):

@@ -1,6 +1,6 @@
 import pytest
 
-import flood_adapt.dbs_controller as db
+from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
@@ -14,32 +14,22 @@ from flood_adapt.object_model.hazard.physical_projection import PhysicalProjecti
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
 
+# from tests.test_object_model.test_events.test_synthetic import test_event_all_synthetic
+# from tests.test_object_model.test_strategies import test_attrs
+# from tests.test_object_model.test_projections import test_dict
+
 
 @pytest.fixture(autouse=True)
-def test_tomls(test_db) -> list:
-    toml_files = [
-        test_db.input_path
-        / "scenarios"
-        / "all_projections_extreme12ft_strategy_comb"
-        / "all_projections_extreme12ft_strategy_comb.toml",
-        test_db.input_path
-        / "scenarios"
-        / "current_extreme12ft_no_measures"
-        / "current_extreme12ft_no_measures.toml",
+def test_scenarios(test_db):
+    test_scns = [
+        "current_extreme12ft_no_measures",
+        "all_projections_extreme12ft_strategy_comb",
     ]
-    yield toml_files
+    yield test_scns
 
 
-@pytest.fixture(autouse=True)
-def test_scenarios(test_db, test_tomls):
-    test_scenarios = {
-        toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
-    }
-    yield test_scenarios
-
-
-def test_initObjectModel_validInput(test_db, test_scenarios):
-    test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
+def test_initObjectModel_validInput(test_db, test_scenarios: dict[str, Scenario]):
+    test_scenario = test_db.scenarios.get("all_projections_extreme12ft_strategy_comb")
 
     test_scenario.init_object_model()
 
@@ -60,26 +50,63 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
 
 
 class Test_scenario_run:
+    # @pytest.fixture(scope="class")
+    # def test_scenario_run(self, test_db_class: Database):
+    #     _proj = test_dict()
+    #     _strat = test_attrs()
+    #     _event = test_event_all_synthetic()
+    #     _scn = {
+    #         "name": "test_scn",
+    #         "projection": _proj['name'],
+    #         "event": _event['name'],
+    #         "strategy": _strat['name'],
+    #     }
+    #     proj = Projection().load_dict(_proj)
+    #     strat = Strategy().load_dict(_strat)
+    #     event = EventFactory().load_dict(_event)
+    #     scn = Scenario().load_dict(_scn)
+
+    #     yield test_db_class, proj, strat, event, scn, _proj, _strat, _event, _scn
+
     @pytest.fixture(scope="class")
-    def test_scenario_before_after_run(self, test_db_class: db.Database):
-        before_run_name = "current_extreme12ft_no_measures"
-        after_run_name = "current_extreme12ft_no_measures_run"
+    def test_scenario_before_after_run(self, test_db_class: Database):
+        run_name = "all_projections_extreme12ft_strategy_comb"
+        not_run_name = f"{run_name}_NOT_RUN"
 
         test_db_class.scenarios.copy(
-            old_name=before_run_name,
-            new_name=after_run_name,
+            old_name=run_name,
+            new_name=not_run_name,
             new_description="temp_description",
         )
 
-        after_run = test_db_class.scenarios.get(after_run_name)
-        after_run.run()
+        to_run = test_db_class.scenarios.get(run_name)
+        to_run.run()
 
-        yield test_db_class, before_run_name, after_run_name
+        yield test_db_class, run_name, not_run_name
 
-    def test_run_change_has_run(self, test_scenario_before_after_run):
-        test_db, before_run, after_run = test_scenario_before_after_run
-        before_run = test_db.scenarios.get(before_run)
-        after_run = test_db.scenarios.get(after_run)
+    def test_run_change_has_run(
+        self, test_scenario_before_after_run: tuple[Database, str, str]
+    ):
+        test_db, run_name, not_run_name = test_scenario_before_after_run
 
-        assert not before_run.direct_impacts.hazard.has_run
-        assert after_run.direct_impacts.hazard.has_run
+        not_run = test_db.scenarios.get(not_run_name)
+        run = test_db.scenarios.get(run_name)
+
+        assert not not_run.direct_impacts.hazard.has_run
+        assert run.direct_impacts.hazard.has_run
+
+
+@pytest.mark.parametrize(
+    "scn_name",
+    [
+        "all_projections_extreme12ft_strategy_comb",
+        "current_extreme12ft_no_measures",
+        "current_extreme12ft_raise_datum",
+        "current_extreme12ft_rivershape_windconst_no_measures",
+        "current_extreme12ft_strategy_impact_comb",
+    ],
+)
+def test_run_on_all_scn(test_db, scn_name):
+    scn = test_db.scenarios.get(scn_name)
+    scn.run()
+    assert scn.direct_impacts.hazard.has_run
