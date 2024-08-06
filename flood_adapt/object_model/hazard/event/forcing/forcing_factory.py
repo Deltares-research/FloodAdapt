@@ -134,3 +134,13 @@ class ForcingFactory(IForcingFactory):
                 if forcing is not None:
                     forcing_classes.add(forcing.__name__)
         return sorted(forcing_classes)
+
+    @staticmethod
+    def get_default_forcing(_type: ForcingType, source: ForcingSource) -> IForcing:
+        """Get the default forcing object for a given type and source."""
+        forcing_class = FORCING_TYPES[_type][source]
+        if forcing_class is None:
+            raise NotImplementedError(
+                f"Forcing class for {_type} and {source} is not implemented."
+            )
+        return forcing_class.get_default()  # TODO implement get_default() method?

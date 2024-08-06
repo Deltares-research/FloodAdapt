@@ -132,11 +132,13 @@ class EventFactory:
         elif mode == Mode.single_event:
             return EventFactory.get_event_from_template(template).load_dict(attrs)
 
+    @staticmethod
     def list_allowed_forcings(template):
         return EventFactory.get_event_from_template(
             template
         ).attrs.list_allowed_forcings()
 
+    @staticmethod
     def get_template_description(template):
         match template:
             case (
@@ -153,5 +155,21 @@ class EventFactory:
                 return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
             case Template.Synthetic:
                 return "Customize a synthetic event by specifying the waterlevels, wind, rainfall and river discharges without being based on a historical event."
+            case _:
+                raise ValueError(f"Invalid event template: {template}")
+
+    @staticmethod
+    def get_default_event(template: Template) -> IEventModel:
+        match template:
+            case Template.Synthetic:
+                return SyntheticEventModel.default()
+            case (
+                Template.Historical
+                | Template.Historical_nearshore
+                | Template.Historical_offshore
+            ):
+                return HistoricalEventModel.default()
+            case Template.Hurricane:
+                return HurricaneEventModel.default()
             case _:
                 raise ValueError(f"Invalid event template: {template}")
