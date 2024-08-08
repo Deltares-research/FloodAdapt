@@ -24,6 +24,10 @@ class RainfallConstant(IRainfall):
 
     intensity: UnitfulIntensity
 
+    @classmethod
+    def default(cls) -> "RainfallConstant":
+        return RainfallConstant(intensity=UnitfulIntensity(value=0, units="mm/h"))
+
 
 class RainfallSynthetic(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
@@ -33,6 +37,10 @@ class RainfallSynthetic(IRainfall):
         return pd.DataFrame(
             SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
         )
+
+    @classmethod
+    def default(cls) -> "RainfallSynthetic":
+        return RainfallSynthetic(timeseries=SyntheticTimeseriesModel().default())
 
 
 class RainfallFromMeteo(IRainfall):
@@ -50,6 +58,10 @@ class RainfallFromMeteo(IRainfall):
             "precip"
         ]  # use `.to_dataframe()` to convert to pd.DataFrame
 
+    @classmethod
+    def default(cls) -> "RainfallFromMeteo":
+        return RainfallFromMeteo()
+
 
 class RainfallFromTrack(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
@@ -59,3 +71,7 @@ class RainfallFromTrack(IRainfall):
 
     def get_data(self) -> pd.DataFrame:
         return self.path  # TODO implement
+
+    @classmethod
+    def default(cls) -> "RainfallFromTrack":
+        return RainfallFromTrack()

@@ -20,6 +20,13 @@ class WindConstant(IWind):
     speed: UnitfulVelocity
     direction: UnitfulDirection
 
+    @classmethod
+    def default(cls) -> "WindConstant":
+        return WindConstant(
+            speed=UnitfulVelocity(10, "m/s"),
+            direction=UnitfulDirection(0, "deg N"),
+        )
+
 
 class WindSynthetic(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
@@ -31,6 +38,10 @@ class WindSynthetic(IWind):
             SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
         )
 
+    @classmethod
+    def default(cls) -> "WindSynthetic":
+        return WindSynthetic(timeseries=SyntheticTimeseriesModel().default())
+
 
 class WindFromTrack(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
@@ -40,6 +51,10 @@ class WindFromTrack(IWind):
 
     def get_data(self) -> pd.DataFrame:
         return self.path
+
+    @classmethod
+    def default(cls) -> "WindFromTrack":
+        return WindFromTrack()
 
 
 class WindFromCSV(IWind):
@@ -55,6 +70,10 @@ class WindFromCSV(IWind):
         )
         df.index = pd.DatetimeIndex(df.index)
         return df
+
+    @classmethod
+    def default(cls) -> "WindFromCSV":
+        return WindFromCSV(path="path/to/wind.csv")
 
 
 class WindFromMeteo(IWind):
@@ -77,3 +96,7 @@ class WindFromMeteo(IWind):
         # ASSUMPTION: the download has been done already, see meteo.download_meteo().
         # TODO add to read_meteo to run download if not already downloaded.
         return read_meteo(meteo_dir=self.path)[["wind_u", "wind_v"]]
+
+    @classmethod
+    def default(cls) -> "WindFromMeteo":
+        return WindFromMeteo()

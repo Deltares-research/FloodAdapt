@@ -111,6 +111,10 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return IEvent.read_csv(csvpath)
 
 
+def plot_forcing(event, forcingtype):
+    return db.Database().plot_forcing(event, forcingtype)
+
+
 def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
     return db.Database().plot_wl(event, input_wl_df)
 

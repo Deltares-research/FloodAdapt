@@ -19,6 +19,10 @@ class DischargeConstant(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
     discharge: UnitfulDischarge
 
+    @classmethod
+    def default(cls) -> "DischargeConstant":
+        return DischargeConstant(discharge=UnitfulDischarge(value=0, units="m3/s"))
+
 
 class DischargeSynthetic(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
@@ -30,6 +34,10 @@ class DischargeSynthetic(IDischarge):
             SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
         )
 
+    @classmethod
+    def default(cls) -> "DischargeSynthetic":
+        return DischargeSynthetic(timeseries=SyntheticTimeseriesModel().default())
+
 
 class DischargeFromCSV(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
@@ -38,3 +46,7 @@ class DischargeFromCSV(IDischarge):
 
     def get_data(self) -> pd.DataFrame:
         return pd.DataFrame(CSVTimeseries.load_file(self.path).calculate_data())
+
+    @classmethod
+    def default(cls) -> "DischargeFromCSV":
+        return DischargeFromCSV(path="path/to/discharge.csv")

@@ -44,6 +44,12 @@ class IForcing(BaseModel, ABC):
         data["_source"] = self._source.value if self._source else None
         return data
 
+    @abstractmethod
+    @classmethod
+    def default() -> "IForcing":
+        """Return the default for this forcing."""
+        ...
+
 
 class IDischarge(IForcing):
     _type: ClassVar[ForcingType] = ForcingType.DISCHARGE

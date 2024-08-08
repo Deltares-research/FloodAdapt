@@ -3,6 +3,9 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any, ClassVar, List, Optional
 
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 import tomli
 import tomli_w
 from pydantic import (
@@ -25,6 +28,13 @@ from flood_adapt.object_model.hazard.interface.models import (
 )
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitTypesDirection,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
+)
 
 
 class IEventModel(BaseModel):
@@ -96,6 +106,11 @@ class IEventModel(BaseModel):
             for k, v in cls.ALLOWED_FORCINGS.items()
         ]
 
+    @abstractmethod
+    def default(cls) -> "IEventModel":
+        """Return the default event model."""
+        ...
+
 
 class IEvent(IDatabaseUser):
     MODEL_TYPE: ClassVar[IEventModel]
@@ -119,6 +134,10 @@ class IEvent(IDatabaseUser):
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
         if additional:
             self.save_additional(Path(path).parent)
+
+    def save_additional(self, path: str | os.PathLike):
+        """Save additional forcing data. Overwrite in subclass if necessary."""
+        return
 
     @abstractmethod
     def process(self, scenario: IScenario = None):
@@ -145,3 +164,264 @@ class IEvent(IDatabaseUser):
             exclude=["name", "description"], exclude_none=True
         )
         return _self == _other
+
+    def plot_forcing(
+        self,
+        forcing_type: ForcingType,
+        units: (
+            UnitTypesLength
+            | UnitTypesIntensity
+            | UnitTypesDischarge
+            | UnitTypesVelocity
+            | None
+        ),
+    ):
+        """Plot the forcing data for the event."""
+        match forcing_type:
+            case ForcingType.RAINFALL:
+                return self.plot_rainfall(units=units)
+            case ForcingType.WIND:
+                return self.plot_wind(velocity_units=units)
+            case ForcingType.WATERLEVEL:
+                return self.plot_waterlevel(units=units)
+            case ForcingType.DISCHARGE:
+                return self.plot_discharge(units=units)
+            case _:
+                raise NotImplementedError(
+                    "Plotting only available for rainfall, wind, waterlevel, and discharge forcings."
+                )
+
+    def plot_waterlevel(self, units: UnitTypesLength):
+        units = units or self.database.site.attrs.gui.default_length_units
+
+        if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
+            return
+
+        data = self.attrs.forcings[ForcingType.WATERLEVEL].get_data()
+        if not data:
+            return
+
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
+        # Plot actual thing
+        fig = px.line(
+            data + self.database.site.attrs.water_level.msl.height.convert(units)
+        )
+
+        # plot reference water levels
+        fig.add_hline(
+            y=self.database.site.attrs.water_level.msl.height.convert(units),
+            line_dash="dash",
+            line_color="#000000",
+            annotation_text="MSL",
+            annotation_position="bottom right",
+        )
+        if self.database.site.attrs.water_level.other:
+            for wl_ref in self.database.site.attrs.water_level.other:
+                fig.add_hline(
+                    y=wl_ref.height.convert(units),
+                    line_dash="dash",
+                    line_color="#3ec97c",
+                    annotation_text=wl_ref.name,
+                    annotation_position="bottom right",
+                )
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            xaxis_title="Time",
+            yaxis_title=f"Water level [{units}]",
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            showlegend=False,
+            xaxis={"range": [xlim1, xlim2]},
+        )
+
+        # write html to results folder
+        output_loc = (
+            self.database.events.get_database_path()
+            / self.attrs.name
+            / ("wl_timeseries.html")
+        )
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
+
+    def plot_rainfall(self, units: UnitTypesIntensity = None) -> str:
+        units = units or self.database.site.attrs.gui.default_intensity_units
+
+        if self.attrs.forcings[ForcingType.RAINFALL] is None:
+            return
+
+        data = self.attrs.forcings[ForcingType.RAINFALL].get_data()
+        if not data:
+            return
+
+        # set timing
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
+        # Plot actual thing
+        fig = px.line(data_frame=data)
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={"text": f"Rainfall intensity [{units}]"},
+            showlegend=False,
+            xaxis={"range": [xlim1, xlim2]},
+        )
+
+        # write html to results folder
+        output_loc = (
+            self.database.events.get_database_path()
+            / self.attrs.name
+            / ("wl_timeseries.html")
+        )
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
+
+    def plot_discharge(self, units: UnitTypesDischarge = None) -> str:
+        units = units or self.database.site.attrs.gui.default_discharge_units
+
+        if self.attrs.forcings[ForcingType.DISCHARGE] is None:
+            return
+
+        data = self.attrs.forcings[ForcingType.DISCHARGE].get_data()
+        if not data:
+            return
+
+        river_descriptions = [i.description for i in self.database.site.attrs.river]
+        river_names = [i.description for i in self.database.site.attrs.river]
+        river_descriptions = np.where(
+            river_descriptions is None, river_names, river_descriptions
+        ).tolist()
+
+        # set timing relative to T0 if event is synthetic
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
+        # Plot actual thing
+        fig = go.Figure()
+        for ii, col in enumerate(data.columns):
+            fig.add_trace(
+                go.Scatter(
+                    x=data.index,
+                    y=data[col],
+                    name=river_descriptions[ii],
+                    mode="lines",
+                )
+            )
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={"text": f"River discharge [{units}]"},
+            xaxis={"range": [xlim1, xlim2]},
+        )
+
+        # write html to results folder
+        output_loc = (
+            self.database.events.get_database_path()
+            / self.attrs.name
+            / ("discharge_timeseries.html")
+        )
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
+
+    def plot_wind(
+        self,
+        velocity_units: UnitTypesVelocity = None,
+        direction_units: UnitTypesDirection = None,
+    ) -> str:
+        velocity_units = (
+            velocity_units or self.database.site.attrs.gui.default_velocity_units
+        )
+        direction_units = (
+            direction_units or self.database.site.attrs.gui.default_angle_units
+        )
+
+        if self.attrs.forcings[ForcingType.WIND] is None:
+            return
+
+        data = self.attrs.forcings[ForcingType.WIND].get_data()
+        if not data:
+            return
+
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
+        # Plot actual thing
+        # Create figure with secondary y-axis
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+        # Add traces
+        fig.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=data[1],
+                name="Wind speed",
+                mode="lines",
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(x=data.index, y=data[2], name="Wind direction", mode="markers"),
+            secondary_y=True,
+        )
+
+        # Set y-axes titles
+        fig.update_yaxes(
+            title_text=f"Wind speed [{velocity_units}]",
+            secondary_y=False,
+        )
+        fig.update_yaxes(
+            title_text=f"Wind direction {direction_units}", secondary_y=True
+        )
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis={"range": [xlim1, xlim2]},
+            xaxis_title={"text": "Time"},
+            showlegend=False,
+        )
+
+        # write html to results folder
+        output_loc = (
+            self.database.events.get_database_path()
+            / self.attrs.name
+            / ("wind_timeseries.html")
+        )
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)

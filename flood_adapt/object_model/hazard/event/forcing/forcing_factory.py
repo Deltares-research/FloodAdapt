@@ -143,4 +143,4 @@ class ForcingFactory(IForcingFactory):
             raise NotImplementedError(
                 f"Forcing class for {_type} and {source} is not implemented."
             )
-        return forcing_class.get_default()  # TODO implement get_default() method?
+        return forcing_class.default()

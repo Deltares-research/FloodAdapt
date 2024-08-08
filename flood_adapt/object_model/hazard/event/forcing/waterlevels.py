@@ -93,6 +93,17 @@ class WaterlevelSynthetic(IWaterlevel):
 
         return wl_df
 
+    @classmethod
+    def default(cls) -> "WaterlevelSynthetic":
+        return WaterlevelSynthetic(
+            surge=SurgeModel(timeseries=SyntheticTimeseriesModel().default()),
+            tide=TideModel(
+                harmonic_amplitude=UnitfulLength(value=0, units="m"),
+                harmonic_period=UnitfulTime(value=0, units="s"),
+                harmonic_phase=UnitfulTime(value=0, units="s"),
+            ),
+        )
+
 
 class WaterlevelFromCSV(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
@@ -101,6 +112,10 @@ class WaterlevelFromCSV(IWaterlevel):
 
     def get_data(self) -> pd.DataFrame:
         return CSVTimeseries.read_csv(self.path)
+
+    @classmethod
+    def default(cls) -> "WaterlevelFromCSV":
+        return WaterlevelFromCSV(path="path/to/waterlevel.csv")
 
 
 class WaterlevelFromModel(IWaterlevel):
@@ -121,6 +136,10 @@ class WaterlevelFromModel(IWaterlevel):
         with SfincsAdapter(model_root=self.path) as _offshore_model:
             return _offshore_model._get_wl_df_from_offshore_his_results()
 
+    @classmethod
+    def default(cls) -> "WaterlevelFromModel":
+        return WaterlevelFromModel()
+
 
 class WaterlevelFromGauged(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
@@ -131,3 +150,7 @@ class WaterlevelFromGauged(IWaterlevel):
         df = pd.read_csv(self.path, index_col=0, parse_dates=True)
         df.index.names = ["time"]
         return df
+
+    @classmethod
+    def default(cls) -> "WaterlevelFromGauged":
+        return WaterlevelFromGauged()

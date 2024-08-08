@@ -6,11 +6,13 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from pydantic import BaseModel
 from shapely.affinity import translate
 
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
@@ -42,6 +44,31 @@ class HurricaneEventModel(IEventModel):
 
     hurricane_translation: TranslationModel
     track_name: str
+
+    def default(self):
+        """Set default values for HurricaneEvent."""
+        return HurricaneEventModel(
+            name="Hurricane Event",
+            time=TimeModel(),
+            template=Template.Hurricane,
+            mode=Mode.single_event,
+            hurricane_translation=TranslationModel(),
+            track_name="",
+            forcings={
+                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
+                    ForcingType.RAINFALL, ForcingSource.TRACK
+                ),
+                ForcingType.WIND: ForcingFactory.get_default_forcing(
+                    ForcingType.WIND, ForcingSource.TRACK
+                ),
+                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
+                    ForcingType.WATERLEVEL, ForcingSource.MODEL
+                ),
+                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
+                    ForcingType.DISCHARGE, ForcingSource.CONSTANT
+                ),
+            },
+        )
 
 
 class HurricaneEvent(IEvent):

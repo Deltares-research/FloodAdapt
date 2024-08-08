@@ -9,6 +9,7 @@ import xarray as xr
 from noaa_coops.station import COOPSAPIError
 
 from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelFromGauged,
@@ -25,6 +26,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
+from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import Obs_pointModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
@@ -43,6 +45,29 @@ class HistoricalEventModel(IEventModel):
         ],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT],
     }
+
+    def default(self) -> "HistoricalEventModel":
+        """Set default values for Synthetic event."""
+        return HistoricalEventModel(
+            name="Historical Event",
+            time=TimeModel(),
+            template=Template.Historical,
+            mode=Mode.single_event,
+            forcings={
+                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
+                    ForcingType.RAINFALL, ForcingSource.MODEL
+                ),
+                ForcingType.WIND: ForcingFactory.get_default_forcing(
+                    ForcingType.WIND, ForcingSource.MODEL
+                ),
+                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
+                    ForcingType.WATERLEVEL, ForcingSource.MODEL
+                ),
+                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
+                    ForcingType.DISCHARGE, ForcingSource.CONSTANT
+                ),
+            },
+        )
 
 
 class HistoricalEvent(IEvent):

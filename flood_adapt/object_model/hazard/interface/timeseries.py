@@ -66,6 +66,15 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
             )
         return self
 
+    @staticmethod
+    def default(ts_var: TIMESERIES_VARIABLE) -> "SyntheticTimeseriesModel":
+        return SyntheticTimeseriesModel(
+            shape_type=ShapeType.gaussian,
+            duration=UnitfulTime(value=2, units="hours"),
+            peak_time=UnitfulTime(value=1, units="hours"),
+            peak_value=ts_var(value=1, units=ts_var.DEFAULT_UNIT),
+        )
+
     @property
     def start_time(self) -> UnitfulTime:
         return self.peak_time - self.duration / 2

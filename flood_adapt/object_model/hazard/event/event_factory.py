@@ -159,7 +159,7 @@ class EventFactory:
                 raise ValueError(f"Invalid event template: {template}")
 
     @staticmethod
-    def get_default_event(template: Template) -> IEventModel:
+    def get_default_eventmodel(template: Template) -> IEventModel:
         match template:
             case Template.Synthetic:
                 return SyntheticEventModel.default()

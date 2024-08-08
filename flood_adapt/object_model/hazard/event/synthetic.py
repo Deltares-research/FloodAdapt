@@ -1,11 +1,13 @@
 from typing import ClassVar, List
 
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
     IEvent,
     IEventModel,
 )
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
@@ -18,6 +20,29 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
+
+    def default(self):
+        """Set default values for Synthetic event."""
+        return SyntheticEventModel(
+            name="Synthetic Event",
+            time=TimeModel(),
+            template=Template.Synthetic,
+            mode=Mode.single_event,
+            forcings={
+                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
+                    ForcingType.RAINFALL, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.WIND: ForcingFactory.get_default_forcing(
+                    ForcingType.WIND, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
+                    ForcingType.WATERLEVEL, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
+                    ForcingType.DISCHARGE, ForcingSource.SYNTHETIC
+                ),
+            },
+        )
 
 
 class SyntheticEvent(IEvent):
