@@ -152,6 +152,17 @@ def get_database_name() -> Union[str, None]:
     return os.environ.get("DATABASE_NAME", None)
 
 
+def get_sfincs_path() -> Union[str, None]:
+    """
+    Get path to the SFINCS executable.
+
+    Returns
+    -------
+        Union[str, None]: string to the SFINCS path, or None if not set.
+    """
+    return os.environ.get("SFINCS_PATH")
+
+
 def parse_config(config_path: Path, overwrite: bool = True) -> dict:
     """
     Parse the configuration file and return the parsed configuration dictionary.
@@ -189,6 +200,9 @@ def parse_config(config_path: Path, overwrite: bool = True) -> dict:
             raise ValueError(f"SYSTEM_FOLDER not found in {config_path}")
         system_folder = config_base_dir / config["SYSTEM_FOLDER"]
         set_system_folder(system_folder, overwrite=overwrite)
+
+        if "SFINCS_PATH" not in config:
+            raise ValueError(f"SFINCS_PATH not found in {config_path}")
 
         if "DATABASE_NAME" not in config:
             raise ValueError(f"DATABASE_NAME not found in {config_path}")

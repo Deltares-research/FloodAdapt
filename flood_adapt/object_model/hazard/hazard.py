@@ -269,7 +269,8 @@ class Hazard:
                 """
             )
 
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
+        # sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
+        sfincs_exec = FloodAdapt_config.get_sfincs_path()
 
         run_success = True
         for simulation_path in self.simulation_paths:
