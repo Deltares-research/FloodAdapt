@@ -16,7 +16,9 @@ from flood_adapt.object_model.hazard.interface.models import (
     ShapeType,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
+    IUnitFullValue,
     UnitfulTime,
+    UnitTypesTime,
 )
 
 
@@ -67,11 +69,11 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
         return self
 
     @staticmethod
-    def default(ts_var: TIMESERIES_VARIABLE) -> "SyntheticTimeseriesModel":
+    def default(ts_var: type[IUnitFullValue]) -> "SyntheticTimeseriesModel":
         return SyntheticTimeseriesModel(
             shape_type=ShapeType.gaussian,
-            duration=UnitfulTime(value=2, units="hours"),
-            peak_time=UnitfulTime(value=1, units="hours"),
+            duration=UnitfulTime(value=2, units=UnitTypesTime.hours),
+            peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
             peak_value=ts_var(value=1, units=ts_var.DEFAULT_UNIT),
         )
 
@@ -143,8 +145,6 @@ class ITimeseries(ABC):
             end=end_time,
             freq=time_step.to_timedelta(),
         )
-        full_df = pd.DataFrame(index=full_df_time_range)
-        full_df.index.name = "time"
 
         data = self.calculate_data(time_step=time_step)
 
@@ -155,7 +155,10 @@ class ITimeseries(ABC):
         )
         df = pd.DataFrame(data, columns=["values"], index=ts_time_range)
 
-        full_df = df.reindex(full_df.index, method="nearest", limit=1, fill_value=0)
+        full_df = df.reindex(
+            index=full_df_time_range, method="nearest", limit=1, fill_value=0
+        )
+        full_df.index.name = "time"
         return full_df
 
     @staticmethod
@@ -177,9 +180,7 @@ class ITimeseries(ABC):
             yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
             xaxis_title={"text": "Time"},
-            yaxis_title={
-                "text": f"{timeseries_variable.__class__.__name__} [{timeseries_variable}]"
-            },
+            yaxis_title={"text": f"{timeseries_variable.units}"},
             showlegend=False,
             xaxis={"range": [xmin, xmax]},
         )

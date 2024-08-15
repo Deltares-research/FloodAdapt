@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import tomli
 
@@ -65,6 +65,24 @@ class EventFactory:
         if template not in EventFactory._EVENT_TEMPLATES:
             raise ValueError(f"Invalid event template: {template}")
         return EventFactory._EVENT_TEMPLATES[template][0]
+
+    @staticmethod
+    def get_eventmodel_from_template(template: Template) -> type[IEventModel]:
+        """Get the event class corresponding to the template.
+
+        Parameters
+        ----------
+        template : str
+            Name of the event template
+
+        Returns
+        -------
+        Type[Event]
+            Event template
+        """
+        if template not in EventFactory._EVENT_TEMPLATES:
+            raise ValueError(f"Invalid event template: {template}")
+        return EventFactory._EVENT_TEMPLATES[template][1]
 
     @staticmethod
     def read_template(filepath: Path) -> Template:
@@ -133,10 +151,10 @@ class EventFactory:
             return EventFactory.get_event_from_template(template).load_dict(attrs)
 
     @staticmethod
-    def list_allowed_forcings(template):
+    def get_allowed_forcings(template) -> dict[str, List[str]]:
         return EventFactory.get_event_from_template(
             template
-        ).attrs.list_allowed_forcings()
+        ).MODEL_TYPE.get_allowed_forcings()
 
     @staticmethod
     def get_template_description(template):

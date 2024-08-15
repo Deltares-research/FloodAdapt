@@ -16,12 +16,17 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
-        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
+        ForcingType.WIND: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+        ],
         ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
 
-    def default(self):
+    @staticmethod
+    def default() -> "SyntheticEventModel":
         """Set default values for Synthetic event."""
         return SyntheticEventModel(
             name="Synthetic Event",

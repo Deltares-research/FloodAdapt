@@ -12,7 +12,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
 )
 from flood_adapt.object_model.hazard.interface.models import ForcingSource
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitTypesDischarge,
+)
 
 
 class DischargeConstant(IDischarge):
@@ -21,7 +24,9 @@ class DischargeConstant(IDischarge):
 
     @classmethod
     def default(cls) -> "DischargeConstant":
-        return DischargeConstant(discharge=UnitfulDischarge(value=0, units="m3/s"))
+        return DischargeConstant(
+            discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms)
+        )
 
 
 class DischargeSynthetic(IDischarge):
@@ -29,14 +34,22 @@ class DischargeSynthetic(IDischarge):
 
     timeseries: SyntheticTimeseriesModel
 
-    def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(
-            SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
-        )
+    def get_data(self, strict=True) -> pd.DataFrame:
+        try:
+            return pd.DataFrame(
+                SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
+            )
+        except Exception as e:
+            if strict:
+                raise
+            else:
+                self._logger.error(f"Error loading synthetic discharge timeseries: {e}")
 
     @classmethod
     def default(cls) -> "DischargeSynthetic":
-        return DischargeSynthetic(timeseries=SyntheticTimeseriesModel().default())
+        return DischargeSynthetic(
+            timeseries=SyntheticTimeseriesModel.default(UnitfulDischarge)
+        )
 
 
 class DischargeFromCSV(IDischarge):
@@ -44,8 +57,16 @@ class DischargeFromCSV(IDischarge):
 
     path: str | os.PathLike
 
-    def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(CSVTimeseries.load_file(self.path).calculate_data())
+    def get_data(self, strict=True) -> pd.DataFrame:
+        try:
+            return pd.DataFrame(
+                CSVTimeseries.load_file(path=self.path).calculate_data()
+            )
+        except Exception as e:
+            if strict:
+                raise
+            else:
+                self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
     @classmethod
     def default(cls) -> "DischargeFromCSV":

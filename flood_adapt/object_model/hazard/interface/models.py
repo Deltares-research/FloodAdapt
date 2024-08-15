@@ -17,19 +17,19 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 ### CONSTANTS ###
-REFERENCE_TIME = datetime(2021, 1, 1, 0, 0, 0)
+REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
 MAX_TIDAL_CYCLES = 20
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
-    UnitfulIntensity
-    | UnitfulDischarge
-    | UnitfulVelocity
-    | UnitfulLength
-    | UnitfulHeight
-    | UnitfulArea
-    | UnitfulDirection
+    UnitfulIntensity,
+    UnitfulDischarge,
+    UnitfulVelocity,
+    UnitfulLength,
+    UnitfulHeight,
+    UnitfulArea,
+    UnitfulDirection,
 ]
 
 

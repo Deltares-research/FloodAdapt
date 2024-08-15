@@ -1,6 +1,6 @@
 # Event tab
 import os
-from typing import Any, Union
+from typing import Any, List, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -62,8 +62,8 @@ def list_forcings() -> list[str]:
     return ForcingFactory.list_forcings()
 
 
-def list_allowed_forcings(template: Template):
-    return EventFactory.list_allowed_forcings(template)
+def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
+    return EventFactory.get_allowed_forcings(template)
 
 
 def get_template_description(template: Template) -> str:
@@ -92,6 +92,23 @@ def delete_event(name: str) -> None:
 
 def copy_event(old_name: str, new_name: str, new_description: str) -> None:
     db.Database().events.copy(old_name, new_name, new_description)
+
+
+def check_higher_level_usage(name: str) -> list[str]:
+    """Check if an event is used in a scenario.
+
+    Parameters
+    ----------
+    name : str
+        name of the event to be checked
+
+    Returns
+    -------
+    list[str]
+        list of scenario names where the event is used
+
+    """
+    return db.Database().events.check_higher_level_usage(name)
 
 
 def download_wl_data(

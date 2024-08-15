@@ -126,14 +126,16 @@ class ForcingFactory(IForcingFactory):
         return [ftype.value for ftype in FORCING_TYPES.keys()]
 
     @staticmethod
-    def list_forcings() -> List[str]:
+    def list_forcings(as_string: bool = True) -> List[str | IForcing]:
         """List all available forcing classes."""
         forcing_classes = set()
         for source_map in FORCING_TYPES.values():
             for forcing in source_map.values():
                 if forcing is not None:
-                    forcing_classes.add(forcing.__name__)
-        return sorted(forcing_classes)
+                    if as_string:
+                        forcing = forcing.__name__
+                    forcing_classes.add(forcing)
+        return forcing_classes
 
     @staticmethod
     def get_default_forcing(_type: ForcingType, source: ForcingSource) -> IForcing:

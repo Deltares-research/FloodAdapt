@@ -1,6 +1,7 @@
 import os
 from abc import abstractmethod
 from pathlib import Path
+from tempfile import gettempdir
 from typing import Any, ClassVar, List, Optional
 
 import numpy as np
@@ -46,7 +47,7 @@ class IEventModel(BaseModel):
     template: Template
     mode: Mode
 
-    forcings: dict[ForcingType, IForcing] = Field(default_factory=dict)
+    forcings: dict[ForcingType, Any] = Field(default_factory=dict)
 
     @model_validator(mode="before")
     def create_forcings(self):
@@ -55,6 +56,20 @@ class IEventModel(BaseModel):
             for ftype, forcing_attrs in self["forcings"].items():
                 if isinstance(forcing_attrs, IForcing):
                     forcings[ftype] = forcing_attrs
+
+                elif isinstance(forcing_attrs, dict) and not all(
+                    v in forcing_attrs for v in ["_type" and "_source"]
+                ):
+                    for name, sub_forcing in forcing_attrs.items():
+                        if ftype not in forcings:
+                            forcings[ftype] = {}
+
+                        if isinstance(sub_forcing, IForcing):
+                            forcings[ftype][name] = sub_forcing
+                        else:
+                            forcings[ftype][name] = ForcingFactory.load_dict(
+                                sub_forcing
+                            )
                 else:
                     forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
             self["forcings"] = forcings
@@ -62,14 +77,12 @@ class IEventModel(BaseModel):
 
     @model_validator(mode="after")
     def validate_forcings(self):
-        for concrete_forcing in self.forcings.values():
-            if concrete_forcing is None:
-                continue
+        def validate_concrete_forcing(concrete_forcing):
             _type = concrete_forcing._type
             _source = concrete_forcing._source
 
             # Check type
-            if concrete_forcing._type not in self.__class__.ALLOWED_FORCINGS:
+            if _type not in self.__class__.ALLOWED_FORCINGS:
                 allowed_types = ", ".join(
                     t.value for t in self.__class__.ALLOWED_FORCINGS.keys()
                 )
@@ -86,6 +99,17 @@ class IEventModel(BaseModel):
                     f"Forcing source {_source.value} is not allowed for forcing type {_type.value}. "
                     f"Allowed sources are: {allowed_sources}"
                 )
+
+        for concrete_forcing in self.forcings.values():
+            if concrete_forcing is None:
+                continue
+
+            if isinstance(concrete_forcing, dict):
+                for _, _concrete_forcing in concrete_forcing.items():
+                    validate_concrete_forcing(_concrete_forcing)
+            else:
+                validate_concrete_forcing(concrete_forcing)
+
         return self
 
     @field_serializer("forcings")
@@ -100,11 +124,8 @@ class IEventModel(BaseModel):
         }
 
     @classmethod
-    def list_allowed_forcings(cls) -> List[str]:
-        return [
-            f"{k.value}: {', '.join([s.value for s in v])}"
-            for k, v in cls.ALLOWED_FORCINGS.items()
-        ]
+    def get_allowed_forcings(cls) -> dict[str, List[str]]:
+        return {k.value: [s.value for s in v] for k, v in cls.ALLOWED_FORCINGS.items()}
 
     @abstractmethod
     def default(cls) -> "IEventModel":
@@ -158,7 +179,7 @@ class IEvent(IDatabaseUser):
         if not isinstance(other, self.__class__):
             return False
         _self = self.attrs.model_dump(
-            exclude=["name", "description"], exclude_none=True
+            exclude=("name", "description"), exclude_none=True
         )
         _other = other.attrs.model_dump(
             exclude=["name", "description"], exclude_none=True
@@ -174,8 +195,8 @@ class IEvent(IDatabaseUser):
             | UnitTypesDischarge
             | UnitTypesVelocity
             | None
-        ),
-    ):
+        ) = None,
+    ) -> str | None:
         """Plot the forcing data for the event."""
         match forcing_type:
             case ForcingType.RAINFALL:
@@ -193,15 +214,25 @@ class IEvent(IDatabaseUser):
 
     def plot_waterlevel(self, units: UnitTypesLength):
         units = units or self.database.site.attrs.gui.default_length_units
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return
 
-        data = self.attrs.forcings[ForcingType.WATERLEVEL].get_data()
-        if not data:
+        data = None
+        try:
+            data = self.attrs.forcings[ForcingType.WATERLEVEL].get_data(
+                t0=xlim1, t1=xlim2
+            )
+        except Exception as e:
+            self.logger.error(f"Error getting water level data: {e}")
             return
 
-        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+        if data is not None and data.empty:
+            self.logger.error(
+                f"Could not retrieve waterlevel data: {self.attrs.forcings[ForcingType.WATERLEVEL]} {data}"
+            )
+            return
 
         # Plot actual thing
         fig = px.line(
@@ -242,28 +273,39 @@ class IEvent(IDatabaseUser):
             xaxis={"range": [xlim1, xlim2]},
         )
 
-        # write html to results folder
-        output_loc = (
-            self.database.events.get_database_path()
-            / self.attrs.name
-            / ("wl_timeseries.html")
-        )
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        # Only save to the the event folder if that has been created already.
+        # Otherwise this will create the folder and break the db since there is no event.toml yet
+        output_dir = self.database.events.get_database_path() / self.attrs.name
+        if not output_dir.exists():
+            output_dir = gettempdir()
+        output_loc = Path(output_dir) / "waterlevel_timeseries.html"
+
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_rainfall(self, units: UnitTypesIntensity = None) -> str:
+    def plot_rainfall(self, units: UnitTypesIntensity = None) -> str | None:
         units = units or self.database.site.attrs.gui.default_intensity_units
+
+        # set timing
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
             return
 
-        data = self.attrs.forcings[ForcingType.RAINFALL].get_data()
-        if not data:
+        data = None
+        try:
+            data = self.attrs.forcings[ForcingType.RAINFALL].get_data(
+                t0=xlim1, t1=xlim2
+            )
+        except Exception as e:
+            self.logger.error(f"Error getting rainfall data: {e}")
             return
 
-        # set timing
-        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+        if data is None or data.empty:
+            self.logger.error(
+                f"Could not retrieve rainfall data: {self.attrs.forcings[ForcingType.RAINFALL]} {data}"
+            )
+            return
 
         # Plot actual thing
         fig = px.line(data_frame=data)
@@ -283,35 +325,52 @@ class IEvent(IDatabaseUser):
             showlegend=False,
             xaxis={"range": [xlim1, xlim2]},
         )
+        # Only save to the the event folder if that has been created already.
+        # Otherwise this will create the folder and break the db since there is no event.toml yet
+        output_dir = self.database.events.get_database_path() / self.attrs.name
+        if not output_dir.exists():
+            output_dir = gettempdir()
+        output_loc = Path(output_dir) / "rainfall_timeseries.html"
 
-        # write html to results folder
-        output_loc = (
-            self.database.events.get_database_path()
-            / self.attrs.name
-            / ("wl_timeseries.html")
-        )
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
         fig.write_html(output_loc)
         return str(output_loc)
 
     def plot_discharge(self, units: UnitTypesDischarge = None) -> str:
         units = units or self.database.site.attrs.gui.default_discharge_units
 
+        # set timing relative to T0 if event is synthetic
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
         if self.attrs.forcings[ForcingType.DISCHARGE] is None:
             return
 
-        data = self.attrs.forcings[ForcingType.DISCHARGE].get_data()
-        if not data:
+        rivers = self.attrs.forcings[ForcingType.DISCHARGE]
+
+        data = None
+        for river in rivers:
+            try:
+                river_data = river.get_data(t0=xlim1, t1=xlim2)
+            except Exception as e:
+                self.logger.error(
+                    f"Error getting discharge data for river: {river} {e}"
+                )
+            # add river_data as a column to the dataframe. keep the same index
+            if data is None:
+                data = river_data
+            else:
+                data = data.join(river_data, how="outer")
+
+        if data.empty:
+            self.logger.error(
+                f"Could not retrieve discharge data: {self.attrs.forcings[ForcingType.DISCHARGE]} {data}"
+            )
             return
 
-        river_descriptions = [i.description for i in self.database.site.attrs.river]
         river_names = [i.description for i in self.database.site.attrs.river]
+        river_descriptions = [i.description for i in self.database.site.attrs.river]
         river_descriptions = np.where(
             river_descriptions is None, river_names, river_descriptions
         ).tolist()
-
-        # set timing relative to T0 if event is synthetic
-        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         # Plot actual thing
         fig = go.Figure()
@@ -339,13 +398,12 @@ class IEvent(IDatabaseUser):
             xaxis={"range": [xlim1, xlim2]},
         )
 
-        # write html to results folder
-        output_loc = (
-            self.database.events.get_database_path()
-            / self.attrs.name
-            / ("discharge_timeseries.html")
-        )
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        # Only save to the the event folder if that has been created already.
+        # Otherwise this will create the folder and break the db since there is no event.toml yet
+        output_dir = self.database.events.get_database_path() / self.attrs.name
+        if not output_dir.exists():
+            output_dir = gettempdir()
+        output_loc = Path(output_dir) / "discharge_timeseries.html"
         fig.write_html(output_loc)
         return str(output_loc)
 
@@ -358,14 +416,22 @@ class IEvent(IDatabaseUser):
             velocity_units or self.database.site.attrs.gui.default_velocity_units
         )
         direction_units = (
-            direction_units or self.database.site.attrs.gui.default_angle_units
+            direction_units or self.database.site.attrs.gui.default_direction_units
         )
 
         if self.attrs.forcings[ForcingType.WIND] is None:
             return
 
-        data = self.attrs.forcings[ForcingType.WIND].get_data()
-        if not data:
+        data = None
+        try:
+            data = self.attrs.forcings[ForcingType.WIND].get_data()
+        except Exception as e:
+            self.logger.error(f"Error getting wind data: {e}")
+
+        if data is not None and data.empty:
+            self.logger.error(
+                f"Could not retrieve discharge data: {self.attrs.forcings[ForcingType.DISCHARGE]} {data}"
+            )
             return
 
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
@@ -416,12 +482,12 @@ class IEvent(IDatabaseUser):
             showlegend=False,
         )
 
-        # write html to results folder
-        output_loc = (
-            self.database.events.get_database_path()
-            / self.attrs.name
-            / ("wind_timeseries.html")
-        )
-        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        # Only save to the the event folder if that has been created already.
+        # Otherwise this will create the folder and break the db since there is no event.toml yet
+        output_dir = self.database.events.get_database_path() / self.attrs.name
+        if not output_dir.exists():
+            output_dir = gettempdir()
+        output_loc = Path(output_dir) / "wind_timeseries.html"
+
         fig.write_html(output_loc)
         return str(output_loc)

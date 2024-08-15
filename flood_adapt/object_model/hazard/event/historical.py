@@ -46,7 +46,8 @@ class HistoricalEventModel(IEventModel):
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT],
     }
 
-    def default(self) -> "HistoricalEventModel":
+    @staticmethod
+    def default() -> "HistoricalEventModel":
         """Set default values for Synthetic event."""
         return HistoricalEventModel(
             name="Historical Event",

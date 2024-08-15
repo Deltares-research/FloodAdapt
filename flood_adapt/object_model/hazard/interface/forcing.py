@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -7,6 +8,7 @@ import pandas as pd
 import tomli
 from pydantic import BaseModel
 
+from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ForcingType,
@@ -18,6 +20,7 @@ class IForcing(BaseModel, ABC):
 
     _type: ClassVar[ForcingType]
     _source: ClassVar[ForcingSource]
+    _logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
 
     @classmethod
     def load_file(cls, path: str | os.PathLike):
@@ -29,8 +32,11 @@ class IForcing(BaseModel, ABC):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self, strict: bool = True, **kwargs: Any) -> pd.DataFrame:
         """If applicable, return the forcing/timeseries data as a (pd.DataFrame | xr.DataSet | arrayLike) data structure.
+
+        Args:
+            raise (bool, optional): If True, raise an error if the data cannot be returned. Defaults to True.
 
         The default implementation is to return None, if it makes sense to return an arrayLike datastructure, return it, otherwise return None.
         """
@@ -45,7 +51,6 @@ class IForcing(BaseModel, ABC):
         return data
 
     @abstractmethod
-    @classmethod
     def default() -> "IForcing":
         """Return the default for this forcing."""
         ...

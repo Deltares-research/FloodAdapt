@@ -1,4 +1,3 @@
-import math
 import os
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +11,6 @@ import tomli_w
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
-    MAX_TIDAL_CYCLES,
     REFERENCE_TIME,
     ShapeType,
 )
@@ -77,8 +75,8 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
         tt = pd.date_range(
-            start=REFERENCE_TIME,
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
             freq=timestep.to_timedelta(),
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
@@ -96,8 +94,8 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
         tt = pd.date_range(
-            start=REFERENCE_TIME,
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
             freq=timestep.to_timedelta(),
         )
         ts = np.where(
@@ -116,8 +114,8 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         timestep: UnitfulTime,
     ) -> np.ndarray:
         tt = pd.date_range(
-            start=REFERENCE_TIME,
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
+            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
             freq=timestep.to_timedelta(),
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
@@ -147,28 +145,28 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         return ts
 
 
-class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
-    def calculate(
-        self,
-        attrs: SyntheticTimeseriesModel,
-        timestep: UnitfulTime,
-    ) -> np.ndarray:
-        tt = pd.date_range(
-            start=REFERENCE_TIME,
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES),
-            freq=timestep.to_timedelta(),
-        )
-        tt_seconds = (tt - REFERENCE_TIME).total_seconds()
+# class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
+#     def calculate(
+#         self,
+#         attrs: SyntheticTimeseriesModel,
+#         timestep: UnitfulTime,
+#     ) -> np.ndarray:
+#         tt = pd.date_range(
+#             start=REFERENCE_TIME,
+#             end=(REFERENCE_TIME + attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES),
+#             freq=timestep.to_timedelta(),
+#         )
+#         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
 
-        omega = 2 * math.pi / attrs.duration.convert(UnitTypesTime.seconds)
-        phase_shift = attrs.peak_time.convert(UnitTypesTime.seconds)
-        one_period_ts = attrs.peak_value.value * np.cos(
-            omega * (tt_seconds - phase_shift)
-        )
+#         omega = 2 * math.pi / attrs.duration.convert(UnitTypesTime.seconds)
+#         phase_shift = attrs.peak_time.convert(UnitTypesTime.seconds)
+#         one_period_ts = attrs.peak_value.value * np.cos(
+#             omega * (tt_seconds - phase_shift)
+#         )
 
-        # Repeat ts to cover the entire duration
-        continuous_ts = np.tile(one_period_ts, MAX_TIDAL_CYCLES)[: len(tt_seconds)]
-        return continuous_ts
+#         # Repeat ts to cover the entire duration
+#         continuous_ts = np.tile(one_period_ts, MAX_TIDAL_CYCLES)[: len(tt_seconds)]
+#         return continuous_ts
 
 
 ### TIMESERIES ###
@@ -178,7 +176,7 @@ class SyntheticTimeseries(ITimeseries):
         ShapeType.scs: ScsTimeseriesCalculator(),
         ShapeType.constant: ConstantTimeseriesCalculator(),
         ShapeType.triangle: TriangleTimeseriesCalculator(),
-        ShapeType.harmonic: HarmonicTimeseriesCalculator(),
+        # ShapeType.harmonic: HarmonicTimeseriesCalculator(),
     }
     attrs: SyntheticTimeseriesModel
 
@@ -195,6 +193,19 @@ class SyntheticTimeseries(ITimeseries):
         end_time: datetime | str,
         time_step: UnitfulTime = DEFAULT_TIMESTEP,
     ) -> pd.DataFrame:
+        """
+        Interpolate the timeseries data using the timestep provided.
+
+        Parameters
+        ----------
+        start_time : datetime | str
+            Start time of the timeseries.
+        end_time : datetime | str
+            End time of the timeseries.
+        time_step : UnitfulTime, optional
+            Time step of the timeseries, by default DEFAULT_TIMESTEP.
+
+        """
         return super().to_dataframe(
             start_time=start_time,
             end_time=end_time,
@@ -225,7 +236,9 @@ class SyntheticTimeseries(ITimeseries):
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
     @staticmethod
-    def load_dict(data: dict[str, Any]):
+    def load_dict(
+        data: dict[str, Any] | SyntheticTimeseriesModel
+    ) -> "SyntheticTimeseries":
         """Create timeseries from object, e.g. when initialized from GUI."""
         obj = SyntheticTimeseries()
         obj.attrs = SyntheticTimeseriesModel.model_validate(data)

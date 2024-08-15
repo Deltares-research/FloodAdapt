@@ -7,6 +7,7 @@ class IDatabaseUser(ABC):
     """Abstract class for FloodAdapt classes that need to use / interact with the FloodAdapt database."""
 
     _database_instance = None
+    _logger = None
 
     @property
     def database(self):
@@ -24,3 +25,10 @@ class IDatabaseUser(ABC):
             reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
         )
         return self.database.input_path
+
+    @property
+    def logger(self):
+        if self._logger is not None:
+            return self._logger
+        self._logger = FloodAdaptLogging.getLogger(self.__class__.__name__)
+        return self._logger
