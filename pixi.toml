@@ -45,5 +45,5 @@ cht-meteo = "*"
 cht-observations =  { git = "https://github.com/deltares/cht_observations.git" }
 cht-tide = "*"
 fiat-toolbox = "*"
-hydromt-fiat = { git = "https://github.com/deltares/hydromt_fiat.git", rev = "2c1f0556103edeedcd5aec6b59ff1e3554061df1" }
-hydromt-sfincs = { git = "https://github.com/deltares/hydromt_sfincs.git", rev = "97c872499cbcaec6092931e4f0ddea1cb57779ca" }
+hydromt-fiat = { git = "https://github.com/deltares/hydromt_fiat.git#floodadapt" }
+hydromt-sfincs = { git = "https://github.com/deltares/hydromt_sfincs.git#FA_quadtree" }
