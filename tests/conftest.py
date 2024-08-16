@@ -8,25 +8,19 @@ from pathlib import Path
 
 import pytest
 
-import flood_adapt.config as fa_config
 from flood_adapt.api.static import read_database
+from flood_adapt.config import settings
 from flood_adapt.log import FloodAdaptLogging
 
-project_root = Path(__file__).absolute().parent.parent.parent
-database_root = project_root / "Database"
-site_name = "charleston_test"
-system_folder = database_root / "system"
-database_path = database_root / site_name
+project_root = Path(__file__).absolute().parents[2]
+settings.database_root = project_root / "Database"
+settings.system_folder = settings.database_root / "system"
+settings.database_name = "charleston_test"
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
 logs_dir = Path(__file__).absolute().parent / "logs"
 
-fa_config.parse_user_input(
-    database_root=database_root,
-    database_name=site_name,
-    system_folder=system_folder,
-)
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set clean=false
@@ -38,7 +32,7 @@ def create_snapshot():
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(database_path, snapshot_dir)
+    shutil.copytree(settings.database_path, snapshot_dir)
 
 
 def restore_db_from_snapshot():
@@ -53,7 +47,7 @@ def restore_db_from_snapshot():
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = database_path / relative_path
+            database_file = settings.database_path / relative_path
             if not database_file.exists():
                 os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
@@ -61,17 +55,17 @@ def restore_db_from_snapshot():
                 shutil.copy2(snapshot_file, database_file)
 
     # Remove created files from database
-    for root, _, files in os.walk(database_path):
+    for root, _, files in os.walk(settings.database_path):
         for file in files:
             database_file = Path(root) / file
-            relative_path = database_file.relative_to(database_path)
+            relative_path = database_file.relative_to(settings.database_path)
             snapshot_file = snapshot_dir / relative_path
 
             if not snapshot_file.exists():
                 os.remove(database_file)
 
     # Remove empty directories from the database
-    for root, dirs, _ in os.walk(database_path, topdown=False):
+    for root, dirs, _ in os.walk(settings.database_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
             if not os.listdir(dir_path):
@@ -140,7 +134,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(database_root, site_name)
+        dbs = read_database(settings.database_root, settings.database_name)
 
         # Perform tests
         yield dbs

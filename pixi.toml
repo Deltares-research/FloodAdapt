@@ -31,6 +31,7 @@ numpy-financial = "*"
 pandas = "<2"
 plotly = "*"
 pydantic = "*"
+pydantic-settings = "*"
 pygeos = "*"
 pyogrio = "*"
 pyproj = "*"
@@ -45,5 +46,7 @@ cht-meteo = "*"
 cht-observations =  { git = "https://github.com/deltares/cht_observations.git" }
 cht-tide = "*"
 fiat-toolbox = "*"
-hydromt-fiat = { git = "https://github.com/deltares/hydromt_fiat.git#floodadapt" }
-hydromt-sfincs = { git = "https://github.com/deltares/hydromt_sfincs.git#FA_quadtree" }
+hydromt-fiat = { git = "https://github.com/deltares/hydromt_fiat.git@floodadapt" }
+hydromt-sfincs = { git = "https://github.com/deltares/hydromt_sfincs.git@FA_quadtree" }
+
+flood_adapt = { path = ".", editable = true }

@@ -163,6 +163,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.8.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.20.1-py311hb3a8bbb_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pydantic-settings-2.4.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pygeos-0.14-py311h54d622a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyogrio-0.6.0-py311hbac4ec9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.1.2-pyhd8ed1ab_0.conda
@@ -171,6 +172,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyha2e5f31_6.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/python-3.11.6-hab00c5b_0_cpython.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python-dateutil-2.9.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/python_abi-3.11-4_cp311.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pytz-2024.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.1-py311h459d7ec_1.conda
@@ -245,8 +247,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9f/5a/a26132406f1f40cf51ea349a5f11b0a46cec02a2031ff82e391c2537247a/geographiclib-2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/53/25/605966a1f2dad515bbbd730440971d3e93ac84820d30eedab04387cb0131/hydromt-0.9.4-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_fiat.git@2c1f0556103edeedcd5aec6b59ff1e3554061df1
-      - pypi: git+https://github.com/deltares/hydromt_sfincs.git@97c872499cbcaec6092931e4f0ddea1cb57779ca
+      - pypi: git+https://github.com/deltares/hydromt_fiat.git@b5084f5ce866a32c03ec0a4931bdd0cc750a414b
+      - pypi: git+https://github.com/deltares/hydromt_sfincs.git@560ce76c546a067108790977295871ce635c840b
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/85/7882d311924cbcfc70b1890780763e36ff0b140c7e51c110fc59a532f087/isodate-0.6.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/e5/07bb97f2e183a9b9d2eec424ecd309110d4128a783b16cf076071912b519/jellyfish-0.11.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -258,7 +260,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/7a/60/54c60fbc74e6c4453a092439e3f3689d15b47baac5a65d530a338627a8ac/NDBC-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5e/6c/07e3221aa1ad763602b09eb1e85850a458cac5478161927e35c175017a54/noaa_coops-0.3.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/03/2b4245b05b71c0cee667e6a0b51606dfa7f4157c9093d71c6b208385a611/numba-0.60.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/bc/82/6aaf4441b35c6aef25435e64d6ffd4919c794114849a687807f555cb5c9c/numba_celltree-0.1.6.tar.gz
+      - pypi: https://files.pythonhosted.org/packages/a9/41/b3b2f293c25905d7fb1e392e15579537d43511c2ac2ea2f822c7994bbd24/numba_celltree-0.1.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/14/e6/8f9d4a498a06f11a06297f0b02af9968844d2e40ee79d372ccee33595285/numcodecs-0.12.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/09/c65e3d2f2b1e53e832507fe2ca0096cf76e403ff8cf4dc9edd90fbef8623/osmnx-1.9.3-py3-none-any.whl
@@ -296,9 +298,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/fe/c4d15ac730b2bcdd530e4bc6491958c53237eb573dba4eec3ad31ff0519a/xarray-2024.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f3/72/8cc5d33d86260e030cd703a5b5021656d1c49066cad710825f0b23428ef6/xarray_spatial-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/db/fd0326e331726f07ff7f40675cd86aa804bfd2e5016c727fa761c934990e/xmltodict-0.13.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/8b/cb/a4e83706518ba638e9eccdc2748ee413948b8e8ba6c8e95262f3514631f7/xugrid-0.10.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/25/bd/ed484126f7e85ac172bd07c9cc97e3871929c807f35fa69710819558134c/xugrid-0.11.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/49/1091bd708f8892dc2ed5155bdf71ff51fcde75df137d65ac53f5d7f4fa25/zeep-4.2.1-py3-none-any.whl
+      - pypi: .
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.7.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/attrs-23.2.0-pyh71513ae_0.conda
@@ -482,6 +485,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.8.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.20.1-py311h533ab2d_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pydantic-settings-2.4.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pygeos-0.14-py311h343093d_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pyogrio-0.6.0-py311h03c997e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.1.2-pyhd8ed1ab_0.conda
@@ -490,6 +494,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyh0701188_6.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/win-64/python-3.11.9-h631f459_0_cpython.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python-dateutil-2.9.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/python_abi-3.11-4_cp311.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pytz-2024.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pyyaml-6.0.1-py311ha68e1ae_1.conda
@@ -560,8 +565,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9f/5a/a26132406f1f40cf51ea349a5f11b0a46cec02a2031ff82e391c2537247a/geographiclib-2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e5/15/cf2a69ade4b194aa524ac75112d5caac37414b20a3a03e6865dfe0bd1539/geopy-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/53/25/605966a1f2dad515bbbd730440971d3e93ac84820d30eedab04387cb0131/hydromt-0.9.4-py3-none-any.whl
-      - pypi: git+https://github.com/deltares/hydromt_fiat.git@2c1f0556103edeedcd5aec6b59ff1e3554061df1
-      - pypi: git+https://github.com/deltares/hydromt_sfincs.git@97c872499cbcaec6092931e4f0ddea1cb57779ca
+      - pypi: git+https://github.com/deltares/hydromt_fiat.git@b5084f5ce866a32c03ec0a4931bdd0cc750a414b
+      - pypi: git+https://github.com/deltares/hydromt_sfincs.git@560ce76c546a067108790977295871ce635c840b
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/85/7882d311924cbcfc70b1890780763e36ff0b140c7e51c110fc59a532f087/isodate-0.6.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a1/3c/0bfd98febe38c995f8bb72c898f218ddf2d3e5ffe0586bfb21308a747d0d/jellyfish-0.11.2-cp311-none-win_amd64.whl
@@ -573,7 +578,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/7a/60/54c60fbc74e6c4453a092439e3f3689d15b47baac5a65d530a338627a8ac/NDBC-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5e/6c/07e3221aa1ad763602b09eb1e85850a458cac5478161927e35c175017a54/noaa_coops-0.3.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/89/2d924ca60dbf949f18a6fec223a2445f5f428d9a5f97a6b29c2122319015/numba-0.60.0-cp311-cp311-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/bc/82/6aaf4441b35c6aef25435e64d6ffd4919c794114849a687807f555cb5c9c/numba_celltree-0.1.6.tar.gz
+      - pypi: https://files.pythonhosted.org/packages/a9/41/b3b2f293c25905d7fb1e392e15579537d43511c2ac2ea2f822c7994bbd24/numba_celltree-0.1.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/f3/44597198c2cfb0d808d68583445b60b0d0ae057f20f0caf2a1200405655e/numcodecs-0.12.1-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/09/c65e3d2f2b1e53e832507fe2ca0096cf76e403ff8cf4dc9edd90fbef8623/osmnx-1.9.3-py3-none-any.whl
@@ -611,9 +616,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/fe/c4d15ac730b2bcdd530e4bc6491958c53237eb573dba4eec3ad31ff0519a/xarray-2024.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f3/72/8cc5d33d86260e030cd703a5b5021656d1c49066cad710825f0b23428ef6/xarray_spatial-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/db/fd0326e331726f07ff7f40675cd86aa804bfd2e5016c727fa761c934990e/xmltodict-0.13.0-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/8b/cb/a4e83706518ba638e9eccdc2748ee413948b8e8ba6c8e95262f3514631f7/xugrid-0.10.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/25/bd/ed484126f7e85ac172bd07c9cc97e3871929c807f35fa69710819558134c/xugrid-0.11.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/49/1091bd708f8892dc2ed5155bdf71ff51fcde75df137d65ac53f5d7f4fa25/zeep-4.2.1-py3-none-any.whl
+      - pypi: .
 packages:
 - kind: conda
   name: _libgcc_mutex
@@ -1182,8 +1188,8 @@ packages:
 - kind: pypi
   name: bottleneck
   version: 1.4.0
-  url: https://files.pythonhosted.org/packages/a5/47/2048a6d640157edca20f064696bf4bb700f7db3a653df566eca04a05d578/Bottleneck-1.4.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: a704165552496cbcc8bcc5921bb679fd6fa66bb1e758888de091b1223231c9f0
+  url: https://files.pythonhosted.org/packages/76/ab/3e95d162d356c853b7c0c084871900d5bdce5e9ad5479396d9641c2dee99/Bottleneck-1.4.0-cp311-cp311-win_amd64.whl
+  sha256: d53f1a72b12cfd76b56934c33bc0cb7c1a295f23a2d3ffba8c764514c9b5e0ff
   requires_dist:
   - numpy
   - numpydoc ; extra == 'doc'
@@ -1192,8 +1198,8 @@ packages:
 - kind: pypi
   name: bottleneck
   version: 1.4.0
-  url: https://files.pythonhosted.org/packages/76/ab/3e95d162d356c853b7c0c084871900d5bdce5e9ad5479396d9641c2dee99/Bottleneck-1.4.0-cp311-cp311-win_amd64.whl
-  sha256: d53f1a72b12cfd76b56934c33bc0cb7c1a295f23a2d3ffba8c764514c9b5e0ff
+  url: https://files.pythonhosted.org/packages/a5/47/2048a6d640157edca20f064696bf4bb700f7db3a653df566eca04a05d578/Bottleneck-1.4.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: a704165552496cbcc8bcc5921bb679fd6fa66bb1e758888de091b1223231c9f0
   requires_dist:
   - numpy
   - numpydoc ; extra == 'doc'
@@ -1921,16 +1927,16 @@ packages:
 - kind: pypi
   name: coverage
   version: 7.5.4
-  url: https://files.pythonhosted.org/packages/1e/62/e33595d35c9fa7cbcca5df2c3745b595532ec94b68c49ca2877629c4aca1/coverage-7.5.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: ed550e7442f278af76d9d65af48069f1fb84c9f745ae249c1a183c1e9d1b025c
+  url: https://files.pythonhosted.org/packages/cd/48/8b929edd540634d8e7ed50d78e86790613e8733edf7eb21c2c217bf25176/coverage-7.5.4-cp311-cp311-win_amd64.whl
+  sha256: d2e344d6adc8ef81c5a233d3a57b3c7d5181f40e79e05e1c143da143ccb6377d
   requires_dist:
   - tomli ; python_full_version <= '3.11.0a6' and extra == 'toml'
   requires_python: '>=3.8'
 - kind: pypi
   name: coverage
   version: 7.5.4
-  url: https://files.pythonhosted.org/packages/cd/48/8b929edd540634d8e7ed50d78e86790613e8733edf7eb21c2c217bf25176/coverage-7.5.4-cp311-cp311-win_amd64.whl
-  sha256: d2e344d6adc8ef81c5a233d3a57b3c7d5181f40e79e05e1c143da143ccb6377d
+  url: https://files.pythonhosted.org/packages/1e/62/e33595d35c9fa7cbcca5df2c3745b595532ec94b68c49ca2877629c4aca1/coverage-7.5.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: ed550e7442f278af76d9d65af48069f1fb84c9f745ae249c1a183c1e9d1b025c
   requires_dist:
   - tomli ; python_full_version <= '3.11.0a6' and extra == 'toml'
   requires_python: '>=3.8'
@@ -2371,14 +2377,14 @@ packages:
 - kind: pypi
   name: duckdb
   version: 1.0.0
-  url: https://files.pythonhosted.org/packages/89/74/94f27afff84f8aba7e01049b6686967fc27ba79e9df095b8b43b87701f8d/duckdb-1.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 5fa389e6a382d4707b5f3d1bc2087895925ebb92b77e9fe3bfb23c9b98372fdc
+  url: https://files.pythonhosted.org/packages/99/cc/e7ac5431a57e6a721f66dc423be58275ad48c9aecc1a12a5f4692e3da4b5/duckdb-1.0.0-cp311-cp311-win_amd64.whl
+  sha256: fd1693cdd15375156f7fff4745debc14e5c54928589f67b87fb8eace9880c370
   requires_python: '>=3.7.0'
 - kind: pypi
   name: duckdb
   version: 1.0.0
-  url: https://files.pythonhosted.org/packages/99/cc/e7ac5431a57e6a721f66dc423be58275ad48c9aecc1a12a5f4692e3da4b5/duckdb-1.0.0-cp311-cp311-win_amd64.whl
-  sha256: fd1693cdd15375156f7fff4745debc14e5c54928589f67b87fb8eace9880c370
+  url: https://files.pythonhosted.org/packages/89/74/94f27afff84f8aba7e01049b6686967fc27ba79e9df095b8b43b87701f8d/duckdb-1.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 5fa389e6a382d4707b5f3d1bc2087895925ebb92b77e9fe3bfb23c9b98372fdc
   requires_python: '>=3.7.0'
 - kind: pypi
   name: et-xmlfile
@@ -2524,6 +2530,45 @@ packages:
   - pytest-cov ; extra == 'test'
   - pytest-subtests ; extra == 'test'
   requires_python: '>=3.9'
+- kind: pypi
+  name: flood-adapt
+  version: 0.1.0
+  path: .
+  sha256: 6a86e671b308edc7e60dc8f1cfe9e79e849126d51d92e03fcdc2279c34c9f6bb
+  requires_dist:
+  - cht-cyclones @ git+https://github.com/deltares/cht_cyclones.git
+  - cht-meteo
+  - cht-observations @ git+https://github.com/deltares/cht_observations.git
+  - cht-tide
+  - dask<2024.7.0
+  - fiat-toolbox
+  - geojson
+  - geopandas
+  - hydromt-fiat @ git+https://github.com/deltares/hydromt_fiat.git@floodadapt
+  - hydromt-sfincs @ git+https://github.com/deltares/hydromt_sfincs.git@FA_quadtree
+  - numpy<2.0
+  - numpy-financial
+  - pandas
+  - plotly
+  - pydantic
+  - pyogrio
+  - tomli
+  - tomli-w
+  - flood-adapt[build,dev,docs] ; extra == 'all'
+  - build ; extra == 'build'
+  - twine ; extra == 'build'
+  - pytest ; extra == 'dev'
+  - pytest-cov ; extra == 'dev'
+  - pre-commit==3.8.0 ; extra == 'dev'
+  - ruff==0.5.5 ; extra == 'dev'
+  - typos==1.23.6 ; extra == 'dev'
+  - jupyter ; extra == 'docs'
+  - jupyter-cache ; extra == 'docs'
+  - matplotlib ; extra == 'docs'
+  - quartodoc ; extra == 'docs'
+  - regex ; extra == 'docs'
+  requires_python: '>=3.8'
+  editable: true
 - kind: conda
   name: folium
   version: 0.17.0
@@ -3293,7 +3338,7 @@ packages:
 - kind: pypi
   name: hydromt-fiat
   version: 0.3.2.dev0
-  url: git+https://github.com/deltares/hydromt_fiat.git@2c1f0556103edeedcd5aec6b59ff1e3554061df1
+  url: git+https://github.com/deltares/hydromt_fiat.git@b5084f5ce866a32c03ec0a4931bdd0cc750a414b
   requires_dist:
   - hydromt
   - geopandas
@@ -3323,7 +3368,7 @@ packages:
 - kind: pypi
   name: hydromt-sfincs
   version: 1.0.3
-  url: git+https://github.com/deltares/hydromt_sfincs.git@97c872499cbcaec6092931e4f0ddea1cb57779ca
+  url: git+https://github.com/deltares/hydromt_sfincs.git@560ce76c546a067108790977295871ce635c840b
   requires_dist:
   - affine
   - datashader
@@ -3483,14 +3528,14 @@ packages:
 - kind: pypi
   name: jellyfish
   version: 0.11.2
-  url: https://files.pythonhosted.org/packages/94/e5/07bb97f2e183a9b9d2eec424ecd309110d4128a783b16cf076071912b519/jellyfish-0.11.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 6ba932f17566a21c009dac8167c0289dd2175c219eea3f3f695d043c50989f46
+  url: https://files.pythonhosted.org/packages/a1/3c/0bfd98febe38c995f8bb72c898f218ddf2d3e5ffe0586bfb21308a747d0d/jellyfish-0.11.2-cp311-none-win_amd64.whl
+  sha256: cad06b9d0f76d5d030bcb8b86454e50aae8166b1c507d3d610743abcf8b7881a
   requires_python: '>=3.7'
 - kind: pypi
   name: jellyfish
   version: 0.11.2
-  url: https://files.pythonhosted.org/packages/a1/3c/0bfd98febe38c995f8bb72c898f218ddf2d3e5ffe0586bfb21308a747d0d/jellyfish-0.11.2-cp311-none-win_amd64.whl
-  sha256: cad06b9d0f76d5d030bcb8b86454e50aae8166b1c507d3d610743abcf8b7881a
+  url: https://files.pythonhosted.org/packages/94/e5/07bb97f2e183a9b9d2eec424ecd309110d4128a783b16cf076071912b519/jellyfish-0.11.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 6ba932f17566a21c009dac8167c0289dd2175c219eea3f3f695d043c50989f46
   requires_python: '>=3.7'
 - kind: conda
   name: jinja2
@@ -5615,14 +5660,14 @@ packages:
 - kind: pypi
   name: llvmlite
   version: 0.43.0
-  url: https://files.pythonhosted.org/packages/6b/99/5d00a7d671b1ba1751fc9f19d3b36f3300774c6eebe2bcdb5f6191763eb4/llvmlite-0.43.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 977525a1e5f4059316b183fb4fd34fa858c9eade31f165427a3977c95e3ee749
+  url: https://files.pythonhosted.org/packages/20/ab/ed5ed3688c6ba4f0b8d789da19fd8e30a9cf7fc5852effe311bc5aefe73e/llvmlite-0.43.0-cp311-cp311-win_amd64.whl
+  sha256: d5bd550001d26450bd90777736c69d68c487d17bf371438f975229b2b8241a91
   requires_python: '>=3.9'
 - kind: pypi
   name: llvmlite
   version: 0.43.0
-  url: https://files.pythonhosted.org/packages/20/ab/ed5ed3688c6ba4f0b8d789da19fd8e30a9cf7fc5852effe311bc5aefe73e/llvmlite-0.43.0-cp311-cp311-win_amd64.whl
-  sha256: d5bd550001d26450bd90777736c69d68c487d17bf371438f975229b2b8241a91
+  url: https://files.pythonhosted.org/packages/6b/99/5d00a7d671b1ba1751fc9f19d3b36f3300774c6eebe2bcdb5f6191763eb4/llvmlite-0.43.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 977525a1e5f4059316b183fb4fd34fa858c9eade31f165427a3977c95e3ee749
   requires_python: '>=3.9'
 - kind: conda
   name: locket
@@ -5644,8 +5689,8 @@ packages:
 - kind: pypi
   name: lxml
   version: 5.2.2
-  url: https://files.pythonhosted.org/packages/8a/f7/f5df71c70c4d14d186dd86fd0e9ebeffdb63b9b86fb19fe9315f9576266b/lxml-5.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 303f540ad2dddd35b92415b74b900c749ec2010e703ab3bfd6660979d01fd4ed
+  url: https://files.pythonhosted.org/packages/04/19/d6aa2d980f220a04c91d4de538d2fea1a65535e7b0a4aec0998ce46e3667/lxml-5.2.2-cp311-cp311-win_amd64.whl
+  sha256: 49095a38eb333aaf44c06052fd2ec3b8f23e19747ca7ec6f6c954ffea6dbf7be
   requires_dist:
   - cssselect>=0.7 ; extra == 'cssselect'
   - html5lib ; extra == 'html5'
@@ -5656,8 +5701,8 @@ packages:
 - kind: pypi
   name: lxml
   version: 5.2.2
-  url: https://files.pythonhosted.org/packages/04/19/d6aa2d980f220a04c91d4de538d2fea1a65535e7b0a4aec0998ce46e3667/lxml-5.2.2-cp311-cp311-win_amd64.whl
-  sha256: 49095a38eb333aaf44c06052fd2ec3b8f23e19747ca7ec6f6c954ffea6dbf7be
+  url: https://files.pythonhosted.org/packages/8a/f7/f5df71c70c4d14d186dd86fd0e9ebeffdb63b9b86fb19fe9315f9576266b/lxml-5.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 303f540ad2dddd35b92415b74b900c749ec2010e703ab3bfd6660979d01fd4ed
   requires_dist:
   - cssselect>=0.7 ; extra == 'cssselect'
   - html5lib ; extra == 'html5'
@@ -6273,15 +6318,6 @@ packages:
 - kind: pypi
   name: numba
   version: 0.60.0
-  url: https://files.pythonhosted.org/packages/57/03/2b4245b05b71c0cee667e6a0b51606dfa7f4157c9093d71c6b208385a611/numba-0.60.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
-  sha256: 4142d7ac0210cc86432b818338a2bc368dc773a2f5cf1e32ff7c5b378bd63ee8
-  requires_dist:
-  - llvmlite<0.44,>=0.43.0.dev0
-  - numpy<2.1,>=1.22
-  requires_python: '>=3.9'
-- kind: pypi
-  name: numba
-  version: 0.60.0
   url: https://files.pythonhosted.org/packages/79/89/2d924ca60dbf949f18a6fec223a2445f5f428d9a5f97a6b29c2122319015/numba-0.60.0-cp311-cp311-win_amd64.whl
   sha256: cac02c041e9b5bc8cf8f2034ff6f0dbafccd1ae9590dc146b3a02a45e53af4e2
   requires_dist:
@@ -6289,10 +6325,19 @@ packages:
   - numpy<2.1,>=1.22
   requires_python: '>=3.9'
 - kind: pypi
+  name: numba
+  version: 0.60.0
+  url: https://files.pythonhosted.org/packages/57/03/2b4245b05b71c0cee667e6a0b51606dfa7f4157c9093d71c6b208385a611/numba-0.60.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+  sha256: 4142d7ac0210cc86432b818338a2bc368dc773a2f5cf1e32ff7c5b378bd63ee8
+  requires_dist:
+  - llvmlite<0.44,>=0.43.0.dev0
+  - numpy<2.1,>=1.22
+  requires_python: '>=3.9'
+- kind: pypi
   name: numba-celltree
-  version: 0.1.6
-  url: https://files.pythonhosted.org/packages/bc/82/6aaf4441b35c6aef25435e64d6ffd4919c794114849a687807f555cb5c9c/numba_celltree-0.1.6.tar.gz
-  sha256: 2bfc722e0e039e73ac04c3cd7151309c12f57f1d7d9b68fbc206aeb0d0ce665b
+  version: 0.1.8
+  url: https://files.pythonhosted.org/packages/a9/41/b3b2f293c25905d7fb1e392e15579537d43511c2ac2ea2f822c7994bbd24/numba_celltree-0.1.8-py3-none-any.whl
+  sha256: 1aefbbcb7c5ee17f28285d6502bfe4a4d5c4eb4609b1081896954f37839237d0
   requires_dist:
   - numba
   - numpy
@@ -6301,12 +6346,12 @@ packages:
   - pydata-sphinx-theme ; extra == 'docs'
   - sphinx ; extra == 'docs'
   - sphinx-gallery ; extra == 'docs'
-  requires_python: '>=3.7'
+  requires_python: '>=3.9'
 - kind: pypi
   name: numcodecs
   version: 0.12.1
-  url: https://files.pythonhosted.org/packages/14/e6/8f9d4a498a06f11a06297f0b02af9968844d2e40ee79d372ccee33595285/numcodecs-0.12.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: a191a8e347ecd016e5c357f2bf41fbcb026f6ffe78fff50c77ab12e96701d155
+  url: https://files.pythonhosted.org/packages/08/f3/44597198c2cfb0d808d68583445b60b0d0ae057f20f0caf2a1200405655e/numcodecs-0.12.1-cp311-cp311-win_amd64.whl
+  sha256: 21d8267bd4313f4d16f5b6287731d4c8ebdab236038f29ad1b0e93c9b2ca64ee
   requires_dist:
   - numpy>=1.7
   - sphinx<7.0.0 ; extra == 'docs'
@@ -6324,8 +6369,8 @@ packages:
 - kind: pypi
   name: numcodecs
   version: 0.12.1
-  url: https://files.pythonhosted.org/packages/08/f3/44597198c2cfb0d808d68583445b60b0d0ae057f20f0caf2a1200405655e/numcodecs-0.12.1-cp311-cp311-win_amd64.whl
-  sha256: 21d8267bd4313f4d16f5b6287731d4c8ebdab236038f29ad1b0e93c9b2ca64ee
+  url: https://files.pythonhosted.org/packages/14/e6/8f9d4a498a06f11a06297f0b02af9968844d2e40ee79d372ccee33595285/numcodecs-0.12.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: a191a8e347ecd016e5c357f2bf41fbcb026f6ffe78fff50c77ab12e96701d155
   requires_dist:
   - numpy>=1.7
   - sphinx<7.0.0 ; extra == 'docs'
@@ -7077,14 +7122,14 @@ packages:
 - kind: pypi
   name: protobuf
   version: 5.27.2
-  url: https://files.pythonhosted.org/packages/27/e4/8dc4546be46873f8950cb44cdfe19b79d66d26e53c4ee5e3440406257fcd/protobuf-5.27.2-cp38-abi3-manylinux2014_x86_64.whl
-  sha256: b848dbe1d57ed7c191dfc4ea64b8b004a3f9ece4bf4d0d80a367b76df20bf36e
+  url: https://files.pythonhosted.org/packages/b1/04/73b8fd7f34f3a2b2b64aa31a173b8aebbdb0c55523df4c027846bb44bc1e/protobuf-5.27.2-cp310-abi3-win_amd64.whl
+  sha256: 0e341109c609749d501986b835f667c6e1e24531096cff9d34ae411595e26505
   requires_python: '>=3.8'
 - kind: pypi
   name: protobuf
   version: 5.27.2
-  url: https://files.pythonhosted.org/packages/b1/04/73b8fd7f34f3a2b2b64aa31a173b8aebbdb0c55523df4c027846bb44bc1e/protobuf-5.27.2-cp310-abi3-win_amd64.whl
-  sha256: 0e341109c609749d501986b835f667c6e1e24531096cff9d34ae411595e26505
+  url: https://files.pythonhosted.org/packages/27/e4/8dc4546be46873f8950cb44cdfe19b79d66d26e53c4ee5e3440406257fcd/protobuf-5.27.2-cp38-abi3-manylinux2014_x86_64.whl
+  sha256: b848dbe1d57ed7c191dfc4ea64b8b004a3f9ece4bf4d0d80a367b76df20bf36e
   requires_python: '>=3.8'
 - kind: conda
   name: psutil
@@ -7353,6 +7398,25 @@ packages:
   - pkg:pypi/pydantic-core
   size: 1606640
   timestamp: 1720041525595
+- kind: conda
+  name: pydantic-settings
+  version: 2.4.0
+  build: pyhd8ed1ab_0
+  subdir: noarch
+  noarch: python
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-settings-2.4.0-pyhd8ed1ab_0.conda
+  sha256: d2d9c7981b281c1abd5c8ad0786c8645ac0ab228e7aaaf8fc63cf166d6c31878
+  md5: 2cf6370f63f9c77177498f2b7a4bf549
+  depends:
+  - pydantic >=2.7.0
+  - python >=3.8
+  - python-dotenv >=0.21.0
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/pydantic-settings
+  size: 26864
+  timestamp: 1722362189712
 - kind: pypi
   name: pyflwdir
   version: 0.5.8
@@ -7745,6 +7809,23 @@ packages:
   size: 222742
   timestamp: 1709299922152
 - kind: conda
+  name: python-dotenv
+  version: 1.0.1
+  build: pyhd8ed1ab_0
+  subdir: noarch
+  noarch: python
+  url: https://conda.anaconda.org/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_0.conda
+  sha256: 2d4c80364f03315d606a50eddd493dbacc078e21412c2462c0f781eec49b572c
+  md5: c2997ea9360ac4e015658804a7a84f94
+  depends:
+  - python >=3.8
+  license: BSD-3-Clause
+  license_family: BSD
+  purls:
+  - pkg:pypi/python-dotenv
+  size: 24278
+  timestamp: 1706018281544
+- kind: conda
   name: python_abi
   version: '3.11'
   build: 4_cp311
@@ -7836,48 +7917,6 @@ packages:
 - kind: pypi
   name: rasterio
   version: 1.3.10
-  url: https://files.pythonhosted.org/packages/f7/0d/6dd65a77c4d2e0809d18edb7461f53a7597b19b886afff023ef5d4df8512/rasterio-1.3.10-cp311-cp311-manylinux2014_x86_64.whl
-  sha256: 30f27e309a14a70c821d10a0ea18b110968dc2e2186b06a900aebd92094f4e00
-  requires_dist:
-  - affine
-  - attrs
-  - certifi
-  - click>=4.0
-  - cligj>=0.5
-  - numpy
-  - snuggs>=1.4.1
-  - click-plugins
-  - setuptools
-  - importlib-metadata ; python_version < '3.10'
-  - ipython>=2.0 ; extra == 'all'
-  - pytest-cov>=2.2.0 ; extra == 'all'
-  - sphinx ; extra == 'all'
-  - ghp-import ; extra == 'all'
-  - pytest>=2.8.2 ; extra == 'all'
-  - numpydoc ; extra == 'all'
-  - sphinx-rtd-theme ; extra == 'all'
-  - packaging ; extra == 'all'
-  - hypothesis ; extra == 'all'
-  - matplotlib ; extra == 'all'
-  - boto3>=1.2.4 ; extra == 'all'
-  - shapely ; python_version < '3.12' and extra == 'all'
-  - ghp-import ; extra == 'docs'
-  - numpydoc ; extra == 'docs'
-  - sphinx ; extra == 'docs'
-  - sphinx-rtd-theme ; extra == 'docs'
-  - ipython>=2.0 ; extra == 'ipython'
-  - matplotlib ; extra == 'plot'
-  - boto3>=1.2.4 ; extra == 's3'
-  - boto3>=1.2.4 ; extra == 'test'
-  - hypothesis ; extra == 'test'
-  - packaging ; extra == 'test'
-  - pytest-cov>=2.2.0 ; extra == 'test'
-  - pytest>=2.8.2 ; extra == 'test'
-  - shapely ; python_version < '3.12' and extra == 'test'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: rasterio
-  version: 1.3.10
   url: https://files.pythonhosted.org/packages/03/d9/40d44154946a55e8fe63b21d44120dae02f4f62500338d09ee0d29d59025/rasterio-1.3.10-cp311-cp311-win_amd64.whl
   sha256: cbb2eea127328302f9e3158a000363a7d9eea22537378dee4f824a7fa2d78c05
   requires_dist:
@@ -7902,6 +7941,48 @@ packages:
   - sphinx-rtd-theme ; extra == 'all'
   - pytest-cov>=2.2.0 ; extra == 'all'
   - packaging ; extra == 'all'
+  - shapely ; python_version < '3.12' and extra == 'all'
+  - ghp-import ; extra == 'docs'
+  - numpydoc ; extra == 'docs'
+  - sphinx ; extra == 'docs'
+  - sphinx-rtd-theme ; extra == 'docs'
+  - ipython>=2.0 ; extra == 'ipython'
+  - matplotlib ; extra == 'plot'
+  - boto3>=1.2.4 ; extra == 's3'
+  - boto3>=1.2.4 ; extra == 'test'
+  - hypothesis ; extra == 'test'
+  - packaging ; extra == 'test'
+  - pytest-cov>=2.2.0 ; extra == 'test'
+  - pytest>=2.8.2 ; extra == 'test'
+  - shapely ; python_version < '3.12' and extra == 'test'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: rasterio
+  version: 1.3.10
+  url: https://files.pythonhosted.org/packages/f7/0d/6dd65a77c4d2e0809d18edb7461f53a7597b19b886afff023ef5d4df8512/rasterio-1.3.10-cp311-cp311-manylinux2014_x86_64.whl
+  sha256: 30f27e309a14a70c821d10a0ea18b110968dc2e2186b06a900aebd92094f4e00
+  requires_dist:
+  - affine
+  - attrs
+  - certifi
+  - click>=4.0
+  - cligj>=0.5
+  - numpy
+  - snuggs>=1.4.1
+  - click-plugins
+  - setuptools
+  - importlib-metadata ; python_version < '3.10'
+  - ipython>=2.0 ; extra == 'all'
+  - pytest-cov>=2.2.0 ; extra == 'all'
+  - sphinx ; extra == 'all'
+  - ghp-import ; extra == 'all'
+  - pytest>=2.8.2 ; extra == 'all'
+  - numpydoc ; extra == 'all'
+  - sphinx-rtd-theme ; extra == 'all'
+  - packaging ; extra == 'all'
+  - hypothesis ; extra == 'all'
+  - matplotlib ; extra == 'all'
+  - boto3>=1.2.4 ; extra == 'all'
   - shapely ; python_version < '3.12' and extra == 'all'
   - ghp-import ; extra == 'docs'
   - numpydoc ; extra == 'docs'
@@ -7951,14 +8032,14 @@ packages:
 - kind: pypi
   name: regex
   version: 2024.5.15
-  url: https://files.pythonhosted.org/packages/39/29/8158a6e69e97b9c72fab0b46fe4d57c789d07ef91fe4afde23721e7cac61/regex-2024.5.15-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 3e507ff1e74373c4d3038195fdd2af30d297b4f0950eeda6f515ae3d84a1770f
+  url: https://files.pythonhosted.org/packages/ef/9b/0aa55fc101c803869c13b389b718b15810592d2df35b1af15ff5b6f48e16/regex-2024.5.15-cp311-cp311-win_amd64.whl
+  sha256: 9e717956dcfd656f5055cc70996ee2cc82ac5149517fc8e1b60261b907740201
   requires_python: '>=3.8'
 - kind: pypi
   name: regex
   version: 2024.5.15
-  url: https://files.pythonhosted.org/packages/ef/9b/0aa55fc101c803869c13b389b718b15810592d2df35b1af15ff5b6f48e16/regex-2024.5.15-cp311-cp311-win_amd64.whl
-  sha256: 9e717956dcfd656f5055cc70996ee2cc82ac5149517fc8e1b60261b907740201
+  url: https://files.pythonhosted.org/packages/39/29/8158a6e69e97b9c72fab0b46fe4d57c789d07ef91fe4afde23721e7cac61/regex-2024.5.15-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 3e507ff1e74373c4d3038195fdd2af30d297b4f0950eeda6f515ae3d84a1770f
   requires_python: '>=3.8'
 - kind: pypi
   name: repoze-lru
@@ -9204,9 +9285,9 @@ packages:
   timestamp: 1607291557628
 - kind: pypi
   name: xugrid
-  version: 0.10.0
-  url: https://files.pythonhosted.org/packages/8b/cb/a4e83706518ba638e9eccdc2748ee413948b8e8ba6c8e95262f3514631f7/xugrid-0.10.0-py3-none-any.whl
-  sha256: e5bd6777e7deec1f213bd32fcdacd29e77622f650ebc951801ccdd7d6231a251
+  version: 0.11.1
+  url: https://files.pythonhosted.org/packages/25/bd/ed484126f7e85ac172bd07c9cc97e3871929c807f35fa69710819558134c/xugrid-0.11.1-py3-none-any.whl
+  sha256: 8111ffe399dc11939955347c80eccd044836930884fd1be4ff9778127b947641
   requires_dist:
   - numba
   - numba-celltree
@@ -9224,7 +9305,7 @@ packages:
   - pyproj ; extra == 'all'
   - shapely>=2.0 ; extra == 'all'
   - zarr ; extra == 'all'
-  requires_python: '>=3.10'
+  requires_python: '>=3.9'
 - kind: conda
   name: xyzservices
   version: 2024.6.0
