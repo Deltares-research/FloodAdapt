@@ -11,7 +11,7 @@ class DbsBenefit(DbsTemplate):
     _object_model_class = Benefit
 
     def save(self, benefit: IBenefit, overwrite: bool = False):
-        """Saves a benefit object in the database.
+        """Save a benefit object in the database.
 
         Parameters
         ----------
@@ -25,7 +25,6 @@ class DbsBenefit(DbsTemplate):
         ValueError
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
-
         # Check if all scenarios are created
         if not all(benefit.scenarios["scenario created"] != "No"):
             raise ValueError(
@@ -36,7 +35,7 @@ class DbsBenefit(DbsTemplate):
         super().save(benefit, overwrite=overwrite)
 
     def delete(self, name: str, toml_only: bool = False):
-        """Deletes an already existing benefit in the database.
+        """Delete an already existing benefit in the database.
 
         Parameters
         ----------
@@ -51,12 +50,13 @@ class DbsBenefit(DbsTemplate):
         ValueError
             Raise error if benefit has already model output
         """
-
         # First delete the benefit
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Benefits" / name
+        output_path = (
+            self._database.benefits.get_database_path(get_input_path=False) / name
+        )
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
@@ -78,7 +78,10 @@ class DbsBenefit(DbsTemplate):
         super().edit(benefit)
 
         # Delete output if edited
-        output_path = self._database.output_path / "Benefits" / benefit.attrs.name
+        output_path = (
+            self._database.benefits.get_database_path(get_input_path=False)
+            / benefit.attrs.name
+        )
 
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)

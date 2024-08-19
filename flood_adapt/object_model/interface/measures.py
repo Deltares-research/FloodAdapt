@@ -15,7 +15,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
 
 
 class ImpactType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in ImpactMeasure"""
+    """Class describing the accepted input for the variable 'type' in ImpactMeasure."""
 
     elevate_properties = "elevate_properties"
     buyout_properties = "buyout_properties"
@@ -23,7 +23,7 @@ class ImpactType(str, Enum):
 
 
 class HazardType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in HazardMeasure"""
+    """Class describing the accepted input for the variable 'type' in HazardMeasure."""
 
     floodwall = "floodwall"
     thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
@@ -38,7 +38,7 @@ class HazardType(str, Enum):
 
 
 class SelectionType(str, Enum):
-    """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure"""
+    """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure."""
 
     aggregation_area = "aggregation_area"
     polygon = "polygon"
@@ -47,7 +47,7 @@ class SelectionType(str, Enum):
 
 
 class MeasureModel(BaseModel):
-    """BaseModel describing the expected variables and data types of attributes common to all measures"""
+    """BaseModel describing the expected variables and data types of attributes common to all measures."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
     description: Optional[str] = ""
@@ -55,7 +55,7 @@ class MeasureModel(BaseModel):
 
 
 class HazardMeasureModel(MeasureModel):
-    """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
+    """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
     type: HazardType
     selection_type: SelectionType
@@ -82,7 +82,7 @@ class HazardMeasureModel(MeasureModel):
 
 
 class ImpactMeasureModel(MeasureModel):
-    """BaseModel describing the expected variables and data types of attributes common to all impact measures"""
+    """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
     type: ImpactType
     selection_type: SelectionType
@@ -121,38 +121,38 @@ class ImpactMeasureModel(MeasureModel):
 
 
 class ElevateModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "elevate" impact measure"""
+    """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
 
     elevation: UnitfulLengthRefValue
 
 
 class BuyoutModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "buyout" impact measure"""
+    """BaseModel describing the expected variables and data types of the "buyout" impact measure."""
 
     ...  # Buyout has only the basic impact measure attributes
 
 
 class FloodProofModel(ImpactMeasureModel):
-    """BaseModel describing the expected variables and data types of the "floodproof" impact measure"""
+    """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
 
     elevation: UnitfulLength
 
 
 class FloodWallModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "floodwall" hazard measure"""
+    """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
 
     elevation: UnitfulLength
     absolute_elevation: Optional[bool] = False
 
 
 class PumpModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "pump" hazard measure"""
+    """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
 
     discharge: UnitfulDischarge
 
 
 class GreenInfrastructureModel(HazardMeasureModel):
-    """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure"""
+    """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
 
     volume: UnitfulVolume
     height: Optional[UnitfulHeight] = None
@@ -208,58 +208,58 @@ class GreenInfrastructureModel(HazardMeasureModel):
 
 
 class IMeasure(ABC):
-    """This is a class for a FloodAdapt measure"""
+    """A class for a FloodAdapt measure."""
 
     attrs: MeasureModel
 
     @staticmethod
     @abstractmethod
     def load_file(filepath: Union[str, os.PathLike]):
-        """get Measure attributes from toml file"""
+        """Get Measure attributes from toml file."""
         ...
 
     @staticmethod
     @abstractmethod
     def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """get Measure attributes from an object, e.g. when initialized from GUI"""
+        """Get Measure attributes from an object, e.g. when initialized from GUI."""
         ...
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Measure attributes to a toml file"""
+        """Save Measure attributes to a toml file."""
 
 
 class IElevate(IMeasure):
-    """This is a class for a FloodAdapt "elevate" measure"""
+    """A class for a FloodAdapt "elevate" measure."""
 
     attrs: ElevateModel
 
 
 class IBuyout(IMeasure):
-    """This is a class for a FloodAdapt "buyout" measure"""
+    """A class for a FloodAdapt "buyout" measure."""
 
     attrs: BuyoutModel
 
 
 class IFloodProof(IMeasure):
-    """This is a class for a FloodAdapt "floodproof" measure"""
+    """A class for a FloodAdapt "floodproof" measure."""
 
     attrs: FloodProofModel
 
 
 class IFloodWall(IMeasure):
-    """This is a class for a FloodAdapt "floodwall" measure"""
+    """A class for a FloodAdapt "floodwall" measure."""
 
     attrs: FloodWallModel
 
 
 class IPump(IMeasure):
-    """This is a class for a FloodAdapt "pump" measure"""
+    """A class for a FloodAdapt "pump" measure."""
 
     attrs: PumpModel
 
 
 class IGreenInfrastructure(IMeasure):
-    """This is a class for a FloodAdapt "green infrastrcutre" measure"""
+    """A class for a FloodAdapt "green infrastrcutre" measure."""
 
     attrs: GreenInfrastructureModel

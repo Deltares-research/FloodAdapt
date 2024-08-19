@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class UnitTypesLength(str, Enum):
@@ -62,7 +62,7 @@ class UnitfulLength(ValueUnitPair):
     units: UnitTypesLength
 
     def convert(self, new_units: UnitTypesLength) -> float:
-        """converts given length value different units
+        """Convert given length value different units.
 
         Parameters
         ----------
@@ -112,7 +112,7 @@ class UnitfulHeight(UnitfulLength):
 
     value: float = Field(..., gt=0)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def convert_length_to_height(cls, obj):
         if isinstance(obj, UnitfulLength):
             return UnitfulHeight(value=obj.value, units=obj.units)
@@ -124,7 +124,7 @@ class UnitfulArea(ValueUnitPair):
     units: UnitTypesArea
 
     def convert(self, new_units: UnitTypesArea) -> float:
-        """converts given length value different units
+        """Convert given length value different units.
 
         Parameters
         ----------
@@ -167,7 +167,7 @@ class UnitfulVelocity(ValueUnitPair):
     units: UnitTypesVelocity
 
     def convert(self, new_units: UnitTypesVelocity) -> float:
-        """converts given  velocity to different units
+        """Convert given  velocity to different units.
 
         Parameters
         ----------
@@ -214,7 +214,7 @@ class UnitfulDischarge(ValueUnitPair):
     units: UnitTypesDischarge
 
     def convert(self, new_units: UnitTypesDischarge) -> float:
-        """converts given discharge to different units
+        """Convert given discharge to different units.
 
         Parameters
         ----------
@@ -249,7 +249,7 @@ class UnitfulIntensity(ValueUnitPair):
     units: UnitTypesIntensity
 
     def convert(self, new_units: UnitTypesIntensity) -> float:
-        """converts given rainfall intensity to different units
+        """Convert given rainfall intensity to different units.
 
         Parameters
         ----------
@@ -283,7 +283,7 @@ class UnitfulVolume(ValueUnitPair):
     units: UnitTypesVolume
 
     def convert(self, new_units: UnitTypesVolume) -> float:
-        """converts given volume to different units
+        """Convert given volume to different units.
 
         Parameters
         ----------

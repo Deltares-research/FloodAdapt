@@ -33,7 +33,7 @@ def test_scenarios(test_db):
     test_scenarios = {
         toml_file.name: Scenario.load_file(toml_file) for toml_file in test_tomls
     }
-    return test_scenarios
+    yield test_scenarios
 
 
 # @pytest.mark.skip(reason="running the model takes long")
@@ -429,16 +429,16 @@ def test_multiple_rivers(test_db, test_scenarios):
     # Overwrite river data of Event
     test_scenario.direct_impacts.hazard.event.attrs.river[0].source = "constant"
     test_scenario.direct_impacts.hazard.event.attrs.river[1].source = "shape"
-    test_scenario.direct_impacts.hazard.event.attrs.river[0].constant_discharge = (
-        UnitfulDischarge(value=2000.0, units="cfs")
-    )
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        0
+    ].constant_discharge = UnitfulDischarge(value=2000.0, units="cfs")
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_type = "gaussian"
-    test_scenario.direct_impacts.hazard.event.attrs.river[1].base_discharge = (
-        UnitfulDischarge(value=1000.0, units="cfs")
-    )
-    test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak = (
-        UnitfulDischarge(value=2500.0, units="cfs")
-    )
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        1
+    ].base_discharge = UnitfulDischarge(value=1000.0, units="cfs")
+    test_scenario.direct_impacts.hazard.event.attrs.river[
+        1
+    ].shape_peak = UnitfulDischarge(value=2500.0, units="cfs")
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_duration = 8
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak_time = 0
 
@@ -457,9 +457,9 @@ def test_multiple_rivers(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.site.attrs.river[1].name = name
     test_scenario.direct_impacts.hazard.site.attrs.river[1].x_coordinate = x
     test_scenario.direct_impacts.hazard.site.attrs.river[1].y_coordinate = y
-    test_scenario.direct_impacts.hazard.site.attrs.river[1].mean_discharge = (
-        UnitfulDischarge(value=mean_discharge, units="cfs")
-    )
+    test_scenario.direct_impacts.hazard.site.attrs.river[
+        1
+    ].mean_discharge = UnitfulDischarge(value=mean_discharge, units="cfs")
     test_scenario.direct_impacts.hazard.site.attrs.river[1].description = description
 
     # Change name of reference model
@@ -495,9 +495,7 @@ def test_multiple_rivers(test_db, test_scenarios):
         np.mean(dis[1].values), 2
     ) == test_scenario.direct_impacts.hazard.event.attrs.river[
         0
-    ].constant_discharge.convert(
-        "m3/s"
-    )
+    ].constant_discharge.convert("m3/s")
     assert np.max(
         dis[2].values
     ) == test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak.convert(

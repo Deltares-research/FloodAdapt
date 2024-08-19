@@ -15,15 +15,14 @@ from flood_adapt.object_model.interface.measures import (
 
 
 class FloodWall(HazardMeasure, IFloodWall):
-    """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height"""
+    """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height."""
 
     attrs: FloodWallModel
     database_input_path: Union[str, os.PathLike, None]
 
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]) -> IFloodWall:
-        """create Floodwall from toml file"""
-
+        """Create Floodwall from toml file."""
         obj = FloodWall()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
@@ -36,14 +35,13 @@ class FloodWall(HazardMeasure, IFloodWall):
     def load_dict(
         data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
     ) -> IFloodWall:
-        """create Floodwall from object, e.g. when initialized from GUI"""
-
+        """Create Floodwall from object, e.g. when initialized from GUI."""
         obj = FloodWall()
         obj.attrs = FloodWallModel.model_validate(data)
         obj.database_input_path = database_input_path
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """save Floodwall to a toml file"""
+        """Save Floodwall to a toml file."""
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

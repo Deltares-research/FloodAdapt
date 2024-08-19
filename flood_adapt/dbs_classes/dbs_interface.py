@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Union
 
 from flood_adapt.object_model.interface.benefits import IBenefit
@@ -13,14 +14,12 @@ ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefi
 
 class AbstractDatabaseElement(ABC):
     def __init__(self):
-        """
-        Initialize any necessary attributes.
-        """
+        """Initialize any necessary attributes."""
         pass
 
     @abstractmethod
     def get(self, name: str) -> ObjectModel:
-        """Returns the object of the type of the database with the given name.
+        """Return the object of the type of the database with the given name.
 
         Parameters
         ----------
@@ -36,8 +35,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def list_objects(self) -> dict[str, Any]:
-        """Returns a dictionary with info on the objects that currently
-        exist in the database.
+        """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
         -------
@@ -48,7 +46,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def copy(self, old_name: str, new_name: str, new_description: str):
-        """Copies (duplicates) an existing object, and gives it a new name.
+        """Copy (duplicate) an existing object, and give it a new name.
 
         Parameters
         ----------
@@ -63,8 +61,9 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Saves an object in the database. This only saves the toml file. If the object also contains a geojson file,
-        this should be saved separately.
+        """Save an object in the database.
+
+        This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
 
         Parameters
         ----------
@@ -99,7 +98,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def delete(self, name: str, toml_only: bool = False):
-        """Deletes an already existing object in the database.
+        """Delete an already existing object in the database.
 
         Parameters
         ----------
@@ -118,7 +117,7 @@ class AbstractDatabaseElement(ABC):
 
     @abstractmethod
     def check_higher_level_usage(self, name: str) -> list[str]:
-        """Checks if an object is used in a higher level object.
+        """Check if an object is used in a higher level object.
 
         Parameters
         ----------
@@ -129,5 +128,21 @@ class AbstractDatabaseElement(ABC):
         -------
         list[str]
             list of higher level objects that use the object
+        """
+        pass
+
+    @abstractmethod
+    def get_database_path(self, get_input_path: bool) -> Path:
+        """Return the path to the database.
+
+        Parameters
+        ----------
+        get_input_path : bool
+            whether to return the input or output path
+
+        Returns
+        -------
+        Path
+            path to the database
         """
         pass

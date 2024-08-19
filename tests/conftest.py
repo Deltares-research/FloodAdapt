@@ -1,27 +1,37 @@
 import filecmp
-import gc
 import logging
 import os
 import shutil
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 
 import flood_adapt.config as fa_config
 from flood_adapt.api.static import read_database
+from flood_adapt.log import FloodAdaptLogging
 
-logging.basicConfig(level=logging.ERROR)
-database_root = Path().absolute().parent / "Database"
+project_root = Path(__file__).absolute().parent.parent.parent
+database_root = project_root / "Database"
 site_name = "charleston_test"
 system_folder = database_root / "system"
 database_path = database_root / site_name
-snapshot_dir = Path(tempfile.mkdtemp()) / "database_snapshot"
+
+session_tmp_dir = Path(tempfile.mkdtemp())
+snapshot_dir = session_tmp_dir / "database_snapshot"
+logs_dir = Path(__file__).absolute().parent / "logs"
+
 fa_config.parse_user_input(
     database_root=database_root,
     database_name=site_name,
     system_folder=system_folder,
 )
+
+#### DEBUGGING ####
+# To disable resetting the database after tests: set clean=false
+# Only for debugging purposes, should always be set to true when pushing to github
+clean = True
 
 
 def create_snapshot():
@@ -71,42 +81,30 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
+    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
+    FloodAdaptLogging(
+        file_path=log_path,
+        loglevel_console=logging.DEBUG,
+        loglevel_root=logging.DEBUG,
+        loglevel_files=logging.DEBUG,
+    )
     create_snapshot()
 
     yield
 
-    restore_db_from_snapshot()
+    if clean:
+        restore_db_from_snapshot()
     shutil.rmtree(snapshot_dir)
 
 
-def make_db_fixture(scope, clean=True):
+def make_db_fixture(scope):
     """
-    This generates a fixture that is used for testing in general.
-    All fixtures function as follows:
-    At the start of the test session:
-        1) Create a snapshot of the database
+    Generate a fixture that is used for testing in general.
 
-    At the start of each test:
-        2) Restore the database from the snapshot
-        3) Initialize database controller
-        4) Perform all tests in scope
-        5) Restore the database from the snapshot
-    Usage
-    ----------
-    To access the fixture in a test , you need to:
-        1) pass the fixture name as an argument to the test function
-        2) directly use as a the database object:
-            def test_some_test(test_db):
-                something = test_db.get_something()
-                some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
-                assert ...
     Parameters
     ----------
     scope : str
         The scope of the fixture (e.g., "function", "class", "module", "package", "session")
-    clean : bool, optional (default is True)
-        Whether to clean the database after all tests in the scope have run.
-        Clean means cleaning the contents of versioned files, and deleting unversioned files and folders after the tests
 
     Returns
     -------
@@ -117,19 +115,38 @@ def make_db_fixture(scope, clean=True):
         raise ValueError(f"Invalid fixture scope: {scope}")
 
     @pytest.fixture(scope=scope)
-    def _db_fixture(clean=clean):
-        """Fixture for setting up and tearing down the database for each test."""
-        if clean:
-            restore_db_from_snapshot()
+    def _db_fixture():
+        """
+        Fixture for setting up and tearing down the database once per scope.
 
+        Every test session:
+            1) Create a snapshot of the database
+            2) Run all tests
+            3) Restore the database from the snapshot
+
+        Every scope:
+            1) Initialize database controller
+            2) Perform all tests in scope
+            3) Restore the database from the snapshot
+
+        Usage
+        ----------
+        To access the fixture in a test , you need to:
+            1) pass the fixture name as an argument to the test function
+            2) directly use as a the database object:
+                def test_some_test(test_db):
+                    something = test_db.get_something()
+                    some_event_toml_path = test_db.input_path / "events" / "some_event" / "some_event.toml"
+                    assert ...
+        """
+        # Setup
         dbs = read_database(database_root, site_name)
 
-        # Yield the database controller for the test
+        # Perform tests
         yield dbs
 
-        # Close dangling connections
-        gc.collect()
-
+        # Teardown
+        dbs.reset()
         if clean:
             restore_db_from_snapshot()
 
@@ -148,10 +165,9 @@ test_db_module = make_db_fixture("module")
 test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
 
-# NOTE: while developing, it is useful to have a fixture that does not clean the database to debug
-# Should not be used in tests that are completed and pushed to the repository
-test_db_no_clean = make_db_fixture("function", clean=False)
-test_db_class_no_clean = make_db_fixture("class", clean=False)
-test_db_module_no_clean = make_db_fixture("module", clean=False)
-test_db_package_no_clean = make_db_fixture("package", clean=False)
-test_db_session_no_clean = make_db_fixture("session", clean=False)
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    test_name = item.name
+    logger = FloodAdaptLogging.getLogger()
+    logger.info(f"\nStarting test: {test_name}\n")

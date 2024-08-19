@@ -31,12 +31,12 @@ def get_event(name: str) -> IEvent:
 
 
 def get_event_mode(name: str) -> str:
-    filename = Database().input_path / "events" / f"{name}" / f"{name}.toml"
+    filename = Database().events.get_database_path() / f"{name}" / f"{name}.toml"
     return Event.get_mode(filename)
 
 
 def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
-    """Create a synthetic event object from a dictionary of attributes
+    """Create a synthetic event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
 
 
 def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
-    """Create a historical nearshore event object from a dictionary of attributes
+    """Create a historical nearshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNears
 
 
 def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffshore:
-    """Create a historical offshore event object from a dictionary of attributes
+    """Create a historical offshore event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffsho
 
 
 def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurricane:
-    """Create a historical hurricane event object from a dictionary of attributes
+    """Create a historical hurricane event object from a dictionary of attributes.
 
     Parameters
     ----------
@@ -120,10 +120,10 @@ def copy_event(old_name: str, new_name: str, new_description: str) -> None:
 
 
 def download_wl_data(
-    station_id, start_time, end_time, units: UnitTypesLength, file=None
+    station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
 ) -> pd.DataFrame:
     return HistoricalNearshore.download_wl_data(
-        station_id, start_time, end_time, units, file
+        station_id, start_time, end_time, units, source, file
     )
 
 
