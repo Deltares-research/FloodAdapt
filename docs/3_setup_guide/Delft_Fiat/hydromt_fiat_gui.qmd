@@ -380,22 +380,36 @@ Coming soon...
 :::
 
 ## Delft-FIAT model folder
-Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. This folder structure will be described...**coming soon**...
+Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. This folder structure will be described.
 
-<!--
 Figure x shows what the folder structure looks like, for a working directory named "FIAT".
 
-├───📁 FIAT/
-    |
-    ├───📁 hazard/
-    │   └───📄 This will be empty
+```
+├───📁 Delft-FIAT/
     |
     ├───📁 exposure/
+    │      ├───📁 additional_attributes/
+    │   │    ├─── 📄 base_zone.gpkg
+    │   │    ├─── 📄 land_use.gpkg
+        │     ├───📁 aggregation_areas/
+    │   │    ├─── 📄 block_groups.gpkg
+        │     ├───📁 equity/
+    │   │    ├─── 📄 equity_data.gpkg
     │   ├───📄 buildings.gpkg
-    │   └───📄 exposure.csv
+    │   ├───📄 exposure.csv
+    │   ├───📄 region.gpkg
+    │   ├───📄 roads.gpkg
     |
     ├───📁 vulnerability/
-    │   └───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_identifiers.csv
     |
-    └───📄 settings.toml
--->
+    ├───📁 hazard/
+    │   └───📄 hazard_map.nc
+    ├───📁 output/
+    |
+    ├───📄 hydromt.log
+    ├───📄 settings.toml
+    └───📄 spatial_joins.toml
+
+```
