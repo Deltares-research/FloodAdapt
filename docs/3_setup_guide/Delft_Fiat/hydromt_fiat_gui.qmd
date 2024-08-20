@@ -379,23 +379,35 @@ There is also a button "Exposure output". This opens the full model data, which 
 Coming soon...
 :::
 
-## Delft-FIAT model folder
-Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. This folder structure will be described...**coming soon**...
+## Delft-FIAT model folder structure
+Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. Below you can see what the folder structure looks like for a comprehensive model, saved in a working directory named "Delft-FIAT".
+When you create a basic model (without using QuickBuild or any advanced options), the resulting folder structure will contain fewer folders and files. The additional folders and files that appear when using QuickBuild or adding additional attributes to your model are highlighted in the figure below, indicating that the folders (incl. files within) are generated only under those specific conditions.
 
-<!--
-Figure x shows what the folder structure looks like, for a working directory named "FIAT".
-
-├───📁 FIAT/
-    |
-    ├───📁 hazard/
-    │   └───📄 This will be empty
+```
+├───📁 Delft-FIAT/
     |
     ├───📁 exposure/
+    │      ├───📁 additional_attributes/ (advanced model)
+    │   │    ├─── 📄 base_zone.gpkg
+    │   │    ├─── 📄 land_use.gpkg
+        │     ├───📁 aggregation_areas/ (quickbuild/advanced model)
+    │   │    ├─── 📄 block_groups.gpkg
+        │     ├───📁 equity/ (quickbuild/advanced model)
+    │   │    ├─── 📄 equity_data.gpkg
     │   ├───📄 buildings.gpkg
-    │   └───📄 exposure.csv
+    │   ├───📄 exposure.csv
+    │   ├───📄 region.gpkg
+    │   ├───📄 roads.gpkg
     |
     ├───📁 vulnerability/
-    │   └───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_identifiers.csv
     |
-    └───📄 settings.toml
--->
+    ├───📁 hazard/
+    │
+    ├───📁 output/
+    |
+    ├───📄 hydromt.log
+    ├───📄 settings.toml
+    └───📄 spatial_joins.toml (quickbuild/advanced model)
+```
