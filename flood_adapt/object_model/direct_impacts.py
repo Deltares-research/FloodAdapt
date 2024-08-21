@@ -293,7 +293,8 @@ class DirectImpacts:
         metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
-        self._create_infographics(self.hazard.event_mode, metrics_path)
+        if self.site_info.attrs.fiat.infographics:
+            self._create_infographics(self.hazard.event_mode, metrics_path)
 
         if self.hazard.event_mode == "risk":
             # Calculate equity based damages
@@ -516,11 +517,18 @@ class DirectImpacts:
         else:
             ext = ""
 
-        metrics_config_path = self.database.static_path.joinpath(
-            "templates",
-            "infometrics",
-            f"metrics_config{ext}.toml",
-        )
+        # Get options for metric configurations
+        metric_types = ["mandatory", "additional"]  # these are checked always
+
+        if self.site_info.attrs.fiat.infographics:  # if infographics are created
+            metric_types += ["infographic"]
+
+        metric_config_paths = [
+            self.database.static_path.joinpath(
+                "templates", "infometrics", f"{name}_metrics_config{ext}.toml"
+            )
+            for name in metric_types
+        ]
 
         # Specify the metrics output path
         metrics_outputs_path = self.database.scenarios.get_database_path(
@@ -531,24 +539,43 @@ class DirectImpacts:
         )
 
         # Write the metrics to file
-        metrics_writer = MetricsFileWriter(metrics_config_path)
+        # Check if type of metric configuration is available
+        for metric_file in metric_config_paths:
+            if metric_file.exists():
+                metrics_writer = MetricsFileWriter(metric_file)
 
-        metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
-            metrics_path=metrics_outputs_path,
-            write_aggregate=None,
-        )
+                metrics_writer.parse_metrics_to_file(
+                    df_results=fiat_results_df,
+                    metrics_path=metrics_outputs_path,
+                    write_aggregate=None,
+                )
 
-        metrics_writer.parse_metrics_to_file(
-            df_results=fiat_results_df,
-            metrics_path=metrics_outputs_path,
-            write_aggregate="all",
-        )
+                metrics_writer.parse_metrics_to_file(
+                    df_results=fiat_results_df,
+                    metrics_path=metrics_outputs_path,
+                    write_aggregate="all",
+                )
+            else:
+                if "mandatory" in metric_file.name.lower():
+                    raise FileNotFoundError(
+                        f"Mandatory metric configuration file {metric_file} does not exist!"
+                    )
 
         return metrics_outputs_path
 
     def _create_infographics(self, mode, metrics_path):
         self._logger.info("Creating infographics...")
+
+        # Check if infographics config file exists
+        if mode == "risk":
+            config_path = self.database.static_path.joinpath(
+                "templates", "Infographics", "config_risk_charts.toml"
+            )
+            if not config_path.exists():
+                self._logger.warning(
+                    "Risk infographic cannot be created, since 'config_risk_charts.toml' is not available"
+                )
+                return
 
         # Get the infographic
         InforgraphicFactory.create_infographic_file_writer(
