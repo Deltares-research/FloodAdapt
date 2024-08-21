@@ -365,11 +365,8 @@ class Hazard:
             template = self.event.attrs.template
 
             if template == "Synthetic" or template == "Historical_nearshore":
-                # generate hazard water level bc incl SLR (in the offshore model these are already included)
-                # returning wl referenced to MSL
-                if self.event.attrs.template == "Historical_nearshore":
-                    # water level offset due to historic SLR already included in observations
-                    wl_ts = self.event.tide_surge_ts
+                # water level offset due to historic SLR already included in observations
+                wl_ts = self.event.tide_surge_ts
                 # In both cases (Synthetic and Historical nearshore) add SLR
                 wl_ts[1] = wl_ts[
                     1
