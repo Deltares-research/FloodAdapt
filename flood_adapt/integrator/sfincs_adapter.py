@@ -1,4 +1,5 @@
 import gc
+import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
@@ -34,15 +35,14 @@ from flood_adapt.object_model.site import Site
 
 
 class SfincsAdapter:
-
     def __init__(self, site: Site, model_root: Optional[str] = None):
         """Load overland sfincs model based on a root directory.
 
         Args:
             model_root (str, optional): Root directory of overland sfincs model. Defaults to None.
         """
-        self._logger = FloodAdaptLogging.getLogger(__name__)
-        self.sf_model = SfincsModel(root=model_root, mode="r+", logger=self._logger)
+        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.INFO)
+        self.sf_model = SfincsModel(root=model_root, mode="r+")
         self.sf_model.read()
         self.site = site
 
