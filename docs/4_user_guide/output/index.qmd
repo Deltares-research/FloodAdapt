@@ -2,4 +2,4 @@
 title: 	Output tab
 ---
 
-Hello
+Coming soon.
