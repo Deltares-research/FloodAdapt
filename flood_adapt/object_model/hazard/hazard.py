@@ -369,9 +369,8 @@ class Hazard:
                 if template == "Synthetic":
                     self.event.add_tide_and_surge_ts()  # Stores the water level time series in self.event.tide_surge_ts
 
-                wl_ts = self.event.tide_surge_ts
-
                 # In both cases (Synthetic and Historical nearshore) add SLR
+                wl_ts = self.event.tide_surge_ts
                 wl_ts[1] = wl_ts[
                     1
                 ] + self.physical_projection.attrs.sea_level_rise.convert(
