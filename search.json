@@ -39,56 +39,56 @@
     "href": "6_demo/king_tides.html",
     "title": "King tides are already a problem – how will that look with sea level rise?",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "6_demo/army_corps.html",
     "href": "6_demo/army_corps.html",
     "title": "The Army Corps has a surge-protection plan for the peninsula – what about the rest of Charleston?",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/objects.html",
     "href": "5_update_model/objects.html",
     "title": "Adding / updating objects in the exposure data",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/dem.html",
     "href": "5_update_model/dem.html",
     "title": "Updating the DEM",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/aggregation_areas.html",
     "href": "5_update_model/aggregation_areas.html",
     "title": "Adding new aggregation areas",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/strategy/index.html",
     "href": "4_user_guide/strategy/index.html",
     "title": "Strategies",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/scenarios/index.html",
     "href": "4_user_guide/scenarios/index.html",
     "title": "Scenarios",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/scenario_results/index.html",
     "href": "4_user_guide/scenario_results/index.html",
     "title": "Scenario results",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/projections/socioEconomic.html",
@@ -340,21 +340,21 @@
     "href": "4_user_guide/compare/index.html",
     "title": "Compare tabs",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/compare/Compare_map.html",
     "href": "4_user_guide/compare/Compare_map.html",
     "title": "Scenario comparison - map",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/arc_gis/index.html",
     "href": "4_user_guide/arc_gis/index.html",
     "title": "ArcGis",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "3_setup_guide/index.html",
@@ -364,11 +364,11 @@
     "text": "Heading 1\nHere is some content.\n…\n\n\n\n\n Back to top"
   },
   {
-    "objectID": "3_setup_guide/database.html",
-    "href": "3_setup_guide/database.html",
-    "title": "Building the database",
+    "objectID": "3_setup_guide/SFINCS/index.html",
+    "href": "3_setup_guide/SFINCS/index.html",
+    "title": "SFINCS Setup",
     "section": "",
-    "text": "Im testing\n\n\n\n Back to top"
+    "text": "Coming soon…\n…\n\n\n\n\n Back to top"
   },
   {
     "objectID": "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html",
@@ -424,21 +424,21 @@
     "href": "2_installation_guide/software_req.html",
     "title": "CFRSS system requirements",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "2_installation_guide/index.html",
     "href": "2_installation_guide/index.html",
     "title": "Getting started with FloodAdapt",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "1_introduction/terminology.html",
     "href": "1_introduction/terminology.html",
     "title": "Terminology",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "1_introduction/overview_floodadapt.html",
@@ -494,21 +494,21 @@
     "href": "2_installation_guide/folder_struct.html",
     "title": "Folder Structure",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "2_installation_guide/installation.html",
     "href": "2_installation_guide/installation.html",
     "title": "Installation steps",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "2_installation_guide/system_req.html",
     "href": "2_installation_guide/system_req.html",
     "title": "CFRSS system requirements",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "3_setup_guide/Delft_Fiat/index.html",
@@ -525,39 +525,39 @@
     "text": "Overview of Delft-FIAT data requirements\nThis section describes the exposure and vulnerability requirements to set up a Delft-FIAT model.\nThe exposure data describe the assets within a project area. Figure 3 shows the types of exposure data needed (and also optionally accepted) to set up a Delft-FIAT model.\n\n\n\nFigure 3: Exposure data used to build a Delft-FIAT model - including both required and optional fields\n\n\n\n\n\n\n\n\nWhy are some data optional?\n\n\n\nThe optional socio-economic variables and aggregation areas are used by FloodAdapt to post-process the damages to gain insight into how damages are distributed spatially or by social-economic sectors (such as damages to high social vulnerability residents). They are very useful for gaining insight, but not required; if they are not provided, FloodAdapt users will still be able to use all of the FloodAdapt functionality.\nThe secondary occupancy type can be optional, but will sometimes be required. The primary and secondary occupancy types tell Delft-FIAT which depth-damage curves should be used for which building. When the depth-damage curves are defined by the secondary occupancy type, this will be a required input. This is the case when using HAZUS damage curves. When using other damage curves, such as those from the Joint Research Center, which are identified only on primary object type, the secondary object type will be optional.\n\n\nVulnerability data in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (Figure 4). The depth-damage curve is related to the building type (e.g. ‘residential 1-story building’) and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.\n\n\n\n\n\nFigure 4: Example of depth-damage functions."
   },
   {
-    "objectID": "3_setup_guide/gui.html",
-    "href": "3_setup_guide/gui.html",
-    "title": "Settings to start the GUI",
+    "objectID": "3_setup_guide/database.html",
+    "href": "3_setup_guide/database.html",
+    "title": "Database Setup",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "3_setup_guide/risk_analysis.html",
     "href": "3_setup_guide/risk_analysis.html",
-    "title": "Set-up for probabilistic risk analysis",
+    "title": "Event Setup",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/benefits.html",
     "href": "4_user_guide/benefits.html",
     "title": "Benefits",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/compare/Compare_table.html",
     "href": "4_user_guide/compare/Compare_table.html",
     "title": "Scenario comparison - metrics",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/events/general_info.html",
     "href": "4_user_guide/events/general_info.html",
     "title": "General event information",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/events/historic_events/historic_events_hurricane.html",
@@ -669,7 +669,7 @@
     "href": "4_user_guide/output/index.html",
     "title": "Output tab",
     "section": "",
-    "text": "Hello\n\n\n\n Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/projections/index.html",
@@ -683,14 +683,14 @@
     "href": "4_user_guide/scenario_results/event_set.html",
     "title": "Event-set (probabilistic risk) scenario output",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/scenario_results/single_event.html",
     "href": "4_user_guide/scenario_results/single_event.html",
     "title": "Single-event scenario output",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "4_user_guide/site_tab.html",
@@ -704,35 +704,42 @@
     "href": "4_user_guide/user_interface.html",
     "title": "GUI features",
     "section": "",
-    "text": "To be filled in when the general features are more finalized (e.g. view and help options)\nTest.\n\n\n\n Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/damage_functions.html",
     "href": "5_update_model/damage_functions.html",
     "title": "Updating damage functions",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/index.html",
     "href": "5_update_model/index.html",
     "title": "Updating FloodAdapt",
     "section": "",
-    "text": "Soon to come…\n\n\n\n Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
   },
   {
     "objectID": "5_update_model/settings.html",
     "href": "5_update_model/settings.html",
     "title": "Updating settings for running probabilistic scenarios",
     "section": "",
-    "text": "Updating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
+    "text": "Coming soon.\n\nUpdating return periods\n\n\nUpdating the flood frequency threshold\n\n\n\n\n Back to top"
   },
   {
     "objectID": "6_demo/index.html",
     "href": "6_demo/index.html",
     "title": "Demonstrating the use of FloodAdapt",
     "section": "",
-    "text": "Back to top"
+    "text": "Coming soon.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "6_demo/measures_impact.html",
+    "href": "6_demo/measures_impact.html",
+    "title": "Measures and their impact",
+    "section": "",
+    "text": "Coming soon. ## Exploring measures"
   },
   {
     "objectID": "6_demo/measures_impact.html#evaluating-measures",
