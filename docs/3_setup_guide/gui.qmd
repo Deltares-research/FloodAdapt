@@ -1,3 +1,0 @@
----
-title:	Settings to start the GUI
----
