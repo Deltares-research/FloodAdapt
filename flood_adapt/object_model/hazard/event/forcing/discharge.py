@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import ClassVar
 
 import pandas as pd
@@ -11,9 +12,13 @@ from flood_adapt.object_model.hazard.event.timeseries import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
 )
-from flood_adapt.object_model.hazard.interface.models import ForcingSource
+from flood_adapt.object_model.hazard.interface.models import (
+    REFERENCE_TIME,
+    ForcingSource,
+)
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
+    UnitfulTime,
     UnitTypesDischarge,
 )
 
@@ -34,16 +39,28 @@ class DischargeSynthetic(IDischarge):
 
     timeseries: SyntheticTimeseriesModel
 
-    def get_data(self, strict=True) -> pd.DataFrame:
+    def get_data(
+        self, strict=True, t0: datetime = None, t1: datetime = None
+    ) -> pd.DataFrame:
+        discharge = SyntheticTimeseries().load_dict(data=self.timeseries)
+
+        if t0 is None:
+            t0 = REFERENCE_TIME
+        elif isinstance(t0, UnitfulTime):
+            t0 = REFERENCE_TIME + t0.to_timedelta()
+
+        if t1 is None:
+            t1 = t0 + discharge.attrs.duration.to_timedelta()
+        elif isinstance(t1, UnitfulTime):
+            t1 = t0 + t1.to_timedelta()
+
         try:
-            return pd.DataFrame(
-                SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
-            )
+            return discharge.to_dataframe(start_time=t0, end_time=t1)
         except Exception as e:
             if strict:
                 raise
             else:
-                self._logger.error(f"Error loading synthetic discharge timeseries: {e}")
+                self._logger.error(f"Error loading synthetic rainfall timeseries: {e}")
 
     @classmethod
     def default(cls) -> "DischargeSynthetic":

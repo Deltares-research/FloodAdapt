@@ -422,19 +422,19 @@ class IEvent(IDatabaseUser):
         if self.attrs.forcings[ForcingType.WIND] is None:
             return
 
+        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
+
         data = None
         try:
-            data = self.attrs.forcings[ForcingType.WIND].get_data()
+            data = self.attrs.forcings[ForcingType.WIND].get_data(xlim1, xlim2)
         except Exception as e:
             self.logger.error(f"Error getting wind data: {e}")
 
-        if data is not None and data.empty:
+        if data is None or data.empty:
             self.logger.error(
-                f"Could not retrieve discharge data: {self.attrs.forcings[ForcingType.DISCHARGE]} {data}"
+                f"Could not retrieve wind data: {self.attrs.forcings[ForcingType.WIND]} {data}"
             )
             return
-
-        xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         # Plot actual thing
         # Create figure with secondary y-axis

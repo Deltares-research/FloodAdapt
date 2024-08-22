@@ -11,7 +11,10 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.gauge_data import get_observed_wl_data
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
-from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
+from flood_adapt.object_model.hazard.interface.models import (
+    Template,
+    TimeModel,
+)
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
