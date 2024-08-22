@@ -366,7 +366,9 @@ class Hazard:
 
             if template == "Synthetic" or template == "Historical_nearshore":
                 # water level offset due to historic SLR already included in observations
-                self.event.add_tide_and_surge_ts()  # Stores the water level time series in self.event.tide_surge_ts
+                if template == "Synthetic":
+                    self.event.add_tide_and_surge_ts()  # Stores the water level time series in self.event.tide_surge_ts
+
                 wl_ts = self.event.tide_surge_ts
 
                 # In both cases (Synthetic and Historical nearshore) add SLR
