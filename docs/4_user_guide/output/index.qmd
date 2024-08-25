@@ -78,8 +78,7 @@ The output from a simulated scenario is saved on a user's computer, aspiring to 
 
 ![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folderStructure.png){width=60% fig-align=left #fig-folderStruct}
 
-### Event scenario output folder
-
+The output folders for the event scenarios and risk scenarios have mostly the same structure. 
 ![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folder_event.png){width=60% fig-align=left #fig-folderEvent}
 
 ![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folder_risk.png){width=60% fig-align=left #fig-folderRisk}
