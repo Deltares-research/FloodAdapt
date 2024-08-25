@@ -1,5 +1,85 @@
 ---
-title: 	Output tab
+title: 	Output
+filters:
+  - lightbox
+lightbox: auto
 ---
 
-Coming soon.
+The FloodAdapt [Output tab](#floodadapt-output-tab) displays flood and impact maps, a tabulated summary of metrics, and a visual infographic for simulated scenarios to help users understand and evaluate their scenarios. The output for event scenarios and risk scenarios differs slightly, but output for both types of scenarios is accessible from the Output tab. FloodAdapt additionally places scenario output locally on your computer in an [Output folder](#output-folder) within your FloodAdapt database. 
+
+## FloodAdapt output tab
+The Output tab has a map window and below it a panel (see @fig-outputTab). The left section of the panel contains a scenario table with the scenarios that have been simulated. These can be sorted by name, date created, or by scenario components (event, projection, strategy). Selecting a scenario in this panel will load the output results for that scenario. The middle section of the panel contains different map visualization options, and the right section contains tabulated metrics. The collapsible frame on the Output tab can be used to view the scenario infographic (see Figure x). 
+
+![**Output tab in FloodAdapt**](../../_static/images/output_tab.png){width=70% fig-align=left #fig-outputTab}
+
+::: {.callout-tip}
+## Viewing the infographic
+The infographic is visible in the map window’s collapsible frame. The user can view the infographic by clicking the little white triangle on the border of the frame to the right of the map window (see @fig-outputTab).
+:::
+
+### Metrics and infographic
+The metrics and infographic will contain different information for a risk scenario and an event scenario. This information is configured separately for event scenarios and risk scenarios at system set-up (see information on how the infometrics and infographic are configured in the [set-up guide](../../3_setup_guide/database.qmd)). @fig-infoG_event shows an example of the infographic for an event scenario and @fig-infoG_risk shows an example of the infographic for a risk scenario. The basic structure of the infographic, highlighted in the figures, is fixed but the information within that structure can be tailored at system setup.   
+
+![**Infographic for an event scenario**](../../_static/images/output_infographic_event.png){width=70% fig-align=left #fig-infoG_event}
+
+![**Infographic for a risk scenario**](../../_static/images/output_infographic_risk.png){width=70% fig-align=left #fig-infoG_risk}
+
+### Map visualization options for an event scenario
+When an event scenario is selected in the scenario panel, there are four map visualization options (see @fig-outputTab). Clicking the check boxes next to any of these four options will activate the corresponding layer in the map window.   
+
+* **Flood map** - shows the extent and depth of flooding for the scenario. 
+* **Building damages** - displayed as a heat map when zoomed out (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level damages
+* **Aggregated damages** - show the damages summed up over different areas, such as census blocks or neighborhoods. The areas will correspond to the aggregation areas that are shown in the [site](../site_tab.qmd) tab; these areas are specified at system setup. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
+* **Road flooding** - shows the water depth on the roads
+
+
+In addition to the four map layers, there is also the option to select an additional layer to view in the map window. This is found in the “Show Layer” drop-down menu. The specific layers available will depend on how the system was configured at setup, but could contain layers like income, social vulnerability index, or aggregation areas. These layers are often useful to visualize in combination with building level damages or flooding, to better understand who is being impacted in the scenario. 
+
+::: {.callout-note}
+## How accurate are the building-level damages?
+The building-level damages show what appear to be precise damage amounts; for example, a building could show $67,233 of damage. In reality, there is uncertainty around this estimate. The uncertainty stems from multiple sources including the accuracy of the flood map at the building location, the correctness of the depth-damage curve for the building, and the accuracy of the exposure data (such as building value or finished floor height). At this moment, uncertainty bands are not provided with the damage estimates in FloodAdapt, but it is important to be aware that these values are not as precisely known as they appear. 
+:::
+
+::: {.callout-tip} 
+## Keeping things clean
+It is possible to have all the map layers visible at the same time, but we recommend turning off the other layers when selecting aggregated damages. It makes for a cleaner map! 
+:::
+
+### Map visualization options for a risk scenario
+A risk scenario calculates return period flooding and damages, and also combines this information to calculate risk in terms of expected annual damages. The risk scenario map visualization options allow users to view both return period and risk output.
+
+When a risk scenario is selected, two radio buttons will appear: “Return period” and “Risk” (see @fig-map_risk). If you select “Return period”, a drop-down window appears from which you can select a return period for which you want to view output. For individual return periods, the map visualization options are identical to those for the [event scenario](#map-visualization-options-for-an-event-scenario).
+
+![**Map visualization options for a risk scenario, showing both 'return period' options and 'risk' options**](../../_static/images/output_tab_risk.png){width=70% fig-align=left #fig-map_risk}
+
+When the "Risk" radio button is selected (see @fig-map_risk), two map layers can be viewed:
+
+* **Building damages** - these damages represent the annual expected damages. When zoomed out this layer is displayed as a heat map (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level expected annual damages.
+* **Aggregated damages** - this layer shows the expected annual damages (risk)summed up over different areas, such as census blocks or neighborhoods. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
+
+There are a couple of special notes about the map visualization options for risk results compared to the return period or event scenario results:
+
+1. **Equity weighting**
+
+    Next to the Risk radio button there is a checkbox "Equity-weighted". Checking it allows users to see equity weighted risk estimates. Equity weights are calculated in FloodAdapt using information on income. These weights are then multiplied by the damages to derive the equity-weighted risk estimates. This visualization is only available at the same scale for which income data is availalbe. This will typically be census block level. @fig-map_equity shows the difference with and without equity weights, highlighting how it affects low-income and high-income neighborhoods. The low income neighborhoods are represented with blue stars and the high-income with yellow stars. Note that the equity-weighted risk for the low-income neighborhoods is higher than the risk when equity weights are not used. 
+
+2. **No flood maps** 
+
+    In the case of risk results, the flood map and road flooding options are disabled because risk is an damage metric that is integrated over several different flood events, and does not correspond to any single flood event. 
+
+![**Aggregated risk map, without equity weighting on the left and with equity weighting on the right**](../../_static/images/output_risk_equity.png){width=100% fig-align=left #fig-map_equity}
+
+
+In addition to the output map layers, there is also the option to select an additional layer to view in the map window. This is found in the “Show Layer” drop-down menu. The specific layers available will depend on how the system was configured at setup, but could contain layers like income, social vulnerability index, or aggregation areas. These layers are often useful to visualize in combination with building level (expected annual) damages, to better understand who is being impacted in the scenario.  
+
+
+## Output folder
+The output from a simulated scenario is saved on a user's computer, aspiring to provide full access and transparency. This section will describe the output folder structure for both an event and a risk scenario. @fig-folderStruct shows the folder structure of the FloodAdapt database and where within it the Output folder can be found. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. Within each site database, there will be three folders: Input, Static, and Output. The Static folder contains site-specific information that is prepared at system setup. The Input and Output folders are populated by FloodAdapt users via the FloodAdapt application. 
+
+![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folderStructure.png){width=60% fig-align=left #fig-folderStruct}
+
+### Event scenario output folder
+
+![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folder_event.png){width=60% fig-align=left #fig-folderEvent}
+
+![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folder_risk.png){width=60% fig-align=left #fig-folderRisk}
