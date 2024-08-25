@@ -33,7 +33,7 @@ The metrics and infographic will contain different information for a risk scenar
 When an event scenario is selected in the scenario panel, there are four map visualization options (see @fig-outputTab). Clicking the check boxes next to any of these four options will activate the corresponding layer in the map window.   
 
 * **Flood map** - shows the extent and depth of flooding for the scenario. 
-* **Building damages** - displayed as a heat map when zoomed out (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level damages
+* **Building damages** - displayed as a heat map when zoomed out (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level damages.
 * **Aggregated damages** - show the damages summed up over different areas, such as census blocks or neighborhoods. The areas will correspond to the aggregation areas that are shown in the [site](../site_tab.qmd) tab; these areas are specified at system setup. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
 * **Road flooding** - shows the water depth on the roads.
 
