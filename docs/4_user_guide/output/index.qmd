@@ -35,7 +35,7 @@ When an event scenario is selected in the scenario panel, there are four map vis
 * **Flood map** - shows the extent and depth of flooding for the scenario. 
 * **Building damages** - displayed as a heat map when zoomed out (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level damages
 * **Aggregated damages** - show the damages summed up over different areas, such as census blocks or neighborhoods. The areas will correspond to the aggregation areas that are shown in the [site](../site_tab.qmd) tab; these areas are specified at system setup. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
-* **Road flooding** - shows the water depth on the roads
+* **Road flooding** - shows the water depth on the roads.
 
 
 In addition to the four map layers, there is also the option to select an additional layer to view in the map window. This is found in the “Show Layer” drop-down menu. The specific layers available will depend on how the system was configured at setup, but could contain layers like income, social vulnerability index, or aggregation areas. These layers are often useful to visualize in combination with building level damages or flooding, to better understand who is being impacted in the scenario. 
@@ -60,19 +60,19 @@ When a risk scenario is selected, two radio buttons will appear: “Return perio
 When the "Risk" radio button is selected (see @fig-map_risk), two map layers can be viewed:
 
 * **Building damages** - these damages represent the annual expected damages. When zoomed out this layer is displayed as a heat map (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level expected annual damages.
-* **Aggregated damages** - this layer shows the expected annual damages (risk)summed up over different areas, such as census blocks or neighborhoods. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
+* **Aggregated damages** - this layer shows the expected annual damages (risk) summed up over different areas, such as census blocks or neighborhoods. The aggregation drop-down menu to the right of the “Aggregated damages” check box can be used to switch between different areas.
 
 There are a couple of special notes about the map visualization options for risk results compared to the return period or event scenario results:
 
 1. **Equity weighting**
 
-    Next to the Risk radio button there is a checkbox "Equity-weighted". Checking it allows users to see equity weighted risk estimates. Equity weights are calculated in FloodAdapt using information on income. These weights are then multiplied by the damages to derive the equity-weighted risk estimates. This visualization is only available at the same scale for which income data is availalbe. This will typically be census block level. @fig-map_equity shows the difference with and without equity weights, highlighting how it affects low-income and high-income neighborhoods. The low income neighborhoods are represented with blue stars and the high-income with yellow stars. Note that the equity-weighted risk for the low-income neighborhoods is higher than the risk when equity weights are not used. 
+    Next to the Risk radio button there is a checkbox "Equity-weighted". Checking it allows users to see equity-weighted risk estimates. Equity weights are calculated in FloodAdapt using information on income. These weights are then multiplied by the damages to derive the equity-weighted risk estimates. This visualization is only available at the same scale for which income data is availalbe. This will typically be census block level. @fig-map_equity shows the difference with and without equity weights, highlighting how it affects low-income and high-income neighborhoods. The low income neighborhoods are represented with blue stars and the high-income with yellow stars. Note that the equity-weighted risk for the low-income neighborhoods is higher than the risk when equity weights are not used. 
 
 2. **No flood maps** 
 
     In the case of risk results, the flood map and road flooding options are disabled because risk is an damage metric that is integrated over several different flood events, and does not correspond to any single flood event. 
 
-![**Aggregated risk map, without equity weighting on the left and with equity weighting on the right**](../../_static/images/output_risk_equity.png){width=100% fig-align=left #fig-map_equity}
+![**Aggregated risk map, without equity weighting on the left and with equity weighting on the right. The yellow stars indicate high-income areas and the blue stars indicate low-income areas. The equity-weighted risk is higher for the low-income neighborhoods than without equity weighting, providing a more equitable interpretation of the risk burden for lower-income areas**](../../_static/images/output_risk_equity.png){width=100% fig-align=left #fig-map_equity}
 
 
 In addition to the output map layers, there is also the option to select an additional layer to view in the map window. This is found in the “Show Layer” drop-down menu. The specific layers available will depend on how the system was configured at setup, but could contain layers like income, social vulnerability index, or aggregation areas. These layers are often useful to visualize in combination with building level (expected annual) damages, to better understand who is being impacted in the scenario.  
