@@ -8,8 +8,8 @@ import tomli
 import tomli_w
 from scipy.interpolate import interp1d
 
-from flood_adapt.api.static import read_database
-from flood_adapt.dbs_controller import Database
+# from flood_adapt.api.static import read_database
+# from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.tipping_points import (
     ITipPoint,
     TippingPointModel,
@@ -39,23 +39,38 @@ Outputs:
 """
 
 
+def ensure_database_loaded():
+    """Ensure that the Database class is available, importing it if not."""
+    try:
+        Database
+    except NameError:
+        # Delay the import until it's actually needed
+        from flood_adapt.dbs_controller import Database
+
+    return Database
+
+
 class TippingPoint(ITipPoint):
     """Class holding all information related to tipping points analysis."""
 
     def __init__(self):
+        self.Database = ensure_database_loaded()
         """Initiate function when object is created through file or dict options."""
-        self.site_toml_path = Path(Database().static_path) / "site" / "site.toml"
-        self.results_path = Database().output_path / "tipping_points"
+        self.site_toml_path = Path(self.Database().static_path) / "site" / "site.toml"
+        self.results_path = self.Database().output_path / "tipping_points"
         self.scenarios = {}
 
     def create_tp_obj(self):
+
         # Save tipping point object to the tipping_points folder and a toml file
-        if not (Database().input_path / "tipping_points" / self.attrs.name).exists():
-            (Database().input_path / "tipping_points" / self.attrs.name).mkdir(
+        if not (
+            self.Database().input_path / "tipping_points" / self.attrs.name
+        ).exists():
+            (self.Database().input_path / "tipping_points" / self.attrs.name).mkdir(
                 parents=True
             )
         self.save(
-            Database().input_path
+            self.Database().input_path
             / "tipping_points"
             / self.attrs.name
             / f"{self.attrs.name}.toml"
@@ -65,22 +80,23 @@ class TippingPoint(ITipPoint):
     def slr_projections(self, slr):
         """Create projections for sea level rise value."""
         new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
-        proj = Database().projections.get(self.attrs.projection)
+        proj = self.Database().projections.get(self.attrs.projection)
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
             value=slr, units=UnitTypesLength.meters
         )
         proj.save(
-            Database().input_path
+            self.Database().input_path
             / "projections"
             / new_projection_name
             / (new_projection_name + ".toml")
         )
+        # TODO: create a list for frotned to get them and show as a list
         return self
 
     def check_scenarios_exist(self, scenario_obj):
         db_list = []
         # check if the current scenario in the tipping point object already exists in the database
-        for db_scenario in Database().scenarios.list_objects()["objects"]:
+        for db_scenario in self.Database().scenarios.list_objects()["objects"]:
             if scenario_obj == db_scenario:
                 db_list.append(db_scenario.attrs.name)
         return db_list
@@ -108,30 +124,38 @@ class TippingPoint(ITipPoint):
         for scenario in scenarios.keys():
 
             scenario_obj = Scenario.load_dict(
-                scenarios[scenario], Database().input_path
+                scenarios[scenario], self.Database().input_path
             )
             scen_exists = self.check_scenarios_exist(scenario_obj)
 
             if scen_exists:
                 # make a dict with name and object
                 self.scenarios[scen_exists[0]] = {
-                    "name": scen_exists[0],
+                    "name": scenario_obj.attrs.name,
+                    "description": scenario_obj.attrs.description,
+                    "event": scenario_obj.attrs.event,
+                    "projection": scenario_obj.attrs.projection,
+                    "strategy": scenario_obj.attrs.strategy,
                     "object": scenario_obj,
                 }
             else:
-                Database().scenarios.save(scenario_obj)
+                self.Database().scenarios.save(scenario_obj)
                 self.scenarios[scenario_obj.attrs.name] = {
                     "name": scenario_obj.attrs.name,
+                    "description": scenario_obj.attrs.description,
+                    "event": scenario_obj.attrs.event,
+                    "projection": scenario_obj.attrs.projection,
+                    "strategy": scenario_obj.attrs.strategy,
                     "object": scenario_obj,
                 }
 
         self.attrs.scenarios = list(self.scenarios.keys())
         self.save(
-            filepath=Database().input_path
+            filepath=self.Database().input_path
             / "tipping_points"
             / self.attrs.name
             / f"{self.attrs.name}.toml"
-        )  # for later when we have a database_tp: TODO: Database().tipping_points.save(self)
+        )  # for later when we have a database_tp: TODO: self.Database().tipping_points.save(self)
 
     def run_tp_scenarios(self):
         """Run all scenarios to determine tipping points."""
@@ -158,8 +182,8 @@ class TippingPoint(ITipPoint):
     def scenario_has_run(self, scenario_obj):
         # TODO: once has_run is refactored (external) we change below to make it more direct
         for db_scenario, finished in zip(
-            Database().scenarios.list_objects()["objects"],
-            Database().scenarios.list_objects()["finished"],
+            self.Database().scenarios.list_objects()["objects"],
+            self.Database().scenarios.list_objects()["finished"],
         ):
             if scenario_obj == db_scenario and finished:
                 return True
@@ -331,20 +355,28 @@ class TippingPoint(ITipPoint):
         return attrs_1 == attrs_2
 
 
+def load_database(database_path: str, database_name: str, system_folder: str):
+    from flood_adapt.api.static import read_database
+    from flood_adapt.config import set_system_folder
+
+    # Call the read_database function with the provided path and name
+    database = read_database(database_path, database_name)
+    set_system_folder(system_folder)
+
+    return database
+
+
 # TODO: post processing stuff still to be done for frontend
 # make html & plots
 # write to file
 
 if __name__ == "__main__":
-    from flood_adapt.config import set_system_folder
+    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
+    database_path = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
+    database_name = "charleston_test"
 
-    database = read_database(
-        r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database",
-        "charleston_test",
-    )
-    set_system_folder(
-        r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
-    )
+    # Load the database
+    database = load_database(database_path, database_name, system_folder)
 
     tp_dict = {
         "name": "tipping_point_test",
@@ -364,5 +396,5 @@ if __name__ == "__main__":
     test_point.create_tp_scenarios()
     # run all scenarios
     test_point.run_tp_scenarios()
-
+    # plot results
     test_point.plot_results()

@@ -20,6 +20,7 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
+from flood_adapt.dbs_classes.dbs_tipping_point import DbsTippingPoint
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -60,6 +61,7 @@ class Database(IDatabase):
     _measures: DbsMeasure
     _projections: DbsProjection
     _benefits: DbsBenefit
+    _tipping_points: DbsTippingPoint
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # Singleton pattern
@@ -130,6 +132,7 @@ class Database(IDatabase):
         self._measures = DbsMeasure(self)
         self._projections = DbsProjection(self)
         self._benefits = DbsBenefit(self)
+        self._tipping_points = DbsTippingPoint(self)
 
         self._init_done = True
 
@@ -169,6 +172,10 @@ class Database(IDatabase):
     @property
     def benefits(self) -> DbsBenefit:
         return self._benefits
+
+    @property
+    def tipping_points(self) -> DbsTippingPoint:
+        return self._tipping_points
 
     def interp_slr(self, slr_scenario: str, year: float) -> float:
         r"""Interpolate SLR value and reference it to the SLR reference year from the site toml.
@@ -676,6 +683,7 @@ class Database(IDatabase):
         self.strategies = self._strategies.list_objects()
         self.scenarios = self._scenarios.list_objects()
         self.benefits = self._benefits.list_objects()
+        self.tipping_points = self._tipping_points.list_objects()
 
     def get_outputs(self) -> dict[str, Any]:
         """Return a dictionary with info on the outputs that currently exist in the database.
