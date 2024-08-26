@@ -5,10 +5,10 @@ filters:
 lightbox: auto
 ---
 
-The FloodAdapt [Output tab](#floodadapt-output-tab) displays flood and impact maps, timeseries of water levels at observation points, a tabulated summary of metrics, and a visual infographic for simulated scenarios to help users understand and evaluate their scenarios. The output for event scenarios and risk scenarios differs slightly, but output for both types of scenarios is accessible from the Output tab. FloodAdapt additionally places scenario output locally on your computer in an [Output folder](#output-folder) within your FloodAdapt database. 
+The FloodAdapt [Output tab](#floodadapt-output-tab) displays flood and impact maps, time series of water levels at observation points, a tabulated summary of metrics, and a visual infographic for simulated scenarios to help users understand and evaluate their scenarios. The output for event scenarios and risk scenarios differs slightly, but output for both types of scenarios is accessible from the Output tab. FloodAdapt additionally places scenario output locally on your computer in an [Output folder](#output-folder) within your FloodAdapt database. 
 
 ## FloodAdapt output tab
-The Output tab has a map window and below it a panel (see @fig-outputTab). The left section of the panel contains a scenario table with the scenarios that have been simulated. These can be sorted by name, date created, or by scenario components (event, projection, strategy). Selecting a scenario in this panel will load the output results for that scenario. The middle section of the panel contains different map visualization options, and the right section contains tabulated metrics. The collapsible frame on the Output tab can be used to view the scenario infographic (see @fig-infoG_event and @fig-infoG_risk). 
+The Output tab has a map window and below it a panel (see @fig-outputTab). The left section of the panel contains a scenario table with the scenarios that have been simulated. These can be sorted by name, date created, or by scenario components (event, projection, strategy). Selecting a scenario in this panel will load the output results for that scenario. The middle section of the panel contains different map visualization options, and the right section contains tabulated metrics. The collapsible frame on the Output tab can be used to view the scenario infographic (see @fig-infoG_event and @fig-infoG_risk). Note that the creation of the infographic is optional (specified at system setup). When an infographic is not configured for a site, the collapsible frame will display the documentation instead of the infographic. 
 
 ![**Output tab in FloodAdapt**](../../_static/images/output_tab.png){width=70% fig-align=left #fig-outputTab}
 
@@ -17,20 +17,20 @@ The Output tab has a map window and below it a panel (see @fig-outputTab). The l
 The infographic is visible in the map window’s collapsible frame. The user can view the infographic by clicking the little white triangle on the border of the frame to the right of the map window (see @fig-outputTab).
 :::
 
-The timeseries at the observation points can be viewed by clicking on the observation points in the map window (see @fig-outputObsPts). A graph window will pop up and show the modeled water level timeseries over the duration of the event. If one of the observation points is located at a water level gauge, the measured water levels will also be displayed. To make the timeseries popup disappear, click anywhere else in the map window. 
-
-![**Timeseries of water levels at observation points**](../../_static/images/output_observationPoints.png){width=70% fig-align=left #fig-outputObsPts}
-
-
 ### Metrics and infographic
-The metrics and infographic will contain different information for a risk scenario and an event scenario. This information is configured separately for event scenarios and risk scenarios at system set-up (see information on how the infometrics and infographic are configured in the [set-up guide](../../3_setup_guide/database.qmd)). @fig-infoG_event shows an example of the infographic for an event scenario and @fig-infoG_risk shows an example of the infographic for a risk scenario. The basic structure of the infographic, highlighted in the figures, is fixed but the information within that structure can be tailored at system setup.   
+The metrics and infographic will contain different information for a risk scenario and an event scenario. This information is configured separately for event scenarios and risk scenarios at system set-up (see information on how the infometrics and infographic are configured in the [setup guide](../../3_setup_guide/database.qmd)). @fig-infoG_event shows an example of the infographic for an event scenario and @fig-infoG_risk shows an example of the infographic for a risk scenario. The basic structure of the infographic, highlighted in the figures, is fixed but the information within that structure can be tailored at system setup.   
 
 ![**Infographic for an event scenario**](../../_static/images/output_infographic_event.png){width=70% fig-align=left #fig-infoG_event}
 
 ![**Infographic for a risk scenario**](../../_static/images/output_infographic_risk.png){width=70% fig-align=left #fig-infoG_risk}
 
+### Time series at observation points
+If observation points have been configured for a site (these are optional), the time series of modeled water levels at these points can be viewed by clicking on the observation points in the map window (see @fig-outputObsPts). A graph window will pop up and show the modeled water level time series over the duration of the event. If one of the observation points is located at a water level gauge, the measured water levels will also be displayed. To make the time series popup disappear, click anywhere else in the map window. 
+
+![**Time series of water levels at observation points**](../../_static/images/output_observationPoints.png){width=70% fig-align=left #fig-outputObsPts}
+
 ### Map visualization options for an event scenario
-When an event scenario is selected in the scenario panel, there are four map visualization options (see @fig-outputTab). Clicking the check boxes next to any of these four options will activate the corresponding layer in the map window.   
+When an event scenario is selected in the scenario panel, there are four map visualization options (see @fig-outputTab). Clicking the check boxes next to any of these four options will display the corresponding layer in the map window.   
 
 * **Flood map** - shows the extent and depth of flooding for the scenario. 
 * **Building damages** - displayed as a heat map when zoomed out (this helps identify which areas are interesting to look at in more detail). Zooming in transitions the heat map to a display of building-level damages.
@@ -70,7 +70,7 @@ There are a couple of special notes about the map visualization options for risk
 
 2. **No flood maps** 
 
-    In the case of risk results, the flood map and road flooding options are disabled because risk is an damage metric that is integrated over several different flood events, and does not correspond to any single flood event. 
+    In the case of risk results, the flood map and road flooding options are disabled because risk is a damage metric that is integrated over several different flood events, and does not correspond to any single flood event. 
 
 ![**Aggregated risk map, without equity weighting on the left and with equity weighting on the right. The yellow stars indicate high-income areas and the blue stars indicate low-income areas. The equity-weighted risk is higher for the low-income neighborhoods than without equity weighting, providing a more equitable interpretation of the risk burden for lower-income areas**](../../_static/images/output_risk_equity.png){width=100% fig-align=left #fig-map_equity}
 
@@ -81,13 +81,16 @@ In addition to the output map layers, there is also the option to select an addi
 ## Output folder
 The output from a simulated scenario is saved on a user's computer, aspiring to provide full access and transparency. This section will describe the output folder structure for both an event and a risk scenario. 
 
-@fig-folderStruct shows the folder structure of the FloodAdapt database and where within it the Output folder can be found. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. Within each site database, there will be three folders: Input, Static, and Output. The Static folder contains site-specific information that is prepared at system setup. The Input and Output folders are populated by FloodAdapt users via the FloodAdapt application. 
+:::{.callout-note}
+## Where can I find the output folder?
+@fig-folderStruct shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder. 
 
-![**Folder structure of FloodAdapt database, showing where the output folder is located**](../../_static/images/output_folderStructure.png){width=60% fig-align=left #fig-folderStruct}
+![**Location of the "output" folder within the FloodAdapt folder structure**](../../_static/images/output_folderStructure.png){width=20% fig-align=left #fig-folderStruct}
+:::
 
-The Output folders for the event scenarios and risk scenarios have mostly the same structure; they only differ in the output flood data. @fig-folderEvent shows the output structure for an Event scenario and @fig-folderRisk shows the output structure for a Risk scenario.
+The output folders for the event scenarios and risk scenarios have mostly the same structure; they only differ in the output flood data. @fig-folderEvent shows the output structure for an Event scenario and @fig-folderRisk shows the output structure for a Risk scenario.
 
-The Output folder contains a subfolder named "Sceanrios". Within this subfolder you will find one folder for each scenario that has been simulated. The name of the folder will be the name of the scenario. Each scenario folder will contain two subfolders: "Flooding" and "Impacts". It will also contain the infographic as an HTML file, a log file with details about the simulation, and the infometrics as CSV files; there will be one CSV for buildling-level metrics and one CSV per aggregation area (e.g. neighborhood or census block group) with aggregated metrics.
+The output folder contains a subfolder named "scenarios". Within this subfolder you will find one folder for each scenario that has been simulated. The name of the folder will be the name of the scenario. Each scenario folder will contain two subfolders: "Flooding" and "Impacts". It will also contain the infographic as an HTML file, a log file with details about the simulation, and the infometrics as CSV files; there will be one CSV for buildling-level metrics and one CSV per aggregation area (e.g. neighborhood or census block group) with aggregated metrics.
 
 The "Impacts" folder will contain multiple files: 
 
@@ -102,11 +105,11 @@ For the risk scenarios, the detailed impacts (CSV file) will have both return pe
 :::
 
 ### Output folder structure for an event scenario
-For an event scenario, the "Flooding" folder will contain a flood depth map as a GeoTiff file, a water level map as a NetCDF, and the water level timeseries for each observation point at the site, as HTML files (see @fig-folderEvent).  
+For an event scenario, the "Flooding" folder will contain a flood depth map as a GeoTIFF file, a water level map as a NetCDF, and (if observation points have been set up for the site) the water level time series for each observation point at the site, as HTML files (see @fig-folderEvent).  
 
-![**Folder structure of the Output folder for an event scenario**](../../_static/images/output_folder_event.png){width=60% fig-align=left #fig-folderEvent}
+![**Folder structure of the "output" folder for an event scenario**](../../_static/images/output_folder_event.png){width=60% fig-align=left #fig-folderEvent}
 
-### Output folder structure for an event scenario
-For a risk scenario, the "Flooding" folder will contain the return period flood maps as NetCDF files (see @fig-folderRisk). 
+### Output folder structure for a risk scenario
+For a risk scenario, the "Flooding" folder will contain the return period water level maps as NetCDF files and the water depth maps as GeoTIFFs (see @fig-folderRisk). 
 
-![**Folder structure of the Output folder for a risk scenario**](../../_static/images/output_folder_risk.png){width=60% fig-align=left #fig-folderRisk}
+![**Folder structure of the "output" folder for a risk scenario**](../../_static/images/output_folder_risk.png){width=60% fig-align=left #fig-folderRisk}
