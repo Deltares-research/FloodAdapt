@@ -1,0 +1,10 @@
+﻿Measure,Infiltration depth (feet),types
+Rainwater detention pond (dry pond),2.6,water_square
+Infiltration fields,2.6,water_square
+Water square,2.5,water_square
+Bioswale,1.1,"water_square, greening"
+Rainwater retention pond (wet pond),1,"water_square, greening"
+Hollow roads,0.3,"water_square, greening"
+Permeable pavement,0.3,"water_square, greening"
+Adding trees,0.2,"water_square, greening"
+Remove pavement to plant green,0.2,"water_square, greening"

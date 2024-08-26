@@ -223,7 +223,7 @@ class TideGaugeModel(BaseModel):
     name: Optional[Union[int, str]] = None
     description: Optional[str] = ""
     source: TideGaugeSource
-    ID: int  # This is the only attribute that is currently used in FA!
+    ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
     file: Optional[str] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
@@ -234,6 +234,11 @@ class TideGaugeModel(BaseModel):
             raise ValueError(
                 "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
             )
+        elif self.source == "noaa_coops" and self.ID is None:
+            raise ValueError(
+                "If `source` is 'noaa_coops' the id of the station should be provided with the attribute 'ID'."
+            )
+
         return self
 
 
