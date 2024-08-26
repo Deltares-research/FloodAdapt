@@ -25,7 +25,7 @@ body:
     id: task-list
     attributes:
       description: >
-        Please provide a list of tasks that need to be completed before this issue can be closed. 
+        Please provide a list of tasks that need to be completed before this issue can be closed.
       label: Task list
     validations:
       required: true

@@ -29,7 +29,7 @@ dependencies = [
     "cht-observations@ git+https://github.com/deltares/cht_observations.git",
     "cht-tide",
     "dask<2024.7.0", # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
-    "fiat-toolbox@ git+https://github.com/Deltares/fiat_toolbox",
+    "fiat-toolbox",
     "geojson",
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
@@ -51,10 +51,9 @@ dynamic = [
 dev = [
     "pytest",
     "pytest-cov",
-    "black      == 24.1.1",
-    "pre-commit == 3.7.1",
-    "ruff       == 0.4.8",
-    "typos      == 1.22.7",
+    "pre-commit == 3.8.0",
+    "ruff       == 0.5.5",
+    "typos      == 1.23.6",
 ]
 build = [
     "build",
@@ -121,6 +120,7 @@ ignore = [
 
     "E501",
     "E741",
+    "NPY201"
 ]
 fixable = [
     "I",
@@ -130,12 +130,6 @@ fixable = [
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.black]
-line-length = 88
-target-version = [
-    "py311",
-]
-
 [tool.pyright]
 reportDeprecated = true
 
@@ -143,6 +137,7 @@ reportDeprecated = true
 files.extend-exclude = [
     "*.js",
     "*.css",
+    "*.svg",
 ]
 files.ignore-hidden = true
 

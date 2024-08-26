@@ -69,9 +69,7 @@ class TestFiatAdapter:
         inds0 = exposure_template["Primary Object Type"] != "road"
         exp0 = exposure_template.loc[inds0, "Max Potential Damage: Structure"]
         eg = test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
-        pg = (
-            test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
-        )
+        pg = test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
         assert all(
             val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
             for val0, val1 in zip(exp0, exp1)

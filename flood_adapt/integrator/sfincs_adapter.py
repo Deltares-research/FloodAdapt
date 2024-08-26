@@ -35,7 +35,6 @@ from flood_adapt.object_model.site import Site
 
 
 class SfincsAdapter:
-
     def __init__(self, site: Site, model_root: Optional[str] = None):
         """Load overland sfincs model based on a root directory.
 
