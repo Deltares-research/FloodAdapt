@@ -104,9 +104,9 @@ class Benefit(IBenefit):
             scenarios_calc[scenario]["event"] = self.attrs.event_set
 
             if "current" in scenario:
-                scenarios_calc[scenario][
-                    "projection"
-                ] = self.attrs.current_situation.projection
+                scenarios_calc[scenario]["projection"] = (
+                    self.attrs.current_situation.projection
+                )
             elif "future" in scenario:
                 scenarios_calc[scenario]["projection"] = self.attrs.projection
 

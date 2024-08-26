@@ -106,9 +106,16 @@ website:
       - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
         contents:
-          - "3_setup_guide/database.qmd"
-          - "3_setup_guide/gui.qmd"
+          - section: "SFINCS Setup"
+            file: "3_setup_guide/SFINCS/index.qmd"
+            contents:
+            - "3_setup_guide/SFINCS/index.qmd"
+          - section: "Delft FIAT Setup"
+            file: "3_setup_guide/Delft_Fiat/index.qmd"
+            contents:
+            - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
           - "3_setup_guide/risk_analysis.qmd"
+          - "3_setup_guide/database.qmd"
       - section: "Updating FloodAdapt"
         file: "5_update_model/index.qmd"
         contents:

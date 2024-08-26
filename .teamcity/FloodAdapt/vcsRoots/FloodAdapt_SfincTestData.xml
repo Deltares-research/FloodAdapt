@@ -11,4 +11,3 @@
   <param name="user" value="%svn_buildserver_username%" />
   <param name="working-copy-format" value="1.8" />
 </vcs-root>
-
