@@ -28,3 +28,15 @@ def edit_tipping_point(tipping_point: ITipPoint) -> None:
 
 def delete_tipping_point(name: str) -> None:
     Database().tipping_points.delete(name)
+
+
+def create_tipping_point_scenarios(name: str) -> None:
+    Database().tipping_points.get(name).create_tp_scenarios()
+
+
+def run_tipping_point(name: str) -> None:
+    Database().tipping_points.get(name).run_tp_scenarios()
+
+
+def plot_tipping_point_results(name: str) -> None:
+    Database().tipping_points.get(name).plot_results()

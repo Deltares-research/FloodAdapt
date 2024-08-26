@@ -392,7 +392,9 @@ class Database(IDatabase):
 
     def plot_rainfall(
         self, event: IEvent, input_rainfall_df: pd.DataFrame = None
-    ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         if (
             event["rainfall"]["source"] == "shape"
             or event["rainfall"]["source"] == "timeseries"
@@ -472,7 +474,9 @@ class Database(IDatabase):
 
     def plot_river(
         self, event: IEvent, input_river_df: list[pd.DataFrame]
-    ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         if any(df.empty for df in input_river_df) and any(
             river["source"] == "timeseries" for river in event["river"]
         ):
@@ -541,7 +545,9 @@ class Database(IDatabase):
 
     def plot_wind(
         self, event: IEvent, input_wind_df: pd.DataFrame = None
-    ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+    ) -> (
+        str
+    ):  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
         if event["wind"]["source"] == "timeseries":
             df = input_wind_df
 
@@ -916,7 +922,9 @@ class Database(IDatabase):
                 path_new = self.scenarios.get_database_path(
                     get_input_path=False
                 ).joinpath(scenario.attrs.name, "Flooding")
-                if scn.direct_impacts.hazard.has_run_check():  # only copy results if the hazard model has actually finished and skip simulation folders
+                if (
+                    scn.direct_impacts.hazard.has_run_check()
+                ):  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         path_0,
                         path_new,
