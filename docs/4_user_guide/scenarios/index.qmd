@@ -4,7 +4,7 @@ filters:
   - lightbox
 lightbox: auto
 ---
-A scenario in FloodAdapt is a what-if situation and consists of a weather event, a climate or socio-economic projection, and a strategy. For example, a scenario could be “Hurricane Ian (event) with 1 foot of sea level rise (projection) with a floodwall (strategy)”. This scenario could be compared with “Hurricane Ian with 1 foot of sea level rise with no measures implemented” to see how well a floodwall would prevent flooding and damages for this event under future sea level rise. Once you have defined at least one event, projection, and strategy, you are ready to create a scenario. Users can evaluate both event scenarios and risk scenarios. For a risk scenario, users select an event set instead of a single event; event sets are created as part of system setup. 
+A scenario in FloodAdapt is a what-if situation and consists of a hydro-meteorological event, a climate and/or socio-economic projection, and a strategy. For example, a scenario could be “Hurricane Ian (event) with 1 foot of sea level rise (projection) with a floodwall (strategy)”. This scenario could be compared with “Hurricane Ian with 1 foot of sea level rise with no measures implemented” to see how well a floodwall would prevent flooding and damages for this event under future sea level rise. Once you have defined at least one event, projection, and strategy, you are ready to create a scenario. Users can evaluate both event scenarios and risk scenarios. For a risk scenario, users select an event set instead of a single event; event sets are created as part of system setup. 
 
 ::: {.callout-note}
 ## What is the difference between an event scenario and a risk scenario
@@ -16,11 +16,11 @@ For an event scenario FloodAdapt calculates the flooding and impacts for one sin
 **Coming soon**…watch a video for examples how different planning questions can be translated into FloodAdapt scenarios
 :::
 
-In the “Scenarios” tab (see @fig-scenarios) you will see an tabulated overview of any scenarios that have already been created. You can sort existing scenarios by name, date created, scenario component (event, project, or strategy), or run status (column "finished") which indicates whether the scenario has been run (True) or not (False). Next to the table there are buttons to add, edit, or delete scenarios. Note that scenarios can only be edited or deleted if they have not yet been run.
+In the “Scenarios” tab (see @fig-scenarios) you will see a tabulated overview of any scenarios that have already been created. You can sort existing scenarios by name, date created, scenario component (event, project, or strategy), or run status (column "finished") which indicates whether the scenario has been run (True) or not (False). Next to the table there are buttons to add, edit, or delete scenarios. Note that scenarios can only be edited or deleted if they have not yet been run.
 
 ![**Scenarios tab in FloodAdapt**](../../_static/images/scenarios_mainWindow.png){width=70% fig-align=left #fig-scenarios}
 
-To create a new scenario, click “Add scenario” to open the specification window (see @fig-scenariosSpecs). In this window there are three panels for each of your scenario ingredients: event, projection, and strategy. Select the desired event, projection, and strategy for your scenario. The scenario name will automatically be generated based on your choice. You can keep that name or overwrite it with your own preferred scenario name. When you have made your selection and are happy with the scenario name, click “OK” to add the scenario to the scenario window.
+To create a new scenario, click “Add scenario” to open the specification window (see @fig-scenariosSpecs). In this window there are three panels for each of your scenario ingredients: event, projection, and strategy. Select the desired event, projection, and strategy for your scenario. The scenario name will automatically be generated based on your choice. You can keep that name or overwrite it with your own preferred scenario name (no spaces or special characters); you can also enter an optional description. When you have made your selection and are happy with the scenario name, click “OK” to add the scenario to the scenario window.
 
 ![**Specifying a scenario in FloodAdapt, shown here for the scenario of Hurricane Ian with 1 foot of sea level rise and elevated homes**](../../_static/images/scenarios_specWindow.png){width=70% fig-align=left #fig-scenariosSpecs}
 
