@@ -594,9 +594,9 @@ class Database:
         # TODO check how this naming of output geoms should become more explicit!
         self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
         self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
-        self.site_attrs["fiat"][
-            "save_simulation"
-        ] = "False"  # default is not to save simulations
+        self.site_attrs["fiat"]["save_simulation"] = (
+            "False"  # default is not to save simulations
+        )
 
         # Add base flood elevation information
         if self.config.bfe:
@@ -967,9 +967,9 @@ class Database:
         # add site configs
         self.site_attrs["dem"] = {}
         self.site_attrs["dem"]["filename"] = fn
-        self.site_attrs["dem"][
-            "units"
-        ] = "meters"  # This is always in meters from SFINCS
+        self.site_attrs["dem"]["units"] = (
+            "meters"  # This is always in meters from SFINCS
+        )
 
     def update_fiat_elevation(self):
         """
@@ -1124,9 +1124,9 @@ class Database:
                     # Add tide_gauge information in site toml
                     self.site_attrs["tide_gauge"] = {}
                     # Mandatory fields
-                    self.site_attrs["tide_gauge"][
-                        "source"
-                    ] = self.config.tide_gauge.source
+                    self.site_attrs["tide_gauge"]["source"] = (
+                        self.config.tide_gauge.source
+                    )
                     self.site_attrs["tide_gauge"]["ID"] = int(station["id"])
                     # Extra fields
                     self.site_attrs["tide_gauge"]["name"] = station["name"]
@@ -1293,9 +1293,9 @@ class Database:
             self.site_attrs["slr"]["scenarios"]["file"] = new_file.relative_to(
                 self.static_path
             ).as_posix()
-            self.site_attrs["slr"]["scenarios"][
-                "relative_to_year"
-            ] = self.config.slr.scenarios.relative_to_year
+            self.site_attrs["slr"]["scenarios"]["relative_to_year"] = (
+                self.config.slr.scenarios.relative_to_year
+            )
 
     def add_obs_points(self):
         """
@@ -1345,12 +1345,10 @@ class Database:
         self.site_attrs["gui"]["mapbox_layers"] = self._get_bin_colors()
         # Derive bins from config max attributes
         fd_max = self.config.gui.max_flood_depth
-        self.site_attrs["gui"]["mapbox_layers"][
-            "flood_map_depth_min"
-        ] = 0  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
-        self.site_attrs["gui"]["mapbox_layers"][
-            "flood_map_zbmax"
-        ] = (
+        self.site_attrs["gui"]["mapbox_layers"]["flood_map_depth_min"] = (
+            0  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
+        )
+        self.site_attrs["gui"]["mapbox_layers"]["flood_map_zbmax"] = (
             -9999  # TODO How to define this?
         )  # mask areas with elevation lower than this (very negative = show all calculated flood depths)
         self.site_attrs["gui"]["mapbox_layers"]["flood_map_bins"] = [
@@ -1430,9 +1428,9 @@ class Database:
         ]  # TODO this could be an input?
         self.site_attrs["flood_frequency"] = {}
         self.site_attrs["flood_frequency"]["flooding_threshold"] = {}
-        self.site_attrs["flood_frequency"]["flooding_threshold"][
-            "value"
-        ] = 0  # TODO this could be an input?
+        self.site_attrs["flood_frequency"]["flooding_threshold"]["value"] = (
+            0  # TODO this could be an input?
+        )
         self.site_attrs["flood_frequency"]["flooding_threshold"]["units"] = (
             self.site_attrs["sfincs"]["floodmap_units"]
         )
