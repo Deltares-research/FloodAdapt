@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -467,7 +470,53 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Coming soon.</p>
+<p>A strategy in FloodAdapt refers to a combination of <a href="../../4_user_guide/measures/index.html">measures</a>. Users can define and name these strategies according to their own ideas and terminology. For example, a “business as usual” strategy could consist of no measures; a “protect” strategy could consist of floodwalls and levees, or an “adapt” strategy could consist of elevating, floodproofing, or buying out properties. Defining at least one strategy is mandatory in FloodAdapt to run a scenario.</p>
+<p>The “Strategies” tab (see <a href="#fig-strategies">Figure&nbsp;1</a>) contains an overview of the strategies that have already been created. You can select existing strategies in the left panel and in the right panel see the measures that are included in the strategy. The measures in the selected strategy also appear in the map window. If a description was added to the strategy when it was created, this will also appear to the right for the selected strategy. Next to the left panel there are buttons to add or delete strategies.</p>
+<div id="fig-strategies" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/strategies_mainWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Strategy tab in FloodAdapt"><img src="../../_static/images/strategies_mainWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Strategy tab in FloodAdapt</strong></figcaption>
+</figure>
+</div>
+<p>To create a new strategy, click “Add strategy”. A dialogue window opens up (see <a href="#fig-strategiesSpecs">Figure&nbsp;2</a>) within which you can choose the measures you want to include in your strategy. To add a measure to your strategy, select it in the left-hand panel and click the “Apply measure” button. You can do this multiple times until you have selected all the measures you want to include in the strategy. In the right-hand panel you see the collection of measures that have been selected. If you want to remove one of these, you can select it in the right-hand panel and click the “Remove measure” button. You can give your strategy a name; this cannot contain any special characters or spaces. You can then (optionally) give a description of your strategy for future reference. Once you have selected the measures in your strategy and provided a name, click “OK” and the strategy will be added to the strategy window.</p>
+<div id="fig-strategiesSpecs" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/strategies_specWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Adding a strategy in FloodAdapt"><img src="../../_static/images/strategies_specWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>Adding a strategy in FloodAdapt</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The “No-measure strategy”
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To create a no-measure strategy (also commonly referred to as “current situation” or “business as usual”), click “Add Strategy”, then simply name the strategy and do not select any measures and click “OK”. Note that a no-measure strategy may be built in with your starting database, as this is recommended during system setup.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Multiple building-level measures are not allowed on the same buildings
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When building a strategy, users are not permitted to apply multiple <a href="../../4_user_guide/measures/buildings.html">building-level measures</a> to the same buildings. This is because it wouldn’t make sense to elevate a home and then also buyout or floodproof the same home. If a user does build a strategy that would result in multiple buildling-level measures being applied to the same buildings, the user will get an error like the one shown below.</p>
+<div id="fig-strategiesError" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../../_static/images/strategies_errorWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Error warning when applying multiple building-level measures to the same buildings"><img src="../../_static/images/strategies_errorWindow.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>Error warning when applying multiple building-level measures to the same buildings</strong></figcaption>
+</figure>
+</div>
+</div>
+</div>
 
 
 
@@ -844,6 +893,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","descPosition":"bottom","closeEffect":"zoom","loop":true});</script>
 
 
 
