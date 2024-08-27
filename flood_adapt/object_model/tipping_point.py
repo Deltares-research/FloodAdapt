@@ -9,8 +9,6 @@ import tomli
 import tomli_w
 from scipy.interpolate import interp1d
 
-# from flood_adapt.api.static import read_database
-# from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.interface.tipping_points import (
     ITipPoint,
     TippingPointModel,
@@ -22,7 +20,7 @@ from flood_adapt.object_model.scenario import Scenario
 """
 This script implements a Tipping Point model to analyze the impact of sea level rise (SLR)
 on metrics such as population exposure, economic losses, etc.
-The model simulates scenarios based on varying SLR projections (for now) to identify tipping points 
+The model simulates scenarios based on varying SLR projections (for now) to identify tipping points
 where a metric exceeds a predefined threshold.
 
 Core Functionalities:
@@ -121,7 +119,6 @@ class TippingPoint(ITipPoint):
 
         # create subdirectories for each scenario and .toml files
         for scenario in scenarios.keys():
-
             scenario_obj = Scenario.load_dict(
                 scenarios[scenario], self.database.input_path
             )
@@ -159,9 +156,9 @@ class TippingPoint(ITipPoint):
         print("All scenarios checked and created successfully.")
 
     def run_tp_scenarios(self):
-        # TODO: add more strict if cluase below
+        # TODO: add more strict if clause below
         """Run all scenarios to determine tipping points."""
-        # Run create_tp_scenarios if scenarios arre {}
+        # Run create_tp_scenarios if scenarios are {}
         if not self.scenarios:
             self.create_tp_scenarios()
 
@@ -242,7 +239,6 @@ class TippingPoint(ITipPoint):
 
             # Check if the interpolated value is reasonable (not -inf, inf, NaN, etc.)
             if np.isfinite(interpolation_function(threshold)):
-
                 new_rows = pd.DataFrame(
                     {
                         "sea level": interpolation_function(threshold),
@@ -258,7 +254,6 @@ class TippingPoint(ITipPoint):
         return tp_results
 
     def prepare_tp_results(self):
-
         tp_path = self.results_path.joinpath(self.attrs.name)
         # Save results - make directory if it doesn't exist
         if not tp_path.is_dir():
@@ -380,8 +375,8 @@ def load_database(database_path: str, database_name: str, system_folder: str):
 # write to file
 
 if __name__ == "__main__":
-    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
-    database_path = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
+    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database\\system"
+    database_path = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database"
     database_name = "charleston_test"
 
     # Load the database
