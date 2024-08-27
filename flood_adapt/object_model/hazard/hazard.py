@@ -25,6 +25,7 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
@@ -51,6 +52,7 @@ class Hazard:
     event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
+    site: ISite
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
@@ -697,7 +699,7 @@ class Hazard:
         # Save flood map paths in object
         self._get_flood_map_path()
 
-    def _get_flood_map_path(self):
+    def _get_flood_map_path(self) -> Path:
         """_summary_."""
         results_path = self.results_dir
         mode = self.event_mode
@@ -711,6 +713,7 @@ class Hazard:
                 map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
         self.flood_map_path = map_fn
+        return map_fn
 
     def write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
