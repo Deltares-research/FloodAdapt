@@ -957,7 +957,14 @@ class Database(IDatabase):
             )
 
     def cleanup(self) -> None:
-        """Remove any unfinished/crashed scenario output."""
+        """
+        Remove corrupted scenario output.
+
+        This method removes any scenario output that:
+            - is corrupted due to unfinished runs
+            - does not have a corresponding input
+
+        """
         scn_input_path = self.scenarios.get_database_path()
         scn_output_path = self.scenarios.get_database_path(get_input_path=False)
         if not scn_output_path.is_dir():
