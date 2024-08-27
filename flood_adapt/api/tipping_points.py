@@ -15,7 +15,7 @@ def get_tipping_point(name: str) -> ITipPoint:
 
 
 def create_tipping_point(attrs: dict[str, Any]) -> ITipPoint:
-    return TippingPoint.load_dict(attrs, Database().input_path)
+    return TippingPoint.load_dict(attrs)
 
 
 def save_tipping_point(tipping_point: ITipPoint) -> None:

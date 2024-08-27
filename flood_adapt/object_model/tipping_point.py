@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Union
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import tomli
@@ -42,50 +43,48 @@ Outputs:
 def ensure_database_loaded():
     """Ensure that the Database class is available, importing it if not."""
     try:
-        Database
+        Database()
     except NameError:
         # Delay the import until it's actually needed
         from flood_adapt.dbs_controller import Database
 
-    return Database
+    return Database()
 
 
 class TippingPoint(ITipPoint):
     """Class holding all information related to tipping points analysis."""
 
     def __init__(self):
-        self.Database = ensure_database_loaded()
+        self.database = ensure_database_loaded()
         """Initiate function when object is created through file or dict options."""
-        self.site_toml_path = Path(self.Database().static_path) / "site" / "site.toml"
-        self.results_path = self.Database().output_path / "tipping_points"
+        self.site_toml_path = Path(self.database.static_path) / "site" / "site.toml"
+        self.results_path = self.database.output_path / "tipping_points"
         self.scenarios = {}
 
-    def create_tp_obj(self):
+    # def create_tp_obj(self):
 
-        # Save tipping point object to the tipping_points folder and a toml file
-        if not (
-            self.Database().input_path / "tipping_points" / self.attrs.name
-        ).exists():
-            (self.Database().input_path / "tipping_points" / self.attrs.name).mkdir(
-                parents=True
-            )
-        self.save(
-            self.Database().input_path
-            / "tipping_points"
-            / self.attrs.name
-            / f"{self.attrs.name}.toml"
-        )
-        return self
+    #     # Save tipping point object to the tipping_points folder and a toml file
+    #     if not (self.database.input_path / "tipping_points" / self.attrs.name).exists():
+    #         (self.database.input_path / "tipping_points" / self.attrs.name).mkdir(
+    #             parents=True
+    #         )
+    #     self.save(
+    #         self.database.input_path
+    #         / "tipping_points"
+    #         / self.attrs.name
+    #         / f"{self.attrs.name}.toml"
+    #     )
+    #     return self
 
     def slr_projections(self, slr):
         """Create projections for sea level rise value."""
         new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
-        proj = self.Database().projections.get(self.attrs.projection)
+        proj = self.database.projections.get(self.attrs.projection)
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
             value=slr, units=UnitTypesLength.meters
         )
         proj.save(
-            self.Database().input_path
+            self.database.input_path
             / "projections"
             / new_projection_name
             / (new_projection_name + ".toml")
@@ -96,14 +95,14 @@ class TippingPoint(ITipPoint):
     def check_scenarios_exist(self, scenario_obj):
         db_list = []
         # check if the current scenario in the tipping point object already exists in the database
-        for db_scenario in self.Database().scenarios.list_objects()["objects"]:
+        for db_scenario in self.database.scenarios.list_objects()["objects"]:
             if scenario_obj == db_scenario:
                 db_list.append(db_scenario.attrs.name)
         return db_list
 
     def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value inside the tipping_point folder."""
-        self.create_tp_obj()
+        # self.create_tp_obj()
         # create projections based on SLR values
         for i, slr in enumerate(self.attrs.sealevelrise):
             self.slr_projections(slr)
@@ -124,7 +123,7 @@ class TippingPoint(ITipPoint):
         for scenario in scenarios.keys():
 
             scenario_obj = Scenario.load_dict(
-                scenarios[scenario], self.Database().input_path
+                scenarios[scenario], self.database.input_path
             )
             scen_exists = self.check_scenarios_exist(scenario_obj)
 
@@ -139,7 +138,7 @@ class TippingPoint(ITipPoint):
                     "object": scenario_obj,
                 }
             else:
-                self.Database().scenarios.save(scenario_obj)
+                self.database.scenarios.save(scenario_obj)
                 self.scenarios[scenario_obj.attrs.name] = {
                     "name": scenario_obj.attrs.name,
                     "description": scenario_obj.attrs.description,
@@ -150,15 +149,22 @@ class TippingPoint(ITipPoint):
                 }
 
         self.attrs.scenarios = list(self.scenarios.keys())
-        self.save(
-            filepath=self.Database().input_path
-            / "tipping_points"
-            / self.attrs.name
-            / f"{self.attrs.name}.toml"
-        )  # for later when we have a database_tp: TODO: self.Database().tipping_points.save(self)
+        # self.save(
+        #     filepath=self.database.input_path
+        #     / "tipping_points"
+        #     / self.attrs.name
+        #     / f"{self.attrs.name}.toml"
+        # )  # for later when we have a database_tp: TODO:
+        # self.database.tipping_points.save(self, overwrite=True)
+        print("All scenarios checked and created successfully.")
 
     def run_tp_scenarios(self):
+        # TODO: add more strict if cluase below
         """Run all scenarios to determine tipping points."""
+        # Run create_tp_scenarios if scenarios arre {}
+        if not self.scenarios:
+            self.create_tp_scenarios()
+
         for name, scenario in self.scenarios.items():
             scenario_obj = scenario["object"]
             # commented out to run every scenario - TODO: uncomment if you want to skip scenarios once
@@ -178,12 +184,13 @@ class TippingPoint(ITipPoint):
 
         # prepare the csv file for the pathway generator
         self.prepare_tp_results()
+        print("All scenarios run successfully.")
 
     def scenario_has_run(self, scenario_obj):
         # TODO: once has_run is refactored (external) we change below to make it more direct
         for db_scenario, finished in zip(
-            self.Database().scenarios.list_objects()["objects"],
-            self.Database().scenarios.list_objects()["finished"],
+            self.database.scenarios.list_objects()["objects"],
+            self.database.scenarios.list_objects()["finished"],
         ):
             if scenario_obj == db_scenario and finished:
                 return True
@@ -233,17 +240,20 @@ class TippingPoint(ITipPoint):
             # Create a linear interpolation function
             interpolation_function = interp1d(y, x, fill_value="extrapolate")
 
-            new_rows = pd.DataFrame(
-                {
-                    "sea level": interpolation_function(threshold),
-                    "strategy": valid_data.iloc[0]["strategy"],
-                    "Metric": metric_name.value,
-                    "Value": threshold,
-                    "ATP": "True",
-                },
-                index=[0],
-            )
-            tp_results = pd.concat([tp_results, new_rows], ignore_index=True)
+            # Check if the interpolated value is reasonable (not -inf, inf, NaN, etc.)
+            if np.isfinite(interpolation_function(threshold)):
+
+                new_rows = pd.DataFrame(
+                    {
+                        "sea level": interpolation_function(threshold),
+                        "strategy": valid_data.iloc[0]["strategy"],
+                        "Metric": metric_name.value,
+                        "Value": threshold,
+                        "ATP": "True",
+                    },
+                    index=[0],
+                )
+                tp_results = pd.concat([tp_results, new_rows], ignore_index=True)
         tp_results = tp_results.sort_values(by=["Metric", "sea level"])
         return tp_results
 
@@ -325,15 +335,14 @@ class TippingPoint(ITipPoint):
 
             fig.show()
 
-    ### standard functions ###
+    @staticmethod
     def load_file(filepath: Union[str, Path]) -> "TippingPoint":
         """Create risk event from toml file."""
-        obj = TippingPoint()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = TippingPointModel.model_validate(toml)
-        return obj
+        return TippingPoint.load_dict(toml)
 
+    @staticmethod
     def load_dict(dct: Union[str, Path]) -> "TippingPoint":
         """Create risk event from toml file."""
         obj = TippingPoint()
@@ -387,7 +396,7 @@ if __name__ == "__main__":
         "sealevelrise": [0.5, 1.0, 1.5, 2],
         "tipping_point_metric": [
             ("TotalDamageEvent", 130074525.0, "greater"),
-            ("DisplacedHighVulnerability", 1000, "greater"),
+            ("DisplacedHighVulnerability", 900, "greater"),
         ],
     }
     # load
@@ -398,3 +407,5 @@ if __name__ == "__main__":
     test_point.run_tp_scenarios()
     # plot results
     test_point.plot_results()
+    # TODO TEST!
+    # self.database.tipping_points.get(self.attrs.name).run_tp_scenarios()
