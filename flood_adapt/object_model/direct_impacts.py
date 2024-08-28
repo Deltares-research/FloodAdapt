@@ -25,7 +25,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
 
 # from flood_adapt.object_model.scenario import ScenarioModel
-from flood_adapt.object_model.utils import cd, finished_file_exists, write_finished_file
+from flood_adapt.object_model.utils import cd
 
 
 class DirectImpacts:
@@ -65,7 +65,7 @@ class DirectImpacts:
         bool
             _description_
         """
-        return finished_file_exists(self.impacts_path)
+        return self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def fiat_has_run_check(self) -> bool:
         """Check if fiat has run as expected.
@@ -75,7 +75,15 @@ class DirectImpacts:
         boolean
             True if fiat has run, False if something went wrong
         """
-        return finished_file_exists(self.fiat_path)
+        log_file = self.fiat_path.joinpath("fiat.log")
+        if not log_file.exists():
+            return False
+        try:
+            with open(log_file, "r", encoding="cp1252") as f:
+                return "Geom calculation are done!" in f.read()
+        except Exception as e:
+            self._logger.error(f"Error while checking if FIAT has run: {e}")
+            return False
 
     def set_socio_economic_change(self, projection: str) -> None:
         """Set the SocioEconomicChange object of the scenario.
@@ -134,9 +142,6 @@ class DirectImpacts:
         self._logger.info("Post-processing impact models...")
         # Preprocess all impact model input
         self.postprocess_fiat()
-
-        # Write finished file to indicate that direct impacts have been run
-        write_finished_file(self.impacts_path)
         self._logger.info("Impact models post-processing complete!")
 
     def preprocess_fiat(self):
@@ -261,9 +266,6 @@ class DirectImpacts:
                     check=True,
                     shell=True,
                 )
-        # Indicator that direct impacts have run
-        if process.returncode == 0:
-            write_finished_file(self.fiat_path)
 
         return process.returncode
 
@@ -314,7 +316,6 @@ class DirectImpacts:
                 shutil.rmtree(self.fiat_path)
             except OSError as e_info:
                 self._logger.warning(f"{e_info}\nCould not delete {self.fiat_path}.")
-        write_finished_file(self.results_path)
 
     def _create_roads(self, fiat_results_df):
         self._logger.info("Saving road impacts...")
