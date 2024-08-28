@@ -137,9 +137,19 @@ class Database(IDatabase):
 
         self._init_done = True
 
-    def reset(self):
+    def shutdown(self):
         self._instance = None
         self._init_done = False
+        self.database_path = None
+        self.database_name = None
+
+        self._static = None
+        self._events = None
+        self._scenarios = None
+        self._strategies = None
+        self._measures = None
+        self._projections = None
+        self._benefits = None
 
     # Property methods
     @property

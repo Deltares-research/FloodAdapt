@@ -146,7 +146,7 @@ def make_db_fixture(scope):
         yield dbs
 
         # Teardown
-        dbs.reset()
+        dbs.shutdown()
         if clean:
             restore_db_from_snapshot()
 
