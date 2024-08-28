@@ -15,7 +15,6 @@ from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
-from flood_adapt.object_model.utils import finished_file_exists, write_finished_file
 
 
 class Benefit(IBenefit):
@@ -25,6 +24,7 @@ class Benefit(IBenefit):
     database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
+    has_run: bool = False
 
     def _init(self):
         """Initialize function called when object is created through the load_file or load_dict methods."""
@@ -33,7 +33,7 @@ class Benefit(IBenefit):
             "output", "Benefits", self.attrs.name
         )
         self.check_scenarios()
-
+        self.has_run = self.has_run_check()
         if self.has_run:
             self.get_output()
         # Get site config
@@ -44,10 +44,6 @@ class Benefit(IBenefit):
         # Get monetary units
         self.unit = self.site_info.attrs.fiat.damage_unit
 
-    @property
-    def has_run(self):
-        return self.has_run_check()
-
     def has_run_check(self) -> bool:
         """Check if the benefit analysis has already been run.
 
@@ -56,7 +52,15 @@ class Benefit(IBenefit):
         bool
             True if the analysis has already been run, else False
         """
-        return finished_file_exists(self.results_path)
+        # Output files to check
+        results_toml = self.results_path.joinpath("results.toml")
+        results_csv = self.results_path.joinpath("time_series.csv")
+        results_html = self.results_path.joinpath("benefits.html")
+
+        check = all(
+            result.exists() for result in [results_toml, results_csv, results_html]
+        )
+        return check
 
     def get_output(self) -> dict:
         """Read the benefit analysis results and the path of the html output.
@@ -66,12 +70,12 @@ class Benefit(IBenefit):
         dict
             results of benefit calculation
         """
-        results_toml = self.results_path.joinpath("results.toml")
-        results_html = self.results_path.joinpath("benefits.html")
-        if not (results_toml.exists() and results_html.exists()):
+        if not self.has_run_check():
             raise RuntimeError(
                 f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
             )
+        results_toml = self.results_path.joinpath("results.toml")
+        results_html = self.results_path.joinpath("benefits.html")
         with open(results_toml, mode="rb") as fp:
             self.results = tomli.load(fp)
         self.results["html"] = str(results_html)
@@ -132,9 +136,10 @@ class Benefit(IBenefit):
             ]
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                scenarios_calc[scenario]["scenario run"] = (
-                    created[0].init_object_model().direct_impacts.has_run
-                )
+                if created[0].init_object_model().direct_impacts.has_run:
+                    scenarios_calc[scenario]["scenario run"] = True
+                else:
+                    scenarios_calc[scenario]["scenario run"] = False
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False
@@ -188,10 +193,8 @@ class Benefit(IBenefit):
         # Run aggregation benefits
         self.cba_aggregation()
         # Updates results
+        self.has_run_check()
         self.get_output()
-
-        # write finished file to indicate that the scenario has been run
-        write_finished_file(self.results_path)
 
     def cba(self):
         """Cost-benefit analysis for the whole study area."""
