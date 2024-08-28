@@ -11,3 +11,14 @@ def cd(newdir: Path):
         yield
     finally:
         os.chdir(prevdir)
+
+
+def write_finished_file(path: Path):
+    if not path.exists():
+        path.mkdir(parents=True)
+    with open(Path(path) / "finished.txt", "w") as f:
+        f.write("run finished")
+
+
+def finished_file_exists(path: Path):
+    return (Path(path) / "finished.txt").exists()

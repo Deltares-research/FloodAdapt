@@ -10,6 +10,7 @@ from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
 from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.utils import finished_file_exists, write_finished_file
 
 
 class Scenario(IScenario):
@@ -93,6 +94,13 @@ class Scenario(IScenario):
             self._logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
+
+        # write finished file to indicate that the scenario has been run
+        write_finished_file(self.results_path)
+
+    def has_run_check(self):
+        """Check if the scenario has been run."""
+        return finished_file_exists(self.results_path)
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):
