@@ -643,8 +643,12 @@ class Database(IDatabase):
                 )
 
                 scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
-
-                self._scenarios.save(scenario_obj)
+                # Check if scenario already exists
+                if (
+                    scenario_obj.attrs.name
+                    not in self.scenarios._get_object_list()["name"]
+                ):
+                    self._scenarios.save(scenario_obj)
 
         # Update the scenarios check
         benefit.check_scenarios()
