@@ -1,8 +1,12 @@
 import shutil
+from os import listdir
 from pathlib import Path
 
+from flood_adapt.api.static import read_database
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.site import Site
+
+from .conftest import DATABASE_PATH, DATABASE_ROOT, SITE_NAME
 
 
 def test_database_controller(test_db):
@@ -49,3 +53,109 @@ def test_projection_plot_slr(test_db):
     html_file_loc = test_db.plot_slr_scenarios()
     print(html_file_loc)
     assert Path(html_file_loc).is_file()
+
+
+def test_cleanup_NoInput_RemoveOutput():
+    # Arrange
+    input_path = DATABASE_PATH / "input" / "scenarios" / "test123"
+    if input_path.exists():
+        shutil.rmtree(input_path)
+
+    output_path = DATABASE_PATH / "output" / "scenarios" / "test123"
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path / "test123.txt", "w") as f:
+        f.write("run finished")
+
+    # Act
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Assert
+    assert not output_path.exists()
+
+    # Cleanup singleton
+    dbs.shutdown()
+
+
+def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
+    # Arrange
+    input_path = DATABASE_PATH / "input" / "scenarios"
+    output_path = DATABASE_PATH / "output" / "scenarios"
+
+    scenario_name = listdir(input_path)[0]
+    input_dir = input_path / scenario_name
+    output_dir = output_path / scenario_name
+
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True)
+
+    with open(output_dir / "test123.txt", "w") as f:
+        f.write("run not finished")
+
+    # Act
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Assert
+    assert input_dir.exists()
+    assert not output_dir.exists()
+
+    # Cleanup singleton
+    dbs.shutdown()
+
+
+def test_shutdown_AfterShutdown_VarsAreNone():
+    # Arrange
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Act
+    dbs.shutdown()
+
+    # Assert
+    assert dbs.__class__._instance is None
+    assert dbs._init_done is False
+    assert dbs.database_path is None
+    assert dbs.database_name is None
+    assert dbs.base_path is None
+    assert dbs.input_path is None
+    assert dbs.static_path is None
+    assert dbs.output_path is None
+    assert dbs._site is None
+    assert dbs.static_sfincs_model is None
+    assert dbs._logger is None
+    assert dbs._static is None
+    assert dbs._events is None
+    assert dbs._scenarios is None
+    assert dbs._strategies is None
+    assert dbs._measures is None
+    assert dbs._projections is None
+    assert dbs._benefits is None
+
+
+def test_shutdown_AfterShutdown_CanReadNewDatabase():
+    # Arrange
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Act
+    dbs.shutdown()
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Assert
+    assert dbs.__class__._instance is not None
+    assert dbs._init_done
+    assert dbs.database_path is not None
+    assert dbs.database_name is not None
+    assert dbs.base_path is not None
+    assert dbs.input_path is not None
+    assert dbs.static_path is not None
+    assert dbs.output_path is not None
+    assert dbs._site is not None
+    assert dbs.static_sfincs_model is not None
+    assert dbs._logger is not None
+    assert dbs._static is not None
+    assert dbs._events is not None
+    assert dbs._scenarios is not None
+    assert dbs._strategies is not None
+    assert dbs._measures is not None
+    assert dbs._projections is not None
+    assert dbs._benefits is not None
