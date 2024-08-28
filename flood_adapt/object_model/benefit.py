@@ -24,7 +24,10 @@ class Benefit(IBenefit):
     database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
-    has_run: bool = False
+
+    @property
+    def has_run(self) -> bool:
+        return self.has_run_check()
 
     def _init(self):
         """Initialize function called when object is created through the load_file or load_dict methods."""
@@ -193,7 +196,6 @@ class Benefit(IBenefit):
         # Run aggregation benefits
         self.cba_aggregation()
         # Updates results
-        self.has_run_check()
         self.get_output()
 
     def cba(self):
