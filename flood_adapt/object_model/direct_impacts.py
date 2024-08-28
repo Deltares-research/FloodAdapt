@@ -256,6 +256,7 @@ class DirectImpacts:
                 process = subprocess.run(
                     f'"{settings.fiat_path}" run settings.toml',
                     stdout=log_handler,
+                    env={},  # need environment variables from runtime hooks
                     check=True,
                     shell=True,
                 )
