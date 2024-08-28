@@ -143,3 +143,7 @@ files.ignore-hidden = true
 
 [tool.typos.default.extend-words]
 strat = "strat"
+waring = "waring"
+guitares = "guitares"
+datas = "datas"
+Stichting = "Stichting"
