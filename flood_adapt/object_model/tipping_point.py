@@ -17,26 +17,6 @@ from flood_adapt.object_model.interface.tipping_points import (
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
 
-"""
-This script implements a Tipping Point model to analyze the impact of sea level rise (SLR)
-on metrics such as population exposure, economic losses, etc.
-The model simulates scenarios based on varying SLR projections (for now) to identify tipping points
-where a metric exceeds a predefined threshold.
-
-Core Functionalities:
-- Creates projections for different SLR values.
-- Iteratively runs simulations to determine tipping points for specified metrics.
-- Saves results and tipping point data in a structured format for analysis.
-
-Inputs:
-- List of sea level rise values specifying different scenario projections.
-- Dictionary detailing the tipping point conditions including metric name, value, unit, and type.
-
-Outputs:
-- Results for each scenario indicating if a tipping point is reached.
-- Compiled results are saved as CSV files.
-"""
-
 
 def ensure_database_loaded():
     """Ensure that the Database class is available, importing it if not."""
@@ -54,25 +34,9 @@ class TippingPoint(ITipPoint):
 
     def __init__(self):
         self.database = ensure_database_loaded()
-        """Initiate function when object is created through file or dict options."""
         self.site_toml_path = Path(self.database.static_path) / "site" / "site.toml"
         self.results_path = self.database.output_path / "tipping_points"
         self.scenarios = {}
-
-    # def create_tp_obj(self):
-
-    #     # Save tipping point object to the tipping_points folder and a toml file
-    #     if not (self.database.input_path / "tipping_points" / self.attrs.name).exists():
-    #         (self.database.input_path / "tipping_points" / self.attrs.name).mkdir(
-    #             parents=True
-    #         )
-    #     self.save(
-    #         self.database.input_path
-    #         / "tipping_points"
-    #         / self.attrs.name
-    #         / f"{self.attrs.name}.toml"
-    #     )
-    #     return self
 
     def slr_projections(self, slr):
         """Create projections for sea level rise value."""
@@ -87,7 +51,6 @@ class TippingPoint(ITipPoint):
             / new_projection_name
             / (new_projection_name + ".toml")
         )
-        # TODO: create a list for frotned to get them and show as a list
         return self
 
     def check_scenarios_exist(self, scenario_obj):
@@ -100,13 +63,10 @@ class TippingPoint(ITipPoint):
 
     def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value inside the tipping_point folder."""
-        # self.create_tp_obj()
-        # create projections based on SLR values
         for i, slr in enumerate(self.attrs.sealevelrise):
             self.slr_projections(slr)
             self.attrs.sealevelrise[i] = str(slr).replace(".", "")
 
-        # crete scenarios for each SLR value
         scenarios = {
             f"slr_{slr}": {
                 "name": f"slr_{slr}",
@@ -125,7 +85,6 @@ class TippingPoint(ITipPoint):
             scen_exists = self.check_scenarios_exist(scenario_obj)
 
             if scen_exists:
-                # make a dict with name and object
                 self.scenarios[scen_exists[0]] = {
                     "name": scenario_obj.attrs.name,
                     "description": scenario_obj.attrs.description,
@@ -146,25 +105,17 @@ class TippingPoint(ITipPoint):
                 }
 
         self.attrs.scenarios = list(self.scenarios.keys())
-        # self.save(
-        #     filepath=self.database.input_path
-        #     / "tipping_points"
-        #     / self.attrs.name
-        #     / f"{self.attrs.name}.toml"
-        # )  # for later when we have a database_tp: TODO:
-        # self.database.tipping_points.save(self, overwrite=True)
         print("All scenarios checked and created successfully.")
 
     def run_tp_scenarios(self):
         # TODO: add more strict if clause below
         """Run all scenarios to determine tipping points."""
-        # Run create_tp_scenarios if scenarios are {}
         if not self.scenarios:
             self.create_tp_scenarios()
 
         for name, scenario in self.scenarios.items():
             scenario_obj = scenario["object"]
-            # commented out to run every scenario - TODO: uncomment if you want to skip scenarios once
+            # IMPORTANT: commented out to run every scenario - uncomment if you want to skip scenarios once tipping point is reached (decision pending on which direction to pursue)
             # if self.attrs.status == TippingPointStatus.reached:
             #     self.scenarios[name]["tipping point reached"] = True
             #     continue
@@ -172,14 +123,12 @@ class TippingPoint(ITipPoint):
             if not self.scenario_has_run(scenario_obj):
                 scenario_obj.run()
 
-            # Check the tipping point status
             if self.check_tipping_point(scenario_obj):
                 self.attrs.status = TippingPointStatus.reached
                 self.scenarios[name]["tipping point reached"] = True
             else:
                 self.scenarios[name]["tipping point reached"] = False
 
-        # prepare the csv file for the pathway generator
         self.prepare_tp_results()
         print("All scenarios run successfully.")
 
@@ -201,14 +150,13 @@ class TippingPoint(ITipPoint):
             ),
             index_col=0,
         )
-        # add to self.scenarios the results of the value metric for the given tipping point metric
+
         for metric in self.attrs.tipping_point_metric:
             self.scenarios[scenario.attrs.name][f"{metric[0]}_value"] = info_df.loc[
                 metric[0], "Value"
             ]
 
-        # if any tipping point is reached, return True
-        # TODO: maybe change to different approach if more than one tipping
+        # TODO: maybe change to a different approach if more than one tipping
         # point is being assessed (instead of any, maybe you want to check
         # which TPs are reached and return a dict with the results)
         return any(
@@ -234,7 +182,6 @@ class TippingPoint(ITipPoint):
             x = valid_data["sea level"]
             y = valid_data["Value"]
 
-            # Create a linear interpolation function
             interpolation_function = interp1d(y, x, fill_value="extrapolate")
 
             # Check if the interpolated value is reasonable (not -inf, inf, NaN, etc.)
@@ -255,24 +202,19 @@ class TippingPoint(ITipPoint):
 
     def prepare_tp_results(self):
         tp_path = self.results_path.joinpath(self.attrs.name)
-        # Save results - make directory if it doesn't exist
         if not tp_path.is_dir():
             tp_path.mkdir(parents=True)
 
-        # Convert the scenarios dictionary to a DataFrame
         tp_results = pd.DataFrame.from_dict(self.scenarios, orient="index").reset_index(
             drop=True
         )
 
-        # Add 'sea level' column with hardcoded conversion
         tp_results["sea level"] = [
             float(i) / 10 for i in self.attrs.sealevelrise
-        ]  # TODO: fix later if needed
+        ]  # TODO: fix later if needed - quick solution dividing by 10
 
-        # Add 'strategy' column
         tp_results["strategy"] = self.attrs.strategy
 
-        # Melt the DataFrame to long format
         tp_results_long = pd.melt(
             tp_results,
             id_vars=["sea level", "strategy"],
@@ -281,15 +223,10 @@ class TippingPoint(ITipPoint):
             value_name="Value",
         )
 
-        # Clean up the 'Metric' column
         tp_results_long["Metric"] = tp_results_long["Metric"].str.replace("_value", "")
-
-        # Calculate the sea level at the tipping point threshold
         tp_results_long = self.calculate_sea_level_at_threshold(tp_results_long)
-
         tp_results_long.to_csv(tp_path / "tipping_point_results.csv")
 
-    # create a function that plots the results from tp_path / "tipping_point_results.csv" against the SLR values
     def plot_results(self):
         tp_path = self.results_path.joinpath(self.attrs.name)
         tp_results = pd.read_csv(tp_path / "tipping_point_results.csv")
@@ -360,20 +297,17 @@ class TippingPoint(ITipPoint):
 
 
 def load_database(database_path: str, database_name: str, system_folder: str):
+    # Call the read_database function with the provided path and name
     from flood_adapt.api.static import read_database
     from flood_adapt.config import set_system_folder
 
-    # Call the read_database function with the provided path and name
     database = read_database(database_path, database_name)
     set_system_folder(system_folder)
 
     return database
 
 
-# TODO: post processing stuff still to be done for frontend
-# make html & plots
-# write to file
-
+# I am keeping this for quick access to debug until review is done. Then we delete it.
 if __name__ == "__main__":
     system_folder = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database\\system"
     database_path = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database"
@@ -402,5 +336,3 @@ if __name__ == "__main__":
     test_point.run_tp_scenarios()
     # plot results
     test_point.plot_results()
-    # TODO TEST!
-    # self.database.tipping_points.get(self.attrs.name).run_tp_scenarios()
