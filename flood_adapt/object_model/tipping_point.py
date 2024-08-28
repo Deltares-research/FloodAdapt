@@ -19,13 +19,11 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 def ensure_database_loaded():
-    """Ensure that the Database class is available, importing it if not."""
+    """Ensure that the Database class is available without circular issues."""
     try:
         Database()
     except NameError:
-        # Delay the import until it's actually needed
         from flood_adapt.dbs_controller import Database
-
     return Database()
 
 
@@ -53,13 +51,13 @@ class TippingPoint(ITipPoint):
         )
         return self
 
-    def check_scenarios_exist(self, scenario_obj):
-        db_list = []
-        # check if the current scenario in the tipping point object already exists in the database
-        for db_scenario in self.database.scenarios.list_objects()["objects"]:
+    def check_scenarios_exist(self, scenario_obj, existing_scenarios):
+        # check if the current scenario in the tipping point object already exists in the database, if not save it
+        for db_scenario in existing_scenarios:
             if scenario_obj == db_scenario:
-                db_list.append(db_scenario.attrs.name)
-        return db_list
+                return db_scenario
+        self.database.scenarios.save(scenario_obj)
+        return scenario_obj
 
     def create_tp_scenarios(self):
         """Create scenarios for each sea level rise value inside the tipping_point folder."""
@@ -77,32 +75,24 @@ class TippingPoint(ITipPoint):
             for slr in self.attrs.sealevelrise
         }
 
-        # create subdirectories for each scenario and .toml files
+        existing_scenarios = self.database.scenarios.list_objects()["objects"]
+
         for scenario in scenarios.keys():
             scenario_obj = Scenario.load_dict(
                 scenarios[scenario], self.database.input_path
             )
-            scen_exists = self.check_scenarios_exist(scenario_obj)
+            resulting_scenario = self.check_scenarios_exist(
+                scenario_obj, existing_scenarios
+            )
 
-            if scen_exists:
-                self.scenarios[scen_exists[0]] = {
-                    "name": scenario_obj.attrs.name,
-                    "description": scenario_obj.attrs.description,
-                    "event": scenario_obj.attrs.event,
-                    "projection": scenario_obj.attrs.projection,
-                    "strategy": scenario_obj.attrs.strategy,
-                    "object": scenario_obj,
-                }
-            else:
-                self.database.scenarios.save(scenario_obj)
-                self.scenarios[scenario_obj.attrs.name] = {
-                    "name": scenario_obj.attrs.name,
-                    "description": scenario_obj.attrs.description,
-                    "event": scenario_obj.attrs.event,
-                    "projection": scenario_obj.attrs.projection,
-                    "strategy": scenario_obj.attrs.strategy,
-                    "object": scenario_obj,
-                }
+            self.scenarios[resulting_scenario.attrs.name] = {
+                "name": resulting_scenario.attrs.name,
+                "description": resulting_scenario.attrs.description,
+                "event": resulting_scenario.attrs.event,
+                "projection": resulting_scenario.attrs.projection,
+                "strategy": resulting_scenario.attrs.strategy,
+                "object": resulting_scenario,
+            }
 
         self.attrs.scenarios = list(self.scenarios.keys())
         print("All scenarios checked and created successfully.")
