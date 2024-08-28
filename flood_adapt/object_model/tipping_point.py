@@ -299,8 +299,8 @@ def load_database(database_path: str, database_name: str, system_folder: str):
 
 # I am keeping this for quick access to debug until review is done. Then we delete it.
 if __name__ == "__main__":
-    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database\\system"
-    database_path = r"C:\\Users\\morenodu\\OneDrive - Stitching Deltares\\Documents\\GitHub\\Database"
+    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
+    database_path = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
     database_name = "charleston_test"
 
     # Load the database
