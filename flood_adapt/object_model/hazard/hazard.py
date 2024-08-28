@@ -727,6 +727,7 @@ class Hazard:
                 map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
         self.flood_map_path = map_fn
+        return map_fn
 
     def write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
