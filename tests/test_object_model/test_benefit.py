@@ -6,6 +6,7 @@ import tomli
 
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.utils import write_finished_file
 
 _RAND = np.random.default_rng(2021)  # Value to make sure randomizing is always the same
 _TEST_NAMES = {
@@ -262,6 +263,8 @@ class TestBenefitScenariosRun:
             fiat_path = output_path.joinpath(
                 "Impacts", f"Impacts_detailed_{row['scenario created']}.csv"
             )
+            # Create dummy file to indicate that the run is finished
+            write_finished_file(fiat_path.parent)
             if not fiat_path.parent.exists():
                 fiat_path.parent.mkdir()
             dummy_impacts = pd.DataFrame()

@@ -31,6 +31,7 @@ from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.utils import finished_file_exists
 
 
 class Database(IDatabase):
@@ -131,11 +132,33 @@ class Database(IDatabase):
         self._projections = DbsProjection(self)
         self._benefits = DbsBenefit(self)
 
+        # Delete any unfinished/crashed scenario output
+        self.cleanup()
+
         self._init_done = True
 
-    def reset(self):
-        self._instance = None
+    def shutdown(self):
+        """Explicitly shut down the database controller singleton and clear all data stored in its memory."""
+        self.__class__._instance = None
         self._init_done = False
+        self.database_path = None
+        self.database_name = None
+
+        self.base_path = None
+        self.input_path = None
+        self.static_path = None
+        self.output_path = None
+        self._site = None
+
+        self.static_sfincs_model = None
+        self._logger = None
+        self._static = None
+        self._events = None
+        self._scenarios = None
+        self._strategies = None
+        self._measures = None
+        self._projections = None
+        self._benefits = None
 
     # Property methods
     @property
@@ -951,3 +974,32 @@ class Database(IDatabase):
                 + ", ".join(errors)
                 + ". Check the logs for more information."
             )
+
+    def cleanup(self) -> None:
+        """
+        Remove corrupted scenario output.
+
+        This method removes any scenario output that:
+            - is corrupted due to unfinished runs
+            - does not have a corresponding input
+
+        """
+        scn_input_path = self.scenarios.get_database_path()
+        scn_output_path = self.scenarios.get_database_path(get_input_path=False)
+        if not scn_output_path.is_dir():
+            return
+
+        input_scenarios = [
+            (scn_input_path / dir).resolve() for dir in os.listdir(scn_input_path)
+        ]
+        output_scenarios = [
+            (scn_output_path / dir).resolve() for dir in os.listdir(scn_output_path)
+        ]
+
+        for dir in output_scenarios:
+            if dir.name not in [path.name for path in input_scenarios]:
+                # input was deleted
+                shutil.rmtree(dir)
+            elif not finished_file_exists(dir):
+                # corrupted output due to unfinished run
+                shutil.rmtree(dir)
