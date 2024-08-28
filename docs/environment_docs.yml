@@ -4,8 +4,12 @@ channels:
 - conda-forge
 
 dependencies:
+- python=3.10
 - jupyter
 - jupyter-cache
+- jupyterlab
+- notebook
+- nbformat
 - matplotlib
 - numpy
 - pandas

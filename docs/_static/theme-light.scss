@@ -37,12 +37,12 @@ $navbar-hl: $links ;
 // general sidebar settings
 #quarto-sidebar {
     margin-top: -30px;
-    width: 230px;
+    width: 250px;
 }
 
 .navbar-logo{
-    width: 50px ; 
-    height: 60px ; 
+    width: 50px ;
+    height: 60px ;
   }
 
   // Sidebar
@@ -54,23 +54,23 @@ $navbar-hl: $links ;
     display: none !important;
 }
 .collapse.list-unstyled.sidebar-section.depth1 .sidebar-item .sidebar-item-container {
-    font-size: 15px;
-    font-weight: 200 !important;
-  }
-  
-// Style 2nd level selection 
-  .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 200 !important;
   }
 
-// Style 3rd level selection 
+// Style 2nd level selection
+  .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
+    font-size: 15px;
+    font-weight: 200 !important;
+  }
+
+// Style 3rd level selection
 .collapse.list-unstyled.sidebar-section.depth3 .sidebar-item .sidebar-item-container {
     font-size: 11px;
     font-weight: 200 !important;
   }
 .collapse.list-unstyled.sidebar-section a:hover{
-    background-color:rgb(226, 228, 238);
+    //background-color:rgb(226, 228, 238);
     width:100%;
     padding: 5px;
     margin-left: -20px;
@@ -80,7 +80,7 @@ $navbar-hl: $links ;
     font-weight: bold;
 //    background-color:rgb(226, 228, 238);
 //    height: 220%
-} 
+}
 
 .sidebar-menu-container{
     margin-right: 0px;
@@ -92,64 +92,55 @@ $navbar-hl: $links ;
 
 // Refining section by section
 
-#quarto-sidebar-section-3 .sidebar-item:nth-child(2) {
-    padding-bottom: 15px;
-}
 #quarto-sidebar-section-3 .sidebar-item:nth-child(3) {
     padding-bottom: 15px;
 }
-
 #quarto-sidebar-section-3 .sidebar-item:nth-child(2) a:hover {
     height: 170%;
+    width: 105%
 }
 #quarto-sidebar-section-3 .sidebar-item:nth-child(3) a:hover {
     height: 170%;
 }
 
-#quarto-sidebar-section-7 .sidebar-item:nth-child(3) {
-    padding-bottom: 10px;
-}
-
 #quarto-sidebar-section-7 .sidebar-item:nth-child(3) a:hover {
     height: 170%;
 }
-#quarto-sidebar-section-8 .sidebar-item-container {
-    height: 30px !important;
-  }
-
-#quarto-sidebar-section-8 .sidebar-item:nth-child(3) {
-    padding-top: 15px;
-}
-#quarto-sidebar-section-8 .sidebar-item:nth-child(5) {
+#quarto-sidebar-section-10 .sidebar-item:nth-child(1) {
     padding-bottom: 15px;
 }
-#quarto-sidebar-section-8 .sidebar-item:nth-child(1) a:hover {
+#quarto-sidebar-section-10 .sidebar-item:nth-child(3) {
+    padding-top: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(5) {
+    padding-bottom: 15px;
+}
+#quarto-sidebar-section-10 .sidebar-item:nth-child(1) a:hover {
     width: 105%;
 }
-#quarto-sidebar-section-8 .sidebar-item:nth-child(1) a:hover {
-    width: 105%;
-}
-#quarto-sidebar-section-8 .sidebar-item:nth-child(2) a:hover {
+#quarto-sidebar-section-10 .sidebar-item:nth-child(2) a:hover {
     height: 140%;
 }
-#quarto-sidebar-section-8 .sidebar-item:nth-child(5) a:hover {
+#quarto-sidebar-section-10 .sidebar-item:nth-child(5) a:hover {
     height: 160%;
     width: 105%
 }
-
-#quarto-sidebar-section-9 .sidebar-item-container {
-    height: 25px !important;
+#quarto-sidebar-section-10 .sidebar-item-container {
+    height: 30px !important;
   }
 
-#quarto-sidebar-section-9 .sidebar-item:first-child a:hover {
+#quarto-sidebar-section-10 .sidebar-item:first-child a:hover {
     width: 105%;
+}
+#quarto-sidebar-section-11 .sidebar-item:nth-child(1) {
+    padding-bottom: 15px;
 }
 
 // Container size
 .collapse.list-unstyled.sidebar-section.depth2 .sidebar-item .sidebar-item-container {
     height: 25px
 }
-// Style content 
+// Style content
 
 .content {
     margin-left: 100px;

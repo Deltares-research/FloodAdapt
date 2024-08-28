@@ -55,7 +55,6 @@ class Hazard:
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
-
         self._mode: Mode
         self.simulation_paths: List[Path]
         self.simulation_paths_offshore: List[Path]
@@ -273,6 +272,9 @@ class Hazard:
 
         run_success = True
         for simulation_path in self.simulation_paths:
+            self._logger.info(
+                f"Running SFINCS model for {'-'.join(simulation_path.parts[-2:])}."
+            )
             with cd(simulation_path):
                 sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
@@ -363,21 +365,12 @@ class Hazard:
             template = self.event.attrs.template
 
             if template == "Synthetic" or template == "Historical_nearshore":
-                # generate hazard water level bc incl SLR (in the offshore model these are already included)
-                # returning wl referenced to MSL
-                if self.event.attrs.template == "Synthetic":
-                    self.event.add_tide_and_surge_ts()
-                    # add water level offset due to historic SLR for synthetic event
-                    wl_ts = (
-                        self.event.tide_surge_ts
-                        + self.site.attrs.slr.vertical_offset.convert(
-                            self.site.attrs.gui.default_length_units
-                        )
-                    )
-                elif self.event.attrs.template == "Historical_nearshore":
-                    # water level offset due to historic SLR already included in observations
-                    wl_ts = self.event.tide_surge_ts
+                # water level offset due to historic SLR already included in observations
+                if template == "Synthetic":
+                    self.event.add_tide_and_surge_ts()  # Stores the water level time series in self.event.tide_surge_ts
+
                 # In both cases (Synthetic and Historical nearshore) add SLR
+                wl_ts = self.event.tide_surge_ts
                 wl_ts[1] = wl_ts[
                     1
                 ] + self.physical_projection.attrs.sea_level_rise.convert(
@@ -977,7 +970,7 @@ class Hazard:
             np.copy(zb), len(floodmap_rp), 1
         )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
-        self._logger.info("Calculating flood risk maps, this may take some time...")
+        self._logger.info("Calculating flood risk map data, this may take some time...")
         for jj in valid_cells:  # looping over all non-masked cells.
             # linear interpolation for all return periods to evaluate
             h[:, jj] = np.interp(
@@ -998,6 +991,7 @@ class Hazard:
         h[dry] = np.nan
 
         for ii, rp in enumerate(floodmap_rp):
+            self._logger.info(f"Creating flood risk map for return period {rp} years.")
             # #create single nc
             zs_rp_single = xr.DataArray(
                 data=h[ii, :], coords={"z": zs["z"]}, attrs={"units": "meters"}
