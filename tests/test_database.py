@@ -102,3 +102,60 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
 
     # Cleanup singleton
     dbs.shutdown()
+
+
+def test_shutdown_AfterShutdown_VarsAreNone():
+    # Arrange
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Act
+    dbs.shutdown()
+
+    # Assert
+    assert dbs.__class__._instance is None
+    assert dbs._init_done is False
+    assert dbs.database_path is None
+    assert dbs.database_name is None
+    assert dbs.base_path is None
+    assert dbs.input_path is None
+    assert dbs.static_path is None
+    assert dbs.output_path is None
+    assert dbs._site is None
+    assert dbs.static_sfincs_model is None
+    assert dbs._logger is None
+    assert dbs._static is None
+    assert dbs._events is None
+    assert dbs._scenarios is None
+    assert dbs._strategies is None
+    assert dbs._measures is None
+    assert dbs._projections is None
+    assert dbs._benefits is None
+
+
+def test_shutdown_AfterShutdown_CanReadNewDatabase():
+    # Arrange
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Act
+    dbs.shutdown()
+    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+
+    # Assert
+    assert dbs.__class__._instance is not None
+    assert dbs._init_done
+    assert dbs.database_path is not None
+    assert dbs.database_name is not None
+    assert dbs.base_path is not None
+    assert dbs.input_path is not None
+    assert dbs.static_path is not None
+    assert dbs.output_path is not None
+    assert dbs._site is not None
+    assert dbs.static_sfincs_model is not None
+    assert dbs._logger is not None
+    assert dbs._static is not None
+    assert dbs._events is not None
+    assert dbs._scenarios is not None
+    assert dbs._strategies is not None
+    assert dbs._measures is not None
+    assert dbs._projections is not None
+    assert dbs._benefits is not None
