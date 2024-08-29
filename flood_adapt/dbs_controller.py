@@ -666,8 +666,14 @@ class Database(IDatabase):
                 )
 
                 scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
-
-                self._scenarios.save(scenario_obj)
+                # Check if scenario already exists (because it was created before in the loop)
+                try:
+                    self.scenarios.save(scenario_obj)
+                except ValueError as e:
+                    if "name is already used" not in str(e):
+                        # some other error was raised, so we re-raise it
+                        raise e
+                    # otherwise, if it already exists and we dont need to save it, we can just continue
 
         # Update the scenarios check
         benefit.check_scenarios()
