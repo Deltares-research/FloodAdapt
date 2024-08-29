@@ -40,7 +40,7 @@ class DbsScenario(DbsTemplate):
         scenarios["Event"] = [obj.attrs.event for obj in objects]
         scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
         scenarios["finished"] = [
-            obj.init_object_model().direct_impacts.has_run for obj in objects
+            obj.init_object_model().has_run_check() for obj in objects
         ]
 
         return scenarios
