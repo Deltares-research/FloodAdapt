@@ -99,21 +99,48 @@ class Event:
 
     @staticmethod
     def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.Dataframe.
+        """Read a timeseries file and return a pd.DataFrame.
 
         Parameters
         ----------
         csvpath : Union[str, os.PathLike]
-            path to csv file
+            Path to the CSV file.
 
         Returns
         -------
         pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
+            Dataframe with time as index and waterlevel as the first column.
         """
-        df = pd.read_csv(csvpath, index_col=0, header=None)
+        try:
+            # try to read the file and parse the index with headers (will raise if there is no header)
+            df = pd.read_csv(csvpath, index_col=0)
+            _ = pd.to_datetime(df.index, errors="raise")
+        except Exception:
+            # with header failed, so try read without header
+            df = pd.read_csv(csvpath, index_col=0, header=None)
+
         df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
+        SUPPORTED_DATETIME_FORMATS = [
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%d",
+            "%Y%m%d %H%M%S",
+            "%Y%m%d %H%M",
+        ]
+        datetime_parsed = False
+        for fmt in SUPPORTED_DATETIME_FORMATS:
+            try:
+                df.index = pd.to_datetime(df.index, format=fmt, errors="raise")
+                datetime_parsed = True
+                break
+            except Exception:
+                pass
+
+        if not datetime_parsed:
+            raise ValueError(
+                f"Could not parse the time column in the CSV file. Supported formats are: {', '.join(SUPPORTED_DATETIME_FORMATS)}"
+            )
+
         return df
 
     def download_meteo(self, site: ISite, path: Path):
