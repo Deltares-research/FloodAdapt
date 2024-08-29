@@ -189,7 +189,7 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
-            dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
+            dem = self.database.static_path / "dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
                 self.database.static_path / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation

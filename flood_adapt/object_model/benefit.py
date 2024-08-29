@@ -202,7 +202,7 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        results_path = self.database_input_path.parent.joinpath("output", "scenarios")
 
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
@@ -280,7 +280,7 @@ class Benefit(IBenefit):
 
     def cba_aggregation(self):
         """Zonal Benefits analysis for the different aggregation areas."""
-        results_path = self.database_input_path.parent.joinpath("output", "Scenarios")
+        results_path = self.database_input_path.parent.joinpath("output", "scenarios")
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
