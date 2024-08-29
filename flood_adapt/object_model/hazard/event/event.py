@@ -112,14 +112,16 @@ class Event:
             Dataframe with time as index and waterlevel as the first column.
         """
         try:
-            # try to read the file and parse the index with headers (will raise if there is no header)
+            # try to read the file with header
             df = pd.read_csv(csvpath, index_col=0)
-            _ = pd.to_datetime(df.index, errors="raise")
-        except Exception:
-            # with header failed, so try read without header
+            # Check if the first index value can be a datetime to confirm header presence
+            pd.to_datetime(df.index, errors="raise")
+        except (ValueError, TypeError, pd.errors.ParserError):
+            # If reading with a header fails, assume no header and read again
             df = pd.read_csv(csvpath, index_col=0, header=None)
-
         df.index.names = ["time"]
+        df.columns = ["data"]
+
         SUPPORTED_DATETIME_FORMATS = [
             "%Y-%m-%d %H:%M:%S",
             "%Y-%m-%d %H:%M",

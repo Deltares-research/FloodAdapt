@@ -494,3 +494,62 @@ def test_block_discharge(test_db):
     assert (
         np.abs(event.dis_df[1][-1] - event.attrs.river[0].base_discharge.value) < 0.001
     )
+
+
+class Test_ReadCSV:
+    def write_dummy_csv(
+        self, path, headers: bool, datetime_format: str
+    ) -> pd.DataFrame:
+        df = pd.DataFrame(
+            {
+                "time": pd.date_range(start="2021-01-01", periods=24, freq="H"),
+                "data": np.random.Generator(24),
+            }
+        )
+        df.to_csv(path, index=False, header=headers, date_format=datetime_format)
+
+        df = df.set_index("time")
+        return df
+
+    def test_read_csv_ReadFileWithHeaders(self, tmp_path):
+        # Arrange
+        path = tmp_path / "withheaders.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=True, datetime_format="%Y-%m-%d %H:%M:%S"
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+        print("df\n", df)
+        print("test_df\n", test_df)
+        pd.testing.assert_frame_equal(df, test_df, check_names=False)
+
+    def test_read_csv_ReadFileWithoutHeaders(self, tmp_path):
+        # Arrange
+        path = tmp_path / "withoutheaders.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=False, datetime_format="%Y-%m-%d %H:%M:%S"
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+        print("df", df)
+        print("test_df", test_df)
+        pd.testing.assert_frame_equal(df, test_df)
+
+    def test_read_csv_ReadFileUnSupportedDatetimeFormat_raises(self, tmp_path):
+        # Arrange
+        path = tmp_path / "unsupporteddatetimeformat.csv"
+        self.write_dummy_csv(path, headers=False, datetime_format="%d %H:%M:%S")
+
+        # Act
+        with pytest.raises(ValueError):
+            Event.read_csv(path)
