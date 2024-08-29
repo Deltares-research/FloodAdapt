@@ -4,20 +4,20 @@ filters:
   - lightbox
 lightbox: auto
 ---
-Flood adaptation measures are designed to reduce flood risk, and their effectiveness is typically assessed by calculating their risk-reduction **benefits** and the **benefit-cost ratio**, which compares benefits with the implementation and maintenance costs of the measure(s).
+Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction **benefits** and the **benefit-cost ratio**, which compares benefits with the implementation and maintenance costs of the measure(s).
 
 FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits. 
 
-When you first go to the Benfits tab in FloodAdapt you will see an empty table in the lower panel. Once you create benefit analyses these will appear in the table. To the right of the table there are buttons to add, edit, or delete a benefit analysis (see @fig-benefitEmpty). Before creating your first benefit analysis, only the 'Add benefit analysis' button is active.   
+When you first go to the Benfits tab in FloodAdapt (see @fig-benefitEmpty) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the 'Add benefit analysis' button is active.   
 
 ![**Benefit tab before any benefit analyses have been run**](../_static/images/benefitTab_empty.png){width=70% fig-align=left #fig-benefitEmpty}
 
 This Benefits documentation will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation. This information is described in the following sections:
 
-* [how to create a new benefit analysis](#creating-a-new-benefit-analysis)
-* [how benefits are calculated](#calculating-benefits)
-* [how to view the benefit output in the Benefits tab](#viewing-benefit-output-in-the-benefits-tab)
-* [which benefits-related output will be saved to your computer](#benefits-output-folder). 
+* [Creating a new benefit analysis](#creating-a-new-benefit-analysis)
+* [Calculating benefits](#calculating-benefits)
+* [Viewing benefit output in the Benefits tab](#viewing-benefit-output-in-the-benefits-tab)
+* [Benefits output folder](#benefits-output-folder). 
 
 ## Creating a new benefit analysis
 FloodAdapt users can evaulate the risk-reduction benefits of any strategy they have created (which can be composed of a single measure or a collection of measures). To do this, go to the Benefits tab in FloodAdapt, and in the bottom panel click on "Add benefit analysis". A popup window will appear within which you will specify important choices about your benefit analysis. 
@@ -28,7 +28,7 @@ For the following description please refer to @fig-benefitPopup. To create a new
 
 * **Analysis name**: Enter a name for your analysis. This cannot have any spaces or special characters (underscores are ok). Choose a name that will help you identify your analysis easily in the benefits tab; for example "benefits_floodwall". You can optionally also add a description.
 * **Strategy to evaluate**: In the "Strategy to evaluate" panel, select the strategy for which you want to calculate benefits. The baseline strategy is selected for you and consists of the 'no-measures' strategy.
-* **Situation at implementation**: The implementation situation is selected for you. It consists of the 'current' projection representing current climate and socio-economic conditions. The implementation year is defined during system setup.  
+* **Situation at implementation**: The implementation situation consists of the 'current' projection representing current climate and socio-economic conditions (pre-selected). The implementation year can be adjusted but by default is set to the 'current' year defined during system setup.  
 * **Situation at end of analysis**: In the end-of-analysis situation, specify the year that corresponds to the duration over which you want to calculate benefits. In @fig-benefitPopup, the year 2060 is specified. That means benefits will be calculated between the current year up to and including 2060. From the "Projection" dropdown menu, select the climate and/or socio-economic conditions you expect at this end-of-analysis year. For example, if you expect sea level rise to be 1 foot at the year specified (e.g. 2060 in @fig-benefitPopup), then choose a projection with 1 foot of SLR. Note that you must have already [created such a projection](projections/index.qmd) in order to select it here. The projection dropdown menu will contain all projections that have been created in the Projections tab. 
 * **Costs**: If you have information on the implementation and maintenance costs of your project, you can set "Add costs" to "Yes" and a "Costs" panel will appear. Here you can enter the costs. If you do not have this information, set "Add costs" to "No" and the "Costs" panel will disappear. When cost information is not available, FloodAdapt will only calculate the risk-reduction benefits. When cost information is available, it will additionally calculate the benefit-cost ratio, net present value, and internal rate of return. These latter two are saved on your computer but not presented in the Benefits tab.
 * **Discount rate**: Enter a discount rate. A discount rate is used in benefit-cost analysis to discount future benefits and costs. It reflects the idea that benefits and costs are worth more if they are experienced sooner. When discount rates are higher, the overall present value of benefits will be lower than when the discount rate is lower. Users are free to explore different discount rates and the effect these have on the present value of benefits and the benefit-cost ratio. 
@@ -36,11 +36,11 @@ For the following description please refer to @fig-benefitPopup. To create a new
 * **Create missing scenarios**: If any of the required scenarios is missing when you click "Check scenarios", you can click "Create missing scenarios" and FloodAdapt will automatically create the missing scenarios and place them in the scenarios table in the [Scenarios](scenarios/index.qmd) tab. 
 * **Click "OK" to add the analysis to the Benefits tab**
 
-![**The "Check scenarios" feature in the Benefit analysis popup window**](../_static/images/benefits_scenarioCheck.png){width=70% fig-align=left #fig-benefitCheckScenarios}
+![**The "Check scenarios" feature in the Benefit analysis popup window**](../_static/images/benefitAnalysisWindow_checkScenarios.png){width=70% fig-align=left #fig-benefitCheckScenarios}
 
 :::{.callout-note}
 ## Required scenarios need to be run before running your benefit analysis
-The "Check scenarios" and "Create missing scenarios" buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the [Scenarios](scenarios/index.qmd) tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. When some of the required scenarios have not yet been run, the "Calculate benefits" button will be greyed out and you will see text beneath it informing you that "You cannot calculate benefits before running the required scenarios (use Scenarios tab)", see @fig-benefitCalcFirst.
+The "Check scenarios" and "Create missing scenarios" buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the [Scenarios](scenarios/index.qmd) tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. If any of the required scenarios have not yet been run, the "Calculate benefits" button will be greyed out and you will see text beneath it informing you that "You cannot calculate benefits before running the required scenarios (use Scenarios tab)", see @fig-benefitCalcFirst.
 
 ![**All required scenarios must first be simulated before running a benefit analysis**](../_static/images/benefits_calcFirst.png){width=70% fig-align=left #fig-benefitCalcFirst}
 :::
@@ -100,14 +100,14 @@ The present value of the costs, benefit cost ratio, net present value, and inter
 
 
 ## Viewing benefit output in the Benefits tab
-@fig-benefitTab shows the Benefits tab in FloodAdapt once a benefit analysis has been completed. The window is separated into a top panel with a map window on the left and, when using the collapsible frame, a time series of benefits on the right. When a benefit analysis is selected in the table, the measures in the strategy for which benefits are being calculated will appear in the map window. The bottom panel will show a summary of the user-provided input to the benefit analysis, such as discount rate or end-year of the analysis. On the right side of the lower panel there is a "Calculate benefits" button. Once the user clicks this button, output will appear in the panel. This output consists of the (present value of the) benefits and a benefit-cost ratio (if cost information was provided). The collapsible frame contains a graphic with the risk-reduction benefits calculated under current conditions and under future conditions (green dots in the figure), the interpolated benefits over time (black line), the discounted benefits over time (dark green line), and the area under the dicsounted benefits curve (green shading) representing the present value of the benefits. 
+@fig-benefitTab shows the Benefits tab in FloodAdapt once a benefit analysis has been completed. The window is separated into a top panel with a map window on the left and, when using the collapsible frame, a time series of benefits on the right. When a benefit analysis is selected in the list, the measures in the strategy for which benefits are being calculated will appear in the map window. The bottom panel will show a summary of the user-provided input to the benefit analysis, such as discount rate or end-year of the analysis. Once the user clicks the "Calculate benefits" button, output will appear in the panel. This output consists of the (present value of the) benefits and a benefit-cost ratio (if cost information was provided). The collapsible frame contains a graphic with the risk-reduction benefits calculated under current conditions and under future conditions (green dots in the figure), the interpolated benefits over time (black line), the discounted benefits over time (dark green line), and the area under the discounted benefits curve (green shading) representing the present value of the benefits. 
 
 :::{.callout-note}
 ## Why don't I see the NPV and IRR in the Benefits tab?
-In addition to the above results which can be viewed in the Output tab, FloodAdapt also calculates - when implementation and/or maintenance cost information is provided - the net present value and the internal rate of return. These are provided in a results text file (TOML file format) in the benefits output folder. 
+In addition to the above results which can be viewed in the Output tab, FloodAdapt also calculates - when implementation and/or maintenance cost information is provided - the net present value and the internal rate of return. These are provided in a results text file in the [benefits output folder](#benefits-output-folder). 
 :::
 
-![**The FloodAdapt Benefits tab**](../_static/images/Benefits_tab.png){width=80% fig-align=left #fig-benefitTab}
+![**The FloodAdapt Benefits tab showing a selected benefit analysis**](../_static/images/Benefits_tab.png){width=80% fig-align=left #fig-benefitTab}
 
 The benefits can also be viewed spatially; the lower panel contains map visualization options (see @fig-benefitTab). The user can click "Aggregated benefits" to see the spatial distribution of benefits (see @fig-benefitDist for an example). They can choose from the "Aggregation" drop-down menu which aggregation level they would like to view, for example neighborhoods or census blocks. 
 
