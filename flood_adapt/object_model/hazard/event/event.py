@@ -1,3 +1,4 @@
+import csv
 import glob
 from datetime import datetime
 from pathlib import Path
@@ -111,10 +112,9 @@ class Event:
         pd.DataFrame
             Dataframe with time as index and waterlevel as the first column.
         """
-        import csv
-
         with open(csvpath, "r") as f:
             try:
+                # read the first 1024 bytes to determine if there is a header
                 has_header = csv.Sniffer().has_header(f.read(1024))
             except csv.Error:
                 # The file is empty
