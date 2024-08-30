@@ -516,7 +516,7 @@ class Test_ReadCSV:
         df = df.set_index("time")
         return df
 
-    def test_read_csv_ReadFileWithHeaders(self, tmp_path):
+    def test_read_file_with_headers(self, tmp_path):
         # Arrange
         path = tmp_path / "withheaders.csv"
         test_df = self.write_dummy_csv(
@@ -532,7 +532,7 @@ class Test_ReadCSV:
 
         pd.testing.assert_frame_equal(df, test_df, check_names=False)
 
-    def test_read_csv_ReadFileWithoutHeaders(self, tmp_path):
+    def test_read_file_without_headers(self, tmp_path):
         # Arrange
         path = tmp_path / "withoutheaders.csv"
         test_df = self.write_dummy_csv(
@@ -548,22 +548,7 @@ class Test_ReadCSV:
 
         pd.testing.assert_frame_equal(df, test_df)
 
-    def test_read_csv_ReadFileUnSupportedDatetimeFormat_raises(self, tmp_path):
-        # Arrange
-        path = tmp_path / "unsupporteddatetimeformat.csv"
-        self.write_dummy_csv(path, headers=False, datetime_format="%d %H:%M:%S")
-
-        # Act
-        with pytest.raises(ValueError) as e:
-            Event.read_csv(path)
-
-        # Assert
-        assert (
-            "Could not parse the time column in the CSV file. Supported formats are: "
-            in str(e.value)
-        )
-
-    def test_read_csv_ReadFileMultipleColumns(self, tmp_path):
+    def test_read_file_multiple_columns(self, tmp_path):
         # Arrange
         path = tmp_path / "multiple_columns.csv"
         test_df = self.write_dummy_csv(

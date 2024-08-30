@@ -131,38 +131,20 @@ class Event:
             raise ValueError(
                 f"Could not determine if the CSV file has a header: {csvpath}."
             )
-        header = 0 if has_header else None
-        df = pd.read_csv(csvpath, index_col=0, header=header)
-
-        df.index.names = ["time"]
-
         if num_columns is None:
             raise ValueError(
-                f"Could not read the number of columns in the CSV file: {csvpath}."
-            )
-        df.columns = [f"data_{i}" for i in range(num_columns)]
-
-        SUPPORTED_DATETIME_FORMATS = [
-            "%Y-%m-%d %H:%M:%S",
-            "%Y-%m-%d %H:%M",
-            "%Y-%m-%d",
-            "%Y%m%d %H%M%S",
-            "%Y%m%d %H%M",
-        ]
-        datetime_parsed = False
-        for fmt in SUPPORTED_DATETIME_FORMATS:
-            try:
-                df.index = pd.to_datetime(df.index, format=fmt, errors="raise")
-                datetime_parsed = True
-                break
-            except Exception:
-                pass
-
-        if not datetime_parsed:
-            raise ValueError(
-                f"Could not parse the time column in the CSV file. Supported formats are: {', '.join(SUPPORTED_DATETIME_FORMATS)}"
+                f"Could not determine the number of columns in the CSV file: {csvpath}."
             )
 
+        df = pd.read_csv(
+            csvpath,
+            index_col=0,
+            names=[f"data_{i}" for i in range(num_columns)],
+            header=0 if has_header else None,
+            parse_dates=True,
+            infer_datetime_format=True,
+        )
+        df.index.names = ["time"]
         return df
 
     def download_meteo(self, site: ISite, path: Path):
