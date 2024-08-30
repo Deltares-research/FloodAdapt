@@ -476,18 +476,25 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>In the event tab, a user can add different types of events. These can be either <a href="../../4_user_guide/events/historic_events/index.html"><strong>historical</strong></a> or <a href="../../4_user_guide/events/synthetic_events.html"><strong>synthetic</strong></a> events. It is also possible to select historical events and modify them to create what-if event scenarios.</p>
-<p>There are three historical event types, which are described in the coming sections:</p>
+<p>FloodAdapt allows users to specify and simulate the flooding and impacts for many different types of (compound) events. These can be either <a href="../../4_user_guide/events/historic_events/index.html"><strong>historically-based</strong></a> or <a href="../../4_user_guide/events/synthetic_events.html"><strong>synthetic</strong></a> events. The historically-based events use historical water levels or hurricane tracks, but allow users to modify event specifics to create what-if event scenarios, for example by adding or intensifying rainfall or shifting a hurricane track.</p>
+<p>There are three historically-based event types, which are described in the coming sections:</p>
 <ul>
 <li><a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html">Historical hurricane</a></li>
 <li><a href="../../4_user_guide/events/historic_events/historic_events_gauged.html">Historical event with gauged water levels</a></li>
 <li><a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html">Historical event without gauged water levels</a></li>
 </ul>
-<p>When the user selects <strong>Add event</strong> in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.</p>
+<p>To create an event, the user goes to the Events tab in FloodAdapt (see <a href="#fig-eventTabEmpty">Figure&nbsp;1</a>). Prior to creating any events, there may be one event already shown in the event list window. This will be a <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event set</a> that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event “Type” is indicated. For event sets this will say “Probabilistic Event Set.” For events that you create in the Events tab, these will say “Single Event”. Next to the event list window there are buttons to add, edit, delete, and copy an event. Prior to creating any events, only the “Add event” button will be active.</p>
+<div id="fig-eventTabEmpty" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><a href="../../_static/images/events_tab_empty.png" class="lightbox" title="The event tab in FloodAdapt prior to creating any events" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/events_tab_empty.png" class="img-fluid figure-img"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>The event tab in FloodAdapt prior to creating any events</strong></figcaption>
+</figure>
+</div>
+<p>When a user clicks <strong>Add event</strong> in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.</p>
 <div id="fig-eventSelector" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><a href="../../_static/images/eventTypeSelector.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The four event types a user can select"><img src="../../_static/images/eventTypeSelector.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>The four event types a user can select</strong></figcaption>
+<p><a href="../../_static/images/eventTypeSelector.png" class="lightbox" title="The four event types a user can select" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/eventTypeSelector.png" class="img-fluid figure-img"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>The four event types a user can select</strong></figcaption>
 </figure>
 </div>
 <p>Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event.</p>
@@ -519,8 +526,8 @@ Event start and stop times
 </div>
 <div id="fig-historicEvent_name_date" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><a href="../../_static/images/event_name_date_entry.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Screenshot of the event window where the user enters the name, description, and dates of the historic event"><img src="../../_static/images/event_name_date_entry.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;2: <strong>Screenshot of the event window where the user enters the name, description, and dates of the historic event</strong></figcaption>
+<p><a href="../../_static/images/event_name_date_entry.png" class="lightbox" title="Screenshot of the event window where the user enters the name, description, and dates of the historic event" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/event_name_date_entry.png" class="img-fluid figure-img"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>Screenshot of the event window where the user enters the name, description, and dates of the historic event</strong></figcaption>
 </figure>
 </div>
 <section id="how-are-events-modeled-in-floodadapt" class="level2">
@@ -530,10 +537,10 @@ Event start and stop times
 <li><p>An offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.</p></li>
 <li><p>An overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.</p></li>
 </ol>
-<p>When a user selects a <a href="historic_events_hurricane.qmd">historical hurricane</a>, FloodAdapt will pull in wind and pressure data for the offshore model, calculate the nearshore water levels for the overland model, and then run the overland model with wind and rainfall (calculated based on track information), and any user-input river discharges.</p>
+<p>When a user selects a <a href="historic_events_hurricane.qmd">historical hurricane</a>, FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the <a href="https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml">Holland 2010 method</a>. It also uses the track information to estimate the rainfall field using the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904">IPET method</a>. The wind, pressure, and rainfall fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model.</p>
 <p>When a user selects a <a href="historic_events_gauged.qmd">Historical event with gauged water levels</a>, only the overland model will be run, using the gauged water levels as input to the overland model.</p>
-<p>When a user selects a <a href="historic_events_ungauged.qmd">Historical event without gauged water levels</a>, the offshore model will first be run using the wind and pressure data from <strong>ADD SOURCE HERE</strong>. The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.</p>
-<p>When a user selects a <a href="../../4_user_guide/events/synthetic_events.html">Synthetic event</a>, only the overland model will be run, using the tide and surge information specified by the user.</p>
+<p>When a user selects a <a href="historic_events_ungauged.qmd">Historical event without gauged water levels</a>, the offshore model will first be run using the wind and pressure data from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA Global Forecast System</a> (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.</p>
+<p>When a user selects a <a href="../../4_user_guide/events/synthetic_events.html">Synthetic event</a>, only the overland model will be run, using the tide, surge, rainfall, wind, and river discharge information specified by the user.</p>
 
 
 </section>
@@ -911,7 +918,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","openEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":true,"closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom"});</script>
 
 
 
