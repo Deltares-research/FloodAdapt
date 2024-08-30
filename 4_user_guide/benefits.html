@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -64,6 +67,8 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../_static/styles.css">
 </head>
@@ -445,7 +450,16 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#creating-a-new-benefit-analysis" id="toc-creating-a-new-benefit-analysis" class="nav-link active" data-scroll-target="#creating-a-new-benefit-analysis">Creating a new benefit analysis</a></li>
+  <li><a href="#calculating-benefits" id="toc-calculating-benefits" class="nav-link" data-scroll-target="#calculating-benefits">Calculating benefits</a></li>
+  <li><a href="#viewing-benefit-output-in-the-benefits-tab" id="toc-viewing-benefit-output-in-the-benefits-tab" class="nav-link" data-scroll-target="#viewing-benefit-output-in-the-benefits-tab">Viewing benefit output in the Benefits tab</a></li>
+  <li><a href="#benefits-output-folder" id="toc-benefits-output-folder" class="nav-link" data-scroll-target="#benefits-output-folder">Benefits output folder</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -467,9 +481,196 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Coming soon.</p>
+<p>Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction <strong>benefits</strong> and the <strong>benefit-cost ratio</strong>, which compares benefits with the implementation and maintenance costs of the measure(s).</p>
+<p>FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits.</p>
+<p>When you first go to the Benefits tab in FloodAdapt (see <a href="#fig-benefitEmpty">Figure&nbsp;1</a>) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the ‘Add benefit analysis’ button is active.</p>
+<div id="fig-benefitEmpty" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefitTab_empty.png" class="lightbox" title="Benefit tab before any benefit analyses have been created" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/benefitTab_empty.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Benefit tab before any benefit analyses have been created</strong></figcaption>
+</figure>
+</div>
+<p>The following sections will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation.</p>
+<ul>
+<li><a href="#creating-a-new-benefit-analysis">Creating a new benefit analysis</a></li>
+<li><a href="#calculating-benefits">Calculating benefits</a></li>
+<li><a href="#viewing-benefit-output-in-the-benefits-tab">Viewing benefit output in the Benefits tab</a></li>
+<li><a href="#benefits-output-folder">Benefits output folder</a>.</li>
+</ul>
+<section id="creating-a-new-benefit-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-new-benefit-analysis">Creating a new benefit analysis</h2>
+<p>FloodAdapt users can evaluate the risk-reduction benefits of any strategy they have created (which can be composed of a single measure or a collection of measures). To do this, go to the Benefits tab in FloodAdapt, and in the bottom panel click on “Add benefit analysis”. A popup window will appear within which you will specify important choices about your benefit analysis.</p>
+<div id="fig-benefitPopup" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefitAnalysisWindow.png" class="lightbox" title="Benefit analysis popup window" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/benefitAnalysisWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>Benefit analysis popup window</strong></figcaption>
+</figure>
+</div>
+<p>For the following description please refer to <a href="#fig-benefitPopup">Figure&nbsp;2</a>. To create a new benefit analysis:</p>
+<ul>
+<li><strong>Analysis name</strong>: Enter a name for your analysis. This cannot have any spaces or special characters (underscores are ok). Choose a name that will help you identify your analysis easily in the benefits tab; for example “benefits_floodwall”. You can optionally also add a description.</li>
+<li><strong>Strategy to evaluate</strong>: In the “Strategy to evaluate” panel, select the strategy for which you want to calculate benefits. The baseline strategy is selected for you and consists of the ‘no-measures’ strategy.</li>
+<li><strong>Situation at implementation</strong>: The implementation situation consists of the ‘current’ projection representing current climate and socio-economic conditions (pre-selected). The implementation year can be adjusted but by default is set to the ‘current’ year defined during system setup.</li>
+<li><strong>Situation at end of analysis</strong>: In the end-of-analysis situation, specify the year that corresponds to the duration over which you want to calculate benefits. In <a href="#fig-benefitPopup">Figure&nbsp;2</a>, the year 2060 is specified. That means benefits will be calculated between the current year up to and including 2060. From the “Projection” dropdown menu, select the climate and/or socio-economic conditions you expect at this end-of-analysis year. For example, if you expect sea level rise to be 1 foot at the year specified (e.g.&nbsp;2060 in <a href="#fig-benefitPopup">Figure&nbsp;2</a>), then choose a projection with 1 foot of SLR. Note that you must have already <a href="../4_user_guide/projections/index.html">created such a projection</a> in order to select it here. The projection dropdown menu will contain all projections that have been created in the Projections tab.</li>
+<li><strong>Costs</strong>: If you have information on the implementation and maintenance costs of your project, you can set “Add costs” to “Yes” and a “Costs” panel will appear. Here you can enter the costs. If you do not have this information, set “Add costs” to “No” and the “Costs” panel will disappear. When cost information is not available, FloodAdapt will only calculate the risk-reduction benefits. When cost information is available, it will additionally calculate the benefit-cost ratio, net present value, and internal rate of return. These latter two are saved on your computer but not presented in the Benefits tab.</li>
+<li><strong>Discount rate</strong>: Enter a discount rate. A discount rate is used in benefit-cost analysis to discount future benefits and costs. It reflects the idea that benefits and costs are worth more if they are experienced sooner. When discount rates are higher, the overall present value of benefits will be lower than when the discount rate is lower. Users are free to explore different discount rates and the effect these have on the present value of benefits and the benefit-cost ratio.</li>
+<li><strong>Check scenarios</strong>: Once you have entered the above information, click the “Check scenarios” button. FloodAdapt helps you to determine which scenarios need to be run in order to carry out the benefit analysis you specified. The risk-reduction benefit analysis requires risk calculations with and without the selected strategy under current conditions and with and without the strategy under the projection selected for the end of the analysis situation. When you click “Check scenarios”, the scenarios that need to be run will be shown in the table in the popup window (see <a href="#fig-benefitCheckScenarios">Figure&nbsp;3</a>). The column “scenario created” will list the scenario name if the scenario has already been created and will say “No” if the scenario has not been created. The column “scenario run” will indicate whether the scenario has already been run (True) or not (False).</li>
+<li><strong>Create missing scenarios</strong>: If any of the required scenarios is missing when you click “Check scenarios”, you can click “Create missing scenarios” and FloodAdapt will automatically create the missing scenarios and place them in the scenarios table in the <a href="../4_user_guide/scenarios/index.html">Scenarios</a> tab.</li>
+<li><strong>Click “OK” to add the analysis to the Benefits tab</strong></li>
+</ul>
+<div id="fig-benefitCheckScenarios" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="lightbox" title="The “Check scenarios” feature in the Benefit analysis popup window" data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/benefitAnalysisWindow_checkScenarios.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>The “Check scenarios” feature in the Benefit analysis popup window</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Required scenarios need to be run before running your benefit analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The “Check scenarios” and “Create missing scenarios” buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the <a href="../4_user_guide/scenarios/index.html">Scenarios</a> tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. If any of the required scenarios have not yet been run, the “Calculate benefits” button will be greyed out and you will see text beneath it informing you that “You cannot calculate benefits before running the required scenarios (use Scenarios tab)”, see <a href="#fig-benefitCalcFirst">Figure&nbsp;4</a>.</p>
+<div id="fig-benefitCalcFirst" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefits_calcFirst.png" class="lightbox" title="All required scenarios must first be simulated before running a benefit analysis" data-gallery="quarto-lightbox-gallery-9"><img src="../_static/images/benefits_calcFirst.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;4: <strong>All required scenarios must first be simulated before running a benefit analysis</strong></figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="calculating-benefits" class="level2">
+<h2 class="anchored" data-anchor-id="calculating-benefits">Calculating benefits</h2>
+<p>Once the required scenarios have been simulated, the “Calculate benefits” button will be active, see <a href="#fig-benefitReady">Figure&nbsp;5</a>. When the button is clicked, the benefit calculation happens on-the-fly, but because the risk information is already calculated, the benefit calculation happens very quickly and the results appear instantly.</p>
+<div id="fig-benefitReady" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefit_readyToRun.png" class="lightbox" title="When all scenarios have been run, “Calculate benefits” button is active" data-gallery="quarto-lightbox-gallery-4"><img src="../_static/images/benefit_readyToRun.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;5: <strong>When all scenarios have been run, “Calculate benefits” button is active</strong></figcaption>
+</figure>
+</div>
+<p>The benefit calculation uses output from four scenarios:</p>
+<ul>
+<li>The risk <strong>without</strong> the strategy implemented in <strong>current conditions</strong></li>
+<li>The risk <strong>with</strong> the strategy implemented in <strong>current conditions</strong></li>
+<li>The risk <strong>without</strong> the strategy implemented in <strong>future conditions</strong></li>
+<li>The risk <strong>with</strong> the strategy implemented in <strong>future conditions</strong></li>
+</ul>
+<p>When the “Calculate benefits” button is clicked, the following benefit calculations are carried out:</p>
+<ol type="1">
+<li><p>The <strong>risk-reduction benefit under current conditions</strong> is calculated as the difference in the risk without the strategy and with the strategy under the “current” projection (representing current conditions).</p></li>
+<li><p>The <strong>risk-reduction benefit under future conditions</strong> (for the year specified in the end-of-analysis situation) is calculated as the difference in the risk without the strategy and with the strategy under the future projection specified in the end-of-analysis situation when you created your benefit analysis.</p></li>
+<li><p>The <strong>annual risk-reduction benefits</strong> are calculated by linearly interpolating between the risk-reduction benefits under current conditions (in the current year) and the risk-reduction benefits under future conditions (in the end-of-analysis year).</p></li>
+<li><p>The <strong>annual discounted benefits</strong> (<span class="math inline">\(B_d(t)\)</span>) are calculated as</p>
+<p><span class="math inline">\(B_d\ (t)=B(t)/(1+r)^t\ \)</span></p>
+<p>where <span class="math inline">\(B(t)\)</span> is the risk-reduction benefit in year <span class="math inline">\(t\)</span>, <span class="math inline">\(t\)</span> is the year since implementation, and <span class="math inline">\(r\)</span> is the discount rate.</p></li>
+<li><p>The <strong>(present value of the) benefits</strong> are calculated as the sum of the annual discounted benefits over the analysis duration (<span class="math inline">\(N\)</span> years).</p>
+<p><span class="math inline">\(Benefits\ =\ \sum_{t=0}^N B_d\ (t)\ \)</span></p></li>
+</ol>
+<p><strong>When cost information is provided, FloodAdapt additionally calculates:</strong></p>
+<ol start="6" type="1">
+<li><p>The <strong>(present value of the) costs</strong> - calculated only when implementation and/or maintenance costs are provided in the benefit analysis input. This is calculated in the same way as the present value of the benefits: <span class="math inline">\(Costs\ =\ \sum_{t=0}^N C_d\ (t)\ \)</span></p>
+<p>where <span class="math inline">\(C_d(t)\)</span> is the discounted cost in year <span class="math inline">\(t\)</span>.</p></li>
+<li><p>The <strong>benefit-cost ratio</strong> (BCR) is calculated as the present value of the benefits divided by the present value of the costs.</p></li>
+<li><p>The <strong>net present value</strong> (NPV) is the difference in annual discounted benefits and costs, summed up over the analysis period.</p>
+<p><span class="math inline">\(NPV\ =\ \sum_{t=0}^N [(B(t)-C(t))/(1+r)^t]\ \)</span></p></li>
+<li><p>The <strong>internal rate of return</strong> (IRR) represents the discount rate at which the NPV would be equal to zero. Higher IRR indicates a better investment, because in this case the benefits weigh strongly against the costs.</p></li>
+</ol>
+<p>The output from these calculation steps can be <a href="#viewing-benefit-output-in-the-benefits-tab">viewed in the Benefits output tab</a> and can additionally be <a href="#benefits-output-folder">accessed on the user’s computer</a>.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Some metrics are only calculated when cost information is provided!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The present value of the costs, benefit cost ratio, net present value, and internal rate of return are only calculated if the user has provided information on implementation and/or maintenance costs when they created their benefit analysis. When this information is not provided, the benefits are calculated, but none of the metrics that require comparison with costs.</p>
+</div>
+</div>
+</section>
+<section id="viewing-benefit-output-in-the-benefits-tab" class="level2">
+<h2 class="anchored" data-anchor-id="viewing-benefit-output-in-the-benefits-tab">Viewing benefit output in the Benefits tab</h2>
+<p><a href="#fig-benefitTab">Figure&nbsp;6</a> shows the Benefits tab in FloodAdapt once a benefit analysis has been completed. The window is separated into a top panel with a map window on the left and, when using the collapsible frame, a time series of benefits on the right. When a benefit analysis is selected in the list, the measures in the strategy for which benefits are being calculated will appear in the map window. The bottom panel will show a summary of the user-provided input to the benefit analysis, such as discount rate or end-year of the analysis. Once the user clicks the “Calculate benefits” button, output will appear in the panel. This output consists of the (present value of the) benefits and a benefit-cost ratio (if cost information was provided). The collapsible frame contains a graphic with the risk-reduction benefits calculated under current conditions and under future conditions (green dots in the figure), the interpolated benefits over time (black line), the discounted benefits over time (dark green line), and the area under the discounted benefits curve (green shading) representing the present value of the benefits.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why don’t I see the NPV and IRR in the Benefits tab?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In addition to the above results which can be viewed in the Output tab, FloodAdapt also calculates - when implementation and/or maintenance cost information is provided - the net present value and the internal rate of return. These are provided in a results text file in the <a href="#benefits-output-folder">benefits output folder</a>.</p>
+</div>
+</div>
+<div id="fig-benefitTab" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/Benefits_tab.png" class="lightbox" title="The FloodAdapt Benefits tab showing a selected benefit analysis" data-gallery="quarto-lightbox-gallery-5"><img src="../_static/images/Benefits_tab.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;6: <strong>The FloodAdapt Benefits tab showing a selected benefit analysis</strong></figcaption>
+</figure>
+</div>
+<p>The benefits can also be viewed spatially; the lower panel contains map visualization options (see <a href="#fig-benefitTab">Figure&nbsp;6</a>). The user can click “Aggregated benefits” to see the spatial distribution of benefits (see <a href="#fig-benefitDist">Figure&nbsp;7</a> for an example). They can choose from the “Aggregation” drop-down menu which aggregation level they would like to view, for example neighborhoods or census blocks.</p>
+<div id="fig-benefitDist" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/Benefits_distributedBenefits.png" class="lightbox" title="Visualizing the benefits spatially" data-gallery="quarto-lightbox-gallery-6"><img src="../_static/images/Benefits_distributedBenefits.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;7: <strong>Visualizing the benefits spatially</strong></figcaption>
+</figure>
+</div>
+<p>In the map visualization options, there is also an equity-weighted button. When this is checked the distributed (aggregated) benefits are displayed using equity weights, see <a href="#fig-benefitEquity">Figure&nbsp;8</a>. The figure shows the benefits without equity weights on the left and with equity weights on the right. In the figure, blue stars have been added (outside of FloodAdapt) to highlight how the equity weighting affects lower-income census-block groups. When equity weights are applied, the benefits of these lower-income areas will be weighted more heavily; in contrast, high-income area benefits will be weighted less heavily. Equity weights are calculated in FloodAdapt using information on income. Risk estimates are multiplied by the equity weights to derive equity-weighted risk estimates, from which equity-weighted benefits are calculated. This visualization is only available at the same scale for which income data is available. This will typically be census block level.</p>
+<div id="fig-benefitEquity" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefits_equity.png" class="lightbox" title="Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)" data-gallery="quarto-lightbox-gallery-7"><img src="../_static/images/benefits_equity.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;8: <strong>Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)</strong></figcaption>
+</figure>
+</div>
+</section>
+<section id="benefits-output-folder" class="level2">
+<h2 class="anchored" data-anchor-id="benefits-output-folder">Benefits output folder</h2>
+<p>The output from a benefit analysis is saved on a user’s computer, aspiring to provide full access and transparency. This section will describe the output files saved from the benefit analysis.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Where can I find the output folder?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><a href="#fig-folderStruct">Figure&nbsp;9</a> shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.</p>
+<div id="fig-folderStruct" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/output_folderStructure.png" class="lightbox" title="Location of the “output” folder within the FloodAdapt folder structure" data-gallery="quarto-lightbox-gallery-10"><img src="../_static/images/output_folderStructure.png" class="img-fluid figure-img" style="width:15.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;9: <strong>Location of the “output” folder within the FloodAdapt folder structure</strong></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The output folder contains a subfolder named “Benefits”. Within this subfolder you will find one folder for each benefit analysis that has been run. The name of the folder will be the name of the benefit analysis. Each folder will contain several files (see <a href="#fig-benefitsOutput">Figure&nbsp;10</a>):</p>
+<ul>
+<li>Benefits graphic (HTML file) that contains the same graphic displayed in the collapsible frame in the Benefits tab.</li>
+<li>Benefits per aggregation area, one CSV file for each aggregation scale defined for the site (e.g.&nbsp;neighborhoods or census block groups). For the aggregation scale for which income data is available (usually census block group), the CSV file will contain a column on benefits and one on equity-weighted benefits.</li>
+<li>Spatial benefits as geopackage (GPKG) files, one file for each aggregation scale defined for the site.</li>
+<li>Summary results of the benefit analysis as a text file (TOML file). This file always contains the total benefits (present value). If cost information was provided when setting up the benefit analysis, this file will also contain costs (present value), net present value (NPV), the benefit cost ratio (BCR), and the internal rate of return (IRR).</li>
+<li>A time series of annual risk with and without the strategy implemented, annual costs and benefits (absolute and discounted), and annual profit as the difference between benefits and costs (absolute and discounted).</li>
+</ul>
+<div id="fig-benefitsOutput" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/benefits_output.png" class="lightbox" title="Benefits output folder" data-gallery="quarto-lightbox-gallery-8"><img src="../_static/images/benefits_output.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;10: <strong>Benefits output folder</strong></figcaption>
+</figure>
+</div>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -845,6 +1046,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","openEffect":"zoom","loop":true});</script>
 
 
 
