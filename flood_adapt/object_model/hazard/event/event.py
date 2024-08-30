@@ -120,11 +120,16 @@ class Event:
                 # The file is empty
                 has_header = False
 
+            reader = csv.reader(f, delimiter=",")
+            for row in reader:
+                num_columns = len(row)
+                break
+
         header = 0 if has_header else None
         df = pd.read_csv(csvpath, index_col=0, header=header)
 
         df.index.names = ["time"]
-        df.columns = ["data"]
+        df.columns = [f"data_{i}" for i in range(num_columns)]
 
         SUPPORTED_DATETIME_FORMATS = [
             "%Y-%m-%d %H:%M:%S",

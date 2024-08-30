@@ -498,14 +498,17 @@ def test_block_discharge(test_db):
 
 class Test_ReadCSV:
     def write_dummy_csv(
-        self, path, headers: bool, datetime_format: str
+        self, path, headers: bool, datetime_format: str, num_columns: int = 1
     ) -> pd.DataFrame:
         size = 20
         gen = np.random.default_rng()
+        time = pd.date_range(start="2021-01-01", periods=size, freq="H")
+        data = {f"data_{i}": gen.random(size) for i in range(num_columns)}
+
         df = pd.DataFrame(
             {
-                "time": pd.date_range(start="2021-01-01", periods=size, freq="H"),
-                "data": gen.random(size),
+                "time": time,
+                **data,
             }
         )
         df.to_csv(path, index=False, header=headers, date_format=datetime_format)
@@ -559,3 +562,19 @@ class Test_ReadCSV:
             "Could not parse the time column in the CSV file. Supported formats are: "
             in str(e.value)
         )
+
+    def test_read_csv_ReadFileMultipleColumns(self, tmp_path):
+        # Arrange
+        path = tmp_path / "multiple_columns.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=False, datetime_format="%Y-%m-%d %H:%M:%S", num_columns=2
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+
+        pd.testing.assert_frame_equal(df, test_df)
