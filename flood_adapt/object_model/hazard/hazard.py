@@ -25,6 +25,7 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
@@ -51,7 +52,7 @@ class Hazard:
     event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
-    has_run: bool = False
+    site: ISite
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
@@ -66,7 +67,6 @@ class Hazard:
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
         self.site = database.site
-        self.has_run = self.has_run_check()
 
     @property
     def event_mode(self) -> Mode:
@@ -75,6 +75,10 @@ class Hazard:
     @event_mode.setter
     def event_mode(self, mode: Mode) -> None:
         self._mode = mode
+
+    @property
+    def has_run(self) -> bool:
+        return self.has_run_check()
 
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
@@ -148,28 +152,26 @@ class Hazard:
 
     def sfincs_has_run_check(self) -> bool:
         """Check if the hazard has been already run."""
-        test_combined = False
+        self.set_simulation_paths()
         if len(self.simulation_paths) == 0:
             raise ValueError("The Scenario has not been initialized correctly.")
-        else:
-            test1 = False
-            test2 = False
-            for sfincs_path in self.simulation_paths:
-                if sfincs_path.exists():
-                    for fname in os.listdir(sfincs_path):
-                        if fname.endswith("_map.nc"):
-                            test1 = True
-                            break
 
-                sfincs_log = sfincs_path.joinpath("sfincs.log")
+        waterlevel_map_exists = False
+        correct_log_file = False
+        for sfincs_path in self.simulation_paths:
+            if sfincs_path.exists():
+                for fname in os.listdir(sfincs_path):
+                    if fname.endswith("_map.nc"):
+                        waterlevel_map_exists = True
+                        break
 
-                if sfincs_log.exists():
-                    with open(sfincs_log) as myfile:
-                        if "Simulation finished" in myfile.read():
-                            test2 = True
+            sfincs_log = sfincs_path.joinpath("sfincs.log")
 
-            test_combined = (test1) & (test2)
-        return test_combined
+            if sfincs_log.exists():
+                with open(sfincs_log) as myfile:
+                    if "Simulation finished" in myfile.read():
+                        correct_log_file = True
+        return waterlevel_map_exists & correct_log_file
 
     def set_event(self) -> None:
         """Set the actual Event template class list using the list of measure names.
@@ -241,7 +243,7 @@ class Hazard:
         if not self.results_dir.exists():
             os.mkdir(self.results_dir)
         self._logger.info("Running hazard models...")
-        if not self.has_run:
+        if not self.has_run_check():
             self.run_sfincs()
 
     def postprocess_models(self):
@@ -249,6 +251,7 @@ class Hazard:
         # Postprocess all hazard model input
         self.postprocess_sfincs()
         # add other models here
+
         # remove simulation folders
         if not self.site.attrs.sfincs.save_simulation:
             sim_path = self.results_dir.joinpath("simulations")
@@ -279,7 +282,9 @@ class Hazard:
                 sfincs_log = "sfincs.log"
                 # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
                 with open(sfincs_log, "a") as log_handler:
-                    return_code = subprocess.run(sfincs_exec, stdout=log_handler)
+                    return_code = subprocess.run(
+                        sfincs_exec, stdout=log_handler, stderr=log_handler
+                    )
                     if return_code.returncode != 0:
                         run_success = False
                         break
@@ -297,11 +302,7 @@ class Hazard:
                 for subdir, _, files in os.walk(simulation_path):
                     if not files:
                         os.rmdir(subdir)
-
             raise RuntimeError("SFINCS model failed to run.")
-
-        # Indicator that hazard has run
-        self.__setattr__("has_run", True)
 
     def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
@@ -713,7 +714,7 @@ class Hazard:
         # Save flood map paths in object
         self._get_flood_map_path()
 
-    def _get_flood_map_path(self):
+    def _get_flood_map_path(self) -> Path:
         """_summary_."""
         results_path = self.results_dir
         mode = self.event_mode
@@ -727,6 +728,7 @@ class Hazard:
                 map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
         self.flood_map_path = map_fn
+        return map_fn
 
     def write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""

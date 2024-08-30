@@ -23,7 +23,6 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
@@ -31,6 +30,7 @@ from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.utils import finished_file_exists
 
 
 class Database(IDatabase):
@@ -131,11 +131,33 @@ class Database(IDatabase):
         self._projections = DbsProjection(self)
         self._benefits = DbsBenefit(self)
 
+        # Delete any unfinished/crashed scenario output
+        self.cleanup()
+
         self._init_done = True
 
-    def reset(self):
-        self._instance = None
+    def shutdown(self):
+        """Explicitly shut down the database controller singleton and clear all data stored in its memory."""
+        self.__class__._instance = None
         self._init_done = False
+        self.database_path = None
+        self.database_name = None
+
+        self.base_path = None
+        self.input_path = None
+        self.static_path = None
+        self.output_path = None
+        self._site = None
+
+        self.static_sfincs_model = None
+        self._logger = None
+        self._static = None
+        self._events = None
+        self._scenarios = None
+        self._strategies = None
+        self._measures = None
+        self._projections = None
+        self._benefits = None
 
     # Property methods
     @property
@@ -307,94 +329,96 @@ class Database(IDatabase):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
-        if (
-            event["template"] == "Synthetic"
-            or event["template"] == "Historical_nearshore"
-        ):
-            gui_units = self.site.attrs.gui.default_length_units
-            if event["template"] == "Synthetic":
-                event["name"] = "temp_event"
-                temp_event = Synthetic.load_dict(event)
-                temp_event.add_tide_and_surge_ts()
-                wl_df = temp_event.tide_surge_ts
+    def plot_wl(self, event: IEvent | dict, input_wl_df: pd.DataFrame = None) -> str:
+        if isinstance(event, dict):
+            event = EventFactory.get_event(event["template"]).load_dict(event)
+
+        match event.attrs.template:
+            case "Synthetic":
+                event.add_tide_and_surge_ts()
+                wl_df = event.tide_surge_ts
                 wl_df.index = np.arange(
-                    -temp_event.attrs.time.duration_before_t0,
-                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    -event.attrs.time.duration_before_t0,
+                    event.attrs.time.duration_after_t0 + 1 / 3600,
                     1 / 6,
                 )
-                xlim1 = -temp_event.attrs.time.duration_before_t0
-                xlim2 = temp_event.attrs.time.duration_after_t0
-            elif event["template"] == "Historical_nearshore":
-                wl_df = input_wl_df
-                xlim1 = pd.to_datetime(event["time"]["start_time"])
-                xlim2 = pd.to_datetime(event["time"]["end_time"])
-
-            # Plot actual thing
-            fig = px.line(
-                wl_df + self.site.attrs.water_level.msl.height.convert(gui_units)
-            )
-
-            # plot reference water levels
-            fig.add_hline(
-                y=self.site.attrs.water_level.msl.height.convert(gui_units),
-                line_dash="dash",
-                line_color="#000000",
-                annotation_text="MSL",
-                annotation_position="bottom right",
-            )
-            if self.site.attrs.water_level.other:
-                for wl_ref in self.site.attrs.water_level.other:
-                    fig.add_hline(
-                        y=wl_ref.height.convert(gui_units),
-                        line_dash="dash",
-                        line_color="#3ec97c",
-                        annotation_text=wl_ref.name,
-                        annotation_position="bottom right",
+                xlim1 = -event.attrs.time.duration_before_t0
+                xlim2 = event.attrs.time.duration_after_t0
+            case "Historical_nearshore":
+                if input_wl_df is None:
+                    self._logger.warning(
+                        "No water level data provided to plot for historical nearshore event, continuing..."
                     )
+                    return ""
+                wl_df = input_wl_df
+                xlim1 = pd.to_datetime(event.attrs.time.start_time)
+                xlim2 = pd.to_datetime(event.attrs.time.end_time)
+            case _:
+                raise NotImplementedError(
+                    "Plotting only available for timeseries and synthetic tide + surge."
+                )
+                return str("")
 
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                xaxis_title="Time",
-                yaxis_title=f"Water level [{gui_units}]",
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                showlegend=False,
-                xaxis={"range": [xlim1, xlim2]},
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
+        gui_units = self.site.attrs.gui.default_length_units
 
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
+        # Plot actual thing
+        fig = px.line(wl_df + self.site.attrs.water_level.msl.height.convert(gui_units))
 
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and synthetic tide + surge."
-            )
-            return str("")
+        # plot reference water levels
+        fig.add_hline(
+            y=self.site.attrs.water_level.msl.height.convert(gui_units),
+            line_dash="dash",
+            line_color="#000000",
+            annotation_text="MSL",
+            annotation_position="bottom right",
+        )
+        if self.site.attrs.water_level.other:
+            for wl_ref in self.site.attrs.water_level.other:
+                fig.add_hline(
+                    y=wl_ref.height.convert(gui_units),
+                    line_dash="dash",
+                    line_color="#3ec97c",
+                    annotation_text=wl_ref.name,
+                    annotation_position="bottom right",
+                )
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            xaxis_title="Time",
+            yaxis_title=f"Water level [{gui_units}]",
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            showlegend=False,
+            xaxis={"range": [xlim1, xlim2]},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def plot_rainfall(
-        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
+        self, event: IEvent | dict, input_rainfall_df: pd.DataFrame = None
     ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if isinstance(event, dict):
+            event = EventFactory.get_event(event["template"]).load_dict(event)
+
         if (
-            event["rainfall"]["source"] == "shape"
-            or event["rainfall"]["source"] == "timeseries"
+            event.attrs.rainfall.source == "shape"
+            or event.attrs.rainfall.source == "timeseries"
         ):
-            event["name"] = "temp_event"
-            temp_event = EventFactory.get_event(event["template"]).load_dict(event)
             if (
-                temp_event.attrs.rainfall.source == "shape"
-                and temp_event.attrs.rainfall.shape_type == "scs"
+                event.attrs.rainfall.source == "shape"
+                and event.attrs.rainfall.shape_type == "scs"
             ):
                 scsfile = self.input_path.parent.joinpath(
                     "static", "scs", self.site.attrs.scs.file
@@ -403,28 +427,26 @@ class Database(IDatabase):
                     ValueError(
                         "Information about SCS file and type missing in site.toml"
                     )
-                temp_event.add_rainfall_ts(
-                    scsfile=scsfile, scstype=self.site.attrs.scs.type
-                )
-                df = temp_event.rain_ts
-            elif event["rainfall"]["source"] == "timeseries":
+                event.add_rainfall_ts(scsfile=scsfile, scstype=self.site.attrs.scs.type)
+                df = event.rain_ts
+            elif event.attrs.rainfall.source == "timeseries":
                 df = input_rainfall_df
             else:
-                temp_event.add_rainfall_ts()
-                df = temp_event.rain_ts
+                event.add_rainfall_ts()
+                df = event.rain_ts
 
             # set timing relative to T0 if event is synthetic
-            if event["template"] == "Synthetic":
+            if event.attrs.template == "Synthetic":
                 df.index = np.arange(
-                    -temp_event.attrs.time.duration_before_t0,
-                    temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                    -event.attrs.time.duration_before_t0,
+                    event.attrs.time.duration_after_t0 + 1 / 3600,
                     1 / 6,
                 )
-                xlim1 = -temp_event.attrs.time.duration_before_t0
-                xlim2 = temp_event.attrs.time.duration_after_t0
+                xlim1 = -event.attrs.time.duration_before_t0
+                xlim2 = event.attrs.time.duration_after_t0
             else:
-                xlim1 = pd.to_datetime(event["time"]["start_time"])
-                xlim2 = pd.to_datetime(event["time"]["end_time"])
+                xlim1 = pd.to_datetime(event.attrs.time.start_time)
+                xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
             # Plot actual thing
             fig = px.line(data_frame=df)
@@ -464,35 +486,37 @@ class Database(IDatabase):
             return str("")
 
     def plot_river(
-        self, event: IEvent, input_river_df: list[pd.DataFrame]
+        self, event: IEvent | dict, input_river_df: list[pd.DataFrame]
     ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
+        if isinstance(event, dict):
+            event = EventFactory.get_event(event["template"]).load_dict(event)
+
         if any(df.empty for df in input_river_df) and any(
-            river["source"] == "timeseries" for river in event["river"]
+            river["source"] == "timeseries" for river in event.attrs.river
         ):
             return ""
-        event["name"] = "temp_event"
-        temp_event = EventFactory.get_event(event["template"]).load_dict(event)
-        event_dir = self.events.get_database_path().joinpath(temp_event.attrs.name)
-        temp_event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
+
+        event_dir = self.events.get_database_path().joinpath(event.attrs.name)
+        event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
         river_descriptions = np.where(
             river_descriptions is None, river_names, river_descriptions
         ).tolist()
-        df = temp_event.dis_df
+        df = event.dis_df
 
         # set timing relative to T0 if event is synthetic
-        if event["template"] == "Synthetic":
+        if event.attrs.template == "Synthetic":
             df.index = np.arange(
-                -temp_event.attrs.time.duration_before_t0,
-                temp_event.attrs.time.duration_after_t0 + 1 / 3600,
+                -event.attrs.time.duration_before_t0,
+                event.attrs.time.duration_after_t0 + 1 / 3600,
                 1 / 6,
             )
-            xlim1 = -temp_event.attrs.time.duration_before_t0
-            xlim2 = temp_event.attrs.time.duration_after_t0
+            xlim1 = -event.attrs.time.duration_before_t0
+            xlim2 = event.attrs.time.duration_after_t0
         else:
-            xlim1 = pd.to_datetime(event["time"]["start_time"])
-            xlim2 = pd.to_datetime(event["time"]["end_time"])
+            xlim1 = pd.to_datetime(event.attrs.time.start_time)
+            xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
         # Plot actual thing
         fig = go.Figure()
@@ -533,9 +557,12 @@ class Database(IDatabase):
         return str(output_loc)
 
     def plot_wind(
-        self, event: IEvent, input_wind_df: pd.DataFrame = None
+        self, event: IEvent | dict, input_wind_df: pd.DataFrame = None
     ) -> str:  # I think we need a separate function for the different timeseries when we also want to plot multiple rivers
-        if event["wind"]["source"] == "timeseries":
+        if isinstance(event, dict):
+            event = EventFactory.get_event(event["template"]).load_dict(event)
+
+        if event.attrs.wind.source == "timeseries":
             df = input_wind_df
 
             # Plot actual thing
@@ -643,8 +670,14 @@ class Database(IDatabase):
                 )
 
                 scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
-
-                self._scenarios.save(scenario_obj)
+                # Check if scenario already exists (because it was created before in the loop)
+                try:
+                    self.scenarios.save(scenario_obj)
+                except ValueError as e:
+                    if "name is already used" not in str(e):
+                        # some other error was raised, so we re-raise it
+                        raise e
+                    # otherwise, if it already exists and we dont need to save it, we can just continue
 
         # Update the scenarios check
         benefit.check_scenarios()
@@ -951,3 +984,32 @@ class Database(IDatabase):
                 + ", ".join(errors)
                 + ". Check the logs for more information."
             )
+
+    def cleanup(self) -> None:
+        """
+        Remove corrupted scenario output.
+
+        This method removes any scenario output that:
+            - is corrupted due to unfinished runs
+            - does not have a corresponding input
+
+        """
+        scn_input_path = self.scenarios.get_database_path()
+        scn_output_path = self.scenarios.get_database_path(get_input_path=False)
+        if not scn_output_path.is_dir():
+            return
+
+        input_scenarios = [
+            (scn_input_path / dir).resolve() for dir in os.listdir(scn_input_path)
+        ]
+        output_scenarios = [
+            (scn_output_path / dir).resolve() for dir in os.listdir(scn_output_path)
+        ]
+
+        for dir in output_scenarios:
+            if dir.name not in [path.name for path in input_scenarios]:
+                # input was deleted
+                shutil.rmtree(dir)
+            elif not finished_file_exists(dir):
+                # corrupted output due to unfinished run
+                shutil.rmtree(dir)
