@@ -6,15 +6,19 @@ lightbox: auto
 ---
 
 
-In the event tab, a user can add different types of events. These can be either [**historical**](historic_events/index.qmd) or [**synthetic**](synthetic_events.qmd) events. It is also possible to select historical events and modify them to create what-if event scenarios.
+FloodAdapt allows users to specify and simulate the flooding and impacts for many different types of (compound) events. These can be either [**historically-based**](historic_events/index.qmd) or [**synthetic**](synthetic_events.qmd) events. The historically-based events use historical water levels or hurricane tracks, but allow users to modify event specifics to create what-if event scenarios, for example by adding or intensifying rainfall or shifting a hurricane track.
 
-There are three historical event types, which are described in the coming sections:
+There are three historically-based event types, which are described in the coming sections:
 
 * [Historical hurricane](historic_events/historic_events_hurricane.qmd)
 * [Historical event with gauged water levels](historic_events/historic_events_gauged.qmd)
 * [Historical event without gauged water levels](historic_events/historic_events_ungauged.qmd)
 
- When the user selects **Add event** in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.
+ To create an event, the user goes to the Events tab in FloodAdapt (see @fig-eventTabEmpty). Prior to creating any events, there may be one event already shown in the event list window. This will be a [probabilistic event set](probabilistic_events.qmd) that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event "Type" is indicated. For event sets this will say "Probabilistic Event Set." For events that you create in the Events tab, these will say "Single Event". Next to the event list window there are buttons to add, edit, delete, and copy an event. Prior to creating any events, only the "Add event" button will be active.
+ 
+  ![**The event tab in FloodAdapt prior to creating any events**](../../_static/images/events_tab_empty.png){#fig-eventTabEmpty}
+
+ When a user clicks **Add event** in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.
 
  ![**The four event types a user can select**](../../_static/images/eventTypeSelector.png){#fig-eventSelector}
 
@@ -42,10 +46,10 @@ FloodAdapt supports two levels of hydrodynamic models:
 
 (2) An overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.
 
-When a user selects a [historical hurricane](historic_events_hurricane.qmd), FloodAdapt will pull in wind and pressure data for the offshore model, calculate the nearshore water levels for the overland model, and then run the overland model with wind and rainfall (calculated based on track information), and any user-input river discharges.
+When a user selects a [historical hurricane](historic_events_hurricane.qmd), FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the [Holland 2010 method](https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml). It also uses the track information to estimate the rainfall field using the [IPET method](https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904). The wind, pressure, and rainfall fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model. 
 
 When a user selects a [Historical event with gauged water levels](historic_events_gauged.qmd), only the overland model will be run, using the gauged water levels as input to the overland model.
 
-When a user selects a [Historical event without gauged water levels](historic_events_ungauged.qmd), the offshore model will first be run using the wind and pressure data from the [NOAA Global Forecast System](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.
+When a user selects a [Historical event without gauged water levels](historic_events_ungauged.qmd), the offshore model will first be run using the wind and pressure data from the [NOAA Global Forecast System](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.
 
-When a user selects a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the tide and surge information specified by the user.
+When a user selects a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the tide, surge, rainfall, wind, and river discharge information specified by the user.
