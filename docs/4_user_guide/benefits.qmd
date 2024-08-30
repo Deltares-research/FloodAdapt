@@ -8,11 +8,11 @@ Flood adaptation measures are designed to reduce flood risk, and are typically e
 
 FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits. 
 
-When you first go to the Benfits tab in FloodAdapt (see @fig-benefitEmpty) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the 'Add benefit analysis' button is active.   
+When you first go to the Benefits tab in FloodAdapt (see @fig-benefitEmpty) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the 'Add benefit analysis' button is active.   
 
-![**Benefit tab before any benefit analyses have been run**](../_static/images/benefitTab_empty.png){width=70% fig-align=left #fig-benefitEmpty}
+![**Benefit tab before any benefit analyses have been created**](../_static/images/benefitTab_empty.png){width=70% fig-align=left #fig-benefitEmpty}
 
-This Benefits documentation will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation. This information is described in the following sections:
+The following sections will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation. 
 
 * [Creating a new benefit analysis](#creating-a-new-benefit-analysis)
 * [Calculating benefits](#calculating-benefits)
