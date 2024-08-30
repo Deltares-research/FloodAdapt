@@ -492,7 +492,7 @@ class Database(IDatabase):
             event = EventFactory.get_event(event["template"]).load_dict(event)
 
         if any(df.empty for df in input_river_df) and any(
-            river["source"] == "timeseries" for river in event.attrs.river
+            river.source == "timeseries" for river in event.attrs.river
         ):
             return ""
 
