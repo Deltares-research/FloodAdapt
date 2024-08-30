@@ -1,4 +1,3 @@
-import csv
 import glob
 from datetime import datetime
 from pathlib import Path
@@ -100,51 +99,21 @@ class Event:
 
     @staticmethod
     def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.DataFrame.
+        """Read a timeseries file and return a pd.Dataframe.
 
         Parameters
         ----------
         csvpath : Union[str, os.PathLike]
-            Path to the CSV file.
+            path to csv file
 
         Returns
         -------
         pd.DataFrame
-            Dataframe with time as index and waterlevel as the first column.
+            Dataframe with time as index and waterlevel as first column.
         """
-        num_columns = None
-        has_header = None
-
-        with open(csvpath, "r") as f:
-            try:
-                # read the first 1024 bytes to determine if there is a header
-                has_header = csv.Sniffer().has_header(f.read(1024))
-            except csv.Error:
-                # The file is empty
-                has_header = False
-
-            f.seek(0)
-            reader = csv.reader(f, delimiter=",")
-            num_columns = len(next(reader)) - 1  # subtract 1 for the index column
-
-        if has_header is None:
-            raise ValueError(
-                f"Could not determine if the CSV file has a header: {csvpath}."
-            )
-        if num_columns is None:
-            raise ValueError(
-                f"Could not determine the number of columns in the CSV file: {csvpath}."
-            )
-
-        df = pd.read_csv(
-            csvpath,
-            index_col=0,
-            names=[f"data_{i}" for i in range(num_columns)],
-            header=0 if has_header else None,
-            parse_dates=True,
-            infer_datetime_format=True,
-        )
+        df = pd.read_csv(csvpath, index_col=0, header=None)
         df.index.names = ["time"]
+        df.index = pd.to_datetime(df.index)
         return df
 
     def download_meteo(self, site: ISite, path: Path):
