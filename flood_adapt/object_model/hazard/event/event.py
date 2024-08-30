@@ -111,14 +111,18 @@ class Event:
         pd.DataFrame
             Dataframe with time as index and waterlevel as the first column.
         """
-        try:
-            # try to read the file with header
-            df = pd.read_csv(csvpath, index_col=0)
-            # Check if the first index value can be a datetime to confirm header presence
-            pd.to_datetime(df.index, errors="raise")
-        except (ValueError, TypeError, pd.errors.ParserError):
-            # If reading with a header fails, assume no header and read again
-            df = pd.read_csv(csvpath, index_col=0, header=None)
+        import csv
+
+        with open(csvpath, "r") as f:
+            try:
+                has_header = csv.Sniffer().has_header(f.read(1024))
+            except csv.Error:
+                # The file is empty
+                has_header = False
+
+        header = 0 if has_header else None
+        df = pd.read_csv(csvpath, index_col=0, header=header)
+
         df.index.names = ["time"]
         df.columns = ["data"]
 

@@ -500,10 +500,12 @@ class Test_ReadCSV:
     def write_dummy_csv(
         self, path, headers: bool, datetime_format: str
     ) -> pd.DataFrame:
+        size = 20
+        gen = np.random.default_rng()
         df = pd.DataFrame(
             {
-                "time": pd.date_range(start="2021-01-01", periods=24, freq="H"),
-                "data": np.random.Generator(24),
+                "time": pd.date_range(start="2021-01-01", periods=size, freq="H"),
+                "data": gen.random(size),
             }
         )
         df.to_csv(path, index=False, header=headers, date_format=datetime_format)
@@ -524,8 +526,7 @@ class Test_ReadCSV:
         # Assert
         assert isinstance(df, pd.DataFrame)
         assert isinstance(df.index, pd.DatetimeIndex)
-        print("df\n", df)
-        print("test_df\n", test_df)
+
         pd.testing.assert_frame_equal(df, test_df, check_names=False)
 
     def test_read_csv_ReadFileWithoutHeaders(self, tmp_path):
@@ -541,8 +542,7 @@ class Test_ReadCSV:
         # Assert
         assert isinstance(df, pd.DataFrame)
         assert isinstance(df.index, pd.DatetimeIndex)
-        print("df", df)
-        print("test_df", test_df)
+
         pd.testing.assert_frame_equal(df, test_df)
 
     def test_read_csv_ReadFileUnSupportedDatetimeFormat_raises(self, tmp_path):
@@ -551,5 +551,11 @@ class Test_ReadCSV:
         self.write_dummy_csv(path, headers=False, datetime_format="%d %H:%M:%S")
 
         # Act
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as e:
             Event.read_csv(path)
+
+        # Assert
+        assert (
+            "Could not parse the time column in the CSV file. Supported formats are: "
+            in str(e.value)
+        )
