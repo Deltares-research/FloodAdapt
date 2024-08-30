@@ -1,7 +1,6 @@
 ---
-title: "SFINCS Setup"
+title: "Coming soon"
 ---
 
-# Coming soon...
 
 ...
