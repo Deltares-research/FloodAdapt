@@ -46,6 +46,6 @@ When a user selects a [historical hurricane](historic_events_hurricane.qmd), Flo
 
 When a user selects a [Historical event with gauged water levels](historic_events_gauged.qmd), only the overland model will be run, using the gauged water levels as input to the overland model.
 
-When a user selects a [Historical event without gauged water levels](historic_events_ungauged.qmd), the offshore model will first be run using the wind and pressure data from **ADD SOURCE HERE**. The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.
+When a user selects a [Historical event without gauged water levels](historic_events_ungauged.qmd), the offshore model will first be run using the wind and pressure data from the [NOAA Global Forecast System](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding using the user-specified local wind, rainfall, and river discharge values.
 
 When a user selects a [Synthetic event](synthetic_events.qmd), only the overland model will be run, using the tide and surge information specified by the user.

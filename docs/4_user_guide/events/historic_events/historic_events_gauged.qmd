@@ -39,7 +39,9 @@ The plot window will then show the time series of the water levels over the dura
 
 ::: {.callout-note}
 ## Required format for imported water level time series
-The water level time series should be a two-column csv. The first column contains the date and time, and the second column contains the water level. **NEED TO SAY SOMETHING ABOUT UNITS ANDN REFERENCE LEVELS HERE**
+The water level time series should be a two-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column contains the water level relative to mean sea level (MSL). The units of the water level will depend on how the system is configured. In the event specification window, you will find an "i" button next to the option to import a time series. Clicking this button will display an example of the format required for the csv. 
+![**Required format popup for water levels when choosing the "timeseries" option**](../../../_static/images/events_waterLevel_TSformat.png){#fig-gaugedWindow_format}
+
 :::
 
 ## Rainfall
