@@ -112,6 +112,9 @@ class Event:
         pd.DataFrame
             Dataframe with time as index and waterlevel as the first column.
         """
+        num_columns = None
+        has_header = None
+
         with open(csvpath, "r") as f:
             try:
                 # read the first 1024 bytes to determine if there is a header
@@ -120,15 +123,23 @@ class Event:
                 # The file is empty
                 has_header = False
 
+            f.seek(0)
             reader = csv.reader(f, delimiter=",")
-            for row in reader:
-                num_columns = len(row)
-                break
+            num_columns = len(next(reader)) - 1  # subtract 1 for the index column
 
+        if has_header is None:
+            raise ValueError(
+                f"Could not determine if the CSV file has a header: {csvpath}."
+            )
         header = 0 if has_header else None
         df = pd.read_csv(csvpath, index_col=0, header=header)
 
         df.index.names = ["time"]
+
+        if num_columns is None:
+            raise ValueError(
+                f"Could not read the number of columns in the CSV file: {csvpath}."
+            )
         df.columns = [f"data_{i}" for i in range(num_columns)]
 
         SUPPORTED_DATETIME_FORMATS = [
