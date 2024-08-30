@@ -412,78 +412,87 @@ class Database(IDatabase):
         if isinstance(event, dict):
             event = EventFactory.get_event(event["template"]).load_dict(event)
 
-        if (
-            event.attrs.rainfall.source == "shape"
-            or event.attrs.rainfall.source == "timeseries"
-        ):
-            if (
-                event.attrs.rainfall.source == "shape"
-                and event.attrs.rainfall.shape_type == "scs"
-            ):
-                scsfile = self.input_path.parent.joinpath(
-                    "static", "scs", self.site.attrs.scs.file
-                )
-                if scsfile.is_file() is False:
-                    ValueError(
-                        "Information about SCS file and type missing in site.toml"
+        match event.attrs.rainfall.source:
+            case "shape":
+                if event.attrs.rainfall.shape_type == "scs":
+                    scsfile = self.input_path.parent.joinpath(
+                        "static", "scs", self.site.attrs.scs.file
                     )
+                    if not scsfile.is_file():
+                        ValueError(
+                            "Information about SCS file and type missing in site.toml"
+                        )
                 event.add_rainfall_ts(scsfile=scsfile, scstype=self.site.attrs.scs.type)
                 df = event.rain_ts
-            elif event.attrs.rainfall.source == "timeseries":
+            case "timeseries":
+                if input_rainfall_df is None:
+                    self._logger.warning(
+                        "No rainfall data provided to plot for timeseries event, continuing..."
+                    )
+                    return ""
                 df = input_rainfall_df
-            else:
-                event.add_rainfall_ts()
-                df = event.rain_ts
-
-            # set timing relative to T0 if event is synthetic
-            if event.attrs.template == "Synthetic":
-                df.index = np.arange(
-                    -event.attrs.time.duration_before_t0,
-                    event.attrs.time.duration_after_t0 + 1 / 3600,
-                    1 / 6,
+            case "constant":
+                time = pd.date_range(
+                    start=event.attrs.time.start_time,
+                    end=event.attrs.time.end_time,
+                    freq="H",
                 )
-                xlim1 = -event.attrs.time.duration_before_t0
-                xlim2 = event.attrs.time.duration_after_t0
-            else:
-                xlim1 = pd.to_datetime(event.attrs.time.start_time)
-                xlim2 = pd.to_datetime(event.attrs.time.end_time)
+                df = pd.DataFrame(
+                    index=time,
+                    data={
+                        "intensity": [event.attrs.rainfall.constant_intensity.value]
+                        * len(time),
+                    },
+                )
+            case _:
+                self._logger.warning(
+                    "Plotting only available for timeseries, shape and constant rainfall."
+                )
+                return ""
 
-            # Plot actual thing
-            fig = px.line(data_frame=df)
-
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                yaxis_title={
-                    "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
-                },
-                showlegend=False,
-                xaxis={"range": [xlim1, xlim2]},
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
+        # set timing relative to T0 if event is synthetic
+        if event.attrs.template == "Synthetic":
+            df.index = np.arange(
+                -event.attrs.time.duration_before_t0,
+                event.attrs.time.duration_after_t0 + 1 / 3600,
+                1 / 6,
             )
-
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
-
+            xlim1 = -event.attrs.time.duration_before_t0
+            xlim2 = event.attrs.time.duration_after_t0
         else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type rainfall."
-            )
-            return str("")
+            xlim1 = pd.to_datetime(event.attrs.time.start_time)
+            xlim2 = pd.to_datetime(event.attrs.time.end_time)
+
+        # Plot actual thing
+        fig = px.line(data_frame=df)
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            yaxis_title={
+                "text": f"Rainfall intensity [{self.site.attrs.gui.default_intensity_units}]"
+            },
+            showlegend=False,
+            xaxis={"range": [xlim1, xlim2]},
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def plot_river(
         self, event: IEvent | dict, input_river_df: list[pd.DataFrame]
@@ -492,8 +501,11 @@ class Database(IDatabase):
             event = EventFactory.get_event(event["template"]).load_dict(event)
 
         if any(df.empty for df in input_river_df) and any(
-            river["source"] == "timeseries" for river in event.attrs.river
+            river.source == "timeseries" for river in event.attrs.river
         ):
+            self._logger.warning(
+                "No/incomplete river discharge data provided to plot for timeseries event, continuing..."
+            )
             return ""
 
         event_dir = self.events.get_database_path().joinpath(event.attrs.name)
@@ -562,66 +574,93 @@ class Database(IDatabase):
         if isinstance(event, dict):
             event = EventFactory.get_event(event["template"]).load_dict(event)
 
-        if event.attrs.wind.source == "timeseries":
-            df = input_wind_df
-
-            # Plot actual thing
-            # Create figure with secondary y-axis
-            import plotly.graph_objects as go
-            from plotly.subplots import make_subplots
-
-            fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-            # Add traces
-            fig.add_trace(
-                go.Scatter(
-                    x=df.index,
-                    y=df[1],
-                    name="Wind speed",
-                    mode="lines",
-                ),
-                secondary_y=False,
+        if event.attrs.wind.source not in ["timeseries", "constant"]:
+            self._logger.warning(
+                "Plotting only available for timeseries and constant type wind."
             )
+            return ""
 
-            fig.add_trace(
-                go.Scatter(x=df.index, y=df[2], name="Wind direction", mode="markers"),
-                secondary_y=True,
-            )
+        match event.attrs.wind.source:
+            case "timeseries":
+                if input_wind_df is None:
+                    self._logger.warning(
+                        "No wind data provided to plot for timeseries event, continuing..."
+                    )
+                    return ""
+                df = input_wind_df
+            case "constant":
+                time = pd.date_range(
+                    start=event.attrs.time.start_time,
+                    end=event.attrs.time.end_time,
+                    freq="H",
+                )
+                df = pd.DataFrame(
+                    index=time,
+                    data={
+                        "speed": [event.attrs.wind.constant_speed.value] * len(time),
+                        "direction": [event.attrs.wind.constant_direction.value]
+                        * len(time),
+                    },
+                )
+            case _:
+                self._logger.warning(
+                    "Plotting only available for timeseries and constant type wind."
+                )
+                return ""
 
-            # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
-            # Set y-axes titles
-            fig.update_yaxes(
-                title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
-                secondary_y=False,
-            )
-            fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
-            fig.update_layout(
-                autosize=False,
-                height=100 * 2,
-                width=280 * 2,
-                margin={"r": 0, "l": 0, "b": 0, "t": 0},
-                font={"size": 10, "color": "black", "family": "Arial"},
-                title_font={"size": 10, "color": "black", "family": "Arial"},
-                legend=None,
-                yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
-                xaxis_title={"text": "Time"},
-                showlegend=False,
-                # paper_bgcolor="#3A3A3A",
-                # plot_bgcolor="#131313",
-            )
+        # Plot actual thing
+        # Create figure with secondary y-axis
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
 
-            # write html to results folder
-            output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
-            output_loc.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_html(output_loc)
-            return str(output_loc)
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-        else:
-            NotImplementedError(
-                "Plotting only available for timeseries and shape type wind."
-            )
-            return str("")
+        # Add traces
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df["speed"],
+                name="Wind speed",
+                mode="lines",
+            ),
+            secondary_y=False,
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, y=df["direction"], name="Wind direction", mode="markers"
+            ),
+            secondary_y=True,
+        )
+
+        # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
+        # Set y-axes titles
+        fig.update_yaxes(
+            title_text=f"Wind speed [{self.site.attrs.gui.default_velocity_units}]",
+            secondary_y=False,
+        )
+        fig.update_yaxes(title_text="Wind direction [deg N]", secondary_y=True)
+        fig.update_layout(
+            autosize=False,
+            height=100 * 2,
+            width=280 * 2,
+            margin={"r": 0, "l": 0, "b": 0, "t": 0},
+            font={"size": 10, "color": "black", "family": "Arial"},
+            title_font={"size": 10, "color": "black", "family": "Arial"},
+            legend=None,
+            yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
+            xaxis_title={"text": "Time"},
+            showlegend=False,
+            # paper_bgcolor="#3A3A3A",
+            # plot_bgcolor="#131313",
+        )
+
+        # write html to results folder
+        output_loc = self.input_path.parent.joinpath("temp", "timeseries.html")
+        output_loc.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_html(output_loc)
+        return str(output_loc)
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(

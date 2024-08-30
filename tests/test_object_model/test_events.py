@@ -494,3 +494,72 @@ def test_block_discharge(test_db):
     assert (
         np.abs(event.dis_df[1][-1] - event.attrs.river[0].base_discharge.value) < 0.001
     )
+
+
+class Test_ReadCSV:
+    def write_dummy_csv(
+        self, path, headers: bool, datetime_format: str, num_columns: int = 1
+    ) -> pd.DataFrame:
+        size = 20
+        gen = np.random.default_rng()
+        time = pd.date_range(start="2021-01-01", periods=size, freq="H")
+        data = {f"data_{i}": gen.random(size) for i in range(num_columns)}
+
+        df = pd.DataFrame(
+            {
+                "time": time,
+                **data,
+            }
+        )
+        df.to_csv(path, index=False, header=headers, date_format=datetime_format)
+
+        df = df.set_index("time")
+        return df
+
+    def test_read_file_with_headers(self, tmp_path):
+        # Arrange
+        path = tmp_path / "withheaders.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=True, datetime_format="%Y-%m-%d %H:%M:%S"
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+
+        pd.testing.assert_frame_equal(df, test_df, check_names=False)
+
+    def test_read_file_without_headers(self, tmp_path):
+        # Arrange
+        path = tmp_path / "withoutheaders.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=False, datetime_format="%Y-%m-%d %H:%M:%S"
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+
+        pd.testing.assert_frame_equal(df, test_df)
+
+    def test_read_file_multiple_columns(self, tmp_path):
+        # Arrange
+        path = tmp_path / "multiple_columns.csv"
+        test_df = self.write_dummy_csv(
+            path, headers=False, datetime_format="%Y-%m-%d %H:%M:%S", num_columns=2
+        )
+
+        # Act
+        df = Event.read_csv(path)
+
+        # Assert
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.DatetimeIndex)
+
+        pd.testing.assert_frame_equal(df, test_df)
