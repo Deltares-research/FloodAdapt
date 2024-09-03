@@ -530,7 +530,7 @@ class Hazard:
                         index_col=0,
                         header=None,
                     )
-                    df[1] = conversion_factor_precip * df[1]
+                    df[1] = conversion_factor_wind * df[1]
                     df.index = pd.DatetimeIndex(df.index)
                     model.add_wind_forcing(timeseries=df)
                 elif self.event.attrs.wind.source == "constant":

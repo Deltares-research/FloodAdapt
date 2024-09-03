@@ -588,6 +588,9 @@ class Database(IDatabase):
                     )
                     return ""
                 df = input_wind_df
+                df = df.rename(
+                    columns={1: "speed", 2: "direction"}
+                )  # rename column names for consistency
             case "constant":
                 time = pd.date_range(
                     start=event.attrs.time.start_time,

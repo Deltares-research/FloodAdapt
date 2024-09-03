@@ -514,6 +514,7 @@ class Test_ReadCSV:
         df.to_csv(path, index=False, header=headers, date_format=datetime_format)
 
         df = df.set_index("time")
+        df.columns = [i + 1 for i in range(num_columns)]
         return df
 
     def test_read_file_with_headers(self, tmp_path):
