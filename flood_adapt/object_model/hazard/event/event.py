@@ -139,7 +139,7 @@ class Event:
         df = pd.read_csv(
             csvpath,
             index_col=0,
-            names=[f"data_{i}" for i in range(num_columns)],
+            names=[i+1 for i in range(num_columns)],
             header=0 if has_header else None,
             parse_dates=True,
             infer_datetime_format=True,
