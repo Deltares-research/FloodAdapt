@@ -21,3 +21,8 @@
 .navbar-right .fa-github {
     font-size: 40px; /* Adjust the value as needed */
 }
+
+/* Adjust heading font size for h3 */
+h3 {
+    font-size: 1.2em; /* Adjust as needed */
+}
