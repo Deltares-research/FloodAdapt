@@ -106,11 +106,10 @@ website:
       - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
         contents:
-          - section: "SFINCS ModelBuilder"
+          - section: "Setup SFINCS"
             file: "3_setup_guide/SFINCS/index.qmd"
             contents:
-            - "3_setup_guide/SFINCS/sitesetup.qmd"
-            - "3_setup_guide/SFINCS/domain.qmd"
+            - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
           - "3_setup_guide/database.qmd"
           - "3_setup_guide/gui.qmd"
           - "3_setup_guide/risk_analysis.qmd"

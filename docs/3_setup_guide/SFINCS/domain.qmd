@@ -1,8 +1,0 @@
----
-title: Domain
-filters:
-  - lightbox
-lightbox: auto
----
-
-Model grid generation, topo-bathy interpolation, active cells and boundary cells, boundary points
