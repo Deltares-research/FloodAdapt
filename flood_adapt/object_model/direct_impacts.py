@@ -65,9 +65,7 @@ class DirectImpacts:
         bool
             _description_
         """
-        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
-
-        return check
+        return self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def fiat_has_run_check(self) -> bool:
         """Check if fiat has run as expected.
@@ -78,13 +76,13 @@ class DirectImpacts:
             True if fiat has run, False if something went wrong
         """
         log_file = self.fiat_path.joinpath("fiat.log")
-        if log_file.exists():
+        if not log_file.exists():
+            return False
+        try:
             with open(log_file, "r", encoding="cp1252") as f:
-                if "Geom calculation are done!" in f.read():
-                    return True
-                else:
-                    return False
-        else:
+                return "Geom calculation are done!" in f.read()
+        except Exception as e:
+            self._logger.error(f"Error while checking if FIAT has run: {e}")
             return False
 
     def set_socio_economic_change(self, projection: str) -> None:
@@ -134,11 +132,11 @@ class DirectImpacts:
         start_time = time.time()
         return_code = self.run_fiat()
         end_time = time.time()
-        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
-        # Indicator that direct impacts have run
-        if return_code == 0:
-            self.__setattr__("has_run", True)
+        success_str = "SUCCESS" if return_code == 0 else "FAILURE"
+        self._logger.info(
+            f"FIAT run finished with return code {return_code} ({success_str}). Running FIAT took {str(round(end_time - start_time, 2))} seconds"
+        )
 
     def postprocess_models(self):
         self._logger.info("Post-processing impact models...")
@@ -269,7 +267,7 @@ class DirectImpacts:
                     shell=True,
                 )
 
-            return process.returncode
+        return process.returncode
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results

@@ -27,6 +27,8 @@ third level : ### Heading
 
 *italic*:  * this will be italic when tab space removed *
 
+<span style="color:red;"><Make font a different color?></span>
+
 ## Paragraphs
 If you want to create a paragraph or continue in the next line add 2 tab spaces behind the last word.
 

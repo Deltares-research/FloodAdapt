@@ -1,0 +1,65 @@
+aggregateBy = []
+
+[[queries]]
+name = "ExpectedAnnualDamages"
+description = "Expected annual damages"
+select = "SUM(`Risk (EAD)`)"
+filter = ""
+long_name = "Expected Annual Damages"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP1"
+description = "Total damage with return period of 1 years"
+select = "SUM(`Total Damage (1Y)`)"
+filter = ""
+long_name = "Total Damage (RP 1)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP2"
+description = "Total damage with return period of 2 years"
+select = "SUM(`Total Damage (2Y)`)"
+filter = ""
+long_name = "Total Damage (RP 2)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP5"
+description = "Total damage with return period of 5 years"
+select = "SUM(`Total Damage (5Y)`)"
+filter = ""
+long_name = "Total Damage (RP 5)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP10"
+description = "Total damage with return period of 10 years"
+select = "SUM(`Total Damage (10Y)`)"
+filter = ""
+long_name = "Total Damage (RP 10)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP25"
+description = "Total damage with return period of 25 years"
+select = "SUM(`Total Damage (25Y)`)"
+filter = ""
+long_name = "Total Damage (RP 25)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP50"
+description = "Total damage with return period of 50 years"
+select = "SUM(`Total Damage (50Y)`)"
+filter = ""
+long_name = "Total Damage (RP 50)"
+show_in_metrics_table = "True"
+
+[[queries]]
+name = "TotalDamageRP100"
+description = "Total damage with return period of 100 years"
+select = "SUM(`Total Damage (100Y)`)"
+filter = ""
+long_name = "Total Damage (RP 100)"
+show_in_metrics_table = "True"
