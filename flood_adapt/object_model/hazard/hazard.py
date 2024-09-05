@@ -668,7 +668,7 @@ class Hazard:
                 )
                 offshore_model.add_spw_forcing(
                     historical_hurricane=self.event,
-                    database_path=self.database.base_path,
+                    event_path=event_dir,
                     model_dir=self.simulation_paths_offshore[ii],
                 )
                 # save created spw file in the event directory

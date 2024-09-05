@@ -207,7 +207,7 @@ def test_make_spw_file(test_db):
     site = Site.load_file(site_toml)
 
     FLORENCE.make_spw_file(
-        database_path=test_db.input_path.parent,
+        event_path=event_toml.parent,
         model_dir=event_toml.parent,
         site=site,
     )

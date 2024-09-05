@@ -96,11 +96,9 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def make_spw_file(self, database_path: Path, model_dir: Path, site=Site):
+    def make_spw_file(self, event_path: Path, model_dir: Path, site=Site):
         # Location of tropical cyclone database
-        cyc_file = database_path.joinpath(
-            "input", "events", f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
-        )
+        cyc_file = event_path.joinpath(f"{self.attrs.track_name}.cyc")
         # Initialize the tropical cyclone database
         tc = TropicalCyclone()
         tc.read_track(filename=cyc_file, fmt="ddb_cyc")
