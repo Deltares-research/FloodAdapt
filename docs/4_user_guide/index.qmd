@@ -45,7 +45,7 @@ Running a scenario calls the SFINCS and Delft-FIAT models to start the simulatio
 -->
 * The [**Output**](output/index.qmd) tab is where a user can view maps showing the flooding and impacts and see infometrics and an infographic for scenarios that have been run.
 
-* The user can compare scenarios spatially (map comparison) in the [C**ompare - map**](compare/Compare_map.qmd) tab and can compare scenarios based on their tabulated metrics in the [**Compare - table**](compare/Compare_table.qmd) tab.
+* The user can compare scenarios spatially (map comparison) in the [**Compare - map**](compare/Compare_map.qmd) tab and can compare scenarios based on their tabulated metrics in the [**Compare - table**](compare/Compare_table.qmd) tab.
 
 * The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the [**Benefits**](benefits.qmd) tab.
 
