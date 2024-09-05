@@ -33,7 +33,7 @@ The guide then describes the use of FloodAdapt [via the tabs in the FloodAdapt g
 
 
 
-* The [**Site** tab](site_tab.qmd) is an informative tab where the user is not required to input any information.
+* The [**Site**](site_tab.qmd) tab is an informative tab where the user is not required to input any information.
 
 * The [**Events**](events/index.qmd), [**Projections**](projections/index.qmd), [**Measures**](measures/index.qmd), and [**Strategy**](strategy/index.qmd) tabs are input tabs where the user will specify the 'ingredients' for their scenarios.
 
@@ -49,4 +49,4 @@ Running a scenario calls the SFINCS and Delft-FIAT models to start the simulatio
 
 * The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the [**Benefits**](benefits.qmd) tab.
 
-![**Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another**](../_static/images/GUI_Tabs.jpg){width=70% fig-align='left' #fig-GUItabs}
+![**Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another.**](../_static/images/GUI_Tabs.jpg){width=70% fig-align='left' #fig-GUItabs}
