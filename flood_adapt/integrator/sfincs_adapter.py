@@ -101,6 +101,8 @@ class SfincsAdapter:
             - wind_v: northward wind velocity [m/s]
             - spatial_ref: CRS
         """
+        if ds["lon"].min() > 180:
+            ds["lon"] = ds["lon"] - 360
         self.sf_model.setup_wind_forcing_from_grid(wind=ds)
 
     def add_pressure_forcing_from_grid(self, ds: xr.DataArray):
