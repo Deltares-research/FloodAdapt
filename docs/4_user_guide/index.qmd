@@ -9,7 +9,7 @@ Welcome to the FloodAdapt user guide! This guide will help you specify and run s
 
 ::: {.callout-note}
 ## What is a scenario in FloodAdapt?
-A FloodAdapt "scenario" refers to a combination of (1) a weather or hydrological "event" that can lead to flooding, like a hurricane, a Nor'easter, a high tide, rainfall, high river discharge, or combinations of these, (2) a "projection" representing future socio-economic or climate conditions and (3) a "strategy", representing an adaptation strategy with any number of individual measures (including the option to evaluate a current-situation strategy with no measures). 
+A FloodAdapt "scenario" refers to a combination of (1) a weather or hydrological "event" that can lead to flooding, like a hurricane, a Nor'easter, a high tide, rainfall, high river discharge, or combinations of these, (2) a "projection" representing future socio-economic or climate conditions and (3) a "strategy", representing an adaptation strategy with any number of individual measures (including the option to evaluate a current-situation strategy with no measures).
 :::
 
 ::: {.callout-tip}
@@ -19,7 +19,7 @@ A FloodAdapt "scenario" refers to a combination of (1) a weather or hydrological
 To answer this question, the user would create a scenario: a recent hurricane shifted to make worst-case landfall (event), under current conditions (projection), with and a floodwall (strategy). Viewing the flooding, impacts and summary information will help them evaluate if the floodwall would have been sufficient to protect against this event.
 :::
 
-@fig-GUItabs_landing shows the FloodAdapt application. There are a number of tabs in the lower panel. FloodAdapt is designed for users to walk through these tabs to create events, projections, measures, and strategies. The Scenarios tab then supports the creation and simulation of scenarios, after which results can be viewed in the Output and Comparison tabs. FloodAdapt also supports the evaluation of benefits in the Benefits tab. 
+@fig-GUItabs_landing shows the FloodAdapt application. There are a number of tabs in the lower panel. FloodAdapt is designed for users to walk through these tabs to create events, projections, measures, and strategies. The Scenarios tab then supports the creation and simulation of scenarios, after which results can be viewed in the Output and Comparison tabs. FloodAdapt also supports the evaluation of benefits in the Benefits tab.
 
 ![**FloodAdapt opens to the "Site" tab. The user walks through the various tabs to create events, projections, measures, strategies, and scenarios for simulation. There are also tabs for viewing output and for creating benefit analyses. This guide describes the process for each of the FloodAdapt tabs**](../_static/images/FA_GUI_userGuide.png){width=100% fig-align='left' #fig-GUItabs_landing}
 
