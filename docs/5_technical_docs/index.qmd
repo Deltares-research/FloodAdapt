@@ -1,0 +1,33 @@
+---
+title: 	FloodAdapt Technical documentation
+filters:
+  - lightbox
+lightbox: auto
+---
+Welcome to the FloodAdapt technical documentation. This section is intended for readers with a technical or modeling background who want to better understand the calculations within FloodAdapt. 
+
+The technical documentation covers the technical details of four main calculation frameworks: 
+
+* Event scenarios (flooding and impacts)
+* Risk scenarios (flooding, impacts, and risk)
+* Equity
+* Benefits
+
+::: {.callout-note}
+## What is the difference between an event scenario and a risk scenario
+For an event scenario FloodAdapt calculates the flooding and impacts for one single hydro-meteorological event, such as a hurricane or a king tide with rainfall. The scenario can include future projections and measures, but always represents just one single event. For a risk scenario, in contrast, FloodAdapt calculates flooding for a set of events with different freequencies. From this output, FloodAdapt derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
+:::
+
+## Event scenarios
+An event scenario in FloodAdapt...
+
+[Click here to read the technical documentation for an event scenario calculation](EventScenario.qmd)
+
+## Risk scenarios
+A risk scenario in FloodAdapt...
+
+## Equity
+Equity refers to...
+
+## Benefits
+Adaptation measures are evaluated by weighing their risk-reduction benefits against their costs...

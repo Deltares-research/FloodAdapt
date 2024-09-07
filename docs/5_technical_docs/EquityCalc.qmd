@@ -1,0 +1,6 @@
+---
+title: 	Equity Calculation
+filters:
+  - lightbox
+lightbox: auto
+---
