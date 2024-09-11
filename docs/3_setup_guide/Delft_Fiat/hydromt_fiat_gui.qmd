@@ -186,11 +186,11 @@ To update the classification of using the Delft-FIAT model-builder:
 3. Click the "Load source" button and choose the point or polygon file with your classification data. This will load the data field names in your file into the "Assign classification" drop-down menu.
 4. Select whether you want to update the primary or secondary object type in the first drop-down menu.
 5. Select the field name that corresponds to your classification data  in the second drop-down menu and click "Add".
-6. Standardize your data.
-  a) Click "OK" on the info box and a window will open to assign a damage curve to the new object type. (If you close this window by accident, click the button "" Standardize")
-  b) Click on an object type in the left list, then click on a damage curve from the right list, which describes your new object type best.
-  c) Repeat this process for all new object types in the right list.
-  d) Click "Okay" when you standardized all curves.
+6. Standardize your data:
+    a) Click "OK" on the info box and a window will open to assign a damage curve to the new object type. (If you close this window by accident, click the button "" Standardize")
+    b) Click on an object type in the left list, then click on a damage curve from the right list, which describes your new object type best.
+    c) Repeat this process for all new object types in the right list.
+    d) Click "Okay" when you standardized all curves.
 7. Click "Add to model" and your classification is updated with your data.
 
 ::: {.callout-warning}
