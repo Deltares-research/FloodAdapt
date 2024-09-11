@@ -2,4 +2,4 @@
 title: "Setup Guide"
 ---
 
-Please follow the sectoins below to set up a Floodadapt model.
+Please follow the sections below to set up a Floodadapt model.
