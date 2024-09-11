@@ -6,28 +6,36 @@ lightbox: auto
 ---
 Welcome to the FloodAdapt technical documentation. This section is intended for readers with a technical or modeling background who want to better understand the calculations within FloodAdapt. 
 
-The technical documentation covers the technical details of four main calculation frameworks: 
+The technical documentation covers the technical details of four calculation frameworks: 
 
 * Event scenarios (flooding and impacts)
 * Risk scenarios (flooding, impacts, and risk)
-* Equity
+* Equity-weighted expected annual damages
 * Benefits
 
-::: {.callout-note}
-## What is the difference between an event scenario and a risk scenario
-For an event scenario FloodAdapt calculates the flooding and impacts for one single hydro-meteorological event, such as a hurricane or a king tide with rainfall. The scenario can include future projections and measures, but always represents just one single event. For a risk scenario, in contrast, FloodAdapt calculates flooding for a set of events with different freequencies. From this output, FloodAdapt derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
-:::
+Each of these are introduced below with a link to the detailed documentation. 
 
 ## Event scenarios
-An event scenario in FloodAdapt...
+
+![**Scenario components: a future climate and/or socio-economic projection, a hydro-meteorological event, and a strategy**](../_static/images/Scenario_cartoon.png){width=50% fig-align='left' #fig-scenarioCartoon}
+
+An event scenario in FloodAdapt is a what-if situation and consists of a hydro-meteorological event, a climate and/or socio-economic projection, and a strategy. For example, an event scenario could be “Hurricane Ian (event) with 1 foot of sea level rise (projection) with a floodwall (strategy)”. This scenario could be compared with “Hurricane Ian with 1 foot of sea level rise with no measures implemented” to see how well a floodwall would prevent flooding and damages for this event under future sea level rise. Once you have defined at least one event, projection, and strategy, you are ready to create a scenario. Users can evaluate both event scenarios and risk scenarios. 
 
 [Click here to read the technical documentation for an event scenario calculation](EventScenario.qmd)
 
 ## Risk scenarios
-A risk scenario in FloodAdapt...
+A risk scenario is very similar to an event scenario. It also consists of a climate and/or socio-economic projection and a strategy. However, instead of being defined for one single hydro-meteorological event, it is defined for a set of events. Ideally this set of events should cover all of the different event types that could lead to flooding in the project area. Each event in the event set must also be accompanied by a frequency of occurrence. FloodAdapt that simulates the flooding for each event in the event set, and subsequently derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
+
+[Click here to read the technical documentation for a risk scenario calculation](RiskScenario.qmd)
 
 ## Equity
-Equity refers to...
+Equity methods account for income disparity among residents in the community. The equity-weighting method used in [Kind et al.](https://wires.onlinelibrary.wiley.com/doi/full/10.1002/wcc.446) is applied in FloodAdapt to calculated equity-weighted expected annual damages. The method makes use of the utility curve, which relates a loss in income to a loss in 'utility' or well-being. This changes depending on the income level. The equity weights are essentially the relative utility loss compared to the average in the community. The method relies on income and population data derived at census block group level, and therefore the equity-weighted expected annual damages are only available at this same scale. 
+
+[Click here to read more details about how the equity weights are calculated and applied in FloodAdapt](EquityCalc.qmd)
 
 ## Benefits
-Adaptation measures are evaluated by weighing their risk-reduction benefits against their costs...
+Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction benefits and the benefit-cost ratio, which compares benefits with the implementation and maintenance costs of the measure(s).
+
+FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits. The user guide section on benefits provides comprehensive guidance on preparing and evaluating benefits in FloodAdapt. 
+
+[Click here to read technical documentation describing the benefit calculation in FloodAdapt](BenefitCalc.qmd).
