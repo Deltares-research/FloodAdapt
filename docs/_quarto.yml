@@ -109,7 +109,7 @@ website:
           - section: "SFINCS Setup"
             file: "3_setup_guide/SFINCS/index.qmd"
             contents:
-            - "3_setup_guide/SFINCS/index.qmd"
+            - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
           - section: "Delft FIAT Setup"
             file: "3_setup_guide/Delft_Fiat/index.qmd"
             contents:
