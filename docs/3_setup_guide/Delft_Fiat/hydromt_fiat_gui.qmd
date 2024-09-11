@@ -17,7 +17,7 @@ This guide is organized in six sections:
 (2) [Selecting your area of interest](#model-boundary) (your "model boundary").
 (3) [Building a Delft-FIAT model with the quick-build option](#sec-quickbuild) (automatic model generation with open data).
 (4) [Building a tailored Delft-FIAT model](#sec-tailored_model) using local data or different settings than the default options.
-(5) [Visualizing](#visualize-your-model) the model you've created
+(5) [Visualizing](#visualize-your-model) the model you"ve created
 (6) [Understanding the Delft-FIAT model folder](#delft-fiat-model-folder) that is generated
 
 @fig-homeScreen shows the Delft-FIAT model builder. There are seven tabs shown at the top. For generating an automatic Delft-FIAT model using open data, you will only need to use the first of these tabs, the "Model Boundary | Quick Build" tab. The remaining tabs are for tailoring your Delft-FIAT model and are described in the [tailored Delft-FIAT model](#sec-tailored_model) section.
@@ -52,7 +52,7 @@ When setting up FloodAdapt in a project area, you will also have to set up a SFI
 Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). If this is the case, you can better pick one of the other options.
 
 * To look at damages for an adminstative area like a city or a county, you can best upload the city or county boundary shapefile using the "Upload file" option
-* To quickly get started and you don't have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.
+* To quickly get started and you don"t have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.
 :::
 
 <!-- I am commenting out the below because I actually think it makes it more confusing instead of clearer.
@@ -69,9 +69,9 @@ After you selected the working directory the Delft-FIAT model builder generates 
 :::
 
 ## Quick Build {#sec-quickbuild}
-The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
+The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn"t require any user input except for defining the [model boundary](#sec-getting-started). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
 
-To use the quick build option to generate a Delft-FIAT model, simply click the "Create model" button on the "Model Boundary | Quick Build" tab after generating your model boundary. That's it!
+To use the quick build option to generate a Delft-FIAT model, simply click the "Create model" button on the "Model Boundary | Quick Build" tab after generating your model boundary. That"s it!
 
 
 ::: {.callout-note}
@@ -114,7 +114,7 @@ In addition to these mandatory steps, there are many options to refine data sour
 
 * [Step 1: Set up a base exposure dataset](#sec-basemodel)
 * [Exposure updates](#sec_update_exposure)
-<!--* **SHOULDN'T CLASSIFICATION BE HERE TOO?** -->
+*   [Update classification of buildings](#sec-classification)
   * [Update finished floor heights of buildings](#sec-finished_floor_height)
   * [Update the ground elevation at the asset locations](#sec-ground_elevation)
   * [Update the maximum potential damages (structure and content) of the assets](#sec-maximum_potential_damages)
@@ -172,6 +172,31 @@ The Delft-FIAT model builder allows you to update the following exposure data, c
 * [Finished floor heights](#sec-finished_floor_height)
 * [Ground elevation](#sec-ground_elevation)
 * [Maximum potential damages](#sec-maximum_potential_damages)
+
+#### Updating classification {#sec-classification}
+The classification of a building defines the building type and can be divided into "primary"and "secondary" classification.
+The primary classification gives a broad description of the building type such as "residential", "industrial", or "commercial". The secondary classification categorizes the buildings further into more refined groups based for instance on their number of stories, building material or other descriptors. Based on this classification the Delft-FIAT model-builder assigns the corresponding damage curve.
+
+In some cases it can be desirable to update the classification of certain buildings with your own data and select a different damage curve.
+
+To update the classification of using the Delft-FIAT model-builder:
+
+1. Open the **Exposure** tab from the top panel and select the **Classification** tab in the bottom panel.
+2. Click the drop-down menu in the "classification Source"-window and select "Upload data".
+3. Click the "Load source" button and choose the point or polygon file with your classification data. This will load the data field names in your file into the "Assign classification" drop-down menu.
+4. Select whether you want to update the primary or secondary object type in the first drop-down menu.
+5. Select the field name that corresponds to your classification data  in the second drop-down menu and click "Add".
+6. Standardize your data.
+  a) Click "OK" on the info box and a window will open to assign a damage curve to the new object type. (If you close this window by accident, click the button "" Standardize")
+  b) Click on an object type in the left list, then click on a damage curve from the right list, which describes your new object type best.
+  c) Repeat this process for all new object types in the right list.
+  d) Click "Okay" when you standardized all curves.
+7. Click "Add to model" and your classification is updated with your data.
+
+::: {.callout-warning}
+##### Optional settings for spatially joining exposure points and finished floor height data
+The current version of the Delft-FIAT model-builder only allows to update the primary OR the secondary object type. It is not possible to update one after another. The data will be overwritten. Nevertheless, this causes no problems when assigning the damage curve since this is done manually during the standardization step.
+:::
 
 #### Updating finished floor heights {#sec-finished_floor_height}
 Finished floor heights refer to the height of the ground floor of a building above ground level. Damage estimates are sensitive to this attribute, and open data is either not available (in the case of OSM) or is not entirely reliable (in the case of NSI). When local data exists on building elevations, these can be incorporated in the Delft-FIAT model using the Delft-FIAT model-builder. The finished floor height data must be point or polygon data (e.g. .gpkg, .geojson).
@@ -267,7 +292,7 @@ Coming soon...
 #### Updating vulnerability curves {#sec_update_vulnerability}
 If you are building your model in the U.S., you can change the damage curve assignment. Updating damage curves is currently only possible in the U.S. The functionality is facilitated by the alignment between [HAZUS damage curves](https://msc.fema.gov/portal/resources/hazus) and the secondary object types in the [National Structure Inventory](https://www.hec.usace.army.mil/confluence/nsi) (see secondary object types in @fig-secOccType). Users can only choose new damage curve assignments from existing damage curves within the HAZUS damage curve database. User-defined damage curves are currently not possible from within the Delft-FIAT model builder. Future releases of the Delft-FIAT model builder may offer more flexibility.
 
-<!-- I think this belongs higher up. It's sort of covered under the quick build section, but could potentially go even higher than that
+<!-- I think this belongs higher up. It"s sort of covered under the quick build section, but could potentially go even higher than that
 There are two data sources which the vulnerability curves can be downloaded from, determined by the location of your model:
 
 1. **United States:** FEMA Hazus Curves
