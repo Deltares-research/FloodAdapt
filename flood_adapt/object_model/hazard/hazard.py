@@ -640,18 +640,8 @@ class Hazard:
 
         # Add wind and if applicable pressure forcing from meteo data (historical_offshore) or spiderweb file (historical_hurricane).
         if self.event.attrs.template == "Historical_offshore":
-            if self.event.attrs.wind.source == "map":
-                offshore_model.add_wind_forcing_from_grid(ds=ds)
-                offshore_model.add_pressure_forcing_from_grid(ds=ds["press"])
-            elif self.event.attrs.wind.source == "timeseries":
-                offshore_model.add_wind_forcing(
-                    timeseries=event_dir.joinpath(self.event.attrs.wind.timeseries_file)
-                )
-            elif self.event.attrs.wind.source == "constant":
-                offshore_model.add_wind_forcing(
-                    const_mag=self.event.attrs.wind.constant_speed.value,
-                    const_dir=self.event.attrs.wind.constant_direction.value,
-                )
+            offshore_model.add_wind_forcing_from_grid(ds=ds)
+            offshore_model.add_pressure_forcing_from_grid(ds=ds["press"])
         elif self.event.attrs.template == "Historical_hurricane":
             spw_name = "hurricane.spw"
             offshore_model.set_config_spw(spw_name=spw_name)
@@ -668,7 +658,7 @@ class Hazard:
                 )
                 offshore_model.add_spw_forcing(
                     historical_hurricane=self.event,
-                    database_path=self.database.base_path,
+                    event_path=event_dir,
                     model_dir=self.simulation_paths_offshore[ii],
                 )
                 # save created spw file in the event directory
