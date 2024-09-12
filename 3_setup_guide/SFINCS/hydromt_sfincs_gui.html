@@ -152,12 +152,6 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/user_interface.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">GUI features</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../4_user_guide/site_tab.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Site tab</span></a>
   </div>
@@ -461,7 +455,7 @@ ul.task-list li input[type="checkbox"] {
 <p><a href="#fig-sfincsHomeScreen">Figure&nbsp;1</a> shows the SFINCS model builder. There are six tabs shown at the top. For generating a SFINCS model for FloodAdapt, you will only need to use the first of these tabs, the “Model Maker” tab. The remaining tabs are for creating a standalone SFINCS model for use outside of FloodAdapt. Within the “Model Maker” tab, there are 5 tabs shown at the bottom. These guide the user through creating a SFINCS model for FloodAdapt.</p>
 <div id="fig-sfincsHomeScreen" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_model_builder_homeScreen.png" class="lightbox" title="The model-builder start screen. Within the “Model Maker” tab located at the top of the GUI, the tabs at the bottom of the GUI walk you through the key components of creating a SFINCS model for FloodAdapt." data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/sfincs_model_builder_homeScreen.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_model_builder_homeScreen.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The model-builder start screen. Within the “Model Maker” tab located at the top of the GUI, the tabs at the bottom of the GUI walk you through the key components of creating a SFINCS model for FloodAdapt."><img src="../../_static/images/sfincs_model_builder_homeScreen.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: The model-builder start screen. Within the “Model Maker” tab located at the top of the GUI, the tabs at the bottom of the GUI walk you through the key components of creating a SFINCS model for FloodAdapt.</figcaption>
 </figure>
 </div>
@@ -481,7 +475,7 @@ ul.task-list li input[type="checkbox"] {
 <p>We need to define a spatial coordinate system for our model, this can be accomplished by selecting “Auto-select UTM zone” in the “Domain” section of the GUI.The “Auto-rotate grid” option can be left unchecked. When modeling local precipitation, such as in many FloodAdapt scenarios, it is recommended to ensure that full watershed area(s) are within the modeled domain area. Check “Local precipitation” and then choose “Select Watershed”. A pop-up box will appear in which you may select one or more watersheds to include in your domain area. Once you have selected your desired watersheds, choose “OK”. The GUI will inform you that the coordinate system will be changed to one appropriate for the selected area, when asked to continue, select “yes”. <a href="#fig-sfincsDomain">Figure&nbsp;2</a> shows the SFINCS model-builder “Domain” tab with the “Select Watershed” pop-up.</p>
 <div id="fig-sfincsDomain" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_domaintab.png" class="lightbox" title="The SFINCS model-builder “Domain” tab and “Select Watershed” pop-up." data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/sfincs_domaintab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_domaintab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="The SFINCS model-builder “Domain” tab and “Select Watershed” pop-up."><img src="../../_static/images/sfincs_domaintab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: The SFINCS model-builder “Domain” tab and “Select Watershed” pop-up.</figcaption>
 </figure>
 </div>
@@ -492,7 +486,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Next, move to the “TopoBathy” tab along the bottom of the GUI. Here, we will choose which topography/bathymetry dataset(s) to map onto our grid. On the bottom left, there is a list of DEM dataset source(s). The user has the option to add a dataset, which must be in geotif format. All dataset(s) that will be combined for use in the model must be referenced to the same vertical reference (i.e.&nbsp;NAVD88, MSL, etc.). Once the dataset(s) are loaded into the left box, select the one(s) that should be mapped onto the model grid and use the right arrow to move them into the right box called “Selected Datasets”. If you are using multiple datasets, sort them by the order in which they should be used. For example, the main dataset should be at the top, and any areas that aren’t covered by it will be filled by subsequent datasets. Once you are satisfied, select “Generate Bathymetry” in the bottom right of the GUI, the topography and bathymetry data will then be displayed in the viewer within the model grid boundary. <a href="#fig-sfincsTopobathy">Figure&nbsp;3</a> shows the SFINCS model-builder “TopoBathy” tab, with the topo-bathymetric dataset mapped to the model grid.</p>
 <div id="fig-sfincsTopobathy" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_topobathytab.png" class="lightbox" title="The SFINCS model-builder “TopoBathy” tab." data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/sfincs_topobathytab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_topobathytab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="The SFINCS model-builder “TopoBathy” tab."><img src="../../_static/images/sfincs_topobathytab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: The SFINCS model-builder “TopoBathy” tab.</figcaption>
 </figure>
 </div>
@@ -502,7 +496,7 @@ ul.task-list li input[type="checkbox"] {
 <p>One of the ways that SFINCS simulations finish quickly is by not solving computations in grid cells that are not within the area of interest. Within the “Active Cells” tab along the bottom of the GUI, by default, pressing “Show active cells” will show that cells within the selected watersheds are set to “Active” and cells outside the watersheds are inactive. Left as-is, SFINCS would only compute in the active cells. It is sometimes necessary to manually add or remove active cells depending on the area of interest, this can be done by checking the “Manually add/remove cells to/from your active mask” box(es). There are also options to load a mask or create a mask based on maximum/minimum elevations as well as maximum area of cells surrounded by active cells to include in the domain or maximum area of isolated cells to remove by using the “Modify mask settings” button. In general, extending the active cells offshore to -2m water depth is recommended for an overland model. <a href="#fig-sfincsActivecells">Figure&nbsp;4</a> shows the SFINSC model-builder “Active Cells” tab, with active cells highlighted in yellow.</p>
 <div id="fig-sfincsActivecells" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_activecellstab.png" class="lightbox" title="The SFINCS model-builder “Active Cells” tab." data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/sfincs_activecellstab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_activecellstab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="The SFINCS model-builder “Active Cells” tab."><img src="../../_static/images/sfincs_activecellstab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: The SFINCS model-builder “Active Cells” tab.</figcaption>
 </figure>
 </div>
@@ -512,7 +506,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Next, move to the “Boundary Cells” tab along the bottom of the GUI. Boundary cells are the cells that will be forced with water level data from either an offshore model, or for example a synthetic tidal/ surge signal, or historical tide gauge data. The goal here is for the entire offshore edge to be defined as a “Water level” boundary, which in the GUI will appear as dark blue cells. Polygons can be used to restrict the area you are defining, and it is also possible to use a water depth to automatically select cells.</p>
 <div id="fig-sfincsBoundarycells" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_boundarycellstab.png" class="lightbox" title="The SFINCS model-builder “Boundary Cells” tab." data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/sfincs_boundarycellstab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_boundarycellstab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="The SFINCS model-builder “Boundary Cells” tab."><img src="../../_static/images/sfincs_boundarycellstab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: The SFINCS model-builder “Boundary Cells” tab.</figcaption>
 </figure>
 </div>
@@ -522,7 +516,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Finally, move to the “Build Model” tab along the bottom of the GUI. This tab gives a summary of the bathymetric datasets that will be used, and bottom friction datasets (currently can only be the default “Constant values”). In the bottom right of the GUI, select “Build model”.</p>
 <div id="fig-sfincsBuildmodel" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/sfincs_buildmodeltab.png" class="lightbox" title="The SFINCS model-builder “Build Model” tab." data-gallery="quarto-lightbox-gallery-6"><img src="../../_static/images/sfincs_buildmodeltab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/sfincs_buildmodeltab.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="The SFINCS model-builder “Build Model” tab."><img src="../../_static/images/sfincs_buildmodeltab.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: The SFINCS model-builder “Build Model” tab.</figcaption>
 </figure>
 </div>
@@ -908,7 +902,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":true,"descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","openEffect":"zoom","loop":true,"selector":".lightbox"});</script>
 
 
 
