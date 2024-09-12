@@ -2,7 +2,4 @@
 title: "Setup Guide"
 ---
 
-# Heading 1
-Here is some content.
-
-...
+Please follow the steps described in the sections below to set up a FloodaAapt Model.
