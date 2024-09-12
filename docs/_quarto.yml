@@ -70,7 +70,6 @@ website:
         file: 4_user_guide/index.qmd # This contains text before sections start
         contents:
           - "4_user_guide/getting_started.qmd" #Moving content from the old 'installation' section into here
-          - "4_user_guide/user_interface.qmd" #These two don't have subsections so just have one qmd file
           - "4_user_guide/site_tab.qmd"
           - section: "Events"
             file: "4_user_guide/events/index.qmd"
