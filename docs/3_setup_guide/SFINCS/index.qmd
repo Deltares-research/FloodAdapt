@@ -1,7 +1,9 @@
 ---
-title: "SFINCS Setup"
+title:	Setting up a SFINCS model
+filters:
+  - lightbox
+lightbox: auto
+jupyter: python3
 ---
 
-# Coming soon...
-
-...
+[SFINCS](https://download.deltares.nl/en/sfincs) is the open-source compound flood model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a SFINCS model in the project area. This is considered the 'baseline' SFINCS model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by selecting a hurricane or developing a synthetic event.
