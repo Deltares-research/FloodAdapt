@@ -1,0 +1,10 @@
+---
+title: 	Equity Calculation
+filters:
+  - lightbox
+lightbox: auto
+---
+
+A description of the equity module in FloodAdapt is coming soon. In the meantime, @fig-equityCalc shows an overview of the calculation.
+
+![**FloodAdapt calculation framework for equity-weighted risk estimates**](../_static/images/Equity_method.jpg){width=100% fig-align=left #fig-equityCalc}
