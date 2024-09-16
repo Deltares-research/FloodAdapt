@@ -173,27 +173,27 @@ class Settings(BaseSettings):
             raise ValueError(f"Unsupported system {system()}")
         return Settings.SYSTEM_SUFFIXES[system()]
 
+    @staticmethod
+    def read(toml_path: Path) -> "Settings":
+        """
+        Parse the configuration file and return the parsed settings.
 
-def read_settings(toml_path: Path) -> Settings:
-    """
-    Parse the configuration file and return the parsed settings.
+        Parameters
+        ----------
+        config_path : Path
+            The path to the configuration file.
 
-    Parameters
-    ----------
-    config_path : Path
-        The path to the configuration file.
+        Returns
+        -------
+        Settings
+            The parsed configuration settings.
 
-    Returns
-    -------
-    Settings
-        The parsed configuration settings.
+        Raises
+        ------
+        ValidationError
+            If required configuration values are missing or if there is an error parsing the configuration file.
+        """
+        with open(toml_path, "rb") as f:
+            settings = tomli.load(f)
 
-    Raises
-    ------
-    ValidationError
-        If required configuration values are missing or if there is an error parsing the configuration file.
-    """
-    with open(toml_path, "rb") as f:
-        settings = tomli.load(f)
-
-    return Settings(**settings)
+        return Settings(**settings)

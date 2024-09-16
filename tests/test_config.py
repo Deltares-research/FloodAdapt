@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config import Settings, read_settings
+from flood_adapt.config import Settings
 from tests.utils import cleared_envvars, modified_environ
 
 
@@ -267,7 +267,7 @@ class TestSettingsModel:
 
         # Act
         with cleared_envvars("DATABASE_ROOT", "DATABASE_NAME", "SYSTEM_FOLDER"):
-            settings = read_settings(config_path)
+            settings = Settings.read(config_path)
 
             # Assert
             self._assert_settings(
@@ -296,7 +296,7 @@ class TestSettingsModel:
             )
 
             # Act
-            settings = read_settings(config_path)
+            settings = Settings.read(config_path)
 
             # Assert
             self._assert_settings(
@@ -324,7 +324,7 @@ class TestSettingsModel:
             config_path.write_text(f"database_name = '{name}'\n")
 
             # Act
-            settings = read_settings(config_path)
+            settings = Settings.read(config_path)
 
             # Assert
             self._assert_settings(
