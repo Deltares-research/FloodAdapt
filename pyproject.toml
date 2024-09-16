@@ -39,6 +39,7 @@ dependencies = [
     "pandas",
     "plotly",
     "pydantic",
+    "pydantic-settings",
     "pyogrio",
     "tomli",
     "tomli-w",
@@ -58,7 +59,6 @@ dev = [
 build = [
     "build",
     "twine",
-
 ]
 docs = [
     "jupyter",

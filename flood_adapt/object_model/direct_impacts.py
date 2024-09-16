@@ -15,7 +15,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-from flood_adapt.config import settings
+from flood_adapt.config import Settings
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -23,8 +23,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
@@ -254,7 +252,7 @@ class DirectImpacts:
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
-                    f'"{settings.fiat_path}" run settings.toml',
+                    f'"{Settings().fiat_path}" run settings.toml',
                     stdout=log_handler,
                     env={},  # need environment variables from runtime hooks
                     check=True,

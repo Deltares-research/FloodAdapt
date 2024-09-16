@@ -12,7 +12,7 @@ import xarray as xr
 from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
-from flood_adapt.config import settings
+from flood_adapt.config import Settings
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import Event
@@ -269,7 +269,7 @@ class Hazard:
                 sfincs_log = "sfincs.log"
                 with open(sfincs_log, "a") as log_handler:
                     return_code = subprocess.run(
-                        settings.sfincs_path, stdout=log_handler
+                        Settings().sfincs_path, stdout=log_handler
                     )
                     if return_code.returncode != 0:
                         run_success = False
@@ -300,7 +300,7 @@ class Hazard:
         with cd(simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
-                subprocess.run(settings.sfincs_path, stdout=log_handler)
+                subprocess.run(Settings().sfincs_path, stdout=log_handler)
 
     def preprocess_sfincs(
         self,

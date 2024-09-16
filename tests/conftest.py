@@ -9,13 +9,15 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.api.static import read_database
-from flood_adapt.config import settings
+from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
 
 project_root = Path(__file__).absolute().parents[2]
-settings.database_root = project_root / "Database"
-settings.system_folder = settings.database_root / "system"
-settings.database_name = "charleston_test"
+settings = Settings(
+    database_root=project_root / "Database",
+    system_folder=project_root / "Database" / "system",
+    database_name="charleston_test",
+)
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
