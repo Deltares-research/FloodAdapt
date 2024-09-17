@@ -3,10 +3,9 @@ from os import listdir
 from pathlib import Path
 
 from flood_adapt.api.static import read_database
+from flood_adapt.config import Settings
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.site import Site
-
-from .conftest import DATABASE_PATH, DATABASE_ROOT, SITE_NAME
 
 
 def test_database_controller(test_db):
@@ -57,18 +56,18 @@ def test_projection_plot_slr(test_db):
 
 def test_cleanup_NoInput_RemoveOutput():
     # Arrange
-    input_path = DATABASE_PATH / "input" / "scenarios" / "test123"
+    input_path = Settings().database_path / "input" / "scenarios" / "test123"
     if input_path.exists():
         shutil.rmtree(input_path)
 
-    output_path = DATABASE_PATH / "output" / "scenarios" / "test123"
+    output_path = Settings().database_path / "output" / "scenarios" / "test123"
     output_path.mkdir(parents=True, exist_ok=True)
 
     with open(output_path / "test123.txt", "w") as f:
         f.write("run finished")
 
     # Act
-    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+    dbs = read_database(Settings().database_root, Settings().database_name)
 
     # Assert
     assert not output_path.exists()
@@ -79,8 +78,8 @@ def test_cleanup_NoInput_RemoveOutput():
 
 def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
     # Arrange
-    input_path = DATABASE_PATH / "input" / "scenarios"
-    output_path = DATABASE_PATH / "output" / "scenarios"
+    input_path = Settings().database_path / "input" / "scenarios"
+    output_path = Settings().database_path / "output" / "scenarios"
 
     scenario_name = listdir(input_path)[0]
     input_dir = input_path / scenario_name
@@ -94,7 +93,7 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
         f.write("run not finished")
 
     # Act
-    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+    dbs = read_database(Settings().database_root, Settings().database_name)
 
     # Assert
     assert input_dir.exists()
@@ -106,7 +105,7 @@ def test_cleanup_InputExists_RunNotFinished_OutputRemoved():
 
 def test_shutdown_AfterShutdown_VarsAreNone():
     # Arrange
-    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+    dbs = read_database(Settings().database_root, Settings().database_name)
 
     # Act
     dbs.shutdown()
@@ -134,11 +133,11 @@ def test_shutdown_AfterShutdown_VarsAreNone():
 
 def test_shutdown_AfterShutdown_CanReadNewDatabase():
     # Arrange
-    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+    dbs = read_database(Settings().database_root, Settings().database_name)
 
     # Act
     dbs.shutdown()
-    dbs = read_database(DATABASE_ROOT, SITE_NAME)
+    dbs = read_database(Settings().database_root, Settings().database_name)
 
     # Assert
     assert dbs.__class__._instance is not None
