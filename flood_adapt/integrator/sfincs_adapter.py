@@ -101,6 +101,8 @@ class SfincsAdapter:
             - wind_v: northward wind velocity [m/s]
             - spatial_ref: CRS
         """
+        if ds["lon"].min() > 180:
+            ds["lon"] = ds["lon"] - 360
         self.sf_model.setup_wind_forcing_from_grid(wind=ds)
 
     def add_pressure_forcing_from_grid(self, ds: xr.DataArray):
@@ -406,7 +408,7 @@ class SfincsAdapter:
     def add_spw_forcing(
         self,
         historical_hurricane: HistoricalHurricane,
-        database_path: Path,
+        event_path: Path,
         model_dir: Path,
     ):
         """Add spiderweb forcing to the sfincs model.
@@ -415,13 +417,13 @@ class SfincsAdapter:
         ----------
         historical_hurricane : HistoricalHurricane
             Information of the historical hurricane event
-        database_path : Path
-            Path of the main database
+        event_path : Path
+            Path of the event object in the database
         model_dir : Path
             Output path of the model
         """
         historical_hurricane.make_spw_file(
-            database_path=database_path, model_dir=model_dir, site=self.site
+            event_path=event_path, model_dir=model_dir, site=self.site
         )
 
     def set_config_spw(self, spw_name: str):

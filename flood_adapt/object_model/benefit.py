@@ -24,7 +24,6 @@ class Benefit(IBenefit):
     database_input_path: Union[str, os.PathLike]
     results_path: Union[str, os.PathLike]
     scenarios: pd.DataFrame
-    has_run: bool = False
 
     def _init(self):
         """Initialize function called when object is created through the load_file or load_dict methods."""
@@ -33,7 +32,7 @@ class Benefit(IBenefit):
             "output", "Benefits", self.attrs.name
         )
         self.check_scenarios()
-        self.has_run = self.has_run_check()
+
         if self.has_run:
             self.get_output()
         # Get site config
@@ -43,6 +42,10 @@ class Benefit(IBenefit):
         self.site_info = Site.load_file(self.site_toml_path)
         # Get monetary units
         self.unit = self.site_info.attrs.fiat.damage_unit
+
+    @property
+    def has_run(self):
+        return self.has_run_check()
 
     def has_run_check(self) -> bool:
         """Check if the benefit analysis has already been run.
@@ -70,10 +73,11 @@ class Benefit(IBenefit):
         dict
             results of benefit calculation
         """
-        if not self.has_run_check():
+        if not self.has_run:
             raise RuntimeError(
                 f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
             )
+
         results_toml = self.results_path.joinpath("results.toml")
         results_html = self.results_path.joinpath("benefits.html")
         with open(results_toml, mode="rb") as fp:
@@ -136,10 +140,9 @@ class Benefit(IBenefit):
             ]
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                if created[0].init_object_model().direct_impacts.has_run:
-                    scenarios_calc[scenario]["scenario run"] = True
-                else:
-                    scenarios_calc[scenario]["scenario run"] = False
+                scenarios_calc[scenario]["scenario run"] = (
+                    created[0].init_object_model().direct_impacts.has_run
+                )
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False
@@ -193,7 +196,7 @@ class Benefit(IBenefit):
         # Run aggregation benefits
         self.cba_aggregation()
         # Updates results
-        self.has_run_check()
+
         self.get_output()
 
     def cba(self):
