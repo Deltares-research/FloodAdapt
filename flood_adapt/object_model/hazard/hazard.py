@@ -269,7 +269,7 @@ class Hazard:
                 sfincs_log = "sfincs.log"
                 with open(sfincs_log, "a") as log_handler:
                     return_code = subprocess.run(
-                        Settings().sfincs_path, stdout=log_handler
+                        Settings().sfincs_path.as_posix(), stdout=log_handler
                     )
                     if return_code.returncode != 0:
                         run_success = False

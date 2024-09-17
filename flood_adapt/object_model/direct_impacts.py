@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import time
+from os import environ
 from pathlib import Path
 
 import geopandas as gpd
@@ -252,9 +253,10 @@ class DirectImpacts:
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
-                    f'"{Settings().fiat_path}" run settings.toml',
+                    f'"{Settings().fiat_path.as_posix()}" run settings.toml',
                     stdout=log_handler,
-                    env={},  # need environment variables from runtime hooks
+                    stderr=log_handler,
+                    env=environ.copy(),  # need environment variables from runtime hooks
                     check=True,
                     shell=True,
                 )

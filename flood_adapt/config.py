@@ -4,7 +4,14 @@ from platform import system
 from typing import ClassVar
 
 import tomli
-from pydantic import Field, computed_field, field_validator, model_validator
+import tomli_w
+from pydantic import (
+    Field,
+    computed_field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,15 +28,16 @@ class Settings(BaseSettings):
     -----
     from flood_adapt.config import Settings
 
-    # One of the following:
-        # 1) Load settings from environment variables, if no environment variables are set, use defaults defined in the class:
-        settings = Settings()
+    One of the following:
 
-        # 2) Load settings from a .toml file, overwriting any environment variables set:
-        settings = Settings.read(toml_path: Path)
+    1) Load settings from environment variables, if no environment variables are set, use defaults defined in the class:
+        `settings = Settings()`
 
-        # 3) Load settings from keyword arguments, overwriting any environment variables:
-        settings = Settings(database_root="path/to/database", database_name="database_name", system_folder="path/to/system_folder")
+    2) Load settings from a .toml file, overwriting any environment variables set:
+        `settings = Settings.read(toml_path: Path)`
+
+    3) Load settings from keyword arguments, overwriting any environment variables:
+        `settings = Settings(database_root="path/to/database", database_name="database_name", system_folder="path/to/system_folder")`
 
     Attributes
     ----------
@@ -38,7 +46,7 @@ class Settings(BaseSettings):
     database_root : Path
         The root directory of the database.
     system_folder : Path
-        The root directory of the system folder.
+        The root directory of the system folder containing the kernels.
 
     Properties
     ----------
@@ -167,6 +175,12 @@ class Settings(BaseSettings):
             raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
         return self
 
+    @field_serializer(
+        "database_root", "system_folder", "sfincs_path", "fiat_path", "database_path"
+    )
+    def serialize_path(self, path: Path) -> str:
+        return path.as_posix()
+
     @staticmethod
     def _system_extension() -> str:
         if system() not in Settings.SYSTEM_SUFFIXES:
@@ -197,3 +211,29 @@ class Settings(BaseSettings):
             settings = tomli.load(f)
 
         return Settings(**settings)
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration settings to a .toml file.
+
+        Parameters
+        ----------
+        config_path : Path
+            The path to the configuration file.
+
+        Returns
+        -------
+        None
+
+        """
+        toml_path = Path(toml_path).resolve()
+        if not toml_path.parent.exists():
+            toml_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(
+                self.model_dump(
+                    exclude={"sfincs_path", "fiat_path", "database_path"},
+                ),
+                f,
+            )
