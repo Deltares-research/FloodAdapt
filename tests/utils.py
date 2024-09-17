@@ -45,12 +45,10 @@ def cleared_envvars(*vars_to_clear):
     original_env = {var: os.environ.get(var, None) for var in vars_to_clear}
 
     try:
-        # Clear specified environment variables
         for var in vars_to_clear:
             del os.environ[var]
         yield
     finally:
-        # Restore original environment variables
         for var, value in original_env.items():
             if value is not None:
                 os.environ[var] = value
