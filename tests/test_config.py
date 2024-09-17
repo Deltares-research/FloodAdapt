@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 from unittest.mock import patch
 
 import pytest
@@ -12,6 +12,19 @@ from tests.utils import modified_environ
 
 
 class TestSettingsModel:
+    @pytest.fixture
+    def create_dummy_db(
+        self, tmp_path: Path
+    ) -> Callable[[Path, str, str], tuple[Path, str]]:
+        def _create_dummy_db(
+            db_root: Path = tmp_path, name: str = "test", system: str = "Windows"
+        ) -> tuple[Path, str]:
+            if db_root != tmp_path:
+                db_root = tmp_path / db_root
+            return self._create_dummy_db(db_root, name, system)
+
+        return _create_dummy_db
+
     def _create_dummy_db(
         self, db_root: Path, name: str = "test", system: str = "Windows"
     ) -> tuple[Path, str]:
@@ -116,10 +129,10 @@ class TestSettingsModel:
         self._assert_settings(settings, system)
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
-    def test_init_from_args_no_envvars(self, system: str, tmp_path: Path, mock_system):
+    def test_init_from_args_no_envvars(self, system: str, create_dummy_db, mock_system):
         # Arrange
         mock_system.return_value = system
-        db_root, name = self._create_dummy_db(tmp_path, system=system)
+        db_root, name = create_dummy_db(system=system)
 
         # Act
         settings = Settings(
@@ -139,11 +152,11 @@ class TestSettingsModel:
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     def test_init_from_envvars_overwriting_defaults(
-        self, system: str, tmp_path: Path, mock_system
+        self, system: str, create_dummy_db: Callable, mock_system
     ):
         # Arrange
         mock_system.return_value = system
-        db_root, name = self._create_dummy_db(tmp_path, system=system)
+        db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
             DATABASE_ROOT=str(db_root),
@@ -163,16 +176,16 @@ class TestSettingsModel:
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     def test_init_from_args_overwriting_envvars(
-        self, system: str, tmp_path: Path, mock_system
+        self, system: str, create_dummy_db, mock_system
     ):
         # Arrange
         mock_system.return_value = system
-        db_root, name = self._create_dummy_db(tmp_path, system=system)
+        db_root, name = create_dummy_db(system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(tmp_path / "dummy"),
+            DATABASE_ROOT=str(db_root / "dummy"),
             DATABASE_NAME="invalid_name",
-            SYSTEM_FOLDER=str(tmp_path / "dummy_system"),
+            SYSTEM_FOLDER=str(db_root / "dummy_system"),
         ):
             # Act
             settings = Settings(
@@ -192,11 +205,11 @@ class TestSettingsModel:
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     def test_init_from_args_different_system_folder(
-        self, system: str, tmp_path: Path, mock_system
+        self, system: str, create_dummy_db, mock_system
     ):
         # Arrange
         mock_system.return_value = system
-        db_root, name = self._create_dummy_db(tmp_path, system=system)
+        db_root, name = create_dummy_db(system=system)
 
         new_system_path = db_root / "another_system_folder"
         shutil.copytree(db_root / "system", new_system_path)
@@ -232,9 +245,9 @@ class TestSettingsModel:
         assert f"Database name {name} does not exist" in str(exc_info.value)
 
     def test_init_from_invalid_system_folder_raise_validation_error(
-        self, tmp_path: Path
+        self, create_dummy_db
     ):
-        db_root, name = self._create_dummy_db(tmp_path)
+        db_root, name = create_dummy_db()
         dummy_system_folder = db_root / "dummy"
 
         with pytest.raises(ValidationError) as exc_info:
@@ -251,10 +264,10 @@ class TestSettingsModel:
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     @pytest.mark.parametrize("model", ["fiat", "sfincs"])
     def test_missing_model_binaries_raise_validation_error(
-        self, system: str, model: str, tmp_path: Path, mock_system
+        self, system: str, model: str, create_dummy_db, mock_system
     ):
         mock_system.return_value = system
-        db_root, name = self._create_dummy_db(tmp_path, system=system)
+        db_root, name = create_dummy_db(system=system)
 
         model_bin = (
             db_root / "system" / model / f"{model}{Settings.SYSTEM_SUFFIXES[system]}"
@@ -278,11 +291,11 @@ class TestSettingsModel:
             _ = Settings()
         assert "Unsupported system " in str(exc_info.value)
 
-    def test_read_settings_no_envvars(self, tmp_path: Path, mock_system):
+    def test_read_settings_no_envvars(self, create_dummy_db, mock_system):
         # Arrange
-        db_root, name = self._create_dummy_db(tmp_path)
+        db_root, name = create_dummy_db()
 
-        config_path = tmp_path / "config.toml"
+        config_path = db_root / "config.toml"
         config_path.write_text(
             f"database_name = '{name}'\ndatabase_root = '{db_root}'\nsystem_folder = '{db_root / 'system'}'\n"
         )
@@ -299,16 +312,16 @@ class TestSettingsModel:
             expected_system_folder=db_root / "system",
         )
 
-    def test_read_settings_overwrites_envvars(self, tmp_path: Path, mock_system):
+    def test_read_settings_overwrites_envvars(self, create_dummy_db, mock_system):
         # Arrange
+        db_root, name = create_dummy_db()
+
         with modified_environ(
             DATABASE_ROOT="dummy_root",
             DATABASE_NAME="dummy_name",
             SYSTEM_FOLDER="dummy_system",
         ):
-            db_root, name = self._create_dummy_db(tmp_path)
-
-            config_path = tmp_path / "config.toml"
+            config_path = db_root / "config.toml"
             config_path.write_text(
                 f"database_name = '{name}'\ndatabase_root = '{db_root}'\nsystem_folder = '{db_root / 'system'}'\n"
             )
@@ -326,17 +339,17 @@ class TestSettingsModel:
             )
 
     def test_read_settings_missing_fields_filled_by_envvars(
-        self, tmp_path: Path, mock_system
+        self, create_dummy_db, mock_system
     ):
         # Arrange
-        db_root, name = self._create_dummy_db(tmp_path)
+        db_root, name = create_dummy_db()
 
         with modified_environ(
             DATABASE_ROOT=str(db_root),
             DATABASE_NAME="dummy_name",
             SYSTEM_FOLDER=str(db_root / "system"),
         ):
-            config_path = tmp_path / "config.toml"
+            config_path = db_root / "config.toml"
             config_path.write_text(f"database_name = '{name}'\n")
 
             # Act
@@ -352,11 +365,11 @@ class TestSettingsModel:
             )
 
     def test_creating_settings_object_changes_envvars(
-        self, tmp_path: Path, mock_system
+        self, create_dummy_db, mock_system
     ):
         # Arrange
-        db_root1, name1 = self._create_dummy_db(tmp_path / "old", "name1")
-        db_root2, name2 = self._create_dummy_db(tmp_path / "new", "name2")
+        db_root1, name1 = create_dummy_db("root1", "name1")
+        db_root2, name2 = create_dummy_db("root2", "name2")
 
         # Act
         with modified_environ(
