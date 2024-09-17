@@ -75,6 +75,21 @@ class TestSettingsModel:
         with patch("flood_adapt.config.system") as mock_system:
             yield mock_system
 
+    @pytest.fixture(autouse=True)
+    def protect_envvars(self):
+        root = os.environ.get("DATABASE_ROOT", None)
+        name = os.environ.get("DATABASE_NAME", None)
+        system_folder = os.environ.get("SYSTEM_FOLDER", None)
+
+        yield
+
+        if root is not None:
+            os.environ["DATABASE_ROOT"] = root
+        if name is not None:
+            os.environ["DATABASE_NAME"] = name
+        if system_folder is not None:
+            os.environ["SYSTEM_FOLDER"] = system_folder
+
     # @pytest.mark.skip(reason="Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database")
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     def test_init_from_defaults_no_envvars(self, system: str, mock_system):
@@ -169,29 +184,30 @@ class TestSettingsModel:
     def test_init_from_args_different_system_folder(
         self, system: str, tmp_path: Path, mock_system
     ):
-        # Arrange
-        mock_system.return_value = system
-        name = "test_name"
-        db_root = self._create_dummy_db(tmp_path, name, system)
-        new_system_path = db_root / "another_system_folder"
-        shutil.copytree(db_root / "system", new_system_path)
-        shutil.rmtree(db_root / "system")
+        with cleared_envvars("DATABASE_ROOT", "DATABASE_NAME", "SYSTEM_FOLDER"):
+            # Arrange
+            mock_system.return_value = system
+            name = "test_name"
+            db_root = self._create_dummy_db(tmp_path, name, system)
+            new_system_path = db_root / "another_system_folder"
+            shutil.copytree(db_root / "system", new_system_path)
+            shutil.rmtree(db_root / "system")
 
-        # Act
-        settings = Settings(
-            database_root=db_root,
-            database_name=name,
-            system_folder=new_system_path,
-        )
+            # Act
+            settings = Settings(
+                database_root=db_root,
+                database_name=name,
+                system_folder=new_system_path,
+            )
 
-        # Assert
-        self._assert_settings(
-            settings,
-            system,
-            expected_name=name,
-            expected_root=db_root,
-            expected_system_folder=new_system_path,
-        )
+            # Assert
+            self._assert_settings(
+                settings,
+                system,
+                expected_name=name,
+                expected_root=db_root,
+                expected_system_folder=new_system_path,
+            )
 
     def test_init_from_invalid_db_root_raise_validation_error(self):
         with pytest.raises(ValidationError) as exc_info:
