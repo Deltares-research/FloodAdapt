@@ -33,24 +33,3 @@ def modified_environ(*remove, **update):
     finally:
         env.update(update_after)
         [env.pop(k) for k in remove_after]
-
-
-@contextlib.contextmanager
-def cleared_envvars(*vars_to_clear):
-    """
-    Temporarily clears specified environment variables and restores them after exiting the context.
-
-    :param vars_to_clear: Environment variables to clear.
-    """
-    original_env = {var: os.environ.get(var, None) for var in vars_to_clear}
-
-    try:
-        for var in vars_to_clear:
-            del os.environ[var]
-        yield
-    finally:
-        for var, value in original_env.items():
-            if value is not None:
-                os.environ[var] = value
-            else:
-                os.unsetenv(var)

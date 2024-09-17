@@ -8,24 +8,26 @@ import pytest
 from pydantic import ValidationError
 
 from flood_adapt.config import Settings
-from tests.utils import cleared_envvars, modified_environ
+from tests.utils import modified_environ
 
 
 class TestSettingsModel:
-    def _create_dummy_db(self, db_root: Path, name: str, system: str) -> Path:
+    def _create_dummy_db(
+        self, db_root: Path, name: str = "test", system: str = "Windows"
+    ) -> tuple[Path, str]:
         ext = Settings.SYSTEM_SUFFIXES[system]
 
         (db_root / "system" / "sfincs").mkdir(parents=True)
-        fd = os.open(db_root / "system" / "sfincs" / f"sfincs{ext}", os.O_CREAT)
-        os.close(fd)
+        with open(db_root / "system" / "sfincs" / f"sfincs{ext}", "w"):
+            pass
 
         (db_root / "system" / "fiat").mkdir(parents=True)
-        fd = os.open(db_root / "system" / "fiat" / f"fiat{ext}", os.O_CREAT)
-        os.close(fd)
+        with open(db_root / "system" / "fiat" / f"fiat{ext}", "w"):
+            pass
 
         (db_root / name / "input").mkdir(parents=True)
         (db_root / name / "static").mkdir(parents=True)
-        return db_root
+        return db_root, name
 
     def _assert_settings(
         self,
@@ -73,6 +75,7 @@ class TestSettingsModel:
     @pytest.fixture()
     def mock_system(self):
         with patch("flood_adapt.config.system") as mock_system:
+            mock_system.return_value = "Windows"
             yield mock_system
 
     @pytest.fixture(autouse=True, scope="class")
@@ -93,27 +96,16 @@ class TestSettingsModel:
         name = os.environ.get("DATABASE_NAME", None)
         system_folder = os.environ.get("SYSTEM_FOLDER", None)
 
-        yield
-
-        if root is not None:
-            os.environ["DATABASE_ROOT"] = root
-        if name is not None:
-            os.environ["DATABASE_NAME"] = name
-        if system_folder is not None:
-            os.environ["SYSTEM_FOLDER"] = system_folder
-
-    @pytest.fixture()
-    def clear_envvars(self):
-        with cleared_envvars("DATABASE_ROOT", "DATABASE_NAME", "SYSTEM_FOLDER"):
+        with modified_environ(
+            DATABASE_ROOT=root, DATABASE_NAME=name, SYSTEM_FOLDER=system_folder
+        ):
             yield
 
     @pytest.mark.skip(
         reason="TODO: Add sfincs & fiat binaries for Linux & Darwin to the system folder in the test database"
     )
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
-    def test_init_from_defaults_no_envvars(
-        self, system: str, mock_system, clear_envvars
-    ):
+    def test_init_from_defaults_no_envvars(self, system: str, mock_system):
         # Arrange
         mock_system.return_value = system
 
@@ -124,13 +116,10 @@ class TestSettingsModel:
         self._assert_settings(settings, system)
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
-    def test_init_from_args_no_envvars(
-        self, system: str, tmp_path: Path, mock_system, clear_envvars
-    ):
+    def test_init_from_args_no_envvars(self, system: str, tmp_path: Path, mock_system):
         # Arrange
         mock_system.return_value = system
-        name = "test_name"
-        db_root = self._create_dummy_db(tmp_path, name, system)
+        db_root, name = self._create_dummy_db(tmp_path, system=system)
 
         # Act
         settings = Settings(
@@ -154,15 +143,13 @@ class TestSettingsModel:
     ):
         # Arrange
         mock_system.return_value = system
-        name = "test_name"
+        db_root, name = self._create_dummy_db(tmp_path, system=system)
 
         with modified_environ(
-            DATABASE_ROOT=str(tmp_path),
+            DATABASE_ROOT=str(db_root),
             DATABASE_NAME=name,
-            SYSTEM_FOLDER=str(tmp_path / "system"),
+            SYSTEM_FOLDER=str(db_root / "system"),
         ):
-            db_root = self._create_dummy_db(tmp_path, name, system)
-
             # Act
             settings = Settings()
 
@@ -180,8 +167,7 @@ class TestSettingsModel:
     ):
         # Arrange
         mock_system.return_value = system
-        name = "test_name"
-        db_root = self._create_dummy_db(tmp_path, name, system)
+        db_root, name = self._create_dummy_db(tmp_path, system=system)
 
         with modified_environ(
             DATABASE_ROOT=str(tmp_path / "dummy"),
@@ -206,12 +192,12 @@ class TestSettingsModel:
 
     @pytest.mark.parametrize("system", Settings.SYSTEM_SUFFIXES.keys())
     def test_init_from_args_different_system_folder(
-        self, system: str, tmp_path: Path, mock_system, clear_envvars
+        self, system: str, tmp_path: Path, mock_system
     ):
         # Arrange
         mock_system.return_value = system
-        name = "test_name"
-        db_root = self._create_dummy_db(tmp_path, name, system)
+        db_root, name = self._create_dummy_db(tmp_path, system=system)
+
         new_system_path = db_root / "another_system_folder"
         shutil.copytree(db_root / "system", new_system_path)
         shutil.rmtree(db_root / "system")
@@ -248,8 +234,7 @@ class TestSettingsModel:
     def test_init_from_invalid_system_folder_raise_validation_error(
         self, tmp_path: Path
     ):
-        name = "test_name"
-        db_root = self._create_dummy_db(tmp_path, name, "Windows")
+        db_root, name = self._create_dummy_db(tmp_path)
         dummy_system_folder = db_root / "dummy"
 
         with pytest.raises(ValidationError) as exc_info:
@@ -268,9 +253,9 @@ class TestSettingsModel:
     def test_missing_model_binaries_raise_validation_error(
         self, system: str, model: str, tmp_path: Path, mock_system
     ):
-        name = "test_name"
         mock_system.return_value = system
-        db_root = self._create_dummy_db(tmp_path, name, system)
+        db_root, name = self._create_dummy_db(tmp_path, system=system)
+
         model_bin = (
             db_root / "system" / model / f"{model}{Settings.SYSTEM_SUFFIXES[system]}"
         )
@@ -293,11 +278,9 @@ class TestSettingsModel:
             _ = Settings()
         assert "Unsupported system " in str(exc_info.value)
 
-    def test_read_settings_no_envvars(self, tmp_path: Path, mock_system, clear_envvars):
+    def test_read_settings_no_envvars(self, tmp_path: Path, mock_system):
         # Arrange
-        mock_system.return_value = "Windows"
-        name = "new_name"
-        db_root = self._create_dummy_db(tmp_path, name, "Windows")
+        db_root, name = self._create_dummy_db(tmp_path)
 
         config_path = tmp_path / "config.toml"
         config_path.write_text(
@@ -310,7 +293,7 @@ class TestSettingsModel:
         # Assert
         self._assert_settings(
             settings,
-            "Windows",
+            mock_system(),
             expected_root=db_root,
             expected_name=name,
             expected_system_folder=db_root / "system",
@@ -318,15 +301,12 @@ class TestSettingsModel:
 
     def test_read_settings_overwrites_envvars(self, tmp_path: Path, mock_system):
         # Arrange
-        mock_system.return_value = "Windows"
-        name = "new_name"
-
         with modified_environ(
             DATABASE_ROOT="dummy_root",
             DATABASE_NAME="dummy_name",
             SYSTEM_FOLDER="dummy_system",
         ):
-            db_root = self._create_dummy_db(tmp_path, name, "Windows")
+            db_root, name = self._create_dummy_db(tmp_path)
 
             config_path = tmp_path / "config.toml"
             config_path.write_text(
@@ -339,7 +319,7 @@ class TestSettingsModel:
             # Assert
             self._assert_settings(
                 settings,
-                "Windows",
+                mock_system(),
                 expected_root=db_root,
                 expected_name=name,
                 expected_system_folder=db_root / "system",
@@ -349,9 +329,7 @@ class TestSettingsModel:
         self, tmp_path: Path, mock_system
     ):
         # Arrange
-        mock_system.return_value = "Windows"
-        name = "new_name"
-        db_root = self._create_dummy_db(tmp_path, name, "Windows")
+        db_root, name = self._create_dummy_db(tmp_path)
 
         with modified_environ(
             DATABASE_ROOT=str(db_root),
@@ -367,7 +345,7 @@ class TestSettingsModel:
             # Assert
             self._assert_settings(
                 settings,
-                "Windows",
+                mock_system(),
                 expected_root=db_root,
                 expected_name=name,
                 expected_system_folder=db_root / "system",
@@ -377,12 +355,8 @@ class TestSettingsModel:
         self, tmp_path: Path, mock_system
     ):
         # Arrange
-        name1 = "old_name"
-        name2 = "new_name"
-        db_root1 = self._create_dummy_db(tmp_path / "old", name1, "Windows")
-        db_root2 = self._create_dummy_db(tmp_path / "new", name2, "Windows")
-        system = "Windows"
-        mock_system.return_value = system
+        db_root1, name1 = self._create_dummy_db(tmp_path / "old", "name1")
+        db_root2, name2 = self._create_dummy_db(tmp_path / "new", "name2")
 
         # Act
         with modified_environ(
@@ -402,7 +376,7 @@ class TestSettingsModel:
             # Assert
             self._assert_settings(
                 from_args,
-                system,
+                mock_system(),
                 expected_name=name2,
                 expected_root=db_root2,
                 expected_system_folder=db_root2 / "system",
