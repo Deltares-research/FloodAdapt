@@ -8,21 +8,20 @@ from pathlib import Path
 
 import pytest
 
+from flood_adapt import SRC_DIR
 from flood_adapt.api.static import read_database
 from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
 
-project_root = Path(__file__).absolute().parents[2]
 settings = Settings(
-    database_root=project_root / "Database",
-    system_folder=project_root / "Database" / "system",
+    database_root=SRC_DIR.parents[1] / "Database",
     database_name="charleston_test",
+    system_folder=SRC_DIR / "system",
 )
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
 logs_dir = Path(__file__).absolute().parent / "logs"
-
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set clean=false

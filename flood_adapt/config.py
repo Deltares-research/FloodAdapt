@@ -9,10 +9,11 @@ from pydantic import (
     Field,
     computed_field,
     field_serializer,
-    field_validator,
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from flood_adapt import SRC_DIR
 
 
 class Settings(BaseSettings):
@@ -74,10 +75,20 @@ class Settings(BaseSettings):
     )  # empty env uses default
 
     database_root: Path = Field(
-        default=Path(__file__).parents[2] / "Database", env="DATABASE_ROOT"
+        default=SRC_DIR.parents[1] / "Database",
+        env="DATABASE_ROOT",
+        description="The root directory of the database that contains site(s). Usually the directory name is 'Database'.",
     )
-    database_name: str = Field(default=None, min_length=1, env="DATABASE_NAME")
-    system_folder: Path = Field(default=None, env="SYSTEM_FOLDER")
+    database_name: str = Field(
+        default="",
+        env="DATABASE_NAME",
+        description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
+    )
+    system_folder: Path = Field(
+        default=SRC_DIR / "system",
+        env="SYSTEM_FOLDER",
+        description="The path of the system folder containing the kernels that run the calculations.",
+    )
 
     @computed_field
     @property
@@ -94,40 +105,6 @@ class Settings(BaseSettings):
     def database_path(self) -> Path:
         return self.database_root / self.database_name
 
-    @field_validator("database_root", mode="before")
-    def set_database_root(cls, v, values):
-        if not Path(v).is_dir():
-            raise ValueError(f"Database root {v} does not exist.")
-        return Path(v)
-
-    @field_validator("database_name", mode="before")
-    def set_database_name(cls, v, values):
-        db_root = values.data.get(
-            "database_root", Settings.model_fields["database_root"].default
-        )
-        if v is None:
-            # If database_name is not given as arg or set in env, compute default as the first dir in database_root excluding 'system' (database_root set from env or default)
-            sites = [
-                d for d in listdir(db_root) if d != "system" and not d.startswith(".")
-            ]
-            if not sites:
-                raise ValueError(f"No databases found in {db_root}.")
-            return sites[0]
-
-        if not (db_root / v).is_dir():
-            raise ValueError(f"Database name {v} does not exist.")
-        return v
-
-    @field_validator("system_folder", mode="before")
-    def set_system_folder(cls, v, values):
-        if v is None:
-            # If system_folder is not given as arg or set in env, compute default to database_root/system (database_root set from env or default)
-            return (
-                values.data.get("database_root", Path(__file__).parents[2] / "Database")
-                / "system"
-            )
-        return v
-
     @model_validator(mode="after")
     def validate_paths(self):
         self._validate_database_path()
@@ -142,6 +119,20 @@ class Settings(BaseSettings):
         return self
 
     def _validate_database_path(self):
+        if not self.database_root.is_dir():
+            raise ValueError(f"Database root {self.database_root} does not exist.")
+
+        if self.database_name == "":
+            # If database_name is not given as arg or set in env, compute default as the first dir in database_root excluding 'system'
+            sites = [
+                d
+                for d in listdir(self.database_root)
+                if d != "system" and not d.startswith(".")
+            ]
+            if not sites:
+                raise ValueError(f"No databases found in {self.database_root}.")
+            self.database_name = sites[0]
+
         if not self.database_path.is_dir():
             raise ValueError(
                 f"Database {self.database_name} at {self.database_root} does not exist. Full path: {self.database_path}"
@@ -170,7 +161,6 @@ class Settings(BaseSettings):
         return self
 
     def _validate_fiat_path(self):
-        """Set FIAT path if not set, then validate it exists."""
         if not self.fiat_path.exists():
             raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
         return self
@@ -179,7 +169,7 @@ class Settings(BaseSettings):
         "database_root", "system_folder", "sfincs_path", "fiat_path", "database_path"
     )
     def serialize_path(self, path: Path) -> str:
-        return path.as_posix()
+        return str(path)
 
     @staticmethod
     def _system_extension() -> str:

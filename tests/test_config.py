@@ -242,7 +242,8 @@ class TestSettingsModel:
         with pytest.raises(ValidationError) as exc_info:
             Settings(database_name=name)
 
-        assert f"Database name {name} does not exist" in str(exc_info.value)
+        assert f"Database {name} at" in str(exc_info.value)
+        assert "does not exist." in str(exc_info.value)
 
     def test_init_from_invalid_system_folder_raise_validation_error(
         self, create_dummy_db

@@ -166,6 +166,7 @@ cython_debug/
 .vscode/launch.json
 /tests/test_database
 /tests/system
+system/
 
 # Pixi
 .pixi
