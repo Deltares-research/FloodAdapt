@@ -89,6 +89,7 @@ include = [
 [tool.setuptools.package-data]
 flood_adapt = [
     "py.typed",
+    "system/**",
 ]
 
 [tool.ruff]
