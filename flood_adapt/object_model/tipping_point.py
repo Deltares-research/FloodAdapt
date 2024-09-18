@@ -43,12 +43,9 @@ class TippingPoint(ITipPoint):
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
             value=slr, units=UnitTypesLength.meters
         )
-        proj.save(
-            self.database.input_path
-            / "projections"
-            / new_projection_name
-            / (new_projection_name + ".toml")
-        )
+        proj.attrs.name = new_projection_name
+        if proj.attrs.name not in self.database.projections.list_objects()["name"]:
+            self.database.projections.save(proj)
         return self
 
     def check_scenarios_exist(self, scenario_obj, existing_scenarios):
@@ -67,9 +64,9 @@ class TippingPoint(ITipPoint):
 
         scenarios = {
             f"slr_{slr}": {
-                "name": f"slr_{slr}",
+                "name": f'{self.attrs.projection}_slr{str(slr).replace(".", "")}_{self.attrs.event_set}_{self.attrs.strategy}',
                 "event": self.attrs.event_set,
-                "projection": f"{self.attrs.projection}_slr{slr}",
+                "projection": f'{self.attrs.projection}_slr{str(slr).replace(".", "")}',
                 "strategy": self.attrs.strategy,
             }
             for slr in self.attrs.sealevelrise
