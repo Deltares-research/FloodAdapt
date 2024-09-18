@@ -16,7 +16,7 @@ from flood_adapt.log import FloodAdaptLogging
 settings = Settings(
     database_root=SRC_DIR.parents[1] / "Database",
     database_name="charleston_test",
-    system_folder=SRC_DIR / "system",
+    # leave system_folder empty to use the envvar or default system folder
 )
 
 session_tmp_dir = Path(tempfile.mkdtemp())
