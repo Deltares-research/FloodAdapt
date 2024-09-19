@@ -13,6 +13,7 @@ from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
 import flood_adapt.config as FloodAdapt_config
+from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import Event
@@ -289,7 +290,7 @@ class Hazard:
                         run_success = False
                         break
 
-        if not run_success:
+        if DELETE_CRASHED_RUNS and not run_success:
             # Remove all files in the simulation folder except for the log files
             for simulation_path in self.simulation_paths:
                 for subdir, _, files in os.walk(simulation_path):
