@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import ClassVar
 
 import pandas as pd
@@ -65,6 +66,10 @@ class WindFromTrack(IWind):
     def get_data(self, strict=True) -> pd.DataFrame:
         return self.path
 
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
+
     @classmethod
     def default(cls) -> "WindFromTrack":
         return WindFromTrack()
@@ -89,6 +94,10 @@ class WindFromCSV(IWind):
                 raise
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
+
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
 
     @classmethod
     def default(cls) -> "WindFromCSV":

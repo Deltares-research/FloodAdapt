@@ -38,12 +38,12 @@ class EventSetModel(IEventModel):
     frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
 
 
-class EventSet(IEvent):
+class EventSet(IEvent[EventSetModel]):
     MODEL_TYPE = EventSetModel
 
     attrs: EventSetModel
 
-    def process(self, scenario: IScenario):
+    def process(self, scenario: IScenario = None):
         """Prepare the forcings of the event set.
 
         Which is to say, prepare the forcings of the subevents of the event set.

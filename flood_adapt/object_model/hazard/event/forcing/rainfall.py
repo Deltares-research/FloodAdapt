@@ -1,4 +1,5 @@
 import os
+import shutil
 from datetime import datetime
 from typing import ClassVar
 
@@ -104,6 +105,10 @@ class RainfallFromMeteo(IRainfall):
             else:
                 self._logger.error(f"Error reading meteo data: {self.path}. {e}")
 
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
+
     @classmethod
     def default(cls) -> "RainfallFromMeteo":
         return RainfallFromMeteo()
@@ -117,6 +122,10 @@ class RainfallFromTrack(IRainfall):
 
     def get_data(self, strict=True) -> pd.DataFrame:
         return self.path  # TODO implement
+
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
 
     @classmethod
     def default(cls) -> "RainfallFromTrack":

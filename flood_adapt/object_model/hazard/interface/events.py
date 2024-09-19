@@ -2,13 +2,11 @@ import os
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, ClassVar, List, Optional
+from typing import Any, ClassVar, Generic, List, Optional, Type, TypeVar
 
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import tomli
-import tomli_w
 from pydantic import (
     BaseModel,
     Field,
@@ -27,7 +25,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.object_model import ObjectModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesDirection,
@@ -115,13 +113,20 @@ class IEventModel(BaseModel):
     @field_serializer("forcings")
     @classmethod
     def serialize_forcings(
-        cls, value: dict[ForcingType, IForcing]
+        cls, value: dict[ForcingType, IForcing | dict[str, IForcing]]
     ) -> dict[str, dict[str, Any]]:
-        return {
-            type.name: forcing.model_dump(exclude_none=True)
-            for type, forcing in value.items()
-            if type
-        }
+        dct = {}
+        for ftype, forcing in value.items():
+            if not forcing:
+                continue
+            if isinstance(forcing, IForcing):
+                dct[ftype.value] = forcing.model_dump(exclude_none=True)
+            else:
+                dct[ftype.value] = {
+                    name: forcing.model_dump(exclude_none=True)
+                    for name, forcing in forcing.items()
+                }
+        return dct
 
     @classmethod
     def get_allowed_forcings(cls) -> dict[str, List[str]]:
@@ -133,32 +138,22 @@ class IEventModel(BaseModel):
         ...
 
 
-class IEvent(IDatabaseUser):
-    MODEL_TYPE: ClassVar[IEventModel]
+T = TypeVar("T", bound=IEventModel)
 
-    attrs: IEventModel
 
-    @classmethod
-    def load_file(cls, path: str | os.PathLike):
-        with open(path, "rb") as file:
-            attrs = tomli.load(file)
-        return cls.load_dict(attrs)
-
-    @classmethod
-    def load_dict(cls, data: dict[str, Any]):
-        obj = cls()
-        obj.attrs = cls.MODEL_TYPE.model_validate(data)
-        return obj
-
-    def save(self, path: str | os.PathLike, additional: bool = False):
-        with open(path, "wb") as f:
-            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
-        if additional:
-            self.save_additional(Path(path).parent)
+class IEvent(ObjectModel[T], Generic[T]):
+    MODEL_TYPE: Type[T]
+    attrs: T
 
     def save_additional(self, path: str | os.PathLike):
-        """Save additional forcing data. Overwrite in subclass if necessary."""
-        return
+        for forcing in self.attrs.forcings.values():
+            if forcing is None:
+                continue
+            if isinstance(forcing, dict):
+                for _, _forcing in forcing.items():
+                    _forcing.save_additional(path)
+            else:
+                forcing.save_additional(path)
 
     @abstractmethod
     def process(self, scenario: IScenario = None):

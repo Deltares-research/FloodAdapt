@@ -1,4 +1,5 @@
 import os
+import shutil
 from datetime import datetime
 from typing import ClassVar
 
@@ -84,6 +85,10 @@ class DischargeFromCSV(IDischarge):
                 raise
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
+
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
 
     @classmethod
     def default(cls) -> "DischargeFromCSV":

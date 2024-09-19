@@ -72,12 +72,12 @@ class HurricaneEventModel(IEventModel):
         )
 
 
-class HurricaneEvent(IEvent):
+class HurricaneEvent(IEvent[HurricaneEventModel]):
     MODEL_TYPE = HurricaneEventModel
 
     attrs: HurricaneEventModel
 
-    def process(self, scenario: IScenario):
+    def process(self, scenario: IScenario = None):
         """Prepare HurricaneEvent forcings."""
         return
 

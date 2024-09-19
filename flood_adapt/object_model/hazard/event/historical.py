@@ -83,7 +83,7 @@ class HistoricalEvent(IEvent):
     def site(self):
         return self.database.site
 
-    def process(self, scenario: IScenario):
+    def process(self, scenario: IScenario = None):
         """Prepare the forcings of the historical event.
 
         If the forcings require it, this function will:

@@ -87,6 +87,8 @@ class EventFactory:
     @staticmethod
     def read_template(filepath: Path) -> Template:
         """Get event template from toml file."""
+        if not filepath.exists():
+            raise FileNotFoundError(f"File not found: {filepath}")
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         if toml.get("template") is None:
@@ -96,6 +98,8 @@ class EventFactory:
     @staticmethod
     def read_mode(filepath: Path) -> Mode:
         """Get event mode from toml file."""
+        if not filepath.exists():
+            raise FileNotFoundError(f"File not found: {filepath}")
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
         if toml.get("mode") is None:

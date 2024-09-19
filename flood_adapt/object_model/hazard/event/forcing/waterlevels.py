@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 from datetime import datetime
 from typing import ClassVar
 
@@ -135,6 +136,10 @@ class WaterlevelFromCSV(IWaterlevel):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
+
     @classmethod
     def default(cls) -> "WaterlevelFromCSV":
         return WaterlevelFromCSV(path="path/to/waterlevel.csv")
@@ -184,6 +189,10 @@ class WaterlevelFromGauged(IWaterlevel):
                 raise
             else:
                 self._logger.error(f"Error reading gauge data: {self.path}. {e}")
+
+    def save_additional(self, path: str | os.PathLike):
+        if self.path:
+            shutil.copy2(self.path, path)
 
     @classmethod
     def default(cls) -> "WaterlevelFromGauged":

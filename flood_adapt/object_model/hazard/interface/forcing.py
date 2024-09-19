@@ -50,8 +50,13 @@ class IForcing(BaseModel, ABC):
         data["_source"] = self._source.value if self._source else None
         return data
 
+    def save_additional(self, path: str | os.PathLike):
+        """Save additional data of the forcing."""
+        return
+
+    @classmethod
     @abstractmethod
-    def default() -> "IForcing":
+    def default(cls) -> "IForcing":
         """Return the default for this forcing."""
         ...
 
