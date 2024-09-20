@@ -13,6 +13,7 @@ import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 
+from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -1036,6 +1037,9 @@ class Database(IDatabase):
             - does not have a corresponding input
 
         """
+        if not DELETE_CRASHED_RUNS:
+            return
+
         scn_input_path = self.scenarios.get_database_path()
         scn_output_path = self.scenarios.get_database_path(get_input_path=False)
         if not scn_output_path.is_dir():
