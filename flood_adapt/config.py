@@ -243,11 +243,3 @@ def parse_user_input(
 
     if any(val is not None for val in [database_root, system_folder, database_name]):
         print("Parsed user input successfully")
-
-
-def main() -> None:
-    pass
-
-
-if __name__ == "__main__":
-    main()
