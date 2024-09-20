@@ -6,7 +6,7 @@ from typing import Any, ClassVar
 
 import pandas as pd
 import tomli
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import (
@@ -59,6 +59,12 @@ class IForcing(BaseModel, ABC):
     def default(cls) -> "IForcing":
         """Return the default for this forcing."""
         ...
+
+    @field_serializer("path", check_fields=False)
+    @classmethod
+    def serialize_path(cls, value: str | os.PathLike | Path) -> str:
+        """Serialize filepath-like fields."""
+        return str(value)
 
 
 class IDischarge(IForcing):

@@ -38,7 +38,7 @@ class EventSetModel(IEventModel):
     frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
 
 
-class EventSet(IEvent[EventSetModel]):
+class EventSet(IEvent):
     MODEL_TYPE = EventSetModel
 
     attrs: EventSetModel

@@ -2,6 +2,7 @@ import math
 import os
 import shutil
 from datetime import datetime
+from pathlib import Path
 from typing import ClassVar
 
 import numpy as np
@@ -9,7 +10,6 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.hazard.event.timeseries import (
-    CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
@@ -20,6 +20,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ShapeType,
 )
+from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulTime,
@@ -125,11 +126,11 @@ class WaterlevelSynthetic(IWaterlevel):
 class WaterlevelFromCSV(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
-    path: os.PathLike | str
+    path: Path
 
-    def get_data(self, strict=True) -> pd.DataFrame:
+    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
         try:
-            return CSVTimeseries.read_csv(self.path)
+            return read_csv(self.path)
         except Exception as e:
             if strict:
                 raise
@@ -150,7 +151,7 @@ class WaterlevelFromModel(IWaterlevel):
     path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
-    def get_data(self, strict=True) -> pd.DataFrame:
+    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
         # Note that this does not run the offshore simulation, it only tries to read the results from the model.
         # Running the model is done in the process method of the event.
         try:
@@ -179,11 +180,9 @@ class WaterlevelFromGauged(IWaterlevel):
     # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
     path: os.PathLike | str | None = Field(default=None)
 
-    def get_data(self, strict=True) -> pd.DataFrame:
+    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
         try:
-            df = pd.read_csv(self.path, index_col=0, parse_dates=True)
-            df.index.names = ["time"]
-            return df
+            return read_csv(self.path)
         except Exception as e:
             if strict:
                 raise

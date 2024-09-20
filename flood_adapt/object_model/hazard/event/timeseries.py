@@ -254,31 +254,11 @@ class CSVTimeseries(ITimeseries):
         obj.attrs = CSVTimeseriesModel.model_validate({"path": path})
         return obj
 
-    @staticmethod
-    def read_csv(csvpath: str | Path) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.Dataframe.
-
-        Parameters
-        ----------
-        csvpath : Union[str, os.PathLike]
-            path to csv file that has the first column as time and the second column as waterlevel.
-            time should be formatted as DEFAULT_DATETIME_FORMAT (= "%Y-%m-%d %H:%M:%S")
-            Waterlevel is relative to the global datum.
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
-        """
-        df = pd.read_csv(csvpath, index_col=0, parse_dates=True)
-        df.index.names = ["time"]
-        return df
-
     def to_dataframe(
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: UnitfulTime,
+        time_step: UnitfulTime = DEFAULT_TIMESTEP,
     ) -> pd.DataFrame:
         if isinstance(start_time, str):
             start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)

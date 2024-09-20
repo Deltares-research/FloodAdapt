@@ -78,7 +78,7 @@ def save_event_toml(event: IEvent) -> None:
 
 
 def save_event_additional(event: IEvent) -> None:
-    db.Database().events.save_additional(event)
+    db.Database().events.save(event, toml_only=False)
 
 
 def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
@@ -128,11 +128,11 @@ def download_wl_data(
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
-    return IEvent.read_csv(csvpath)
+    return read_csv(csvpath)
 
 
-def plot_forcing(event, forcingtype):
-    return db.Database().plot_forcing(event, forcingtype)
+def plot_forcing(event, forcingtype) -> str | None:
+    return event.plot_forcing(forcingtype)
 
 
 def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:

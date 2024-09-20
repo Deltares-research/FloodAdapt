@@ -1,6 +1,6 @@
-import os
 from abc import ABC, abstractmethod
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, Protocol
 
 import numpy as np
@@ -15,6 +15,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TIMESERIES_VARIABLE,
     ShapeType,
 )
+from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     IUnitFullValue,
     UnitfulTime,
@@ -87,8 +88,20 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
 
 
 class CSVTimeseriesModel(ITimeseriesModel):
-    path: str | os.PathLike
-    # TODO: Add validation for csv_file_path / contents ?
+    path: Path
+
+    @model_validator(mode="after")
+    def validate_csv(self):
+        if not self.path.exists():
+            raise ValueError(f"Path {self.path} does not exist.")
+        if not self.path.is_file():
+            raise ValueError(f"Path {self.path} is not a file.")
+        if not self.path.suffix == ".csv":
+            raise ValueError(f"Path {self.path} is not a csv file.")
+
+        # Try loading the csv file, read_csv will raise an error if it cannot read the file
+        read_csv(self.path)
+        return self
 
 
 class ITimeseriesCalculationStrategy(Protocol):

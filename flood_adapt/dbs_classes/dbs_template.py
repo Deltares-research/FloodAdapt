@@ -112,7 +112,9 @@ class DbsTemplate(AbstractDatabaseElement):
             if "toml" not in file.name:
                 shutil.copy(file, dest / file.name)
 
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(
+        self, object_model: ObjectModel, overwrite: bool = False, toml_only: bool = True
+    ):
         """Save an object in the database. This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
 
         Parameters
@@ -146,6 +148,8 @@ class DbsTemplate(AbstractDatabaseElement):
         object_model.save(
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
+        if not toml_only:
+            object_model.save_additional(self._path / object_model.attrs.name)
 
     def edit(self, object_model: ObjectModel):
         """Edit an already existing object in the database.

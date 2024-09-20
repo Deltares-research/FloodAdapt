@@ -72,7 +72,7 @@ class HurricaneEventModel(IEventModel):
         )
 
 
-class HurricaneEvent(IEvent[HurricaneEventModel]):
+class HurricaneEvent(IEvent):
     MODEL_TYPE = HurricaneEventModel
 
     attrs: HurricaneEventModel

@@ -3,6 +3,32 @@ from typing import Any, List
 
 import tomli
 
+from flood_adapt.object_model.hazard.event.forcing.discharge import (
+    DischargeConstant,
+    DischargeFromCSV,
+    DischargeSynthetic,
+)
+from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+    RainfallConstant,
+    RainfallFromMeteo,
+    RainfallFromTrack,
+    RainfallSynthetic,
+)
+
+# RainfallfromCSV,
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+    WaterlevelFromCSV,
+    WaterlevelFromGauged,
+    WaterlevelFromModel,
+    WaterlevelSynthetic,
+)
+from flood_adapt.object_model.hazard.event.forcing.wind import (
+    WindConstant,
+    WindFromCSV,
+    WindFromMeteo,
+    WindFromTrack,
+    WindSynthetic,
+)
 from flood_adapt.object_model.hazard.interface.forcing import (
     IForcing,
     IForcingFactory,
@@ -11,21 +37,6 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ForcingType,
 )
-
-from .discharge import DischargeConstant, DischargeFromCSV, DischargeSynthetic
-from .rainfall import (
-    RainfallConstant,
-    RainfallFromMeteo,
-    RainfallFromTrack,
-    RainfallSynthetic,
-)
-from .waterlevels import (
-    WaterlevelFromCSV,
-    WaterlevelFromGauged,
-    WaterlevelFromModel,
-    WaterlevelSynthetic,
-)
-from .wind import WindConstant, WindFromMeteo, WindFromTrack, WindSynthetic
 
 FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
     ForcingType.WATERLEVEL: {
@@ -46,7 +57,7 @@ FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
     ForcingType.WIND: {
         ForcingSource.METEO: WindFromMeteo,
         ForcingSource.TRACK: WindFromTrack,
-        ForcingSource.CSV: None,
+        ForcingSource.CSV: WindFromCSV,
         ForcingSource.SYNTHETIC: WindSynthetic,
         ForcingSource.CONSTANT: WindConstant,
     },

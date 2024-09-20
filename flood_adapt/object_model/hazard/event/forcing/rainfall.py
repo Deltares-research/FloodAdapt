@@ -89,7 +89,7 @@ class RainfallFromMeteo(IRainfall):
     path: str | os.PathLike | None = Field(default=None)
     # path to the meteo data, set this when downloading it
 
-    def get_data(self, strict=True) -> xr.DataArray:
+    def get_data(self, strict=True, **kwargs) -> xr.DataArray:
         try:
             if self.path is None:
                 raise ValueError(
@@ -120,7 +120,7 @@ class RainfallFromTrack(IRainfall):
     path: str | os.PathLike | None = Field(default=None)
     # path to spw file, set this when creating it
 
-    def get_data(self, strict=True) -> pd.DataFrame:
+    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
         return self.path  # TODO implement
 
     def save_additional(self, path: str | os.PathLike):

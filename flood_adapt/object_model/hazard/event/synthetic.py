@@ -50,7 +50,7 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         )
 
 
-class SyntheticEvent(IEvent[SyntheticEventModel]):
+class SyntheticEvent(IEvent):
     MODEL_TYPE = SyntheticEventModel
 
     attrs: SyntheticEventModel

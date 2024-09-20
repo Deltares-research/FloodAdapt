@@ -2,11 +2,14 @@ import os
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, ClassVar, Generic, List, Optional, Type, TypeVar
+from typing import Any, ClassVar, List, Optional, Type
 
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import tomli
+import tomli_w
 from pydantic import (
     BaseModel,
     Field,
@@ -25,7 +28,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.object_model import ObjectModel
+from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesDirection,
@@ -138,12 +141,24 @@ class IEventModel(BaseModel):
         ...
 
 
-T = TypeVar("T", bound=IEventModel)
+class IEvent(IDatabaseUser):
+    MODEL_TYPE: Type[IEventModel]
+    attrs: IEventModel
 
+    @classmethod
+    def load_dict(cls, attrs: dict[str, Any]) -> "IEvent":
+        obj = cls()
+        obj.attrs = cls.MODEL_TYPE.model_validate(attrs)
+        return obj
 
-class IEvent(ObjectModel[T], Generic[T]):
-    MODEL_TYPE: Type[T]
-    attrs: T
+    @classmethod
+    def load_file(cls, path: str | os.PathLike) -> "IEvent":
+        with open(path, "rb") as f:
+            return cls.load_dict(tomli.load(f))
+
+    def save(self, path: str | os.PathLike):
+        with open(path, "wb") as f:
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
     def save_additional(self, path: str | os.PathLike):
         for forcing in self.attrs.forcings.values():
@@ -341,27 +356,27 @@ class IEvent(ObjectModel[T], Generic[T]):
 
         rivers = self.attrs.forcings[ForcingType.DISCHARGE]
 
-        data = None
-        for river in rivers:
+        data = pd.DataFrame()
+        errors = []
+
+        for name, river in rivers.items():
             try:
                 river_data = river.get_data(t0=xlim1, t1=xlim2)
+                # add river_data as a column to the dataframe. keep the same index
+                if data.empty:
+                    data = river_data
+                else:
+                    data = data.join(river_data, how="outer")
             except Exception as e:
-                self.logger.error(
-                    f"Error getting discharge data for river: {river} {e}"
-                )
-            # add river_data as a column to the dataframe. keep the same index
-            if data is None:
-                data = river_data
-            else:
-                data = data.join(river_data, how="outer")
+                errors.append((name, e))
 
-        if data.empty:
+        if errors:
             self.logger.error(
-                f"Could not retrieve discharge data: {self.attrs.forcings[ForcingType.DISCHARGE]} {data}"
+                f"Could not retrieve discharge data for {', '.join([entry[0] for entry in errors])}: {errors}"
             )
             return
 
-        river_names = [i.description for i in self.database.site.attrs.river]
+        river_names = [i.name for i in self.database.site.attrs.river]
         river_descriptions = [i.description for i in self.database.site.attrs.river]
         river_descriptions = np.where(
             river_descriptions is None, river_names, river_descriptions
