@@ -12,8 +12,8 @@ import xarray as xr
 from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
-from flood_adapt.config import Settings
 from flood_adapt import DELETE_CRASHED_RUNS
+from flood_adapt.config import Settings
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import Event

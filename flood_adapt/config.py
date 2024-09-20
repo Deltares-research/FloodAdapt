@@ -227,4 +227,3 @@ class Settings(BaseSettings):
                 ),
                 f,
             )
-
