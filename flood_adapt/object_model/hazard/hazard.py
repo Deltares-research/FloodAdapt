@@ -12,8 +12,8 @@ import xarray as xr
 from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
-import flood_adapt.config as FloodAdapt_config
 from flood_adapt import DELETE_CRASHED_RUNS
+from flood_adapt.config import Settings
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event import Event
@@ -264,16 +264,6 @@ class Hazard:
 
     def run_sfincs(self):
         # Run new model(s)
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
-
         run_success = True
         for simulation_path in self.simulation_paths:
             self._logger.info(
@@ -281,10 +271,9 @@ class Hazard:
             )
             with cd(simulation_path):
                 sfincs_log = "sfincs.log"
-                # with open(results_dir.joinpath(f"{self.name}.log"), "a") as log_handler:
                 with open(sfincs_log, "a") as log_handler:
                     return_code = subprocess.run(
-                        sfincs_exec, stdout=log_handler, stderr=log_handler
+                        Settings().sfincs_path.as_posix(), stdout=log_handler
                     )
                     if return_code.returncode != 0:
                         run_success = False
@@ -307,20 +296,11 @@ class Hazard:
 
     def run_sfincs_offshore(self, ii: int):
         # Run offshore model(s)
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
-
         simulation_path = self.simulation_paths_offshore[ii]
         with cd(simulation_path):
             sfincs_log = "sfincs.log"
             with open(sfincs_log, "w") as log_handler:
-                subprocess.run(sfincs_exec, stdout=log_handler)
+                subprocess.run(Settings().sfincs_path, stdout=log_handler)
 
     def preprocess_sfincs(
         self,

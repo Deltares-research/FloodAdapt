@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import time
+from os import environ
 from pathlib import Path
 
 import geopandas as gpd
@@ -15,7 +16,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-import flood_adapt.config as FloodAdapt_config
+from flood_adapt.config import Settings
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -23,8 +24,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
@@ -187,7 +186,7 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
-            dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
+            dem = self.database.static_path / "dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
                 self.database.static_path / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation
@@ -249,20 +248,13 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
-
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
-                    f'"{fiat_exec}" run settings.toml',
+                    f'"{Settings().fiat_path.as_posix()}" run settings.toml',
                     stdout=log_handler,
+                    stderr=log_handler,
+                    env=environ.copy(),  # need environment variables from runtime hooks
                     check=True,
                     shell=True,
                 )

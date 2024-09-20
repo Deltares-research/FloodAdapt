@@ -1,245 +1,229 @@
-import os
+from os import environ, listdir
 from pathlib import Path
-from typing import Union
+from platform import system
+from typing import ClassVar
 
 import tomli
+import tomli_w
+from pydantic import (
+    Field,
+    computed_field,
+    field_serializer,
+    model_validator,
+)
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from flood_adapt import SRC_DIR
 
 
-def set_database_root(database_root: Path, overwrite: bool = True) -> None:
+class Settings(BaseSettings):
     """
-    Set the database root path.
+    The configuration settings for the FloodAdapt database and integrator.
 
-    Parameters
-    ----------
-    database_root : Path
-        The absolute new database_root path.
-    overwrite : bool, optional
-        If False, it will only be set if it is not already set.
+    Precedence is as follows: user arguments > environment variables > defaults in this class.
+    When loading is done, the settings are validated and the environment variables are updated with the loaded values.
 
-    Returns
-    -------
-    None
+    If any required settings are missing or invalid, a ValidationError is raised.
 
-    Raises
-    ------
-    ValueError
-        If the provided database root is not a valid directory.
-    """
-    if database_root == get_database_root():
-        return
-    abs_database_root = Path(database_root).resolve()
-    if not Path(abs_database_root).is_dir():
-        raise ValueError(f"{abs_database_root} is not a valid database root directory")
+    Usage
+    -----
+    from flood_adapt.config import Settings
 
-    if get_database_root() is None:
-        os.environ["DATABASE_ROOT"] = str(abs_database_root)
-        print(f"database_root set: {abs_database_root}")
-    elif overwrite:
-        print(f"database_root overwritten: {abs_database_root}")
-        os.environ["DATABASE_ROOT"] = str(abs_database_root)
+    One of the following:
 
+    1) Load settings from environment variables, if no environment variables are set, use defaults defined in the class:
+        `settings = Settings()`
 
-def set_system_folder(system_folder: Path, overwrite: bool = True) -> None:
-    """
-    Set the system folder path.
+    2) Load settings from a .toml file, overwriting any environment variables set:
+        `settings = Settings.read(toml_path: Path)`
 
-    Parameters
-    ----------
-    system_folder : Path
-        The new system folder path.
-    overwrite : bool, optional
-        If False, it will only be set if it is not already set.
+    3) Load settings from keyword arguments, overwriting any environment variables:
+        `settings = Settings(database_root="path/to/database", database_name="database_name", system_folder="path/to/system_folder")`
 
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    ValueError
-        If the provided system folder is not a valid directory.
-    """
-    if system_folder == get_system_folder():
-        return
-    abs_system_folder = Path(system_folder).resolve()
-    if not Path(abs_system_folder).is_dir():
-        raise ValueError(f"{abs_system_folder} is not a valid system folder directory")
-
-    if get_system_folder() is None:
-        os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
-        print(f"system_folder set: {abs_system_folder}")
-    elif overwrite:
-        print(f"system_folder overwritten: {abs_system_folder}")
-        os.environ["SYSTEM_FOLDER"] = str(abs_system_folder)
-
-
-def set_database_name(database_name: str, overwrite: bool = True) -> None:
-    """
-    Set the database_name.
-
-    Parameters
+    Attributes
     ----------
     database_name : str
-        The new database name.
-    overwrite : bool, optional
-        If False, it will only be set if it is not already set.
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    ValueError
-        If DATABASE_ROOT is not set or if the provided database_name is not a valid directory in DATABASE_ROOT.
-    """
-    if database_name == get_database_name():
-        return
-    db_root = get_database_root()
-    if db_root is None:
-        raise ValueError(
-            "DATABASE_ROOT is not set, set it before setting DATABASE_NAME\n"
-        )
-
-    full_database_path = Path(db_root, database_name)
-    if not full_database_path.is_dir():
-        raise ValueError(f"{full_database_path} is not a valid directory\n")
-
-    if get_database_name() is None:
-        os.environ["DATABASE_NAME"] = str(database_name)
-        print(f"database_name set: {database_name}")
-    elif overwrite:
-        print(f"database_name overwritten: {database_name}")
-        os.environ["DATABASE_NAME"] = str(database_name)
-
-
-def get_database_root() -> Union[Path, None]:
-    """
-    Get the root directory for the database.
-
-    Returns
-    -------
-    Path or None
-        The path to the root of the database if the DATABASE_ROOT environment variable is set,
-        None otherwise.
-    """
-    if os.environ.get("DATABASE_ROOT", None):
-        return Path(os.environ["DATABASE_ROOT"])
-
-
-def get_system_folder() -> Union[Path, None]:
-    """
-    Get the system folder path.
-
-    Returns
-    -------
-    Path or None
-        The system folder path if the SYSTEM_FOLDER environment variable is set, otherwise None.
-    """
-    if os.environ.get("SYSTEM_FOLDER", None):
-        return Path(os.environ["SYSTEM_FOLDER"])
-
-
-def get_database_name() -> Union[str, None]:
-    """
-    Get the database name.
-
-    Returns
-    -------
-    str or None
-        The database name if the DATABASE_NAME environment variable is set, otherwise None.
-    """
-    return os.environ.get("DATABASE_NAME", None)
-
-
-def parse_config(config_path: Path, overwrite: bool = True) -> dict:
-    """
-    Parse the configuration file and return the parsed configuration dictionary.
-
-    Parameters
-    ----------
-    config_path : Path
-        The path to the configuration file.
-    overwrite : bool, optional
-        Flag indicating whether to overwrite existing configuration values, defaults to True.
-
-    Returns
-    -------
-    dict
-        The parsed configuration dictionary.
-
-    Raises
-    ------
-    ValueError
-        If required configuration values are missing or if there is an error parsing the configuration file.
-    """
-    with open(config_path, "rb") as f:
-        config = tomli.load(f)
-
-    config_base_dir = config_path.parent
-
-    try:
-        # Parse the config file
-        if "DATABASE_ROOT" not in config:
-            raise ValueError(f"DATABASE_ROOT not found in {config_path}")
-        database_root = config_base_dir / config["DATABASE_ROOT"]
-        set_database_root(database_root, overwrite=overwrite)
-
-        if "SYSTEM_FOLDER" not in config:
-            raise ValueError(f"SYSTEM_FOLDER not found in {config_path}")
-        system_folder = config_base_dir / config["SYSTEM_FOLDER"]
-        set_system_folder(system_folder, overwrite=overwrite)
-
-        if "DATABASE_NAME" not in config:
-            raise ValueError(f"DATABASE_NAME not found in {config_path}")
-        set_database_name(config["DATABASE_NAME"], overwrite=overwrite)
-
-        if overwrite:
-            print(f"Configuration loaded from {config_path}")
-
-    except ValueError as e:
-        full_error = f"""
-        {e}
-        Error parsing configuration toml file: {config_path}
-        Please make sure the file is formatted correctly and contains the required fields.
-        """
-        raise ValueError(full_error)
-
-    return config
-
-
-def parse_user_input(
-    database_root=None, system_folder=None, database_name=None, overwrite=True
-) -> None:
-    """
-    Parse the user input and set the corresponding configuration values.
-
-    Parameters
-    ----------
-    database_root : str, optional
-        The absolute path to the root directory of the database.
-    system_folder : str, optional
-        The absolute path to the system folder.
-    database_name : str, optional
         The name of the database.
-    overwrite : bool, optional
-        Whether to overwrite existing configuration values. Default is True.
+    database_root : Path
+        The root directory of the database.
+    system_folder : Path
+        The root directory of the system folder containing the kernels.
 
-    Returns
-    -------
-    None
+    Properties
+    ----------
+    database_path : Path
+        The full path to the database.
+    sfincs_path : Path
+        The path to the SFINCS binary.
+    fiat_path : Path
+        The path to the FIAT binary.
+
+    Raises
+    ------
+    ValidationError
+        If required settings are missing or invalid.
     """
-    # Set database_root if given
-    if database_root is not None:
-        set_database_root(database_root, overwrite=overwrite)
 
-    # Set system folder if given
-    if system_folder is not None:
-        set_system_folder(system_folder, overwrite=overwrite)
+    SYSTEM_SUFFIXES: ClassVar[dict[str, str]] = {
+        "Windows": ".exe",
+        "Linux": "",
+        "Darwin": "",
+    }
 
-    # Set database_name if given
-    if database_name is not None:
-        set_database_name(database_name, overwrite=overwrite)
+    model_config = SettingsConfigDict(
+        env_ignore_empty=True, validate_default=True
+    )  # empty env uses default
 
-    if any(val is not None for val in [database_root, system_folder, database_name]):
-        print("Parsed user input successfully")
+    database_root: Path = Field(
+        default=SRC_DIR.parents[1] / "Database",
+        env="DATABASE_ROOT",
+        description="The root directory of the database that contains site(s). Usually the directory name is 'Database'.",
+    )
+    database_name: str = Field(
+        default="",
+        env="DATABASE_NAME",
+        description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
+    )
+    system_folder: Path = Field(
+        default=SRC_DIR / "system",
+        env="SYSTEM_FOLDER",
+        description="The path of the system folder containing the kernels that run the calculations.",
+    )
+
+    @computed_field
+    @property
+    def sfincs_path(self) -> Path:
+        return self.system_folder / "sfincs" / f"sfincs{Settings._system_extension()}"
+
+    @computed_field
+    @property
+    def fiat_path(self) -> Path:
+        return self.system_folder / "fiat" / f"fiat{Settings._system_extension()}"
+
+    @computed_field
+    @property
+    def database_path(self) -> Path:
+        return self.database_root / self.database_name
+
+    @model_validator(mode="after")
+    def validate_paths(self):
+        self._validate_database_path()
+        self._validate_system_folder()
+        self._validate_fiat_path()
+        self._validate_sfincs_path()
+
+        environ["DATABASE_ROOT"] = str(self.database_root)
+        environ["DATABASE_NAME"] = self.database_name
+        environ["SYSTEM_FOLDER"] = str(self.system_folder)
+
+        return self
+
+    def _validate_database_path(self):
+        if not self.database_root.is_dir():
+            raise ValueError(f"Database root {self.database_root} does not exist.")
+
+        if self.database_name == "":
+            # If database_name is not given as arg or set in env, compute default as the first dir in database_root excluding 'system'
+            sites = [
+                d
+                for d in listdir(self.database_root)
+                if d != "system" and not d.startswith(".")
+            ]
+            if not sites:
+                raise ValueError(f"No databases found in {self.database_root}.")
+            self.database_name = sites[0]
+
+        if not self.database_path.is_dir():
+            raise ValueError(
+                f"Database {self.database_name} at {self.database_root} does not exist. Full path: {self.database_path}"
+            )
+
+        if not (self.database_path / "input").is_dir():
+            raise ValueError(
+                f"Database {self.database_name} at {self.database_path} does not contain an input folder."
+            )
+
+        if not (self.database_path / "static").is_dir():
+            raise ValueError(
+                f"Database {self.database_name} at {self.database_path} does not contain a static folder."
+            )
+
+        return self
+
+    def _validate_system_folder(self):
+        if not self.system_folder.is_dir():
+            raise ValueError(f"System folder {self.system_folder} does not exist.")
+        return self
+
+    def _validate_sfincs_path(self):
+        if not self.sfincs_path.exists():
+            raise ValueError(f"SFINCS binary {self.sfincs_path} does not exist.")
+        return self
+
+    def _validate_fiat_path(self):
+        if not self.fiat_path.exists():
+            raise ValueError(f"FIAT binary {self.fiat_path} does not exist.")
+        return self
+
+    @field_serializer(
+        "database_root", "system_folder", "sfincs_path", "fiat_path", "database_path"
+    )
+    def serialize_path(self, path: Path) -> str:
+        return str(path)
+
+    @staticmethod
+    def _system_extension() -> str:
+        if system() not in Settings.SYSTEM_SUFFIXES:
+            raise ValueError(f"Unsupported system {system()}")
+        return Settings.SYSTEM_SUFFIXES[system()]
+
+    @staticmethod
+    def read(toml_path: Path) -> "Settings":
+        """
+        Parse the configuration file and return the parsed settings.
+
+        Parameters
+        ----------
+        config_path : Path
+            The path to the configuration file.
+
+        Returns
+        -------
+        Settings
+            The parsed configuration settings.
+
+        Raises
+        ------
+        ValidationError
+            If required configuration values are missing or if there is an error parsing the configuration file.
+        """
+        with open(toml_path, "rb") as f:
+            settings = tomli.load(f)
+
+        return Settings(**settings)
+
+    def write(self, toml_path: Path) -> None:
+        """
+        Write the configuration settings to a .toml file.
+
+        Parameters
+        ----------
+        config_path : Path
+            The path to the configuration file.
+
+        Returns
+        -------
+        None
+
+        """
+        toml_path = Path(toml_path).resolve()
+        if not toml_path.parent.exists():
+            toml_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(toml_path, "wb") as f:
+            tomli_w.dump(
+                self.model_dump(
+                    exclude={"sfincs_path", "fiat_path", "database_path"},
+                ),
+                f,
+            )
