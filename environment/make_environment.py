@@ -10,10 +10,8 @@ except Exception:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
     import yaml  # noQA
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_ROOT = PROJECT_ROOT / "FloodAdapt"
-WHEELS_DIR = BACKEND_ROOT / "environment" / "geospatial-wheels"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
 
 SUBPROCESS_KWARGS = {
     "shell": True,
@@ -21,12 +19,8 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
+    "start_new_session": True,
 }
-
-try:
-    subprocess.run("conda info", **SUBPROCESS_KWARGS)
-except subprocess.CalledProcessError:
-    subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
 
 def parse_args():
@@ -63,6 +57,13 @@ def parse_args():
         dest="optional_deps",
         help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
     )
+    parser.add_argument(
+        "--project-root",
+        default=None,
+        type=str,
+        dest="project_root",
+        help="The root directory of the project. Default is 2 levels above this script. Usually named 'FloodAdapt'.",
+    )
 
     args = parser.parse_args()
     return args
@@ -95,35 +96,73 @@ def check_and_delete_conda_env(env_name, prefix=None):
             subprocess.run(f"conda env remove -n {env_name} -y", **SUBPROCESS_KWARGS)
 
 
+def install_OGR_dependencies(env_name: str, prefix_option: str):
+    if sys.platform.startswith("win"):
+        write_env_yml(env_name)
+        create_command = f"conda env create -f _environment.yml {prefix_option}"
+        process = subprocess.Popen(
+            create_command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+
+        while process.poll() is None:
+            print(process.stdout.readline())
+
+    elif sys.platform == "linux":
+        subprocess.run("sudo add-apt-repository ppa:ubuntugis/ppa", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo apt-get update", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo apt-get install gdal-bin", **SUBPROCESS_KWARGS)
+        subprocess.run("sudo apt-get install libgdal-dev", **SUBPROCESS_KWARGS)
+        subprocess.run(
+            "export CPLUS_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS
+        )
+        subprocess.run("export C_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS)
+        subprocess.run("ogrinfo --version", **SUBPROCESS_KWARGS)
+
+        subprocess.run(
+            "pip install GDAL==$(ogrinfo --version | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')",
+            **SUBPROCESS_KWARGS,
+        )
+        # TODO more deps
+    else:
+        raise NotImplementedError(f"Platform {sys.platform} not supported.")
+
+
 def create_env(
     env_name: str,
     prefix: str = None,
     editable: bool = False,
     optional_deps: str = None,
 ):
-    if not BACKEND_ROOT.exists():
+    if not PROJECT_ROOT.exists():
         raise FileNotFoundError(
-            f"The FloodAdapt repository was not found in the expected location: {BACKEND_ROOT}"
+            f"The FloodAdapt repository was not found in the expected location: {PROJECT_ROOT}"
         )
 
-    write_env_yml(env_name)
     check_and_delete_conda_env(env_name, prefix=prefix)
+    print(prefix)
+    print(env_name)
+    if prefix:
+        env_location = os.path.join(prefix, env_name)
+        prefix_option = f"--prefix {env_location}"
+        activate_command = f"conda activate -p {env_location}"
+        conda_run_opt = f"-p {env_location}"
+    else:
+        env_location = env_name
+        prefix_option = ""
+        activate_command = f"conda activate {env_name}"
+        conda_run_opt = f"-n {env_name}"
 
-    env_location = os.path.join(prefix, env_name) if prefix else env_name
-    prefix_option = f"--prefix {env_location}" if prefix else ""
-    create_command = f"conda env create -f _environment.yml {prefix_option}"
-
-    activate_option = env_location if prefix else env_name
-    activate_command = f"conda activate {activate_option}"
+    install_OGR_dependencies(env_name, prefix_option)
 
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
 
     command_list = [
-        "conda activate",
-        create_command,
-        activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        f"conda run {conda_run_opt} pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
     ]
     command = " && ".join(command_list)
 
@@ -141,15 +180,33 @@ def create_env(
 
     while process.poll() is None:
         print(process.stdout.readline())
-    print(process.stdout.read())
+
+    if process.returncode != 0:
+        print(process.stderr.read())
+        raise RuntimeError(
+            f"Environment creation failed with return code {process.returncode}"
+        )
 
     os.remove("_environment.yml")
     print(f"Environment {env_name} created successfully!")
+
     print(f"Activate it with:\n\n\t{activate_command}\n")
 
 
 if __name__ == "__main__":
     args = parse_args()
+    subprocess.run("conda init", **SUBPROCESS_KWARGS)
+
+    if args.project_root:
+        PROJECT_ROOT = Path(args.project_root).resolve()
+        print(f"Using project root: {PROJECT_ROOT}")
+        WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
+
+        assert PROJECT_ROOT.exists(), f"Project root does not exist: {PROJECT_ROOT}. Please verify your project root."
+        assert (
+            PROJECT_ROOT / "flood_adapt"
+        ).exists(), f"Project root {PROJECT_ROOT} does not contain the flood_adapt package. Please verify your project root."
+        assert WHEELS_DIR.exists(), f"Wheels directory does not exist: {WHEELS_DIR}. Please verify your project root."
 
     create_env(
         env_name=args.env_name,
