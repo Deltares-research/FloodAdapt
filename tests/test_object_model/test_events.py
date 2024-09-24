@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import tomli
+from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -220,8 +221,6 @@ def test_make_spw_file(test_db):
 
 
 def test_translate_hurricane_track(test_db):
-    from cht_cyclones.tropical_cyclone import TropicalCyclone
-
     event_toml = test_db.input_path / "events" / "FLORENCE" / "FLORENCE.toml"
 
     template = Event.get_template(event_toml)
