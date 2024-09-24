@@ -7,10 +7,10 @@ import geopandas as gpd
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
-import plotly.graph_objects as go
 import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
+from plotly.graph_objects import Figure, Scatter
 
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
@@ -486,14 +486,14 @@ class Benefit(IBenefit):
     def _make_html(self, cba):
         """Make an html with the time-series of the benefits and discounted benefits."""
         # Save a plotly graph in an html
-        fig = go.Figure()
+        fig = Figure()
 
         # Get only endpoints
         cba2 = cba.iloc[[0, -1]]
 
         # Add graph with benefits
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=cba.index,
                 y=cba["benefits"],
                 mode="lines",
@@ -502,7 +502,7 @@ class Benefit(IBenefit):
             )
         )
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=cba2.index,
                 y=cba2["benefits"],
                 mode="markers",
@@ -513,7 +513,7 @@ class Benefit(IBenefit):
         )
 
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=cba.index,
                 y=cba["benefits_discounted"],
                 mode="lines",
@@ -523,7 +523,7 @@ class Benefit(IBenefit):
         )
 
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=cba.index,
                 y=cba["benefits_discounted"],
                 mode="none",

@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
 import tomli

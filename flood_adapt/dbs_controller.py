@@ -7,11 +7,13 @@ from typing import Any, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
+from plotly.express import line
+from plotly.express.colors import sample_colorscale
+from plotly.graph_objects import Figure, Scatter
+from plotly.subplots import make_subplots
+from xarray import open_dataarray, open_dataset
 
 from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
@@ -293,10 +295,10 @@ class Database(IDatabase):
             }
         )
 
-        colors = px.colors.sample_colorscale(
+        colors = sample_colorscale(
             "rainbow", [n / (ncolors - 1) for n in range(ncolors)]
         )
-        fig = px.line(
+        fig = line(
             df,
             x="Year",
             y=f"Sea level rise [{self.site.attrs.gui.default_length_units}]",
@@ -363,7 +365,7 @@ class Database(IDatabase):
         gui_units = self.site.attrs.gui.default_length_units
 
         # Plot actual thing
-        fig = px.line(wl_df + self.site.attrs.water_level.msl.height.convert(gui_units))
+        fig = line(wl_df + self.site.attrs.water_level.msl.height.convert(gui_units))
 
         # plot reference water levels
         fig.add_hline(
@@ -465,7 +467,7 @@ class Database(IDatabase):
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
         # Plot actual thing
-        fig = px.line(data_frame=df)
+        fig = line(data_frame=df)
 
         # fig.update_traces(marker={"line": {"color": "#000000", "width": 2}})
 
@@ -532,10 +534,10 @@ class Database(IDatabase):
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
 
         # Plot actual thing
-        fig = go.Figure()
+        fig = Figure()
         for ii, col in enumerate(df.columns):
             fig.add_trace(
-                go.Scatter(
+                Scatter(
                     x=df.index,
                     y=df[col],
                     name=river_descriptions[ii],
@@ -614,14 +616,12 @@ class Database(IDatabase):
 
         # Plot actual thing
         # Create figure with secondary y-axis
-        import plotly.graph_objects as go
-        from plotly.subplots import make_subplots
 
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         # Add traces
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=df.index,
                 y=df["speed"],
                 name="Wind speed",
@@ -631,7 +631,7 @@ class Database(IDatabase):
         )
 
         fig.add_trace(
-            go.Scatter(
+            Scatter(
                 x=df.index, y=df["direction"], name="Wind direction", mode="markers"
             ),
             secondary_y=True,
@@ -825,7 +825,7 @@ class Database(IDatabase):
                 "Flooding",
                 "max_water_level_map.nc",
             )
-            map = xr.open_dataarray(map_path)
+            map = open_dataarray(map_path)
 
             zsmax = map.to_numpy()
 
@@ -835,7 +835,7 @@ class Database(IDatabase):
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
             )
-            zsmax = xr.open_dataset(file_path)["risk_map"][:, :].to_numpy().T
+            zsmax = open_dataset(file_path)["risk_map"][:, :].to_numpy().T
         return zsmax
 
     def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:

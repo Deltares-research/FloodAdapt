@@ -6,11 +6,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import xarray as xr
 from noaa_coops.station import COOPSAPIError
 from numpy import matlib
+from plotly.express import line
+from plotly.graph_objects import Scatter
 
 from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.config import Settings
@@ -730,7 +730,7 @@ class Hazard:
 
             for ii, col in enumerate(df.columns):
                 # Plot actual thing
-                fig = px.line(
+                fig = line(
                     df[col] * conversion_factor
                     + self.site.attrs.water_level.localdatum.height.convert(
                         gui_units
@@ -807,7 +807,7 @@ class Hazard:
                         else:
                             # If data is available, add to plot
                             fig.add_trace(
-                                go.Scatter(
+                                Scatter(
                                     x=pd.DatetimeIndex(df_gauge.index),
                                     y=df_gauge[1]
                                     + self.site.attrs.water_level.msl.height.convert(
