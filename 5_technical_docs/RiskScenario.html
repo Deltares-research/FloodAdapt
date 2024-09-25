@@ -444,7 +444,7 @@ ul.task-list li input[type="checkbox"] {
 <p>For a risk scenario the hazard calculation involves both simulating the flooding for each event in the event set and the derivation of probabilistic <em>return period maps</em>. FloodAdapt modifies the SFINCS model based on adaptation options and calculates the flooding for each event in the event set in the same way it does for an <a href="../5_technical_docs/EventScenario.html">event scenario</a>. This is indicated in <a href="#fig-workflow_risk_hazard">Figure&nbsp;1</a> by a horizontal line, above which the event scenario and risk scenario are the same, except that the flood model is called multiple times to calculate flooding for each event in the event set. This workflow is described in the <a href="../5_technical_docs/EventScenario.html">event scenario</a> documentation and not repeated here. Below the horizontal line in <a href="#fig-workflow_risk_hazard">Figure&nbsp;1</a>, the workflow for the risk scenario hazard is unique. Once the simulation for each event in the event set has been completed, the entire set of flood maps is passed into a <em>probabilistic calculator</em>. This is a routine that uses the event frequencies and simulated flood maps to create a water level-frequency curve for each grid cell in the flood model. It then derives from this curve the flood depth for the return periods specified for the site at system setup. From this outPut it creates gridded return period flood maps.</p>
 <div id="fig-workflow_risk_hazard" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_riskScenario_hazards.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="FloodAdapt calculation framework for hazardfor a risk scenario"><img src="../_static/images/Workflow_riskScenario_hazards.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_riskScenario_hazards.jpg" class="lightbox" title="FloodAdapt calculation framework for hazardfor a risk scenario" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/Workflow_riskScenario_hazards.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>FloodAdapt calculation framework for hazardfor a risk scenario</strong></figcaption>
 </figure>
 </div>
@@ -454,7 +454,7 @@ ul.task-list li input[type="checkbox"] {
 <p><a href="#fig-workflow_risk_impacts">Figure&nbsp;2</a> zooms in on the impact and risk calculation portion of the FloodAdapt workflow for a risk scenario. Referring to the figure can support the description of the calculation.</p>
 <div id="fig-workflow_risk_impacts" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_riskScenario_impacts.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="FloodAdapt calculation framework for impacts and risk for a risk scenario"><img src="../_static/images/Workflow_riskScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_riskScenario_impacts.jpg" class="lightbox" title="FloodAdapt calculation framework for impacts and risk for a risk scenario" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/Workflow_riskScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>FloodAdapt calculation framework for impacts and risk for a risk scenario</strong></figcaption>
 </figure>
 </div>
@@ -462,7 +462,7 @@ ul.task-list li input[type="checkbox"] {
 <p>For a risk scenario, FloodAdapt imports into Delft-FIAT the set of return period flood maps (calculated in the hazard calculation framework described above) and their associated return periods. Delft-FIAT has an automatic risk module built in which calculates and outputs the direct economic damages to the assets in the exposure data for each input return period flood map. It uses this output to generate a damage-frequency curve (note that the exceedance frequency is the reciprocal of the return period). The expected annual damages (risk) are then calculated as the area under the damage-frequency curve (see <a href="#fig-riskcalc">Figure&nbsp;3</a>). The set of return periods will be finite, so Delft-FIAT makes approximations for return periods beyond what is calculated. For return periods higher than the highest calculated, it assumes economic damages equal to the highest calculated. For return periods lower than the lowest calculated, it assumes economic damages of zero. In FloodAdapt, users can choose the return periods for which damages will be calculated, to minimize these approxmiations. For example, users can take an upper limit for the return period of 500 or 1000 years and a lower limit of 1 year.</p>
 <div id="fig-riskcalc" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/risk_calc.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve."><img src="../_static/images/risk_calc.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/risk_calc.png" class="lightbox" title="Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve." data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/risk_calc.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve.</strong></figcaption>
 </figure>
 </div>
@@ -844,7 +844,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","loop":true,"descPosition":"bottom","selector":".lightbox","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","openEffect":"zoom","loop":true,"selector":".lightbox","descPosition":"bottom"});</script>
 
 
 
