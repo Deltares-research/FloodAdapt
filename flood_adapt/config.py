@@ -48,6 +48,8 @@ class Settings(BaseSettings):
         The root directory of the database.
     system_folder : Path
         The root directory of the system folder containing the kernels.
+    delete_crashed_runs : bool
+        Whether to delete crashed/corrupted runs immediately after they are detected.
 
     Properties
     ----------
@@ -88,6 +90,12 @@ class Settings(BaseSettings):
         default=SRC_DIR / "system",
         env="SYSTEM_FOLDER",
         description="The path of the system folder containing the kernels that run the calculations.",
+    )
+    delete_crashed_runs: bool = Field(
+        default=True,
+        env="DELETE_CRASHED_RUNS",
+        description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
+        exclude=True,
     )
 
     @computed_field

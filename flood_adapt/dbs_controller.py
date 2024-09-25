@@ -15,7 +15,7 @@ from plotly.graph_objects import Figure, Scatter
 from plotly.subplots import make_subplots
 from xarray import open_dataarray, open_dataset
 
-from flood_adapt import DELETE_CRASHED_RUNS
+from flood_adapt.config import Settings
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -1037,7 +1037,7 @@ class Database(IDatabase):
             - does not have a corresponding input
 
         """
-        if not DELETE_CRASHED_RUNS:
+        if not Settings().delete_crashed_runs:
             return
 
         scn_input_path = self.scenarios.get_database_path()

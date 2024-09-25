@@ -12,7 +12,6 @@ from numpy import matlib
 from plotly.express import line
 from plotly.graph_objects import Scatter
 
-from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.config import Settings
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
@@ -279,19 +278,20 @@ class Hazard:
                         run_success = False
                         break
 
-        if DELETE_CRASHED_RUNS and not run_success:
-            # Remove all files in the simulation folder except for the log files
-            for simulation_path in self.simulation_paths:
-                for subdir, _, files in os.walk(simulation_path):
-                    for file in files:
-                        if not file.endswith(".log"):
-                            os.remove(os.path.join(subdir, file))
+        if not run_success:
+            if Settings().delete_crashed_runs:
+                # Remove all files in the simulation folder except for the log files
+                for simulation_path in self.simulation_paths:
+                    for subdir, _, files in os.walk(simulation_path):
+                        for file in files:
+                            if not file.endswith(".log"):
+                                os.remove(os.path.join(subdir, file))
 
-            # Remove all empty directories in the simulation folder (so only folders with log files remain)
-            for simulation_path in self.simulation_paths:
-                for subdir, _, files in os.walk(simulation_path):
-                    if not files:
-                        os.rmdir(subdir)
+                # Remove all empty directories in the simulation folder (so only folders with log files remain)
+                for simulation_path in self.simulation_paths:
+                    for subdir, _, files in os.walk(simulation_path):
+                        if not files:
+                            os.rmdir(subdir)
             raise RuntimeError("SFINCS model failed to run.")
 
     def run_sfincs_offshore(self, ii: int):
