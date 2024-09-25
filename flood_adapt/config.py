@@ -94,7 +94,8 @@ class Settings(BaseSettings):
     delete_crashed_runs: bool = Field(
         default=True,
         env="DELETE_CRASHED_RUNS",
-        description="Whether to delete crashed/corrupted runs immediately after they are detected.",
+        description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
+        exclude=True,
     )
 
     @computed_field
