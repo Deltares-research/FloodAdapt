@@ -12,7 +12,6 @@ import xarray as xr
 from noaa_coops.station import COOPSAPIError
 from numpy import matlib
 
-from flood_adapt import DELETE_CRASHED_RUNS
 from flood_adapt.config import Settings
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
@@ -279,7 +278,7 @@ class Hazard:
                         run_success = False
                         break
 
-        if DELETE_CRASHED_RUNS and not run_success:
+        if Settings().delete_crashed_runs and not run_success:
             # Remove all files in the simulation folder except for the log files
             for simulation_path in self.simulation_paths:
                 for subdir, _, files in os.walk(simulation_path):
