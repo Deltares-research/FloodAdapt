@@ -3,6 +3,7 @@ from abc import abstractmethod
 from enum import Enum
 
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 class ModelData(str, Enum):
@@ -10,8 +11,16 @@ class ModelData(str, Enum):
 
 
 class IAdapter(IDatabaseUser):
+    """Adapter interface for all models run in FloodAdapt."""
+
+    @property
     @abstractmethod
-    def __enter__(self):
+    def has_run(self) -> bool:
+        """Return True if the model has been run."""
+        pass
+
+    @abstractmethod
+    def __enter__(self) -> "IAdapter":
         """Use the adapter as a context manager to handle opening/closing of the model and attached resources.
 
         This method should return the adapter object itself, so that it can be used in a with statement.
@@ -55,7 +64,7 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def run(self):
+    def run(self, scenario: IScenario):
         """Perform the whole workflow (preprocess, execute and postprocess) of running the model."""
         pass
 

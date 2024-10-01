@@ -18,9 +18,9 @@ from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
-import flood_adapt.config as FloodAdapt_config
+import flood_adapt.misc.config as FloodAdapt_config
 from flood_adapt.integrator.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
 )
@@ -140,6 +140,11 @@ class SfincsAdapter(IHazardAdapter):
         # Return False to propagate/reraise any exceptions that occurred in the with block
         # Return True to suppress any exceptions that occurred in the with block
         return False
+
+    @property
+    def has_run(self) -> bool:
+        """Return True if the model has been run."""
+        return self.sfincs_completed()  # + postprocessing checks
 
     ### HAZARD ADAPTER METHODS ###
     def read(self, path: str | os.PathLike):

@@ -10,6 +10,7 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.hazard.event.timeseries import (
+    CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
@@ -20,10 +21,10 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ShapeType,
 )
-from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulTime,
+    UnitTypesTime,
 )
 
 
@@ -72,7 +73,6 @@ class WaterlevelSynthetic(IWaterlevel):
         self, strict=True, t0: datetime = None, t1: datetime = None
     ) -> pd.DataFrame:
         surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
-
         if t0 is None:
             t0 = REFERENCE_TIME
         elif isinstance(t0, UnitfulTime):
@@ -104,13 +104,13 @@ class WaterlevelSynthetic(IWaterlevel):
 
         # Combine
         wl_df = tide_df.add(surge_df, axis="index")
-        wl_df.columns = ["values"]
+        wl_df.columns = ["data_0"]
         wl_df.index.name = "time"
 
         return wl_df
 
-    @classmethod
-    def default(cls) -> "WaterlevelSynthetic":
+    @staticmethod
+    def default() -> "WaterlevelSynthetic":
         return WaterlevelSynthetic(
             surge=SurgeModel(
                 timeseries=SyntheticTimeseriesModel.default(UnitfulLength)
@@ -128,9 +128,21 @@ class WaterlevelFromCSV(IWaterlevel):
 
     path: Path
 
-    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
+        if t0 is None:
+            t0 = REFERENCE_TIME
+        elif isinstance(t0, UnitfulTime):
+            t0 = REFERENCE_TIME + t0.to_timedelta()
+
+        if t1 is None:
+            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
+        elif isinstance(t1, UnitfulTime):
+            t1 = t0 + t1.to_timedelta()
+
         try:
-            return read_csv(self.path)
+            return CSVTimeseries.load_file(path=self.path).to_dataframe(
+                start_time=t0, end_time=t1
+            )
         except Exception as e:
             if strict:
                 raise
@@ -141,8 +153,8 @@ class WaterlevelFromCSV(IWaterlevel):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "WaterlevelFromCSV":
+    @staticmethod
+    def default() -> "WaterlevelFromCSV":
         return WaterlevelFromCSV(path="path/to/waterlevel.csv")
 
 
@@ -151,7 +163,7 @@ class WaterlevelFromModel(IWaterlevel):
     path: str | os.PathLike | None = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
-    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
         # Note that this does not run the offshore simulation, it only tries to read the results from the model.
         # Running the model is done in the process method of the event.
         try:
@@ -170,8 +182,8 @@ class WaterlevelFromModel(IWaterlevel):
             else:
                 self._logger.error(f"Error reading model results: {self.path}. {e}")
 
-    @classmethod
-    def default(cls) -> "WaterlevelFromModel":
+    @staticmethod
+    def default() -> "WaterlevelFromModel":
         return WaterlevelFromModel()
 
 
@@ -180,9 +192,21 @@ class WaterlevelFromGauged(IWaterlevel):
     # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
     path: os.PathLike | str | None = Field(default=None)
 
-    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
+        if t0 is None:
+            t0 = REFERENCE_TIME
+        elif isinstance(t0, UnitfulTime):
+            t0 = REFERENCE_TIME + t0.to_timedelta()
+
+        if t1 is None:
+            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
+        elif isinstance(t1, UnitfulTime):
+            t1 = t0 + t1.to_timedelta()
+
         try:
-            return read_csv(self.path)
+            return CSVTimeseries.load_file(path=self.path).to_dataframe(
+                start_time=t0, end_time=t1
+            )
         except Exception as e:
             if strict:
                 raise
@@ -193,6 +217,6 @@ class WaterlevelFromGauged(IWaterlevel):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "WaterlevelFromGauged":
+    @staticmethod
+    def default() -> "WaterlevelFromGauged":
         return WaterlevelFromGauged()

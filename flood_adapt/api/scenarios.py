@@ -1,6 +1,6 @@
 from typing import Any, Union
 
-import flood_adapt.dbs_controller as db
+import flood_adapt.dbs_classes.database as db
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 

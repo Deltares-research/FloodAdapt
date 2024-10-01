@@ -21,7 +21,7 @@ from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.interface.events import IEvent
 
@@ -902,15 +902,20 @@ class Database(IDatabase):
         scenario = self._scenarios.get(scenario_name)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.direct_impacts.hazard.has_run():
+        if scenario.direct_impacts.hazard.has_run:
             return
 
-        simulations = self.scenarios.list_objects()["objects"]
-        scns_simulated = [self._scenarios.get(sim.name) for sim in simulations]
+        scns_simulated = [
+            self._scenarios.get(sim.attrs.name)
+            for sim in self.scenarios.list_objects()["objects"]
+            if self.scenarios.get_database_path(get_input_path=False)
+            .joinpath(sim.attrs.name, "Flooding")
+            .is_dir()
+        ]
 
         for scn in scns_simulated:
-            if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.scenarios.get_database_path(
+            if scn.equal_hazard_components(scenario):
+                existing = self.scenarios.get_database_path(
                     get_input_path=False
                 ).joinpath(scn.attrs.name, "Flooding")
                 path_new = self.scenarios.get_database_path(
@@ -920,7 +925,7 @@ class Database(IDatabase):
                     scn.direct_impacts.hazard.has_run_check()
                 ):  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
-                        path_0,
+                        existing,
                         path_new,
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),

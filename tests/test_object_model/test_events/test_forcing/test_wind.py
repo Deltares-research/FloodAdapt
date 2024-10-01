@@ -23,20 +23,25 @@ from flood_adapt.object_model.io.unitfulvalue import (
 class TestWindConstant:
     def test_wind_constant_get_data(self):
         # Arrange
-        speed = UnitfulVelocity(10, UnitTypesVelocity.mps)
-        direction = UnitfulDirection(90, UnitTypesDirection.degrees)
+        _speed = 10
+        _dir = 90
+        speed = UnitfulVelocity(_speed, UnitTypesVelocity.mps)
+        direction = UnitfulDirection(_dir, UnitTypesDirection.degrees)
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).get_data()
-
+        print(wind_df)
         # Assert
-        assert wind_df is None
+        assert isinstance(wind_df, pd.DataFrame)
+        assert not wind_df.empty
+        assert wind_df["data_0"].max() == _speed
+        assert wind_df["data_1"].min() == _dir
 
 
 class TestWindFromMeteo:
-    def test_wind_from_model_get_data(self, tmp_path, test_db):
+    def test_wind_from_meteo_get_data(self, tmp_path, test_db):
         # Arrange
-        test_path = tmp_path / "test_wl_from_model"
+        test_path = tmp_path / "test_wl_from_meteo"
 
         if test_path.exists():
             shutil.rmtree(test_path)
@@ -45,12 +50,10 @@ class TestWindFromMeteo:
             start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
         )
-        site = test_db.site.attrs
-
         download_meteo(
             time=time,
             meteo_dir=test_path,
-            site=site,
+            site=test_db.site.attrs,
         )
 
         # Act
@@ -58,12 +61,13 @@ class TestWindFromMeteo:
 
         # Assert
         assert isinstance(wind_df, xr.Dataset)
-
         # TODO more asserts
 
 
 class TestWindFromCSV:
-    def test_wind_from_csv_get_data(self, tmp_path):
+    def test_wind_from_csv_get_data(
+        self, tmp_path, dummy_2d_timeseries_df: pd.DataFrame
+    ):
         # Arrange
         path = Path(tmp_path) / "wind/test.csv"
         if not path.parent.exists():
@@ -72,14 +76,8 @@ class TestWindFromCSV:
         # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
         # Required coordinates: ['time', 'y', 'x']
 
-        data = pd.DataFrame(
-            {
-                "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
-                "wind_u": [1, 2],
-                "wind_v": [2, 3],
-            }
-        )
-        data.to_csv(path)
+        dummy_2d_timeseries_df.columns = ["wind_u", "wind_v"]
+        dummy_2d_timeseries_df.to_csv(path)
 
         # Act
         wind_df = WindFromCSV(path=path).get_data()

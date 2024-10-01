@@ -288,7 +288,7 @@ class TestSyntheticTimeseries:
         )
 
         assert isinstance(df, pd.DataFrame)
-        assert list(df.columns) == ["values"]
+        assert list(df.columns) == ["data_0"]
         assert list(df.index.names) == ["time"]
 
         # Check that the DataFrame has the correct content
@@ -301,7 +301,7 @@ class TestSyntheticTimeseries:
             freq=timestep.to_timedelta(),
         )
         expected_df = pd.DataFrame(
-            expected_data, columns=["values"], index=expected_time_range
+            expected_data, columns=["data_0"], index=expected_time_range
         )
         expected_df.index.name = "time"
         pd.testing.assert_frame_equal(df, expected_df)

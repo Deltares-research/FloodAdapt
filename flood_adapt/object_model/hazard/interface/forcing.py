@@ -8,7 +8,7 @@ import pandas as pd
 import tomli
 from pydantic import BaseModel, field_serializer
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ForcingType,

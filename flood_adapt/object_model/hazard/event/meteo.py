@@ -68,6 +68,9 @@ def read_meteo(
         # Append the dataset to the list
         datasets.append(ds)
 
+    if not datasets:
+        raise ValueError("No meteo files found in the specified directory")
+
     # Concatenate the datasets along the new time coordinate
     ds = xr.concat(datasets, dim="time")
     ds.raster.set_crs(4326)

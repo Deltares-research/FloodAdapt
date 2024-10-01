@@ -50,8 +50,10 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
+    UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
+    UnitTypesVelocity,
 )
 
 
@@ -126,15 +128,15 @@ class TestAddForcing:
 
         def test_add_forcing_wind_constant(self, sfincs_adapter):
             forcing = WindConstant(
-                speed=UnitfulVelocity(10, "m/s"),
-                direction=UnitfulDirection(20, "deg N"),
+                speed=UnitfulVelocity(value=10, units=UnitTypesVelocity.mps),
+                direction=UnitfulDirection(value=20, units=UnitTypesDirection.degrees),
             )
             sfincs_adapter._add_forcing_wind(forcing)
 
             sfincs_adapter._model.setup_wind_forcing.assert_called_once_with(
                 timeseries=None,
-                const_mag=forcing.speed,
-                const_dir=forcing.direction,
+                magnitude=forcing.speed.convert(UnitTypesVelocity.mps),
+                direction=forcing.direction.value,
             )
 
         def test_add_forcing_wind_synthetic(self, sfincs_adapter):
@@ -142,11 +144,10 @@ class TestAddForcing:
             forcing.path = "path/to/timeseries.csv"
 
             sfincs_adapter._add_forcing_wind(forcing)
-
             sfincs_adapter._model.setup_wind_forcing.assert_called_once_with(
                 timeseries=forcing.path,
-                const_mag=None,
-                const_dir=None,
+                magnitude=None,
+                direction=None,
             )
 
         def test_add_forcing_wind_from_meteo(self, sfincs_adapter):
@@ -166,7 +167,8 @@ class TestAddForcing:
 
         def test_add_forcing_wind_unsupported(self, sfincs_adapter):
             class UnsupportedWind(IWind):
-                pass
+                def default():
+                    return UnsupportedWind
 
             forcing = UnsupportedWind()
 
@@ -191,7 +193,7 @@ class TestAddForcing:
 
             sfincs_adapter._model.setup_precip_forcing.assert_called_once_with(
                 timeseries=None,
-                magnitude=forcing.intensity,
+                magnitude=forcing.intensity.value,
             )
 
         def test_add_forcing_rain_synthetic(self, sfincs_adapter):
@@ -217,7 +219,8 @@ class TestAddForcing:
 
         def test_add_forcing_rain_unsupported(self, sfincs_adapter):
             class UnsupportedRain(IRainfall):
-                pass
+                def default():
+                    return UnsupportedRain
 
             forcing = UnsupportedRain()
 
@@ -285,7 +288,8 @@ class TestAddForcing:
             sfincs_adapter = sfincs_adapter_1_rivers
 
             class UnsupportedDischarge(IDischarge):
-                pass
+                def default():
+                    return UnsupportedDischarge
 
             sfincs_adapter._logger.warning = mock.Mock()
             forcing = UnsupportedDischarge()
@@ -438,7 +442,8 @@ class TestAddForcing:
             sfincs_adapter._logger.warning = mock.Mock()
 
             class UnsupportedWaterLevel(IWaterlevel):
-                pass
+                def default():
+                    return UnsupportedWaterLevel
 
             forcing = UnsupportedWaterLevel()
             sfincs_adapter._add_forcing_waterlevels(forcing)
@@ -601,13 +606,13 @@ class TestAddProjection:
             }
         )
 
-        wl_df_before = adapter.get_water_levels()
+        wl_df_before = adapter.get_waterlevel_forcing()
         wl_df_expected = wl_df_before.apply(
             lambda x: x + projection.attrs.sea_level_rise.convert("meters")
         )
 
         adapter.add_projection(projection)
-        wl_df_after = adapter.get_water_levels()
+        wl_df_after = adapter.get_waterlevel_forcing()
 
         assert wl_df_expected.equals(wl_df_after)
 

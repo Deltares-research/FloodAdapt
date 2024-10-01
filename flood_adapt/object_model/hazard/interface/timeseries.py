@@ -160,17 +160,23 @@ class ITimeseries(ABC):
         )
 
         data = self.calculate_data(time_step=time_step)
+        n_cols = data.shape[1] if len(data.shape) > 1 else 1
 
         ts_time_range = pd.date_range(
             start=(start_time + ts_start_time.to_timedelta()),
             end=(start_time + ts_end_time.to_timedelta()),
             freq=time_step.to_timedelta(),
         )
-        df = pd.DataFrame(data, columns=["values"], index=ts_time_range)
+
+        df = pd.DataFrame(
+            data, columns=[f"data_{i}" for i in range(n_cols)], index=ts_time_range
+        )
 
         full_df = df.reindex(
             index=full_df_time_range, method="nearest", limit=1, fill_value=0
         )
+        full_df = full_df.set_index(full_df_time_range)
+        full_df.index = pd.to_datetime(full_df.index)
         full_df.index.name = "time"
         return full_df
 

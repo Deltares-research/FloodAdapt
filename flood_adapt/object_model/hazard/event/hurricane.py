@@ -46,7 +46,7 @@ class HurricaneEventModel(IEventModel):
     track_name: str
 
     @staticmethod
-    def default():
+    def default() -> "HurricaneEventModel":
         """Set default values for HurricaneEvent."""
         return HurricaneEventModel(
             name="Hurricane Event",

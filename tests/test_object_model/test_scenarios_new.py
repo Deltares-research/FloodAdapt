@@ -1,12 +1,12 @@
 import pytest
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
-from flood_adapt.object_model.direct_impacts import DirectImpacts
-from flood_adapt.object_model.hazard.hazard import FloodMap
+from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 

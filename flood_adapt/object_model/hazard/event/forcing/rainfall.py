@@ -20,7 +20,12 @@ from flood_adapt.object_model.hazard.interface.models import (
     REFERENCE_TIME,
     ForcingSource,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulIntensity, UnitfulTime
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulIntensity,
+    UnitfulTime,
+    UnitTypesIntensity,
+    UnitTypesTime,
+)
 
 
 class RainfallConstant(IRainfall):
@@ -37,7 +42,7 @@ class RainfallConstant(IRainfall):
             t0 = REFERENCE_TIME + t0.to_timedelta()
 
         if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units="hr").to_timedelta()
+            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
         elif isinstance(t1, UnitfulTime):
             t1 = t0 + t1.to_timedelta()
 
@@ -47,7 +52,7 @@ class RainfallConstant(IRainfall):
 
     @classmethod
     def default(cls) -> "RainfallConstant":
-        return RainfallConstant(intensity=UnitfulIntensity(value=0, units="mm/hr"))
+        return cls(intensity=UnitfulIntensity(value=0, units=UnitTypesIntensity.mm_hr))
 
 
 class RainfallSynthetic(IRainfall):
@@ -77,8 +82,8 @@ class RainfallSynthetic(IRainfall):
             else:
                 self._logger.error(f"Error loading synthetic rainfall timeseries: {e}")
 
-    @classmethod
-    def default(cls) -> "RainfallSynthetic":
+    @staticmethod
+    def default() -> "RainfallSynthetic":
         return RainfallSynthetic(
             timeseries=SyntheticTimeseriesModel.default(UnitfulIntensity)
         )
@@ -109,8 +114,8 @@ class RainfallFromMeteo(IRainfall):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "RainfallFromMeteo":
+    @staticmethod
+    def default() -> "RainfallFromMeteo":
         return RainfallFromMeteo()
 
 
@@ -127,6 +132,6 @@ class RainfallFromTrack(IRainfall):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "RainfallFromTrack":
+    @staticmethod
+    def default() -> "RainfallFromTrack":
         return RainfallFromTrack()

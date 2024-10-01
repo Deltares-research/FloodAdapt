@@ -6,7 +6,7 @@ import pandas as pd
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-import flood_adapt.dbs_controller as db
+import flood_adapt.dbs_classes.database as db
 
 
 def get_outputs() -> dict[str, Any]:

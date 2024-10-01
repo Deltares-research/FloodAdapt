@@ -20,6 +20,7 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     ITimeseriesCalculationStrategy,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulTime,
     UnitTypesTime,
@@ -280,7 +281,7 @@ class CSVTimeseries(ITimeseries):
         time_step: UnitfulTime = DEFAULT_TIMESTEP,
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
-        ts = self.read_csv(self.attrs.path)
+        ts = read_csv(self.attrs.path)
 
         time_range = pd.date_range(
             start=ts.index.min(), end=ts.index.max(), freq=time_step.to_timedelta()

@@ -57,7 +57,7 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
     event = test_db.events.get(test_scenario.attrs.event)
     surge_peak = event.attrs.surge.shape_peak.convert("meters")
     tide_amp = event.attrs.tide.harmonic_amplitude.convert("meters")
-    localdatum = test_db.attrs.water_level.localdatum.height.convert(
+    localdatum = test_db.site.attrs.water_level.localdatum.height.convert(
         "meters"
     ) - test_db.site.attrs.water_level.msl.height.convert("meters")
 
@@ -71,7 +71,7 @@ def test_hazard_preprocess_synthetic_discharge(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.init_object_model()
-    test_scenario.direct_impacts.hazard.preprocess_models()
+    test_scenario.direct_impacts.preprocess_models()
 
     test_scenario.attrs.name = f"{test_scenario.attrs.name}_2"
     test_scenario.direct_impacts.hazard.name = f"{test_scenario.attrs.name}_2"

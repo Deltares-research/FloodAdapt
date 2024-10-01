@@ -56,3 +56,8 @@ class IBenefit(IDatabaseUser):
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created."""
         ...
+
+    @abstractmethod
+    def run_cost_benefit(self):
+        """Run the cost benefit analysis."""
+        ...

@@ -48,15 +48,15 @@ class WindConstant(IWind):
             t1 = t0 + t1.to_timedelta()
 
         time = pd.date_range(start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta())
-        values = [
-            [self.speed.value for _ in range(len(time))],
-            [self.direction.value for _ in range(len(time))],
-        ]
+        data = {
+            "data_0": [self.speed.value for _ in range(len(time))],
+            "data_1": [self.direction.value for _ in range(len(time))],
+        }
 
-        return pd.DataFrame(data=values, index=time)
+        return pd.DataFrame(data=data, index=time)
 
-    @classmethod
-    def default(cls) -> "WindConstant":
+    @staticmethod
+    def default() -> "WindConstant":
         return WindConstant(
             speed=UnitfulVelocity(value=10, units=UnitTypesVelocity.mps),
             direction=UnitfulDirection(value=0, units=UnitTypesDirection.degrees),
@@ -81,8 +81,8 @@ class WindSynthetic(IWind):
             else:
                 self._logger.error(f"Error loading synthetic wind timeseries: {e}")
 
-    @classmethod
-    def default(cls) -> "WindSynthetic":
+    @staticmethod
+    def default() -> "WindSynthetic":
         return WindSynthetic(
             timeseries=SyntheticTimeseriesModel.default(UnitfulVelocity)
         )
@@ -103,8 +103,8 @@ class WindFromTrack(IWind):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "WindFromTrack":
+    @staticmethod
+    def default() -> "WindFromTrack":
         return WindFromTrack()
 
 
@@ -128,8 +128,8 @@ class WindFromCSV(IWind):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "WindFromCSV":
+    @staticmethod
+    def default() -> "WindFromCSV":
         return WindFromCSV(path="path/to/wind.csv")
 
 
@@ -160,6 +160,6 @@ class WindFromMeteo(IWind):
             else:
                 self._logger.error(f"Error reading meteo data: {self.path}. {e}")
 
-    @classmethod
-    def default(cls) -> "WindFromMeteo":
+    @staticmethod
+    def default() -> "WindFromMeteo":
         return WindFromMeteo()

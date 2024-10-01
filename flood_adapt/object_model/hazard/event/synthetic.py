@@ -25,8 +25,8 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
 
-    @classmethod
-    def default(cls) -> "SyntheticEventModel":
+    @staticmethod
+    def default() -> "SyntheticEventModel":
         """Set default values for Synthetic event."""
         return SyntheticEventModel(
             name="Synthetic Event",

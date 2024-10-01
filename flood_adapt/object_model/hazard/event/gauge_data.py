@@ -5,7 +5,7 @@ import cht_observations.observation_stations as cht_station
 import pandas as pd
 from noaa_coops.station import COOPSAPIError
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.site import Obs_pointModel, SiteModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength

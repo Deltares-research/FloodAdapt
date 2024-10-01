@@ -6,7 +6,7 @@ import pyproj
 import tomli
 import tomli_w
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.measure.hazard_measure import (
     HazardMeasure,
 )

@@ -3,7 +3,7 @@ from typing import Any, Union
 import geopandas as gpd
 import pandas as pd
 
-import flood_adapt.dbs_controller as db
+import flood_adapt.dbs_classes.database as db
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 

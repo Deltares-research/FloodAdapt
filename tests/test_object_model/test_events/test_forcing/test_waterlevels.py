@@ -1,9 +1,8 @@
-import shutil
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -143,79 +142,64 @@ class TestWaterlevelSynthetic:
         assert isinstance(wl_df, pd.DataFrame)
         assert not wl_df.empty
         assert (
-            wl_df["values"].max() <= expected_max
-        ), f"Expected max {surge_peak_value} + {tide_amplitude} ~ {expected_max}, got {wl_df['values'].max()}"
+            wl_df["data_0"].max() <= expected_max
+        ), f"Expected max {surge_peak_value} + {tide_amplitude} ~ {expected_max}, got {wl_df['data_0'].max()}"
         assert (
-            wl_df["values"].min() >= expected_min
-        ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['values'].min()}"
+            wl_df["data_0"].min() >= expected_min
+        ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['data_0'].min()}"
 
 
 class TestWaterlevelFromCSV:
-    def test_waterlevel_from_csv_get_data(self, tmp_path):
-        # Arrange
-        data = {
-            "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
-            "values": [1, 2],
-        }
-        df = pd.DataFrame(data)
-        df = df.set_index("time")
+    # Arrange
+    def test_waterlevel_from_csv_get_data(
+        self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame
+    ):
         path = tmp_path / "test.csv"
-        df.to_csv(path)
+        dummy_1d_timeseries_df.to_csv(path)
 
         # Act
         wl_df = WaterlevelFromCSV(path=path).get_data()
 
+        print(dummy_1d_timeseries_df, wl_df, sep="\n\n")
+
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
-        assert not wl_df.empty
-        assert wl_df["values"].max() == pytest.approx(2, rel=1e-2)
-        assert wl_df["values"].min() == pytest.approx(1, rel=1e-2)
-        assert len(wl_df["values"]) == 2
-        assert len(wl_df.index) == 2
+        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
 
 
 class TestWaterlevelFromModel:
-    def test_waterlevel_from_model_get_data(self, test_db: IDatabase, tmp_path):
+    @patch("flood_adapt.integrator.sfincs_adapter.SfincsAdapter")
+    def test_waterlevel_from_model_get_data(
+        self, mock_sfincs_adapter, dummy_1d_timeseries_df, test_db: IDatabase, tmp_path
+    ):
         # Arrange
-        offshore_template = test_db.static_path / "templates" / "offshore"
+        mock_instance = mock_sfincs_adapter.return_value
+        mock_instance.__enter__.return_value = mock_instance
+        mock_instance._get_wl_df_from_offshore_his_results.return_value = (
+            dummy_1d_timeseries_df
+        )
+
         test_path = tmp_path / "test_wl_from_model"
-
-        if test_path.exists():
-            shutil.rmtree(test_path)
-        shutil.copytree(offshore_template, test_path)
-
-        with SfincsAdapter(model_root=test_path, database=test_db) as offshore_model:
-            offshore_model.write(test_path)
-            offshore_model.execute()
 
         # Act
         wl_df = WaterlevelFromModel(path=test_path).get_data()
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
-        # TODO more asserts?
+        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
 
 
 class TestWaterlevelFromGauged:
-    def test_waterlevel_from_gauge_get_data(self, test_db: IDatabase, tmp_path):
+    def test_waterlevel_from_gauge_get_data(
+        self, dummy_1d_timeseries_df: pd.DataFrame, test_db: IDatabase, tmp_path
+    ):
         # Arrange
-        data = {
-            "time": ["2021-01-01 00:00:00", "2021-01-01 01:00:00"],
-            "values": [1, 2],
-        }
-        df = pd.DataFrame(data)
-        df = df.set_index("time")
-
         path = tmp_path / "test.csv"
-        df.to_csv(path)
+        dummy_1d_timeseries_df.to_csv(path)
 
         # Act
         wl_df = WaterlevelFromGauged(path=path).get_data()
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
-        assert not wl_df.empty
-        assert wl_df["values"].max() == pytest.approx(2, rel=1e-2)
-        assert wl_df["values"].min() == pytest.approx(1, rel=1e-2)
-        assert len(wl_df["values"]) == 2
-        assert len(wl_df.index) == 2
+        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df, check_names=False)

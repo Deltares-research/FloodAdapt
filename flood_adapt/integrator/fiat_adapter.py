@@ -5,17 +5,17 @@ from typing import List, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.hazard.hazard import FloodMap
+from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.site import Site
 
 
-class FiatAdapter:
+class FiatAdapter:  # TODO implement ImpactAdapter interface
     """All the attributes of the template fiat model and the methods to adjust it according to the projection and strategy attributes."""
 
     fiat_model: FiatModel  # hydroMT-FIAT model

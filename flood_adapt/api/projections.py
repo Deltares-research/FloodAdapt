@@ -1,6 +1,6 @@
 from typing import Any
 
-import flood_adapt.dbs_controller as db
+import flood_adapt.dbs_classes.database as db
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.projection import Projection
 

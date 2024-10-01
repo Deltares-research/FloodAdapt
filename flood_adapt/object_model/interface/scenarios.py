@@ -41,3 +41,6 @@ class IScenario(IDatabaseUser):
 
     @abstractmethod
     def run(self) -> None: ...
+
+    @abstractmethod
+    def equal_hazard_components(self, scenario: "IScenario") -> bool: ...

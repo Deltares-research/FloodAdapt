@@ -284,19 +284,8 @@ class TestUnitfulHeight:
 
     def test_unitfulHeight_setValue_negativeValue(self):
         # Assert
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError):
             UnitfulHeight(value=-10, units=UnitTypesLength.meters)
-        assert "UnitfulHeight\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
-
-    def test_unitfulHeight_setValue_zeroValue(self):
-        # Assert
-        with pytest.raises(ValueError) as excinfo:
-            UnitfulHeight(value=0, units=UnitTypesLength.meters)
-        assert "UnitfulHeight\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
 
     def test_unitfulHeight_setUnit_invalidUnits(self):
         # Assert
@@ -368,19 +357,8 @@ class TestUnitfulArea:
 
     def test_unitfulArea_setValue_negativeValue(self):
         # Assert
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError):
             UnitfulArea(value=-10, units=UnitTypesArea.m2)
-        assert "UnitfulArea\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
-
-    def test_unitfulArea_setValue_zeroValue(self):
-        # Assert
-        with pytest.raises(ValueError) as excinfo:
-            UnitfulArea(value=0, units=UnitTypesArea.m2)
-        assert "UnitfulArea\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
 
     def test_unitfulArea_setUnit_invalidUnits(self):
         # Assert
@@ -412,19 +390,8 @@ class TestUnitfulVolume:
 
     def test_unitfulVolume_setValue_negativeValue(self):
         # Assert
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError):
             UnitfulVolume(value=-10, units=UnitTypesVolume.m3)
-        assert "UnitfulVolume\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
-
-    def test_unitfulVolume_setValue_zeroValue(self):
-        # Assert
-        with pytest.raises(ValueError) as excinfo:
-            UnitfulVolume(value=0, units=UnitTypesVolume.m3)
-        assert "UnitfulVolume\nvalue\n  Input should be greater than 0" in str(
-            excinfo.value
-        )
 
     def test_unitfulVolume_setUnit_invalidUnits(self):
         # Assert

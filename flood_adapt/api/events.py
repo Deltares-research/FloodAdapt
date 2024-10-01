@@ -5,17 +5,55 @@ from typing import Any, List, Union
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-import flood_adapt.dbs_controller as db
-from flood_adapt.log import FloodAdaptLogging
+import flood_adapt.dbs_classes.database as db
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.gauge_data import get_observed_wl_data
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
+from flood_adapt.object_model.hazard.interface.forcing import (
+    IDischarge,
+    IForcing,
+    IRainfall,
+    IWaterlevel,
+    IWind,
+)
 from flood_adapt.object_model.hazard.interface.models import (
+    TIDAL_PERIOD,
+    ForcingSource,
+    ForcingType,
+    Mode,
+    ShapeType,
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
+from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength, UnitTypesTime
+
+# Ensure all objects are imported and available for use if this module is imported
+__all__ = [
+    "ShapeType",
+    "Template",
+    "TimeModel",
+    "ForcingType",
+    "Mode",
+    "EventFactory",
+    "IEvent",
+    "IForcing",
+    "IDischarge",
+    "IRainfall",
+    "IWaterlevel",
+    "IWind",
+    "TIDAL_PERIOD",
+    "ForcingSource",
+    "ForcingType",
+    "Template",
+    "TimeModel",
+    "IDischarge",
+    "IRainfall",
+    "IWaterlevel",
+    "IWind",
+    "UnitTypesTime",
+]
 
 
 def get_events() -> dict[str, Any]:
@@ -61,8 +99,8 @@ def list_forcing_types() -> list[str]:
     return ForcingFactory.list_forcing_types()
 
 
-def list_forcings() -> list[str]:
-    return ForcingFactory.list_forcings()
+def list_forcings(as_string: bool) -> list[str | IForcing]:
+    return ForcingFactory.list_forcings(as_string=as_string)
 
 
 def get_allowed_forcings(template: Template) -> dict[str, List[str]]:

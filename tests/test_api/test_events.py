@@ -1,6 +1,10 @@
+import datetime
+
 import pytest
 
 import flood_adapt.api.events as api_events
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.io.unitfulvalue import UnitfulTime
 
 
 @pytest.fixture()
@@ -48,11 +52,18 @@ def test_create_synthetic_event_valid_dict(test_db, test_dict):
 
 
 def test_create_synthetic_event_invalid_dict(test_db, test_dict):
-    test_dict["water_level_offset"]["value"] = "zero"
+    del test_dict["name"]
     with pytest.raises(ValueError):
         # Assert error if a value is incorrect
         api_events.create_synthetic_event(test_dict)
     # TODO assert error msg
+
+
+TimeModel(
+    start_time=datetime.datetime(year=2024, month=10, day=1),
+    end_time=datetime.datetime(year=2024, month=10, day=3),
+    time_step=UnitfulTime(value=1, units="hours").to_timedelta(),
+).model_dump()
 
 
 def test_save_synthetic_event_already_exists(test_db, test_dict):

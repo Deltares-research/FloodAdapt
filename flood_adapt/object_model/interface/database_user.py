@@ -1,6 +1,6 @@
 from abc import ABC
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 
 
 class IDatabaseUser(ABC):
@@ -13,7 +13,7 @@ class IDatabaseUser(ABC):
     def database(self):
         if self._database_instance is not None:
             return self._database_instance
-        from flood_adapt.dbs_controller import Database  # noqa
+        from flood_adapt.dbs_classes.database import Database  # noqa
 
         self._database_instance = Database()
         return self._database_instance

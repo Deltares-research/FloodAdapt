@@ -5,13 +5,14 @@ from typing import ClassVar, List
 from pydantic import Field
 from typing_extensions import Annotated
 
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
     IEvent,
     IEventModel,
 )
-from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
@@ -36,6 +37,32 @@ class EventSetModel(IEventModel):
 
     sub_events: List[str]
     frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
+
+    @staticmethod
+    def default() -> "EventSetModel":
+        """Set default values for Synthetic event."""
+        return EventSetModel(
+            name="EventSet",
+            time=TimeModel(),
+            template=Template.Synthetic,
+            mode=Mode.risk,
+            sub_events=["sub_event1", "sub_event2"],
+            frequency=[0.5, 0.5],
+            forcings={
+                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
+                    ForcingType.RAINFALL, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.WIND: ForcingFactory.get_default_forcing(
+                    ForcingType.WIND, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
+                    ForcingType.WATERLEVEL, ForcingSource.SYNTHETIC
+                ),
+                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
+                    ForcingType.DISCHARGE, ForcingSource.SYNTHETIC
+                ),
+            },
+        )
 
 
 class EventSet(IEvent):

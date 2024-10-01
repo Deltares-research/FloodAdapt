@@ -45,14 +45,12 @@ class DischargeConstant(IDischarge):
             t1 = t0 + t1.to_timedelta()
 
         time = pd.date_range(start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta())
-        values = [self.discharge.value for _ in range(len(time))]
-        return pd.DataFrame(data=values, index=time)
+        data = {"data_0": [self.discharge.value for _ in range(len(time))]}
+        return pd.DataFrame(data=data, index=time)
 
     @classmethod
     def default(cls) -> "DischargeConstant":
-        return DischargeConstant(
-            discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms)
-        )
+        return cls(discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms))
 
 
 class DischargeSynthetic(IDischarge):
@@ -83,8 +81,8 @@ class DischargeSynthetic(IDischarge):
             else:
                 self._logger.error(f"Error loading synthetic rainfall timeseries: {e}")
 
-    @classmethod
-    def default(cls) -> "DischargeSynthetic":
+    @staticmethod
+    def default() -> "DischargeSynthetic":
         return DischargeSynthetic(
             timeseries=SyntheticTimeseriesModel.default(UnitfulDischarge)
         )
@@ -109,11 +107,10 @@ class DischargeFromCSV(IDischarge):
             t1 = t0 + t1.to_timedelta()
 
         try:
-            return pd.DataFrame(
-                CSVTimeseries.load_file(path=self.path).to_dataframe(
-                    start_time=t0, end_time=t1
-                )
+            return CSVTimeseries.load_file(path=self.path).to_dataframe(
+                start_time=t0, end_time=t1
             )
+
         except Exception as e:
             if strict:
                 raise
@@ -124,6 +121,6 @@ class DischargeFromCSV(IDischarge):
         if self.path:
             shutil.copy2(self.path, path)
 
-    @classmethod
-    def default(cls) -> "DischargeFromCSV":
+    @staticmethod
+    def default() -> "DischargeFromCSV":
         return DischargeFromCSV(path="path/to/discharge.csv")

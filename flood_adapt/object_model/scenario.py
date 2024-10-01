@@ -6,9 +6,9 @@ import tomli
 import tomli_w
 
 from flood_adapt import __version__
+from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.direct_impacts import DirectImpacts
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
 
 
@@ -16,6 +16,7 @@ class Scenario(IScenario):
     """class holding all information related to a scenario."""
 
     attrs: ScenarioModel
+
     direct_impacts: DirectImpacts
 
     @property
@@ -65,7 +66,7 @@ class Scenario(IScenario):
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
-    def run(self):
+    def run(self):  # TODO move to controller
         """Run direct impact models for the scenario."""
         self.init_object_model()
         os.makedirs(self.results_path, exist_ok=True)
@@ -77,6 +78,7 @@ class Scenario(IScenario):
             self._logger.info(
                 f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
+
             # preprocess model input data first, then run, then post-process
             if not self.direct_impacts.hazard.has_run:
                 template_path = Path(
@@ -95,9 +97,23 @@ class Scenario(IScenario):
                 print(
                     f"Direct impacts for scenario '{self.attrs.name}' has already been run."
                 )
+
             self._logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
+
+    def equal_hazard_components(self, scenario: "IScenario") -> bool:
+        """Check if two scenarios have the same hazard components."""
+        same_events = self.database.events.get(
+            self.attrs.event
+        ) == self.database.events.get(scenario.attrs.event)
+        same_projections = self.database.projections.get(
+            self.attrs.projection
+        ) == self.database.projections.get(scenario.attrs.projection)
+        same_strategies = self.database.strategies.get(
+            self.attrs.strategy
+        ) == self.database.strategies.get(scenario.attrs.strategy)
+        return same_events & same_projections & same_strategies
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):

@@ -8,7 +8,7 @@ import pandas as pd
 import xarray as xr
 from noaa_coops.station import COOPSAPIError
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -36,8 +36,8 @@ class HistoricalEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
-        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.MODEL],
-        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.MODEL],
+        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.METEO],
+        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.METEO],
         ForcingType.WATERLEVEL: [
             ForcingSource.CSV,
             ForcingSource.MODEL,
@@ -56,10 +56,10 @@ class HistoricalEventModel(IEventModel):
             mode=Mode.single_event,
             forcings={
                 ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
-                    ForcingType.RAINFALL, ForcingSource.MODEL
+                    ForcingType.RAINFALL, ForcingSource.METEO
                 ),
                 ForcingType.WIND: ForcingFactory.get_default_forcing(
-                    ForcingType.WIND, ForcingSource.MODEL
+                    ForcingType.WIND, ForcingSource.METEO
                 ),
                 ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
                     ForcingType.WATERLEVEL, ForcingSource.MODEL

@@ -3,7 +3,7 @@ from typing import Any
 import geopandas as gpd
 import pandas as pd
 
-import flood_adapt.dbs_controller as db
+import flood_adapt.dbs_classes.database as db
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof

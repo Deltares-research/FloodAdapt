@@ -8,13 +8,15 @@ from pathlib import Path
 
 import pytest
 
-import flood_adapt.config as fa_config
+import flood_adapt.misc.config as fa_config
 from flood_adapt.api.static import read_database
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
+
+from .fixtures import *  # noqa
 
 PROJECT_ROOT = Path(__file__).absolute().parent.parent.parent
 DATABASE_ROOT = PROJECT_ROOT / "Database"
-SITE_NAME = "charleston_test"
+SITE_NAME = "charleston_test_hazardrefactor"
 SYSTEM_FOLDER = DATABASE_ROOT / "system"
 DATABASE_PATH = DATABASE_ROOT / SITE_NAME
 

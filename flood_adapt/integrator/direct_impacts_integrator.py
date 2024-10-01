@@ -15,20 +15,22 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-import flood_adapt.config as FloodAdapt_config
+import flood_adapt.misc.config as FloodAdapt_config
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
-from flood_adapt.object_model.hazard.hazard import FloodMap
+from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
+# TODO move code that is related to fiat to the Fiat Adapter
+# TODO move other code to the Controller class
 class DirectImpacts(IDatabaseUser):
     """All information related to the direct impacts of the scenario.
 
@@ -39,7 +41,6 @@ class DirectImpacts(IDatabaseUser):
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
     hazard: FloodMap
-    has_run: bool = False
 
     def __init__(self, scenario: ScenarioModel, results_path: Path = None) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
@@ -82,6 +83,15 @@ class DirectImpacts(IDatabaseUser):
     @property
     def site_info(self):
         return self.database.site
+
+    def run(self):
+        """Run the direct impact model."""
+        if self.has_run:
+            self._logger.info("Direct impacts have already been run.")
+            return
+        self.preprocess_models()
+        self.run_models()
+        self.postprocess_models()
 
     def has_run_check(self) -> bool:
         """Check if the direct impact has been run.
@@ -134,16 +144,6 @@ class DirectImpacts(IDatabaseUser):
         self.impact_strategy = self.database.strategies.get(
             strategy
         ).get_impact_strategy()
-
-    # def set_hazard(self, scenario: ScenarioModel) -> None:
-    #     """Set the Hazard object of the scenario.
-
-    #     Parameters
-    #     ----------
-    #     scenario : str
-    #         Name of the scenario
-    #     """
-    #     self.hazard = FloodMap(scenario.name)
 
     def preprocess_models(self):
         self._logger.info("Preparing impact models...")
