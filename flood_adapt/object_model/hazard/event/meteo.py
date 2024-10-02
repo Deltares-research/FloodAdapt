@@ -42,7 +42,7 @@ def download_meteo(meteo_dir: Path, time: TimeModel, site: SiteModel):
 
     time_range = [t0, t1]
 
-    gfs_conus.download(time_range)
+    gfs_conus.download(time_range=time_range, parameters=params, path=meteo_dir)
 
 
 def read_meteo(

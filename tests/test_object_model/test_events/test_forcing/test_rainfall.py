@@ -72,7 +72,7 @@ class TestRainfallFromMeteo:
 
         time = TimeModel(
             start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
+            end_time=datetime.strptime("2021-01-02 00:00:00", "%Y-%m-%d %H:%M:%S"),
         )
         download_meteo(meteo_dir=test_path, time=time, site=test_db.site.attrs)
 

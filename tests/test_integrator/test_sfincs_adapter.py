@@ -51,8 +51,10 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
+    UnitTypesLength,
     UnitTypesVelocity,
 )
+from flood_adapt.object_model.projection import Projection
 
 
 @pytest.fixture()
@@ -586,7 +588,7 @@ class TestAddMeasure:
 class TestAddProjection:
     """Class to test the add_projection method of the SfincsAdapter class."""
 
-    def test_add_slr(self, default_sfincs_adapter, dummy_projection):
+    def test_add_slr(self, default_sfincs_adapter, dummy_projection: Projection):
         adapter = default_sfincs_adapter
         adapter._set_waterlevel_forcing(
             pd.DataFrame(
@@ -594,10 +596,10 @@ class TestAddProjection:
                 data={"waterlevel": [1, 2, 3]},
             )
         )
-
+        slr = dummy_projection.get_physical_projection().attrs.sea_level_rise
         wl_df_before = adapter.get_waterlevel_forcing()
         wl_df_expected = wl_df_before.apply(
-            lambda x: x + dummy_projection.attrs.sea_level_rise.convert("meters")
+            lambda x: x + slr.convert(UnitTypesLength.meters)
         )
 
         adapter.add_projection(dummy_projection)
