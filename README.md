@@ -65,32 +65,34 @@ conda activate ENV_NAME
 
 cd FloodAdapt
 
-# Update all packages to the latest available versions allowed by requirements defined in pyproject.toml files.
-# This also performs the update for the backend dependencies, but deactivates the editable installation and installs everything as a package.
-python -m pip install --upgrade --upgrade-strategy eager -e .
+python -m pip install -e . --upgrade
 ```
+Note:  Update all packages and their dependencies to the latest available versions allowed by requirements defined in pyproject.toml files. This also performs the update for the backend dependencies, but deactivates the editable installation and installs everything as a package.
 
 ## Configure database
 
-FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains functions to set environment variables, specific to your system.
+FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains the Settings class to set and validate environment variables, specific to your system.
 
-To validate and set these variables, write a .toml file containing the following lines:
-```bash
-# The path to the FloodAdapt Database containing databases with possibly multiple different sites.
-DATABASE_ROOT="<path/to/Database>"
-
-# The site name to use at startup.
-DATABASE_NAME="<site_name>"
-
-# The path to the `system` folder containing the binaries for SFINCS and fiat.
-SYSTEM_FOLDER="<path/to/system>"
-```
-
-Then, before doing any calculations, add the following lines to the top of your script / initialize function to validate and set the environment variables:
+To initialize floodadapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
-from flood_adapt.config import parse_config
-config_path = "path/to/your.toml"
-parse_config(config_path)
+from pathlib import Path
+from flood_adapt.config import Settings
+
+# Usually ends in `Database` and can contain multiple sites
+root = Path("path/to/your/database/root")
+
+# Specifies which site to use
+name = "database_name"
+
+# Contains the model kernels to run that perform the calculations
+system_folder = Path("path/to/your/system/folder")
+
+# Validate and set environment variables
+Settings(
+    database_root=root,
+    database_name=name,
+    system_folder=system_folder,
+)
 ```
 
 ## Developing FloodAdapt
