@@ -239,7 +239,7 @@ class TestAddForcing:
                 test_db.static_path / "site" / "site.toml",
             )
 
-            test_db.reset()
+            test_db.shutdown()
             test_db = read_database(test_db.static_path.parents[1], "charleston_test")
 
             overland_path = test_db.static_path / "templates" / "overland_0_rivers"

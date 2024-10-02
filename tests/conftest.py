@@ -7,16 +7,17 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-from fixtures import *  # noqa
 
 from flood_adapt import SRC_DIR
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 
+from .fixtures import *  # noqa
+
 settings = Settings(
     database_root=SRC_DIR.parents[1] / "Database",
-    database_name="charleston_test",
+    database_name="charleston_test_hazardrefactor",
     # leave system_folder empty to use the envvar or default system folder
 )
 

@@ -18,8 +18,8 @@ from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
-import flood_adapt.misc.config as FloodAdapt_config
 from flood_adapt.integrator.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
@@ -186,22 +186,13 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-
-        sfincs_exec = FloodAdapt_config.get_system_folder() / "sfincs" / "sfincs.exe"
         sim_path = sim_path or self._model.root
 
         with cd(sim_path):
             sfincs_log = "sfincs.log"
             with FloodAdaptLogging.to_file(file_path=sfincs_log):
                 process = subprocess.run(
-                    sfincs_exec,
+                    str(Settings().sfincs_path),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,

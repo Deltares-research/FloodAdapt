@@ -3,7 +3,7 @@ from os import listdir
 from pathlib import Path
 
 from flood_adapt.api.static import read_database
-from flood_adapt.config import Settings
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.site import Site
 
