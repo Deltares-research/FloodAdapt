@@ -43,8 +43,8 @@ def _perform_conversion_test(
     instance = test_class(initial_value, initial_unit)
     converted = instance.convert(target_unit)
 
-    assert converted == pytest.approx(
-        expected_value, rel=1e-2
+    assert (
+        converted == pytest.approx(expected_value, rel=1e-2)
     ), f"{instance} Failed conversion: {initial_unit} to {target_unit}. Expected {expected_value}, got {converted}"
 
 
@@ -105,7 +105,6 @@ class TestUnitfulTime:
 
 
 class TestUnitfulIntensity:
-
     TEST_INTENSITY_CONVERSIONS = [
         (1, UnitTypesIntensity.mm_hr, 1 / 25.39544832, UnitTypesIntensity.inch_hr),
         (180, UnitTypesIntensity.mm_hr, 7.08, UnitTypesIntensity.inch_hr),
@@ -493,8 +492,8 @@ class TestIUnitFullValue:
         length_a = UnitfulLength(value_a, unit_a)
         length_b = UnitfulLength(value_b, unit_b)
         assert (
-            length_a < length_b
-        ) is expected_result, f"Failed less than: {length_a} and {length_b}. {length_a} {length_b.convert(length_a.units)}"
+            (length_a < length_b) is expected_result
+        ), f"Failed less than: {length_a} and {length_b}. {length_a} {length_b.convert(length_a.units)}"
 
     TEST_GREATERTHAN_ENTRIES = [
         (2, UnitTypesLength.centimeters, 1, UnitTypesLength.centimeters, True),
@@ -517,8 +516,8 @@ class TestIUnitFullValue:
         length_a = UnitfulLength(value_a, unit_a)
         length_b = UnitfulLength(value_b, unit_b)
         assert (
-            length_a > length_b
-        ) == expected_result, f"Failed greater than: {length_a} and {length_b}. Result {(length_a > length_b)}"
+            (length_a > length_b) == expected_result
+        ), f"Failed greater than: {length_a} and {length_b}. Result {(length_a > length_b)}"
 
     TEST_COMPARE_RAISE_TYPEERRORS = [
         ("inch"),

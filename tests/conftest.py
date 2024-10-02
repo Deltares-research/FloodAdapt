@@ -7,55 +7,49 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from fixtures import *  # noqa
 
-import flood_adapt.misc.config as fa_config
+from flood_adapt import SRC_DIR
 from flood_adapt.api.static import read_database
+from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 
-from .fixtures import *  # noqa
-
-PROJECT_ROOT = Path(__file__).absolute().parent.parent.parent
-DATABASE_ROOT = PROJECT_ROOT / "Database"
-SITE_NAME = "charleston_test_hazardrefactor"
-SYSTEM_FOLDER = DATABASE_ROOT / "system"
-DATABASE_PATH = DATABASE_ROOT / SITE_NAME
-
-SESSION_TMP_DIR = Path(tempfile.mkdtemp())
-SNAPSHOT_DIR = SESSION_TMP_DIR / "database_snapshot"
-LOGS_DIR = Path(__file__).absolute().parent / "logs"
-
-fa_config.parse_user_input(
-    database_root=DATABASE_ROOT,
-    database_name=SITE_NAME,
-    system_folder=SYSTEM_FOLDER,
+settings = Settings(
+    database_root=SRC_DIR.parents[1] / "Database",
+    database_name="charleston_test",
+    # leave system_folder empty to use the envvar or default system folder
 )
+
+session_tmp_dir = Path(tempfile.mkdtemp())
+snapshot_dir = session_tmp_dir / "database_snapshot"
+logs_dir = Path(__file__).absolute().parent / "logs"
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
 # Only for debugging purposes, should always be set to true when pushing to github
-CLEAN = True
+clean = True
 
 
 def create_snapshot():
     """Create a snapshot of the database directory."""
-    if SNAPSHOT_DIR.exists():
-        shutil.rmtree(SNAPSHOT_DIR)
-    shutil.copytree(DATABASE_PATH, SNAPSHOT_DIR)
+    if snapshot_dir.exists():
+        shutil.rmtree(snapshot_dir)
+    shutil.copytree(settings.database_path, snapshot_dir)
 
 
 def restore_db_from_snapshot():
     """Restore the database directory from the snapshot."""
-    if not SNAPSHOT_DIR.exists():
+    if not snapshot_dir.exists():
         raise FileNotFoundError(
             "Snapshot path does not exist. Create a snapshot first."
         )
 
     # Copy deleted/changed files from snapshot to database
-    for root, _, files in os.walk(SNAPSHOT_DIR):
+    for root, _, files in os.walk(snapshot_dir):
         for file in files:
             snapshot_file = Path(root) / file
-            relative_path = snapshot_file.relative_to(SNAPSHOT_DIR)
-            database_file = DATABASE_PATH / relative_path
+            relative_path = snapshot_file.relative_to(snapshot_dir)
+            database_file = settings.database_path / relative_path
             if not database_file.exists():
                 os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
@@ -63,17 +57,17 @@ def restore_db_from_snapshot():
                 shutil.copy2(snapshot_file, database_file)
 
     # Remove created files from database
-    for root, _, files in os.walk(DATABASE_PATH):
+    for root, _, files in os.walk(settings.database_path):
         for file in files:
             database_file = Path(root) / file
-            relative_path = database_file.relative_to(DATABASE_PATH)
-            snapshot_file = SNAPSHOT_DIR / relative_path
+            relative_path = database_file.relative_to(settings.database_path)
+            snapshot_file = snapshot_dir / relative_path
 
             if not snapshot_file.exists():
                 os.remove(database_file)
 
     # Remove empty directories from the database
-    for root, dirs, _ in os.walk(DATABASE_PATH, topdown=False):
+    for root, dirs, _ in os.walk(settings.database_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
             if not os.listdir(dir_path):
@@ -83,7 +77,7 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
-    log_path = LOGS_DIR / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
+    log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,
         loglevel_console=logging.DEBUG,
@@ -96,9 +90,9 @@ def session_setup_teardown():
 
     yield
 
-    if CLEAN:
+    if clean:
         restore_db_from_snapshot()
-    shutil.rmtree(SNAPSHOT_DIR)
+    shutil.rmtree(snapshot_dir)
 
 
 def make_db_fixture(scope):
@@ -144,14 +138,14 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(DATABASE_ROOT, SITE_NAME)
+        dbs = read_database(settings.database_root, settings.database_name)
 
         # Perform tests
         yield dbs
 
         # Teardown
-        dbs.reset()
-        if CLEAN:
+        dbs.shutdown()
+        if clean:
             restore_db_from_snapshot()
 
     return _db_fixture

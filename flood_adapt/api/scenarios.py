@@ -18,8 +18,8 @@ def create_scenario(attrs: dict[str, Any]) -> IScenario:
     return Scenario.load_dict(attrs, db.Database().input_path)
 
 
-def save_scenario(scenario: IScenario) -> (bool, str):
-    """Save the scenario to the db.Database().
+def save_scenario(scenario: IScenario) -> tuple[bool, str]:
+    """Save the scenario to the Database().
 
     Parameters
     ----------

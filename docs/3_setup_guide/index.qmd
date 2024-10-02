@@ -1,9 +1,10 @@
 ---
-title: "Setup Guide" 
+title: "Setup Guide"
 ---
 
-# Heading 1
-Here is some content.
+Please follow the steps described in the sections below to set up a FloodaAapt Model.
 
-...
-
+1. [SFINCS Setup](SFINCS/index.qmd)
+2. [Delft FIAT Setup](Delft_Fiat/index.qmd)
+3. [Event Setup](risk_analysis.qmd)
+4. [Database Setup](database.qmd)

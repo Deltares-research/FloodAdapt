@@ -238,7 +238,7 @@ class SyntheticTimeseries(ITimeseries):
 
     @staticmethod
     def load_dict(
-        data: dict[str, Any] | SyntheticTimeseriesModel
+        data: dict[str, Any] | SyntheticTimeseriesModel,
     ) -> "SyntheticTimeseries":
         """Create timeseries from object, e.g. when initialized from GUI."""
         obj = SyntheticTimeseries()

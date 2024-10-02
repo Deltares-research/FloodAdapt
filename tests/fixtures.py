@@ -100,7 +100,6 @@ def dummy_pump_measure():
 
 @pytest.fixture()
 def dummy_strategy(dummy_buyout_measure, dummy_pump_measure):
-
     model = StrategyModel(
         name="dummy_strategy",
         description="",

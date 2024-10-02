@@ -109,9 +109,9 @@ class Benefit(IBenefit):
             scenarios_calc[scenario]["event"] = self.attrs.event_set
 
             if "current" in scenario:
-                scenarios_calc[scenario][
-                    "projection"
-                ] = self.attrs.current_situation.projection
+                scenarios_calc[scenario]["projection"] = (
+                    self.attrs.current_situation.projection
+                )
             elif "future" in scenario:
                 scenarios_calc[scenario]["projection"] = self.attrs.projection
 
@@ -141,10 +141,9 @@ class Benefit(IBenefit):
             ]
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                if created[0].init_object_model().direct_impacts.has_run:
-                    scenarios_calc[scenario]["scenario run"] = True
-                else:
-                    scenarios_calc[scenario]["scenario run"] = False
+                scenarios_calc[scenario]["scenario run"] = (
+                    created[0].init_object_model().direct_impacts.has_run
+                )
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False

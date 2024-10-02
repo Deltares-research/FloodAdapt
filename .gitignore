@@ -169,3 +169,7 @@ flood_adapt/system
 flood_adapt/system/
 /tests/test_database
 /tests/system
+system/
+
+# Pixi
+.pixi

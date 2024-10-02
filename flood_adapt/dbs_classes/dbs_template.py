@@ -105,12 +105,14 @@ class DbsTemplate(AbstractDatabaseElement):
         # Then a save. Checking whether the name is already in use is done in the save function
         self.save(copy_object)
 
-        # Then save all the accompanied files
+        # Then save accompanied files excluding the toml file
         src = self._path / old_name
         dest = self._path / new_name
+        EXCLUDE = [".toml"]
         for file in src.glob("*"):
-            if "toml" not in file.name:
-                shutil.copy(file, dest / file.name)
+            if file.suffix in EXCLUDE:
+                continue
+            shutil.copy(file, dest / file.name)
 
     def save(
         self, object_model: ObjectModel, overwrite: bool = False, toml_only: bool = True

@@ -499,10 +499,12 @@ class SfincsAdapter(IHazardAdapter):
             time-invariant precipitation intensity [mm_hr], by default None
         """
         if isinstance(forcing, RainfallConstant):
-            self._model.setup_precip_forcing(
-                timeseries=None,
-                magnitude=forcing.intensity.convert(UnitTypesIntensity.mm_hr),
-            ),
+            (
+                self._model.setup_precip_forcing(
+                    timeseries=None,
+                    magnitude=forcing.intensity.convert(UnitTypesIntensity.mm_hr),
+                ),
+            )
 
         elif isinstance(forcing, RainfallSynthetic):
             self._model.add_precip_forcing(timeseries=forcing.get_data())

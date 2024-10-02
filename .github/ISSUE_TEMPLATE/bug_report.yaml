@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-description: Report incorrect behavior 
+description: Report incorrect behavior
 labels: [bug, needs refinement]
 
 body:
@@ -18,8 +18,8 @@ body:
     attributes:
       description: >
         Please provide a minimal, copy-pastable example or a link to a public repository that reproduces the behavior. If providing a copy pastable example,
-        you may assume your in a clean up to date version of FloodAdapt with a python enviroment active. In the case of a repository, ensure the repository
-        has a README.md which includes intructions to reproduce the behaviour.
+        you may assume your in a clean up to date version of FloodAdapt with a python environment active. In the case of a repository, ensure the repository
+        has a README.md which includes instructions to reproduce the behaviour.
       label: Reproducible Example
     validations:
       required: true
@@ -43,7 +43,7 @@ body:
     id: task-list
     attributes:
       description: >
-        Please provide a list of tasks that need to be completed before this issue can be closed. 
+        Please provide a list of tasks that need to be completed before this issue can be closed.
       label: Task list
     validations:
       required: true
