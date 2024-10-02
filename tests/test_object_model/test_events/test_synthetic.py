@@ -11,7 +11,12 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
 from flood_adapt.object_model.hazard.event.synthetic import SyntheticEvent
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.hazard.interface.models import (
+    Mode,
+    ShapeType,
+    Template,
+    TimeModel,
+)
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
@@ -25,12 +30,14 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesTime,
     UnitTypesVelocity,
 )
 
 
 @pytest.fixture()
-def test_projection_event_all_synthetic(self):
+def test_projection_event_all_synthetic():
     attrs = {
         "name": "test_historical_nearshore",
         "time": TimeModel(
@@ -53,16 +60,18 @@ def test_projection_event_all_synthetic(self):
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
-                        shape_type="triangle",
-                        duration=UnitfulTime(value=1, units="days"),
-                        peak_time=UnitfulTime(value=8, units="hours"),
-                        peak_value=UnitfulLength(value=1, units="meters"),
+                        shape_type=ShapeType.triangle,
+                        duration=UnitfulTime(value=1, units=UnitTypesTime.days),
+                        peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
+                        peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=UnitfulLength(value=1, units="meters"),
-                    harmonic_period=UnitfulTime(value=12.4, units="hours"),
-                    harmonic_phase=UnitfulTime(value=0, units="hours"),
+                    harmonic_amplitude=UnitfulLength(
+                        value=1, units=UnitTypesLength.meters
+                    ),
+                    harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours),
+                    harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
                 ),
             ),
         },
@@ -71,7 +80,7 @@ def test_projection_event_all_synthetic(self):
 
 
 @pytest.fixture()
-def test_event_all_synthetic(self):
+def test_event_all_synthetic():
     attrs = {
         "name": "test_historical_nearshore",
         "time": TimeModel(
@@ -94,16 +103,18 @@ def test_event_all_synthetic(self):
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
-                        shape_type="triangle",
-                        duration=UnitfulTime(value=1, units="days"),
-                        peak_time=UnitfulTime(value=8, units="hours"),
-                        peak_value=UnitfulLength(value=1, units="meters"),
+                        shape_type=ShapeType.triangle,
+                        duration=UnitfulTime(value=1, units=UnitTypesTime.days),
+                        peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
+                        peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=UnitfulLength(value=1, units="meters"),
-                    harmonic_period=UnitfulTime(value=12.4, units="hours"),
-                    harmonic_phase=UnitfulTime(value=0, units="hours"),
+                    harmonic_amplitude=UnitfulLength(
+                        value=1, units=UnitTypesLength.meters
+                    ),
+                    harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours),
+                    harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
                 ),
             ),
         },

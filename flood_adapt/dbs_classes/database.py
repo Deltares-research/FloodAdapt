@@ -730,7 +730,7 @@ class Database(IDatabase):
         """
         # Get conresion factor need to get from the sfincs units to the gui units
         units = UnitfulLength(value=1, units=self.site.attrs.gui.default_length_units)
-        unit_cor = units.convert(new_units="meters")
+        unit_cor = units.convert(new_units=UnitTypesLength.meters)
 
         return unit_cor
 

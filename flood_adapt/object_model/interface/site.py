@@ -295,7 +295,7 @@ class SiteModel(BaseModel):
     risk: RiskModel
     # TODO what should the default be
     flood_frequency: Optional[FloodFrequencyModel] = {
-        "flooding_threshold": UnitfulLength(value=0.0, units="meters")
+        "flooding_threshold": UnitfulLength(value=0.0, units=UnitTypesLength.meters)
     }
     dem: DemModel
     fiat: FiatModel

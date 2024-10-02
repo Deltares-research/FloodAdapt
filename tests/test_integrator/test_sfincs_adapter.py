@@ -42,13 +42,11 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import HazardType, IMeasure
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulIntensity,
-    UnitfulLength,
     UnitfulVelocity,
     UnitTypesDirection,
     UnitTypesDischarge,
@@ -588,7 +586,7 @@ class TestAddMeasure:
 class TestAddProjection:
     """Class to test the add_projection method of the SfincsAdapter class."""
 
-    def test_add_slr(self, default_sfincs_adapter):
+    def test_add_slr(self, default_sfincs_adapter, dummy_projection):
         adapter = default_sfincs_adapter
         adapter._set_waterlevel_forcing(
             pd.DataFrame(
@@ -597,21 +595,12 @@ class TestAddProjection:
             )
         )
 
-        projection = PhysicalProjection(
-            data={
-                "sea_level_rise": UnitfulLength(value=10, units="meters"),
-                "subsidence": UnitfulLength(value=1, units="meters"),
-                "rainfall_increase": 1,
-                "storm_frequency_increase": 1,
-            }
-        )
-
         wl_df_before = adapter.get_waterlevel_forcing()
         wl_df_expected = wl_df_before.apply(
-            lambda x: x + projection.attrs.sea_level_rise.convert("meters")
+            lambda x: x + dummy_projection.attrs.sea_level_rise.convert("meters")
         )
 
-        adapter.add_projection(projection)
+        adapter.add_projection(dummy_projection)
         wl_df_after = adapter.get_waterlevel_forcing()
 
         assert wl_df_expected.equals(wl_df_after)

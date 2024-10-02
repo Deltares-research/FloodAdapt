@@ -1,7 +1,8 @@
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -14,11 +15,16 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
-from flood_adapt.object_model.hazard.event.synthetic import SyntheticEvent
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.hazard.interface.models import (
+    Mode,
+    ShapeType,
+    Template,
+    TimeModel,
+)
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -29,8 +35,11 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesTime,
     UnitTypesVelocity,
 )
+from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
@@ -59,16 +68,18 @@ def test_eventset_model():
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
-                        shape_type="triangle",
-                        duration=UnitfulTime(value=1, units="days"),
-                        peak_time=UnitfulTime(value=8, units="hours"),
-                        peak_value=UnitfulLength(value=1, units="meters"),
+                        shape_type=ShapeType.triangle,
+                        duration=UnitfulTime(value=1, units=UnitTypesTime.days),
+                        peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
+                        peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=UnitfulLength(value=1, units="meters"),
-                    harmonic_period=UnitfulTime(value=12.4, units="hours"),
-                    harmonic_phase=UnitfulTime(value=0, units="hours"),
+                    harmonic_amplitude=UnitfulLength(
+                        value=1, units=UnitTypesLength.meters
+                    ),
+                    harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours),
+                    harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
                 ),
             ),
         },
@@ -76,18 +87,45 @@ def test_eventset_model():
     return attrs
 
 
+@pytest.fixture()
+def test_db_with_dummyscn_and_eventset(
+    test_db: IDatabase,
+    test_eventset_model,
+    dummy_pump_measure,
+    dummy_buyout_measure,
+    dummy_projection,
+    dummy_strategy,
+):
+    pump, geojson = dummy_pump_measure
+    dst_path = test_db.measures.get_database_path() / pump.attrs.name / geojson.name
+    test_db.measures.save(pump)
+    shutil.copy2(geojson, dst_path)
+
+    test_db.measures.save(dummy_buyout_measure)
+
+    test_db.projections.save(dummy_projection)
+    test_db.strategies.save(dummy_strategy)
+
+    event_set = EventSet.load_dict(test_eventset_model)
+    test_db.events.save(event_set)
+
+    scn = Scenario.load_dict(
+        {
+            "name": "test_eventset",
+            "event": event_set.attrs.name,
+            "projection": dummy_projection.attrs.name,
+            "strategy": dummy_strategy.attrs.name,
+        }
+    )
+    test_db.scenarios.save(scn)
+
+    return test_db, scn, event_set
+
+
 class TestEventSet:
     @pytest.fixture()
     def test_synthetic_eventset(self, test_eventset_model: dict[str, Any]):
         return EventSet.load_dict(test_eventset_model)
-
-    @pytest.fixture()
-    def test_scenario(self, test_db, test_synthetic_eventset: EventSet):
-        test_db.events.save(test_synthetic_eventset)
-
-        scn = test_db.scenarios.get("current_test_set_synthetic_no_measures")
-
-        return test_db, scn, test_synthetic_eventset
 
     def test_get_subevent_paths(self, test_db, test_synthetic_eventset: EventSet):
         subevent_paths = test_synthetic_eventset.get_sub_event_paths()
@@ -106,15 +144,19 @@ class TestEventSet:
         assert test_synthetic_eventset.attrs.mode == Mode.risk
         assert all(subevent.attrs.mode == Mode.single_event for subevent in subevents)
 
-    def test_eventset_synthetic_process(self, test_scenario: tuple):
-        test_db, scn, test_eventset = test_scenario
-        SyntheticEvent.process = mock.Mock()
-        test_eventset.process(scn)
+    @patch("flood_adapt.object_model.hazard.event.synthetic.SyntheticEvent.process")
+    def test_eventset_synthetic_process(
+        self,
+        mock_process,
+        test_db_with_dummyscn_and_eventset: tuple[IDatabase, Scenario, EventSet],
+    ):
+        test_db, scn, event_set = test_db_with_dummyscn_and_eventset
+        event_set.process(scn)
 
-        assert SyntheticEvent.process.call_count == len(test_eventset.attrs.sub_events)
+        assert mock_process.call_count == len(event_set.attrs.sub_events)
 
-    def test_calculate_rp_floodmaps(self, test_scenario: tuple):
-        test_db, scn, test_eventset = test_scenario
+    def test_calculate_rp_floodmaps(self, test_db_with_dummyscn_and_eventset: tuple):
+        test_db, scn, event_set = test_db_with_dummyscn_and_eventset
 
         scn.run()
         output_path = (

@@ -24,6 +24,7 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulTime,
+    UnitTypesLength,
     UnitTypesTime,
 )
 
@@ -116,9 +117,9 @@ class WaterlevelSynthetic(IWaterlevel):
                 timeseries=SyntheticTimeseriesModel.default(UnitfulLength)
             ),
             tide=TideModel(
-                harmonic_amplitude=UnitfulLength(value=0, units="meters"),
-                harmonic_period=UnitfulTime(value=0, units="seconds"),
-                harmonic_phase=UnitfulTime(value=0, units="seconds"),
+                harmonic_amplitude=UnitfulLength(value=0, units=UnitTypesLength.meters),
+                harmonic_period=UnitfulTime(value=0, units=UnitTypesTime.seconds),
+                harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.seconds),
             ),
         )
 

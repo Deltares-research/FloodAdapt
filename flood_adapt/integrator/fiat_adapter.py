@@ -11,7 +11,7 @@ from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.site import Site
 
 
@@ -64,7 +64,7 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
         is_risk = floodmap.mode == Mode.risk
 
         # Add the floodmap data to a data catalog with the unit conversion
-        wl_current_units = UnitfulLength(value=1.0, units="meters")
+        wl_current_units = UnitfulLength(value=1.0, units=UnitTypesLength.meters)
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
 
         self.fiat_model.setup_hazard(
