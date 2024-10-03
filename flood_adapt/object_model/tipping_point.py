@@ -38,7 +38,9 @@ class TippingPoint(ITipPoint):
 
     def slr_projections(self, slr):
         """Create projections for sea level rise value."""
-        new_projection_name = self.attrs.projection + "_slr" + str(slr).replace(".", "")
+        new_projection_name = (
+            self.attrs.projection + "_tp_slr" + str(slr).replace(".", "")
+        )
         proj = self.database.projections.get(self.attrs.projection)
         proj.attrs.physical_projection.sea_level_rise = UnitfulLength(
             value=slr, units=UnitTypesLength.meters
@@ -64,9 +66,9 @@ class TippingPoint(ITipPoint):
 
         scenarios = {
             f"slr_{slr}": {
-                "name": f'{self.attrs.projection}_slr{str(slr).replace(".", "")}_{self.attrs.event_set}_{self.attrs.strategy}',
+                "name": f'{self.attrs.projection}_tp_slr{str(slr).replace(".", "")}_{self.attrs.event_set}_{self.attrs.strategy}',
                 "event": self.attrs.event_set,
-                "projection": f'{self.attrs.projection}_slr{str(slr).replace(".", "")}',
+                "projection": f'{self.attrs.projection}_tp_slr{str(slr).replace(".", "")}',
                 "strategy": self.attrs.strategy,
             }
             for slr in self.attrs.sealevelrise
@@ -286,18 +288,23 @@ class TippingPoint(ITipPoint):
 def load_database(database_path: str, database_name: str, system_folder: str):
     # Call the read_database function with the provided path and name
     from flood_adapt.api.static import read_database
-    from flood_adapt.config import set_system_folder
+    from flood_adapt.config import Settings
 
     database = read_database(database_path, database_name)
-    set_system_folder(system_folder)
+    # Validate and set environment variables
+    Settings(
+        database_root=database_path,
+        database_name=database_name,
+        system_folder=system_folder,
+    )
 
     return database
 
 
 # I am keeping this for quick access to debug until review is done. Then we delete it.
 if __name__ == "__main__":
-    system_folder = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database\\system"
-    database_path = r"C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
+    system_folder = "C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt\\flood_adapt\\system"
+    database_path = "C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
     database_name = "charleston_test"
 
     # Load the database
