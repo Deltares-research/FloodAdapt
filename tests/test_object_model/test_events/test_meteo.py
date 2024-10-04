@@ -3,6 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import xarray as xr
 
 from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
@@ -19,15 +20,13 @@ class TestDownloadMeteo:
         download_meteo(meteo_dir, time, test_db.site.attrs)
 
         # Assert
-        print(meteo_dir, os.listdir(meteo_dir))
         assert meteo_dir.exists()
-        assert len(os.listdir(meteo_dir)) > 0
+        assert len(os.listdir(meteo_dir)) > 0, "No files were downloaded"
 
 
 class TestReadMeteo:
     @staticmethod
     def write_mock_nc_file(meteo_dir: Path, time: TimeModel):
-        # Create a mock NetCDF file
         ds = xr.Dataset(
             {
                 "barometric_pressure": (("x", "y"), [[1013, 1012], [1011, 1010]]),
@@ -86,3 +85,12 @@ class TestReadMeteo:
         # Assert
         assert isinstance(result, xr.Dataset)
         assert result == expected_ds
+
+    def test_read_meteo_no_nc_files(self, test_db, tmp_path):
+        # Arrange
+        meteo_dir = tmp_path
+
+        # Act & Assert
+        with pytest.raises(ValueError) as e:
+            read_meteo(meteo_dir, TimeModel(), test_db.site.attrs)
+        assert "No meteo files found in the specified directory" in str(e.value)

@@ -146,30 +146,6 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
         return ts
 
 
-# class HarmonicTimeseriesCalculator(ITimeseriesCalculationStrategy):
-#     def calculate(
-#         self,
-#         attrs: SyntheticTimeseriesModel,
-#         timestep: UnitfulTime,
-#     ) -> np.ndarray:
-#         tt = pd.date_range(
-#             start=REFERENCE_TIME,
-#             end=(REFERENCE_TIME + attrs.duration.to_timedelta() * MAX_TIDAL_CYCLES),
-#             freq=timestep.to_timedelta(),
-#         )
-#         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
-
-#         omega = 2 * math.pi / attrs.duration.convert(UnitTypesTime.seconds)
-#         phase_shift = attrs.peak_time.convert(UnitTypesTime.seconds)
-#         one_period_ts = attrs.peak_value.value * np.cos(
-#             omega * (tt_seconds - phase_shift)
-#         )
-
-#         # Repeat ts to cover the entire duration
-#         continuous_ts = np.tile(one_period_ts, MAX_TIDAL_CYCLES)[: len(tt_seconds)]
-#         return continuous_ts
-
-
 ### TIMESERIES ###
 class SyntheticTimeseries(ITimeseries):
     CALCULATION_STRATEGIES: dict[ShapeType, ITimeseriesCalculationStrategy] = {
@@ -287,4 +263,5 @@ class CSVTimeseries(ITimeseries):
             start=ts.index.min(), end=ts.index.max(), freq=time_step.to_timedelta()
         )
         interpolated_df = ts.reindex(time_range).interpolate(method="linear")
+
         return interpolated_df.to_numpy()

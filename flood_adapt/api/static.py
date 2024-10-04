@@ -6,12 +6,11 @@ from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.interface.database import IDatabase
 
 # upon start up of FloodAdapt
 
 
-def read_database(database_path: Union[str, os.PathLike], site_name: str) -> IDatabase:
+def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Database:
     """Given a path and a site name returns a IDatabase object.
 
     Parameters

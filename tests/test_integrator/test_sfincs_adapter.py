@@ -238,9 +238,9 @@ class TestAddForcing:
                 test_db.static_path / "site" / "site_without_river.toml",
                 test_db.static_path / "site" / "site.toml",
             )
-
+            root = test_db.static_path.parents[1]
             test_db.shutdown()
-            test_db = read_database(test_db.static_path.parents[1], "charleston_test")
+            test_db = read_database(root, "charleston_test")
 
             overland_path = test_db.static_path / "templates" / "overland_0_rivers"
 

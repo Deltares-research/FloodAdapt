@@ -160,13 +160,18 @@ class ITimeseries(ABC):
         )
 
         data = self.calculate_data(time_step=time_step)
-        n_cols = data.shape[1] if len(data.shape) > 1 else 1
 
+        n_cols = data.shape[1] if len(data.shape) > 1 else 1
         ts_time_range = pd.date_range(
             start=(start_time + ts_start_time.to_timedelta()),
             end=(start_time + ts_end_time.to_timedelta()),
             freq=time_step.to_timedelta(),
         )
+
+        # If the data contains more than the requested time range (from reading a csv file)
+        # Slice the data to match the expected time range
+        if len(data) > len(ts_time_range):
+            data = data[: len(ts_time_range)]
 
         df = pd.DataFrame(
             data, columns=[f"data_{i}" for i in range(n_cols)], index=ts_time_range

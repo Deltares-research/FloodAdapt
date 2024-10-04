@@ -53,23 +53,25 @@ def read_meteo(
 
     # Create an empty list to hold the datasets
     datasets = []
+    nc_files = sorted(glob.glob(str(meteo_dir.joinpath("*.nc"))))
+
+    if not nc_files:
+        raise ValueError("No meteo files found in the specified directory")
+
     # Loop over each file and create a new dataset with a time coordinate
-    for filename in sorted(glob.glob(str(meteo_dir.joinpath("*.nc")))):
+    for filename in nc_files:
         # Open the file as an xarray dataset
         ds = xr.open_dataset(filename)
 
         # Extract the timestring from the filename and convert to pandas datetime format
         time_str = filename.split(".")[-2]
-        time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
+        _time = pd.to_datetime(time_str, format="%Y%m%d_%H%M")
 
         # Add the time coordinate to the dataset
-        ds["time"] = time
+        ds["time"] = _time
 
         # Append the dataset to the list
         datasets.append(ds)
-
-    if not datasets:
-        raise ValueError("No meteo files found in the specified directory")
 
     # Concatenate the datasets along the new time coordinate
     ds = xr.concat(datasets, dim="time")
