@@ -1,7 +1,7 @@
-import os
 import shutil
 from datetime import datetime
-from typing import ClassVar
+from pathlib import Path
+from typing import Any, ClassVar, Optional
 
 import pandas as pd
 import xarray as xr
@@ -46,7 +46,9 @@ class RainfallConstant(IRainfall):
         elif isinstance(t1, UnitfulTime):
             t1 = t0 + t1.to_timedelta()
 
-        time = pd.date_range(start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta())
+        time = pd.date_range(
+            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
+        )
         values = [self.intensity.value for _ in range(len(time))]
         return pd.DataFrame(data=values, index=time)
 
@@ -60,8 +62,12 @@ class RainfallSynthetic(IRainfall):
     timeseries: SyntheticTimeseriesModel
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
 
         if t0 is None:
@@ -91,10 +97,16 @@ class RainfallSynthetic(IRainfall):
 
 class RainfallFromMeteo(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
-    path: str | os.PathLike | None = Field(default=None)
-    # path to the meteo data, set this when downloading it
+    path: Optional[Path] = Field(default=None)
 
-    def get_data(self, strict=True, **kwargs) -> xr.DataArray:
+    # path to the meteo data, set this when downloading it
+    def get_data(
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> xr.DataArray:
         try:
             if self.path is None:
                 raise ValueError(
@@ -110,9 +122,10 @@ class RainfallFromMeteo(IRainfall):
             else:
                 self._logger.error(f"Error reading meteo data: {self.path}. {e}")
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "RainfallFromMeteo":
@@ -122,15 +135,22 @@ class RainfallFromMeteo(IRainfall):
 class RainfallFromTrack(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
 
-    path: str | os.PathLike | None = Field(default=None)
+    path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
 
-    def get_data(self, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         return self.path  # TODO implement
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "RainfallFromTrack":

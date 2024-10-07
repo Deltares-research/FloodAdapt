@@ -1,12 +1,8 @@
-import os
 import shutil
 from pathlib import Path
 from typing import ClassVar, List
 
-import cht_observations.observation_stations as cht_station
-import pandas as pd
 import xarray as xr
-from noaa_coops.station import COOPSAPIError
 
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
@@ -17,6 +13,7 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindFromMeteo
 from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
+from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -25,11 +22,10 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
+    IForcing,
 )
 from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import Obs_pointModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 
 class HistoricalEventModel(IEventModel):
@@ -95,16 +91,11 @@ class HistoricalEvent(IEvent):
         self.meteo_ds = None
         sim_path = self._get_simulation_path()
 
-        require_offshore_run = any(
-            forcing._source == ForcingSource.MODEL
-            for forcing in self.attrs.forcings.values()
-            if forcing is not None
-        )
-
-        if require_offshore_run:
+        if self._require_offshore_run():
             self.download_meteo()
             self.meteo_ds = self.read_meteo()
 
+            sim_path.mkdir(parents=True, exist_ok=True)
             self._preprocess_sfincs_offshore(sim_path)
             self._run_sfincs_offshore(sim_path)
 
@@ -125,11 +116,40 @@ class HistoricalEvent(IEvent):
             ):
                 forcing.path = sim_path
             elif isinstance(forcing, WaterlevelFromGauged):
-                out_path = sim_path / "waterlevels.csv"
-                self._get_observed_wl_data(out_path=out_path)
+                if not self.database.site.attrs.tide_gauge:
+                    raise ValueError(
+                        "No tide gauge is defined in the site. is required to run a historical event with gauged water levels."
+                    )
+                gauge = TideGauge(attrs=self.database.site.attrs.tide_gauge)
+                out_path = (
+                    self.database.events.get_database_path()
+                    / self.attrs.name
+                    / "gauge_data.csv"
+                )
+                gauge.get_waterlevels_in_time_frame(
+                    time=self.attrs.time,
+                    out_path=out_path,
+                )
                 forcing.path = out_path
 
-    def _preprocess_sfincs_offshore(self, sim_path: str | os.PathLike):
+    def _require_offshore_run(self) -> bool:
+        for forcing in self.attrs.forcings.values():
+            if forcing is not None:
+                if isinstance(forcing, IForcing):
+                    if forcing._source == ForcingSource.MODEL:
+                        return True
+                elif isinstance(forcing, dict):
+                    return any(
+                        forcing_instance._source == ForcingSource.MODEL
+                        for forcing_instance in forcing.values()
+                    )
+                else:
+                    raise ValueError(
+                        f"Unknown forcing type: {forcing.__class__.__name__}"
+                    )
+        return False
+
+    def _preprocess_sfincs_offshore(self, sim_path: Path):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
         This function is reused for ForcingSources: MODEL, TRACK, and GAUGED.
@@ -141,9 +161,9 @@ class HistoricalEvent(IEvent):
         from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
         # Initialize
-        if os.path.exists(sim_path):
+        if Path(sim_path).exists():
             shutil.rmtree(sim_path)
-        os.makedirs(sim_path, exist_ok=True)
+        Path(sim_path).mkdir(parents=True, exist_ok=True)
 
         template_offshore = self.database.static_path.joinpath(
             "templates", self.site.attrs.sfincs.offshore_model
@@ -221,118 +241,3 @@ class HistoricalEvent(IEvent):
             meteo_dir=self.database.output_path / "meteo",
             site=self.database.site.attrs,
         )
-
-    def _get_observed_wl_data(
-        self,
-        units: UnitTypesLength = UnitTypesLength("meters"),
-        source: str = "noaa_coops",
-        station_id: int = None,
-        out_path: str | os.PathLike = None,
-    ) -> pd.DataFrame:
-        """Download waterlevel data from NOAA station using station_id, start and stop time.
-
-        Parameters
-        ----------
-        station_id : int | None
-            NOAA observation station ID. If None, all observation stations in the site are downloaded.
-        out_path: str | os.PathLike
-            Path to store the observed/imported waterlevel data.
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and the waterlevel for each observation station as columns.
-        """
-        wl_df = pd.DataFrame()
-        if station_id is None:
-            station_ids = [obs_point.ID for obs_point in self.site.attrs.obs_point]
-        elif isinstance(station_id, int):
-            station_ids = [station_id]
-
-        obs_points = [p for p in self.site.attrs.obs_point if p.ID in station_ids]
-        if not obs_points:
-            self._logger.warning(
-                f"Could not find observation stations with ID {station_id}."
-            )
-            return None
-
-        for obs_point in obs_points:
-            if obs_point.file:
-                station_data = self._read_imported_waterlevels(obs_point.file)
-            else:
-                station_data = self._download_obs_point_data(
-                    obs_point=obs_point, source=source
-                )
-                # Skip if data could not be downloaded
-                if station_data is None:
-                    continue
-            station_data = station_data.rename(columns={"waterlevel": obs_point.ID})
-            station_data = station_data * UnitfulLength(
-                value=1.0, units=UnitTypesLength("meters")
-            ).convert(units)
-
-            if wl_df.empty:
-                wl_df = station_data
-            else:
-                wl_df = wl_df.join(station_data, how="outer")
-
-        if out_path is not None:
-            wl_df.to_csv(Path(out_path))
-
-        return wl_df
-
-    def _download_obs_point_data(
-        self, obs_point: Obs_pointModel, source: str = "noaa_coops"
-    ) -> pd.DataFrame | None:
-        """Download waterlevel data from NOAA station using station_id, start and stop time.
-
-        Parameters
-        ----------
-        obs_point : Obs_pointModel
-            Observation point model.
-        source : str
-            Source of the data.
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and the waterlevel of the observation station as the column.
-        None
-            If the data could not be downloaded.
-        """
-        try:
-            source_obj = cht_station.source(source)
-            df = source_obj.get_data(
-                id=obs_point.ID,
-                tstart=self.attrs.time.start_time,
-                tstop=self.attrs.time.end_time,
-            )
-            df = pd.DataFrame(df)  # Convert series to dataframe
-            df = df.rename(columns={"v": 1})
-
-        except COOPSAPIError as e:
-            self._logger.warning(
-                f"Could not download tide gauge data for station {obs_point.ID}. {e}"
-            )
-            return None
-        return df
-
-    def _read_imported_waterlevels(self, path: str | os.PathLike):
-        """Read waterlevels from an imported csv file.
-
-        Parameters
-        ----------
-        path : str | os.PathLike
-            Path to the csv file.
-
-        Returns
-        -------
-        pd.DataFrame
-            Dataframe with time as index and the waterlevel for each observation station as columns.
-        """
-        df_temp = pd.read_csv(path, index_col=0, parse_dates=True)
-        df_temp.index.names = ["time"]
-        startindex = df_temp.index.get_loc(self.attrs.time.start_time, method="nearest")
-        stopindex = df_temp.index.get_loc(self.attrs.time.end_time, method="nearest")
-        df = df_temp.iloc[startindex:stopindex, :]
-        return df

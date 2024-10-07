@@ -3,8 +3,9 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
+from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
@@ -30,13 +31,6 @@ class Floodmap_type(str, Enum):
 
     water_level = "water_level"
     water_depth = "water_depth"
-
-
-class TideGaugeSource(str, Enum):
-    """The accepted input for the variable source in tide_gauge."""
-
-    file = "file"
-    noaa_coops = "noaa_coops"
 
 
 class SfincsModel(BaseModel):
@@ -212,34 +206,6 @@ class RiverModel(BaseModel):
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
-
-
-class TideGaugeModel(BaseModel):
-    """The accepted input for the variable tide_gauge in Site.
-
-    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
-    """
-
-    name: Optional[Union[int, str]] = None
-    description: Optional[str] = ""
-    source: TideGaugeSource
-    ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
-    file: Optional[str] = None  # for locally stored data
-    lat: Optional[float] = None
-    lon: Optional[float] = None
-
-    @model_validator(mode="after")
-    def validate_selection_type(self) -> "TideGaugeModel":
-        if self.source == "file" and self.file is None:
-            raise ValueError(
-                "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
-            )
-        elif self.source == "noaa_coops" and self.ID is None:
-            raise ValueError(
-                "If `source` is 'noaa_coops' the id of the station should be provided with the attribute 'ID'."
-            )
-
-        return self
 
 
 class Obs_pointModel(BaseModel):

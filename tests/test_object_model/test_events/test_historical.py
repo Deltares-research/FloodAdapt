@@ -1,7 +1,6 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Any
-from unittest import mock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -13,7 +12,14 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.hazard.event.timeseries import CSVTimeseries
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingType,
+    Mode,
+    Template,
+    TimeModel,
+)
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -32,10 +38,7 @@ class TestHistoricalEvent:
     def test_event_all_constant_no_waterlevels(self):
         attrs = {
             "name": "test_historical_nearshore",
-            "time": TimeModel(
-                start_time=datetime(2020, 1, 1),
-                end_time=datetime(2020, 1, 2),
-            ),
+            "time": TimeModel(),
             "template": Template.Historical,
             "mode": Mode.single_event,
             "forcings": {
@@ -74,6 +77,73 @@ class TestHistoricalEvent:
         )
         return scn
 
+    @pytest.fixture()
+    def setup_gauged_scenario(
+        self,
+        test_db: IDatabase,
+        test_event_no_waterlevels: HistoricalEvent,
+        dummy_1d_timeseries_df: pd.DataFrame,
+        tmp_path: Path,
+    ) -> tuple[IDatabase, Scenario, HistoricalEvent, Mock, pd.DataFrame, Path, Path]:
+        with patch(
+            "flood_adapt.object_model.hazard.event.tide_gauge.TideGauge"
+        ) as mock_tide_gauge:
+            gauged_event = test_event_no_waterlevels
+            mock_tide_gauge._cached_data = {}
+            path = tmp_path / "gauge_data.csv"
+            dummy_1d_timeseries_df.to_csv(path)
+
+            expected_df = CSVTimeseries.load_file(path).to_dataframe(
+                start_time=gauged_event.attrs.time.start_time,
+                end_time=gauged_event.attrs.time.end_time,
+            )
+
+            obj = mock_tide_gauge.return_value
+            obj._read_imported_waterlevels.return_value = expected_df
+            obj._download_tide_gauge_data.return_value = expected_df
+            obj.attrs.path = path
+
+            gauged_event.attrs.forcings[ForcingType.WATERLEVEL] = WaterlevelFromGauged()
+
+            test_db.events.save(gauged_event)
+            gauged_scn = Scenario.load_dict(
+                {
+                    "name": "test_scenario",
+                    "event": gauged_event.attrs.name,
+                    "projection": "current",
+                    "strategy": "no_measures",
+                }
+            )
+            expected_path = (
+                test_db.events.get_database_path() / gauged_event.attrs.name / path.name
+            )
+
+            return (
+                test_db,
+                gauged_scn,
+                gauged_event,
+                mock_tide_gauge,
+                expected_df,
+                path,
+                expected_path,
+            )
+
+    @pytest.fixture()
+    def mock_unused_methods_for_gauged(self):
+        mocked_functions = [
+            "flood_adapt.object_model.hazard.event.meteo.download_meteo",
+            "flood_adapt.object_model.hazard.event.meteo.read_meteo",
+            "flood_adapt.object_model.hazard.event.historical.HistoricalEvent._preprocess_sfincs_offshore",
+            "flood_adapt.object_model.hazard.event.historical.HistoricalEvent._run_sfincs_offshore",
+        ]
+
+        patches = [patch(mock) for mock in mocked_functions]
+
+        yield [p.start() for p in patches]
+
+        for p in patches:
+            p.stop()
+
     def test_save_event_toml(
         self, test_event_all_constant_no_waterlevels: dict[str, Any], tmp_path: Path
     ):
@@ -110,73 +180,49 @@ class TestHistoricalEvent:
         assert loaded_event == saved_event
 
     def test_process_without_waterlevels_should_call_nothing(
-        self, test_scenario: Scenario, test_event_no_waterlevels: HistoricalEvent
-    ):
-        # Arrange
-        event = test_event_no_waterlevels
-
-        # Mocking
-        event.download_meteo = mock.Mock()
-        event.read_meteo = mock.Mock()
-        event._get_observed_wl_data = mock.Mock()
-        event._preprocess_sfincs_offshore = mock.Mock()
-        event._run_sfincs_offshore = mock.Mock()
-
-        # Act
-        event.process(test_scenario)
-
-        # Assert
-        event.download_meteo.assert_not_called()
-        event.read_meteo.assert_not_called()
-        event._preprocess_sfincs_offshore.assert_not_called()
-        event._run_sfincs_offshore.assert_not_called()
-        event._get_observed_wl_data.assert_not_called()
-
-    @pytest.mark.skip(
-        reason="noaa-coops gives a KeyError. cht_oservations needs an update?"
-    )
-    def test_process_gauged(
         self,
-        tmp_path: Path,
         test_scenario: Scenario,
         test_event_no_waterlevels: HistoricalEvent,
+        mock_unused_methods_for_gauged: tuple[Mock, Mock, Mock, Mock],
     ):
         # Arrange
         event = test_event_no_waterlevels
-        path = Path(tmp_path) / "gauge_data.csv"
-        test_path = Path(tmp_path) / "observed_wl_data.csv"
-
-        time = pd.date_range(
-            start=event.attrs.time.start_time,
-            end=event.attrs.time.end_time,
-            freq=event.attrs.time.time_step,
-        )
-        gauge_ts = pd.DataFrame(
-            index=time,
-            data={
-                "value": range(len(time)),
-            },
-        )
-        gauge_ts.to_csv(path)
-        test_event_no_waterlevels.attrs.forcings["WATERLEVEL"] = WaterlevelFromGauged(
-            path=path
-        )
-
-        # Mocking
-        event.download_meteo = mock.Mock()
-        event.read_meteo = mock.Mock()
-        event._preprocess_sfincs_offshore = mock.Mock()
-        event._run_sfincs_offshore = mock.Mock()
-        event.process = mock.Mock()
 
         # Act
         event.process(test_scenario)
-        _ = event._get_observed_wl_data(out_path=test_path)
 
         # Assert
-        event.download_meteo.assert_not_called()
-        event.read_meteo.assert_not_called()
-        event._preprocess_sfincs_offshore.assert_not_called()
-        event._run_sfincs_offshore.assert_not_called()
+        for mock in mock_unused_methods_for_gauged:
+            mock.assert_not_called()
 
-        assert event.attrs.forcings["WATERLEVEL"] == WaterlevelFromGauged()
+    def test_process_gauged(
+        self,
+        setup_gauged_scenario: tuple[
+            IDatabase, Scenario, HistoricalEvent, Mock, pd.DataFrame, Path, Path
+        ],
+        mock_unused_methods_for_gauged: tuple[Mock, Mock, Mock, Mock],
+    ):
+        # Arrange
+        (
+            test_db,
+            test_scenario,
+            test_event,
+            mock_tide_gauge,
+            expected_df,
+            path,
+            expected_path,
+        ) = setup_gauged_scenario
+
+        # Act
+        test_event.process(test_scenario)
+        result_df = test_event.attrs.forcings[ForcingType.WATERLEVEL].get_data(
+            t0=test_event.attrs.time.start_time, t1=test_event.attrs.time.end_time
+        )
+
+        # Assert
+        for mock in mock_unused_methods_for_gauged:
+            mock.assert_not_called()
+
+        assert expected_path.exists()
+        print(result_df, expected_df, sep="\n\n")
+        pd.testing.assert_frame_equal(expected_df, result_df)

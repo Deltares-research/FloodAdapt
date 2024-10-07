@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -192,7 +191,7 @@ class SyntheticTimeseries(ITimeseries):
         )
 
     @staticmethod
-    def load_file(filepath: str | os.PathLike):
+    def load_file(filepath: Path):
         """Create timeseries from toml file."""
         obj = SyntheticTimeseries()
         with open(filepath, mode="rb") as fp:
@@ -200,7 +199,7 @@ class SyntheticTimeseries(ITimeseries):
         obj.attrs = SyntheticTimeseriesModel.model_validate(toml)
         return obj
 
-    def save(self, filepath: str | os.PathLike):
+    def save(self, filepath: Path):
         """
         Save Synthetic Timeseries toml.
 

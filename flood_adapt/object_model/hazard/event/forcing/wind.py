@@ -1,7 +1,7 @@
-import os
 import shutil
 from datetime import datetime
-from typing import ClassVar
+from pathlib import Path
+from typing import Any, ClassVar, Optional
 
 import pandas as pd
 import xarray as xr
@@ -35,8 +35,12 @@ class WindConstant(IWind):
     direction: UnitfulDirection
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         if t0 is None:
             t0 = REFERENCE_TIME
         elif isinstance(t0, UnitfulTime):
@@ -47,7 +51,9 @@ class WindConstant(IWind):
         elif isinstance(t1, UnitfulTime):
             t1 = t0 + t1.to_timedelta()
 
-        time = pd.date_range(start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta())
+        time = pd.date_range(
+            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
+        )
         data = {
             "data_0": [self.speed.value for _ in range(len(time))],
             "data_1": [self.direction.value for _ in range(len(time))],
@@ -69,8 +75,12 @@ class WindSynthetic(IWind):
     timeseries: SyntheticTimeseriesModel
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         try:
             return pd.DataFrame(
                 SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
@@ -91,17 +101,13 @@ class WindSynthetic(IWind):
 class WindFromTrack(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
 
-    path: str | os.PathLike | None = Field(default=None)
+    path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
 
-    def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
-        return self.path
-
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "WindFromTrack":
@@ -111,11 +117,15 @@ class WindFromTrack(IWind):
 class WindFromCSV(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
-    path: str | os.PathLike
+    path: Path
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         try:
             return read_csv(self.path)
         except Exception as e:
@@ -124,9 +134,10 @@ class WindFromCSV(IWind):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "WindFromCSV":
@@ -136,13 +147,18 @@ class WindFromCSV(IWind):
 class WindFromMeteo(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
 
-    path: str | os.PathLike | None = Field(default=None)
+    path: Optional[Path] = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']
-
-    def get_data(self, strict=True, **kwargs) -> xr.DataArray:
+    def get_data(
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> xr.DataArray:
         try:
             if self.path is None:
                 raise ValueError(

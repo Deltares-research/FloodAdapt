@@ -13,9 +13,11 @@ from flood_adapt.object_model.interface.site import ISite
 
 
 class IDatabase(ABC):
+    base_path: Path
     input_path: Path
     output_path: Path
-    static_path = Path
+    static_path: Path
+
     site: ISite
 
     @property

@@ -1,6 +1,6 @@
-import os
 from abc import abstractmethod
 from enum import Enum
+from pathlib import Path
 
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
@@ -54,12 +54,12 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def read(self, path: str | os.PathLike):
+    def read(self, path: Path):
         """Read the model configuration from a path or other source."""
         pass
 
     @abstractmethod
-    def write(self, path: str | os.PathLike):
+    def write(self, path: Path):
         """Write the current model configuration to a path or other destination."""
         pass
 

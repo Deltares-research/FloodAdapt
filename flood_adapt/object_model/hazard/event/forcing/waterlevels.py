@@ -1,9 +1,8 @@
 import math
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar, Optional
 
 import numpy as np
 import pandas as pd
@@ -53,7 +52,7 @@ class TideModel(BaseModel):
     def to_dataframe(
         self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP
     ) -> pd.DataFrame:
-        index = pd.date_range(start=t0, end=t1, freq=ts.to_timedelta())
+        index = pd.date_range(start=t0, end=t1, freq=ts.to_timedelta(), name="time")
         seconds = np.arange(len(index)) * ts.convert("seconds")
 
         amp = self.harmonic_amplitude.value
@@ -71,8 +70,12 @@ class WaterlevelSynthetic(IWaterlevel):
     tide: TideModel
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
         if t0 is None:
             t0 = REFERENCE_TIME
@@ -94,7 +97,10 @@ class WaterlevelSynthetic(IWaterlevel):
 
         surge_ts = surge.calculate_data()
         time_surge = pd.date_range(
-            start=start_surge, end=end_surge, freq=DEFAULT_TIMESTEP.to_timedelta()
+            start=start_surge,
+            end=end_surge,
+            freq=DEFAULT_TIMESTEP.to_timedelta(),
+            name="time",
         )
 
         surge_df = pd.DataFrame(surge_ts, index=time_surge)
@@ -106,7 +112,6 @@ class WaterlevelSynthetic(IWaterlevel):
         # Combine
         wl_df = tide_df.add(surge_df, axis="index")
         wl_df.columns = ["data_0"]
-        wl_df.index.name = "time"
 
         return wl_df
 
@@ -150,9 +155,12 @@ class WaterlevelFromCSV(IWaterlevel):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = (
+                path / self.path.name
+            )  # update the path to the new location so the toml also gets updated
 
     @staticmethod
     def default() -> "WaterlevelFromCSV":
@@ -161,7 +169,7 @@ class WaterlevelFromCSV(IWaterlevel):
 
 class WaterlevelFromModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
-    path: str | os.PathLike | None = Field(default=None)
+    path: Optional[Path] = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
     def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
@@ -191,9 +199,11 @@ class WaterlevelFromModel(IWaterlevel):
 class WaterlevelFromGauged(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
     # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
-    path: os.PathLike | str | None = Field(default=None)
+    path: Optional[Path] = Field(default=None)
 
-    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(
+        self, t0=None, t1=None, strict=True, **kwargs
+    ) -> Optional[pd.DataFrame]:
         if t0 is None:
             t0 = REFERENCE_TIME
         elif isinstance(t0, UnitfulTime):
@@ -210,13 +220,17 @@ class WaterlevelFromGauged(IWaterlevel):
             )
         except Exception as e:
             if strict:
-                raise
+                raise e
             else:
                 self._logger.error(f"Error reading gauge data: {self.path}. {e}")
+                return None
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = (
+                path / self.path.name
+            )  # update the path to the new location so the toml also gets updated
 
     @staticmethod
     def default() -> "WaterlevelFromGauged":

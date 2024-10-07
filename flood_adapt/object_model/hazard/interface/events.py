@@ -1,4 +1,3 @@
-import os
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
@@ -152,15 +151,15 @@ class IEvent(IDatabaseUser):
         return obj
 
     @classmethod
-    def load_file(cls, path: str | os.PathLike) -> "IEvent":
+    def load_file(cls, path: Path) -> "IEvent":
         with open(path, "rb") as f:
             return cls.load_dict(tomli.load(f))
 
-    def save(self, path: str | os.PathLike):
+    def save(self, path: Path):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         for forcing in self.attrs.forcings.values():
             if forcing is None:
                 continue

@@ -1,0 +1,138 @@
+from pathlib import Path
+from typing import ClassVar, Optional
+
+import cht_observations.observation_stations as cht_station
+import pandas as pd
+from noaa_coops.station import COOPSAPIError
+
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.tide_gauge import (
+    ITideGauge,
+    TideGaugeModel,
+)
+from flood_adapt.object_model.io.csv import read_csv
+from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
+
+
+class TideGauge(ITideGauge):
+    _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
+    _logger = FloodAdaptLogging.getLogger(__name__)
+
+    def __init__(self, attrs: TideGaugeModel):
+        self.attrs = attrs
+
+    def get_waterlevels_in_time_frame(
+        self,
+        time: TimeModel,
+        out_path: Optional[Path] = None,
+        units: UnitTypesLength = UnitTypesLength.meters,
+    ) -> pd.DataFrame:
+        """Download waterlevel data from NOAA station using station_id, start and stop time.
+
+        Parameters
+        ----------
+        time : TimeModel
+            Time model with start and end time.
+        tide_gauge : TideGaugeModel
+            Tide gauge model.
+        out_path : Optional[Path], optional
+            Path to save the data, by default None.
+        units : UnitTypesLength, optional
+            Unit of the waterlevel, by default UnitTypesLength.meters.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and the waterlevel for each observation station as columns.
+        """
+        if self.attrs.file:
+            gauge_data = self._read_imported_waterlevels(
+                time=time, path=self.attrs.file
+            )
+        else:
+            gauge_data = self._download_tide_gauge_data(time=time)
+
+        gauge_data = gauge_data.rename(columns={"waterlevel": self.attrs.ID})
+        gauge_data = gauge_data * UnitfulLength(
+            value=1.0, units=UnitTypesLength("meters")
+        ).convert(units)
+
+        if out_path is not None:
+            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+            gauge_data.to_csv(Path(out_path))
+        return gauge_data
+
+    @staticmethod
+    def _read_imported_waterlevels(time: TimeModel, path: Path) -> pd.DataFrame:
+        """Read waterlevels from an imported csv file.
+
+        Parameters
+        ----------
+        path : Path
+            Path to the csv file containing the waterlevel data. The csv file should have a column with the waterlevel data and a column with the time data.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and the waterlevel for each observation station as columns.
+            The data is sliced to the time range specified in the time model.
+        """
+        df_temp = read_csv(path)
+        time_range = pd.date_range(
+            start=time.start_time,
+            end=time.end_time,
+            freq=time.time_step,
+            name=df_temp.index.name,
+        )
+
+        df = df_temp.reindex(time_range, method="nearest")
+
+        return df
+
+    def _download_tide_gauge_data(self, time: TimeModel) -> pd.DataFrame | None:
+        """Download waterlevel data from NOAA station using station_id, start and stop time.
+
+        Parameters
+        ----------
+        obs_point : Obs_pointModel
+            Observation point model.
+        source : str
+            Source of the data.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with time as index and the waterlevel of the observation station as the column.
+        None
+            If the data could not be downloaded.
+        """
+        cache_key = f"{self.attrs.ID}_{time.start_time}_{time.end_time}"
+        if cache_key in self.__class__._cached_data:
+            return self.__class__._cached_data[cache_key]
+
+        try:
+            source_obj = cht_station.source(self.attrs.source.value)
+            series = source_obj.get_data(
+                id=self.attrs.ID,
+                tstart=time.start_time,
+                tstop=time.end_time,
+            )
+            index = pd.date_range(
+                start=time.start_time,
+                end=time.end_time,
+                freq=time.time_step,
+                name="time",
+            )
+            df = pd.DataFrame(data=series, index=index)
+
+        except COOPSAPIError as e:
+            self._logger.error(
+                f"Could not download tide gauge data for station {self.attrs.ID}. {e}"
+            )
+            return None
+
+        # Cache the result
+        self.__class__._cached_data[cache_key] = df
+
+        return df

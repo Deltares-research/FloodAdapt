@@ -147,7 +147,7 @@ class SfincsAdapter(IHazardAdapter):
         return self.sfincs_completed()  # + postprocessing checks
 
     ### HAZARD ADAPTER METHODS ###
-    def read(self, path: str | os.PathLike):
+    def read(self, path: Path):
         """Read the sfincs model from the current model root."""
         if Path(self._model.root) != Path(path):
             self._model.set_root(root=path, mode="r")

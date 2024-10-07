@@ -147,11 +147,16 @@ class DbsTemplate(AbstractDatabaseElement):
         if not (self._path / object_model.attrs.name).exists():
             (self._path / object_model.attrs.name).mkdir()
 
+        # Save additional files first, so that any attached files can be copied first from anywhere to the new location
+        # Then change the path attributes on the object to the new location
+        if not toml_only:
+            if hasattr(object_model, "save_additional"):
+                object_model.save_additional(self._path / object_model.attrs.name)
+
+        # Then save the object
         object_model.save(
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
         )
-        if not toml_only:
-            object_model.save_additional(self._path / object_model.attrs.name)
 
     def edit(self, object_model: ObjectModel):
         """Edit an already existing object in the database.

@@ -1,8 +1,7 @@
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar, Optional
 
 import pandas as pd
 
@@ -32,8 +31,12 @@ class DischargeConstant(IDischarge):
     discharge: UnitfulDischarge
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         if t0 is None:
             t0 = REFERENCE_TIME
         elif isinstance(t0, UnitfulTime):
@@ -44,7 +47,9 @@ class DischargeConstant(IDischarge):
         elif isinstance(t1, UnitfulTime):
             t1 = t0 + t1.to_timedelta()
 
-        time = pd.date_range(start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta())
+        time = pd.date_range(
+            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
+        )
         data = {"data_0": [self.discharge.value for _ in range(len(time))]}
         return pd.DataFrame(data=data, index=time)
 
@@ -59,8 +64,12 @@ class DischargeSynthetic(IDischarge):
     timeseries: SyntheticTimeseriesModel
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         discharge = SyntheticTimeseries().load_dict(data=self.timeseries)
 
         if t0 is None:
@@ -91,11 +100,15 @@ class DischargeSynthetic(IDischarge):
 class DischargeFromCSV(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
-    path: str | os.PathLike | Path
+    path: Path
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
-    ) -> pd.DataFrame:
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         if t0 is None:
             t0 = REFERENCE_TIME
         elif isinstance(t0, UnitfulTime):
@@ -117,9 +130,10 @@ class DischargeFromCSV(IDischarge):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         if self.path:
             shutil.copy2(self.path, path)
+            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "DischargeFromCSV":

@@ -157,6 +157,7 @@ class ITimeseries(ABC):
             start=start_time,
             end=end_time,
             freq=time_step.to_timedelta(),
+            name="time",
         )
 
         data = self.calculate_data(time_step=time_step)

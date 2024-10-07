@@ -1,8 +1,8 @@
 import logging
-import os
 from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Optional
 
 import pandas as pd
 import tomli
@@ -18,12 +18,15 @@ from flood_adapt.object_model.hazard.interface.models import (
 class IForcing(BaseModel, ABC):
     """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
 
+    class Config:
+        arbitrary_types_allowed = True
+
     _type: ClassVar[ForcingType]
     _source: ClassVar[ForcingSource]
     _logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
 
     @classmethod
-    def load_file(cls, path: str | os.PathLike):
+    def load_file(cls, path: Path):
         with open(path, mode="rb") as fp:
             toml_data = tomli.load(fp)
         return cls.load_dict(toml_data)
@@ -32,15 +35,23 @@ class IForcing(BaseModel, ABC):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
-    def get_data(self, strict: bool = True, **kwargs: Any) -> pd.DataFrame:
+    def get_data(
+        self,
+        t0: Optional[datetime] = None,
+        t1: Optional[datetime] = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Optional[pd.DataFrame]:
         """If applicable, return the forcing/timeseries data as a (pd.DataFrame | xr.DataSet | arrayLike) data structure.
 
         Args:
-            raise (bool, optional): If True, raise an error if the data cannot be returned. Defaults to True.
+            t0 (datetime, optional): Start time of the data.
+            t1 (datetime, optional): End time of the data.
+            strict (bool, optional): If True, raise an error if the data cannot be returned. Defaults to True.
 
-        The default implementation is to return None, if it makes sense to return an arrayLike datastructure, return it, otherwise return None.
+        The default implementation is to return None, if it makes sense to return a dataframe-like datastructure, return it, otherwise return None.
         """
-        return
+        return None
 
     def model_dump(self, **kwargs: Any) -> dict[str, Any]:
         """Override the default model_dump to include class variables `_type` and `_source`."""
@@ -50,7 +61,7 @@ class IForcing(BaseModel, ABC):
         data["_source"] = self._source.value if self._source else None
         return data
 
-    def save_additional(self, path: str | os.PathLike):
+    def save_additional(self, path: Path):
         """Save additional data of the forcing."""
         return
 
@@ -62,7 +73,7 @@ class IForcing(BaseModel, ABC):
 
     @field_serializer("path", check_fields=False)
     @classmethod
-    def serialize_path(cls, value: str | os.PathLike | Path) -> str:
+    def serialize_path(cls, value: Path) -> str:
         """Serialize filepath-like fields."""
         return str(value)
 

@@ -24,11 +24,14 @@ def read_csv(csvpath: Path) -> pd.DataFrame:
             # read the first 1024 bytes to determine if there is a header
             has_header = csv.Sniffer().has_header(f.read(1024))
         except csv.Error:
-            # The file is empty
             has_header = False
         f.seek(0)
         reader = csv.reader(f, delimiter=",")
-        num_columns = len(next(reader)) - 1  # subtract 1 for the index column
+        try:
+            first_row = next(reader)
+            num_columns = len(first_row) - 1  # subtract 1 for the index column
+        except StopIteration:
+            raise ValueError(f"The CSV file is empty: {csvpath}.")
 
     if has_header is None:
         raise ValueError(
@@ -53,5 +56,12 @@ def read_csv(csvpath: Path) -> pd.DataFrame:
         dtype=dtype,
     )
 
+    # Any index that cannot be converted to datetime will be NaT
+    df.index = pd.to_datetime(df.index, errors="coerce")
     df.index.names = ["time"]
+    df.index.freq = pd.infer_freq(df.index)
+
+    # Drop rows where the index is NaT
+    df = df[~df.index.isna()]
+
     return df

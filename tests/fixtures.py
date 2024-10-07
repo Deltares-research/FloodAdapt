@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.hazard.interface.models import DEFAULT_TIMESTEP
+from flood_adapt.object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
     BuyoutModel,
@@ -28,6 +28,7 @@ from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
 
 __all__ = [
+    "dummy_time_model",
     "dummy_1d_timeseries_df",
     "dummy_2d_timeseries_df",
     "dummy_projection",
@@ -35,25 +36,25 @@ __all__ = [
     "dummy_pump_measure",
     "dummy_strategy",
     "mock_download_meteo",
-    "START_TIME",
-    "END_TIME",
     "DEFAULT_TIMESTEP",
 ]
 
 TEST_DATA_DIR = Path(__file__).parent / "data"
 
-START_TIME = "2021-01-01 00:00:00"
-END_TIME = "2021-01-01 01:00:00"
+
+@pytest.fixture(scope="function")
+def dummy_time_model() -> TimeModel:
+    return TimeModel()
 
 
 @pytest.fixture(scope="function")
-def dummy_1d_timeseries_df() -> pd.DataFrame:
-    return _n_dim_dummy_timeseries_df(1)
+def dummy_1d_timeseries_df(dummy_time_model) -> pd.DataFrame:
+    return _n_dim_dummy_timeseries_df(1, dummy_time_model)
 
 
 @pytest.fixture(scope="function")
-def dummy_2d_timeseries_df() -> pd.DataFrame:
-    return _n_dim_dummy_timeseries_df(2)
+def dummy_2d_timeseries_df(dummy_time_model) -> pd.DataFrame:
+    return _n_dim_dummy_timeseries_df(2, dummy_time_model)
 
 
 @pytest.fixture(scope="session")
@@ -110,12 +111,14 @@ def dummy_strategy(dummy_buyout_measure, dummy_pump_measure):
     return strat
 
 
-def _n_dim_dummy_timeseries_df(n_dims: int) -> pd.DataFrame:
+def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeModel) -> pd.DataFrame:
     time = pd.date_range(
-        start=START_TIME, end=END_TIME, freq=DEFAULT_TIMESTEP.to_timedelta()
+        start=time_model.start_time,
+        end=time_model.end_time,
+        freq=time_model.time_step,
+        name="time",
     )
     gen = np.random.default_rng()
     data = {f"data_{i}": gen.random(len(time)) for i in range(n_dims)}
     df = pd.DataFrame(index=time, data=data, dtype=float)
-    df.index.name = "time"
     return df
