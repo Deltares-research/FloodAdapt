@@ -1,5 +1,5 @@
 ---
-title:	Building the database
+title:	Database Setup
 ---
 
-Im testing
+Coming soon.

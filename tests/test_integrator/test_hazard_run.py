@@ -44,7 +44,7 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
 
     fn_bc = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
         / "simulations"
@@ -68,9 +68,7 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
         "meters"
     ) - test_scenario.site_info.attrs.water_level.msl.height.convert("meters")
 
-    slr_offset = test_scenario.site_info.attrs.slr.vertical_offset.convert("meters")
-
-    assert np.abs(peak_model - (surge_peak + tide_amp + slr_offset - localdatum)) < 0.01
+    assert np.abs(peak_model - (surge_peak + tide_amp - localdatum)) < 0.01
 
 
 # @pytest.mark.skip(reason="There is no sfincs.inp checked in")
@@ -202,7 +200,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
 
     bzs_file1 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
@@ -212,7 +210,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
     )
     bzs_file2 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
@@ -238,7 +236,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
 
     bzs_file1_slr = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
@@ -248,7 +246,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
     )
     bzs_file1 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / test_scenario.attrs.name
         / "Flooding"
         / "simulations"
@@ -277,7 +275,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.preprocess_models()
     precip_file1 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_precip_no_measures"
         / "Flooding"
         / "simulations"
@@ -305,7 +303,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
 
     precip_file2 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_precip_rainfall_incr_no_measures"
         / "Flooding"
         / "simulations"
@@ -327,7 +325,7 @@ def test_run_prob_eventset(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.run_models()
     zs_file1 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
         / "simulations"
@@ -337,7 +335,7 @@ def test_run_prob_eventset(test_db, test_scenarios):
     )
     zs_file2 = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
         / "simulations"
@@ -359,7 +357,7 @@ def test_rp_floodmap_calculation(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
         / "rp_water_level.nc"
@@ -373,7 +371,7 @@ def test_rp_floodmap_calculation(test_db, test_scenarios):
     for ii, event in enumerate(event_set):
         zs_file = (
             test_db.output_path
-            / "Scenarios"
+            / "scenarios"
             / "current_test_set_no_measures"
             / "Flooding"
             / "simulations"
@@ -407,7 +405,7 @@ def test_rp_floodmap_calculation(test_db, test_scenarios):
     # save png file
     fn = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_test_set_no_measures"
         / "Flooding"
         / "simulations"
@@ -473,7 +471,7 @@ def test_multiple_rivers(test_db, test_scenarios):
     # Check for the correct output
     output_folder = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
         / "simulations"
@@ -526,7 +524,7 @@ def test_no_rivers(test_db, test_scenarios):
     # Check for the correct output
     output_folder = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
         / "simulations"
@@ -555,7 +553,7 @@ def test_plot_wl_obs(test_db, test_scenarios):
     # Check for the correct output
     output_folder = (
         test_db.output_path
-        / "Scenarios"
+        / "scenarios"
         / "current_extreme12ft_no_measures"
         / "Flooding"
     )

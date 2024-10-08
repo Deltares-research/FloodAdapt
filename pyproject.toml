@@ -39,6 +39,7 @@ dependencies = [
     "pandas",
     "plotly",
     "pydantic",
+    "pydantic-settings",
     "pyogrio",
     "tomli",
     "tomli-w",
@@ -58,7 +59,6 @@ dev = [
 build = [
     "build",
     "twine",
-
 ]
 docs = [
     "jupyter",
@@ -89,6 +89,7 @@ include = [
 [tool.setuptools.package-data]
 flood_adapt = [
     "py.typed",
+    # "system/**", uncomment when other os are supported as well
 ]
 
 [tool.ruff]

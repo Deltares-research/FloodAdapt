@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import time
+from os import environ
 from pathlib import Path
 
 import geopandas as gpd
@@ -15,7 +16,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-import flood_adapt.config as FloodAdapt_config
+from flood_adapt.config import Settings
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -23,8 +24,6 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
     SocioEconomicChange,
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
-
-# from flood_adapt.object_model.scenario import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
@@ -65,9 +64,7 @@ class DirectImpacts:
         bool
             _description_
         """
-        check = self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
-
-        return check
+        return self.impacts_path.joinpath(f"Impacts_detailed_{self.name}.csv").exists()
 
     def fiat_has_run_check(self) -> bool:
         """Check if fiat has run as expected.
@@ -78,13 +75,13 @@ class DirectImpacts:
             True if fiat has run, False if something went wrong
         """
         log_file = self.fiat_path.joinpath("fiat.log")
-        if log_file.exists():
+        if not log_file.exists():
+            return False
+        try:
             with open(log_file, "r", encoding="cp1252") as f:
-                if "Geom calculation are done!" in f.read():
-                    return True
-                else:
-                    return False
-        else:
+                return "Geom calculation are done!" in f.read()
+        except Exception as e:
+            self._logger.error(f"Error while checking if FIAT has run: {e}")
             return False
 
     def set_socio_economic_change(self, projection: str) -> None:
@@ -134,11 +131,11 @@ class DirectImpacts:
         start_time = time.time()
         return_code = self.run_fiat()
         end_time = time.time()
-        print(f"Running FIAT took {str(round(end_time - start_time, 2))} seconds")
 
-        # Indicator that direct impacts have run
-        if return_code == 0:
-            self.__setattr__("has_run", True)
+        success_str = "SUCCESS" if return_code == 0 else "FAILURE"
+        self._logger.info(
+            f"FIAT run finished with return code {return_code} ({success_str}). Running FIAT took {str(round(end_time - start_time, 2))} seconds"
+        )
 
     def postprocess_models(self):
         self._logger.info("Post-processing impact models...")
@@ -189,7 +186,7 @@ class DirectImpacts:
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
-            dem = self.database.static_path / "Dem" / self.site_info.attrs.dem.filename
+            dem = self.database.static_path / "dem" / self.site_info.attrs.dem.filename
             aggregation_areas = [
                 self.database.static_path / aggr.file
                 for aggr in self.site_info.attrs.fiat.aggregation
@@ -251,25 +248,18 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        if not FloodAdapt_config.get_system_folder():
-            raise ValueError(
-                """
-                SYSTEM_FOLDER environment variable is not set. Set it by calling FloodAdapt_config.set_system_folder() and provide the path.
-                The path should be a directory containing folders with the model executables
-                """
-            )
-        fiat_exec = FloodAdapt_config.get_system_folder() / "fiat" / "fiat.exe"
-
         with cd(self.fiat_path):
             with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
                 process = subprocess.run(
-                    f'"{fiat_exec}" run settings.toml',
+                    f'"{Settings().fiat_path.as_posix()}" run settings.toml',
                     stdout=log_handler,
+                    stderr=log_handler,
+                    env=environ.copy(),  # need environment variables from runtime hooks
                     check=True,
                     shell=True,
                 )
 
-            return process.returncode
+        return process.returncode
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results

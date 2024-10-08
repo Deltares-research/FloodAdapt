@@ -253,7 +253,7 @@ class TestBenefitScenariosRun:
             output_path = (
                 test_db.input_path.parent
                 / "output"
-                / "Scenarios"
+                / "scenarios"
                 / row["scenario created"]
             )
             if not output_path.exists():
