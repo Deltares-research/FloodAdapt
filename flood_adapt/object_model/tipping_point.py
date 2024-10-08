@@ -290,20 +290,20 @@ def load_database(database_path: str, database_name: str, system_folder: str):
     from flood_adapt.api.static import read_database
     from flood_adapt.config import Settings
 
-    database = read_database(database_path, database_name)
     # Validate and set environment variables
     Settings(
         database_root=database_path,
         database_name=database_name,
         system_folder=system_folder,
     )
+    database = read_database(database_path, database_name)
 
     return database
 
 
 # I am keeping this for quick access to debug until review is done. Then we delete it.
 if __name__ == "__main__":
-    system_folder = "C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\FloodAdapt\\flood_adapt\\system"
+    system_folder = "C:\\Users\\morenodu\\FloodAdapt\\flood_adapt\\system"
     database_path = "C:\\Users\\morenodu\\OneDrive - Stichting Deltares\\Documents\\GitHub\\Database"
     database_name = "charleston_test"
 
