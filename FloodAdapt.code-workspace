@@ -1,0 +1,103 @@
+{
+	"folders": [
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/FloodAdapt-GUI"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/FloodAdapt"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/Database"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/fiat_toolbox"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/hydromt_sfincs"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/hydromt_fiat"
+		},
+		{
+			"path": "C:/Users/blom_lk/dev/Workspace_FloodAdapt/cht_observations"
+		},
+		{
+			"path": "../guitars"
+		}
+	],
+	"settings": {
+		"github.copilot.editor.enableAutoCompletions": true,
+		"workbench.sideBar.location": "right",
+		"workbench.startupEditor": "none",
+		"editor.indentSize": "tabSize",
+		"editor.tabSize": 4,
+		"editor.insertSpaces": true,
+		"editor.formatOnSaveMode": "modifications",
+		"editor.formatOnSave": true,
+		"editor.folding": true,
+		"editor.foldingStrategy": "indentation",
+		"editor.tabCompletion": "on",
+		"editor.suggestSelection": "first",
+		"editor.wordWrap": "on",
+		"editor.foldingHighlight": true,
+		"editor.rename.enablePreview": true,
+		"editor.codeActionsOnSave": {
+			"source.ignoreInitModuleImports": "always",
+			"source.organizeImports.ruff": "explicit",
+			"source.organizeImports": "explicit",
+			"source.unusedImports": "explicit",
+		},
+		"diffEditor.ignoreTrimWhitespace": true,
+		"python.analysis.extraPaths": [
+			"C:/Users/blom_lk/dev/Workspace_FloodAdapt/FloodAdapt",
+		],
+		"python.autoComplete.extraPaths": [
+			"C:/Users/blom_lk/dev/Workspace_FloodAdapt/FloodAdapt",
+		],
+		"python.analysis.autoImportCompletions": true,
+		"python.analysis.exclude": [
+			"**/dist/**",
+			"**/build/**",
+			"**/Database/**",
+			"**/node_modules",
+			"**/venv",
+			"**/env",
+			"**/.venv",
+			"**/.env",
+			"**/__pycache__",
+			"**/.git",
+			"**/.vscode",
+		],
+		"python.analysis.importFormat": "absolute",
+		"python.analysis.inlayHints.callArgumentNames": "off",
+		"python.analysis.inlayHints.functionReturnTypes": false,
+		"python.analysis.inlayHints.variableTypes": false,
+		"python.analysis.inlayHints.pytestParameters": false,
+		"python.analysis.autoIndent": false,
+		"python.analysis.useLibraryCodeForTypes": true,
+		"python.analysis.autoFormatStrings": true,
+		"python.analysis.userFileIndexingLimit": 500,
+		"python.analysis.fixAll": [
+			"source.convertImportFormat",
+			"source.unusedImports",
+		],
+		"python.defaultInterpreterPath": "C:/Users/blom_lk/AppData/Local/miniforge3/envs/fa_dev/python.exe",
+		"python.languageServer": "Pylance",
+		"[python]": {
+			"debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
+			"diffEditor.ignoreTrimWhitespace": false,
+			"editor.formatOnType": false,
+			"editor.wordBasedSuggestions": "off"
+		},
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-python.python",
+			"ms-python.debugpy",
+			"ms-python.vscode-pylance",
+			"GitHub.copilot",
+			"GitHub.copilot-chat",
+			"donjayamanne.githistory",
+		]
+	}
+}
