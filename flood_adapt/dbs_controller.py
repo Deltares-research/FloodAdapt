@@ -458,18 +458,14 @@ class Database(IDatabase):
 
         # set timing relative to T0 if event is synthetic
         if event.attrs.template == "Synthetic":
-            start = -event.attrs.time.duration_before_t0
-            stop = event.attrs.time.duration_after_t0 + 1 / 3600
-            duration = stop - start
-            step = duration / df.index.size
-
+            xlim1 = -event.attrs.time.duration_before_t0
+            xlim2 = event.attrs.time.duration_after_t0 + 1 / 3600
+            step = (xlim2 - xlim1) / df.index.size
             df.index = np.arange(
-                start,
-                stop,
+                xlim1,
+                xlim2,
                 step,
             )
-            xlim1 = start
-            xlim2 = stop
         else:
             xlim1 = pd.to_datetime(event.attrs.time.start_time)
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
