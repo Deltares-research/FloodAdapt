@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, Union
 
 import tomli
@@ -9,6 +10,7 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 )
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.projections import IProjection, ProjectionModel
+from flood_adapt.object_model.utils import import_external_file
 
 
 class Projection(IProjection):
@@ -41,12 +43,14 @@ class Projection(IProjection):
     def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save Projection to a toml file."""
         if additional_files:
-            raise NotImplementedError(
-                "Additional files are not yet implemented for Projection objects."
+            if self.attrs.socio_economic_change.new_development_shapefile is None:
+                raise ValueError("The shapefile for the new development is not set.")
+            new_path = import_external_file(
+                self.attrs.socio_economic_change.new_development_shapefile,
+                Path(filepath).parent,
             )
-
-        if not os.path.exists(filepath):
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.socio_economic_change.new_development_shapefile = str(new_path)
 
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

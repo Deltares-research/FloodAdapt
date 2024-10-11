@@ -10,6 +10,7 @@ from flood_adapt.object_model.interface.events import (
     HistoricalOffshoreModel,
     IHistoricalOffshore,
 )
+from flood_adapt.object_model.utils import import_external_file
 
 
 class HistoricalOffshore(Event, IHistoricalOffshore):
@@ -46,8 +47,46 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
             path to the location where file will be saved
         """
         if additional_files:
-            raise NotImplementedError(
-                "Additional files are not yet implemented for HistoricalOffshore objects."
-            )
+            if self.attrs.rainfall.source == "timeseries":
+                if self.attrs.rainfall.timeseries_file is None:
+                    raise ValueError(
+                        "The timeseries file for the rainfall source is not set."
+                    )
+                new_path = import_external_file(
+                    self.attrs.rainfall.timeseries_file, Path(filepath).parent
+                )
+                self.attrs.rainfall.timeseries_file = str(new_path)
+
+            if self.attrs.wind.source == "timeseries":
+                if self.attrs.wind.timeseries_file is None:
+                    raise ValueError(
+                        "The timeseries file for the wind source is not set."
+                    )
+                new_path = import_external_file(
+                    self.attrs.wind.timeseries_file, Path(filepath).parent
+                )
+                self.attrs.wind.timeseries_file = str(new_path)
+
+            for river in self.attrs.river:
+                if river.source == "timeseries":
+                    if river.timeseries_file is None:
+                        raise ValueError(
+                            "The timeseries file for the river source is not set."
+                        )
+                    new_path = import_external_file(
+                        river.timeseries_file, Path(filepath).parent
+                    )
+                    river.timeseries_file = str(new_path)
+
+            if self.attrs.tide.source == "timeseries":
+                if self.attrs.tide.timeseries_file is None:
+                    raise ValueError(
+                        "The timeseries file for the tide source is not set."
+                    )
+                new_path = import_external_file(
+                    self.attrs.tide.timeseries_file, Path(filepath).parent
+                )
+                self.attrs.tide.timeseries_file = str(new_path)
+
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

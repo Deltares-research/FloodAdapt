@@ -9,6 +9,7 @@ from flood_adapt.object_model.direct_impact.measure.impact_measure import (
     ImpactMeasure,
 )
 from flood_adapt.object_model.interface.measures import BuyoutModel, IBuyout
+from flood_adapt.object_model.utils import import_external_file
 
 
 class Buyout(ImpactMeasure, IBuyout):
@@ -41,8 +42,10 @@ class Buyout(ImpactMeasure, IBuyout):
     def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save Buyout to a toml file."""
         if additional_files:
-            raise NotImplementedError(
-                "Additional files are not yet implemented for Buyout objects."
-            )
+            if self.attrs.polygon_file:
+                new_path = import_external_file(
+                    self.attrs.polygon_file, Path(filepath).parent
+                )
+                self.attrs.polygon_file = str(new_path)
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

@@ -61,6 +61,7 @@ def test_projection_save_createsFile(test_db, test_dict):
     file_path = (
         test_db.input_path / "projections" / "new_projection" / "new_projection.toml"
     )
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     test_projection.save(file_path)
     assert file_path.is_file()
 
@@ -70,6 +71,7 @@ def test_projection_loadFile_checkAllAttrs(test_db, test_dict):
     file_path = (
         test_db.input_path / "projections" / "new_projection" / "new_projection.toml"
     )
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     test_projection.save(file_path)
 
     test_projection = Projection.load_file(file_path)

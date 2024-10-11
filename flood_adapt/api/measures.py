@@ -60,8 +60,8 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         return GreenInfrastructure.load_dict(attrs, database_path)
 
 
-def save_measure(measure: IMeasure) -> None:
-    Database().measures.save(measure)
+def save_measure(measure: IMeasure, additional_files: bool = True) -> None:
+    Database().measures.save(measure, additional_files=additional_files)
 
 
 def edit_measure(measure: IMeasure) -> None:

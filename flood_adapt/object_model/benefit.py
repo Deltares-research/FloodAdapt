@@ -609,7 +609,7 @@ class Benefit(IBenefit):
         """
         if additional_files:
             raise NotImplementedError(
-                "Additional files are not yet implemented for Benefit objects."
+                f"Saving additional files is not yet implemented for {self.__class__.__name__} objects."
             )
 
         with open(filepath, "wb") as f:

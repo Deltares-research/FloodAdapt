@@ -60,7 +60,12 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(
+        self,
+        object_model: ObjectModel,
+        overwrite: bool = False,
+        additional_files: bool = False,
+    ):
         """Save an object in the database.
 
         This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
@@ -72,6 +77,8 @@ class AbstractDatabaseElement(ABC):
         overwrite : OverwriteMode, optional
             whether to overwrite the object if it already exists in the
             database, by default False
+        additional_files : bool, optional
+            whether to save additional files, such as geojson files, by default False
 
         Raises
         ------

@@ -133,7 +133,7 @@ class DbsTemplate(AbstractDatabaseElement):
             whether to overwrite the object if it already exists in the
             database, by default False
         additional_files : bool, optional
-            whether to save additional files, by default False
+            whether to save additional files attached to the object in the database, by default False
 
         Raises
         ------

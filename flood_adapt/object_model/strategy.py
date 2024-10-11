@@ -124,10 +124,12 @@ class Strategy(IStrategy):
         ----------
         filepath : Union[str, os.PathLike]
             path of the toml file to be saved
+        additional_files : bool, optional
+            if True, additional files will be saved, by default False
         """
         if additional_files:
             raise NotImplementedError(
-                "Additional files are not yet implemented for Strategy objects."
+                f"Saving additional files is not yet implemented for {self.__class__.__name__} objects."
             )
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

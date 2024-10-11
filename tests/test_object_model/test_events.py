@@ -30,9 +30,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulVelocity,
 )
-from flood_adapt.object_model.site import (
-    Site,
-)
 
 
 def test_get_template(test_db):
@@ -155,11 +152,8 @@ def test_download_meteo(test_db):
 
     kingTide = HistoricalOffshore.load_file(event_toml)
 
-    site_toml = test_db.static_path / "site" / "site.toml"
-
-    site = Site.load_file(site_toml)
     path = test_db.input_path / "events" / "kingTideNov2021"
-    gfs_conus = kingTide.download_meteo(site=site, path=path)
+    gfs_conus = kingTide.download_meteo(site=test_db.site, path=path)
 
     assert gfs_conus
 
@@ -182,14 +176,13 @@ def test_download_wl_timeseries(test_db):
     station_id = 8665530
     start_time_str = "20230101 000000"
     stop_time_str = "20230102 000000"
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
+
     wl_df = HistoricalNearshore.download_wl_data(
         station_id,
         start_time_str,
         stop_time_str,
         units="feet",
-        source=site.attrs.tide_gauge.source,
+        source=test_db.site.attrs.tide_gauge.source,
         file=None,
     )
 
@@ -203,13 +196,9 @@ def test_make_spw_file(test_db):
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
-
     FLORENCE.make_spw_file(
         event_path=event_toml.parent,
         model_dir=event_toml.parent,
-        site=site,
     )
 
     assert event_toml.parent.joinpath("hurricane.spw").is_file()
@@ -227,9 +216,6 @@ def test_translate_hurricane_track(test_db):
     template = Event.get_template(event_toml)
     FLORENCE = EventFactory.get_event(template).load_file(event_toml)
 
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
-
     tc = TropicalCyclone()
     tc.read_track(filename=event_toml.parent.joinpath("FLORENCE.cyc"), fmt="ddb_cyc")
     ref = tc.track
@@ -242,7 +228,7 @@ def test_translate_hurricane_track(test_db):
     FLORENCE.attrs.hurricane_translation.northsouth_translation.value = dy
     FLORENCE.attrs.hurricane_translation.northsouth_translation.units = "meters"
 
-    tc = FLORENCE.translate_tc_track(tc=tc, site=site)
+    tc = FLORENCE.translate_tc_track(tc=tc)
     new = tc.track
 
     # Determine difference in coordinates between the tracks
@@ -408,9 +394,7 @@ def test_constant_discharge(test_db):
             constant_discharge=UnitfulDischarge(value=2000.0, units="cfs"),
         )
     ]
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=test_db.site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     const_dis = event.attrs.river[0].constant_discharge.value
@@ -434,9 +418,7 @@ def test_gaussian_discharge(test_db):
             shape_peak=UnitfulDischarge(value=10000, units="cfs"),
         )
     ]
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=test_db.site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     # event.dis_df.to_csv(
@@ -475,9 +457,8 @@ def test_block_discharge(test_db):
             shape_end_time=-20.0,
         )
     ]
-    site_toml = test_db.static_path / "site" / "site.toml"
-    site = Site.load_file(site_toml)
-    event.add_dis_ts(event_dir=test_toml.parent, site_river=site.attrs.river)
+
+    event.add_dis_ts(event_dir=test_toml.parent, site_river=test_db.site.attrs.river)
     assert isinstance(event.dis_df, pd.DataFrame)
     assert isinstance(event.dis_df.index, pd.DatetimeIndex)
     # event.dis_df.to_csv(

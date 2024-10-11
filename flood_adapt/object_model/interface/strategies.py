@@ -1,6 +1,5 @@
 import os
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -33,10 +32,6 @@ class IStrategy(ABC):
         ...
 
     @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Strategy attributes to a toml file."""
-
-    @abstractmethod
-    def save_additional_files(self, input_dir: Path):
-        """Save additional files to the objects input directory."""
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+        """Save Strategy attributes to a toml file, and optionally additional files."""
         ...

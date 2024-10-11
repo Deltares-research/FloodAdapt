@@ -42,7 +42,7 @@ class Site(ISite):
         """Write toml file from model object."""
         if additional_files:
             raise NotImplementedError(
-                "Additional files are not yet implemented for Site objects."
+                f"Saving additional files is not yet implemented for {self.__class__.__name__} objects."
             )
         with open(filepath, "wb") as f:
             tomli_w.dump(self._attrs.dict(exclude_none=True), f)
