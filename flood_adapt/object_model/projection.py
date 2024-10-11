@@ -38,8 +38,13 @@ class Projection(IProjection):
         obj.attrs = ProjectionModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save Projection to a toml file."""
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for Projection objects."
+            )
+
         if not os.path.exists(filepath):
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
 

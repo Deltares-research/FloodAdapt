@@ -37,7 +37,7 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         obj.attrs = HistoricalOffshoreModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save event toml.
 
         Parameters
@@ -45,5 +45,9 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         file : Path
             path to the location where file will be saved
         """
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for HistoricalOffshore objects."
+            )
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

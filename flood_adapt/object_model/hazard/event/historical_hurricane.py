@@ -84,7 +84,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         # return object
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save event toml.
 
         Parameters
@@ -92,6 +92,10 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         file : Path
             path to the location where file will be saved
         """
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for HisticalHurricane objects."
+            )
         # save toml file
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

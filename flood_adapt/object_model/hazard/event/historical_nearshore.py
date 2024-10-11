@@ -50,7 +50,7 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         obj.attrs = HistoricalNearshoreModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save event toml.
 
         Parameters
@@ -58,6 +58,10 @@ class HistoricalNearshore(Event, IHistoricalNearshore):
         file : Path
             path to the location where file will be saved
         """
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for HistoricalNearshore objects."
+            )
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 

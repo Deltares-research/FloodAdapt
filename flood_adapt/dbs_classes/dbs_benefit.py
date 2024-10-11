@@ -10,7 +10,9 @@ class DbsBenefit(DbsTemplate):
     _folder_name = "benefits"
     _object_model_class = Benefit
 
-    def save(self, benefit: IBenefit, overwrite: bool = False):
+    def save(
+        self, benefit: IBenefit, overwrite: bool = False, additional_files: bool = False
+    ):
         """Save a benefit object in the database.
 
         Parameters
@@ -32,7 +34,7 @@ class DbsBenefit(DbsTemplate):
             )
 
         # Save the benefit
-        super().save(benefit, overwrite=overwrite)
+        super().save(benefit, overwrite=overwrite, additional_files=additional_files)
 
     def delete(self, name: str, toml_only: bool = False):
         """Delete an already existing benefit in the database.

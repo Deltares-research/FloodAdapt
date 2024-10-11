@@ -36,7 +36,13 @@ class Site(ISite):
         obj.attrs = SiteModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]) -> None:
+    def save(
+        self, filepath: Union[str, os.PathLike], additional_files: bool = False
+    ) -> None:
         """Write toml file from model object."""
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for Site objects."
+            )
         with open(filepath, "wb") as f:
             tomli_w.dump(self._attrs.dict(exclude_none=True), f)

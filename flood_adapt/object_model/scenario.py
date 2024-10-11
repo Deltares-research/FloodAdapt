@@ -59,8 +59,13 @@ class Scenario(IScenario):
         obj.database_input_path = database_input_path
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save Scenario to a toml file."""
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for Scenario objects."
+            )
+
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 

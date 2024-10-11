@@ -225,8 +225,9 @@ class IMeasure(ABC):
         ...
 
     @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Measure attributes to a toml file."""
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+        """Save Measure attributes to a toml file, and optionally additional files."""
+        ...
 
 
 class IElevate(IMeasure):

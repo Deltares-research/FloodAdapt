@@ -117,7 +117,7 @@ class Strategy(IStrategy):
 
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike]):
+    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
         """Save Strategy to a toml file.
 
         Parameters
@@ -125,5 +125,9 @@ class Strategy(IStrategy):
         filepath : Union[str, os.PathLike]
             path of the toml file to be saved
         """
+        if additional_files:
+            raise NotImplementedError(
+                "Additional files are not yet implemented for Strategy objects."
+            )
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
