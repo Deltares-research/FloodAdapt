@@ -417,15 +417,18 @@ class Database(IDatabase):
 
         match event.attrs.rainfall.source:
             case "shape":
+                scs_file, scs_type = None, None
                 if event.attrs.rainfall.shape_type == "scs":
-                    scsfile = self.input_path.parent.joinpath(
-                        "static", "scs", self.site.attrs.scs.file
-                    )
-                    if not scsfile.is_file():
+                    if self.site.attrs.scs is None:
                         ValueError(
                             "Information about SCS file and type missing in site.toml"
                         )
-                event.add_rainfall_ts(scsfile=scsfile, scstype=self.site.attrs.scs.type)
+                    else:
+                        scs_file = self.input_path.parent.joinpath(
+                            "static", "scs", self.site.attrs.scs.file
+                        )
+                        scs_type = self.site.attrs.scs.type
+                event.add_rainfall_ts(scsfile=scs_file, scstype=scs_type)
                 df = event.rain_ts
             case "timeseries":
                 if input_rainfall_df is None:
@@ -455,13 +458,18 @@ class Database(IDatabase):
 
         # set timing relative to T0 if event is synthetic
         if event.attrs.template == "Synthetic":
+            start = -event.attrs.time.duration_before_t0
+            stop = event.attrs.time.duration_after_t0 + 1 / 3600
+            duration = stop - start
+            step = duration / df.index.size
+
             df.index = np.arange(
-                -event.attrs.time.duration_before_t0,
-                event.attrs.time.duration_after_t0 + 1 / 3600,
-                1 / 6,
+                start,
+                stop,
+                step,
             )
-            xlim1 = -event.attrs.time.duration_before_t0
-            xlim2 = event.attrs.time.duration_after_t0
+            xlim1 = start
+            xlim2 = stop
         else:
             xlim1 = pd.to_datetime(event.attrs.time.start_time)
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
