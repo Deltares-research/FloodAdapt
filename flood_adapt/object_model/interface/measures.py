@@ -89,7 +89,7 @@ class ImpactMeasureModel(MeasureModel):
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     polygon_file: Optional[str] = None
-    property_type: str
+    property_type: str  # TODO make enum
 
     # TODO #94 pydantic validators do not currently work
 

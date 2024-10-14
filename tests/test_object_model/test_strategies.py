@@ -1,4 +1,4 @@
-from pathlib import Path
+import pytest
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
@@ -13,17 +13,19 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.strategy import Strategy
 
-test_database = Path().absolute() / "tests" / "test_database"
 
-
-def test_strategy_comb_read(test_db):
+@pytest.fixture()
+def test_strategy(test_db):
     test_toml = (
         test_db.input_path / "strategies" / "strategy_comb" / "strategy_comb.toml"
     )
     assert test_toml.is_file()
 
-    strategy = Strategy.load_file(test_toml)
+    return Strategy.load_file(test_toml)
 
+
+def test_strategy_comb_read(test_db, test_strategy):
+    strategy = test_strategy
     assert strategy.attrs.name == "strategy_comb"
     assert strategy.attrs.description == "strategy_comb"
     assert len(strategy.attrs.measures) == 4
@@ -53,6 +55,14 @@ def test_strategy_no_measures(test_db):
     assert isinstance(strategy.get_impact_strategy(), ImpactStrategy)
     assert len(strategy.get_hazard_strategy().measures) == 0
     assert len(strategy.get_impact_strategy().measures) == 0
+
+
+def test_save_additional_files_raises_error(test_strategy, tmp_path):
+    with pytest.raises(
+        NotImplementedError,
+        match="Saving additional files is not yet implemented for Strategy objects.",
+    ):
+        test_strategy.save(tmp_path, additional_files=True)
 
 
 def test_elevate_comb_correct(test_db):

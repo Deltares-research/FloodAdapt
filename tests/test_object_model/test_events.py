@@ -1,6 +1,7 @@
 import glob
 import os
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,19 +10,34 @@ import tomli
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.historical_hurricane import (
+    HistoricalHurricane,
+)
 from flood_adapt.object_model.hazard.event.historical_nearshore import (
     HistoricalNearshore,
 )
 from flood_adapt.object_model.hazard.event.historical_offshore import HistoricalOffshore
+from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.events import (
+    HistoricalHurricaneModel,
+    HistoricalNearshoreModel,
+    HistoricalOffshoreModel,
     Mode,
     RainfallModel,
+    RainfallSource,
     RiverModel,
+    RiverSource,
+    SurgeModel,
+    SurgeSource,
+    SyntheticModel,
     Template,
     TideModel,
+    TideSource,
     TimeModel,
     Timing,
+    TranslationModel,
     WindModel,
+    WindSource,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -29,6 +45,9 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
     UnitfulLength,
     UnitfulVelocity,
+    UnitTypesDirection,
+    UnitTypesLength,
+    UnitTypesVelocity,
 )
 
 
@@ -545,3 +564,173 @@ class Test_ReadCSV:
         assert isinstance(df.index, pd.DatetimeIndex)
 
         pd.testing.assert_frame_equal(df, test_df)
+
+
+@pytest.fixture
+def test_event_model_no_name_template_timing(test_data_dir):
+    return {
+        "description": "test description",
+        "mode": Mode.single_event,
+        "water_level_offset": UnitfulLength(value=0.0, units=UnitTypesLength.meters),
+        "time": TimeModel(),
+        "tide": TideModel(
+            source=TideSource.timeseries,
+            timeseries_file=str(test_data_dir / "tide.csv"),
+        ),
+        "surge": SurgeModel(source=SurgeSource.none),
+        "wind": WindModel(
+            source=WindSource.constant,
+            constant_speed=UnitfulVelocity(value=0.0, units=UnitTypesVelocity.meters),
+            constant_direction=UnitfulDirection(
+                value=0.0, units=UnitTypesDirection.degrees
+            ),
+        ),
+        "rainfall": RainfallModel(
+            source=RainfallSource.timeseries,
+            timeseries_file=str(test_data_dir / "rainfall.csv"),
+        ),
+        "river": [
+            RiverModel(
+                source=RiverSource.timeseries,
+                timeseries_file=str(test_data_dir / "river.csv"),
+            )
+        ],
+    }
+
+
+@pytest.fixture
+def test_synthetic_event(test_event_model_no_name_template_timing):
+    test_event_model_no_name_template_timing.update(
+        name="test_synthetic",
+        template=Template.Synthetic,
+        timing=Timing.idealized,
+        time=TimeModel(
+            duration_before_t0=24,
+            duration_after_t0=24,
+        ),
+    )
+    data = SyntheticModel(**test_event_model_no_name_template_timing)
+    return Synthetic.load_dict(data)
+
+
+@pytest.fixture
+def test_nearshore_event(test_event_model_no_name_template_timing):
+    test_event_model_no_name_template_timing.update(
+        name="test_historical_nearshore",
+        template=Template.Historical_nearshore,
+        timing=Timing.historical,
+    )
+    data = HistoricalNearshoreModel(**test_event_model_no_name_template_timing)
+    return HistoricalNearshore.load_dict(data)
+
+
+@pytest.fixture
+def test_offshore_event(test_event_model_no_name_template_timing):
+    test_event_model_no_name_template_timing.update(
+        name="test_historical_offshore",
+        template=Template.Historical_offshore,
+        timing=Timing.historical,
+    )
+    data = HistoricalOffshoreModel(**test_event_model_no_name_template_timing)
+    return HistoricalOffshore.load_dict(data)
+
+
+@pytest.fixture
+def test_hurricane_event(test_data_dir, test_event_model_no_name_template_timing):
+    test_event_model_no_name_template_timing.update(
+        name="test_historical_hurricane",
+        template=Template.Hurricane,
+        timing=Timing.historical,
+        track_name="BONNIE",
+        hurricane_translation=TranslationModel(),
+        tide=TideModel(source=TideSource.model),
+        surge=SurgeModel(source=SurgeSource.none),
+        wind=WindModel(source=WindSource.track),  # or map?
+        rainfall=RainfallModel(source=RainfallSource.track),  # or map?
+        river=[
+            RiverModel(
+                source=RiverSource.timeseries,
+                timeseries_file=str(test_data_dir / "river.csv"),
+            )
+        ],
+    )
+    data = HistoricalHurricaneModel(**test_event_model_no_name_template_timing)
+    return HistoricalHurricane.load_dict(data)
+
+
+def test_synthetic_save_additional_raises_NotImplementedError(
+    tmp_path, test_synthetic_event
+):
+    toml_path = tmp_path / "test_synthetic.toml"
+    with pytest.raises(
+        NotImplementedError,
+        match="Additional files are not yet implemented for SyntheticEvent objects.",
+    ):
+        test_synthetic_event.save(toml_path, additional_files=True)
+
+
+def validate_event_saves_tide_rainfall_river_csv_files(output_dir, event_obj):
+    # Arrange
+    toml_path = output_dir / event_obj.attrs.name / f"{event_obj.attrs.name}.toml"
+    expected_tide_path = (
+        toml_path.parent / Path(event_obj.attrs.tide.timeseries_file).name
+    )
+    expected_rainfall_path = (
+        toml_path.parent / Path(event_obj.attrs.rainfall.timeseries_file).name
+    )
+    expected_river_path = (
+        toml_path.parent / Path(event_obj.attrs.river[0].timeseries_file).name
+    )
+    toml_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Act
+    event_obj.save(toml_path, additional_files=True)
+
+    # Assert
+    assert toml_path.exists()
+    assert expected_tide_path.exists()
+    assert expected_rainfall_path.exists()
+
+    with open(toml_path, "rb") as f:
+        data = tomli.load(f)
+
+    assert data["tide"]["timeseries_file"] == str(expected_tide_path)
+    assert data["rainfall"]["timeseries_file"] == str(expected_rainfall_path)
+    assert data["river"][0]["timeseries_file"] == str(expected_river_path)
+
+
+def test_nearshore_save_additional_saves_all_csv_files(tmp_path, test_nearshore_event):
+    validate_event_saves_tide_rainfall_river_csv_files(
+        output_dir=tmp_path,
+        event_obj=test_nearshore_event,
+    )
+
+
+def test_offshore_save_additional_saves_all_csv_files(tmp_path, test_offshore_event):
+    validate_event_saves_tide_rainfall_river_csv_files(
+        output_dir=tmp_path,
+        event_obj=test_offshore_event,
+    )
+
+
+def test_hurricane_save_additional_saves_spw_file(tmp_path, test_hurricane_event):
+    # Arrange
+    toml_path = (
+        tmp_path
+        / test_hurricane_event.attrs.name
+        / f"{test_hurricane_event.attrs.name}.toml"
+    )
+    expected_spw_path = toml_path.parent / "hurricane.spw"
+    toml_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Act
+    test_hurricane_event.save(toml_path, additional_files=True)
+
+    # Assert
+    assert toml_path.exists()
+    assert expected_spw_path.exists()
+
+    with open(toml_path, "rb") as f:
+        _ = tomli.load(f)
+
+    assert expected_spw_path.exists()

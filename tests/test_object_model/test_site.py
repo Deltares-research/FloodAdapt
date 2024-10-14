@@ -286,3 +286,18 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
             test_site_multiple_rivers.attrs.river[i].mean_discharge.value
             == test_site_1_river.attrs.river[i].mean_discharge.value
         )
+
+
+def test_save_additional_files_raise_NotImplementedError(test_sites, tmp_path):
+    test_site = test_sites["site.toml"]
+    output_path = tmp_path / "test_site.toml"
+
+    if not output_path.parent.exists():
+        output_path.parent.mkdir()
+    assert not output_path.exists()
+
+    with pytest.raises(NotImplementedError) as exception_info:
+        test_site.save(output_path, additional_files=True)
+        assert "Saving additional files is not implemented for Site objects" in str(
+            exception_info.value
+        )

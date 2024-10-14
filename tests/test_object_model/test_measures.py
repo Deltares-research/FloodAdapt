@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import geopandas as gpd
+import pytest
 import tomli
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
@@ -12,15 +13,24 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
+    BuyoutModel,
+    ElevateModel,
+    FloodProofModel,
+    GreenInfrastructureModel,
     HazardType,
     ImpactType,
+    PumpModel,
     SelectionType,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
+    UnitfulHeight,
     UnitfulLength,
     UnitfulLengthRefValue,
     UnitfulVolume,
+    UnitTypesLength,
+    UnitTypesVolume,
+    VerticalReference,
 )
 
 
@@ -39,7 +49,7 @@ def test_floodwall_read(test_db):
     assert floodwall.attrs.description == "seawall"
     assert floodwall.attrs.type == "floodwall"
     assert floodwall.attrs.elevation.value == 12
-    assert floodwall.attrs.elevation.units == "feet"
+    assert floodwall.attrs.elevation.units == UnitTypesLength.feet
 
 
 def test_elevate_aggr_area_read(test_db):
@@ -64,7 +74,7 @@ def test_elevate_aggr_area_read(test_db):
     assert elevate.attrs.description == "raise_property_aggregation_area"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
-    assert elevate.attrs.elevation.units == "feet"
+    assert elevate.attrs.elevation.units == UnitTypesLength.feet
     assert elevate.attrs.elevation.type == "floodmap"
     assert elevate.attrs.selection_type == "aggregation_area"
     assert elevate.attrs.aggregation_area_type == "aggr_lvl_2"
@@ -77,7 +87,7 @@ def test_elevate_aggr_area_read_fail(test_db):
         "name": "test1",
         "description": "test1",
         "type": "elevate_properties",
-        "elevation": {"value": 1, "units": "feet", "type": "floodmap"},
+        "elevation": {"value": 1, "units": UnitTypesLength.feet, "type": "floodmap"},
         "selection_type": "aggregation_area",
         # "aggregation_area_name": "test_area",
         "property_type": "RES",
@@ -137,7 +147,7 @@ def test_elevate_polygon_read(test_db):
     assert elevate.attrs.description == "raise_property_polygon"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
-    assert elevate.attrs.elevation.units == "feet"
+    assert elevate.attrs.elevation.units == UnitTypesLength.feet
     assert elevate.attrs.elevation.type == "floodmap"
     assert elevate.attrs.selection_type == "polygon"
     assert elevate.attrs.polygon_file == "raise_property_polygon.geojson"
@@ -216,3 +226,168 @@ def test_green_infra_read(test_db):
     #         / "green_infra"
     #         / "green_infra.toml"
     #     )
+
+
+@pytest.fixture
+def test_pump(test_db, test_data_dir):
+    data = PumpModel(
+        name="test_pump",
+        description="test_pump",
+        type=HazardType.pump,
+        discharge=UnitfulDischarge(value=100, units="cfs"),
+        selection_type=SelectionType.polygon,
+        polygon_file=str(test_data_dir / "polyline.geojson"),
+    )
+    return Pump.load_dict(
+        data=data,
+        database_input_path=test_db.input_path,
+    )
+
+
+@pytest.fixture
+def test_elevate(test_db, test_data_dir):
+    data = ElevateModel(
+        name="test_elevate",
+        description="test_elevate",
+        type=ImpactType.elevate_properties,
+        elevation=UnitfulLengthRefValue(
+            value=1, units=UnitTypesLength.feet, type="floodmap"
+        ),
+        selection_type=SelectionType.polygon,
+        property_type="RES",
+        polygon_file=str(test_data_dir / "polygon.geojson"),
+    )
+    return Elevate.load_dict(
+        data=data,
+        database_input_path=test_db.input_path,
+    )
+
+
+@pytest.fixture
+def test_buyout(test_db, test_data_dir):
+    data = BuyoutModel(
+        name="test_buyout",
+        description="test_buyout",
+        type=ImpactType.buyout_properties,
+        selection_type=SelectionType.polygon,
+        property_type="RES",
+        polygon_file=str(test_data_dir / "polygon.geojson"),
+    )
+
+    return Buyout.load_dict(
+        data=data,
+        database_input_path=test_db.input_path,
+    )
+
+
+@pytest.fixture
+def test_floodproof(test_db, test_data_dir):
+    data = FloodProofModel(
+        name="test_floodproof",
+        description="test_floodproof",
+        type=ImpactType.floodproof_properties,
+        selection_type=SelectionType.polygon,
+        elevation=UnitfulLengthRefValue(
+            value=1, units=UnitTypesLength.feet, type=VerticalReference.floodmap
+        ),
+        property_type="RES",
+        polygon_file=str(test_data_dir / "polygon.geojson"),
+    )
+
+    return FloodProof.load_dict(
+        data=data,
+        database_input_path=test_db.input_path,
+    )
+
+
+@pytest.fixture
+def test_green_infra(test_db, test_data_dir):
+    data = GreenInfrastructureModel(
+        name="test_green_infra",
+        description="test_green_infra",
+        type=HazardType.greening,
+        volume=UnitfulVolume(value=100, units=UnitTypesVolume.cf),
+        height=UnitfulHeight(value=1, units=UnitTypesLength.feet),
+        selection_type=SelectionType.polygon,
+        polygon_file=str(test_data_dir / "polygon.geojson"),
+        percent_area=10,
+    )
+
+    return GreenInfrastructure.load_dict(
+        data=data,
+        database_input_path=test_db.input_path,
+    )
+
+
+def test_pump_save_additional_files_save_geojson(test_pump, tmp_path):
+    # Arrange
+    output_path = tmp_path / "test_pump.toml"
+    expected_geojson = output_path.parent / Path(test_pump.attrs.polygon_file).name
+
+    # Act
+    test_pump.save(output_path, additional_files=True)
+
+    # Assert
+    assert output_path.exists()
+    assert expected_geojson.exists()
+    assert test_pump.attrs.polygon_file == str(expected_geojson)
+
+
+def test_elevate_save_additional_files_save_geojson(test_elevate, tmp_path):
+    # Arrange
+    output_path = tmp_path / "test_elevate.toml"
+    expected_geojson = output_path.parent / Path(test_elevate.attrs.polygon_file).name
+
+    # Act
+    test_elevate.save(output_path, additional_files=True)
+
+    # Assert
+    assert output_path.exists()
+    assert expected_geojson.exists()
+    assert test_elevate.attrs.polygon_file == str(expected_geojson)
+
+
+def test_buyout_save_additional_files_save_geojson(test_buyout, tmp_path):
+    # Arrange
+    output_path = tmp_path / "test_buyout.toml"
+    expected_geojson = output_path.parent / Path(test_buyout.attrs.polygon_file).name
+
+    # Act
+    test_buyout.save(output_path, additional_files=True)
+
+    # Assert
+    assert output_path.exists()
+    assert expected_geojson.exists()
+    assert test_buyout.attrs.polygon_file == str(expected_geojson)
+
+
+def test_floodproof_save_additional_files_save_geojson(test_floodproof, tmp_path):
+    # Arrange
+    output_path = tmp_path / "test_floodproof.toml"
+    expected_geojson = (
+        output_path.parent / Path(test_floodproof.attrs.polygon_file).name
+    )
+
+    # Act
+    test_floodproof.save(output_path, additional_files=True)
+
+    # Assert
+    assert output_path.exists()
+    assert expected_geojson.exists()
+    assert test_floodproof.attrs.polygon_file == str(expected_geojson)
+
+
+def test_green_infra_save_additional_files_save_geojson(test_green_infra, tmp_path):
+    # Arrange
+    output_path = tmp_path / "test_greeninfra.toml"
+    expected_geojson = (
+        output_path.parent / Path(test_green_infra.attrs.polygon_file).name
+    )
+
+    # Act
+    test_green_infra.save(output_path, additional_files=True)
+
+    # Assert
+    assert output_path.exists()
+    assert expected_geojson.exists()
+    assert test_green_infra.attrs.polygon_file == str(expected_geojson)

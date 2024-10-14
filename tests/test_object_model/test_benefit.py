@@ -89,6 +89,22 @@ def test_save_fromTestDict_saveToml(test_db):
     assert output_path.exists()
 
 
+def test_save_additional_files_raise_NotImplementedError(test_db, tmp_path):
+    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
+    output_path = test_db.input_path.joinpath(
+        "benefits", "test_benefit", "test_benefit.toml"
+    )
+    if not output_path.parent.exists():
+        output_path.parent.mkdir()
+    assert not output_path.exists()
+
+    with pytest.raises(NotImplementedError) as exception_info:
+        benefit.save(output_path, additional_files=True)
+        assert "Saving additional files is not implemented for Benefit objects" in str(
+            exception_info.value
+        )
+
+
 # Tests for when the scenarios needed for the benefit analysis are not there yet
 class TestBenefitScenariosNotCreated:
     # Fixture to create a Benefit object
