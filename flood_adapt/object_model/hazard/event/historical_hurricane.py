@@ -96,12 +96,17 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
                 self.attrs.rainfall.source == "track"
                 or self.attrs.rainfall.source == "map"
             ):
+                from flood_adapt.dbs_controller import Database
+
                 # @gundula is this the correct way to handle this?
-                # This creates the spw file when saving instead of when running a scenario
-                # We should then also only reference it in the sfincs adapter and only copy it over when needed
-                self.make_spw_file(
-                    event_path=Path(filepath).parent, model_dir=Path(filepath).parent
+                # Should we save .cyc AND/ OR .spw files?
+                ind = (
+                    Database()
+                    .cyclone_track_database.list_names()
+                    .index(self.attrs.track_name)
                 )
+                track = Database().cyclone_track_database.get_track(ind)
+                self.write_cyc(Path(filepath).parent, track)
 
         # save toml file
         with open(filepath, "wb") as f:
@@ -131,6 +136,12 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         spw_file = model_dir.joinpath(filename)
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
+
+    def write_cyc(self, output_dir: Path, track: TropicalCyclone):
+        cyc_file = output_dir / f"{self.attrs.track_name}.cyc"
+
+        # cht_cyclone function to write TropicalCyclone as .cyc file
+        track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
     def translate_tc_track(self, tc: TropicalCyclone):
         from flood_adapt.dbs_controller import Database

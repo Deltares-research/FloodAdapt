@@ -713,14 +713,18 @@ def test_offshore_save_additional_saves_all_csv_files(tmp_path, test_offshore_ev
     )
 
 
-def test_hurricane_save_additional_saves_spw_file(tmp_path, test_hurricane_event):
+def test_hurricane_save_additional_saves_cyc_file(
+    test_db, tmp_path, test_hurricane_event
+):
     # Arrange
     toml_path = (
         tmp_path
         / test_hurricane_event.attrs.name
         / f"{test_hurricane_event.attrs.name}.toml"
     )
-    expected_spw_path = toml_path.parent / "hurricane.spw"
+    expected_cyc_path = (
+        toml_path.parent / f"{test_hurricane_event.attrs.track_name}.cyc"
+    )
     toml_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Act
@@ -728,9 +732,9 @@ def test_hurricane_save_additional_saves_spw_file(tmp_path, test_hurricane_event
 
     # Assert
     assert toml_path.exists()
-    assert expected_spw_path.exists()
+    assert expected_cyc_path.exists()
 
     with open(toml_path, "rb") as f:
-        _ = tomli.load(f)
+        data = tomli.load(f)
 
-    assert expected_spw_path.exists()
+    assert data["track_name"] == str(expected_cyc_path.stem)
