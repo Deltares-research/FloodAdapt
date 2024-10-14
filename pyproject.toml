@@ -88,9 +88,10 @@ include = [
 
 [tool.setuptools.package-data]
 flood_adapt = [
+    "database_builder/**",
     "py.typed",
-    # "system/**", uncomment when other os are supported as well
 ]
+    # "system/**", uncomment when other os are supported as well
 
 [tool.ruff]
 line-length = 88
