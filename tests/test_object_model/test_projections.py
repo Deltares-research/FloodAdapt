@@ -56,21 +56,18 @@ def test_dict():
 
 
 @pytest.fixture
-def dummy_projection():
+def test_projection(test_data_dir):
     attrs = ProjectionModel(
         name="test_projection",
         description="test description",
         physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(),
+        socio_economic_change=SocioEconomicChangeModel(
+            new_development_shapefile=str(
+                test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
+            )
+        ),
     )
     return Projection.load_dict(attrs)
-
-
-@pytest.fixture
-def dummy_shapefile(tmp_path, test_data_dir):
-    shpfile = test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
-    assert shpfile.exists()
-    return shpfile
 
 
 def test_projection_load_dict(test_dict):
@@ -182,17 +179,19 @@ def test_projection_only_slr(test_projections):
 
 
 def test_save_with_new_development_areas_also_saves_shapefile(
-    dummy_projection, dummy_shapefile, tmp_path
+    test_projection, tmp_path
 ):
     # Arrange
-    dummy_projection.attrs.socio_economic_change.new_development_shapefile = str(
-        dummy_shapefile
-    )
     toml_path = tmp_path / "test_file.toml"
-    expected_new_path = toml_path.parent / dummy_shapefile.name
+    expected_new_path = (
+        toml_path.parent
+        / Path(
+            test_projection.attrs.socio_economic_change.new_development_shapefile
+        ).name
+    )
 
     # Act
-    dummy_projection.save(toml_path, additional_files=True)
+    test_projection.save(toml_path, additional_files=True)
 
     # Assert
     assert toml_path.exists()
@@ -206,14 +205,14 @@ def test_save_with_new_development_areas_also_saves_shapefile(
 
 
 def test_save_with_new_development_areas_isNone_raises_ValueError(
-    dummy_projection, tmp_path
+    test_projection, tmp_path
 ):
     # Arrange
-    dummy_projection.attrs.socio_economic_change.new_development_shapefile = None
+    test_projection.attrs.socio_economic_change.new_development_shapefile = None
     toml_path = tmp_path / "test_file.toml"
 
     # Act Assert
     with pytest.raises(
         ValueError, match="The shapefile for the new development is not set."
     ):
-        dummy_projection.save(toml_path, additional_files=True)
+        test_projection.save(toml_path, additional_files=True)

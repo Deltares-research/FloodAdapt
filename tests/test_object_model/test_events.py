@@ -690,6 +690,7 @@ def validate_event_saves_tide_rainfall_river_csv_files(output_dir, event_obj):
     assert toml_path.exists()
     assert expected_tide_path.exists()
     assert expected_rainfall_path.exists()
+    assert expected_river_path.exists()
 
     with open(toml_path, "rb") as f:
         data = tomli.load(f)
