@@ -12,6 +12,7 @@ from flood_adapt.object_model.interface.measures import (
     IPump,
     PumpModel,
 )
+from flood_adapt.object_model.utils import import_external_file
 
 
 class Pump(HazardMeasure, IPump):
@@ -42,6 +43,12 @@ class Pump(HazardMeasure, IPump):
         return obj
 
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save Floodwall to a toml file."""
+        """Save Pump to a toml file."""
+        if self.attrs.polygon_file:
+            new_path = import_external_file(
+                self.attrs.polygon_file, Path(filepath).parent
+            )
+            self.attrs.polygon_file = str(new_path)
+
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

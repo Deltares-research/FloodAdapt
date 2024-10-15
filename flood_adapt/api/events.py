@@ -99,6 +99,10 @@ def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurri
     return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
 
 
+def save_event(event: IEvent) -> None:
+    Database().events.save(event)
+
+
 def save_event_toml(event: IEvent) -> None:
     Database().events.save(event)
 

@@ -60,7 +60,11 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
+    def save(
+        self,
+        object_model: ObjectModel,
+        overwrite: bool = False,
+    ):
         """Save an object in the database.
 
         This only saves the toml file. If the object also contains a geojson file, this should be saved separately.

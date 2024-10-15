@@ -114,8 +114,14 @@ class DbsTemplate(AbstractDatabaseElement):
                 continue
             shutil.copy(file, dest / file.name)
 
-    def save(self, object_model: ObjectModel, overwrite: bool = False):
-        """Save an object in the database. This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
+    def save(
+        self,
+        object_model: ObjectModel,
+        overwrite: bool = False,
+    ):
+        """Save an object in the database and all associated files.
+
+        This saves the toml file and any additional files attached to the object.
 
         Parameters
         ----------
@@ -145,8 +151,9 @@ class DbsTemplate(AbstractDatabaseElement):
         if not (self._path / object_model.attrs.name).exists():
             (self._path / object_model.attrs.name).mkdir()
 
+        # Save the object
         object_model.save(
-            self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
+            self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml",
         )
 
     def edit(self, object_model: ObjectModel):

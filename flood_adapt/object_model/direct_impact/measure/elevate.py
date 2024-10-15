@@ -9,6 +9,7 @@ from flood_adapt.object_model.direct_impact.measure.impact_measure import (
     ImpactMeasure,
 )
 from flood_adapt.object_model.interface.measures import ElevateModel, IElevate
+from flood_adapt.object_model.utils import import_external_file
 
 
 class Elevate(ImpactMeasure, IElevate):
@@ -40,5 +41,11 @@ class Elevate(ImpactMeasure, IElevate):
 
     def save(self, filepath: Union[str, os.PathLike]):
         """Save Elevate to a toml file."""
+        if self.attrs.polygon_file:
+            new_path = import_external_file(
+                self.attrs.polygon_file, Path(filepath).parent
+            )
+            self.attrs.polygon_file = str(new_path)
+
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

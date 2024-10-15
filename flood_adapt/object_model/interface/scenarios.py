@@ -33,7 +33,7 @@ class IScenario(ABC):
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save Scenario attributes to a toml file."""
+        """Save Scenario attributes to a toml file, and optionally additional files."""
         ...
 
     @abstractmethod

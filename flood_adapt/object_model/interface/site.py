@@ -355,5 +355,5 @@ class ISite(ABC):
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save Site attributes to a toml file."""
+        """Save site attributes to a toml file, and optionally additional files."""
         ...

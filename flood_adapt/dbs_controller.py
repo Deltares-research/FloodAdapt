@@ -7,6 +7,7 @@ from typing import Any, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
@@ -56,6 +57,7 @@ class Database(IDatabase):
     _site: ISite
 
     static_sfincs_model: SfincsAdapter
+    cyclone_track_database: CycloneTrackDatabase
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -124,6 +126,15 @@ class Database(IDatabase):
         self.static_sfincs_model = SfincsAdapter(
             model_root=sfincs_path, site=self._site
         )
+
+        # Get the cyclone track database
+        if self._site.attrs.cyclone_track_database:
+            self.cyclone_track_database = CycloneTrackDatabase(
+                name="ibtracs",
+                file_name=self.static_path
+                / "cyclone_track_database"
+                / self._site.attrs.cyclone_track_database.file,
+            )
 
         # Initialize the different database objects
         self._static = DbsStatic(self)

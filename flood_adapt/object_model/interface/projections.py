@@ -55,4 +55,5 @@ class IProjection(ABC):
 
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
-        """Save Projection attributes to a toml file."""
+        """Save Projection attributes to a toml file, and optionally additional files."""
+        ...
