@@ -38,14 +38,14 @@ publish-python = { cmd = "twine upload dist/*", depends_on = ["build-python-whee
 github-release = "python utils/github-release.py"
 
 [feature.docs.tasks]
-quartodoc-build = { cmd = "quartodoc build && rm objects.json", cwd = "docs", inputs = ["docs/_quarto.yml", "flood_adapt/api"], outputs = ["api_reference"] }
+quartodoc-build = { cmd = "quartodoc build && rm objects.json", cwd = "docs", inputs = ["docs/_quarto.yml"], outputs = ["UserDocs"] }
 quarto-preview = { cmd = "quarto preview docs", depends_on = [ "quartodoc-build"] }
 quarto-check = { cmd = "quarto check all", depends_on = ["quartodoc-build"] }
 quarto-render = { cmd = "quarto render docs --to html --execute", depends_on = ["quartodoc-build"] }
 # sphinx-build = { cmd = "" }
 # sphinx-preview = { cmd = "quarto preview docs", depends_on = [ "sphinx-build"] }
 
-docs = { depends_on = ["quarto-preview", "sphinx-preview"] }
+docs = { depends_on = ["quarto-preview"] } # , "sphinx-preview"
 
 [dependencies]
 python = ">3.8"
