@@ -54,7 +54,7 @@ class Synthetic(Event, ISynthetic):
         obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save event toml.
 
         Parameters
@@ -62,10 +62,6 @@ class Synthetic(Event, ISynthetic):
         file : Path
             path to the location where file will be saved
         """
-        if additional_files:
-            raise NotImplementedError(
-                "Additional files are not yet implemented for SyntheticEvent objects."
-            )
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 

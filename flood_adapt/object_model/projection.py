@@ -40,11 +40,9 @@ class Projection(IProjection):
         obj.attrs = ProjectionModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
-        """Save Projection to a toml file."""
-        if additional_files:
-            if self.attrs.socio_economic_change.new_development_shapefile is None:
-                raise ValueError("The shapefile for the new development is not set.")
+    def save(self, filepath: Union[str, os.PathLike]):
+        """Save ProjectionModel to a toml file, save any external files and update the paths in the object."""
+        if self.attrs.socio_economic_change.new_development_shapefile:
             new_path = import_external_file(
                 self.attrs.socio_economic_change.new_development_shapefile,
                 Path(filepath).parent,

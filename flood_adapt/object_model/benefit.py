@@ -597,20 +597,13 @@ class Benefit(IBenefit):
         obj._init()
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save the Benefit attributes as a toml file.
 
         Parameters
         ----------
         filepath : Union[str, os.PathLike]
             path for saving the toml file
-        additional_files : bool, optional
-            Save additional input files in the database instead of referencing them from where the user imported them.
         """
-        if additional_files:
-            raise NotImplementedError(
-                f"Saving additional files is not yet implemented for {self.__class__.__name__} objects."
-            )
-
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

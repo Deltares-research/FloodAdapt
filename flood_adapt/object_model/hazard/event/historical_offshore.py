@@ -38,7 +38,7 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         obj.attrs = HistoricalOffshoreModel.model_validate(data)
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save event toml.
 
         Parameters
@@ -46,47 +46,42 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
         file : Path
             path to the location where file will be saved
         """
-        if additional_files:
-            if self.attrs.rainfall.source == "timeseries":
-                if self.attrs.rainfall.timeseries_file is None:
+        if self.attrs.rainfall.source == "timeseries":
+            if self.attrs.rainfall.timeseries_file is None:
+                raise ValueError(
+                    "The timeseries file for the rainfall source is not set."
+                )
+            new_path = import_external_file(
+                self.attrs.rainfall.timeseries_file, Path(filepath).parent
+            )
+            self.attrs.rainfall.timeseries_file = str(new_path)
+
+        if self.attrs.wind.source == "timeseries":
+            if self.attrs.wind.timeseries_file is None:
+                raise ValueError("The timeseries file for the wind source is not set.")
+            new_path = import_external_file(
+                self.attrs.wind.timeseries_file, Path(filepath).parent
+            )
+            self.attrs.wind.timeseries_file = str(new_path)
+
+        for river in self.attrs.river:
+            if river.source == "timeseries":
+                if river.timeseries_file is None:
                     raise ValueError(
-                        "The timeseries file for the rainfall source is not set."
+                        "The timeseries file for the river source is not set."
                     )
                 new_path = import_external_file(
-                    self.attrs.rainfall.timeseries_file, Path(filepath).parent
+                    river.timeseries_file, Path(filepath).parent
                 )
-                self.attrs.rainfall.timeseries_file = str(new_path)
+                river.timeseries_file = str(new_path)
 
-            if self.attrs.wind.source == "timeseries":
-                if self.attrs.wind.timeseries_file is None:
-                    raise ValueError(
-                        "The timeseries file for the wind source is not set."
-                    )
-                new_path = import_external_file(
-                    self.attrs.wind.timeseries_file, Path(filepath).parent
-                )
-                self.attrs.wind.timeseries_file = str(new_path)
-
-            for river in self.attrs.river:
-                if river.source == "timeseries":
-                    if river.timeseries_file is None:
-                        raise ValueError(
-                            "The timeseries file for the river source is not set."
-                        )
-                    new_path = import_external_file(
-                        river.timeseries_file, Path(filepath).parent
-                    )
-                    river.timeseries_file = str(new_path)
-
-            if self.attrs.tide.source == "timeseries":
-                if self.attrs.tide.timeseries_file is None:
-                    raise ValueError(
-                        "The timeseries file for the tide source is not set."
-                    )
-                new_path = import_external_file(
-                    self.attrs.tide.timeseries_file, Path(filepath).parent
-                )
-                self.attrs.tide.timeseries_file = str(new_path)
+        if self.attrs.tide.source == "timeseries":
+            if self.attrs.tide.timeseries_file is None:
+                raise ValueError("The timeseries file for the tide source is not set.")
+            new_path = import_external_file(
+                self.attrs.tide.timeseries_file, Path(filepath).parent
+            )
+            self.attrs.tide.timeseries_file = str(new_path)
 
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)

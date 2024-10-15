@@ -18,8 +18,8 @@ def create_projection(attrs: dict[str, Any]) -> IProjection:
     return Projection.load_dict(attrs)
 
 
-def save_projection(projection: IProjection, additional_files: bool = False) -> None:
-    Database().projections.save(projection, additional_files=additional_files)
+def save_projection(projection: IProjection) -> None:
+    Database().projections.save(projection)
 
 
 def edit_projection(projection: IProjection) -> None:

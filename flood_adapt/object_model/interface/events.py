@@ -222,7 +222,7 @@ class IEvent(ABC):
         ...
 
     @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save Event attributes to a toml file, and optionally additional files."""
         ...
 

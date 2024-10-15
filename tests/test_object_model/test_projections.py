@@ -30,7 +30,7 @@ def test_projections(test_db):
 
 
 @pytest.fixture()
-def test_dict():
+def test_dict(test_data_dir):
     config_values = {
         "name": "new_projection",
         "description": "new_unsaved_projection",
@@ -49,7 +49,7 @@ def test_dict():
                 "units": "feet",
                 "type": "floodmap",
             },
-            "new_development_shapefile": "new_areas.geojson",
+            "new_development_shapefile": str(Path(test_data_dir, "new_areas.geojson")),
         },
     }
     yield config_values
@@ -191,7 +191,7 @@ def test_save_with_new_development_areas_also_saves_shapefile(
     )
 
     # Act
-    test_projection.save(toml_path, additional_files=True)
+    test_projection.save(toml_path)
 
     # Assert
     assert toml_path.exists()
@@ -202,17 +202,3 @@ def test_save_with_new_development_areas_also_saves_shapefile(
     assert data["socio_economic_change"]["new_development_shapefile"] == str(
         expected_new_path
     )
-
-
-def test_save_with_new_development_areas_isNone_raises_ValueError(
-    test_projection, tmp_path
-):
-    # Arrange
-    test_projection.attrs.socio_economic_change.new_development_shapefile = None
-    toml_path = tmp_path / "test_file.toml"
-
-    # Act Assert
-    with pytest.raises(
-        ValueError, match="The shapefile for the new development is not set."
-    ):
-        test_projection.save(toml_path, additional_files=True)

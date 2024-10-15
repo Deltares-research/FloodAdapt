@@ -83,7 +83,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         # return object
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save event toml.
 
         Parameters
@@ -91,22 +91,18 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         file : Path
             path to the location where file will be saved
         """
-        if additional_files:
-            if (
-                self.attrs.rainfall.source == "track"
-                or self.attrs.rainfall.source == "map"
-            ):
-                from flood_adapt.dbs_controller import Database
+        if self.attrs.rainfall.source == "track" or self.attrs.rainfall.source == "map":
+            from flood_adapt.dbs_controller import Database
 
-                # @gundula is this the correct way to handle this?
-                # Should we save .cyc AND/ OR .spw files?
-                ind = (
-                    Database()
-                    .cyclone_track_database.list_names()
-                    .index(self.attrs.track_name)
-                )
-                track = Database().cyclone_track_database.get_track(ind)
-                self.write_cyc(Path(filepath).parent, track)
+            # @gundula is this the correct way to handle this?
+            # Should we save .cyc AND/ OR .spw files?
+            ind = (
+                Database()
+                .cyclone_track_database.list_names()
+                .index(self.attrs.track_name)
+            )
+            track = Database().cyclone_track_database.get_track(ind)
+            self.write_cyc(Path(filepath).parent, track)
 
         # save toml file
         with open(filepath, "wb") as f:

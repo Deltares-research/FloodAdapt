@@ -64,7 +64,6 @@ class AbstractDatabaseElement(ABC):
         self,
         object_model: ObjectModel,
         overwrite: bool = False,
-        additional_files: bool = False,
     ):
         """Save an object in the database.
 
@@ -77,8 +76,6 @@ class AbstractDatabaseElement(ABC):
         overwrite : OverwriteMode, optional
             whether to overwrite the object if it already exists in the
             database, by default False
-        additional_files : bool, optional
-            whether to save additional files, such as geojson files, by default False
 
         Raises
         ------

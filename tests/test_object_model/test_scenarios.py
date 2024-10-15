@@ -61,17 +61,6 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
     )
 
 
-def test_save_additional_files_raises_error(test_db, test_scenarios):
-    test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
-    test_scenario.init_object_model()
-
-    with pytest.raises(
-        NotImplementedError,
-        match="Saving additional files is not yet implemented for Scenario objects.",
-    ):
-        test_scenario.save(test_db.output_path, additional_files=True)
-
-
 def test_hazard_load(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 

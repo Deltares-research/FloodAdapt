@@ -658,17 +658,6 @@ def test_hurricane_event(test_data_dir, test_event_model_no_name_template_timing
     return HistoricalHurricane.load_dict(data)
 
 
-def test_synthetic_save_additional_raises_NotImplementedError(
-    tmp_path, test_synthetic_event
-):
-    toml_path = tmp_path / "test_synthetic.toml"
-    with pytest.raises(
-        NotImplementedError,
-        match="Additional files are not yet implemented for SyntheticEvent objects.",
-    ):
-        test_synthetic_event.save(toml_path, additional_files=True)
-
-
 def validate_event_saves_tide_rainfall_river_csv_files(output_dir, event_obj):
     # Arrange
     toml_path = output_dir / event_obj.attrs.name / f"{event_obj.attrs.name}.toml"
@@ -684,7 +673,7 @@ def validate_event_saves_tide_rainfall_river_csv_files(output_dir, event_obj):
     toml_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Act
-    event_obj.save(toml_path, additional_files=True)
+    event_obj.save(toml_path)
 
     # Assert
     assert toml_path.exists()
@@ -729,7 +718,7 @@ def test_hurricane_save_additional_saves_cyc_file(
     toml_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Act
-    test_hurricane_event.save(toml_path, additional_files=True)
+    test_hurricane_event.save(toml_path)
 
     # Assert
     assert toml_path.exists()

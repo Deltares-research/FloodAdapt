@@ -47,7 +47,7 @@ class IBenefit(ABC):
         ...
 
     @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save Benefit attributes to a toml file, and optionally additional files."""
         ...
 

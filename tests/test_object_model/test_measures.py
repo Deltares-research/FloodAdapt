@@ -319,13 +319,13 @@ def test_green_infra(test_db, test_data_dir):
     )
 
 
-def test_pump_save_additional_files_save_geojson(test_pump, tmp_path):
+def test_pump_save_saves_geojson(test_pump, tmp_path):
     # Arrange
     output_path = tmp_path / "test_pump.toml"
     expected_geojson = output_path.parent / Path(test_pump.attrs.polygon_file).name
 
     # Act
-    test_pump.save(output_path, additional_files=True)
+    test_pump.save(output_path)
 
     # Assert
     assert output_path.exists()
@@ -333,13 +333,13 @@ def test_pump_save_additional_files_save_geojson(test_pump, tmp_path):
     assert test_pump.attrs.polygon_file == str(expected_geojson)
 
 
-def test_elevate_save_additional_files_save_geojson(test_elevate, tmp_path):
+def test_elevate_save_saves_geojson(test_elevate, tmp_path):
     # Arrange
     output_path = tmp_path / "test_elevate.toml"
     expected_geojson = output_path.parent / Path(test_elevate.attrs.polygon_file).name
 
     # Act
-    test_elevate.save(output_path, additional_files=True)
+    test_elevate.save(output_path)
 
     # Assert
     assert output_path.exists()
@@ -347,13 +347,13 @@ def test_elevate_save_additional_files_save_geojson(test_elevate, tmp_path):
     assert test_elevate.attrs.polygon_file == str(expected_geojson)
 
 
-def test_buyout_save_additional_files_save_geojson(test_buyout, tmp_path):
+def test_buyout_save_saves_geojson(test_buyout, tmp_path):
     # Arrange
     output_path = tmp_path / "test_buyout.toml"
     expected_geojson = output_path.parent / Path(test_buyout.attrs.polygon_file).name
 
     # Act
-    test_buyout.save(output_path, additional_files=True)
+    test_buyout.save(output_path)
 
     # Assert
     assert output_path.exists()
@@ -361,7 +361,7 @@ def test_buyout_save_additional_files_save_geojson(test_buyout, tmp_path):
     assert test_buyout.attrs.polygon_file == str(expected_geojson)
 
 
-def test_floodproof_save_additional_files_save_geojson(test_floodproof, tmp_path):
+def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
     # Arrange
     output_path = tmp_path / "test_floodproof.toml"
     expected_geojson = (
@@ -369,7 +369,7 @@ def test_floodproof_save_additional_files_save_geojson(test_floodproof, tmp_path
     )
 
     # Act
-    test_floodproof.save(output_path, additional_files=True)
+    test_floodproof.save(output_path)
 
     # Assert
     assert output_path.exists()
@@ -377,7 +377,7 @@ def test_floodproof_save_additional_files_save_geojson(test_floodproof, tmp_path
     assert test_floodproof.attrs.polygon_file == str(expected_geojson)
 
 
-def test_green_infra_save_additional_files_save_geojson(test_green_infra, tmp_path):
+def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
     # Arrange
     output_path = tmp_path / "test_greeninfra.toml"
     expected_geojson = (
@@ -385,7 +385,7 @@ def test_green_infra_save_additional_files_save_geojson(test_green_infra, tmp_pa
     )
 
     # Act
-    test_green_infra.save(output_path, additional_files=True)
+    test_green_infra.save(output_path)
 
     # Assert
     assert output_path.exists()

@@ -57,14 +57,6 @@ def test_strategy_no_measures(test_db):
     assert len(strategy.get_impact_strategy().measures) == 0
 
 
-def test_save_additional_files_raises_error(test_strategy, tmp_path):
-    with pytest.raises(
-        NotImplementedError,
-        match="Saving additional files is not yet implemented for Strategy objects.",
-    ):
-        test_strategy.save(tmp_path, additional_files=True)
-
-
 def test_elevate_comb_correct(test_db):
     test_toml = (
         test_db.input_path

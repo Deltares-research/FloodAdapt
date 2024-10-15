@@ -118,12 +118,10 @@ class DbsTemplate(AbstractDatabaseElement):
         self,
         object_model: ObjectModel,
         overwrite: bool = False,
-        additional_files: bool = False,
     ):
         """Save an object in the database and all associated files.
 
-        By default, this only saves the toml file.
-        Any additional files attached to the object can be saved by setting additional_files to True.
+        This saves the toml file and any additional files attached to the object.
 
         Parameters
         ----------
@@ -132,8 +130,6 @@ class DbsTemplate(AbstractDatabaseElement):
         overwrite : bool, optional
             whether to overwrite the object if it already exists in the
             database, by default False
-        additional_files : bool, optional
-            whether to save additional files attached to the object in the database, by default False
 
         Raises
         ------
@@ -158,7 +154,6 @@ class DbsTemplate(AbstractDatabaseElement):
         # Save the object
         object_model.save(
             self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml",
-            additional_files=additional_files,
         )
 
     def edit(self, object_model: ObjectModel):

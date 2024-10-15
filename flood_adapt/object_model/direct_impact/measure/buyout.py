@@ -39,13 +39,12 @@ class Buyout(ImpactMeasure, IBuyout):
         obj.database_input_path = database_input_path
         return obj
 
-    def save(self, filepath: Union[str, os.PathLike], additional_files: bool = False):
+    def save(self, filepath: Union[str, os.PathLike]):
         """Save Buyout to a toml file."""
-        if additional_files:
-            if self.attrs.polygon_file:
-                new_path = import_external_file(
-                    self.attrs.polygon_file, Path(filepath).parent
-                )
-                self.attrs.polygon_file = str(new_path)
+        if self.attrs.polygon_file:
+            new_path = import_external_file(
+                self.attrs.polygon_file, Path(filepath).parent
+            )
+            self.attrs.polygon_file = str(new_path)
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.dict(exclude_none=True), f)
