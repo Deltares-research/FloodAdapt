@@ -164,7 +164,7 @@ class Event:
             source=gfs_source,
             parameters=params,
             path=path,
-            x_range=[lon - 10, lon + 10],
+            x_range=[lon - np.min([10, np.abs(lon)-0.1]), lon + np.min([10, np.abs(lon)-0.1])], # fix for sites near the 0 degree longitude
             y_range=[lat - 10, lat + 10],
             crs=CRS.from_epsg(4326),
         )
