@@ -37,7 +37,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesVelocity,
 )
 from flood_adapt.object_model.utils import cd
-
+from flood_adapt.object_model.hazard.run_sfincs import execute_sfincs
 
 class Hazard:
     """All information related to the hazard of the scenario.
@@ -262,22 +262,13 @@ class Hazard:
                     self._logger.warning(f"{e_info}\nCould not delete {sim_path}.")
 
     def run_sfincs(self):
-        # Run new model(s)
         run_success = True
         for simulation_path in self.simulation_paths:
-            self._logger.info(
-                f"Running SFINCS model for {'-'.join(simulation_path.parts[-2:])}."
-            )
-            with cd(simulation_path):
-                sfincs_log = "sfincs.log"
-                with open(sfincs_log, "a") as log_handler:
-                    return_code = subprocess.run(
-                        Settings().sfincs_path.as_posix(), stdout=log_handler
-                    )
-                    if return_code.returncode != 0:
-                        run_success = False
-                        break
-
+            run_success = execute_sfincs(simulation_path)
+            if not run_success:
+                break
+        
+        # Cleanup
         if not run_success:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
@@ -294,13 +285,13 @@ class Hazard:
                             os.rmdir(subdir)
             raise RuntimeError("SFINCS model failed to run.")
 
-    def run_sfincs_offshore(self, ii: int):
+    def run_sfincs_offshore(self, ii: int) -> bool:
         # Run offshore model(s)
-        simulation_path = self.simulation_paths_offshore[ii]
-        with cd(simulation_path):
-            sfincs_log = "sfincs.log"
-            with open(sfincs_log, "w") as log_handler:
-                subprocess.run(Settings().sfincs_path, stdout=log_handler)
+        run_success = execute_sfincs(self.simulation_paths_offshore[ii])
+        if not run_success:
+            # TODO add cleanup here as well?
+            raise RuntimeError("SFINCS model failed to run.")
+
 
     def preprocess_sfincs(
         self,
