@@ -248,18 +248,8 @@ class DirectImpacts:
         del fa
 
     def run_fiat(self):
-        with cd(self.fiat_path):
-            with open(self.fiat_path.joinpath("fiat.log"), "a") as log_handler:
-                process = subprocess.run(
-                    f'"{Settings().fiat_path.as_posix()}" run settings.toml',
-                    stdout=log_handler,
-                    stderr=log_handler,
-                    env=environ.copy(),  # need environment variables from runtime hooks
-                    check=True,
-                    shell=True,
-                )
-
-        return process.returncode
+        success = execute_fiat()
+        return success
 
     def postprocess_fiat(self):
         # Postprocess the FIAT results
