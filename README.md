@@ -14,60 +14,22 @@ Recent developments of the decision-support system include (1) simplifying and p
 
 FloodAdapt is currently in an intensive development stage. Independent usage of the repository will be challenging prior to end-of-year 2024. FloodAdapt documentation will be expanded on throughout 2024.
 
-## Setting up conda
+## Setting up pixi
 
-In order to develop the FloodAdapt-GUI locally, please follow the following steps:
-
-- Download and install [mambaforge](https://mamba.readthedocs.io/en/latest/installation.html#fresh-install).
-
-- Depending on your company settings, you might also have to run the following in a Powershell terminal as administrator:
-
-```bash
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-```
+[Pixi](https://prefix.dev/docs/pixi/overview) is used to build the environment, manage dependencies and run tasks.
+Download and install [Pixi](https://prefix.dev/docs/pixi/overview)
 
 ## Installation
 
+Link to the latest [installer]() here.
+
 Before starting the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
 
-To run FloodAdapt, GeoPandas needs to be installed. GeoPandas depends for its spatial functionality on a large geospatial, open source stack of libraries (GEOS, GDAL, PROJ). These base C libraries can sometimes be a challenge to install.
-
-Pre built binaries are provided in `environment/geospatial-wheels`, and are installed using `environment/make_environment.py`. They can be manually installed into your environment using: `pip install <wheel_path>`. All other dependencies can be either found on pip (https://pypi.org/) or have pyproj.toml files to use during installation.
-
-## Creating the environment
-
-The environment for running and developing FloodAdapt can be made with the script: `make_environment.py`.
-
-Create a virtual environment named `ENV_NAME` with the core dependencies of FloodAdapt by running the following in a terminal:
-
 ```bash
-python make_environment.py -n ENV_NAME
-```
-
-Additional installation options that can be added to the end of the command:
-
-`-n ENV_NAME` or `--name ENV_NAME`
-- The name for the environment to be created. If it already exists, it will be removed and recreated from scratch.
-
-`-p PREFIX` or `--prefix PREFIX`
-- Creates the environment at `prefix/name` instead of the default conda location.
-
-`-d GROUP` or `--dev GROUP`
-- Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. GROUP: dev | build | all
-
-`-e` or `--editable`
-- Do an editable install of the FloodAdapt-GUI and FloodAdapt packages.
-
-## Updating the environment
-To update your current environment, run the following commands:
-```bash
-conda activate ENV_NAME
-
+git clone https://github.com/Deltares-research/FloodAdapt.git
 cd FloodAdapt
-
-python -m pip install -e . --upgrade
+pixi install
 ```
-Note:  Update all packages and their dependencies to the latest available versions allowed by requirements defined in pyproject.toml files. This also performs the update for the backend dependencies, but deactivates the editable installation and installs everything as a package.
 
 ## Configure database
 
@@ -97,26 +59,40 @@ Settings(
 
 ## Developing FloodAdapt
 
-Clone the repository
+Clone the repository and install the development environment
 
 ```bash
 git clone https://github.com/Deltares/FloodAdapt
+cd FloodAdapt
+pixi install dev
 ```
 
-Create a developer environment `example_name`, with an editable installation FloodAdapt core and the `dev` optional dependency group .
-
+## Useful pixi commands
 ```bash
-python make_environment.py -n example_name --editable --dev dev
+# Display all pixi commands and options
+pixi -h
+
+# Install a non default pixi environment defined in pixi.toml
+pixi install [ENV_NAME]
+
+# Update environment to the latest allowed by dependency specifications in pixi.toml
+pixi update
+
+# Add a package to the dependencies
+pixi add [PACKAGE]
+
+# List all available tasks
+pixi task list
+
+# Start a shell in the pixi environment
+pixi shell --environment [ENV_NAME]
+
+# Run a task in the default environment
+pixi run [TASK]
+
+# Run a task in the ENV_NAME environment
+pixi run --environment [ENV_NAME] [TASK]
 ```
-
-### Optional Dependencies
-Different groups of packages are required for various tasks that are not required to run the application. The optional dependency groups for FloodAdapt are:
-- `dev` - linting, pre-commit hooks & testing
-- `build` - distribution related packages & publishing to pip
-- `docs` - generating documentation & example notebooks
-- `all` - all of the above
-
-An optional dependency group can be installed in addition to installing the core using `pip install .[group_name]`, where '.' can be replaced by a directory path that contains a pyproj.toml file.
 
 ### Setup Visual Studio Code (optional)
 
