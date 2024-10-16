@@ -26,7 +26,7 @@ logs_dir = Path(__file__).absolute().parent / "logs"
 #### DEBUGGING ####
 # To disable resetting the database after tests: set clean=false
 # Only for debugging purposes, should always be set to true when pushing to github
-clean = True
+clean = False
 
 
 def create_snapshot():

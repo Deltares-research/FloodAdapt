@@ -25,13 +25,13 @@ def _run_sfincs_win(simulation_dir: Path) -> bool:
         with open("sfincs.log", "w") as log_handler:
             try:
                 process = subprocess.run(
-                    Settings().sfincs_path.as_posix(),check=True, capture_output=True, text=True, stdout=log_handler
+                    Settings().sfincs_path.as_posix(),check=True, text=True, stdout=log_handler
                 )
             except subprocess.CalledProcessError as e:
                 if process.stderr:
                     logger.error(process.stderr)
-            
-    return process.returncode == 0:
+    logger.info(f"Finished evaluating SFINCS simulation: {simulation_dir}")
+    return process.returncode == 0
 
 
 def _run_sfincs_linux(simulation_dir: Path) -> bool:
@@ -66,9 +66,10 @@ def _run_sfincs_linux(simulation_dir: Path) -> bool:
 
     with open(log_file, "w") as log_handler:
         try:
-            process = subprocess.run(docker_command, check=True, capture_output=True, text=True, stdout=log_handler)
+            process = subprocess.run(docker_command, check=True, text=True, stdout=log_handler)
         except subprocess.CalledProcessError as e:
             if process.stderr:
                 logger.error(process.stderr)
+    logger.info(f"Finished evaluating SFINCS simulation: {simulation_dir}")
     return process.returncode == 0
 
