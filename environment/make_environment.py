@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 try:
     import yaml  # noQA
@@ -84,7 +85,7 @@ def write_env_yml(env_name: str):
     print(f"Temporary environment file created at: {PROJECT_ROOT / '_environment.yml'}")
 
 
-def check_and_delete_conda_env(env_name, prefix=None):
+def check_and_delete_conda_env(env_name: str, prefix: Optional[str] = None):
     result = subprocess.run("conda env list", **SUBPROCESS_KWARGS)
 
     if env_name in result.stdout:
@@ -97,9 +98,9 @@ def check_and_delete_conda_env(env_name, prefix=None):
 
 def create_env(
     env_name: str,
-    prefix: str = None,
+    prefix: Optional[str] = None,
     editable: bool = False,
-    optional_deps: str = None,
+    optional_deps: Optional[str] = None,
 ):
     if not BACKEND_ROOT.exists():
         raise FileNotFoundError(
@@ -139,11 +140,22 @@ def create_env(
         universal_newlines=True,
     )
 
-    while process.poll() is None:
-        print(process.stdout.readline())
-    print(process.stdout.read())
+    while process.poll() is None and process.stdout:
+        print(process.stdout.readline(), end="")
 
     os.remove("_environment.yml")
+
+    if process.returncode != 0:
+        if process.stderr:
+            print(process.stderr.read())
+
+        raise subprocess.CalledProcessError(
+            process.returncode,
+            command,
+            process.stdout.read() if process.stdout else None,
+            process.stderr.read() if process.stderr else None,
+        )
+
     print(f"Environment {env_name} created successfully!")
     print(f"Activate it with:\n\n\t{activate_command}\n")
 
