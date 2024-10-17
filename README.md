@@ -14,28 +14,28 @@ Recent developments of the decision-support system include (1) simplifying and p
 
 FloodAdapt is currently in an intensive development stage. Independent usage of the repository will be challenging prior to end-of-year 2024. FloodAdapt documentation will be expanded on throughout 2024.
 
-## Setting up pixi
+# Installation
 
-[Pixi](https://prefix.dev/docs/pixi/overview) is used to build the environment, manage dependencies and run tasks.
-Download and install [Pixi](https://prefix.dev/docs/pixi/overview)
+## Setting up Pixi
+To build the environment, manage dependencies and run tasks, FloodAdapt uses [Pixi](https://prefix.dev/docs/pixi/overview), please download and install it by following the instructions on the pixi website.
 
-## Installation
+Before continuing the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
 
-Link to the latest [installer]() here.
-
-Before starting the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
-
+## Windows
+Then run these commands to install FloodAdapt:
 ```bash
 git clone https://github.com/Deltares-research/FloodAdapt.git
 cd FloodAdapt
 pixi install
 ```
+## Linux
+Linux is not supported at the moment, but will be supported in the near future.
 
 ## Configure database
 
-FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains the Settings class to set and validate environment variables, specific to your system.
+FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains the `Settings` class to set and validate environment variables, specific to your system.
 
-To initialize floodadapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
+To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
 from pathlib import Path
 from flood_adapt.config import Settings
@@ -59,12 +59,22 @@ Settings(
 
 ## Developing FloodAdapt
 
-Clone the repository and install the development environment
+To contribute to FloodAdapt, you will need to install additional dependencies. To do so, clone the repository and install the development environment:
 
 ```bash
+# Install dev environment
 git clone https://github.com/Deltares/FloodAdapt
 cd FloodAdapt
 pixi install dev
+
+# Verify everything is installed correctly
+pixi run tests
+
+# `activate` the environment
+pixi shell -e dev
+
+# Develop
+...
 ```
 
 ## Useful pixi commands
@@ -75,23 +85,23 @@ pixi -h
 # Install a non default pixi environment defined in pixi.toml
 pixi install [ENV_NAME]
 
-# Update environment to the latest allowed by dependency specifications in pixi.toml
+# Update environment(s) to the latest allowed by dependency specifications in pixi.toml
 pixi update
-
-# Add a package to the dependencies
-pixi add [PACKAGE]
 
 # List all available tasks
 pixi task list
 
-# Start a shell in the pixi environment
-pixi shell --environment [ENV_NAME]
-
-# Run a task in the default environment
+# Run a task in the default environment for that task
 pixi run [TASK]
 
-# Run a task in the ENV_NAME environment
-pixi run --environment [ENV_NAME] [TASK]
+# Start a shell in the pixi environment
+pixi shell -e [ENV_NAME]
+
+# Add a package to the dependencies
+pixi add [PACKAGE]
+
+# Run a task in a specific environment
+pixi run -e [ENV_NAME] [TASK]
 ```
 
 ### Setup Visual Studio Code (optional)
