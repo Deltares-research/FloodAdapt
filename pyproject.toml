@@ -23,6 +23,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
 requires-python = ">=3.8"
+
+# Any package below will be taken from pypi.
+# These are ignored if any packages is also defined in the section: [tool.pixi.dependencies]
 dependencies = [
     "cht-cyclones@ git+https://github.com/deltares/cht_cyclones.git",
     "cht-meteo",
@@ -30,10 +33,11 @@ dependencies = [
     "cht-tide",
     "dask<2024.7.0", # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
     "fiat-toolbox",
+    "fiona",
     "geojson",
     "geopandas",
-    "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt",
-    "hydromt-sfincs@ git+https://github.com/Deltares-research/hydromt_sfincs_insiders.git@FA_quadtree",
+    # "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git@floodadapt", # TODO either have the pypi deps here or in the pixi section
+    # "hydromt-sfincs@ git+https://github.com/Deltares-research/hydromt_sfincs_insiders.git@FA_quadtree", # TODO either have the pypi deps here or in the pixi section
     "numpy < 2.0",
     "numpy-financial",
     "pandas",
@@ -67,9 +71,6 @@ docs = [
     "quartodoc",
     "regex",
 ]
-all = [
-    "flood-adapt[build,dev,docs]",
-]
 
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
@@ -89,7 +90,6 @@ include = [
 [tool.setuptools.package-data]
 flood_adapt = [
     "py.typed",
-    # "system/**", uncomment when other os are supported as well
 ]
 
 [tool.ruff]
@@ -131,9 +131,6 @@ fixable = [
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.pyright]
-reportDeprecated = true
-
 [tool.typos]
 files.extend-exclude = [
     "*.js",
@@ -144,3 +141,47 @@ files.ignore-hidden = true
 
 [tool.typos.default.extend-words]
 strat = "strat"
+
+################################################################
+############################# PIXI #############################
+################################################################
+[tool.pixi.pypi-dependencies]
+hydromt-fiat = { git = "https://github.com/deltares/hydromt_fiat.git"}
+hydromt-sfincs = { git = "https://github.com/Deltares-research/hydromt_sfincs_insiders", rev = "560ce76c546a067108790977295871ce635c840b" }
+
+[tool.pixi.feature.dev.pypi-dependencies]
+setuptools = "*"
+flood_adapt = {path = "../FloodAdapt", editable = true } # Kind of a hack, but needed at the moment
+
+[tool.pixi.feature.gui.pypi-dependencies]
+Census = "*"
+guitares = "*"
+branca = "*"
+floodadapt_gui = {path = "../FloodAdapt-GUI", editable = true }
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.environments]
+py311 = { features = ["py311"], solve-group = "py311" }
+py310 = { features = ["py310"], solve-group = "py310" }
+
+build = { features = ["build"], solve-group = "py311" }
+dev = { features = ["dev"], solve-group = "py311" }
+docs = { features = ["docs"], solve-group = "py311" }
+gui = {features = ["dev", "gui"], solve-group = "py311" }
+
+[tool.pixi.feature.dev.tasks]
+install-pre-commit = "pre-commit install"
+run-pre-commit = "pre-commit run --all-files"
+tests = {cmd = "pytest --cov=flood_adapt --cov-report=xml tests"}
+
+[tool.pixi.feature.gui.tasks]
+gui = { cmd = "python ../FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}

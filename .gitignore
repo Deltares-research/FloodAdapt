@@ -170,3 +170,4 @@ system/
 
 # Pixi
 .pixi
+*.egg-info
