@@ -3,7 +3,7 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir, abs_path
+from flood_adapt.dbs_classes.path_builder import ObjectDir, db_path
 
 
 @contextmanager
@@ -58,7 +58,7 @@ def resolve_filepath(
     _path = Path(path)
     if str(_path) == _path.name:
         # this is a filename, so it is in the database
-        src_path = abs_path(object_dir=object_dir, obj_name=obj_name) / path
+        src_path = db_path(object_dir=object_dir, obj_name=obj_name) / path
     else:
         # this is a path, so it is an external file
         src_path = Path(path)
@@ -95,7 +95,9 @@ def save_file_to_database(
             f"Failed to find {src_file} when saving external file to the database as it does not exist."
         )
 
-    if src_file != dst_file and dst_file.exists():
+    if src_file == dst_file:
+        return dst_file
+    elif dst_file.exists():
         os.remove(dst_file)
 
     dst_file.parent.mkdir(parents=True, exist_ok=True)

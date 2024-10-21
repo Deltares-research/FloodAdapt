@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Type
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.object_model import IObject
 
@@ -15,10 +15,10 @@ class DbsTemplate(AbstractDatabaseElement):
 
     def __init__(self, database: IDatabase):
         self._database = database
-        self.input_path = abs_path(
+        self.input_path = db_path(
             top_level_dir=TopLevelDir.input, object_dir=self._object_class.dir_name
         )
-        self.output_path = abs_path(
+        self.output_path = db_path(
             top_level_dir=TopLevelDir.output, object_dir=self._object_class.dir_name
         )
         self.standard_objects = []

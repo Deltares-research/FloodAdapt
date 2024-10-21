@@ -11,7 +11,7 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, db_path
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.scenario import Scenario
@@ -32,14 +32,14 @@ class Benefit(IBenefit):
             self.attrs = BenefitModel.model_validate(data)
 
         # Get output path based on database path
-        self.results_path = abs_path(TopLevelDir.output, self.dir_name, self.attrs.name)
+        self.results_path = db_path(TopLevelDir.output, self.dir_name, self.attrs.name)
         self.check_scenarios()
 
         if self.has_run:
             self.get_output()
         # Get site config
         self.site_info = Site.load_file(
-            abs_path(TopLevelDir.static, ObjectDir.site, "site.toml")
+            db_path(TopLevelDir.static, ObjectDir.site, "site.toml")
         )
         # Get monetary units
         self.unit = self.site_info.attrs.fiat.damage_unit
@@ -125,7 +125,7 @@ class Benefit(IBenefit):
         # but the way it is set-up now there will be issues with cyclic imports
         scenarios_avail = []
         for scenario_path in list(
-            abs_path(TopLevelDir.input, ObjectDir.scenario).glob("*")
+            db_path(TopLevelDir.input, ObjectDir.scenario).glob("*")
         ):
             scenarios_avail.append(
                 Scenario.load_file(scenario_path.joinpath(f"{scenario_path.name}.toml"))
@@ -206,7 +206,7 @@ class Benefit(IBenefit):
         scenarios = self.scenarios.copy(deep=True)
         scenarios["EAD"] = None
 
-        results_path = abs_path(TopLevelDir.output, ObjectDir.scenario)
+        results_path = db_path(TopLevelDir.output, ObjectDir.scenario)
 
         # Get metrics per scenario
         for index, scenario in scenarios.iterrows():
@@ -284,7 +284,7 @@ class Benefit(IBenefit):
 
     def cba_aggregation(self):
         """Zonal Benefits analysis for the different aggregation areas."""
-        results_path = abs_path(TopLevelDir.output, ObjectDir.scenario)
+        results_path = db_path(TopLevelDir.output, ObjectDir.scenario)
         # Get years of interest
         year_start = self.attrs.current_situation.year
         year_end = self.attrs.future_year
@@ -377,7 +377,7 @@ class Benefit(IBenefit):
                 if n.name == aggr_name
             ][0]
             aggr_areas_path = (
-                abs_path(TopLevelDir.static)
+                db_path(TopLevelDir.static)
                 / self.site_info.attrs.fiat.aggregation[ind].file
             )
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
@@ -550,59 +550,3 @@ class Benefit(IBenefit):
         # write html to results folder
         html = self.results_path.joinpath("benefits.html")
         fig.write_html(html)
-
-    # @staticmethod
-    # def load_file(filepath: Union[str, os.PathLike]) -> IBenefit:
-    #     """Create a Benefit object from a toml file.
-
-    #     Parameters
-    #     ----------
-    #     filepath : Union[str, os.PathLike]
-    #         path to a toml file holding the attributes of a Benefit object
-
-    #     Returns
-    #     -------
-    #     IBenefit
-    #         a Benefit object
-    #     """
-    #     obj = Benefit()
-    #     with open(filepath, mode="rb") as fp:
-    #         toml = tomli.load(fp)
-    #     obj.attrs = BenefitModel.model_validate(toml)
-    #     # if benefits is created by path use that to get to the database path
-    #     obj._init()
-    #     return obj
-
-    # @staticmethod
-    # def load_dict(
-    #     data: dict[str, Any], database_input_path: Union[str, os.PathLike]
-    # ) -> IBenefit:
-    #     """Create a Benefit object from a dictionary, e.g. when initialized from GUI.
-
-    #     Parameters
-    #     ----------
-    #     data : dict[str, Any]
-    #         a dictionary with the Benefit attributes
-    #     database_input_path : Union[str, os.PathLike]
-    #         the path where the FloodAdapt database is located
-
-    #     Returns
-    #     -------
-    #     IBenefit
-    #         a Benefit object
-    #     """
-    #     obj = Benefit()
-    #     obj.attrs = BenefitModel.model_validate(data)
-    #     obj._init()
-    #     return obj
-
-    # def save(self, filepath: Union[str, os.PathLike]):
-    #     """Save the Benefit attributes as a toml file.
-
-    #     Parameters
-    #     ----------
-    #     filepath : Union[str, os.PathLike]
-    #         path for saving the toml file
-    #     """
-    #     with open(filepath, "wb") as f:
-    #         tomli_w.dump(self.attrs.dict(exclude_none=True), f)

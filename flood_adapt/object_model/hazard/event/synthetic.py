@@ -32,50 +32,6 @@ class Synthetic(Event, ISynthetic):
         )
         self.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
 
-    # @staticmethod
-    # def load_file(filepath: Union[str, os.PathLike]):
-    #     """Create Synthetic from toml file."""
-    #     obj = Synthetic()
-    #     with open(filepath, mode="rb") as fp:
-    #         toml = tomli.load(fp)
-    #     obj.attrs = SyntheticModel.model_validate(toml)
-
-    #     # synthetic event is the only one without start and stop time, so set this here.
-    #     # Default start time is defined in TimeModel, setting end_time here
-    #     # based on duration before and after T0
-    #     tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
-    #     end_time = tstart + timedelta(
-    #         hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
-    #     )
-    #     obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
-    #     return obj
-
-    # @staticmethod
-    # def load_dict(data: dict[str, Any]):
-    #     """Create Synthetic from object, e.g. when initialized from GUI."""
-    #     obj = Synthetic()
-    #     obj.attrs = SyntheticModel.model_validate(data)
-    #     # synthetic event is the only one without start and stop time, so set this here.
-    #     # Default start time is defined in TimeModel, setting end_time here
-    #     # based on duration before and after T0
-    #     tstart = datetime.strptime(obj.attrs.time.start_time, "%Y%m%d %H%M%S")
-    #     end_time = tstart + timedelta(
-    #         hours=obj.attrs.time.duration_before_t0 + obj.attrs.time.duration_after_t0
-    #     )
-    #     obj.attrs.time.end_time = datetime.strftime(end_time, "%Y%m%d %H%M%S")
-    #     return obj
-
-    # def save(self, filepath: Union[str, os.PathLike]):
-    #     """Save event toml.
-
-    #     Parameters
-    #     ----------
-    #     file : Path
-    #         path to the location where file will be saved
-    #     """
-    #     with open(filepath, "wb") as f:
-    #         tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
     def add_tide_and_surge_ts(self):
         """Generate time series of harmoneous tide (cosine) and gaussian surge shape.
 

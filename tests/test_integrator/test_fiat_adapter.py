@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.object_model.scenario import Scenario
 
 
@@ -113,7 +113,7 @@ class TestFiatAdapter:
             0
         ].attrs.elevation.value
         # Read the base flood map information
-        bfes = pd.read_csv(abs_path(TopLevelDir.static) / "bfe" / "bfe.csv")
+        bfes = pd.read_csv(db_path(TopLevelDir.static) / "bfe" / "bfe.csv")
 
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on="Object ID")[

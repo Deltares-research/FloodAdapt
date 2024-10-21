@@ -24,7 +24,7 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
@@ -114,15 +114,15 @@ class Database(IDatabase):
         # Set the paths
 
         self.base_path = Path(database_path) / database_name
-        self.input_path = abs_path(TopLevelDir.input)
-        self.static_path = abs_path(TopLevelDir.static)
-        self.output_path = abs_path(TopLevelDir.output)
+        self.input_path = db_path(TopLevelDir.input)
+        self.static_path = db_path(TopLevelDir.static)
+        self.output_path = db_path(TopLevelDir.output)
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
         # Get the static sfincs model
         sfincs_path = str(
-            abs_path(TopLevelDir.static)
+            db_path(TopLevelDir.static)
             / "templates"
             / self._site.attrs.sfincs.overland_model
         )

@@ -6,7 +6,7 @@ from typing import Any, Union
 import cht_observations.observation_stations as cht_station
 import pandas as pd
 
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
     IHistoricalNearshore,
@@ -28,19 +28,19 @@ class HistoricalNearshore(IHistoricalNearshore):
             self.attrs = HistoricalNearshoreModel.model_validate(data)
 
         if self.attrs.rainfall.source == "timeseries":
-            path = abs_path(
+            path = db_path(
                 TopLevelDir.input, self.dir_name, self.attrs.rainfall.timeseries_file
             )
             self.rain_ts = HistoricalNearshore.read_csv(path)
 
         if self.attrs.wind.source == "timeseries":
-            path = abs_path(
+            path = db_path(
                 TopLevelDir.input, self.dir_name, self.attrs.wind.timeseries_file
             )
             self.wind_ts = HistoricalNearshore.read_csv(path)
 
         if self.attrs.tide.source == "timeseries":
-            path = abs_path(
+            path = db_path(
                 TopLevelDir.input, self.dir_name, self.attrs.tide.timeseries_file
             )
             self.tide_surge_ts = HistoricalNearshore.read_csv(path)

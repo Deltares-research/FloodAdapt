@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, db_path
 from flood_adapt.object_model.interface.measures import IMeasure, ImpactMeasureModel
 from flood_adapt.object_model.interface.site import Site
 
@@ -22,13 +22,13 @@ class ImpactMeasure(IMeasure[ImpactMeasureModel]):
         """
         # get the site information
         site = Site.load_file(
-            abs_path(TopLevelDir.static, object_dir=ObjectDir.site) / "site.toml"
+            db_path(TopLevelDir.static, object_dir=ObjectDir.site) / "site.toml"
         )
 
         # use hydromt-fiat to load the fiat model if it is not provided
         if fiat_model is None:
             fiat_model = FiatModel(
-                root=str(abs_path(TopLevelDir.static) / "templates" / "fiat"),
+                root=str(db_path(TopLevelDir.static) / "templates" / "fiat"),
                 mode="r",
             )
             fiat_model.read()
@@ -36,7 +36,7 @@ class ImpactMeasure(IMeasure[ImpactMeasureModel]):
         # check if polygon file is used, then get the absolute path
         if self.attrs.polygon_file:
             polygon_file = (
-                abs_path(TopLevelDir.input, ObjectDir.measure, self.attrs.name)
+                db_path(TopLevelDir.input, ObjectDir.measure, self.attrs.name)
                 / self.attrs.polygon_file
             )
         else:

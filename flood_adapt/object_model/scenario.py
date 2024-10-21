@@ -2,7 +2,7 @@ import os
 from typing import Any
 
 from flood_adapt import __version__
-from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, db_path
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
@@ -27,9 +27,9 @@ class Scenario(IScenario):
             self.attrs = ScenarioModel.model_validate(data)
 
         self.site_info = Site.load_file(
-            abs_path(TopLevelDir.static, ObjectDir.site) / "site.toml"
+            db_path(TopLevelDir.static, ObjectDir.site) / "site.toml"
         )
-        self.results_path = abs_path(TopLevelDir.output, self.dir_name, self.attrs.name)
+        self.results_path = db_path(TopLevelDir.output, self.dir_name, self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
             results_path=self.results_path,

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -93,7 +93,7 @@ def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
         type="type_3",
     )
 
-    scsfile = abs_path(TopLevelDir.static) / "scs" / hazard.site.attrs.scs.file
+    scsfile = db_path(TopLevelDir.static) / "scs" / hazard.site.attrs.scs.file
     scstype = hazard.site.attrs.scs.type
 
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)

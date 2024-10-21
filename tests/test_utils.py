@@ -7,7 +7,7 @@ from flood_adapt.object_model.utils import save_file_to_database
 
 @pytest.fixture
 def mock_settings(tmp_path):
-    with mock.patch("flood_adapt.object_model.utils.Settings") as MockSettings:
+    with mock.patch("flood_adapt.dbs_classes.path_builder.Settings") as MockSettings:
         instance = MockSettings.return_value
         instance.database_path = tmp_path / "Database" / "test"
         yield instance

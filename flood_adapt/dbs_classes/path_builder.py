@@ -30,12 +30,12 @@ class ObjectDir(str, Enum):
     pump = "measures"
 
 
-def abs_path(
+def db_path(
     top_level_dir: TopLevelDir = TopLevelDir.input,
     object_dir: Optional[ObjectDir] = None,
     obj_name: Optional[str] = None,
 ) -> Path:
-    """Return an absolute path to a directory from arguments."""
+    """Return an path to a database directory from arguments."""
     return Settings().database_path / rel_path(
         top_level_dir=top_level_dir, object_dir=object_dir, obj_name=obj_name
     )
