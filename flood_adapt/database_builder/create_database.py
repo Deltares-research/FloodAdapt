@@ -25,9 +25,8 @@ from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
+from flood_adapt.object_model.interface.site import Obs_pointModel, Site, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
-from flood_adapt.object_model.site import Site
 
 config_path = None
 

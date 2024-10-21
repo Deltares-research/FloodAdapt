@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -12,10 +13,9 @@ from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import RainfallModel, TideModel
-from flood_adapt.object_model.interface.site import SCSModel
+from flood_adapt.object_model.interface.site import SCSModel, Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 
 
 @pytest.fixture(autouse=True)
@@ -44,7 +44,7 @@ def test_scenarios(test_db, test_tomls) -> dict[str, Scenario]:
 def test_initObjectModel_validInput(test_db, test_scenarios):
     test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     assert isinstance(test_scenario.site_info, Site)
     assert isinstance(test_scenario.direct_impacts, DirectImpacts)
@@ -64,7 +64,7 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
 def test_hazard_load(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
 
     assert event.attrs.timing == "idealized"
@@ -75,7 +75,7 @@ def test_hazard_load(test_db, test_scenarios):
 def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
 
@@ -93,9 +93,7 @@ def test_scs_rainfall(test_db: Database, test_scenarios: dict[str, Scenario]):
         type="type_3",
     )
 
-    scsfile = hazard.database_input_path.parent.joinpath(
-        "static", "scs", hazard.site.attrs.scs.file
-    )
+    scsfile = abs_path(TopLevelDir.static) / "scs" / hazard.site.attrs.scs.file
     scstype = hazard.site.attrs.scs.type
 
     event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
@@ -152,5 +150,5 @@ class Test_scenario_run:
 
         # use event template to get the associated Event child class
         test_scenario = Scenario.load_file(test_toml)
-        test_scenario.init_object_model()
+        # test_scenario.init_object_model()
         test_scenario.infographic()

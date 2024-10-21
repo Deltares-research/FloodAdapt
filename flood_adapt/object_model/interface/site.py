@@ -1,10 +1,10 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel, model_validator
 
+from flood_adapt.dbs_classes.path_builder import ObjectDir
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
@@ -284,11 +284,9 @@ class StandardObjectModel(BaseModel):
     strategies: Optional[list[str]] = []
 
 
-class SiteModel(BaseModel):
+class SiteModel(IObjectModel):
     """The expected variables and data types of attributes of the Site class."""
 
-    name: str
-    description: Optional[str] = ""
     lat: float
     lon: float
     sfincs: SfincsModel
@@ -298,9 +296,9 @@ class SiteModel(BaseModel):
     gui: GuiModel
     risk: RiskModel
     # TODO what should the default be
-    flood_frequency: Optional[FloodFrequencyModel] = {
-        "flooding_threshold": UnitfulLength(value=0.0, units="meters")
-    }
+    flood_frequency: Optional[FloodFrequencyModel] = FloodFrequencyModel(
+        flooding_threshold=UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    )
     dem: DemModel
     fiat: FiatModel
     tide_gauge: Optional[TideGaugeModel] = None
@@ -314,46 +312,12 @@ class SiteModel(BaseModel):
     )  # optional for the US to use standard objects
 
 
-class ISite(ABC):
-    _attrs: SiteModel
+class Site(IObject[SiteModel]):
+    attrs: SiteModel
+    dir_name = ObjectDir.site
 
-    @property
-    @abstractmethod
-    def attrs(self) -> SiteModel:
-        """Get the site attributes as a dictionary.
-
-        Returns
-        -------
-        SiteModel
-            Pydantic model with the site attributes
-        """
-        ...
-
-    @attrs.setter
-    @abstractmethod
-    def attrs(self, value: SiteModel):
-        """Set the site attributes from a dictionary.
-
-        Parameters
-        ----------
-        value : SiteModel
-            Pydantic model with the site attributes
-        """
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Site attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """Get Site attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save site attributes to a toml file, and optionally additional files."""
-        ...
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, SiteModel):
+            self.attrs = data
+        else:
+            self.attrs = SiteModel.model_validate(data)

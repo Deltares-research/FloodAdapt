@@ -199,6 +199,37 @@ def test_save_with_new_development_areas_also_saves_shapefile(
 
     with open(toml_path, "rb") as f:
         data = tomli.load(f)
-    assert data["socio_economic_change"]["new_development_shapefile"] == str(
-        expected_new_path
+    assert (
+        data["socio_economic_change"]["new_development_shapefile"]
+        == expected_new_path.name
+    )
+
+
+def test_save_with_new_development_areas_shapefile_already_exists(
+    test_projection, test_db
+):
+    # Arrange
+    toml_path = (
+        test_db.input_path
+        / "projections"
+        / test_projection.attrs.name
+        / f"{test_projection.attrs.name}.toml"
+    )
+    expected_new_path = (
+        toml_path.parent
+        / Path(
+            test_projection.attrs.socio_economic_change.new_development_shapefile  # "pop_growth_new_20.shp"
+        ).name
+    )
+
+    # Act
+    test_projection.save(toml_path)
+    test_projection.save(toml_path)
+
+    # Assert
+    assert toml_path.exists()
+    assert expected_new_path.exists()
+    assert (
+        test_projection.attrs.socio_economic_change.new_development_shapefile
+        == expected_new_path.name
     )

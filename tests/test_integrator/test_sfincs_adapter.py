@@ -25,7 +25,7 @@ def test_scenarios(test_db):
 def test_add_obs_points(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     path_in = (
         test_db.static_path
         / "templates"

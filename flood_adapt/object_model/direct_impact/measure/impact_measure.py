@@ -1,19 +1,16 @@
-import os
-from abc import ABC
-from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.object_model.interface.measures import ImpactMeasureModel
-from flood_adapt.object_model.site import Site
+from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, abs_path
+from flood_adapt.object_model.interface.measures import IMeasure, ImpactMeasureModel
+from flood_adapt.object_model.interface.site import Site
 
 
-class ImpactMeasure(ABC):
+class ImpactMeasure(IMeasure[ImpactMeasureModel]):
     """All the information for a specific measure type that affects the impact model."""
 
     attrs: ImpactMeasureModel
-    database_input_path: Union[str, os.PathLike]
 
     def get_object_ids(self, fiat_model: Optional[FiatModel] = None) -> list[Any]:
         """Get ids of objects that are affected by the measure.
@@ -25,16 +22,13 @@ class ImpactMeasure(ABC):
         """
         # get the site information
         site = Site.load_file(
-            Path(self.database_input_path).parent / "static" / "site" / "site.toml"
+            abs_path(TopLevelDir.static, object_dir=ObjectDir.site) / "site.toml"
         )
 
         # use hydromt-fiat to load the fiat model if it is not provided
         if fiat_model is None:
             fiat_model = FiatModel(
-                root=Path(self.database_input_path).parent
-                / "static"
-                / "templates"
-                / "fiat",
+                root=str(abs_path(TopLevelDir.static) / "templates" / "fiat"),
                 mode="r",
             )
             fiat_model.read()
@@ -42,9 +36,7 @@ class ImpactMeasure(ABC):
         # check if polygon file is used, then get the absolute path
         if self.attrs.polygon_file:
             polygon_file = (
-                Path(self.database_input_path)
-                / "measures"
-                / self.attrs.name
+                abs_path(TopLevelDir.input, ObjectDir.measure, self.attrs.name)
                 / self.attrs.polygon_file
             )
         else:

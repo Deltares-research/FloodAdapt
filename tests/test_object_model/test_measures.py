@@ -93,7 +93,7 @@ def test_elevate_aggr_area_read_fail(test_db):
         "property_type": "RES",
     }
 
-    Elevate.load_dict(test_dict, test_db.input_path)
+    Elevate.load_dict(test_dict)
 
 
 def test_elevate_aggr_area_save(test_db):
@@ -240,7 +240,6 @@ def test_pump(test_db, test_data_dir):
     )
     return Pump.load_dict(
         data=data,
-        database_input_path=test_db.input_path,
     )
 
 
@@ -259,7 +258,6 @@ def test_elevate(test_db, test_data_dir):
     )
     return Elevate.load_dict(
         data=data,
-        database_input_path=test_db.input_path,
     )
 
 
@@ -276,7 +274,6 @@ def test_buyout(test_db, test_data_dir):
 
     return Buyout.load_dict(
         data=data,
-        database_input_path=test_db.input_path,
     )
 
 
@@ -296,7 +293,6 @@ def test_floodproof(test_db, test_data_dir):
 
     return FloodProof.load_dict(
         data=data,
-        database_input_path=test_db.input_path,
     )
 
 
@@ -315,7 +311,6 @@ def test_green_infra(test_db, test_data_dir):
 
     return GreenInfrastructure.load_dict(
         data=data,
-        database_input_path=test_db.input_path,
     )
 
 
@@ -330,7 +325,7 @@ def test_pump_save_saves_geojson(test_pump, tmp_path):
     # Assert
     assert output_path.exists()
     assert expected_geojson.exists()
-    assert test_pump.attrs.polygon_file == str(expected_geojson)
+    assert test_pump.attrs.polygon_file == expected_geojson.name
 
 
 def test_elevate_save_saves_geojson(test_elevate, tmp_path):
@@ -344,7 +339,7 @@ def test_elevate_save_saves_geojson(test_elevate, tmp_path):
     # Assert
     assert output_path.exists()
     assert expected_geojson.exists()
-    assert test_elevate.attrs.polygon_file == str(expected_geojson)
+    assert test_elevate.attrs.polygon_file == expected_geojson.name
 
 
 def test_buyout_save_saves_geojson(test_buyout, tmp_path):
@@ -358,7 +353,7 @@ def test_buyout_save_saves_geojson(test_buyout, tmp_path):
     # Assert
     assert output_path.exists()
     assert expected_geojson.exists()
-    assert test_buyout.attrs.polygon_file == str(expected_geojson)
+    assert test_buyout.attrs.polygon_file == expected_geojson.name
 
 
 def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
@@ -374,7 +369,7 @@ def test_floodproof_save_saves_geojson(test_floodproof, tmp_path):
     # Assert
     assert output_path.exists()
     assert expected_geojson.exists()
-    assert test_floodproof.attrs.polygon_file == str(expected_geojson)
+    assert test_floodproof.attrs.polygon_file == expected_geojson.name
 
 
 def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
@@ -390,4 +385,4 @@ def test_green_infra_save_saves_geojson(test_green_infra, tmp_path):
     # Assert
     assert output_path.exists()
     assert expected_geojson.exists()
-    assert test_green_infra.attrs.polygon_file == str(expected_geojson)
+    assert test_green_infra.attrs.polygon_file == expected_geojson.name

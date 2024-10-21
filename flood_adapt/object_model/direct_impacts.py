@@ -39,18 +39,23 @@ class DirectImpacts:
     hazard: Hazard
     has_run: bool = False
 
-    def __init__(self, scenario: ScenarioModel, database, results_path: Path) -> None:
+    @property
+    def database(self):
+        if not hasattr(self, "_database"):
+            from flood_adapt.dbs_controller import Database
+
+            self._database = Database()
+        return self._database
+
+    def __init__(self, scenario: ScenarioModel, results_path: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
-        self.database = database
         self.scenario = scenario
         self.results_path = results_path
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
-        self.set_hazard(scenario, database, self.results_path.joinpath("Flooding"))
-        # Get site config
-        self.site_toml_path = self.database.static_path / "site" / "site.toml"
-        self.site_info = database.site
+        self.set_hazard(scenario, self.database, self.results_path.joinpath("Flooding"))
+        self.site_info = self.database.site
         # Define results path
         self.impacts_path = self.results_path.joinpath("Impacts")
         self.fiat_path = self.impacts_path.joinpath("fiat_model")
@@ -182,7 +187,7 @@ class DirectImpacts:
         if self.socio_economic_change.attrs.population_growth_new != 0:
             # Get path of new development area geometry
             area_path = (
-                self.database.projections.get_database_path()
+                self.database.projections.input_path
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
@@ -521,9 +526,7 @@ class DirectImpacts:
         ]
 
         # Specify the metrics output path
-        metrics_outputs_path = self.database.scenarios.get_database_path(
-            get_input_path=False
-        ).joinpath(
+        metrics_outputs_path = self.database.scenarios.output_path.joinpath(
             self.name,
             f"Infometrics_{self.name}.csv",
         )
@@ -575,7 +578,5 @@ class DirectImpacts:
             config_base_path=self.database.static_path.joinpath(
                 "templates", "Infographics"
             ),
-            output_base_path=self.database.scenarios.get_database_path(
-                get_input_path=False
-            ).joinpath(self.name),
+            output_base_path=self.database.scenarios.output_path.joinpath(self.name),
         ).write_infographics_to_file()

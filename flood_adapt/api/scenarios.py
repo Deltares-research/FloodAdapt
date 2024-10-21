@@ -15,7 +15,7 @@ def get_scenario(name: str) -> IScenario:
 
 
 def create_scenario(attrs: dict[str, Any]) -> IScenario:
-    return Scenario.load_dict(attrs, Database().input_path)
+    return Scenario.load_dict(attrs)
 
 
 def save_scenario(scenario: IScenario) -> tuple[bool, str]:

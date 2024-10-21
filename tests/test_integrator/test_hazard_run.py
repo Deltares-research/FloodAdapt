@@ -39,7 +39,7 @@ def test_scenarios(test_db):
 # @pytest.mark.skip(reason="running the model takes long")
 def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-    test_scenario.init_object_model()
+    # # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     fn_bc = (
@@ -75,7 +75,7 @@ def test_hazard_preprocess_synthetic_wl(test_db, test_scenarios):
 def test_hazard_preprocess_synthetic_discharge(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     test_scenario.attrs.name = f"{test_scenario.attrs.name}_2"
@@ -99,7 +99,7 @@ def test_preprocess_rainfall_timeseriesfile(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     event_path = test_db.input_path / "events" / "extreme12ft"
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     hazard = test_scenario.direct_impacts.hazard
     hazard.event.attrs.rainfall.source = "timeseries"
@@ -129,7 +129,7 @@ def test_preprocess_pump(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.strategy = "pump"
     test_scenario.attrs.name = test_scenario.attrs.name.replace("no_measures", "pump")
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     hazard = test_scenario.direct_impacts.hazard
 
@@ -148,7 +148,7 @@ def test_preprocess_greenInfra(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.attrs.strategy = "greeninfra"
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     assert isinstance(
         test_scenario.direct_impacts.hazard.hazard_strategy.measures[0],
         GreenInfrastructure,
@@ -169,7 +169,7 @@ def test_preprocess_greenInfra_aggr_area(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.attrs.strategy = "total_storage_aggregation_area"
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     assert isinstance(
         test_scenario.direct_impacts.hazard.hazard_strategy.measures[0],
         GreenInfrastructure,
@@ -181,7 +181,7 @@ def test_preprocess_greenInfra_aggr_area(test_scenarios):
 def test_write_floodmap_geotiff(test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
     test_scenario.direct_impacts.hazard.postprocess_models()
@@ -195,7 +195,7 @@ def test_write_floodmap_geotiff(test_scenarios):
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR HAZARD!")
 def test_preprocess_prob_eventset(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     bzs_file1 = (
@@ -230,7 +230,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
     test_scenario: Scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.projection = "SLR_2ft"
     test_scenario.attrs.name = "SLR_2ft_test_set_no_measures"
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     slr = test_scenario.direct_impacts.hazard.physical_projection.attrs.sea_level_rise
     test_scenario.direct_impacts.hazard.preprocess_models()
 
@@ -264,7 +264,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
 def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
@@ -288,7 +288,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     cum_precip1 = df1.sum()[1]
 
     test_scenario.attrs.name = "current_extreme12ft_precip_rainfall_incr_no_measures"
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
@@ -320,7 +320,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
 @pytest.mark.skip(reason="Running models takes a couple of minutes")
 def test_run_prob_eventset(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.preprocess_models()
     test_scenario.direct_impacts.hazard.run_models()
     zs_file1 = (
@@ -353,7 +353,7 @@ def test_run_prob_eventset(test_db, test_scenarios):
 def test_rp_floodmap_calculation(test_db, test_scenarios):
     test_scenario = test_scenarios["current_test_set_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
     test_scenario.direct_impacts.hazard.calculate_rp_floodmaps()
     nc_file = (
         test_db.output_path
@@ -418,7 +418,7 @@ def test_rp_floodmap_calculation(test_db, test_scenarios):
 def test_multiple_rivers(test_db, test_scenarios):
     test_scenario: Scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     # Add an extra river
     test_scenario.direct_impacts.hazard.event.attrs.river.append(
@@ -505,7 +505,7 @@ def test_multiple_rivers(test_db, test_scenarios):
 def test_no_rivers(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     # Overwrite river data of Event
     test_scenario.direct_impacts.hazard.event.attrs.river = []
@@ -543,7 +543,7 @@ def test_no_rivers(test_db, test_scenarios):
 def test_plot_wl_obs(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
-    test_scenario.init_object_model()
+    # test_scenario.init_object_model()
 
     # Preprocess the models
     test_scenario.direct_impacts.hazard.preprocess_models()

@@ -14,24 +14,25 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
+from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.event import EventModel
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
 )
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWallModel
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+from flood_adapt.object_model.interface.events import EventModel
+from flood_adapt.object_model.interface.measures import (
+    FloodWallModel,
     GreenInfrastructureModel,
+    PumpModel,
 )
-from flood_adapt.object_model.hazard.measure.pump import PumpModel
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDischarge,
     UnitTypesLength,
     UnitTypesVolume,
 )
-from flood_adapt.object_model.site import Site
 
 
 class SfincsAdapter:
@@ -278,7 +279,7 @@ class SfincsAdapter:
             floodwall information
         """
         # HydroMT function: get geodataframe from filename
-        polygon_file = measure_path.joinpath(floodwall.polygon_file)
+        polygon_file = Settings().database_path / floodwall.polygon_file
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
@@ -329,7 +330,7 @@ class SfincsAdapter:
         """
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.selection_type == "polygon":
-            polygon_file = measure_path.joinpath(green_infrastructure.polygon_file)
+            polygon_file = Settings().database_path / green_infrastructure.polygon_file
         elif green_infrastructure.selection_type == "aggregation_area":
             # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
@@ -380,7 +381,8 @@ class SfincsAdapter:
             pump information
         """
         # HydroMT function: get geodataframe from filename
-        polygon_file = measure_path.joinpath(pump.polygon_file)
+        polygon_file = Settings().database_path / pump.polygon_file
+
         gdf_pump = self.sf_model.data_catalog.get_geodataframe(
             polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )

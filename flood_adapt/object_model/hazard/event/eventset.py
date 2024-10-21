@@ -1,31 +1,20 @@
 from pathlib import Path
-from typing import Union
+from typing import Any
 
-import tomli
-
+from flood_adapt.dbs_classes.path_builder import ObjectDir
 from flood_adapt.object_model.interface.events import EventSetModel
+from flood_adapt.object_model.interface.object_model import IObject
 
 
-class EventSet:
+class EventSet(IObject[EventSetModel]):
     """class for all event sets."""
 
     attrs: EventSetModel
+    dir_name = ObjectDir.event
     event_paths: list[Path]
 
-    @staticmethod
-    def load_file(filepath: Union[str, Path]):
-        """Create risk event from toml file."""
-        obj = EventSet()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = EventSetModel.model_validate(toml)
-        return obj
-
-    def __eq__(self, other):
-        if not isinstance(other, EventSet):
-            # don't attempt to compare against unrelated types
-            return NotImplemented
-        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
-        attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
-        attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
-        return attrs_1 == attrs_2
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, EventSetModel):
+            self.attrs = data
+        else:
+            self.attrs = EventSetModel.model_validate(data)

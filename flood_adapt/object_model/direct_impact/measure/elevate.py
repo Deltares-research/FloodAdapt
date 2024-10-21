@@ -1,51 +1,28 @@
 import os
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
-import tomli
-import tomli_w
-
-from flood_adapt.object_model.direct_impact.measure.impact_measure import (
-    ImpactMeasure,
-)
 from flood_adapt.object_model.interface.measures import ElevateModel, IElevate
-from flood_adapt.object_model.utils import import_external_file
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Elevate(ImpactMeasure, IElevate):
+class Elevate(IElevate):
     """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height."""
 
     attrs: ElevateModel
-    database_input_path: Union[str, os.PathLike, None]
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]) -> IElevate:
-        """Create Elevate from toml file."""
-        obj = Elevate()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = ElevateModel.model_validate(toml)
-        # if measure is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
-        return obj
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, ElevateModel):
+            self.attrs = data
+        else:
+            self.attrs = ElevateModel.model_validate(data)
 
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
-    ) -> IElevate:
-        """Create Elevate from object, e.g. when initialized from GUI."""
-        obj = Elevate()
-        obj.attrs = ElevateModel.model_validate(data)
-        obj.database_input_path = database_input_path
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Elevate to a toml file."""
+    def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
+        """Save the additional files to the database."""
         if self.attrs.polygon_file:
-            new_path = import_external_file(
-                self.attrs.polygon_file, Path(filepath).parent
+            src_path = resolve_filepath(
+                self.dir_name, self.attrs.name, self.attrs.polygon_file
             )
-            self.attrs.polygon_file = str(new_path)
-
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            path = save_file_to_database(src_path, Path(toml_path).parent)
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.polygon_file = path.name

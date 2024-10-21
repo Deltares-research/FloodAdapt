@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from flood_adapt.dbs_classes.path_builder import TopLevelDir, abs_path
 from flood_adapt.object_model.scenario import Scenario
 
 
@@ -34,11 +35,11 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+            test_db.scenarios.output_path.joinpath(
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
-        path = test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+        path = test_db.scenarios.output_path.joinpath(
             scenario_name, "Impacts", "fiat_model", "exposure", "exposure.csv"
         )
         exposure_scenario = pd.read_csv(path)
@@ -53,7 +54,7 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+            test_db.scenarios.output_path.joinpath(
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
@@ -112,11 +113,8 @@ class TestFiatAdapter:
             0
         ].attrs.elevation.value
         # Read the base flood map information
-        bfes = pd.read_csv(
-            test_scenario.database_input_path.parent.joinpath(
-                "static", "bfe", "bfe.csv"
-            )
-        )
+        bfes = pd.read_csv(abs_path(TopLevelDir.static) / "bfe" / "bfe.csv")
+
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on="Object ID")[
             ["Object ID", "bfe", "Ground Floor Height"]
@@ -199,7 +197,7 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+            test_db.scenarios.output_path.joinpath(
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )

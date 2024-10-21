@@ -18,15 +18,16 @@ class MeasureFactory:
     def get_measure_object(filepath: Union[str, os.PathLike]):
         measure_type = Measure.get_measure_type(filepath)
 
-        if measure_type in iter(ImpactType):
+        if isinstance(measure_type, ImpactType):
             return ImpactMeasureFactory.get_impact_measure(measure_type).load_file(
                 filepath
             )
-
-        elif measure_type in iter(HazardType):
+        elif isinstance(measure_type, HazardType):
             return HazardMeasureFactory.get_hazard_measure(measure_type).load_file(
                 filepath
             )
+        else:
+            raise ValueError(f"Measure type {measure_type} not recognized.")
 
 
 class ImpactMeasureFactory:
@@ -48,6 +49,8 @@ class ImpactMeasureFactory:
             return Buyout
         elif impact_measure == "floodproof_properties":
             return FloodProof
+        else:
+            raise ValueError(f"Measure type {impact_measure} not recognized.")
 
 
 class HazardMeasureFactory:
@@ -75,3 +78,5 @@ class HazardMeasureFactory:
             return GreenInfrastructure
         elif hazard_measure == "pump":
             return Pump
+        else:
+            raise ValueError(f"Measure type {hazard_measure} not recognized.")

@@ -11,8 +11,8 @@ from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
-from flood_adapt.object_model.site import Site
 
 
 class FiatAdapter:

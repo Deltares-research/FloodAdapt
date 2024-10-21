@@ -1,10 +1,10 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
+from flood_adapt.dbs_classes.path_builder import ObjectDir
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -158,11 +158,9 @@ class TranslationModel(BaseModel):
     )
 
 
-class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
+class EventModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all event types."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     mode: Mode
     template: Template
     timing: Timing
@@ -175,13 +173,9 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
-class EventSetModel(
-    BaseModel
-):  # add WindModel etc as this is shared among all? templates
+class EventSetModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     mode: Mode
     subevent_name: Optional[list[str]] = []
     frequency: Optional[list[float]] = []
@@ -206,38 +200,25 @@ class HistoricalHurricaneModel(EventModel):
     track_name: str
 
 
-class IEvent(ABC):
-    attrs: EventModel
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Event attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """Get Event attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Event attributes to a toml file, and optionally additional files."""
-        ...
+EventModelType = TypeVar("EventModelType", bound=EventModel)
 
 
-class ISynthetic(IEvent):
+class IEvent(IObject[EventModelType]):
+    attrs: EventModelType
+    dir_name = ObjectDir.event
+
+
+class ISynthetic(IEvent[SyntheticModel]):
     attrs: SyntheticModel
 
 
-class IHistoricalNearshore(IEvent):
+class IHistoricalNearshore(IEvent[HistoricalNearshoreModel]):
     attrs: HistoricalNearshoreModel
 
 
-class IHistoricalOffshore(IEvent):
+class IHistoricalOffshore(IEvent[HistoricalOffshoreModel]):
     attrs: HistoricalOffshoreModel
 
 
-class IHistoricalHurricane(IEvent):
+class IHistoricalHurricane(IEvent[HistoricalHurricaneModel]):
     attrs: HistoricalHurricaneModel

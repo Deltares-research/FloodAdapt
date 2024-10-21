@@ -3,6 +3,8 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
+from flood_adapt.dbs_classes.path_builder import ObjectDir, abs_path
+
 
 @contextmanager
 def cd(newdir: Path):
@@ -25,35 +27,78 @@ def finished_file_exists(path: Path):
     return (Path(path) / "finished.txt").exists()
 
 
-def import_external_file(
-    external_file: Path | str | os.PathLike, dst_dir: Path | str | os.PathLike
+def resolve_filepath(
+    object_dir: ObjectDir, obj_name: str, path: Path | str | os.PathLike
 ) -> Path:
-    """Copy an external file to the destination directory.
+    """
+    Determine whether a given path is an external file or a file in the database.
+
+    Users can set the path to a file in the database directly, meaning it will be an absolute path.
+    Users can also read the path from loading a toml file, meaning it will be a filename relative to the toml file.
 
     Parameters
     ----------
-    external_file : Path | str | os.PathLike
-        Path to the external file to be copied.
+    object_dir : ObjectDir
+        The directory name of the object in the database.
+    obj_name : str
+        The name of the object.
+    path : Union[Path, str, os.PathLike]
+        The path to the file, which can be an absolute path or a relative path.
+
+    Returns
+    -------
+    Path
+        The resolved path to the file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file does not exist in either the provided path or the database path.
+    """
+    _path = Path(path)
+    if str(_path) == _path.name:
+        # this is a filename, so it is in the database
+        src_path = abs_path(object_dir=object_dir, obj_name=obj_name) / path
+    else:
+        # this is a path, so it is an external file
+        src_path = Path(path)
+    return src_path
+
+
+def save_file_to_database(
+    src_file: Path | str | os.PathLike, dst_dir: Path | str | os.PathLike
+) -> Path:
+    """Save a file to the database.
+
+    Parameters
+    ----------
+    src_file : Path | str | os.PathLike
+        Path to the file to be copied.
     dst_dir : Path | str | os.PathLike
         Path to the destination directory.
 
     Returns
     -------
     Path
-        Path to the copied file.
+        Path to the copied file
 
     Raises
     ------
     FileNotFoundError
-        If the external file does not exist.
+        If the src_file does not exist at the given path
     """
-    external_file = Path(external_file).resolve()
-    dst_dir = Path(dst_dir).resolve()
-    if not external_file.exists():
-        raise FileNotFoundError(
-            f"Could not import file {external_file} as it does not exist."
-        )
-    dst_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(external_file, dst_dir / external_file.name)
+    src_file = Path(src_file).resolve()
+    dst_file = Path(dst_dir).resolve() / src_file.name
 
-    return dst_dir / external_file.name
+    if not src_file.exists():
+        raise FileNotFoundError(
+            f"Failed to find {src_file} when saving external file to the database as it does not exist."
+        )
+
+    if src_file != dst_file and dst_file.exists():
+        os.remove(dst_file)
+
+    dst_file.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src_file, dst_file)
+
+    return dst_file

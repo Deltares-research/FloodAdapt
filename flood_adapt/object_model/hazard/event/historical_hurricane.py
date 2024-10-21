@@ -1,21 +1,18 @@
 import os
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import pyproj
-import tomli
-import tomli_w
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from shapely.affinity import translate
 
-from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
     IHistoricalHurricane,
 )
 
 
-class HistoricalHurricane(Event, IHistoricalHurricane):
+class HistoricalHurricane(IHistoricalHurricane):
     """HistoricalHurricane class object for storing historical hurricane data in a standardized format for use in flood_adapt.
 
     Attributes
@@ -35,62 +32,13 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
 
     attrs: HistoricalHurricaneModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Load event toml.
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, HistoricalHurricaneModel):
+            self.attrs = data
+        else:
+            self.attrs = HistoricalHurricaneModel.model_validate(data)
 
-        Parameters
-        ----------
-        file : Path
-            path to the location where file will be loaded from
-
-        Returns
-        -------
-        HistoricalHurricane
-            HistoricalHurricane object
-        """
-        # load toml file
-        obj = HistoricalHurricane()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-
-        # load toml into object
-        obj.attrs = HistoricalHurricaneModel.model_validate(toml)
-
-        # return object
-        return obj
-
-    @staticmethod
-    def load_dict(data: dict[str, Any]):
-        """Load event toml.
-
-        Parameters
-        ----------
-        data : dict
-            dictionary containing event data
-
-        Returns
-        -------
-        HistoricalHurricane
-            HistoricalHurricane object
-        """
-        # Initialize object
-        obj = HistoricalHurricane()
-
-        # load data into object
-        obj.attrs = HistoricalHurricaneModel.model_validate(data)
-
-        # return object
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save event toml.
-
-        Parameters
-        ----------
-        file : Path
-            path to the location where file will be saved
-        """
+    def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
         if self.attrs.rainfall.source == "track" or self.attrs.rainfall.source == "map":
             from flood_adapt.dbs_controller import Database
 
@@ -102,11 +50,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
                 .index(self.attrs.track_name)
             )
             track = Database().cyclone_track_database.get_track(ind)
-            self.write_cyc(Path(filepath).parent, track)
-
-        # save toml file
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            self.write_cyc(Path(toml_path).parent, track)
 
     def make_spw_file(self, event_path: Path, model_dir: Path):
         # Location of tropical cyclone database

@@ -71,14 +71,13 @@ def test_loadFile_nonExistingFile_FileNotFoundError(test_db):
 
 # Create Benefit object using using a dictionary
 def test_loadDict_fromTestDict_createBenefit(test_db):
-    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
-
+    benefit = Benefit.load_dict(_TEST_DICT)
     assert isinstance(benefit, IBenefit)
 
 
 # Save a toml from a test benefit dictionary
 def test_save_fromTestDict_saveToml(test_db):
-    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
+    benefit = Benefit.load_dict(_TEST_DICT)
     output_path = test_db.input_path.joinpath(
         "benefits", "test_benefit", "test_benefit.toml"
     )

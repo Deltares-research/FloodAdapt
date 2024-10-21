@@ -1,37 +1,11 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
-
-from pydantic import BaseModel, Field
+from flood_adapt.dbs_classes.path_builder import ObjectDir
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 
 
-class StrategyModel(BaseModel):
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
-    measures: Optional[list[str]] = []
+class StrategyModel(IObjectModel):
+    measures: list[str] = []
 
 
-class IStrategy(ABC):
+class IStrategy(IObject[StrategyModel]):
+    dir_name = ObjectDir.strategy
     attrs: StrategyModel
-    database_input_path: Union[str, os.PathLike]
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike], validate: bool = False):
-        """Get Strategy attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(
-        data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike],
-        validate: bool = True,
-    ):
-        """Get Strategy attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Strategy attributes to a toml file, and optionally additional files."""
-        ...

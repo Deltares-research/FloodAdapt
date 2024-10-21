@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
 import tomli
@@ -18,31 +17,32 @@ from scipy.interpolate import interp1d
 
 from flood_adapt.object_model.interface.events import (
     EventModel,
+    IEvent,
     Mode,
+    Template,
 )
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 
 
-class Event:
-    """abstract parent class for all event types."""
+class Event(IEvent):
+    """Base class for all event types."""
 
     attrs: EventModel
 
     @staticmethod
     def get_template(filepath: Path):
         """Create Synthetic from toml file."""
-        obj = Event()
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = EventModel.model_validate(toml)
-        return obj.attrs.template
+        template = Template(toml.get("template"))
+        return template
 
     @staticmethod
     def get_mode(filepath: Path) -> Mode:
         """Get mode of the event (single or risk) from toml file."""
         with open(filepath, mode="rb") as fp:
             event_data = tomli.load(fp)
-        mode = event_data["mode"]
+        mode = Mode(event_data.get("mode"))
         return mode
 
     @staticmethod
@@ -147,7 +147,7 @@ class Event:
         df.index.names = ["time"]
         return df
 
-    def download_meteo(self, site: ISite, path: Path):
+    def download_meteo(self, site: Site, path: Path):
         params = ["wind", "barometric_pressure", "precipitation"]
         lon = site.attrs.lon
         lat = site.attrs.lat

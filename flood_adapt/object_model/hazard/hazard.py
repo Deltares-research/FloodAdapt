@@ -25,7 +25,7 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulIntensity,
@@ -47,12 +47,11 @@ class Hazard:
     """
 
     name: str
-    database_input_path: Path
     mode: Mode
     event_set: EventSet
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
-    site: ISite
+    site: Site
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
@@ -83,9 +82,7 @@ class Hazard:
     def set_simulation_paths(self) -> None:
         if self._mode == Mode.single_event:
             self.simulation_paths = [
-                self.database.scenarios.get_database_path(
-                    get_input_path=False
-                ).joinpath(
+                self.database.scenarios.output_path.joinpath(
                     self.name,
                     "Flooding",
                     "simulations",
@@ -95,9 +92,7 @@ class Hazard:
             # Create a folder name for the offshore model (will not be used if offshore model is not created)
             if self.site.attrs.sfincs.offshore_model is not None:
                 self.simulation_paths_offshore = [
-                    self.database.scenarios.get_database_path(
-                        get_input_path=False
-                    ).joinpath(
+                    self.database.scenarios.output_path.joinpath(
                         self.name,
                         "Flooding",
                         "simulations",
@@ -109,9 +104,7 @@ class Hazard:
             self.simulation_paths_offshore = []
             for subevent in self.event_list:
                 self.simulation_paths.append(
-                    self.database.scenarios.get_database_path(
-                        get_input_path=False
-                    ).joinpath(
+                    self.database.scenarios.output_path.joinpath(
                         self.name,
                         "Flooding",
                         "simulations",
@@ -122,9 +115,7 @@ class Hazard:
                 # Create a folder name for the offshore model (will not be used if offshore model is not created)
                 if self.site.attrs.sfincs.offshore_model is not None:
                     self.simulation_paths_offshore.append(
-                        self.database.scenarios.get_database_path(
-                            get_input_path=False
-                        ).joinpath(
+                        self.database.scenarios.output_path.joinpath(
                             self.name,
                             "Flooding",
                             "simulations",
@@ -180,7 +171,7 @@ class Hazard:
             event_name (str): name of event used in scenario.
         """
         self.event_set_path = (
-            self.database.events.get_database_path()
+            self.database.events.input_path
             / self.event_name
             / f"{self.event_name}.toml"
         )
@@ -199,7 +190,7 @@ class Hazard:
 
             for subevent in subevents:
                 event_path = (
-                    self.database.events.get_database_path()
+                    self.database.events.input_path
                     / self.event_name
                     / subevent
                     / f"{subevent}.toml"
@@ -538,7 +529,7 @@ class Hazard:
             # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
-                    measure_path = self.database.measures.get_database_path().joinpath(
+                    measure_path = self.database.measures.input_path.joinpath(
                         measure.attrs.name
                     )
                     if measure.attrs.type == "floodwall":
@@ -598,12 +589,12 @@ class Hazard:
         )
         if self.event_mode == Mode.risk:
             event_dir = (
-                self.database.events.get_database_path()
+                self.database.events.input_path
                 / self.event_set.attrs.name
                 / self.event.attrs.name
             )
         else:
-            event_dir = self.database.events.get_database_path() / self.event.attrs.name
+            event_dir = self.database.events.input_path / self.event.attrs.name
 
         # Create folders for offshore model
         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)

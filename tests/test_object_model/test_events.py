@@ -684,9 +684,9 @@ def validate_event_saves_tide_rainfall_river_csv_files(output_dir, event_obj):
     with open(toml_path, "rb") as f:
         data = tomli.load(f)
 
-    assert data["tide"]["timeseries_file"] == str(expected_tide_path)
-    assert data["rainfall"]["timeseries_file"] == str(expected_rainfall_path)
-    assert data["river"][0]["timeseries_file"] == str(expected_river_path)
+    assert data["tide"]["timeseries_file"] == expected_tide_path.name
+    assert data["rainfall"]["timeseries_file"] == expected_rainfall_path.name
+    assert data["river"][0]["timeseries_file"] == expected_river_path.name
 
 
 def test_nearshore_save_additional_saves_all_csv_files(tmp_path, test_nearshore_event):
