@@ -7,7 +7,9 @@ import tomli
 import tomli_w
 from pydantic import BaseModel, Field
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir
+from flood_adapt.object_model.interface.database import (
+    ObjectDir,
+)
 
 
 class IObjectModel(BaseModel):

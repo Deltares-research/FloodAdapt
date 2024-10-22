@@ -24,7 +24,7 @@ from flood_adapt.object_model.interface.events import (
 from flood_adapt.object_model.interface.site import Site
 
 
-class Event(IEvent):
+class Event(IEvent[EventModel]):
     """Base class for all event types."""
 
     attrs: EventModel
@@ -457,12 +457,3 @@ class Event(IEvent):
     #     df.index.names = ["time"]
     #     df.index = pd.to_datetime(df.index)
     #     return df
-
-    def __eq__(self, other):
-        if not isinstance(other, Event):
-            # don't attempt to compare against unrelated types
-            return NotImplemented
-        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
-        attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
-        attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
-        return attrs_1 == attrs_2

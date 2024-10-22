@@ -24,12 +24,11 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
-from flood_adapt.dbs_classes.path_builder import TopLevelDir, db_path
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.database import IDatabase, TopLevelDir, db_path
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength

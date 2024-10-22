@@ -2,7 +2,11 @@ from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, db_path
+from flood_adapt.object_model.interface.database import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.measures import IMeasure, ImpactMeasureModel
 from flood_adapt.object_model.interface.site import Site
 

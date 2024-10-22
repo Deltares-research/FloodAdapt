@@ -4,7 +4,10 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from flood_adapt.dbs_classes.path_builder import db_path
+from flood_adapt.object_model.hazard.event.event import Event
+from flood_adapt.object_model.interface.database import (
+    db_path,
+)
 from flood_adapt.object_model.interface.events import (
     HistoricalOffshoreModel,
     IHistoricalOffshore,
@@ -28,14 +31,14 @@ class HistoricalOffshore(IHistoricalOffshore):
                 db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
                 / self.attrs.rainfall.timeseries_file
             )
-            self.rain_ts = HistoricalOffshore.read_csv(path)
+            self.rain_ts = Event.read_csv(path)
 
         if self.attrs.wind.source == "timeseries":
             path = (
                 db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
                 / self.attrs.wind.timeseries_file
             )
-            self.wind_ts = HistoricalOffshore.read_csv(path)
+            self.wind_ts = Event.read_csv(path)
 
     def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
         if self.attrs.rainfall.source == "timeseries":

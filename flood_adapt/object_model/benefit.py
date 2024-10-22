@@ -11,8 +11,8 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir, TopLevelDir, db_path
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
+from flood_adapt.object_model.interface.database import ObjectDir, TopLevelDir, db_path
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.scenario import Scenario
 

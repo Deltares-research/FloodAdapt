@@ -3,7 +3,9 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.dbs_classes.path_builder import ObjectDir
+from flood_adapt.object_model.interface.database import (
+    ObjectDir,
+)
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
