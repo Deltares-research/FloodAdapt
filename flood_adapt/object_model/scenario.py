@@ -41,7 +41,6 @@ class Scenario(IScenario):
 
     def run(self):
         """Run direct impact models for the scenario."""
-        # self.init_object_model()
         os.makedirs(self.results_path, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.

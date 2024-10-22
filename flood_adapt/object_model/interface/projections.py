@@ -39,5 +39,5 @@ class ProjectionModel(IObjectModel):
 
 
 class IProjection(IObject[ProjectionModel]):
-    attrs = ProjectionModel
+    attrs: ProjectionModel
     dir_name = ObjectDir.projection

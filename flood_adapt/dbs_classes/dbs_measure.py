@@ -1,13 +1,11 @@
-from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.interface.measures import IMeasure
-
-# from flood_adapt.object_model.measure import Measure
 from flood_adapt.object_model.measure_factory import MeasureFactory
+from flood_adapt.object_model.utils import resolve_filepath
 
 
 class DbsMeasure(DbsTemplate):
@@ -47,10 +45,11 @@ class DbsMeasure(DbsTemplate):
         for path, obj in zip(measures["path"], objects):
             # If polygon is used read the polygon file
             if obj.attrs.polygon_file:
-                if Path(obj.attrs.polygon_file).exists():
-                    _path = Path(obj.attrs.polygon_file)
-                else:
-                    _path = self.input_path / obj.attrs.name / obj.attrs.polygon_file
+                _path = resolve_filepath(
+                    object_dir=self._object_class.dir_name,
+                    obj_name=obj.attrs.name,
+                    file_name=obj.attrs.polygon_file,
+                )
                 geometries.append(gpd.read_file(_path))
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:

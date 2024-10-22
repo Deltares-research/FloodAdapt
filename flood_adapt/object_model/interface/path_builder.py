@@ -26,12 +26,12 @@ class ObjectDir(str, Enum):
     projection = "projections"
     scenario = "scenarios"
 
-    buyout = "measures"
-    elevate = "measures"
-    floodproof = "measures"
-    greening = "measures"
-    floodwall = "measures"
-    pump = "measures"
+    # buyout = "measures"
+    # elevate = "measures"
+    # floodproof = "measures"
+    # greening = "measures"
+    # floodwall = "measures"
+    # pump = "measures"
 
 
 def db_path(

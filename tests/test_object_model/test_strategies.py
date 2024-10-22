@@ -82,10 +82,6 @@ def test_green_infra(test_db):
 
     strategy = Strategy.load_file(test_toml)
 
-    print(strategy)
-    print(strategy.attrs)
-    print(strategy.get_hazard_strategy())
-    print(strategy.get_hazard_strategy().measures)
     assert strategy.attrs.name == "greeninfra"
     assert isinstance(strategy.attrs.measures, list)
     assert isinstance(strategy.get_hazard_strategy().measures[0], GreenInfrastructure)

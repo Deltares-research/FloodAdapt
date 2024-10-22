@@ -246,39 +246,3 @@ class ImpactMeasure(IMeasure[ImpactMeasureModel], Generic[ImpactMeasureModelType
     """All the information for a specific measure type that affects the impact model."""
 
     attrs: ImpactMeasureModel
-
-
-# class IElevate(IMeasure[ElevateModel]):
-#     """A class for a FloodAdapt "elevate" measure."""
-
-#     attrs: ElevateModel
-
-
-# class IBuyout(IMeasure[BuyoutModel]):
-#     """A class for a FloodAdapt "buyout" measure."""
-
-#     attrs: BuyoutModel
-
-
-# class IFloodProof(IMeasure[FloodProofModel]):
-#     """A class for a FloodAdapt "floodproof" measure."""
-
-#     attrs: FloodProofModel
-
-
-# class IFloodWall(IMeasure[FloodWallModel]):
-#     """A class for a FloodAdapt "floodwall" measure."""
-
-#     attrs: FloodWallModel
-
-
-# class IPump(IMeasure[PumpModel]):
-#     """A class for a FloodAdapt "pump" measure."""
-
-#     attrs: PumpModel
-
-
-# class IGreenInfrastructure(IMeasure[GreenInfrastructureModel]):
-#     """A class for a FloodAdapt "green infrastrcutre" measure."""
-
-#     attrs: GreenInfrastructureModel
