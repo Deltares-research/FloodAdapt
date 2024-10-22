@@ -6,16 +6,52 @@ from typing import Union
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
+from flood_adapt.dbs_classes.dbs_template import AbstractDatabaseElement
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 
 
 class IDatabase(ABC):
+    base_path: Path
     input_path: Path
     output_path: Path
-    static_path = Path
-    site: ISite
+    static_path: Path
+
+    static_sfincs_model: SfincsAdapter
+
+    @property
+    @abstractmethod
+    def site(self) -> Site: ...
+
+    @property
+    @abstractmethod
+    def static(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def events(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def scenarios(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def strategies(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def measures(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def projections(self) -> AbstractDatabaseElement: ...
+
+    @property
+    @abstractmethod
+    def benefits(self) -> AbstractDatabaseElement: ...
 
     @abstractmethod
     def __init__(

@@ -7,6 +7,7 @@ from typing import Any, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
@@ -29,10 +30,13 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
+)
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -53,9 +57,10 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: ISite
+    _site: Site
 
     static_sfincs_model: SfincsAdapter
+    cyclone_track_database: CycloneTrackDatabase
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -110,20 +115,32 @@ class Database(IDatabase):
         self.database_name = database_name
 
         # Set the paths
+
         self.base_path = Path(database_path) / database_name
-        self.input_path = self.base_path / "input"
-        self.static_path = self.base_path / "static"
-        self.output_path = self.base_path / "output"
+        self.input_path = db_path(TopLevelDir.input)
+        self.static_path = db_path(TopLevelDir.static)
+        self.output_path = db_path(TopLevelDir.output)
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
         # Get the static sfincs model
-        sfincs_path = self.static_path.joinpath(
-            "templates", self._site.attrs.sfincs.overland_model
+        sfincs_path = str(
+            db_path(TopLevelDir.static)
+            / "templates"
+            / self._site.attrs.sfincs.overland_model
         )
         self.static_sfincs_model = SfincsAdapter(
             model_root=sfincs_path, site=self._site
         )
+
+        # Get the cyclone track database
+        if self._site.attrs.cyclone_track_database:
+            self.cyclone_track_database = CycloneTrackDatabase(
+                name="ibtracs",
+                file_name=self.static_path
+                / "cyclone_track_database"
+                / self._site.attrs.cyclone_track_database.file,
+            )
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
@@ -164,7 +181,7 @@ class Database(IDatabase):
 
     # Property methods
     @property
-    def site(self) -> ISite:
+    def site(self) -> Site:
         return self._site
 
     @property
@@ -515,7 +532,7 @@ class Database(IDatabase):
             )
             return ""
 
-        event_dir = self.events.get_database_path().joinpath(event.attrs.name)
+        event_dir = self.events.input_path.joinpath(event.attrs.name)
         event.add_dis_ts(event_dir, self.site.attrs.river, input_river_df)
         river_descriptions = [i.description for i in self.site.attrs.river]
         river_names = [i.description for i in self.site.attrs.river]
@@ -672,15 +689,13 @@ class Database(IDatabase):
 
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame):
         df.to_csv(
-            self.events.get_database_path().joinpath(event.attrs.name, f"{name}.csv"),
+            self.events.input_path.joinpath(event.attrs.name, f"{name}.csv"),
             header=False,
         )
 
     def write_cyc(self, event: IEvent, track: TropicalCyclone):
         cyc_file = (
-            self.events.get_database_path()
-            / event.attrs.name
-            / f"{event.attrs.track_name}.cyc"
+            self.events.input_path / event.attrs.name / f"{event.attrs.track_name}.cyc"
         )
         # cht_cyclone function to write TropicalCyclone as .cyc file
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
@@ -716,7 +731,7 @@ class Database(IDatabase):
                     [row["projection"], row["event"], row["strategy"]]
                 )
 
-                scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
+                scenario_obj = Scenario.load_dict(scenario_dict)
                 # Check if scenario already exists (because it was created before in the loop)
                 try:
                     self.scenarios.save(scenario_obj)
@@ -824,7 +839,7 @@ class Database(IDatabase):
         """
         # If single event read with hydromt-sfincs
         if not return_period:
-            map_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            map_path = self.scenarios.output_path.joinpath(
                 scenario_name,
                 "Flooding",
                 "max_water_level_map.nc",
@@ -834,7 +849,7 @@ class Database(IDatabase):
             zsmax = map.to_numpy()
 
         else:
-            file_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
+            file_path = self.scenarios.output_path.joinpath(
                 scenario_name,
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
@@ -855,9 +870,7 @@ class Database(IDatabase):
         GeoDataFrame
             impacts at footprint level
         """
-        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
-            scenario_name, "Impacts"
-        )
+        out_path = self.scenarios.output_path.joinpath(scenario_name, "Impacts")
         footprints = out_path / f"Impacts_building_footprints_{scenario_name}.gpkg"
         gdf = gpd.read_file(footprints, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -876,9 +889,7 @@ class Database(IDatabase):
         GeoDataFrame
             Impacts at roads
         """
-        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
-            scenario_name, "Impacts"
-        )
+        out_path = self.scenarios.output_path.joinpath(scenario_name, "Impacts")
         roads = out_path / f"Impacts_roads_{scenario_name}.gpkg"
         gdf = gpd.read_file(roads, engine="pyogrio")
         gdf = gdf.to_crs(4326)
@@ -897,9 +908,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated damages per aggregation type
         """
-        out_path = self.scenarios.get_database_path(get_input_path=False).joinpath(
-            scenario_name, "Impacts"
-        )
+        out_path = self.scenarios.output_path.joinpath(scenario_name, "Impacts")
         gdfs = {}
         for aggr_area in out_path.glob(f"Impacts_aggregated_{scenario_name}_*.gpkg"):
             label = aggr_area.stem.split(f"{scenario_name}_")[-1]
@@ -920,7 +929,7 @@ class Database(IDatabase):
         dict[GeoDataFrame]
             dictionary with aggregated benefits per aggregation type
         """
-        out_path = self.benefits.get_database_path(get_input_path=False).joinpath(
+        out_path = self.benefits.output_path.joinpath(
             benefit_name,
         )
         gdfs = {}
@@ -982,12 +991,10 @@ class Database(IDatabase):
 
         for scn in scns_simulated:
             if scn.direct_impacts.hazard == scenario.direct_impacts.hazard:
-                path_0 = self.scenarios.get_database_path(
-                    get_input_path=False
-                ).joinpath(scn.attrs.name, "Flooding")
-                path_new = self.scenarios.get_database_path(
-                    get_input_path=False
-                ).joinpath(scenario.attrs.name, "Flooding")
+                path_0 = self.scenarios.output_path.joinpath(scn.attrs.name, "Flooding")
+                path_new = self.scenarios.output_path.joinpath(
+                    scenario.attrs.name, "Flooding"
+                )
                 if scn.direct_impacts.hazard.has_run_check():  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         path_0,
@@ -1044,16 +1051,16 @@ class Database(IDatabase):
         if not Settings().delete_crashed_runs:
             return
 
-        scn_input_path = self.scenarios.get_database_path()
-        scn_output_path = self.scenarios.get_database_path(get_input_path=False)
-        if not scn_output_path.is_dir():
+        if not self.scenarios.output_path.is_dir():
             return
 
         input_scenarios = [
-            (scn_input_path / dir).resolve() for dir in os.listdir(scn_input_path)
+            (self.scenarios.input_path / dir).resolve()
+            for dir in os.listdir(self.scenarios.input_path)
         ]
         output_scenarios = [
-            (scn_output_path / dir).resolve() for dir in os.listdir(scn_output_path)
+            (self.scenarios.output_path / dir).resolve()
+            for dir in os.listdir(self.scenarios.output_path)
         ]
 
         for dir in output_scenarios:

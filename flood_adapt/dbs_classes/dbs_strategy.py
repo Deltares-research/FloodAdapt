@@ -3,9 +3,7 @@ from flood_adapt.object_model.strategy import Strategy
 
 
 class DbsStrategy(DbsTemplate):
-    _type = "strategy"
-    _folder_name = "strategies"
-    _object_model_class = Strategy
+    _object_class = Strategy
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if a strategy is a standard strategy.
@@ -21,10 +19,10 @@ class DbsStrategy(DbsTemplate):
             Raise error if strategy is a standard strategy.
         """
         # Check if strategy is a standard strategy
-        if self._database.site.attrs.standard_objects.strategies:
-            if name in self._database.site.attrs.standard_objects.strategies:
-                return True
-
+        if self._database.site.attrs.standard_objects:
+            if self._database.site.attrs.standard_objects.strategies:
+                if name in self._database.site.attrs.standard_objects.strategies:
+                    return True
         return False
 
     def check_higher_level_usage(self, name: str) -> list[str]:

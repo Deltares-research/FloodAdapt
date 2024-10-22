@@ -15,7 +15,7 @@ from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
 )
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 
 
 def get_measures() -> dict[str, Any]:
@@ -43,21 +43,18 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
     IMeasure
         Measure object.
     """
-    # If a database is provided, use it to set the input path for the measure. Otherwise, set it to None.
-    database_path = Database().input_path
-
     if type == "elevate_properties":
-        return Elevate.load_dict(attrs, database_path)
+        return Elevate.load_dict(attrs)
     elif type == "buyout_properties":
-        return Buyout.load_dict(attrs, database_path)
+        return Buyout.load_dict(attrs)
     elif type == "floodproof_properties":
-        return FloodProof.load_dict(attrs, database_path)
+        return FloodProof.load_dict(attrs)
     elif type in ["floodwall", "thin_dam", "levee"]:
-        return FloodWall.load_dict(attrs, database_path)
+        return FloodWall.load_dict(attrs)
     elif type in ["pump", "culvert"]:
-        return Pump.load_dict(attrs, database_path)
+        return Pump.load_dict(attrs)
     elif type in ["water_square", "total_storage", "greening"]:
-        return GreenInfrastructure.load_dict(attrs, database_path)
+        return GreenInfrastructure.load_dict(attrs)
 
 
 def save_measure(measure: IMeasure) -> None:
@@ -77,7 +74,7 @@ def copy_measure(old_name: str, new_name: str, new_description: str) -> None:
 
 
 # Green infrastructure
-def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: ISite) -> float:
+def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
     return GreenInfrastructure.calculate_polygon_area(gdf=gdf, site=site)
 
 

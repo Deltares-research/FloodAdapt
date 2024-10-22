@@ -1,22 +1,19 @@
 import os
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import pyproj
-import tomli
-import tomli_w
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from shapely.affinity import translate
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
-    IHistoricalHurricane,
 )
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.interface.path_builder import db_path
 
 
-class HistoricalHurricane(Event, IHistoricalHurricane):
+class HistoricalHurricane(Event):
     """HistoricalHurricane class object for storing historical hurricane data in a standardized format for use in flood_adapt.
 
     Attributes
@@ -34,69 +31,56 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         Save event toml
     """
 
-    attrs = HistoricalHurricaneModel
+    attrs: HistoricalHurricaneModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Load event toml.
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, HistoricalHurricaneModel):
+            self.attrs = data
+        else:
+            self.attrs = HistoricalHurricaneModel.model_validate(data)
 
-        Parameters
-        ----------
-        file : Path
-            path to the location where file will be loaded from
+        if self.attrs.rainfall.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.rainfall.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.rainfall.timeseries_file
+                )
+                self.rain_ts = Event.read_csv(path)
 
-        Returns
-        -------
-        HistoricalHurricane
-            HistoricalHurricane object
-        """
-        # load toml file
-        obj = HistoricalHurricane()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
+        if self.attrs.wind.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.wind.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.wind.timeseries_file
+                )
+                self.wind_ts = Event.read_csv(path)
 
-        # load toml into object
-        obj.attrs = HistoricalHurricaneModel.model_validate(toml)
+        if self.attrs.tide.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.tide.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.tide.timeseries_file
+                )
+                self.tide_surge_ts = Event.read_csv(path)
 
-        # return object
-        return obj
+    def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
+        if self.attrs.rainfall.source == "track" or self.attrs.rainfall.source == "map":
+            from flood_adapt.dbs_controller import Database
 
-    @staticmethod
-    def load_dict(data: dict[str, Any]):
-        """Load event toml.
+            # @gundula is this the correct way to handle this?
+            # Should we save .cyc AND/ OR .spw files?
+            ind = (
+                Database()
+                .cyclone_track_database.list_names()
+                .index(self.attrs.track_name)
+            )
+            track = Database().cyclone_track_database.get_track(ind)
+            self.write_cyc(Path(toml_path).parent, track)
 
-        Parameters
-        ----------
-        data : dict
-            dictionary containing event data
-
-        Returns
-        -------
-        HistoricalHurricane
-            HistoricalHurricane object
-        """
-        # Initialize object
-        obj = HistoricalHurricane()
-
-        # load data into object
-        obj.attrs = HistoricalHurricaneModel.model_validate(data)
-
-        # return object
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save event toml.
-
-        Parameters
-        ----------
-        file : Path
-            path to the location where file will be saved
-        """
-        # save toml file
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
-
-    def make_spw_file(self, event_path: Path, model_dir: Path, site=Site):
+    def make_spw_file(self, event_path: Path, model_dir: Path):
         # Location of tropical cyclone database
         cyc_file = event_path.joinpath(f"{self.attrs.track_name}.cyc")
         # Initialize the tropical cyclone database
@@ -108,7 +92,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
             self.attrs.hurricane_translation.eastwest_translation.value != 0
             or self.attrs.hurricane_translation.northsouth_translation.value != 0
         ):
-            tc = self.translate_tc_track(tc=tc, site=site)
+            tc = self.translate_tc_track(tc=tc)
 
         if self.attrs.rainfall.source == "track":
             tc.include_rainfall = True
@@ -121,9 +105,17 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
 
-    def translate_tc_track(self, tc: TropicalCyclone, site: Site):
+    def write_cyc(self, output_dir: Path, track: TropicalCyclone):
+        cyc_file = output_dir / f"{self.attrs.track_name}.cyc"
+
+        # cht_cyclone function to write TropicalCyclone as .cyc file
+        track.write_track(filename=cyc_file, fmt="ddb_cyc")
+
+    def translate_tc_track(self, tc: TropicalCyclone):
+        from flood_adapt.dbs_controller import Database
+
         # First convert geodataframe to the local coordinate system
-        crs = pyproj.CRS.from_string(site.attrs.sfincs.csname)
+        crs = pyproj.CRS.from_string(Database().site.attrs.sfincs.csname)
         tc.track = tc.track.to_crs(crs)
 
         # Translate the track in the local coordinate system
