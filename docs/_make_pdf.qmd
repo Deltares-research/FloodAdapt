@@ -1,0 +1,76 @@
+---
+title: Test to print the pdf
+subtitle: Floodadapt Guide
+author: "Kathryn Roscoe, Sarah Rautenbach, Lauren Schambach"
+nocite: |
+  @*
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    number-depth: 2
+    output-file: "Test_print_docs"
+    output-ext:  "pdf"
+editor: source
+---
+# To run please use the terminal : quarto render _make_pdf.qmd --resource-path _static
+
+```{r}
+#| echo: false
+#| eval: true
+process_qmd <- function(file, fpath_in = "_static", fpath_out = "_static") {
+  doc <- readLines(file)
+  end_yaml <- which(doc == "---")[2]
+  yaml_header <- doc[1:end_yaml]
+  title_line <- yaml_header[grep("title:", yaml_header)]
+  title <- sub("title: *", "", title_line)
+  out_doc <- doc[seq(end_yaml+1, length(doc))]
+  if (fpath_in != fpath_out) {
+    out_doc <- stringr::str_replace_all(out_doc, fpath_in, fpath_out)
+  }
+  res <- knitr::knit_child(text = out_doc, quiet = TRUE, options = list(eval = FALSE, echo = TRUE))
+  return(list(title = title, content = res))
+}
+```
+
+
+
+```{r}
+#| output: asis
+#| echo: false
+#| eval: true
+#| message: false
+idx <- process_qmd("1_introduction/index.qmd")
+cat("\n# ", idx$title, "\n\n")
+cat(unlist(idx$content), sep = '\n\n')
+```
+
+
+
+```{r}
+#| output: asis
+#| echo: false
+#| eval: true
+#| message: false
+howto <- process_qmd("4_user_guide/index.qmd")
+start <- process_qmd("4_user_guide/getting_started.qmd")
+site <- process_qmd("4_user_guide/site_tab.qmd")
+cat("\n# ", howto$title, "\n\n")
+cat(unlist(howto$content), sep = '\n\n')
+cat("\n# ", start$title, "\n\n")
+cat(unlist(start$content), sep = '\n\n')
+cat("\n# ", site$title, "\n\n")
+cat(unlist(site$content), sep = '\n\n')
+```
+
+
+```{r}
+#| output: asis
+#| echo: false
+#| eval: true
+#| message: false
+howto2 <- process_qmd("2_installation_guide/index.qmd")
+cat("\n# ", howto2$title, "\n\n")
+cat(unlist(howto2$content), sep = '\n\n')
+```
