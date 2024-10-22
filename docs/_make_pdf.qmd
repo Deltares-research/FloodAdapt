@@ -14,27 +14,45 @@ format:
     output-ext:  "pdf"
 editor: source
 ---
-# To run please use the terminal : quarto render _make_pdf.qmd --resource-path _static
+<!-- To run please use the terminal : quarto render _make_pdf.qmd --resource-path _static
+    source : https://github.com/royal-statistical-society/datavisguide/blob/main/_make_pdf.qmd-->
 
 ```{r}
 #| echo: false
 #| eval: true
+# Function to change paths
+# Function to change paths
+update_image_paths <- function(content) {
+  # Replace ../../_static/images/ with ../_static/images/
+  updated_content <- gsub("\\.\\./\\..*/_static/images/", "../_static/images/", content)
+  updated_content <- gsub("##", "### ", updated_content)
+  updated_content <- gsub("###", "#### ", updated_content)
+
+  return(updated_content)
+}
+
+# Process QMD function
 process_qmd <- function(file, fpath_in = "_static", fpath_out = "_static") {
   doc <- readLines(file)
   end_yaml <- which(doc == "---")[2]
   yaml_header <- doc[1:end_yaml]
   title_line <- yaml_header[grep("title:", yaml_header)]
   title <- sub("title: *", "", title_line)
-  out_doc <- doc[seq(end_yaml+1, length(doc))]
+  out_doc <- doc[seq(end_yaml + 1, length(doc))]
+
   if (fpath_in != fpath_out) {
     out_doc <- stringr::str_replace_all(out_doc, fpath_in, fpath_out)
   }
+
   res <- knitr::knit_child(text = out_doc, quiet = TRUE, options = list(eval = FALSE, echo = TRUE))
+
+  # Update image paths in the content
+  res <- update_image_paths(res)
+
   return(list(title = title, content = res))
 }
+
 ```
-
-
 
 ```{r}
 #| output: asis
@@ -42,35 +60,40 @@ process_qmd <- function(file, fpath_in = "_static", fpath_out = "_static") {
 #| eval: true
 #| message: false
 idx <- process_qmd("1_introduction/index.qmd")
-cat("\n# ", idx$title, "\n\n")
-cat(unlist(idx$content), sep = '\n\n')
-```
-
-
-
-```{r}
-#| output: asis
-#| echo: false
-#| eval: true
-#| message: false
 howto <- process_qmd("4_user_guide/index.qmd")
 start <- process_qmd("4_user_guide/getting_started.qmd")
 site <- process_qmd("4_user_guide/site_tab.qmd")
+events <- process_qmd("4_user_guide/events/index.qmd")
+historic_events <- process_qmd("4_user_guide/events/historic_events/index.qmd")
+historic_events_h <- process_qmd("4_user_guide/events/historic_events/historic_events_hurricane.qmd")
+historic_events_g <- process_qmd("4_user_guide/events/historic_events/historic_events_gauged.qmd")
+historic_events_u <- process_qmd("4_user_guide/events/historic_events/historic_events_ungauged.qmd")
+synthetic_events <- process_qmd("4_user_guide/events/synthetic_events.qmd")
+probabilistic_events <- process_qmd("4_user_guide/events/probabilistic_events.qmd")
+projections <- process_qmd("4_user_guide/projections/index.qmd")
+
+cat("\n# ", idx$title, "\n\n")
+cat(unlist(idx$content), sep = '\n\n')
 cat("\n# ", howto$title, "\n\n")
 cat(unlist(howto$content), sep = '\n\n')
-cat("\n# ", start$title, "\n\n")
+cat("\n## ", start$title, "\n\n")
 cat(unlist(start$content), sep = '\n\n')
-cat("\n# ", site$title, "\n\n")
+cat("\n## ", site$title, "\n\n")
 cat(unlist(site$content), sep = '\n\n')
-```
-
-
-```{r}
-#| output: asis
-#| echo: false
-#| eval: true
-#| message: false
-howto2 <- process_qmd("2_installation_guide/index.qmd")
-cat("\n# ", howto2$title, "\n\n")
-cat(unlist(howto2$content), sep = '\n\n')
+cat("\n## ", events$title, "\n\n")
+cat(unlist(events$content), sep = '\n\n')
+cat("\n### ", historic_events$title, "\n\n")
+cat(unlist(historic_events$content), sep = '\n\n')
+cat("\n#### ", historic_events_h$title, "\n\n")
+cat(unlist(historic_events_h$content), sep = '\n\n')
+cat("\n#### ", historic_events_g$title, "\n\n")
+cat(unlist(historic_events_g$content), sep = '\n\n')
+cat("\n#### ", historic_events_u$title, "\n\n")
+cat(unlist(historic_events_u$content), sep = '\n\n')
+cat("\n### ", synthetic_events$title, "\n\n")
+cat(unlist(synthetic_events$content), sep = '\n\n')
+cat("\n### ", probabilistic_events$title, "\n\n")
+cat(unlist(probabilistic_events$content), sep = '\n\n')
+cat("\n## ", projections$title, "\n\n")
+cat(unlist(projections$content), sep = '\n\n')
 ```
