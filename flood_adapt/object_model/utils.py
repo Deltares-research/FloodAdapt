@@ -3,7 +3,7 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
-from flood_adapt.object_model.interface.database import (
+from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     db_path,
 )

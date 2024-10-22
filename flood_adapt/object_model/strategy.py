@@ -4,8 +4,11 @@ from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrateg
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
-from flood_adapt.object_model.interface.database import ObjectDir, db_path
 from flood_adapt.object_model.interface.measures import HazardType, ImpactType
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.strategies import IStrategy, StrategyModel
 from flood_adapt.object_model.measure_factory import (
     MeasureFactory,

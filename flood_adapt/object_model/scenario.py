@@ -5,7 +5,11 @@ from flood_adapt import __version__
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import ScenarioModel
-from flood_adapt.object_model.interface.database import ObjectDir, TopLevelDir, db_path
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.utils import finished_file_exists, write_finished_file

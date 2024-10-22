@@ -1,66 +1,16 @@
 import os
 from abc import ABC, abstractmethod
-from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-from flood_adapt.config import Settings
 from flood_adapt.dbs_classes.dbs_template import AbstractDatabaseElement
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.site import Site
-
-
-class TopLevelDir(str, Enum):
-    """Top level directories in the database."""
-
-    input = "input"
-    output = "output"
-    static = "static"
-    temp = "temp"
-
-
-class ObjectDir(str, Enum):
-    """The names for object directories at the second level of the database."""
-
-    site = "site"
-
-    benefit = "benefits"
-    event = "events"
-    strategy = "strategies"
-    measure = "measures"
-    projection = "projections"
-    scenario = "scenarios"
-
-    buyout = "measures"
-    elevate = "measures"
-    floodproof = "measures"
-    greening = "measures"
-    floodwall = "measures"
-    pump = "measures"
-
-
-def db_path(
-    top_level_dir: TopLevelDir = TopLevelDir.input,
-    object_dir: Optional[ObjectDir] = None,
-    obj_name: Optional[str] = None,
-) -> Path:
-    """Return an path to a database directory from arguments."""
-    rel_path = Path(top_level_dir.value)
-    if object_dir is not None:
-        if isinstance(object_dir, ObjectDir):
-            rel_path = rel_path / object_dir.value
-        else:
-            rel_path = rel_path / str(object_dir)
-
-        if obj_name is not None:
-            rel_path = rel_path / obj_name
-
-    return Settings().database_path / rel_path
 
 
 class IDatabase(ABC):

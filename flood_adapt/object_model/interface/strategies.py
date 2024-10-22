@@ -1,5 +1,5 @@
-from flood_adapt.object_model.interface.database import ObjectDir
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import ObjectDir
 
 
 class StrategyModel(IObjectModel):
