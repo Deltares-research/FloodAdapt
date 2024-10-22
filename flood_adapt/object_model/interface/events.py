@@ -1,12 +1,17 @@
+from abc import abstractmethod
 from enum import Enum
-from typing import Optional, TypeVar
+from pathlib import Path
+from typing import Optional, TypeVar, Union
 
+import numpy as np
+import pandas as pd
 from pydantic import BaseModel
 
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -209,18 +214,37 @@ class IEvent(IObject[EventModelType]):
     attrs: EventModelType
     dir_name = ObjectDir.event
 
+    @staticmethod
+    @abstractmethod
+    def get_template(filepath: Path): ...
 
-class ISynthetic(IEvent[SyntheticModel]):
-    attrs: SyntheticModel
+    @staticmethod
+    @abstractmethod
+    def get_mode(filepath: Path) -> Mode: ...
 
+    @staticmethod
+    @abstractmethod
+    def timeseries_shape(
+        shape_type: str, duration: float, peak: float, **kwargs
+    ) -> np.ndarray: ...
 
-class IHistoricalNearshore(IEvent[HistoricalNearshoreModel]):
-    attrs: HistoricalNearshoreModel
+    @staticmethod
+    @abstractmethod
+    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame: ...
 
+    @abstractmethod
+    def download_meteo(self, site: Site, path: Path): ...
 
-class IHistoricalOffshore(IEvent[HistoricalOffshoreModel]):
-    attrs: HistoricalOffshoreModel
+    @abstractmethod
+    def add_dis_ts(
+        self,
+        event_dir: Path,
+        site_river: list,
+        input_river_df_list: Optional[list[pd.DataFrame]] = [],
+    ): ...
 
+    @abstractmethod
+    def add_rainfall_ts(self, **kwargs): ...
 
-class IHistoricalHurricane(IEvent[HistoricalHurricaneModel]):
-    attrs: HistoricalHurricaneModel
+    @abstractmethod
+    def add_wind_ts(self): ...

@@ -529,29 +529,17 @@ class Hazard:
             # Add hazard measures if included
             if self.hazard_strategy.measures is not None:
                 for measure in self.hazard_strategy.measures:
-                    measure_path = self.database.measures.input_path.joinpath(
-                        measure.attrs.name
-                    )
                     if measure.attrs.type == "floodwall":
-                        self._logger.info(
-                            "Adding floodwall to the overland flood model..."
-                        )
-                        model.add_floodwall(
-                            floodwall=measure.attrs, measure_path=measure_path
-                        )
+                        model.add_floodwall(floodwall=measure)
                     if measure.attrs.type == "pump":
-                        model.add_pump(pump=measure.attrs, measure_path=measure_path)
+                        model.add_pump(pump=measure)
                     if (
                         measure.attrs.type == "greening"
                         or measure.attrs.type == "total_storage"
                         or measure.attrs.type == "water_square"
                     ):
-                        self._logger.info(
-                            "Adding green infrastructure to the overland flood model..."
-                        )
                         model.add_green_infrastructure(
-                            green_infrastructure=measure.attrs,
-                            measure_path=measure_path,
+                            green_infrastructure=measure,
                         )
 
             # add observation points from site.toml

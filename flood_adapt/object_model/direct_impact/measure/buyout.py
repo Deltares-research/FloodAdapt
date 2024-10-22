@@ -2,12 +2,14 @@ import os
 from pathlib import Path
 from typing import Any
 
-from flood_adapt.object_model.interface.measures import BuyoutModel, IBuyout
+from flood_adapt.object_model.interface.measures import BuyoutModel, ImpactMeasure
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Buyout(IBuyout):
+class Buyout(ImpactMeasure[BuyoutModel]):
     """Subclass of ImpactMeasure describing the measure of buying-out buildings."""
+
+    attrs: BuyoutModel
 
     def __init__(self, data: dict[str, Any]) -> None:
         if isinstance(data, BuyoutModel):

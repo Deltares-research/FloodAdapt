@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from flood_adapt.object_model.interface.database import (
+from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )

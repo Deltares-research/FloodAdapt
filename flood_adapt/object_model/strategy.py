@@ -1,10 +1,13 @@
 from typing import Any, Union
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
-from flood_adapt.object_model.interface.measures import HazardType, ImpactType
+from flood_adapt.object_model.interface.measures import (
+    HazardMeasure,
+    HazardType,
+    ImpactMeasure,
+    ImpactType,
+)
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     db_path,
@@ -17,6 +20,8 @@ from flood_adapt.object_model.measure_factory import (
 
 class Strategy(IStrategy):
     """Strategy class that holds all the information for a specific strategy."""
+
+    attrs: StrategyModel
 
     def __init__(self, data: dict[str, Any]) -> None:
         if isinstance(data, StrategyModel):

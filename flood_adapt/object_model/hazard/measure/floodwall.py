@@ -4,12 +4,12 @@ from typing import Any
 
 from flood_adapt.object_model.interface.measures import (
     FloodWallModel,
-    IFloodWall,
+    HazardMeasure,
 )
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class FloodWall(IFloodWall):
+class FloodWall(HazardMeasure[FloodWallModel]):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height."""
 
     attrs: FloodWallModel

@@ -73,7 +73,7 @@ class HazardMeasureModel(MeasureModel[HazardType]):
     polygon_file: Optional[str] = Field(
         None,
         min_length=1,
-        description="Path to a polygon file, relative to the database path.",
+        description="Path to a polygon file, either absolute or relative to the measure path.",
     )
 
     @model_validator(mode="after")
@@ -220,8 +220,6 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-# Can probably remove all of these I-classes and just use the classes directly
-# The I-classes are only used to inherit from
 MeasureModelType = TypeVar("MeasureModelType", bound=MeasureModel)
 
 
@@ -232,37 +230,55 @@ class IMeasure(IObject[MeasureModelType]):
     attrs: MeasureModelType
 
 
-class IElevate(IMeasure[ElevateModel]):
-    """A class for a FloodAdapt "elevate" measure."""
-
-    attrs: ElevateModel
+HazardMeasureModelType = TypeVar("HazardMeasureModelType", bound=HazardMeasureModel)
 
 
-class IBuyout(IMeasure[BuyoutModel]):
-    """A class for a FloodAdapt "buyout" measure."""
+class HazardMeasure(IMeasure[HazardMeasureModel], Generic[HazardMeasureModelType]):
+    """HazardMeasure class that holds all the information for a specific measure type that affects the impact model."""
 
-    attrs: BuyoutModel
-
-
-class IFloodProof(IMeasure[FloodProofModel]):
-    """A class for a FloodAdapt "floodproof" measure."""
-
-    attrs: FloodProofModel
+    attrs: HazardMeasureModel
 
 
-class IFloodWall(IMeasure[FloodWallModel]):
-    """A class for a FloodAdapt "floodwall" measure."""
-
-    attrs: FloodWallModel
+ImpactMeasureModelType = TypeVar("ImpactMeasureModelType", bound=ImpactMeasureModel)
 
 
-class IPump(IMeasure[PumpModel]):
-    """A class for a FloodAdapt "pump" measure."""
+class ImpactMeasure(IMeasure[ImpactMeasureModel], Generic[ImpactMeasureModelType]):
+    """All the information for a specific measure type that affects the impact model."""
 
-    attrs: PumpModel
+    attrs: ImpactMeasureModel
 
 
-class IGreenInfrastructure(IMeasure[GreenInfrastructureModel]):
-    """A class for a FloodAdapt "green infrastrcutre" measure."""
+# class IElevate(IMeasure[ElevateModel]):
+#     """A class for a FloodAdapt "elevate" measure."""
 
-    attrs: GreenInfrastructureModel
+#     attrs: ElevateModel
+
+
+# class IBuyout(IMeasure[BuyoutModel]):
+#     """A class for a FloodAdapt "buyout" measure."""
+
+#     attrs: BuyoutModel
+
+
+# class IFloodProof(IMeasure[FloodProofModel]):
+#     """A class for a FloodAdapt "floodproof" measure."""
+
+#     attrs: FloodProofModel
+
+
+# class IFloodWall(IMeasure[FloodWallModel]):
+#     """A class for a FloodAdapt "floodwall" measure."""
+
+#     attrs: FloodWallModel
+
+
+# class IPump(IMeasure[PumpModel]):
+#     """A class for a FloodAdapt "pump" measure."""
+
+#     attrs: PumpModel
+
+
+# class IGreenInfrastructure(IMeasure[GreenInfrastructureModel]):
+#     """A class for a FloodAdapt "green infrastrcutre" measure."""
+
+#     attrs: GreenInfrastructureModel

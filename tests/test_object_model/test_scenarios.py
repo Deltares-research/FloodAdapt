@@ -11,11 +11,11 @@ from flood_adapt.object_model.direct_impacts import DirectImpacts
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.database import (
+from flood_adapt.object_model.interface.events import RainfallModel, TideModel
+from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.events import RainfallModel, TideModel
 from flood_adapt.object_model.interface.site import SCSModel, Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
 from flood_adapt.object_model.scenario import Scenario

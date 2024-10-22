@@ -7,7 +7,7 @@ import pyproj
 
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
-    IGreenInfrastructure,
+    HazardMeasure,
 )
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
@@ -17,8 +17,10 @@ from flood_adapt.object_model.io.unitfulvalue import (
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class GreenInfrastructure(IGreenInfrastructure):
+class GreenInfrastructure(HazardMeasure[GreenInfrastructureModel]):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
+
+    attrs: GreenInfrastructureModel
 
     def __init__(self, data: dict[str, Any]) -> None:
         if isinstance(data, GreenInfrastructureModel):

@@ -6,13 +6,13 @@ import pyproj
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from shapely.affinity import translate
 
+from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
-    IHistoricalHurricane,
 )
 
 
-class HistoricalHurricane(IHistoricalHurricane):
+class HistoricalHurricane(Event):
     """HistoricalHurricane class object for storing historical hurricane data in a standardized format for use in flood_adapt.
 
     Attributes

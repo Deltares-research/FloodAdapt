@@ -7,12 +7,11 @@ import pandas as pd
 
 from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
-    ISynthetic,
     SyntheticModel,
 )
 
 
-class Synthetic(Event, ISynthetic):
+class Synthetic(Event):
     """class for Synthetic event, can only be initialized from a toml file or dictionar using load_file or load_dict."""
 
     attrs: SyntheticModel

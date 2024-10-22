@@ -14,16 +14,19 @@ from cht_tide.tide_predict import predict
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.historical_hurricane import (
     HistoricalHurricane,
 )
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+    GreenInfrastructure,
+)
+from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.events import EventModel
-from flood_adapt.object_model.interface.measures import (
-    FloodWallModel,
-    GreenInfrastructureModel,
-    PumpModel,
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
 )
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.interface.site import Site
@@ -270,7 +273,7 @@ class SfincsAdapter:
                 timeseries=list_df, locations=gdf_locs, merge=False
             )
 
-    def add_floodwall(self, floodwall: FloodWallModel, measure_path=Path):
+    def add_floodwall(self, floodwall: FloodWall):
         """Add floodwall to sfincs model.
 
         Parameters
@@ -278,16 +281,21 @@ class SfincsAdapter:
         floodwall : FloodWallModel
             floodwall information
         """
+        self._logger.info("Adding floodwall to the overland flood model...")
         # HydroMT function: get geodataframe from filename
-        polygon_file = Settings().database_path / floodwall.polygon_file
+        polygon_file = (
+            db_path(object_dir=floodwall.dir_name, obj_name=floodwall.attrs.name)
+            / floodwall.attrs.polygon_file
+        )
         gdf_floodwall = self.sf_model.data_catalog.get_geodataframe(
             polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
 
         # Add floodwall attributes to geodataframe
-        gdf_floodwall["name"] = floodwall.name
+        gdf_floodwall["name"] = floodwall.attrs.name
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
+
         # TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
         try:
             heights = [
@@ -304,9 +312,11 @@ class SfincsAdapter:
         except Exception:
             self._logger.warning(
                 f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
-                Using uniform height of {floodwall.elevation.convert(UnitTypesLength("meters"))} meters instead."""
+                Using uniform height of {floodwall.attrs.elevation.convert(UnitTypesLength("meters"))} meters instead."""
             )
-            gdf_floodwall["z"] = floodwall.elevation.convert(UnitTypesLength("meters"))
+            gdf_floodwall["z"] = floodwall.attrs.elevation.convert(
+                UnitTypesLength("meters")
+            )
 
         # par1 is the overflow coefficient for weirs
         gdf_floodwall["par1"] = 0.6
@@ -316,42 +326,47 @@ class SfincsAdapter:
             structures=gdf_floodwall, stype="weir", merge=True
         )
 
-    def add_green_infrastructure(
-        self, green_infrastructure: GreenInfrastructureModel, measure_path: Path
-    ):
+    def add_green_infrastructure(self, green_infrastructure: GreenInfrastructure):
         """Add green infrastructure to sfincs model.
 
         Parameters
         ----------
-        green_infrastructure : GreenInfrastructureModel
+        green_infrastructure : GreenInfrastructure
             Green infrastructure information
         measure_path: Path
             Path of the measure folder
         """
+        self._logger.info("Adding green infrastructure to the overland flood model...")
         # HydroMT function: get geodataframe from filename
-        if green_infrastructure.selection_type == "polygon":
-            polygon_file = Settings().database_path / green_infrastructure.polygon_file
-        elif green_infrastructure.selection_type == "aggregation_area":
+        if green_infrastructure.attrs.selection_type == "polygon":
+            polygon_file = db_path(
+                object_dir=green_infrastructure.dir_name,
+                obj_name=green_infrastructure.attrs.polygon_file,
+            )
+        elif green_infrastructure.attrs.selection_type == "aggregation_area":
             # TODO this logic already exists in the database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
             for aggr_dict in self.site.attrs.fiat.aggregation:
                 # check which one is used in measure
-                if not aggr_dict.name == green_infrastructure.aggregation_area_type:
+                if (
+                    not aggr_dict.name
+                    == green_infrastructure.attrs.aggregation_area_type
+                ):
                     continue
                 # load geodataframe
                 aggr_areas = gpd.read_file(
-                    measure_path.parents[2] / "static" / aggr_dict.file,
+                    db_path(TopLevelDir.static) / aggr_dict.file,
                     engine="pyogrio",
                 ).to_crs(4326)
                 # keep only aggregation area chosen
                 polygon_file = aggr_areas.loc[
                     aggr_areas[aggr_dict.field_name]
-                    == green_infrastructure.aggregation_area_name,
+                    == green_infrastructure.attrs.aggregation_area_name,
                     ["geometry"],
                 ].reset_index(drop=True)
         else:
             raise ValueError(
-                f"The selection type: {green_infrastructure.selection_type} is not valid"
+                f"The selection type: {green_infrastructure.attrs.selection_type} is not valid"
             )
 
         gdf_green_infra = self.sf_model.data_catalog.get_geodataframe(
@@ -365,14 +380,14 @@ class SfincsAdapter:
 
         # Volume is always already calculated and is converted to m3 for SFINCS
         height = None
-        volume = green_infrastructure.volume.convert(UnitTypesVolume("m3"))
+        volume = green_infrastructure.attrs.volume.convert(UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self.sf_model.setup_storage_volume(
             storage_locs=gdf_green_infra, volume=volume, height=height, merge=True
         )
 
-    def add_pump(self, pump: PumpModel, measure_path: Path):
+    def add_pump(self, pump: Pump):
         """Add pump to sfincs model.
 
         Parameters
@@ -380,9 +395,11 @@ class SfincsAdapter:
         pump : PumpModel
             pump information
         """
+        self._logger.info("Adding pump to the overland flood model...")
         # HydroMT function: get geodataframe from filename
-        polygon_file = Settings().database_path / pump.polygon_file
-
+        polygon_file = db_path(
+            object_dir=pump.dir_name, obj_name=pump.attrs.polygon_file
+        )
         gdf_pump = self.sf_model.data_catalog.get_geodataframe(
             polygon_file, geom=self.sf_model.region, crs=self.sf_model.crs
         )
@@ -391,7 +408,7 @@ class SfincsAdapter:
         self.sf_model.setup_drainage_structures(
             structures=gdf_pump,
             stype="pump",
-            discharge=pump.discharge.convert(UnitTypesDischarge("m3/s")),
+            discharge=pump.attrs.discharge.convert(UnitTypesDischarge("m3/s")),
             merge=True,
         )
 
@@ -401,6 +418,7 @@ class SfincsAdapter:
         Args:
             path_out (Path): new root of sfincs model
         """
+        self._logger.info(f"Writing the sfincs model to {path_out}")
         # Change model root to new folder
         self.sf_model.set_root(path_out, mode="w+")
 
@@ -424,9 +442,7 @@ class SfincsAdapter:
         model_dir : Path
             Output path of the model
         """
-        historical_hurricane.make_spw_file(
-            event_path=event_path, model_dir=model_dir, site=self.site
-        )
+        historical_hurricane.make_spw_file(event_path=event_path, model_dir=model_dir)
 
     def set_config_spw(self, spw_name: str):
         self.sf_model.set_config("spwfile", spw_name)
@@ -437,6 +453,9 @@ class SfincsAdapter:
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
         if self.site.attrs.obs_point is not None:
+            self._logger.info(
+                "Adding observation points to the overland flood model..."
+            )
             obs_points = self.site.attrs.obs_point
             names = []
             lat = []

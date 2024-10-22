@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Any
 
 from flood_adapt.object_model.interface.measures import (
-    IPump,
+    HazardMeasure,
     PumpModel,
 )
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Pump(IPump):
+class Pump(HazardMeasure[PumpModel]):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height."""
 
     attrs: PumpModel

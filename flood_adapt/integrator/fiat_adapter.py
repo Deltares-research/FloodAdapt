@@ -9,6 +9,9 @@ from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
+from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
+    get_object_ids,
+)
 from flood_adapt.object_model.hazard.hazard import Hazard
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.site import Site
@@ -247,7 +250,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = elevate.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(elevate, self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
@@ -301,7 +304,7 @@ class FiatAdapter:
         ].isin(self.site.attrs.fiat.non_building_names)
 
         # Get rows that are affected
-        objectids = buyout.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(buyout, self.fiat_model)
         rows = (
             self.fiat_model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
@@ -334,7 +337,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = floodproof.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(floodproof, self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 

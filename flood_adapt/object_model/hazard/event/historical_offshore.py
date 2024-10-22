@@ -5,17 +5,16 @@ from typing import Any, Optional
 import pandas as pd
 
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.interface.database import (
-    db_path,
-)
 from flood_adapt.object_model.interface.events import (
     HistoricalOffshoreModel,
-    IHistoricalOffshore,
+)
+from flood_adapt.object_model.interface.path_builder import (
+    db_path,
 )
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class HistoricalOffshore(IHistoricalOffshore):
+class HistoricalOffshore(Event):
     rain_ts: Optional[pd.DataFrame] = None
     wind_ts: Optional[pd.DataFrame] = None
 

@@ -7,19 +7,18 @@ import cht_observations.observation_stations as cht_station
 import pandas as pd
 
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.interface.database import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
-    IHistoricalNearshore,
+)
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class HistoricalNearshore(IHistoricalNearshore):
+class HistoricalNearshore(Event):
     rain_ts: pd.DataFrame
     wind_ts: pd.DataFrame
     tide_surge_ts: pd.DataFrame
@@ -41,13 +40,13 @@ class HistoricalNearshore(IHistoricalNearshore):
             path = db_path(
                 TopLevelDir.input, self.dir_name, self.attrs.wind.timeseries_file
             )
-            self.wind_ts = HistoricalNearshore.read_csv(path)
+            self.wind_ts = Event.read_csv(path)
 
         if self.attrs.tide.source == "timeseries":
             path = db_path(
                 TopLevelDir.input, self.dir_name, self.attrs.tide.timeseries_file
             )
-            self.tide_surge_ts = HistoricalNearshore.read_csv(path)
+            self.tide_surge_ts = Event.read_csv(path)
 
     def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
         if self.attrs.rainfall.source == "timeseries":
@@ -111,7 +110,7 @@ class HistoricalNearshore(IHistoricalNearshore):
         start_time = datetime.strptime(start_time_str, "%Y%m%d %H%M%S")
         stop_time = datetime.strptime(stop_time_str, "%Y%m%d %H%M%S")
         if file is not None:
-            df_temp = HistoricalNearshore.read_csv(file)
+            df_temp = Event.read_csv(file)
             startindex = df_temp.index.get_loc(start_time, method="nearest")
             stopindex = df_temp.index.get_loc(stop_time, method="nearest")
             df = df_temp.iloc[startindex:stopindex, :]

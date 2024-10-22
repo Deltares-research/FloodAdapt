@@ -5,8 +5,12 @@ from pathlib import Path
 from typing import Any, Type
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
-from flood_adapt.object_model.interface.database import IDatabase, TopLevelDir, db_path
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.object_model import IObject
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
+)
 
 
 class DbsTemplate(AbstractDatabaseElement):
