@@ -544,9 +544,6 @@ class Hazard:
 
             # add observation points from site.toml
             model.add_obs_points()
-            self._logger.info(
-                "Adding observation points to the overland flood model..."
-            )
 
             # write sfincs model in output destination
             model.write_sfincs_model(path_out=self.simulation_paths[ii])

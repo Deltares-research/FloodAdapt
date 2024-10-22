@@ -11,7 +11,6 @@ from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
 )
 from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
     db_path,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
@@ -31,22 +30,31 @@ class HistoricalNearshore(Event):
             self.attrs = HistoricalNearshoreModel.model_validate(data)
 
         if self.attrs.rainfall.source == "timeseries":
-            path = db_path(
-                TopLevelDir.input, self.dir_name, self.attrs.rainfall.timeseries_file
-            )
-            self.rain_ts = Event.read_csv(path)
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.rainfall.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.rainfall.timeseries_file
+                )
+                self.rain_ts = Event.read_csv(path)
 
         if self.attrs.wind.source == "timeseries":
-            path = db_path(
-                TopLevelDir.input, self.dir_name, self.attrs.wind.timeseries_file
-            )
-            self.wind_ts = Event.read_csv(path)
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.wind.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.wind.timeseries_file
+                )
+                self.wind_ts = Event.read_csv(path)
 
         if self.attrs.tide.source == "timeseries":
-            path = db_path(
-                TopLevelDir.input, self.dir_name, self.attrs.tide.timeseries_file
-            )
-            self.tide_surge_ts = Event.read_csv(path)
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.tide.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.tide.timeseries_file
+                )
+                self.tide_surge_ts = Event.read_csv(path)
 
     def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
         if self.attrs.rainfall.source == "timeseries":

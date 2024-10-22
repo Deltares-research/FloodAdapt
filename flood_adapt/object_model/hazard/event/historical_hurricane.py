@@ -10,6 +10,7 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
 )
+from flood_adapt.object_model.interface.path_builder import db_path
 
 
 class HistoricalHurricane(Event):
@@ -37,6 +38,33 @@ class HistoricalHurricane(Event):
             self.attrs = data
         else:
             self.attrs = HistoricalHurricaneModel.model_validate(data)
+
+        if self.attrs.rainfall.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.rainfall.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.rainfall.timeseries_file
+                )
+                self.rain_ts = Event.read_csv(path)
+
+        if self.attrs.wind.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.wind.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.wind.timeseries_file
+                )
+                self.wind_ts = Event.read_csv(path)
+
+        if self.attrs.tide.source == "timeseries":
+            # This is a temporary fix until the Hazard refactor is merged.
+            if self.attrs.tide.timeseries_file is not None:
+                path = (
+                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+                    / self.attrs.tide.timeseries_file
+                )
+                self.tide_surge_ts = Event.read_csv(path)
 
     def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
         if self.attrs.rainfall.source == "track" or self.attrs.rainfall.source == "map":
