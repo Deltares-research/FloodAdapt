@@ -9,7 +9,7 @@ import flood_adapt.dbs_classes.database as db
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.event.gauge_data import get_observed_wl_data
+from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
@@ -155,14 +155,21 @@ def check_higher_level_usage(name: str) -> list[str]:
 def download_wl_data(
     station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
 ) -> pd.DataFrame:
-    return get_observed_wl_data(
-        time=TimeModel(start_time=start_time, end_time=end_time),
-        site=db.Database().site.attrs,
-        station_id=station_id,
-        units=units,
-        source=source,
-        out_path=file,
-    )
+    _tide_gauge_model = db.Database().site.attrs.tide_gauge
+
+    if not _tide_gauge_model:
+        raise ValueError("No tide gauge defined in the site object.")
+    else:
+        if _tide_gauge_model.ID != station_id:
+            # warning that they dont overlap??
+            # _tide_gauge_model.ID = station_id
+            pass
+        tide_gauge = TideGauge(_tide_gauge_model)
+        return tide_gauge.get_waterlevels_in_time_frame(
+            time=TimeModel(start_time=start_time, end_time=end_time),
+            units=units,
+            out_path=file,
+        )
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:

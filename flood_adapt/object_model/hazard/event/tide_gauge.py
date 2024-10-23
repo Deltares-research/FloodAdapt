@@ -20,7 +20,10 @@ class TideGauge(ITideGauge):
     _logger = FloodAdaptLogging.getLogger(__name__)
 
     def __init__(self, attrs: TideGaugeModel):
-        self.attrs = attrs
+        if isinstance(attrs, TideGaugeModel):
+            self.attrs = attrs
+        else:
+            self.attrs = TideGaugeModel.model_validate(attrs)
 
     def get_waterlevels_in_time_frame(
         self,

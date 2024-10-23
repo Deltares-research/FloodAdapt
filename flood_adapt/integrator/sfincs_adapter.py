@@ -469,7 +469,7 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(forcing, WindFromMeteo):
             # TODO check with @gundula
-            self._set_wind_forcing(forcing.path)
+            self._set_wind_forcing(forcing.get_data())
         elif isinstance(forcing, WindFromTrack):
             # TODO check with @gundula
             self._set_config_spw(forcing.path)

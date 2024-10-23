@@ -222,11 +222,20 @@ class IEvent(IDatabaseUser):
                 )
 
     def plot_waterlevel(self, units: UnitTypesLength):
+        if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
+            return ""
+
+        if source := self.attrs.forcings[ForcingType.WATERLEVEL]._source in [
+            ForcingSource.METEO,
+            ForcingSource.MODEL,
+        ]:
+            self.logger.warning(
+                f"Plotting not supported for waterlevel data from {source}"
+            )
+            return ""
+
         units = units or self.database.site.attrs.gui.default_length_units
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
-
-        if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
-            return
 
         data = None
         try:
@@ -294,6 +303,17 @@ class IEvent(IDatabaseUser):
 
     def plot_rainfall(self, units: UnitTypesIntensity = None) -> str | None:
         units = units or self.database.site.attrs.gui.default_intensity_units
+        if self.attrs.forcings[ForcingType.RAINFALL] is None:
+            return ""
+
+        if self.attrs.forcings[ForcingType.RAINFALL]._source in [
+            ForcingSource.TRACK,
+            ForcingSource.METEO,
+        ]:
+            self.logger.warning(
+                "Plotting not supported for rainfall data from track or meteo"
+            )
+            return ""
 
         # set timing
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
@@ -351,7 +371,7 @@ class IEvent(IDatabaseUser):
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         if self.attrs.forcings[ForcingType.DISCHARGE] is None:
-            return
+            return ""
 
         rivers = self.attrs.forcings[ForcingType.DISCHARGE]
 
@@ -373,7 +393,7 @@ class IEvent(IDatabaseUser):
             self.logger.error(
                 f"Could not retrieve discharge data for {', '.join([entry[0] for entry in errors])}: {errors}"
             )
-            return
+            return ""
 
         river_names = [i.name for i in self.database.site.attrs.river]
         river_descriptions = [i.description for i in self.database.site.attrs.river]
@@ -421,15 +441,23 @@ class IEvent(IDatabaseUser):
         velocity_units: UnitTypesVelocity = None,
         direction_units: UnitTypesDirection = None,
     ) -> str:
+        if self.attrs.forcings[ForcingType.WIND] is None:
+            return ""
+
+        if self.attrs.forcings[ForcingType.WIND]._source in [
+            ForcingSource.TRACK,
+            ForcingSource.METEO,
+        ]:
+            self.logger.warning(
+                "Plotting not supported for wind data from track or meteo"
+            )
+            return ""
         velocity_units = (
             velocity_units or self.database.site.attrs.gui.default_velocity_units
         )
         direction_units = (
             direction_units or self.database.site.attrs.gui.default_direction_units
         )
-
-        if self.attrs.forcings[ForcingType.WIND] is None:
-            return
 
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
@@ -443,7 +471,7 @@ class IEvent(IDatabaseUser):
             self.logger.error(
                 f"Could not retrieve wind data: {self.attrs.forcings[ForcingType.WIND]} {data}"
             )
-            return
+            return ""
 
         # Plot actual thing
         # Create figure with secondary y-axis
@@ -456,14 +484,16 @@ class IEvent(IDatabaseUser):
         fig.add_trace(
             go.Scatter(
                 x=data.index,
-                y=data[1],
+                y=data.iloc[:, 0],
                 name="Wind speed",
                 mode="lines",
             ),
             secondary_y=False,
         )
         fig.add_trace(
-            go.Scatter(x=data.index, y=data[2], name="Wind direction", mode="markers"),
+            go.Scatter(
+                x=data.index, y=data.iloc[:, 1], name="Wind direction", mode="markers"
+            ),
             secondary_y=True,
         )
 

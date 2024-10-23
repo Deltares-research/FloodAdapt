@@ -73,7 +73,7 @@ class HistoricalEvent(IEvent):
     attrs: HistoricalEventModel
 
     def __init__(self):
-        self._logger = FloodAdaptLogging().getLogger(__name__)
+        self._logger = FloodAdaptLogging.getLogger(__name__)
 
     @property
     def site(self):

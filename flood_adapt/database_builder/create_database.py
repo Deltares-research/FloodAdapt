@@ -343,7 +343,7 @@ class Database:
             rmtree(root)
         root.mkdir(parents=True)
 
-        self.logger = FloodAdaptLogging().getLogger(__name__)
+        self.logger = FloodAdaptLogging.getLogger(__name__)
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root

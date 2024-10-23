@@ -7,7 +7,9 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
+from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.forcing import IWind
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
@@ -166,10 +168,20 @@ class WindFromMeteo(IWind):
                 )
 
             from flood_adapt.object_model.hazard.event.meteo import read_meteo
+            from flood_adapt.object_model.site import Site
 
             # ASSUMPTION: the download has been done already, see meteo.download_meteo().
             # TODO add to read_meteo to run download if not already downloaded.
-            return read_meteo(meteo_dir=self.path)[["wind_u", "wind_v"]]
+            time = TimeModel(
+                start_time=t0,
+                end_time=t1,
+            )
+            site = Site.load_file(
+                Settings().database_path / "static" / "site" / "site.toml"
+            )
+            return read_meteo(
+                meteo_dir=self.path, time=time, site=site
+            )  # [["wind_u", "wind_v"]]
         except Exception as e:
             if strict:
                 raise

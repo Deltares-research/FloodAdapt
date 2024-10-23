@@ -49,6 +49,7 @@ def read_meteo(
     meteo_dir: Path, time: TimeModel = None, site: SiteModel = None
 ) -> xr.Dataset:
     if time is not None and site is not None:
+        meteo_dir.mkdir(parents=True, exist_ok=True)
         download_meteo(time=time, meteo_dir=meteo_dir, site=site)
 
     # Create an empty list to hold the datasets
