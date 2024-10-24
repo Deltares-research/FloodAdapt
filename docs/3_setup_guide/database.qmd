@@ -1,5 +1,78 @@
 ---
-title:	Database Setup
+title:	Database Builder
+filters:
+  - lightbox
+lightbox: auto
 ---
+ The FloodAdapt database builder is intended to greatly simplify the process of setting up FloodAdapt in a new location. The FloodAdapt software is an 'empty shell' that must be connected to a site-specific database. The database builder aids the user in setting up this database. 
+ 
+ The most critical components of the FloodAdapt database are the SFINCS and Delft-FIAT models, both of which can now be generated with greater ease using the [SFINCS model-builder](SFINCS/index.qmd) and the [Delft-FIAT model-builder](Delft_Fiat/index.qmd). Once these have been created, users can run the FloodAdapt database builder to generate a complete database for a functioning FloodAdapt application at their site. 
 
-Coming soon.
+ Running the database builder consists of double-clicking the FloodAdapt database-builder executable. This opens a screen where the user can enter a file path to the database-builder configuration file. 
+
+ This documentation will describe the FloodAdapt database-builder configuration file. Depending on the amount of information included in the configuration file, different FloodAdapt functionalities will be activated. This is described in the section [FloodAdapt capabilities based on configuration](#floodadapt-capabilities-based-on-configuration). It starts by outlining the minimum information required to generate a functional FloodAdapt system, and then specifies additional functionalities and the required information in the configuration file to activate them. The section [Configuration file attributes](#configuration-file-attributes) specifies all of the attributes that can be included in the database-builder configuration and includes details about their format and use. 
+
+
+## FloodAdapt capabilities based on configuration
+There are different functionalities that are activiated in FloodAdapt depending on the information contained in the configuration file. This section starts by describing the information needed for the [baseline FloodAdapt configuration](#baseline-floodadapt-configuration), which is the minimum needed to set up a functional FloodAdapt system. Note that an important requirement is that a Delft-FIAT model and an overland SFINCS model have been set up for the site. The following sections then describe additional FloodAdapt functionality that is activated with additional configuration input. 
+
+### Baseline FloodAdapt configuration
+A baseline FloodAdapt configuration is a functional version of FloodAdapt that requires the minimum amount of configuration input. This version allows users to run event scenarios for either a synthetic event or a historical gauged event. All measures and future projections are available for analysis. Note that because it only supports event scenarios, the risk and benefits options are not available for this baseline configuration.
+
+The following are required to set up a baseline FloodAdapt configuration:
+
+* A name for your site
+* The path to your overland SFINCS model folder
+* The path to your Delft-FIAT model folder
+* The unit system you want to work in (imperial or metric)
+* Max values for mapping bins
+
+A screenshot of an example configuration file for a baseline FloodAdapt model for Chesapeake Beach is shown in @fig-DB_baseline
+
+![**Example configuration file for a baseline FloodAdapt model for Chesapeake Beach**](../_static/images/database_baselineConfig.png){width=100% fig-align=left #fig-DB_baseline}
+
+### Risk and benefit analysis
+To activate the functionality to calculate risk and benefits in FloodAdapt, the user must have a [probabilistic event set](risk_analysis.qmd) prepared. They can then specify the location of the probabilistic event set in the configuration file
+
+![**Snippet of configuration file showing the addition of a probabilistic event set to activate the risk and benefit analysis functionalities**](../_static/images/database_probEventSet.png){width=100% fig-align=left #fig-DB_probEventSet}
+
+### Simulating hurricane events and 'ungauged' historic events
+To add the ability to simulate a scenario with a historical hurricane, the user needs an offshore SFINCS model, which can also be created with the [SFINCS model-builder](SFINCS/index.qmd). Many offshore SFINCS models have been created for the U.S. East and Gulf coasts and may be available for use at no cost. In addition to specifying an offshore model, the user can also indicate which 'cyclone basin' is relevant for them. @fig-DB_cyclonesNA shows the hurricane selection window for the example of choosing "North America" as the cyclone basin. 
+
+![**Snippet of configuration file showing the offshore model and a selection of a 'cyclone basin'**](../_static/images/database_offshore_snippet.png){width=100% fig-align=left #fig-DB_offshore_snippet}
+
+![**Adding an offshore model activates the ability to select a hurricane event, as well as an 'ungauged' historical event. Both of these event types make use of the offshore model. The left window shows the "Add event" popup window for the baseline FloodAdapt configuration, and the right shows with the addition of an offshore model**](../_static/images/database_offshore.png){width=70% fig-align=left #fig-DB_offshore}
+
+![**Hurricane selection window when a user has selected "NA" for North America as the 'cyclone basin'**](../_static/images/database_cyclones_NA.png){width=70% fig-align=left #fig-DB_cyclonesNA}
+
+
+### Downloading historical water levels
+To activate the ability to easily download water levels when specifying a historical event, users in the U.S. can add a tide gauge configuration attribute and set it to obtain the water levels automatically from the [NOAA COOPS](https://tidesandcurrents.noaa.gov/stations.html) website. 
+
+![**Snippet of configuration file showing the addition of a tide gauge**](../_static/images/database_tideGauge.png){width=100% fig-align=left #fig-DB_tideGauge}
+
+
+![**Adding a tide gauge allows a user to activate the 'Download observed water levels' button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level ('zero') than MSL. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge.**](../_static/images/database_comp_tideGauge.png){width=70% fig-align=left #fig-DB_comp_tideGauge}
+
+### Social vulnerability insights
+To activate functionalities in FloodAdapt which provide social vulnerability insights, users can specify in the database configuration file a social vulnerability index layer, and a threshold above which residents are considered highly socially vulnerable. @fig-DB_SVI
+
+![**Snippet of configuration file showing the addition of an SVI layer**](../_static/images/database_SVI.png){width=100% fig-align=left #fig-DB_SVI}
+
+When an SVI layer is included, and a threshold defining highly socially vulnerable people is given (see @fig-DB_SVI), FloodAdapt shows additional information in the infographic, the metrics table, and allows the user to view the SVI layer in both the [Measures](../4_user_guide/measures/index.qmd) and [Output](../4_user_guide/output/index.qmd) tabs.  @fig-DB_SVI_comp highlights the added information in the infographic and metrics table. It shows the baseline configuration on the left, and the configuration with an SVI layer added on the right. With the SVI layer included, users can see in the infographic the proprotion of highly-vulnerable residential buildings that were damaged and destroyed. In the metrics table, they can see how many highly vulnerable residential properties were flooded. 
+
+![**Snippet of configuration file showing the addition of an SVI layer**](../_static/images/database_SVI_comp.png){width=100% fig-align=left #fig-DB_SVI_comp}
+
+### Visualizing water level output time series
+FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). To activate this functionality, observation points can be added to the database-builder configuration file. 
+
+![**Snippet of configuration file showing the addition of an SVI layer**](../_static/images/database_SVI_comp.png){width=100% fig-align=left #fig-DB_SVI_comp}
+
+![**Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points.**](../_static/images/database_obsComp.png){width=100% fig-align=left #fig-DB_obscomp}
+
+
+### Elevating buildings above base flood elevation (BFE)
+
+### Sea level rise scenario selection
+
+## Configuration file attributes
