@@ -155,7 +155,7 @@ class TestAddForcing:
             forcing.path = "path/to/meteo/grid"
 
             sfincs_adapter._add_forcing_wind(forcing)
-            sfincs_adapter._set_wind_forcing.assert_called_once_with(forcing.path)
+            sfincs_adapter._set_wind_forcing.assert_called_once_with(forcing.get_data())
 
         def test_add_forcing_wind_from_track(self, sfincs_adapter):
             forcing = mock.Mock(spec=WindFromTrack)

@@ -59,7 +59,8 @@ def read_csv(csvpath: Path) -> pd.DataFrame:
     # Any index that cannot be converted to datetime will be NaT
     df.index = pd.to_datetime(df.index, errors="coerce")
     df.index.names = ["time"]
-    df.index.freq = pd.infer_freq(df.index)
+    if len(df.index) > 2:
+        df.index.freq = pd.infer_freq(df.index)
 
     # Drop rows where the index is NaT
     df = df[~df.index.isna()]

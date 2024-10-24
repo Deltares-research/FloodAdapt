@@ -9,12 +9,12 @@ from pydantic import Field
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
-from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.forcing import IWind
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
     REFERENCE_TIME,
     ForcingSource,
+    TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
