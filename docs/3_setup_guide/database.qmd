@@ -66,15 +66,28 @@ When an SVI layer is included, and a threshold defining highly socially vulnerab
 ### Visualizing water level output time series
 FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). To activate this functionality, observation points can be added to the database-builder configuration file. 
 
-![**Snippet of configuration file showing the addition of an SVI layer**](../_static/images/database_SVI_comp.png){width=100% fig-align=left #fig-DB_SVI_comp}
+![**Snippet of configuration file showing the addition of observation points**](../_static/images/database_obs_snippet.png){width=100% fig-align=left #fig-DB_SVI_comp}
 
 ![**Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points.**](../_static/images/database_obsComp.png){width=100% fig-align=left #fig-DB_obscomp}
 
 
 ### Elevating buildings above base flood elevation (BFE)
+FloodAdapt allows users to explore home elevations as an adaptation measure. With the base configuration, FloodAdapt users can specify how high a home should be elevated relative to a datum. However, in the U.S. standards for home elevations or elevations of new buildings are often specified relative to *base flood elevation* (BFE). This is a regulatory 100-year flood level calculated by the federal government. When users reference a base flood elevation layer in the configuration file, FloodAdapt users can choose to elevate homes above a datum or to a height above BFE.
+
+![**Snippet of configuration file showing the addition of a base flood elevation layer**](../_static/images/database_bfe_snippet.png){width=100% fig-align=left #fig-DB_SVI_comp}
+
+![**Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum**](../_static/images/database_bfe_comp.png){width=100% fig-align=left #fig-DB_obscomp}
 
 ### Sea level rise scenario selection
+FloodAdapt allows users to explore the flooding and impacts for future sea level rise projections. In the base configuration case, users have access to this functionality, and can enter a sea level rise explicitly, for example "0.5 feet". However, FloodAdapt users may want to explore flooding and impacts at a specific point in the future, for example in 15 or 20 years, and they may not know the sea level rise to expect in that future year. To facilitate these users, a sea level rise scenario CSV file can be included in the database setup. There are many sources for sea level rise scenarios, such as the [interagency sea level task force](https://sealevel.globalchange.gov/resources/2022-sea-level-rise-technical-report/). The CSV file contains future years in the first column and sea level rise projections for different SLR scenarios in the remaining colunns. There is no limit to the number of SLR scenarios a user can include. FloodAdapt uses this file to generate a visualization showing the different SLR scenario curves in the [Projections](../4_user_guide/projections/index.qmd) selection window. It also allows a user to enter a future year and select a SLR scenario, and then automatically calculates the sea level rise for that year. 
 
-![**Including a SLR.csv file with sea level rise scenario projections allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise**](../_static/images/database_SLR_comp.png){width=100% fig-align=left #fig-DB_slrComp)
+![**Snippet of configuration file showing the addition of a sea level rise scenario CSV file**](../_static/images/database_SLR_snippet.png){width=100% fig-align=left #fig-DB_SVI_comp}
+
+![**Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise**](../_static/images/database_SLR_comp.png){width=100% fig-align=left #fig-DB_slrComp}
+
+::: {.callout-note}
+## What about when sea level rise scenarios change?
+Sea level rise scenarios are updating every few years. Updating the sea level rise scenarios in FloodAdapt is a simple as updating the CSV file with the years and projected sea level rise. FloodAdapt will then automatically use the new information when a FloodAdapt user selects a future year and a sea level rise scenario. 
+:::
 
 ## Configuration file attributes
