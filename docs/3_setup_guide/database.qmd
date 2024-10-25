@@ -61,7 +61,7 @@ To activate functionalities in FloodAdapt which provide social vulnerability ins
 
 When an SVI layer is included, and a threshold defining highly socially vulnerable people is given (see @fig-DB_SVI), FloodAdapt shows additional information in the infographic, the metrics table, and allows the user to view the SVI layer in both the [Measures](../4_user_guide/measures/index.qmd) and [Output](../4_user_guide/output/index.qmd) tabs.  @fig-DB_SVI_comp highlights the added information in the infographic and metrics table. It shows the baseline configuration on the left, and the configuration with an SVI layer added on the right. With the SVI layer included, users can see in the infographic the proprotion of highly-vulnerable residential buildings that were damaged and destroyed. In the metrics table, they can see how many highly vulnerable residential properties were flooded. 
 
-![**Snippet of configuration file showing the addition of an SVI layer**](../_static/images/database_SVI_comp.png){width=100% fig-align=left #fig-DB_SVI_comp}
+![**When an SVI layer and a threshold are included, the infographic will include an additional graphic showing the distribution of residential impacts on high and low socially vulnerable homes **](../_static/images/database_SVI_comp.png){width=100% fig-align=left #fig-DB_SVI_comp}
 
 ### Visualizing water level output time series
 FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). To activate this functionality, observation points can be added to the database-builder configuration file. 
@@ -74,5 +74,7 @@ FloodAdapt allows users to view modeled water level time series at observation p
 ### Elevating buildings above base flood elevation (BFE)
 
 ### Sea level rise scenario selection
+
+![**Including a SLR.csv file with sea level rise scenario projections allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise**](../_static/images/database_SLR_comp.png){width=100% fig-align=left #fig-DB_slrComp)
 
 ## Configuration file attributes
