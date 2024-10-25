@@ -2,18 +2,12 @@ import shutil
 from pathlib import Path
 from typing import ClassVar, List
 
-import xarray as xr
-
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallFromMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromGauged,
     WaterlevelFromModel,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindFromMeteo
-from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
-from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -83,26 +77,21 @@ class HistoricalEvent(IEvent):
         """Prepare the forcings of the historical event.
 
         If the forcings require it, this function will:
-        - download meteo data: download the meteo data from the meteo source and store it in the output directory.
         - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
 
         """
         self._scenario = scenario
         self.meteo_ds = None
         sim_path = self._get_simulation_path()
-
         if self._require_offshore_run():
-            self.download_meteo()
-            self.meteo_ds = self.read_meteo()
+            if self.site.attrs.sfincs.offshore_model is None:
+                raise ValueError(
+                    f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
+                )
 
             sim_path.mkdir(parents=True, exist_ok=True)
             self._preprocess_sfincs_offshore(sim_path)
             self._run_sfincs_offshore(sim_path)
-
-        if self.site.attrs.sfincs.offshore_model is None:
-            raise ValueError(
-                f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
-            )
 
         self._logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
@@ -111,26 +100,8 @@ class HistoricalEvent(IEvent):
 
             # FIXME added temp implementations here to make forcing.get_data() succeed,
             # move this to the forcings themselves?
-            if isinstance(
-                forcing, (WaterlevelFromModel, RainfallFromMeteo, WindFromMeteo)
-            ):
+            if isinstance(forcing, WaterlevelFromModel):
                 forcing.path = sim_path
-            elif isinstance(forcing, WaterlevelFromGauged):
-                if not self.database.site.attrs.tide_gauge:
-                    raise ValueError(
-                        "No tide gauge is defined in the site. is required to run a historical event with gauged water levels."
-                    )
-                gauge = TideGauge(attrs=self.database.site.attrs.tide_gauge)
-                out_path = (
-                    self.database.events.get_database_path()
-                    / self.attrs.name
-                    / "gauge_data.csv"
-                )
-                gauge.get_waterlevels_in_time_frame(
-                    time=self.attrs.time,
-                    out_path=out_path,
-                )
-                forcing.path = out_path
 
     def _require_offshore_run(self) -> bool:
         for forcing in self.attrs.forcings.values():
@@ -152,7 +123,7 @@ class HistoricalEvent(IEvent):
     def _preprocess_sfincs_offshore(self, sim_path: Path):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
 
-        This function is reused for ForcingSources: MODEL, TRACK, and GAUGED.
+        This function is reused for ForcingSources: MODEL & TRACK.
 
         Args:
             sim_path path to the root of the offshore model
@@ -176,20 +147,18 @@ class HistoricalEvent(IEvent):
             physical_projection = self.database.projections.get(
                 self._scenario.attrs.projection
             ).get_physical_projection()
-            _offshore_model._add_bzs_from_bca(self.attrs, physical_projection)
+            _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
 
             # Add wind and if applicable pressure forcing from meteo data
             wind_forcing = self.attrs.forcings[ForcingType.WIND]
             if wind_forcing is not None:
                 # Add wind forcing
-                _offshore_model._add_forcing_wind(
-                    wind_forcing
-                )  # forcing.process() will download meteo if required. forcing.process is called by event.process()
+                _offshore_model._add_forcing_wind(wind_forcing)
 
                 # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                 if wind_forcing._source == ForcingSource.TRACK:
                     _offshore_model._add_pressure_forcing_from_grid(
-                        ds=self.read_meteo()["press"]
+                        ds=MeteoHandler().read(self.attrs.time)["press"]
                     )
 
             # write sfincs model in output destination
@@ -227,17 +196,3 @@ class HistoricalEvent(IEvent):
             )
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
-
-    def download_meteo(self):
-        download_meteo(
-            time=self.attrs.time,
-            meteo_dir=self.database.output_path / "meteo",
-            site=self.database.site.attrs,
-        )
-
-    def read_meteo(self) -> xr.Dataset:
-        return read_meteo(
-            time=self.attrs.time,
-            meteo_dir=self.database.output_path / "meteo",
-            site=self.database.site.attrs,
-        )

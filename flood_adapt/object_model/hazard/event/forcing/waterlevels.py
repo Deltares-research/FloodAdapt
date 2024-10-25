@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field
 
+from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -19,6 +21,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     REFERENCE_TIME,
     ForcingSource,
     ShapeType,
+    TimeModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -26,6 +29,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesTime,
 )
+from flood_adapt.object_model.site import Site
 
 
 class SurgeModel(BaseModel):
@@ -77,15 +81,10 @@ class WaterlevelSynthetic(IWaterlevel):
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
         surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
         if t1 is None:
-            t1 = t0 + surge.attrs.duration.to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
+            t0, t1 = self.parse_time(t0, surge.attrs.duration)
+        else:
+            t0, t1 = self.parse_time(t0, t1)
 
         surge_df = surge.to_dataframe(
             start_time=t0,
@@ -135,16 +134,7 @@ class WaterlevelFromCSV(IWaterlevel):
     path: Path
 
     def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
-
+        t0, t1 = self.parse_time(t0, t1)
         try:
             return CSVTimeseries.load_file(path=self.path).to_dataframe(
                 start_time=t0, end_time=t1
@@ -169,6 +159,7 @@ class WaterlevelFromCSV(IWaterlevel):
 
 class WaterlevelFromModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
+
     path: Optional[Path] = Field(default=None)
     # simpath of the offshore model, set this when running the offshore model
 
@@ -198,39 +189,27 @@ class WaterlevelFromModel(IWaterlevel):
 
 class WaterlevelFromGauged(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
-    # path to the gauge data, set this when writing the downloaded gauge data to disk in event.process()
-    path: Optional[Path] = Field(default=None)
 
     def get_data(
         self, t0=None, t1=None, strict=True, **kwargs
     ) -> Optional[pd.DataFrame]:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
+        t0, t1 = self.parse_time(t0, t1)
+        time = TimeModel(start_time=t0, end_time=t1)
 
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
+        site = Site.load_file(
+            Settings().database_path / "static" / "site" / "site.toml"
+        )
+        if site.attrs.tide_gauge is None:
+            raise ValueError("No tide gauge defined for this site.")
 
         try:
-            return CSVTimeseries.load_file(path=self.path).to_dataframe(
-                start_time=t0, end_time=t1
-            )
+            return TideGauge(site.attrs.tide_gauge).get_waterlevels_in_time_frame(time)
         except Exception as e:
             if strict:
                 raise e
             else:
-                self._logger.error(f"Error reading gauge data: {self.path}. {e}")
+                self._logger.error(f"Error reading gauge data: {e}")
                 return None
-
-    def save_additional(self, path: Path):
-        if self.path:
-            shutil.copy2(self.path, path)
-            self.path = (
-                path / self.path.name
-            )  # update the path to the new location so the toml also gets updated
 
     @staticmethod
     def default() -> "WaterlevelFromGauged":

@@ -70,9 +70,11 @@ class TestDischargeCSV:
         # Arrange
         path = Path(tmp_path) / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
+        t0 = dummy_1d_timeseries_df.index[0]
+        t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        discharge_df = DischargeFromCSV(path=path).get_data()
+        discharge_df = DischargeFromCSV(path=path).get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)

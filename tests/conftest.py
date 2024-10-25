@@ -15,12 +15,6 @@ from flood_adapt.misc.log import FloodAdaptLogging
 
 from .fixtures import *  # noqa
 
-settings = Settings(
-    database_root=SRC_DIR.parents[1] / "Database",
-    database_name="charleston_test_hazardrefactor",
-    # leave system_folder empty to use the envvar or default system folder
-)
-
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
 logs_dir = Path(__file__).absolute().parent / "logs"
@@ -35,7 +29,7 @@ def create_snapshot():
     """Create a snapshot of the database directory."""
     if snapshot_dir.exists():
         shutil.rmtree(snapshot_dir)
-    shutil.copytree(settings.database_path, snapshot_dir)
+    shutil.copytree(Settings().database_path, snapshot_dir)
 
 
 def restore_db_from_snapshot():
@@ -50,7 +44,7 @@ def restore_db_from_snapshot():
         for file in files:
             snapshot_file = Path(root) / file
             relative_path = snapshot_file.relative_to(snapshot_dir)
-            database_file = settings.database_path / relative_path
+            database_file = Settings().database_path / relative_path
             if not database_file.exists():
                 os.makedirs(os.path.dirname(database_file), exist_ok=True)
                 shutil.copy2(snapshot_file, database_file)
@@ -58,17 +52,17 @@ def restore_db_from_snapshot():
                 shutil.copy2(snapshot_file, database_file)
 
     # Remove created files from database
-    for root, _, files in os.walk(settings.database_path):
+    for root, _, files in os.walk(Settings().database_path):
         for file in files:
             database_file = Path(root) / file
-            relative_path = database_file.relative_to(settings.database_path)
+            relative_path = database_file.relative_to(Settings().database_path)
             snapshot_file = snapshot_dir / relative_path
 
             if not snapshot_file.exists():
                 os.remove(database_file)
 
     # Remove empty directories from the database
-    for root, dirs, _ in os.walk(settings.database_path, topdown=False):
+    for root, dirs, _ in os.walk(Settings().database_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
             if not os.listdir(dir_path):
@@ -78,6 +72,12 @@ def restore_db_from_snapshot():
 @pytest.fixture(scope="session", autouse=True)
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
+    Settings(
+        database_root=SRC_DIR.parents[1] / "Database",
+        database_name="charleston_test_hazardrefactor",
+        # leave system_folder empty to use the envvar or default system folder
+    )
+
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
         file_path=log_path,
@@ -139,7 +139,7 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(settings.database_root, settings.database_name)
+        dbs = read_database(Settings().database_root, Settings().database_name)
 
         # Perform tests
         yield dbs

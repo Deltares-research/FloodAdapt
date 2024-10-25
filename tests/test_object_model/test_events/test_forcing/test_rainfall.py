@@ -1,4 +1,3 @@
-import shutil
 from datetime import datetime
 
 import pandas as pd
@@ -10,7 +9,6 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallFromMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -63,22 +61,16 @@ class TestRainfallSynthetic:
 
 
 class TestRainfallFromMeteo:
-    def test_rainfall_from_meteo_get_data(self, test_db, tmp_path):
+    def test_rainfall_from_meteo_get_data(self, test_db):
         # Arrange
-        test_path = tmp_path / "test_rainfall_from_meteo"
-
-        if test_path.exists():
-            shutil.rmtree(test_path)
-
         time = TimeModel(
             start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             end_time=datetime.strptime("2021-01-02 00:00:00", "%Y-%m-%d %H:%M:%S"),
         )
-        download_meteo(meteo_dir=test_path, time=time, site=test_db.site.attrs)
 
         # Act
-        wl_df = RainfallFromMeteo(path=test_path).get_data()
+        wl_df = RainfallFromMeteo().get_data(t0=time.start_time, t1=time.end_time)
 
         # Assert
-        assert isinstance(wl_df, xr.DataArray)
+        assert isinstance(wl_df, xr.Dataset)
         # TODO more asserts

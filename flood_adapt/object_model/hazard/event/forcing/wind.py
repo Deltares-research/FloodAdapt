@@ -7,12 +7,11 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import IWind
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
-    REFERENCE_TIME,
     ForcingSource,
     TimeModel,
 )
@@ -22,10 +21,8 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
 from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
-    UnitfulTime,
     UnitfulVelocity,
     UnitTypesDirection,
-    UnitTypesTime,
     UnitTypesVelocity,
 )
 
@@ -43,16 +40,7 @@ class WindConstant(IWind):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
-
+        t0, t1 = self.parse_time(t0, t1)
         time = pd.date_range(
             start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
         )
@@ -148,9 +136,7 @@ class WindFromCSV(IWind):
 
 class WindFromMeteo(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
-
-    path: Optional[Path] = Field(default=None)
-    # simpath of the offshore model, set this when running the offshore model
+    meteo_handler: MeteoHandler = MeteoHandler()
 
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']
@@ -161,32 +147,16 @@ class WindFromMeteo(IWind):
         strict: bool = True,
         **kwargs: Any,
     ) -> xr.DataArray:
+        t0, t1 = self.parse_time(t0, t1)
+        time = TimeModel(start_time=t0, end_time=t1)
+
         try:
-            if self.path is None:
-                raise ValueError(
-                    "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
-                )
-
-            from flood_adapt.object_model.hazard.event.meteo import read_meteo
-            from flood_adapt.object_model.site import Site
-
-            # ASSUMPTION: the download has been done already, see meteo.download_meteo().
-            # TODO add to read_meteo to run download if not already downloaded.
-            time = TimeModel(
-                start_time=t0,
-                end_time=t1,
-            )
-            site = Site.load_file(
-                Settings().database_path / "static" / "site" / "site.toml"
-            )
-            return read_meteo(
-                meteo_dir=self.path, time=time, site=site
-            )  # [["wind_u", "wind_v"]]
+            return self.meteo_handler.read(time)
         except Exception as e:
             if strict:
                 raise
             else:
-                self._logger.error(f"Error reading meteo data: {self.path}. {e}")
+                self._logger.error(f"Error reading meteo data: {e}")
 
     @staticmethod
     def default() -> "WindFromMeteo":

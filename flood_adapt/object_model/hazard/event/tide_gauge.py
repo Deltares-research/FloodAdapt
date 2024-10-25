@@ -58,7 +58,7 @@ class TideGauge(ITideGauge):
 
         gauge_data = gauge_data.rename(columns={"waterlevel": self.attrs.ID})
         gauge_data = gauge_data * UnitfulLength(
-            value=1.0, units=UnitTypesLength("meters")
+            value=1.0, units=UnitTypesLength.meters
         ).convert(units)
 
         if out_path is not None:
@@ -127,6 +127,7 @@ class TideGauge(ITideGauge):
                 freq=time.time_step,
                 name="time",
             )
+            series = series.reindex(index, method="nearest")
             df = pd.DataFrame(data=series, index=index)
 
         except COOPSAPIError as e:

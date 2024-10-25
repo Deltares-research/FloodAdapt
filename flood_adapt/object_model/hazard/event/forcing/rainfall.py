@@ -7,7 +7,7 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.event.meteo import read_meteo
+from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.event.timeseries import (
     DEFAULT_TIMESTEP,
     SyntheticTimeseries,
@@ -17,14 +17,12 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IRainfall,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    REFERENCE_TIME,
     ForcingSource,
+    TimeModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
-    UnitfulTime,
     UnitTypesIntensity,
-    UnitTypesTime,
 )
 
 
@@ -34,18 +32,12 @@ class RainfallConstant(IRainfall):
     intensity: UnitfulIntensity
 
     def get_data(
-        self, strict=True, t0: datetime = None, t1: datetime = None
+        self,
+        t0: datetime = None,
+        t1: datetime = None,
+        strict=True,
     ) -> pd.DataFrame:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
-
+        t0, t1 = self.parse_time(t0, t1)
         time = pd.date_range(
             start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
         )
@@ -69,16 +61,10 @@ class RainfallSynthetic(IRainfall):
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
         rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
-
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + rainfall.attrs.duration.to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
+        if t1 is not None:
+            t0, t1 = self.parse_time(t0, t1)
+        else:
+            t0, t1 = self.parse_time(t0, rainfall.attrs.duration)
 
         try:
             return rainfall.to_dataframe(start_time=t0, end_time=t1)
@@ -97,35 +83,25 @@ class RainfallSynthetic(IRainfall):
 
 class RainfallFromMeteo(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
-    path: Optional[Path] = Field(default=None)
 
-    # path to the meteo data, set this when downloading it
+    meteo_handler: MeteoHandler = MeteoHandler()
+
     def get_data(
         self,
         t0: Optional[datetime] = None,
         t1: Optional[datetime] = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> xr.DataArray:
+    ) -> xr.Dataset:
+        t0, t1 = self.parse_time(t0, t1)
+        time_frame = TimeModel(start_time=t0, end_time=t1)
         try:
-            if self.path is None:
-                raise ValueError(
-                    "Meteo path is not set. Download the meteo dataset first using HistoricalEvent.download_meteo().."
-                )
-
-            return read_meteo(meteo_dir=self.path)[
-                "precip"
-            ]  # use `.to_dataframe()` to convert to pd.DataFrame
+            return self.meteo_handler.read(time_frame)
         except Exception as e:
             if strict:
                 raise
             else:
                 self._logger.error(f"Error reading meteo data: {self.path}. {e}")
-
-    def save_additional(self, path: Path):
-        if self.path:
-            shutil.copy2(self.path, path)
-            self.path = path / self.path.name
 
     @staticmethod
     def default() -> "RainfallFromMeteo":
@@ -145,6 +121,8 @@ class RainfallFromTrack(IRainfall):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
+        t0, t1 = self.parse_time(t0, t1)
+
         return self.path  # TODO implement
 
     def save_additional(self, path: Path):

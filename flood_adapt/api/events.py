@@ -155,21 +155,11 @@ def check_higher_level_usage(name: str) -> list[str]:
 def download_wl_data(
     station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
 ) -> pd.DataFrame:
-    _tide_gauge_model = db.Database().site.attrs.tide_gauge
-
-    if not _tide_gauge_model:
-        raise ValueError("No tide gauge defined in the site object.")
-    else:
-        if _tide_gauge_model.ID != station_id:
-            # warning that they dont overlap??
-            # _tide_gauge_model.ID = station_id
-            pass
-        tide_gauge = TideGauge(_tide_gauge_model)
-        return tide_gauge.get_waterlevels_in_time_frame(
-            time=TimeModel(start_time=start_time, end_time=end_time),
-            units=units,
-            out_path=file,
-        )
+    return TideGauge().get_waterlevels_in_time_frame(
+        time=TimeModel(start_time=start_time, end_time=end_time),
+        units=units,
+        out_path=file,
+    )
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:

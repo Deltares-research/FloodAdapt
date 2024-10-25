@@ -156,11 +156,10 @@ class TestWaterlevelFromCSV:
     ):
         path = tmp_path / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-
+        t0 = dummy_1d_timeseries_df.index[0]
+        t1 = dummy_1d_timeseries_df.index[-1]
         # Act
-        wl_df = WaterlevelFromCSV(path=path).get_data()
-
-        print(dummy_1d_timeseries_df, wl_df, sep="\n\n")
+        wl_df = WaterlevelFromCSV(path=path).get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
@@ -190,15 +189,24 @@ class TestWaterlevelFromModel:
 
 
 class TestWaterlevelFromGauged:
-    def test_waterlevel_from_gauge_get_data(
-        self, dummy_1d_timeseries_df: pd.DataFrame, test_db: IDatabase, tmp_path
-    ):
+    @pytest.fixture()
+    def mock_tide_gauge(self, dummy_1d_timeseries_df: pd.DataFrame):
+        with patch(
+            "flood_adapt.object_model.hazard.event.forcing.waterlevels.TideGauge.get_waterlevels_in_time_frame"
+        ) as mock_download_wl:
+            mock_download_wl.return_value = dummy_1d_timeseries_df
+            yield mock_download_wl, dummy_1d_timeseries_df
+
+    def test_waterlevel_from_gauge_get_data(self, test_db: IDatabase, mock_tide_gauge):
         # Arrange
-        path = tmp_path / "test.csv"
-        dummy_1d_timeseries_df.to_csv(path)
+        _, dummy_1d_timeseries_df = mock_tide_gauge
+        t0 = dummy_1d_timeseries_df.index[0]
+        t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        wl_df = WaterlevelFromGauged(path=path).get_data()
+        wl_df = WaterlevelFromGauged(tide_gauge=test_db.site.attrs.tide_gauge).get_data(
+            t0=t0, t1=t1
+        )
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)

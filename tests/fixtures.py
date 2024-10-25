@@ -35,7 +35,6 @@ __all__ = [
     "dummy_buyout_measure",
     "dummy_pump_measure",
     "dummy_strategy",
-    "mock_download_meteo",
     "DEFAULT_TIMESTEP",
 ]
 
@@ -55,11 +54,6 @@ def dummy_1d_timeseries_df(dummy_time_model) -> pd.DataFrame:
 @pytest.fixture(scope="function")
 def dummy_2d_timeseries_df(dummy_time_model) -> pd.DataFrame:
     return _n_dim_dummy_timeseries_df(2, dummy_time_model)
-
-
-@pytest.fixture(scope="session")
-def mock_download_meteo():
-    return None  # TODO implement
 
 
 @pytest.fixture()

@@ -15,14 +15,11 @@ from flood_adapt.object_model.hazard.interface.forcing import (
 )
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
-    REFERENCE_TIME,
     ForcingSource,
 )
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
-    UnitfulTime,
     UnitTypesDischarge,
-    UnitTypesTime,
 )
 
 
@@ -37,16 +34,7 @@ class DischargeConstant(IDischarge):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
-
+        t0, t1 = self.parse_time(t0, t1)
         time = pd.date_range(
             start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
         )
@@ -72,15 +60,10 @@ class DischargeSynthetic(IDischarge):
     ) -> Optional[pd.DataFrame]:
         discharge = SyntheticTimeseries().load_dict(data=self.timeseries)
 
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
         if t1 is None:
-            t1 = t0 + discharge.attrs.duration.to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
+            t0, t1 = self.parse_time(t0, discharge.attrs.duration)
+        else:
+            t0, t1 = self.parse_time(t0, t1)
 
         try:
             return discharge.to_dataframe(start_time=t0, end_time=t1)
@@ -109,15 +92,7 @@ class DischargeFromCSV(IDischarge):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
-
-        if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
+        t0, t1 = self.parse_time(t0, t1)
 
         try:
             return CSVTimeseries.load_file(path=self.path).to_dataframe(

@@ -1,96 +1,141 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 import xarray as xr
 
-from flood_adapt.object_model.hazard.event.meteo import download_meteo, read_meteo
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 
 
-class TestDownloadMeteo:
-    def test_download_meteo_data_exists(self, test_db, tmp_path):
-        # Arrange
-        meteo_dir = Path(tmp_path, "meteo")
-        time = TimeModel()
+def write_mock_nc_file(
+    meteo_dir: Path, time_range: tuple[datetime, datetime]
+) -> xr.Dataset:
+    METEO_DATETIME_FORMAT = "%Y%m%d_%H%M"
+    duration = time_range[1] - time_range[0]
+    intervals = int(duration.total_seconds() // timedelta(hours=3).total_seconds())
+    gen = np.random.default_rng(42)
 
-        # Act
-        download_meteo(meteo_dir, time, test_db.site.attrs)
-
-        # Assert
-        assert meteo_dir.exists()
-        assert len(os.listdir(meteo_dir)) > 0, "No files were downloaded"
-
-
-class TestReadMeteo:
-    @staticmethod
-    def write_mock_nc_file(meteo_dir: Path, time: TimeModel):
+    for i in range(intervals):
+        time_coord = time_range[0] + timedelta(hours=3 * i)
         ds = xr.Dataset(
             {
-                "barometric_pressure": (("x", "y"), [[1013, 1012], [1011, 1010]]),
-                "precipitation": (("x", "y"), [[0.1, 0.2], [0.3, 0.4]]),
+                "wind_u": (("lat", "lon"), gen.random((2, 2))),
+                "wind_v": (("lat", "lon"), gen.random((2, 2))),
+                "barometric_pressure": (("lat", "lon"), gen.random((2, 2))),
+                "precipitation": (("lat", "lon"), gen.random((2, 2))),
             },
             coords={
-                "x": [0, 1],
-                "y": [0, 1],
+                "time": [time_coord],
+                "lat": [30.0, 30.1],
+                "lon": [-90.0, -90.1],
             },
         )
-        file_path = meteo_dir / f"mock.{time.start_time.strftime('%Y%m%d_%H%M')}.nc"
+        time_str = time_coord.strftime(METEO_DATETIME_FORMAT)
+        file_path = meteo_dir / f"mock.{time_str}.nc"
         ds.to_netcdf(file_path)
-        return ds
 
-    @patch("flood_adapt.object_model.hazard.event.meteo.download_meteo")
-    def test_read_meteo_only_1_nc_file(mock_download_meteo, test_db, tmp_path):
+
+class TestMeteoHandler:
+    @pytest.fixture()
+    def setup_meteo_test(self, tmp_path):
+        handler = MeteoHandler(dir=tmp_path)
+        time = TimeModel(
+            start_time=REFERENCE_TIME,
+            end_time=REFERENCE_TIME + timedelta(hours=3),
+        )
+
+        yield handler, time
+
+    @pytest.fixture
+    def mock_meteogrid_download(self):
+        """Mock the download method of MeteoGrid to not do an expensive MeteoGrid.download call, and write a mock netcdf file instead."""
+
+        def side_effect(
+            time_range: tuple[datetime, datetime], parameters: list[str], path: Path
+        ):
+            write_mock_nc_file(path, time_range)
+
+        with patch(
+            "flood_adapt.object_model.hazard.event.meteo.MeteoGrid.download",
+            side_effect=side_effect,
+        ) as mock_download:
+            yield mock_download
+
+    def test_download_meteo_data(
+        self, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+    ):
         # Arrange
-        meteo_dir = tmp_path
-        time = TimeModel()
-
-        expected_ds = TestReadMeteo.write_mock_nc_file(meteo_dir, time)
-        expected_ds.raster.set_crs(4326)
-        expected_ds = expected_ds.rename({"barometric_pressure": "press"})
-        expected_ds = expected_ds.rename({"precipitation": "precip"})
+        handler, time_model = setup_meteo_test
 
         # Act
-        result = read_meteo(meteo_dir, time, test_db.site.attrs)
+        handler.download(time_model)
+
+        # Assert
+        assert handler.dir.exists()
+        nc_files = list(handler.dir.glob("*.nc"))
+        assert len(nc_files) > 0, "No NetCDF files were downloaded"
+
+        # Read the NetCDF file and assert its contents
+        for nc_file in nc_files:
+            with xr.open_dataset(nc_file) as ds:
+                assert (
+                    "barometric_pressure" in ds
+                ), "`barometric_pressure` not found in dataset"
+                assert "precipitation" in ds, "`precipitation` not found in dataset"
+
+    def test_read_meteo_no_nc_files_raises_filenotfound(
+        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+    ):
+        # Arrange
+        handler, time = setup_meteo_test
+        mock_meteogrid_download.side_effect = (
+            lambda time_range, parameters, path: None
+        )  # Mock download to not write any files
+
+        # Act
+        with pytest.raises(FileNotFoundError) as excinfo:
+            handler.read(time)
+
+        assert f"No meteo files found in meteo directory {handler.dir}" in str(
+            excinfo.value
+        )
+
+    def test_read_meteo_1_nc_file(
+        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+    ):
+        # Arrange
+        handler, time = setup_meteo_test
+
+        # Act
+        result = handler.read(time)
 
         # Assert
         assert isinstance(result, xr.Dataset)
-        assert result == expected_ds
+        assert (
+            len(os.listdir(handler.dir)) == 1
+        ), "Expected 1 NetCDF file in the directory"
+        assert "precip" in result, "`precip` not found in result"
+        assert "press" in result, "`press` not found in result"
 
-    @patch("flood_adapt.object_model.hazard.event.meteo.download_meteo")
-    def test_read_meteo_multiple_nc_files(mock_download_meteo, test_db, tmp_path):
+    def test_read_meteo_multiple_nc_files(
+        self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
+    ):
         # Arrange
-        meteo_dir = tmp_path
-        _time = TimeModel()
-        datasets = []
-
-        for i in range(5):
-            time = TimeModel(
-                start_time=_time.start_time + timedelta(days=i),
-                end_time=_time.end_time + timedelta(days=i),
-            )
-            ds = TestReadMeteo.write_mock_nc_file(meteo_dir, time)
-            datasets.append(ds)
-
-        expected_ds = xr.concat(datasets, dim="time")
-        expected_ds.raster.set_crs(4326)
-        expected_ds = expected_ds.rename({"barometric_pressure": "press"})
-        expected_ds = expected_ds.rename({"precipitation": "precip"})
+        handler, time = setup_meteo_test
+        time.start_time = REFERENCE_TIME
+        time.end_time = REFERENCE_TIME + timedelta(hours=12)
 
         # Act
-        result = read_meteo(meteo_dir, _time, test_db.site.attrs)
+        result = handler.read(time)
 
         # Assert
         assert isinstance(result, xr.Dataset)
-        assert result == expected_ds
-
-    def test_read_meteo_no_nc_files(self, test_db, tmp_path):
-        # Arrange
-        meteo_dir = tmp_path
-
-        # Act & Assert
-        with pytest.raises(ValueError) as e:
-            read_meteo(meteo_dir, TimeModel(), test_db.site.attrs)
-        assert "No meteo files found in the specified directory" in str(e.value)
+        assert (
+            len(os.listdir(handler.dir)) > 1
+        ), "Expected multiple NetCDF files in the directory"
+        assert "precip" in result, "`precip` not found in result"
+        assert "press" in result, "`press` not found in result"

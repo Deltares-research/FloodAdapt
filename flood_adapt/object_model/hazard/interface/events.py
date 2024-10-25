@@ -30,6 +30,7 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulLength,
     UnitTypesDirection,
     UnitTypesDischarge,
     UnitTypesIntensity,
@@ -46,6 +47,9 @@ class IEventModel(BaseModel):
     time: TimeModel
     template: Template
     mode: Mode
+    water_level_offset: UnitfulLength = UnitfulLength(
+        value=0, units=UnitTypesLength.meters
+    )
 
     forcings: dict[ForcingType, Any] = Field(default_factory=dict)
 

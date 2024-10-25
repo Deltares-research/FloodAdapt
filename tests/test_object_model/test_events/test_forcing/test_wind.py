@@ -1,4 +1,3 @@
-import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -10,7 +9,6 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindFromCSV,
     WindFromMeteo,
 )
-from flood_adapt.object_model.hazard.event.meteo import download_meteo
 from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
@@ -39,25 +37,15 @@ class TestWindConstant:
 
 
 class TestWindFromMeteo:
-    def test_wind_from_meteo_get_data(self, tmp_path, test_db):
+    def test_wind_from_meteo_get_data(self, test_db):
         # Arrange
-        test_path = tmp_path / "test_wl_from_meteo"
-
-        if test_path.exists():
-            shutil.rmtree(test_path)
-
         time = TimeModel(
             start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
             end_time=datetime.strptime("2021-01-01 00:10:00", "%Y-%m-%d %H:%M:%S"),
         )
-        download_meteo(
-            time=time,
-            meteo_dir=test_path,
-            site=test_db.site.attrs,
-        )
 
         # Act
-        wind_df = WindFromMeteo(path=test_path).get_data()
+        wind_df = WindFromMeteo().get_data(t0=time.start_time, t1=time.end_time)
 
         # Assert
         assert isinstance(wind_df, xr.Dataset)
