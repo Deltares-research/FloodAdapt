@@ -82,7 +82,7 @@ def test_projection_event_all_synthetic():
 @pytest.fixture()
 def test_event_all_synthetic():
     attrs = {
-        "name": "test_historical_nearshore",
+        "name": "test_synthetic_nearshore",
         "time": TimeModel(
             start_time=datetime(2020, 1, 1),
             end_time=datetime(2020, 1, 2),
@@ -119,30 +119,16 @@ def test_event_all_synthetic():
             ),
         },
     }
-    return attrs
+    return SyntheticEvent.load_dict(attrs)
 
 
 class TestSyntheticEvent:
     # TODO add test for for eventmodel validators
-
-    @pytest.fixture()
-    def test_event(self, test_event_all_synthetic):
-        return SyntheticEvent.load_dict(test_event_all_synthetic)
-
     def test_save_event_toml(self, test_event_all_synthetic, tmp_path):
         path = tmp_path / "test_event.toml"
-        test_event = SyntheticEvent.load_dict(test_event_all_synthetic)
+        test_event = test_event_all_synthetic
         test_event.save(path)
         assert path.exists()
-
-    def test_load_dict(self, test_event_all_synthetic):
-        loaded_event = SyntheticEvent.load_dict(test_event_all_synthetic)
-
-        assert loaded_event.attrs.name == test_event_all_synthetic["name"]
-        assert loaded_event.attrs.time == test_event_all_synthetic["time"]
-        assert loaded_event.attrs.template == test_event_all_synthetic["template"]
-        assert loaded_event.attrs.mode == test_event_all_synthetic["mode"]
-        assert loaded_event.attrs.forcings == test_event_all_synthetic["forcings"]
 
     def test_load_file(self, test_event_all_synthetic, tmp_path):
         path = tmp_path / "test_event.toml"

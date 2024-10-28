@@ -1,9 +1,107 @@
 import pytest
 
 import flood_adapt.api.scenarios as api_scenarios
+from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.utils import finished_file_exists
 
 
-def test_scenario(test_db):
+@pytest.fixture()
+def setup_nearshore_scenario(test_db, setup_nearshore_event):
+    test_db.events.save(setup_nearshore_event)
+
+    test_dict = {
+        "name": "gauged_nearshore",
+        "description": "current_extreme12ft_no_measures",
+        "event": setup_nearshore_event.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    return Scenario.load_dict(test_dict)
+
+
+@pytest.fixture()
+def setup_offshore_meteo_scenario(test_db, setup_offshore_meteo_event):
+    test_db.events.save(setup_offshore_meteo_event)
+
+    test_dict = {
+        "name": "offshore_meteo",
+        "description": "current_extreme12ft_no_measures",
+        "event": setup_offshore_meteo_event.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    return Scenario.load_dict(test_dict)
+
+
+@pytest.fixture()
+def setup_synthetic_scenario(test_db, test_event_all_synthetic):
+    test_db.events.save(test_event_all_synthetic)
+    test_dict = {
+        "name": "synthetic",
+        "description": "current_extreme12ft_no_measures",
+        "event": test_event_all_synthetic.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    return Scenario.load_dict(test_dict)
+
+
+@pytest.fixture()
+def setup_eventset_scenario(test_db, test_eventset):
+    test_db.events.save(test_eventset)
+    test_dict = {
+        "name": "eventset",
+        "description": "current_extreme12ft_no_measures",
+        "event": test_eventset.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    return Scenario.load_dict(test_dict)
+
+
+def test_run_offshore_scenario(test_db, setup_offshore_meteo_scenario):
+    api_scenarios.save_scenario(setup_offshore_meteo_scenario)
+    api_scenarios.run_scenario(setup_offshore_meteo_scenario.attrs.name)
+
+    assert finished_file_exists(
+        test_db.scenarios.get_database_path(get_input_path=False)
+        / setup_offshore_meteo_scenario.attrs.name
+    )
+
+
+def test_run_nearshore_scenario(test_db, setup_nearshore_scenario):
+    api_scenarios.save_scenario(setup_nearshore_scenario)
+    api_scenarios.run_scenario(setup_nearshore_scenario.attrs.name)
+
+    assert finished_file_exists(
+        test_db.scenarios.get_database_path(get_input_path=False)
+        / setup_nearshore_scenario.attrs.name
+    )
+
+
+def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
+    api_scenarios.save_scenario(setup_synthetic_scenario)
+    api_scenarios.run_scenario(setup_synthetic_scenario.attrs.name)
+
+    assert finished_file_exists(
+        test_db.scenarios.get_database_path(get_input_path=False)
+        / setup_synthetic_scenario.attrs.name
+    )
+
+
+def test_run_eventset_scenario(test_db, setup_eventset_scenario):
+    api_scenarios.save_scenario(setup_eventset_scenario)
+    api_scenarios.run_scenario(setup_eventset_scenario.attrs.name)
+
+    assert finished_file_exists(
+        test_db.scenarios.get_database_path(get_input_path=False)
+        / setup_eventset_scenario.attrs.name
+    )
+
+
+def test_create_save_scenario(test_db, setup_offshore_meteo_event):
+    test_db.events.save(setup_offshore_meteo_event)
+
     test_dict = {
         "name": "current_extreme12ft_no_measures",
         "description": "current_extreme12ft_no_measures",
@@ -17,7 +115,7 @@ def test_scenario(test_db):
         scenario = api_scenarios.create_scenario(test_dict)
 
     # correct event
-    test_dict["event"] = "extreme12ft"
+    test_dict["event"] = setup_offshore_meteo_event.attrs.name
     scenario = api_scenarios.create_scenario(test_dict)
 
     assert not api_scenarios.save_scenario(scenario)[0]

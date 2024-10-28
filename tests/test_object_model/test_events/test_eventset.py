@@ -1,7 +1,6 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -43,7 +42,7 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
-def test_eventset_model():
+def test_eventset():
     attrs = {
         "name": "test_eventset_synthetic",
         "time": TimeModel(
@@ -84,13 +83,13 @@ def test_eventset_model():
             ),
         },
     }
-    return attrs
+    return EventSet.load_dict(attrs)
 
 
 @pytest.fixture()
 def test_db_with_dummyscn_and_eventset(
     test_db: IDatabase,
-    test_eventset_model,
+    test_eventset,
     dummy_pump_measure,
     dummy_buyout_measure,
     dummy_projection,
@@ -106,7 +105,7 @@ def test_db_with_dummyscn_and_eventset(
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 
-    event_set = EventSet.load_dict(test_eventset_model)
+    event_set = test_eventset
     test_db.events.save(event_set)
 
     scn = Scenario.load_dict(
@@ -123,25 +122,19 @@ def test_db_with_dummyscn_and_eventset(
 
 
 class TestEventSet:
-    @pytest.fixture()
-    def test_synthetic_eventset(self, test_eventset_model: dict[str, Any]):
-        return EventSet.load_dict(test_eventset_model)
+    def test_get_subevent_paths(self, test_db, test_eventset: EventSet):
+        subevent_paths = test_eventset.get_sub_event_paths()
+        assert len(subevent_paths) == len(test_eventset.attrs.sub_events)
 
-    def test_get_subevent_paths(self, test_db, test_synthetic_eventset: EventSet):
-        subevent_paths = test_synthetic_eventset.get_sub_event_paths()
-        assert len(subevent_paths) == len(test_synthetic_eventset.attrs.sub_events)
+    def test_get_subevents_create_sub_events(self, test_db, test_eventset: EventSet):
+        subevent_paths = test_eventset.get_sub_event_paths()
 
-    def test_get_subevents_create_sub_events(
-        self, test_db, test_synthetic_eventset: EventSet
-    ):
-        subevent_paths = test_synthetic_eventset.get_sub_event_paths()
+        subevents = test_eventset.get_subevents()
 
-        subevents = test_synthetic_eventset.get_subevents()
-
-        assert len(subevents) == len(test_synthetic_eventset.attrs.sub_events)
+        assert len(subevents) == len(test_eventset.attrs.sub_events)
         assert all(subevent_path.exists() for subevent_path in subevent_paths)
 
-        assert test_synthetic_eventset.attrs.mode == Mode.risk
+        assert test_eventset.attrs.mode == Mode.risk
         assert all(subevent.attrs.mode == Mode.single_event for subevent in subevents)
 
     @patch("flood_adapt.object_model.hazard.event.synthetic.SyntheticEvent.process")

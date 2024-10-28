@@ -84,8 +84,6 @@ class RainfallSynthetic(IRainfall):
 class RainfallFromMeteo(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
 
-    meteo_handler: MeteoHandler = MeteoHandler()
-
     def get_data(
         self,
         t0: Optional[datetime] = None,
@@ -96,7 +94,7 @@ class RainfallFromMeteo(IRainfall):
         t0, t1 = self.parse_time(t0, t1)
         time_frame = TimeModel(start_time=t0, end_time=t1)
         try:
-            return self.meteo_handler.read(time_frame)
+            return MeteoHandler().read(time_frame)
         except Exception as e:
             if strict:
                 raise

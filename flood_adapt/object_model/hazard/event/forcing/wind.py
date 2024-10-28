@@ -136,7 +136,6 @@ class WindFromCSV(IWind):
 
 class WindFromMeteo(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
-    meteo_handler: MeteoHandler = MeteoHandler()
 
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']
@@ -146,12 +145,12 @@ class WindFromMeteo(IWind):
         t1: Optional[datetime] = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> xr.DataArray:
+    ) -> xr.Dataset:
         t0, t1 = self.parse_time(t0, t1)
         time = TimeModel(start_time=t0, end_time=t1)
 
         try:
-            return self.meteo_handler.read(time)
+            return MeteoHandler().read(time)
         except Exception as e:
             if strict:
                 raise

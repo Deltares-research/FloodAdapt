@@ -45,6 +45,7 @@ from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEvent,
 )
+from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
@@ -54,7 +55,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import Mode, Template
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
@@ -75,6 +76,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesVolume,
 )
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import cd
 
 
@@ -99,6 +101,9 @@ class SfincsAdapter(IHazardAdapter):
                 reason="the `database` parameter is deprecated. Use the database attribute instead.",
             )
 
+        self._site = Site.load_file(
+            Settings().database_path / "static" / "site" / "site.toml"
+        )
         self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)
         self._model.read()
 
@@ -468,8 +473,8 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=forcing.path, magnitude=None, direction=None
             )
         elif isinstance(forcing, WindFromMeteo):
-            # TODO check with @gundula
-            self._set_wind_forcing(forcing.get_data())
+            time = self._model.get_model_time()
+            self._set_wind_forcing(forcing.get_data(t0=time[0], t1=time[1]))
         elif isinstance(forcing, WindFromTrack):
             # TODO check with @gundula
             self._set_config_spw(forcing.path)
@@ -1174,19 +1179,33 @@ class SfincsAdapter(IHazardAdapter):
 
             # check if event is historic
             if isinstance(event, HistoricalEvent):
-                df_gauge = event._get_observed_wl_data(
-                    station_id=self.database.site.attrs.obs_point[ii].ID,
+                if self._site.attrs.tide_gauge is None:
+                    continue
+                df_gauge = TideGauge(
+                    attrs=self._site.attrs.tide_gauge
+                ).get_waterlevels_in_time_frame(
+                    time=TimeModel(
+                        start_time=event.attrs.time.start_time,
+                        end_time=event.attrs.time.end_time,
+                    ),
                     units=UnitTypesLength(gui_units),
                 )
+                import pdb
+
+                pdb.set_trace()
+
                 if df_gauge is not None:
+                    waterlevel = df_gauge.iloc[
+                        :, 0
+                    ] + self.database.site.attrs.water_level.msl.height.convert(
+                        gui_units
+                    )
+
                     # If data is available, add to plot
                     fig.add_trace(
                         go.Scatter(
                             x=pd.DatetimeIndex(df_gauge.index),
-                            y=df_gauge[1]
-                            + self.database.site.attrs.water_level.msl.height.convert(
-                                gui_units
-                            ),
+                            y=waterlevel,
                             line_color="#ea6404",
                         )
                     )

@@ -158,7 +158,7 @@ class HistoricalEvent(IEvent):
                 # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                 if wind_forcing._source == ForcingSource.TRACK:
                     _offshore_model._add_pressure_forcing_from_grid(
-                        ds=MeteoHandler().read(self.attrs.time)["press"]
+                        ds=MeteoHandler().read(self.attrs.time)
                     )
 
             # write sfincs model in output destination

@@ -56,7 +56,11 @@ class TideGauge(ITideGauge):
         else:
             gauge_data = self._download_tide_gauge_data(time=time)
 
-        gauge_data = gauge_data.rename(columns={"waterlevel": self.attrs.ID})
+        if gauge_data is None:
+            # TODO warning?
+            return pd.DataFrame()
+
+        gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]
         gauge_data = gauge_data * UnitfulLength(
             value=1.0, units=UnitTypesLength.meters
         ).convert(units)
