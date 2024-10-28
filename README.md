@@ -82,10 +82,10 @@ pixi shell -e dev
 # Display all pixi commands and options
 pixi -h
 
-# Install a non default pixi environment defined in pixi.toml
+# Install a non default pixi environment defined in pyproject.toml
 pixi install [ENV_NAME]
 
-# Update environment(s) to the latest allowed by dependency specifications in pixi.toml
+# Update environment(s) to the latest allowed by dependency specifications in pyproject.toml
 pixi update
 
 # List all available tasks

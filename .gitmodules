@@ -1,0 +1,3 @@
+[submodule "FloodAdapt-GUI"]
+	path = FloodAdapt-GUI
+	url = https://github.com/Deltares-research/FloodAdapt-GUI.git
