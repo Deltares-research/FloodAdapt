@@ -72,6 +72,12 @@ docs = [
     "quartodoc",
     "regex",
 ]
+gui = [
+    "Census", # somehow this gives errors in hydromt-fiat?
+    "guitares",
+    "branca",
+    "python-dotenv",
+]
 
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
@@ -147,15 +153,8 @@ strat = "strat"
 ############################# PIXI #############################
 ################################################################
 [tool.pixi.pypi-dependencies]
-hydromt-sfincs = { git = "https://github.com/Deltares-research/hydromt_sfincs_insiders", rev = "560ce76c546a067108790977295871ce635c840b" }
+hydromt-sfincs = { git = "https://github.com/Deltares-research/hydromt_sfincs_insiders", rev = "560ce76c546a067108790977295871ce635c840b" } # Will be gone when hydromt-sfincs merges the quadtree stuff into main
 flood_adapt = {path = ".", editable = true }
-
-
-[tool.pixi.feature.gui.pypi-dependencies]
-Census = "*"
-guitares = "*"
-branca = "*"
-python-dotenv = "*"
 
 [tool.pixi.feature.py311.dependencies]
 python = "3.11.*"

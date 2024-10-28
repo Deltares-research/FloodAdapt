@@ -2358,7 +2358,7 @@ packages:
   name: flood-adapt
   version: 0.1.1
   path: .
-  sha256: bde69fd3f426b445f969baa99fe574ecf8ffdf5e62a332a00c8bedb2ef25743c
+  sha256: f090aea9713a1f701f1209e0697da6b11ebb8dee7c46ff58c5bf043b5fc08125
   requires_dist:
   - cht-cyclones @ git+https://github.com/deltares/cht_cyclones.git
   - cht-meteo
@@ -2392,6 +2392,10 @@ packages:
   - matplotlib ; extra == 'docs'
   - quartodoc ; extra == 'docs'
   - regex ; extra == 'docs'
+  - census ; extra == 'gui'
+  - guitares ; extra == 'gui'
+  - branca ; extra == 'gui'
+  - python-dotenv ; extra == 'gui'
   requires_python: <3.13,>=3.8
   editable: true
 - kind: pypi
