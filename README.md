@@ -17,7 +17,7 @@ FloodAdapt is currently in an intensive development stage. Independent usage of 
 # Installation
 
 ## Setting up Pixi
-To build the environment, manage dependencies and run tasks, FloodAdapt uses [Pixi](https://prefix.dev/docs/pixi/overview), please download and install it by following the instructions on the pixi website.
+To build the environment, manage dependencies and run tasks, FloodAdapt uses [Pixi](https://pixi.sh/latest/), please download and install it by following the instructions on the pixi website.
 
 Before continuing the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
 

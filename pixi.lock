@@ -2358,7 +2358,7 @@ packages:
   name: flood-adapt
   version: 0.1.1
   path: .
-  sha256: f090aea9713a1f701f1209e0697da6b11ebb8dee7c46ff58c5bf043b5fc08125
+  sha256: 584290c551a956610eb555c5626a62e973442727e200ba0d587e91aff04aceec
   requires_dist:
   - cht-cyclones @ git+https://github.com/deltares/cht_cyclones.git
   - cht-meteo
