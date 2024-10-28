@@ -29,24 +29,24 @@ A baseline FloodAdapt configuration allows users to get started with FloodAdapt 
 
 ::: {.callout-tip} 
 ## Including the baseline configuration attributes in the database configuration file
-The name of your site, paths to your SFINCS and Delft-FIAT models, and the unit system are all specified in the header section of the configuration file which is described [here](#header-attributes). The max values for output maps are specified in the 'GUI attributes' section which is described [here](#gui-attributes). 
+The name of your site, paths to your SFINCS and Delft-FIAT models, and the unit system are all specified in the header section of the configuration file which is described under 'Configuration file attributes' in the [Header attributes section](#header-attributes). The max values for output maps are specified in the [GUI attributes section](#gui-attributes). 
 :::
 
 ### Risk and benefit analysis
 The baseline FloodAdapt configuration allows users to simulate event scenarios, which can be very insightful. However, risk scenarios allow users to understand the current and future risk to a community (considering many types of events), with and without adaptation options, and to calculate the risk-reduction benefits of adaptation strategies. To activate the risk scenario and benefit analysis functionality, a [probabilistic event set](risk_analysis.qmd) is required. When this set is included in the FloodAdapt database, FloodAdapt calculates the flooding for all the events in the set and uses a probabilistic calculator to calculate return period flooding, impacts, and risk. 
 
-::: {.callout-note}
+<!-- :: {.callout-note}
 ## What is the difference between an event scenario and a risk scenario
 For an event scenario FloodAdapt calculates the flooding and impacts for one single weather event, such as a hurricane or a king tide with rainfall. The scenario can include future projections and measures, but always represents just one single event. For a risk scenario, in contrast, FloodAdapt calculates flooding for a set of events with different probabilities. From this output, FloodAdapt derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
-:::
+:::-->
 
 ::: {.callout-tip} 
 ## Including a probabilistic event set in the database configuration file
-Specifying a probabilistic event set is done in the Header section of the configuration file. See the optional attributes of the configuration file Header section [here](#header-attributes) (further down on this page).
+Specifying a probabilistic event set is done in the Header section of the configuration file. See the attributes in the Header section under 'Configuration file attributes' in the [Header attributes section](#header-attributes).
 :::
 
 ### Simulating hurricane events and 'ungauged' historical events
-For FloodAdapt users to simulate a scenario with a historical hurricane, or to simulate a historical event for which there are no meaured nearshore water levels, an offshore SFINCS model needs to be included in the FloodAdapt database (this can be created with the [SFINCS model-builder](SFINCS/index.qmd)). Once an offshore model is included, users will see additional event types that can be selected when they click "Add Event" in the FloodAdapt Events tab (see @fig-DB_offshore). If a specific cyclone basin is specified in the database configuration file, the hurricane selector window (which appears when the 'Historical - hurricane' option is chosen) will be filtered to only show the relevant area (see @fig-DB_cyclonesNA). 
+For FloodAdapt users to simulate a scenario with a historical hurricane, or to simulate a historical event for which there are no meaured nearshore water levels, an offshore SFINCS model needs to be included in the FloodAdapt database (this can be created with the [SFINCS model-builder](SFINCS/index.qmd)). Once an offshore model is included, users will see additional event types that can be selected when they click "Add Event" in the FloodAdapt Events tab (see @fig-DB_offshore). If a specific cyclone basin is specified in the database configuration file, the hurricane selector window (which appears when the 'Historical - hurricane' option is chosen) will be filtered to only show hurricanes in the relevant area (see @fig-DB_cyclonesNA). 
 <!-- Many offshore SFINCS models have been created for the U.S. East and Gulf coasts and may be available for use at no cost 
 In addition to specifying an offshore model, the user can also indicate which 'cyclone basin' is relevant for them. @fig-DB_cyclonesNA shows the hurricane selection window for the example of choosing "North America" as the cyclone basin.-->
 
@@ -56,16 +56,16 @@ In addition to specifying an offshore model, the user can also indicate which 'c
 
 ::: {.callout-tip} 
 ## Including an offshore model and cyclone basin in the database configuration file
-Specifying an offshore SFINCS model and a cyclone basin is done in the Header section of the configuration file. See the optional attributes of the configuration file Header section [here](#header-attributes) (further down on this page).
+Specifying an offshore SFINCS model and a cyclone basin is done in the Header section of the configuration file. See the attributes in the Header section under 'Configuration file attributes' in the [Header attributes section](#header-attributes).
 :::
 ### Downloading historical water levels
-FloodAdapt allows user to simulate historical events. In the baseline FloodAdapt configuration, FloodAdapt users need to import their own water level time series for historical events. When a tide gauge (or alternatively a long time series CSV file) is added to the FloodAdapt database, this activates a 'Download Observed Water Levels' button. FloodAdapt users can then easily download water levels for a historical event by selecting a start and end date and clicking that button. @fig-DB_comp_tideGauge shows the baseline FloodAdapt configuration on the left and with the inclusion of a tide gauge on the right. For sites in the U.S. tide gauges can be added automatically based on the site location via the [NOAA COOPS](https://tidesandcurrents.noaa.gov/stations.html) website. The NOAA site also includes datum differences at gauge locations, so that users have the option to view water levels relative to a (potentially) more familiar datum (see @fig-DB_comp_tideGauge).
+FloodAdapt allows users to simulate historical events. In the baseline FloodAdapt configuration, FloodAdapt users need to import their own water level time series for historical events. When a tide gauge (or alternatively a long time series CSV file) is added to the FloodAdapt database, this activates a 'Download Observed Water Levels' button. FloodAdapt users can then easily download water levels for a historical event by selecting a start and end date and clicking that button. @fig-DB_comp_tideGauge shows the baseline FloodAdapt configuration on the left and with the inclusion of a tide gauge on the right. For sites in the U.S. tide gauges can be added automatically based on the site location via the [NOAA COOPS](https://tidesandcurrents.noaa.gov/stations.html) website. The NOAA site also includes datum differences at gauge locations, so that users have the option to view water levels relative to a (potentially) more familiar datum (see @fig-DB_comp_tideGauge).
 
-![**Adding a tide gauge allows a user to activate the 'Download observed water levels' button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level ('zero') than MSL. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge.**](../_static/images/database_comp_tideGauge.png){width=70% fig-align=left #fig-DB_comp_tideGauge}
+![**Adding a tide gauge allows a user to activate the 'Download observed water levels' button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level ('zero') than mean sea level (MSL). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge.**](../_static/images/database_comp_tideGauge.png){width=70% fig-align=left #fig-DB_comp_tideGauge}
 
 ::: {.callout-tip} 
 ## Including a tide gauge in the database configuration file
-Details how to include a tide gauge (or long water level time series) to activate the 'Download Observed Water Levels' button are described [here](#tide-gauge) (further down on this page).
+Details how to include a tide gauge (or long water level time series) to activate the 'Download Observed Water Levels' button are described under 'Configuration file attributes' in the [Tide Gauge section](#tide-gauge).
 :::
 ### Social vulnerability insights
 
@@ -75,10 +75,8 @@ FloodAdapt automatically generates an infographic and a metrics table which help
 
 ::: {.callout-tip} 
 ## Including an SVI layer in the database configuration file
-The attritubes needed to include an SVI layer are described [here](#social-vulnerability-index-(svi)) (further down on this page).
+The attritubes needed to include an SVI layer are described under 'Configuration file attributes' in the [Social vulnerability index section](#social-vulnerability-index-(svi)).
 :::
-To activate functionalities in FloodAdapt which provide social vulnerability, a social vulnerability index (SVI) layer can be included
- insights, users can specify in the database configuration file a social vulnerability index layer, and a threshold above which residents are considered highly socially vulnerable.
 
 ### Visualizing water level output time series
 FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt [Output tab](../4_user_guide/output/index.qmd). The spatial flood map in the FloodAdapt Output tab is static and represents the maximum flood depth during an event. Having observation points helps users understand how the water levels evolved *during* an event. To activate this functionality, observation points can be added to the database-builder configuration file. 
@@ -87,7 +85,7 @@ FloodAdapt allows users to view modeled water level time series at observation p
 
 ::: {.callout-tip} 
 ## Including observation points in the database configuration file
-The attritubes needed to include observation points are described [here](#base-flood-elevation-(bfe)) (further down on this page).
+The attritubes needed to include observation points are described under 'Configuration file attributes' in the [Observation Points section](#observation-points).
 :::
 
 
@@ -96,18 +94,18 @@ FloodAdapt allows users to explore home elevations as an adaptation measure. Wit
 
 ::: {.callout-tip} 
 ## Including a BFE layer in the database configuration file
-The attritubes needed to include a BFE layer are described [here](#base-flood-elevation-(bfe)) (further down on this page)
+The attritubes needed to include a BFE layer are described under 'Configuration file attributes' in the [Base Flood Elevation section](#base-flood-elevation-(bfe)).
 :::
 
 
 ![**Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum**](../_static/images/database_bfe_comp.png){width=100% fig-align=left #fig-DB_obscomp}
 
 ### Sea level rise scenario selection
-FloodAdapt allows users to explore the flooding and impacts for future sea level rise projections. In the base configuration case, users have access to this functionality, and can enter a sea level rise explicitly, for example "0.5 feet". However, FloodAdapt users may want to explore flooding and impacts at a specific point in the future, for example in 15 or 20 years, and they may not know the sea level rise to expect in that future year. To facilitate these users, a sea level rise scenario CSV file can be included in the database setup. There are many sources for sea level rise scenarios, such as the [interagency sea level task force](https://sealevel.globalchange.gov/resources/2022-sea-level-rise-technical-report/). The CSV file contains future years in the first column and sea level rise projections for different SLR scenarios in the remaining colunns. There is no limit to the number of SLR scenarios a user can include. FloodAdapt uses this file to generate a visualization showing the different SLR scenario curves in the [Projections](../4_user_guide/projections/index.qmd) selection window. It also allows a user to enter a future year and select a SLR scenario, and then automatically calculates the sea level rise for that year. 
+FloodAdapt allows users to explore the flooding and impacts for future sea level rise projections. In the base configuration case, users have access to this functionality, and can enter a sea level rise explicitly, for example "0.5 feet". However, FloodAdapt users may want to explore flooding and impacts at a specific point in the future, for example in 15 or 20 years, and they may not know the sea level rise to expect in that future year. To facilitate these users, a sea level rise scenario CSV file can be included in the database setup. There are many sources for sea level rise scenarios, such as the [interagency sea level task force](https://sealevel.globalchange.gov/resources/2022-sea-level-rise-technical-report/). There is no limit to the number of SLR scenarios a user can include. FloodAdapt uses this file to generate a visualization showing the different SLR scenario curves in the [Projections](../4_user_guide/projections/index.qmd) selection window. It also allows a user to enter a future year and select a SLR scenario, and then automatically calculates the sea level rise for that year. 
 
 ::: {.callout-tip} 
 ## Including SLR scenarios in the database configuration file
-The attritubes needed to specify SLR scenarios are described [here](#sea-level-rise-slr-scenarios) (further down on this page).
+The attritubes needed to specify SLR scenarios are described under 'Configuration file attributes' in the [Sea Level Rise Scenarois section](#sea-level-rise-slr-scenarios).
 :::
 
 ![**Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise**](../_static/images/database_SLR_comp.png){width=100% fig-align=left #fig-DB_slrComp}
@@ -139,15 +137,26 @@ Sea level rise scenarios are updating every few years. Updating the sea level ri
 
 **Optional** attributes are:
 
-* **sfincs_offshore** - this is the location of your SFINCS offshore model
-* **cyclone_basin** - this is the region where your site is located, for filtering the tropical cyclones (hurricanes) that show up in the hurricane selection window. Options are **TO BE FILLED IN**
+* **sfincs_offshore** - this is the location of your SFINCS offshore model.
+* **cyclone_basin** - this is the region code (given with quotation marks around it, see @fig-DB_header_optional) where your site is located, for filtering the tropical cyclones (hurricanes) that show up in the hurricane selection window in FloodAdapt. Region codes are described below tihs list.
 * **probabilistic_set** - this is the path to the prepared event set and event frequencies which enable risk analysis
+
+For the **cyclone_basin** the region code options are:
+
+ - NA = North Atlantic
+ - SA = South Atlantic
+ - EP = Eastern North Pacific (which includes the Central Pacific region)
+ - WP = Western North Pacific
+ - SP = South Pacific
+ - SI = South Indian
+ - NI = North Indian
+
 
 
 ### GUI attributes
 ![**Snippet showing the attributes of the GUI**](../_static/images/database_GUI_snippet.png){width=100% fig-align=left #fig-DB_GUI}
 
-@fig-DB_GUI shows the attributes that are required for the GUI. These are **mandatory** attributes that must be included in the base configuration file. 
+@fig-DB_GUI shows the attributes that are required for the GUI. These are **mandatory** attributes that must be included in all configuration files, including the base configuration file. 
 
 The GUI attributes all have to do with maximum values. These are used to create automatic bins for the spatial mapping of flooding, impacts, and benefits. 
 
