@@ -1,3 +1,0 @@
-# SRC_DIR { #flood_adapt.SRC_DIR }
-
-`SRC_DIR`
