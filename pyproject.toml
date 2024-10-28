@@ -183,5 +183,5 @@ tests = {cmd = "pytest --cov=flood_adapt --cov-report=xml tests"}
 [tool.pixi.feature.gui.tasks]
 init-submodule =    {cmd = "git submodule update --init --recursive", inputs=[".gitmodules"], outputs = ["FloodAdapt-GUI/*"]}
 update-to-main-latest =  {cmd = "cd FloodAdapt-GUI; git checkout main; git pull origin;", depends_on=["init-submodule"]}
-editable-install =  {cmd = "pip install -e ./FloodAdapt-GUI --no-deps", depends_on=["init-submodule"], outputs=["FloodAdapt-GUI/floodadapt_gui.egg-info/*"]}
-gui = { cmd = "python ./FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py", depends_on=["editable-install"]}
+editable-gui-install =  {cmd = "pip install -e ./FloodAdapt-GUI --no-deps", depends_on=["init-submodule"], outputs=["FloodAdapt-GUI/floodadapt_gui.egg-info/*"]}
+gui = { cmd = "python ./FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py", depends_on=["editable-gui-install"]}
