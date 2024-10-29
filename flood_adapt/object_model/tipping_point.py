@@ -111,6 +111,7 @@ class TippingPoint(ITipPoint):
 
             if not self.scenario_has_run(scenario_obj):
                 scenario_obj.run()
+                self.has_run = True
 
             if self.check_tipping_point(scenario_obj):
                 self.attrs.status = TippingPointStatus.reached
@@ -120,6 +121,8 @@ class TippingPoint(ITipPoint):
 
         self.prepare_tp_results()
         print("All scenarios run successfully.")
+
+        self._make_html()
 
     def scenario_has_run(self, scenario_obj):
         # TODO: once has_run is refactored (external) we change below to make it more direct
@@ -216,7 +219,7 @@ class TippingPoint(ITipPoint):
         tp_results_long = self.calculate_sea_level_at_threshold(tp_results_long)
         tp_results_long.to_csv(tp_path / "tipping_point_results.csv")
 
-    def plot_results(self):
+    def _make_html(self):  # Make html
         tp_path = self.results_path.joinpath(self.attrs.name)
         tp_results = pd.read_csv(tp_path / "tipping_point_results.csv")
 
@@ -248,13 +251,22 @@ class TippingPoint(ITipPoint):
                 },
                 name=f"{metric[0]} threshold",
             )
+            fig.add_annotation(
+                text="text",
+                x=-5,
+                y=-3,
+            )
+
             fig.update_layout(
                 title=f"Tipping Point Analysis for {self.attrs.name}",
                 xaxis_title="Sea Level Rise (m)",
                 yaxis_title="Value",
             )
 
-            fig.show()
+            # fig.show()
+            # write html to results folder
+            html = os.path.join(tp_path, "tipping_point.html")
+            fig.write_html(html)
 
     @staticmethod
     def load_file(filepath: Union[str, Path]) -> "TippingPoint":
@@ -329,4 +341,4 @@ if __name__ == "__main__":
     # run all scenarios
     test_point.run_tp_scenarios()
     # plot results
-    test_point.plot_results()
+    test_point._make_html()
