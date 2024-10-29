@@ -48,7 +48,7 @@ class DbsMeasure(DbsTemplate):
                 _path = resolve_filepath(
                     object_dir=self._object_class.dir_name,
                     obj_name=obj.attrs.name,
-                    file_name=obj.attrs.polygon_file,
+                    path=obj.attrs.polygon_file,
                 )
                 geometries.append(gpd.read_file(_path))
             # If aggregation area is used read the polygon from the aggregation area name
