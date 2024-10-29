@@ -65,6 +65,18 @@ def parse_args():
         dest="optional_deps",
         help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
     )
+    parser.add_argument(
+        "--cicd",
+        required=False,
+        dest="is_cicd",
+        default=False,
+        action="store_true",
+        help="""Set this flag to skip the pip install commands, since they might require credentials.
+Useful for CI/CD environments where the credentials are not available.
+The environment will be created containing the geospatial packages, but the other pypi dependencies will not be installed.
+To complete the environment, run the following command after activating it: pip install FloodAdapt
+""",
+    )
 
     args = parser.parse_args()
     return args
@@ -101,6 +113,7 @@ def create_env(
     env_name: str,
     prefix: Optional[str] = None,
     editable: bool = False,
+    is_cicd: bool = False,
     optional_deps: Optional[str] = None,
 ):
     if not BACKEND_ROOT.exists():
@@ -124,9 +137,14 @@ def create_env(
     command_list = [
         "conda activate",
         create_command,
-        activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir",
     ]
+
+    if not is_cicd:
+        command_list.append(activate_command)
+        command_list.append(
+            f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir"
+        )
+
     command = " && ".join(command_list)
 
     print("Running commands:")
@@ -169,5 +187,6 @@ if __name__ == "__main__":
         env_name=args.env_name,
         prefix=args.prefix,
         editable=args.editable,
+        is_cicd=args.is_cicd,
         optional_deps=args.optional_deps,
     )
