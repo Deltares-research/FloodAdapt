@@ -131,15 +131,14 @@ def create_env(
     activate_option = env_location if prefix else env_name
     activate_command = f"conda activate {activate_option}"
 
-    editable_option = "-e" if editable else ""
-    dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
-
     command_list = [
         "conda activate",
         create_command,
     ]
 
     if not is_cicd:
+        editable_option = "-e" if editable else ""
+        dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
         command_list.append(activate_command)
         command_list.append(
             f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir"
