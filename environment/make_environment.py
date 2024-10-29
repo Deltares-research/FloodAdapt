@@ -22,6 +22,7 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
+    "env": os.environ.copy(),
 }
 
 try:
@@ -138,6 +139,7 @@ def create_env(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
+        env=os.environ.copy(),
     )
 
     while process.poll() is None and process.stdout:
