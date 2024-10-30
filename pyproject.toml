@@ -37,7 +37,7 @@ dependencies = [
     "geojson",
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git",
-    # "hydromt-sfincs@ git+https://github.com/Deltares-research/hydromt_sfincs_insiders.git@FA_quadtree", # TODO replace with a release or main branch after quadtree readwrite is copied to main
+    "hydromt-sfincs", # is overwritten by git submodule in extern and installed as ditable by pixi.
     "numpy < 2.0",
     "numpy-financial",
     "pandas",
@@ -153,7 +153,9 @@ strat = "strat"
 ############################# PIXI #############################
 ################################################################
 [tool.pixi.pypi-dependencies]
-hydromt-sfincs = { git = "https://github.com/Deltares-research/hydromt_sfincs_insiders", rev = "560ce76c546a067108790977295871ce635c840b" } # Will be gone when hydromt-sfincs merges the quadtree stuff into main
+# pixi doesnt support git checkouts to private repos yet.
+# So, any private git dependencies are added as git submodules, which need to be cloned before being able to run floodadapt.
+hydromt_sfincs = {path = "extern/hydromt_sfincs", editable = true }
 flood_adapt = {path = ".", editable = true }
 
 [tool.pixi.feature.py311.dependencies]
@@ -178,10 +180,7 @@ gui = {features = ["gui"], solve-group = "py311" }
 [tool.pixi.feature.dev.tasks]
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
 pre-commit = {cmd = "pre-commit run --all-files", depends_on=["install-pre-commit"]}
-tests = {cmd = "pytest --cov=flood_adapt --cov-report=xml tests"}
+tests = {cmd = "pytest --cov=flood_adapt --cov-report=html tests"}
 
 [tool.pixi.feature.gui.tasks]
-init-submodule =    {cmd = "git submodule update --init --recursive", inputs=[".gitmodules"], outputs = ["FloodAdapt-GUI/*"]}
-update-to-main-latest =  {cmd = "cd FloodAdapt-GUI; git checkout main; git pull origin;", depends_on=["init-submodule"]}
-editable-gui-install =  {cmd = "pip install -e ./FloodAdapt-GUI --no-deps", depends_on=["init-submodule"], outputs=["FloodAdapt-GUI/floodadapt_gui.egg-info/*"]}
-gui = { cmd = "python ./FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py", depends_on=["editable-gui-install"]}
+gui = { cmd = "python .extern/FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}

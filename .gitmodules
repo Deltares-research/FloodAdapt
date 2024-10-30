@@ -1,3 +1,8 @@
 [submodule "FloodAdapt-GUI"]
-	path = FloodAdapt-GUI
+	path = extern/FloodAdapt-GUI
 	url = https://github.com/Deltares-research/FloodAdapt-GUI.git
+	branch = add_pixi
+[submodule "hydromt_sfincs"]
+	path = extern/hydromt_sfincs
+	url = https://github.com/Deltares-research/hydromt_sfincs_insiders.git
+	branch = FA_quadtree
