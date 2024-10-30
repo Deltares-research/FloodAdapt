@@ -259,7 +259,7 @@ class TippingPoint(ITipPoint):
                 yref="y",
             )
             fig.add_annotation(
-                text=f"Tipping point metric: {metric[0]}",
+                text="Tipping point metric: A value here",  # TODO grab tp value
                 x=1,
                 y=0,
                 xref="paper",
@@ -271,7 +271,7 @@ class TippingPoint(ITipPoint):
             fig.update_layout(
                 title=f"Tipping Point Analysis for {self.attrs.name}",
                 xaxis_title="Sea Level Rise (m)",
-                yaxis_title="Value",
+                yaxis_title=f"Tipping point metric: {metric[0]}",
             )
 
             # write html to results folder
