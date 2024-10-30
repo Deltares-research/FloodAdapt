@@ -685,22 +685,22 @@ class Database:
         else:
             for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
                 # Make sure paths are correct
-                aggr.file = str(
-                    self.static_path.joinpath("templates", "fiat", aggr.file)
+                aggr["file"] = str(
+                    self.static_path.joinpath("templates", "fiat", aggr["file"])
                     .relative_to(self.static_path)
                     .as_posix()
                 )
-                if aggr.equity is not None:
-                    aggr.equity.census_data = str(
+                if aggr["equity"] is not None:
+                    aggr["equity"]["census_data"] = str(
                         self.static_path.joinpath(
-                            "templates", "fiat", aggr.equity.census_data
+                            "templates", "fiat", aggr["equity"]["census_data"]
                         )
                         .relative_to(self.static_path)
                         .as_posix()
                     )
-                self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
+                self.site_attrs["fiat"]["aggregation"].append(aggr)
             self.logger.info(
-                f"The aggregation types {[aggr.name for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
+                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
             )
 
         # Read SVI
