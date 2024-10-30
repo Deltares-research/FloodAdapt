@@ -252,18 +252,28 @@ class TippingPoint(ITipPoint):
                 name=f"{metric[0]} threshold",
             )
             fig.add_annotation(
-                text="text",
-                x=-5,
-                y=-3,
+                text=f"Tipping point: {metric[0]}",
+                x=0,
+                y=35000,
+                xref="x",
+                yref="y",
             )
-
+            fig.add_annotation(
+                text=f"Tipping point metric: {metric[0]}",
+                x=1,
+                y=0,
+                xref="paper",
+                yref="paper",
+                xanchor="left",
+                yanchor="top",
+                showarrow=False,
+            )
             fig.update_layout(
                 title=f"Tipping Point Analysis for {self.attrs.name}",
                 xaxis_title="Sea Level Rise (m)",
                 yaxis_title="Value",
             )
 
-            # fig.show()
             # write html to results folder
             html = os.path.join(tp_path, "tipping_point.html")
             fig.write_html(html)

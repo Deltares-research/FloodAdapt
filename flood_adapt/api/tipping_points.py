@@ -36,7 +36,3 @@ def create_tipping_point_scenarios(name: str) -> None:
 
 def run_tipping_point(name: str) -> None:
     Database().tipping_points.get(name).run_tp_scenarios()
-
-
-# def plot_tipping_point_results(name: str) -> None:
-#    app.info.set_url(tipping_points.results)
