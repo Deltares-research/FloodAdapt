@@ -138,3 +138,16 @@ pre-commit install
     "autoDocstring.docstringFormat": "numpy"
 }
 ```
+
+
+
+## Running the GUI
+
+The GUI uses [mapbox](https://www.mapbox.com/) to allow users with less programming experience to interact with the models and visualize outputs. In order to use mapbox, you need a token.
+
+If you don't already have one, ask for one or go to https://www.mapbox.com/, make a new account and generate a token
+
+- Create this file: `.env` in the root of this project, and put the following line: `MAPBOX_TOKEN=<your_token>`
+- Make sure you have access to the [FloodAdapt-GUI](https://github.com/Deltares-research/FloodAdapt-GUI) repository
+- clone the repository with `git submodule update --init --recursive`
+- run the gui with  `pixi run gui`
