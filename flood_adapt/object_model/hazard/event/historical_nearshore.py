@@ -10,9 +10,6 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalNearshoreModel,
 )
-from flood_adapt.object_model.interface.path_builder import (
-    db_path,
-)
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
@@ -29,30 +26,38 @@ class HistoricalNearshore(Event):
         else:
             self.attrs = HistoricalNearshoreModel.model_validate(data)
 
+        # Temporary fix until the Hazard refactor is merged.
+        # Dont try to load the timeseries data if the object is the default object since that has fake files.
+        if self.attrs.name == "default":
+            return
+
         if self.attrs.rainfall.source == "timeseries":
             # This is a temporary fix until the Hazard refactor is merged.
-            if self.attrs.rainfall.timeseries_file is not None:
-                path = (
-                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
-                    / self.attrs.rainfall.timeseries_file
+            if self.attrs.rainfall.timeseries_file:
+                path = resolve_filepath(
+                    object_dir=self.dir_name,
+                    obj_name=self.attrs.name,
+                    path=self.attrs.rainfall.timeseries_file,
                 )
                 self.rain_ts = Event.read_csv(path)
 
         if self.attrs.wind.source == "timeseries":
             # This is a temporary fix until the Hazard refactor is merged.
-            if self.attrs.wind.timeseries_file is not None:
-                path = (
-                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
-                    / self.attrs.wind.timeseries_file
+            if self.attrs.wind.timeseries_file:
+                path = resolve_filepath(
+                    object_dir=self.dir_name,
+                    obj_name=self.attrs.name,
+                    path=self.attrs.wind.timeseries_file,
                 )
                 self.wind_ts = Event.read_csv(path)
 
         if self.attrs.tide.source == "timeseries":
             # This is a temporary fix until the Hazard refactor is merged.
-            if self.attrs.tide.timeseries_file is not None:
-                path = (
-                    db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
-                    / self.attrs.tide.timeseries_file
+            if self.attrs.tide.timeseries_file:
+                path = resolve_filepath(
+                    object_dir=self.dir_name,
+                    obj_name=self.attrs.name,
+                    path=self.attrs.tide.timeseries_file,
                 )
                 self.tide_surge_ts = Event.read_csv(path)
 

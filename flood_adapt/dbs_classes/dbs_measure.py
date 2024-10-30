@@ -45,12 +45,12 @@ class DbsMeasure(DbsTemplate):
         for path, obj in zip(measures["path"], objects):
             # If polygon is used read the polygon file
             if obj.attrs.polygon_file:
-                _path = resolve_filepath(
+                src_path = resolve_filepath(
                     object_dir=self._object_class.dir_name,
                     obj_name=obj.attrs.name,
-                    file_name=obj.attrs.polygon_file,
+                    path=obj.attrs.polygon_file,
                 )
-                geometries.append(gpd.read_file(_path))
+                geometries.append(gpd.read_file(src_path))
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
                 if (
