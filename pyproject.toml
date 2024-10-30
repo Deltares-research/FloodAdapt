@@ -37,7 +37,8 @@ dependencies = [
     "geojson",
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git",
-    "hydromt-sfincs", # is overwritten by git submodule in extern and installed as ditable by pixi.
+    # "hydromt-sfincs", # uncomment when hydromt-sfincs quadtree stuff is released.
+    # is overwritten by git submodule in extern and installed as editable by pixi.
     "numpy < 2.0",
     "numpy-financial",
     "pandas",
@@ -155,7 +156,7 @@ strat = "strat"
 [tool.pixi.pypi-dependencies]
 # pixi doesnt support git checkouts to private repos yet.
 # So, any private git dependencies are added as git submodules, which need to be cloned before being able to run floodadapt.
-hydromt_sfincs = {path = "extern/hydromt_sfincs", editable = true }
+hydromt_sfincs = {path = "./extern/hydromt_sfincs", editable = true }
 flood_adapt = {path = ".", editable = true }
 
 [tool.pixi.feature.py311.dependencies]
@@ -183,4 +184,4 @@ pre-commit = {cmd = "pre-commit run --all-files", depends_on=["install-pre-commi
 tests = {cmd = "pytest --cov=flood_adapt --cov-report=html tests"}
 
 [tool.pixi.feature.gui.tasks]
-gui = { cmd = "python .extern/FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}
+gui = { cmd = "python ./extern/FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}

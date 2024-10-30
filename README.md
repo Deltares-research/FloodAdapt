@@ -26,6 +26,7 @@ Then run these commands to install FloodAdapt:
 ```bash
 git clone https://github.com/Deltares-research/FloodAdapt.git
 cd FloodAdapt
+git submodule update --init --recursive
 pixi install
 ```
 ## Linux
@@ -65,17 +66,29 @@ To contribute to FloodAdapt, you will need to install additional dependencies. T
 # Install dev environment
 git clone https://github.com/Deltares/FloodAdapt
 cd FloodAdapt
+git submodule update --init --recursive
 pixi install dev
 
 # Verify everything is installed correctly
 pixi run tests
 
-# `activate` the environment
+# `activate` the dev environment
 pixi shell -e dev
 
 # Develop
 ...
 ```
+
+### Adding editable installations to your environment
+
+To make developing easier and not have to reinstall packages after every change, editable installs exist.
+Pixi supports editable installs, but not in the most intuitive way, as they need to be defined as editable in the project specification.
+
+Example command to add the package `example_package` as an editable install to the default environment:
+- go to the non-pixi sections in `pyproject.toml` and comment out the `example_package`. ([dependencies] or [optional-dependencies])
+- in the pixi section: [tool.pixi.pypi-dependencies]
+- add the line `example_package = {path = "./path/to/example_package", editable = true }`. Note that this path is relative to the root of this project.
+- run `pixi update`
 
 ## Useful pixi commands
 ```bash
