@@ -145,6 +145,14 @@ class Event(IEvent[EventModel]):
             infer_datetime_format=True,
         )
         df.index.names = ["time"]
+
+        # Filter out rows with invalid dates
+        dt_index = pd.to_datetime(df.index, errors="coerce")
+        valid_index = dt_index.notna()
+
+        df = df[valid_index]
+        df.index = dt_index[valid_index]
+
         return df
 
     def download_meteo(self, site: Site, path: Path):
