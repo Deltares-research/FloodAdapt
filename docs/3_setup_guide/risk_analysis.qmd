@@ -7,7 +7,7 @@ lightbox: auto
 
 This guidance provides support for preparing an **event set** to be used in FloodAdapt to calculate probabilistic flood maps, impacts, and risk. An event set consists of a set of events, defined by variables like surge, tide, and rainfall, and their occurrence frequencies. To see how FloodAdapt uses an event set to calculate risk, take a look at the [FloodAdapt technical documentation on risk analysis](../5_technical_docs/RiskScenario.qmd), particularly the part about the [probabilistic calculator](../5_technical_docs/RiskScenario.qmd#probCalculator).  
 
-The method described in this guidance is known as the Joint Probability Method (JPM). In the JPM, all types of hydro-meteorological events that may lead to flooding in an area of interest are identified. Subsequently, a representative set of (synthetic) events is selected, covering as much as possible the whole range of events that may contribute substantially to the overall flood risk. The likelihood of occurrence of each event is estimated from key statistics of the relevant flood drivers like rainfall, river discharge, sea level, etc. The selected events are then simulated with a combined hydrological-hydraulic model to identify areas that will be flooded as well as additional relevant indicators like flood depth, flood duration, and flow velocities. Subsequently, flood impacts are estimated for each simulated event based on the derived flood characteristics and relevant data on exposed assets that may be damaged. The contributions to flood risk (likelihood × impact) are thus computed for each event and combined to quantify the overall flood risk in the area.
+The method described in this guidance is known as the Joint Probability Method (JPM). In the JPM, all types of hydro-meteorological events that may lead to flooding in an area of interest are identified. Subsequently, a representative set of (synthetic) events is selected, covering as much as possible the whole range of events that may contribute substantially to the overall flood risk. The likelihood of occurrence of each event is estimated from key statistics of the relevant flood drivers like rainfall, river discharge, and sea level. 
 
 Note that this guide focuses on non-hurricane events. For the derivation of a hurricane event set, which can be combined with a set of non-hurricane events, please see this [comprehensive FEMA guide from 2023](https://www.fema.gov/sites/default/files/documents/Coastal_Statistical_Simulation_Methods_Nov_2023.pdf). 
 
@@ -20,9 +20,9 @@ The joint probability method supports an event-based approach, like the one used
 
 This guide is organized around key steps in preparing an event set.
 
-1. [Identify flood drivers and define variables](##identify-relevant-define-variables)
+1. [Identify flood drivers and define variables](#identify-relevant-define-variables)
    
-   Determine the flood drivers that have a significant impact on the flood risk in the area (e.g. rainfall, river discharge, sea levels), and Select appropriate variables that best represent the characteristics of the identified flood drivers.
+   Determine the flood drivers that have a significant impact on the flood risk in the area (e.g. rainfall, river discharge, sea levels), and select appropriate variables that best represent the characteristics of the identified flood drivers.
 
 2. [Calculate probabilities of variables](#quantify-probs)
 
@@ -34,7 +34,7 @@ This guide is organized around key steps in preparing an event set.
 
 4. [Select events and calculate their frequencies](#select-events)
 
-   Select a set of flood events (defined as a combination of flood driver variables) and quantify their occurrence frequencies.
+   Select a set of events (defined as a combination of flood driver variables) and quantify their occurrence frequencies.
 
 5. [Format the events for FloodAdapt](#format-events)
 
