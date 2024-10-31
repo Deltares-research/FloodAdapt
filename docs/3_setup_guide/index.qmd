@@ -14,8 +14,8 @@ The setup guide consists of the following sections:
 
 1. [SFINCS Setup](SFINCS/index.qmd) - this gives an overvivew of the SFINCS model and walks the user through the use of the SFINCS model-builder to create an overland SFINCS model.
 
-2. [Delft FIAT Setup](Delft_Fiat/index.qmd) - this section gives an overview of the Delft-FIAT model and walks the user through the use of the Delft-FIAT model-builder
+2. [Delft FIAT Setup](Delft_Fiat/index.qmd) - this section gives an overview of the Delft-FIAT model and walks the user through the use of the Delft-FIAT model-builder.
 
-3. [Event Setup](risk_analysis.qmd) - provides guidance and examples how to create a probabilistic event set for risk analysis in a compound flood area
+3. [Event Setup](risk_analysis.qmd) - provides guidance and examples how to create a probabilistic event set for risk analysis in a compound flood area.
 
-4. [Database Setup](database.qmd) - describes the preparation of a database-builder configuration file that can be used with the database-builder tool to create a FloodAdapt database
+4. [Database Setup](database.qmd) - describes the preparation of a configuration file to use with the database-builder tool to create a FloodAdapt database.

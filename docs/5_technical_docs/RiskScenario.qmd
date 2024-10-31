@@ -8,7 +8,7 @@ A risk scenario is similar to an event scenario, but instead of running for one 
 
 The [hazard calculation](#hazard-calculation) and [impact & risk calculation](#impact-and-risk-calculation) frameworks for a risk scenario are presented in the sections below.
 
-## Hazard calculation
+## Hazard calculation {#hazard-calc}
 
 @fig-workflow_risk_hazard zooms in on the hazard calculation portion of the FloodAdapt workflow for a risk scenario. Referring to the figure can support the description of the calculation.
 
@@ -16,7 +16,7 @@ For a risk scenario the hazard calculation involves both simulating the flooding
 
 ![**FloodAdapt calculation framework for hazardfor a risk scenario**](../_static/images/Workflow_riskScenario_hazards.jpg){width=100% fig-align=left #fig-workflow_risk_hazard}
 
-## Impact and risk calculation
+## Impact and risk calculation {#impact-risk-calc}
 
 @fig-workflow_risk_impacts zooms in on the impact and risk calculation portion of the FloodAdapt workflow for a risk scenario. Referring to the figure can support the description of the calculation.
 
@@ -24,7 +24,7 @@ For a risk scenario the hazard calculation involves both simulating the flooding
 
 The automatic updating of the Delft-FIAT model based on user-specified adaptation options and projections is identical to the handling in the [event scenario](EventScenario.qmd). This workflow description is not repeated here.
 
-For a risk scenario, FloodAdapt imports into Delft-FIAT the set of return period flood maps (calculated in the hazard calculation framework described above) and their associated return periods. Delft-FIAT has an automatic risk module built in which calculates and outputs the direct economic damages to the assets in the exposure data for each input return period flood map. It uses this output to generate a damage-frequency curve (note that the exceedance frequency is the reciprocal of the return period). The expected annual damages (risk) are then calculated as the area under the damage-frequency curve (see @fig-riskcalc). The set of return periods will be finite, so Delft-FIAT makes approximations for return periods beyond what is calculated. For return periods higher than the highest calculated, it assumes economic damages equal to the highest calculated. For return periods lower than the lowest calculated, it assumes economic damages of zero. In FloodAdapt, users can choose the return periods for which damages will be calculated, to minimize these approxmiations. For example, users can take an upper limit for the return period of 500 or 1000 years and a lower limit of 1 year.
+For a risk scenario, FloodAdapt imports into Delft-FIAT the set of return period flood maps (calculated in the [hazard framework](#hazard-calc) with the use of the [probabilistic calcultor](#probCalculator)). Delft-FIAT has an automatic risk module built in which calculates and outputs the direct economic damages to the assets in the exposure data for each input return period flood map. It uses this output to generate a damage-frequency curve (note that the exceedance frequency is the reciprocal of the return period). The expected annual damages (risk) are then calculated as the area under the damage-frequency curve (see @fig-riskcalc). The set of return periods will be finite, so Delft-FIAT makes approximations for return periods beyond what is calculated. For return periods higher than the highest calculated, it assumes economic damages equal to the highest calculated. For return periods lower than the lowest calculated, it assumes economic damages of zero. In FloodAdapt, users can choose the return periods for which damages will be calculated, to minimize these approxmiations. For example, users can take an upper limit for the return period of 500 or 1000 years and a lower limit of 1 year.
 
 ![**Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve.**](../_static/images/risk_calc.png){width=50% fig-align=left #fig-riskcalc}
 
@@ -80,7 +80,7 @@ For extrapolation outside of the bounds of the minimum and maximum return period
 
 ###### **Step 6: Convert water levels to water depths** {#step6}
 
-The resulting return-period water levels for each grid cell are mapped onto the raster of the (typically finer-scale) DEM using the indices file that maps each SFINCS grid cell to its corresponding DEM raster cells. The land elevation is then subtracted from the water levels to obtain flood depths. 
+The resulting return-period water levels for each grid cell are mapped onto the raster of the (typically finer-scale) DEM using the indices file that maps each SFINCS grid cell to its corresponding DEM raster cells. The land elevation is then subtracted from the water levels to obtain flood depths. These flood depth maps are then passed to the Delft-FIAT model to [calculate impacts and risk](#impact-risk-calc). 
 
 
 

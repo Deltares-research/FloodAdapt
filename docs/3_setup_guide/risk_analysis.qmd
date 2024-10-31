@@ -1,45 +1,47 @@
 ---
-title:	Event Setup
+title:	Event Set
 filters:
   - lightbox
 lightbox: auto
 ---
 
-This guide provides instructions on preparing an event set to be used in FloodAdapt to calculate probabilistic flood and hazard maps, impacts, and risk. Preparing such an event set requires some background information on Probabilistic Flood Risk Assessments (PFRA) to which this guide is largely devoted. Practitioners may lack the required experience for carrying out a PFRA, which increases the threshold of applying such a method. This document is written to explain the steps required and as such to lower the threshold for practitioners and motivate them to apply such methods in practice. Even though PFRA involves several methods from mathematics, this guide is written without the use of mathematical formulas for readability. Nevertheless, for further reading of this guide some basic understanding of statistical analysis is required.
+This guidance provides support for preparing an **event set** to be used in FloodAdapt to calculate probabilistic flood maps, impacts, and risk. An event set consists of a set of events, defined by variables like surge, tide, and rainfall, and their occurrence frequencies. To see how FloodAdapt uses an event set to calculate risk, take a look at the [FloodAdapt technical documentation on risk analysis](../5_technical_docs/RiskScenario.qmd), particularly the part about the [probabilistic calculator](../5_technical_docs/RiskScenario.qmd#probCalculator).  
 
-## Probabilistic Flood Risk Assessment
+The method described in this guidance is known as the Joint Probability Method (JPM). In the JPM, all types of hydro-meteorological events that may lead to flooding in an area of interest are identified. Subsequently, a representative set of (synthetic) events is selected, covering as much as possible the whole range of events that may contribute substantially to the overall flood risk. The likelihood of occurrence of each event is estimated from key statistics of the relevant flood drivers like rainfall, river discharge, sea level, etc. The selected events are then simulated with a combined hydrological-hydraulic model to identify areas that will be flooded as well as additional relevant indicators like flood depth, flood duration, and flow velocities. Subsequently, flood impacts are estimated for each simulated event based on the derived flood characteristics and relevant data on exposed assets that may be damaged. The contributions to flood risk (likelihood × impact) are thus computed for each event and combined to quantify the overall flood risk in the area.
 
-Floods can cause casualties and major damages to properties and critical infrastructure. Various measures can be considered to reduce flood risk. However, such measures are often expensive and may have negative socio-economic and environmental impacts. The selection of (a set of) risk mitigating measures therefore requires a careful weighing of costs and benefits (flood risk reduction). A flood risk assessment provides essential information for the decision-making process by identifying high-risk locations and by identifying to what extent the risk can be reduced by taking mitigating measures.
+Note that this guide focuses on non-hurricane events. For the derivation of a hurricane event set, which can be combined with a set of non-hurricane events, please see this [comprehensive FEMA guide from 2023](https://www.fema.gov/sites/default/files/documents/Coastal_Statistical_Simulation_Methods_Nov_2023.pdf). 
 
-Flood risk is a combination of the likelihood of a flood event occurring and the impacts such an event has on society and the environment. 
-One of the complexities in PFRA is that there are many different types of flood events that may occur, each with its own impacts and likelihoods of occurrence. In coastal zones, floods may be caused by different combinations of intense rainfall (pluvial flooding), high river discharges (fluvial flooding), groundwater tables rising above the ground surface (groundwater flooding), and high tides, storm surges and waves (coastal flooding). Furthermore, the severity, temporal distributions and relative timing of these flood drivers can vary between events. To obtain full insight in the existing flood risk, a range of flood events that may occur need to be considered. This can be done by carrying out a Probabilistic Flood Risk Assessment (PFRA).
+::: {.callout-note}
+### Event-based approach versus time-series approach
+The joint probability method supports an event-based approach, like the one used in FloodAdapt. In this approach, synthetic events are generated and their occurrence frequencies are determined based on the joint probability of the variables defining the event (like surge and rainfall). Another approach is a time-series approach, where simulations are based on either a historical or synthetic time series of flood drivers. Probabilities do not need to be quantified in a time-series approach because correlations will be represented by the long time series. The time-series approach is easier to apply and easier to standardize, but requires long good-quality records of all relevant flood drivers, which are usually not available. 
+:::
 
-In a PFRA, all types of hydro-meteorological events that may lead to flooding in an area of interest are identified. Subsequently, a representative set of (synthetic) events is selected, covering as much as possible the whole range of events that may contribute substantially to the overall flood risk. The likelihood of occurrence of each event is estimated from key statistics of the relevant flood drivers like rainfall, river discharge, sea level, etc. The selected events are then simulated with a combined hydrological-hydraulic model to identify areas that will be flooded as well as additional relevant indicators like flood depth, flood duration, and flow velocities. Subsequently, flood impacts are estimated for each simulated event based on the derived flood characteristics and relevant data on exposed assets that may be damaged. The contributions to flood risk (likelihood × impact) are thus computed for each event and combined to quantify the overall flood risk in the area.
+## Steps to prepare an event set
+
+This guide is organized around key steps in preparing an event set.
+
+1. [Identify flood drivers and define variables](##identify-relevant-define-variables)
+   
+   Determine the flood drivers that have a significant impact on the flood risk in the area (e.g. rainfall, river discharge, sea levels), and Select appropriate variables that best represent the characteristics of the identified flood drivers.
+
+2. [Calculate probabilities of variables](#quantify-probs)
+
+   Calculate the probability distribution of the flood driver variables.
+
+3. [Calculate joint probabilities](#calculate-joint-probs)
+
+   Calcualte correlation between variables and the joint probability of occurrence of the flood driver variables.
+
+4. [Select events and calculate their frequencies](#select-events)
+
+   Select a set of flood events (defined as a combination of flood driver variables) and quantify their occurrence frequencies.
+
+5. [Format the events for FloodAdapt](#format-events)
+
+   Prepare the set of events (event specs and frequencies) in the format required for FloodAdapt.
 
 
-## Overview of the Event Set Preparation
-
-Various PFRA methods have been applied in literature and practice. The methods can be classified into event-based methods and time-series methods. With event-based methods, model simulations are carried out for a set of (usually synthetic) flood events. With time-series methods, the simulations are carried out for a complete time series of flood drivers like surge, rainfall, and tide. The time series can be either historic or synthetic. FloodAdapt uses the event-based approach. For this approach, the following steps need to be carried out:
-
-1. **[Identify the most relevant flood drivers in the area](##identify-relevant-define-variables)**:
-   Determine the flood drivers that have a significant impact on the flood risk in the area, such as rainfall, river discharge, sea levels, etc.
-
-2. **[Define variables representing these flood drivers](##identify-relevant-define-variables)**:
-   Select appropriate variables that best represent the characteristics of the identified flood drivers.
-
-3. **[Quantify probabilities of variables](#quantify-probs)**:
-   Calculate the probability distribution of the flood variables.
-
-4. **[Calculate variable correlation and event probabilities](#calculate-joint-probs)**
-   Calcualte correlation between variables and the event probabilities as the joint probability of occurrence of the flood variables.
-
-5. **[Select events and quantify event probabilities](#select-events)**:
-   Select a set of flood events (defined as a combination of flood driver variables) and quantify their probabilities.
-
-
-
-
-## Step 1 & 2 - Identify flood drivers and define variables {#identify-relevant-define-variables}
+## Step 1 - Identify flood drivers and define variables {#identify-relevant-define-variables}
 
 The initial step in setting up a probabilistic flood risk assessment involves identifying the most relevant flood drivers in the project area. In coastal zones, floods may be caused by (combinations of) intense rainfall (pluvial flooding), high river discharges (fluvial flooding), groundwater tables rising above the ground surface (groundwater flooding), and high tides, storm surges, and waves (coastal flooding). In a probabilistic analysis, these flood drivers are represented by variables that quantify a specific characteristic of the flood driver, such as daily rainfall or peak storm surge. These variables are sometimes referred to as “stochastic variables” or “random variables,” acknowledging the fact that they can take on a range of values that have probabilities of occurrence/exceedance associated with them.
 
@@ -50,7 +52,7 @@ Limiting the number of variables in a probabilistic flood risk assessment is cru
 While a comprehensive analysis ideally covers all relevant flood events, practical constraints often necessitate a balance. The choice of the number of model simulations is a trade-off between accuracy and simulation time. It is important to understand the relationship between the flood drivers and flood response, which may come from existing knowledge of the area or from exploratory simulations with a Hydrologic/Hydraulic (H&H) model. Conducting a sensitivity analysis with the H&H model for each candidate variable allows quantification of the sensitivity of the flood hazard and impact. Variables for which this sensitivity is relatively small can be replaced by a constant value, reducing the complexity of the analysis and computation times. For example, while the peak river discharge is a critical variable if a project area is along a river, in coastal areas where water levels are dominated by the sea, a constant river discharge might suffice, verified through sensitivity analysis to assess its impact. This demonstrates the essential balance between accuracy and practicality in setting up probabilistic flood risk assessments, aiming to include as many variables as necessary but as few as possible to maintain manageability and effectiveness, particularly if scenarios need to be re-evaluated frequently due to changing climate conditions or socio-economic factors.
 
 
-## Step 3 - Quantify probabilities of variables {#quantify-probs}
+## Step 2 - Calculate probabilities of variables {#quantify-probs}
 
 Flood events are described as a combination of realizations of the selected flood driver variables. For each event considered in the probabilistic analysis, the probability of occurrence is needed to be able to quantify the contribution of such an event to the overall risk. The event probabilities are derived from probabilities of the flood event variables. In some cases, probability distributions of variables are readily available. NOAA, for example, offers nation-wide statistics on rainfall (NOAA rainfall). In other instances, probabilities need to be derived either from gauge records or from expert judgement.This section focusses on deriving probabilities/statistics from gauge data.
 
@@ -84,7 +86,7 @@ Sometimes, data is collected from a period when the system under consideration w
 
 For coastal systems, corrections for sea level rise are almost always necessary. Due to sea level rise, the exceedance probabilities of sea water levels increase over time, making early observations non-representative of current conditions. A simple correction is to add the amount of observed sea level rise since year Y to all observations from that year. For instance, if sea levels have risen by 0.5 ft since 1990, all water levels observed in 1990 should be increased by 0.5 ft to reflect current conditions. This adjustment requires an understanding of the extent of sea level rise, which is complicated by year-to-year fluctuations that can obscure the long-term trend. To address this, a trend line might be fitted through the data, although this process can be somewhat subjective.
 
-![**Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline**](../_static/images/){width=45% fig-align=left #fig-trendLine}
+![**Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline**](../_static/images/eventSet_trendLine.png){width=50% fig-align=left #fig-trendLine}
 
 @fig-trendLine illustrates annual average observed sea water levels from 1996-2020 in Charleston, SC (blue dots), with the black line representing a linear trend line as derived by NOAA (NOAA SWL trend), and the red line showing a non-linear trend line using the LOWESS method (Cleveland, 1979). The estimated average sea level in 2020 differs by approximately 0.3 feet between the two methods, indicating that the choice of method can significantly influence the estimated flood risk. The linear fit does not account for the notable increase in sea water levels observed since 2014, suggesting the LOWESS fit might be more appropriate. However, this increase could be an anomaly; a similar sharp rise occurred in the 1940s, but by the late 1950s, the data returned to align with the linear trend. This variability demonstrates that past sea level rise is uncertain, and it may be prudent to consider both trend lines when assessing potential impacts on flood risk.
 
@@ -115,7 +117,7 @@ According to the theory, only the GEV and GPD or one of the underlying probabili
 The graphs in @fig-GEVGPD show the probability of exceedance of annual maxima (left) and peaks over threshold (right) data. The exceedance probability of AM also represents the annual exceedance probability of the variable for which the distribution function was derived. For POT data, this is not the case because the number of peaks in a POT data set can be larger or smaller than the number of years. To convert to an annual exceedance probability, the derived exceedance probabilities of POT data must be multiplied by the average number of exceedances of the selected threshold in a year (denoted $\lambda$). Parameter $\lambda$ can be estimated by dividing the number of selected peaks by the number of years in the record. Note that $\lambda$ is a frequency of occurrence (per year). Multiplication of this frequency with a probability of exceedance from the POT data results in a frequency of exceedance. 
 
 ::: {.callout-note}
-## Probability and Frequency 
+### Probability and Frequency 
 The terms “probability” and “frequency” are often used interchangeably to quantify the likelihood of a specific event occurring within a defined period. These two terms are similar, but not the same. Probability refers to the chance that an event will occur in a fixed period, typically a year. Frequency refers to how often such an event will occur on average during a fixed period. For example, at some location the probability of more than 5 inches of rainfall in a day may be estimated at 1/20 per year. That means each year there is a probability of 1 in 20 that more than 5 inches of rainfall is recorded in a day. In this case, the frequency is also equal to 1/20 per year, indicating such an event will occur on average once every 20 years. However, for events that occur more often, probability and frequency differ. For example, an event with more than 2 inches of rainfall in a day may occur on average twice per year. That means such an event has a frequency of 2 (per year). The probability of such an event happening in a year will be less than 1 since probabilities are, by definition, between 0 and 1. Probability is a quantification of the chance of such an event occurring at least once in a year, whereas frequency is a quantification of the number of times such an event occurs on average in a year. For very rare events, probability and frequency are (approximately) equal, because such events are not expected to occur more than once per year. 
 :::
 
@@ -139,7 +141,7 @@ To derive the empirical probability distribution, sort the data in descending or
 The variable of interest now has an empirical distribution function, quantifying probabilities of all observed values, and an extreme value distribution function, quantifying exceedance probabilities of extremes. So, for the highest observed values in the record there are two probability estimates available. Ideally, these two probability estimates are the same, but this is often not the case. Especially for variables for which high peaks typically occur in clusters, there will most likely be a substantial difference in the two probability estimates due to the differences in the way these two probabilities were derived. @fig-combiningDists shows the empirical probability distribution (black line) and fitted extreme value distribution (red line) of the tidal peaks at an example location. It shows the exceedance frequencies according to the empirical distribution are higher than those according to the extreme value distribution function. The green dashed line shows a pragmatic way to connect the two distributions and combine them into a single probability distribution function. An alternative approach could be to “lift” the extreme value distribution such that is better connects with the empirical distribution. Such methods may seem like they are corrupting the results, but it is a necessary work-around to combine two distributions that are based on different approaches. The first approach (“each tidal peak should be included”) is valid for average/moderate conditions, whereas the second (“only the highest peak of each event is included”) is valid for extreme events.  
 
 
-## Step 4 - Calculate correlation and joint probabilities {#calculate-joint-probs}
+## Step 3 - Calculate joint probabilities {#calculate-joint-probs}
 
 Event probabilities are the joint probabilities of the variables that define the event. If the variables are mutually independent, the joint probability can be calculated as the product of the the probabilities of the individual variables. However, some variables may be impacted by the same hydro-meteorological processes, which means they are not independent. For example, a storm event may cause both high storm surges and high rainfall intensities. In that case, high values of rainfall and storm surge are more likely to coincide, which means rainfall and storm surge are not independent. This needs to be accounted for when estimating event probabilities.
 
@@ -166,7 +168,7 @@ Since copula-variables x and y are correlated, the corresponding real-world vari
 
 @fig-copulas showed patterns of four copulas, but there are many other copulas available, covering essentially any correlation pattern imaginable. A copula needs to be selected that best matches the observed data. Plotting of observed joint occurrences of correlated variables may reveal which copula(s) best describe the correlation between the variables involved. For example, if the data indicate the dependency increases for large values, the Gumbel-Hougard copula is a possible candidate, whereas if the dependency increases for low values, the Clayton copula is a possible candidate. Another strategy is to try out a large set of copulas and verify which one provides the best fit of the data. There are several statistical tests available that quantify the goodness-of-fit of the copula to the data, similar to the goodness-of-fit tests for extreme value distribution functions. Such methods are available in computational software packages like Python and R.
 
-## Step 5 - Select events and quantify event probabilities {#select-events}
+## Step 4 - Select events and calculate their frequencies {#select-events}
 When considering the selection of events, it is important to remember its purpose: the set of events will be used to calculate return period flooding and expected annual damages. The key to event selection is to ensure that the set of events is sufficient to reliably (consistently) estimate these important variables. There are two primary ways to select events and estimate their occurrence frequencies. One is to use a Monte Carlo approach, which is most recommended when there are a lot of variables that influence the flooding. The second is numerical integration, which is is more straight-forward and advantageous (in terms of required number of events) when the number of variables is limited to two - which may be the case for many areas. 
 
 With **Monte Carlo** sampling, a set of synthetic events is generated from the joint probability distribution of the event variables. This can be considered a representative set of possible events that may occur. For example, if an event with a joint occurrence of a peak river discharge between *Q1* and *Q2* and a peak sea water level between *H1* and *H2* has a probability of 0.05 per year according to the joint distribution, the sampling will lead to 5% of the simulated years containing an event in this range. However, since the sampling process is random by nature, the resulting percentage can also be lower or higher.
@@ -182,5 +184,48 @@ Both for Monte Carlo and for numerical integration, more events means better acc
 
 
 
-## Step 6 - putting the event set in the correct FloodAdapt format
+## Step 5 - Format the events for FloodAdapt {#format-events}
+Once you have selected events and calculated their occurrence frquencies, they must be put in the correct format for FloodAdapt. @fig-eventSet_folderDiagram shows the overall structure of the event set folder. The folder contains a sub-folder for each event in the event set and an event-set TOML file that gives the event names (which should align with the folder names) and the occurrence frequencies of the events. Each event folder should contain an event TOML file defining the event, and the time series (for the event duration) of the flood variables. More details about the [event folder contents](#event-folder-contents) and the [event set TOML file](#eventset-toml-file) are given below.
 
+![**Overview of the setup process for FloodAdapt**](../_static/images/eventSet_folderDiagram.png){width=55% fig-align=left #fig-eventSet_folderDiagram}
+
+
+##### **Event folder contents** {#event-folder-contents}
+
+Each event folder must contain a TOML file, with the name [EVENT_NAME].TOML, where [EVENT_NAME] should be replaced with the name of your event (which is also the name of the event folder). For example, if your event is called myEvent001, then the event folder should be called myEvent100, and the TOML file should be called myEvent001.TOML. In addition, the event folder must contain a time series file (CSV format) for each of the event variables that are varying over the duration of the event. @fig-eventSet_eventFolderContents shows the contents for an event named event_001. 
+
+![**Contents of an event folder (example)**](../_static/images/eventSet_eventFolderContents.png){width=55% fig-align=left #fig-eventSet_eventFolderContents}
+
+The time series CSV files are two-column files that contain a datetime in the first column and the variable value in the second column. The units of the variable will depend if you are working with imperial or metric units:
+
+* Rainfall - inches/hour (imperial) or mm/hour (metric)
+* Tide - feet+MSL (imperial) or meters+MSL (metric)
+* Surge - feet (imperial) or meters (metric)
+* River discharge - cubic feet per section (imperial) or cubic meters per second (metric)
+* Wind - knots (imperial) or m^3/s (metric)
+
+
+The TOML file specifies the event. @fig-eventSet_eventTOML shows the template for an event TOML file, which includes forcing fields for river discharge, wind, rainfall, tide, and surge. In this example, there are two probabilistic event variables: rainfall and total sea water level (which includes both tide and surge). The river discharge is treated as a constant and wind is omitted because its effects are already accounted for in the total water level (which includes surge). Because the total water level variable includes both tide and surge, the surge variable is omitted (set to "none") and the total water level time series is used for the "tide" field. A couple of notes about the event specifications:
+
+* All potential flood drivers must be defined, even if they are set to zero or none. For example, in @fig-eventSet_eventTOML, the wind is set to "none". Similarly, the discharge is set to "constant" because it is not treated probabilistically in this event set.
+* Although the events are synthetic they use the "Historical_nearshore" template because the event variables are being represented by time series like a historical event. This means that a start time and end time must be given. These can be anything in the past, as long as the duration matches the duration in the variable time series files. 
+
+![**Example TOML file for an event named "event_0000"**](../_static/images/eventSet_eventTOML.png){width=80% fig-align=left #fig-eventSet_eventTOML}
+
+##### **Event set TOML file** {#eventset-toml-file}
+
+
+The event set folder must contain an event set TOML file. This file will specify the names and occurrence frequencies of all of the events in the set. Every event specified in this TOML file must also have an associated event folder. 
+@fig-eventSet_probSetToml shows an example of a TOML file for a set named "probabilistic_set".
+
+![**Example TOML file for an event**](../_static/images/eventSet_probSetToml.png){width=100% fig-align=left #fig-eventSet_probSetToml}
+
+The required fields are:
+
+* name - this should also be the name of the event-set folder
+* description - this can be anything
+* mode - this should be set to "risk"
+* subevent_name - this is a list of the events for which event folders have been created
+* frequency - this is a list of occurrence frequencies for the events in the subevent_name list
+
+Once the event set folder is created, you can reference it in the [database builder](../3_setup_guide/database.qmd) configuration file and it will be included in the FloodAdapt database so users can calculate risk and risk-reduction benefits of adaptation options. 
