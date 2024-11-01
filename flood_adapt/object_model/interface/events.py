@@ -5,7 +5,7 @@ from typing import Optional, TypeVar, Union
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
@@ -205,7 +205,13 @@ class HistoricalHurricaneModel(EventModel):
 
     hurricane_translation: TranslationModel
     track_name: str
-    track_index: int = Field(None, ge=0)
+    cyc_file: Optional[str] = None
+
+    @model_validator(mode="after")
+    def set_cycfile(self) -> "HistoricalHurricaneModel":
+        if self.cyc_file is None:
+            self.cyc_file = f"{self.track_name}.cyc"
+        return self
 
 
 EventModelType = TypeVar("EventModelType", bound=EventModel)

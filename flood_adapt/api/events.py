@@ -149,3 +149,7 @@ def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):
     Database().write_cyc(event, track)
+
+
+def get_cyclone_track_by_index(index: int) -> TropicalCyclone:
+    return Database().cyclone_track_database.get_track(index)

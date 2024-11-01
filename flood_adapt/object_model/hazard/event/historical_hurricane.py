@@ -10,7 +10,7 @@ from flood_adapt.object_model.hazard.event.event import Event
 from flood_adapt.object_model.interface.events import (
     HistoricalHurricaneModel,
 )
-from flood_adapt.object_model.utils import resolve_filepath
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class HistoricalHurricane(Event):
@@ -75,14 +75,50 @@ class HistoricalHurricane(Event):
                 self.tide_surge_ts = Event.read_csv(path)
 
     def save_additional(self, toml_path: Path | str | os.PathLike) -> None:
-        if self.attrs.rainfall.source == "track" or self.attrs.rainfall.source == "map":
-            from flood_adapt.dbs_controller import Database
+        # Load the track from the (possibly external) .cyc file
+        src_path = resolve_filepath(
+            object_dir=self.dir_name,
+            obj_name=self.attrs.name,
+            path=self.attrs.cyc_file,
+        )
+        path = save_file_to_database(src_path, Path(toml_path).parent)
+        self.attrs.cyc_file = path.name
 
-            # @gundula is this the correct way to handle this?
-            # Should we save .cyc AND/ OR .spw files?
+        if self.attrs.rainfall:
+            if self.attrs.rainfall.source == "timeseries":
+                src_path = resolve_filepath(
+                    self.dir_name, self.attrs.name, self.attrs.rainfall.timeseries_file
+                )
+                path = save_file_to_database(src_path, Path(toml_path).parent)
+                self.attrs.rainfall.timeseries_file = path.name
+        if self.attrs.wind:
+            if self.attrs.wind.source == "timeseries":
+                src_path = resolve_filepath(
+                    self.dir_name, self.attrs.name, self.attrs.wind.timeseries_file
+                )
+                path = save_file_to_database(src_path, Path(toml_path).parent)
+                self.attrs.wind.timeseries_file = path.name
 
-            track = Database().cyclone_track_database.get_track(self.attrs.track_index)
-            self.write_cyc(Path(toml_path).parent, track)
+        if self.attrs.river:
+            for river in self.attrs.river:
+                if river.source == "timeseries":
+                    if river.timeseries_file is None:
+                        raise ValueError(
+                            "The timeseries file for the river source is not set."
+                        )
+                    src_path = resolve_filepath(
+                        self.dir_name, self.attrs.name, river.timeseries_file
+                    )
+                    path = save_file_to_database(src_path, Path(toml_path).parent)
+                    river.timeseries_file = path.name
+
+        if self.attrs.tide:
+            if self.attrs.tide.source == "timeseries":
+                src_path = resolve_filepath(
+                    self.dir_name, self.attrs.name, self.attrs.tide.timeseries_file
+                )
+                path = save_file_to_database(src_path, Path(toml_path).parent)
+                self.attrs.tide.timeseries_file = path.name
 
     def make_spw_file(self, event_path: Path, model_dir: Path):
         # Location of tropical cyclone database
@@ -111,7 +147,8 @@ class HistoricalHurricane(Event):
 
     def write_cyc(self, output_dir: Path, track: TropicalCyclone):
         cyc_file = output_dir / f"{self.attrs.track_name}.cyc"
-
+        if cyc_file.exists():
+            os.remove(cyc_file)
         # cht_cyclone function to write TropicalCyclone as .cyc file
         track.write_track(filename=cyc_file, fmt="ddb_cyc")
 
