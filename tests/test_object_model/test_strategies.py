@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
@@ -9,7 +11,11 @@ from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from flood_adapt.object_model.interface.measures import HazardType, ImpactType
+from flood_adapt.object_model.interface.measures import (
+    HazardType,
+    ImpactType,
+    SelectionType,
+)
 from flood_adapt.object_model.strategy import Strategy
 
 
@@ -87,3 +93,50 @@ def test_green_infra(test_db):
     assert isinstance(strategy.get_hazard_strategy().measures[0], GreenInfrastructure)
     assert isinstance(strategy.get_hazard_strategy().measures[1], GreenInfrastructure)
     assert isinstance(strategy.get_hazard_strategy().measures[2], GreenInfrastructure)
+
+
+@pytest.fixture()
+def test_buyoutmodel(test_data_dir):
+    return
+
+
+@pytest.fixture()
+def setup_strategy_with_overlapping_measures(test_db, test_data_dir, test_buyoutmodel):
+    measures = []
+    for i in range(1, 4):
+        attrs = {
+            "name": f"test_buyout{i}",
+            "description": "test_buyout",
+            "type": ImpactType.buyout_properties,
+            "selection_type": SelectionType.polygon,
+            "property_type": "RES",
+            "polygon_file": str(test_data_dir / "polygon.geojson"),
+        }
+        test_buyout = Buyout(attrs)
+
+        measures.append(test_buyout.attrs.name)
+        print(test_buyout.attrs.polygon_file)
+        test_db.measures.save(test_buyout)
+
+    strategy_model = {
+        "name": "test_strategy",
+        "description": "test_strategy",
+        "measures": measures,
+    }
+    return test_db, Strategy(strategy_model)
+
+
+@patch("flood_adapt.dbs_classes.dbs_strategy.get_object_ids")
+def test_check_overlapping_measures(
+    mock_get_object_ids, setup_strategy_with_overlapping_measures
+):
+    test_db, strategy = setup_strategy_with_overlapping_measures
+    mock_get_object_ids.return_value = [1, 2, 3]
+
+    with pytest.raises(ValueError) as excinfo:
+        test_db.strategies._check_overlapping_measures(strategy.attrs.measures)
+
+    assert (
+        "Cannot create strategy! There are overlapping buildings for which measures are proposed"
+        in str(excinfo.value)
+    )

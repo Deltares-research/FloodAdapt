@@ -4,7 +4,7 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
     get_object_ids,
 )
-from flood_adapt.object_model.interface.object_model import IObject
+from flood_adapt.object_model.measure import ImpactType
 from flood_adapt.object_model.strategy import Strategy
 
 
@@ -13,7 +13,7 @@ class DbsStrategy(DbsTemplate):
 
     def save(
         self,
-        object_model: IObject,
+        object_model: Strategy,
         overwrite: bool = False,
     ):
         """Save an object in the database and all associated files.
@@ -45,7 +45,7 @@ class DbsStrategy(DbsTemplate):
             )
 
         # Check if any measures overlap
-        self._check_overlapping_measures(object_model)
+        self._check_overlapping_measures(object_model.attrs.measures)
 
         # If the folder doesnt exist yet, make the folder and save the object
         if not (self.input_path / object_model.attrs.name).exists():
@@ -58,7 +58,7 @@ class DbsStrategy(DbsTemplate):
             / f"{object_model.attrs.name}.toml",
         )
 
-    def _check_overlapping_measures(self, strategy: IObject):
+    def _check_overlapping_measures(self, measures: list[str]):
         """Validate if the combination of impact measures can happen, since impact measures cannot affect the same properties.
 
         Raises
@@ -66,8 +66,13 @@ class DbsStrategy(DbsTemplate):
         ValueError
             information on which combinations of measures have overlapping properties
         """
-        # Get ids of objects affected for each measure
-        ids = [get_object_ids(measure) for measure in strategy.attrs.measures]
+        _measures = [self._database.measures.get(measure) for measure in measures]
+        impact_measures = [
+            measure
+            for measure in _measures
+            if isinstance(measure.attrs.type, ImpactType)
+        ]
+        ids = [get_object_ids(measure) for measure in impact_measures]
 
         # Get all possible pairs of measures and check overlapping buildings for each measure
         combs = list(combinations(enumerate(ids), 2))
@@ -86,8 +91,8 @@ class DbsStrategy(DbsTemplate):
                     if counter > 0:
                         msg += " and"
                     msg += " between '{}' and '{}'".format(
-                        strategy.attrs.measures[comb[0][0]].attrs.name,
-                        strategy.attrs.measures[comb[1][0]].attrs.name,
+                        impact_measures[comb[0][0]].attrs.name,
+                        impact_measures[comb[1][0]].attrs.name,
                     )
                     counter += 1
             raise ValueError(msg)
