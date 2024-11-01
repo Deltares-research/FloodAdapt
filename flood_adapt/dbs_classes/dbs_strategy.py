@@ -1,9 +1,96 @@
+from itertools import combinations
+
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
+from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
+    get_object_ids,
+)
+from flood_adapt.object_model.interface.object_model import IObject
 from flood_adapt.object_model.strategy import Strategy
 
 
 class DbsStrategy(DbsTemplate):
     _object_class = Strategy
+
+    def save(
+        self,
+        object_model: IObject,
+        overwrite: bool = False,
+    ):
+        """Save an object in the database and all associated files.
+
+        This saves the toml file and any additional files attached to the object.
+
+        Parameters
+        ----------
+        object_model : ObjectModel
+            object to be saved in the database
+        overwrite : bool, optional
+            whether to overwrite the object if it already exists in the
+            database, by default False
+
+        Raises
+        ------
+        ValueError
+            Raise error if name is already in use.
+        """
+        object_exists = object_model.attrs.name in self.list_objects()["name"]
+
+        # If you want to overwrite the object, and the object already exists, first delete it. If it exists and you
+        # don't want to overwrite, raise an error.
+        if overwrite and object_exists:
+            self.delete(object_model.attrs.name, toml_only=True)
+        elif not overwrite and object_exists:
+            raise ValueError(
+                f"'{object_model.attrs.name}' name is already used by another {self._object_class.class_name}. Choose a different name"
+            )
+
+        # Check if any measures overlap
+        self._check_overlapping_measures(object_model)
+
+        # If the folder doesnt exist yet, make the folder and save the object
+        if not (self.input_path / object_model.attrs.name).exists():
+            (self.input_path / object_model.attrs.name).mkdir()
+
+        # Save the object and any additional files
+        object_model.save(
+            self.input_path
+            / object_model.attrs.name
+            / f"{object_model.attrs.name}.toml",
+        )
+
+    def _check_overlapping_measures(self, strategy: IObject):
+        """Validate if the combination of impact measures can happen, since impact measures cannot affect the same properties.
+
+        Raises
+        ------
+        ValueError
+            information on which combinations of measures have overlapping properties
+        """
+        # Get ids of objects affected for each measure
+        ids = [get_object_ids(measure) for measure in strategy.attrs.measures]
+
+        # Get all possible pairs of measures and check overlapping buildings for each measure
+        combs = list(combinations(enumerate(ids), 2))
+        common_elements = []
+        for comb in combs:
+            common_elements.append(list(set(comb[0][1]).intersection(comb[1][1])))
+        # If there is any combination with overlapping buildings raise Error and do not allow for Strategy object creation
+        overlapping = [len(k) > 0 for k in common_elements]
+
+        msg = ""
+        if any(overlapping):
+            msg = "Cannot create strategy! There are overlapping buildings for which measures are proposed"
+            counter = 0
+            for i, comb in enumerate(combs):
+                if overlapping[i]:
+                    if counter > 0:
+                        msg += " and"
+                    msg += " between '{}' and '{}'".format(
+                        strategy.attrs.measures[comb[0][0]].attrs.name,
+                        strategy.attrs.measures[comb[1][0]].attrs.name,
+                    )
+                    counter += 1
+            raise ValueError(msg)
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if a strategy is a standard strategy.
