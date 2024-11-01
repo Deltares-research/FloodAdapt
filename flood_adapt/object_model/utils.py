@@ -97,13 +97,20 @@ def save_file_to_database(
         raise FileNotFoundError(
             f"Failed to find {src_file} when saving external file to the database as it does not exist."
         )
-
     if src_file == dst_file:
         return dst_file
     elif dst_file.exists():
-        os.remove(dst_file)
+        if dst_file.suffix == ".shp":
+            for file in list(dst_file.parent.glob(f"{dst_file.stem}.*")):
+                os.remove(file)
+        else:
+            os.remove(dst_file)
 
     dst_file.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src_file, dst_file)
+    if src_file.suffix == ".shp":
+        for file in list(src_file.parent.glob(f"{src_file.stem}.*")):
+            shutil.copy2(file, dst_file.parent.joinpath(file.name))
+    else:
+        shutil.copy2(src_file, dst_file)
 
     return dst_file
