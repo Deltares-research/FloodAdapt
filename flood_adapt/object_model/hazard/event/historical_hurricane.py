@@ -80,12 +80,8 @@ class HistoricalHurricane(Event):
 
             # @gundula is this the correct way to handle this?
             # Should we save .cyc AND/ OR .spw files?
-            ind = (
-                Database()
-                .cyclone_track_database.list_names()
-                .index(self.attrs.track_name)
-            )
-            track = Database().cyclone_track_database.get_track(ind)
+
+            track = Database().cyclone_track_database.get_track(self.attrs.track_index)
             self.write_cyc(Path(toml_path).parent, track)
 
     def make_spw_file(self, event_path: Path, model_dir: Path):

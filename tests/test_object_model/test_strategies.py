@@ -115,7 +115,6 @@ def setup_strategy_with_overlapping_measures(test_db, test_data_dir, test_buyout
         test_buyout = Buyout(attrs)
 
         measures.append(test_buyout.attrs.name)
-        print(test_buyout.attrs.polygon_file)
         test_db.measures.save(test_buyout)
 
     strategy_model = {
