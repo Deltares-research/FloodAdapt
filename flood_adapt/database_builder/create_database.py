@@ -561,7 +561,7 @@ class Database:
                         "Building footprint data will be downloaded from Open Street Maps."
                     )
                     region_path = Path(self.fiat_model.root).joinpath(
-                        "exposure", "region.gpkg"
+                        "geoms", "region.geojson"
                     )
                     if not region_path.exists():
                         self.logger.error("No region file found in the FIAT model.")
@@ -646,13 +646,13 @@ class Database:
         # TODO make aggregation areas not mandatory
         if not self.fiat_model.spatial_joins["aggregation_areas"]:
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
+            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
                 region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
-                    "exposure", "aggregation_areas", "region.gpkg"
+                    "exposure", "aggregation_areas", "region.geojson"
                 )
                 if not aggregation_path.parent.exists():
                     aggregation_path.parent.mkdir()
@@ -686,22 +686,22 @@ class Database:
         else:
             for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
                 # Make sure paths are correct
-                aggr.file = str(
-                    self.static_path.joinpath("templates", "fiat", aggr.file)
+                aggr["file"] = str(
+                    self.static_path.joinpath("templates", "fiat", aggr["file"])
                     .relative_to(self.static_path)
                     .as_posix()
                 )
-                if aggr.equity is not None:
-                    aggr.equity.census_data = str(
+                if aggr["equity"] is not None:
+                    aggr["equity"]["census_data"] = str(
                         self.static_path.joinpath(
-                            "templates", "fiat", aggr.equity.census_data
+                            "templates", "fiat", aggr["equity"]["census_data"]
                         )
                         .relative_to(self.static_path)
                         .as_posix()
                     )
-                self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
+                self.site_attrs["fiat"]["aggregation"].append(aggr)
             self.logger.info(
-                f"The aggregation types {[aggr.name for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
+                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
             )
 
         # Read SVI

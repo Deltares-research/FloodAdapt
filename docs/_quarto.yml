@@ -96,11 +96,7 @@ website:
           - "4_user_guide/strategy/index.qmd"
           - "4_user_guide/scenarios/index.qmd"
           - "4_user_guide/output/index.qmd"
-          - section: "Compare tabs"
-            file: "4_user_guide/compare/index.qmd"
-            contents:
-            - "4_user_guide/compare/Compare_map.qmd"
-            - "4_user_guide/compare/Compare_table.qmd"
+          - "4_user_guide/compare/index.qmd"
           - "4_user_guide/benefits.qmd"
       - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
