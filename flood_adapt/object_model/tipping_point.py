@@ -231,53 +231,84 @@ class TippingPoint(ITipPoint):
         tp_path = self.results_path.joinpath(self.attrs.name)
         tp_results = pd.read_csv(tp_path / "tipping_point_results.csv")
 
+        # divide calculated values from interpolated ones
+        tp_slr_min = int(self.attrs.sealevelrise[0]) / 10
+        tp_slr_max = int(self.attrs.sealevelrise[-1]) / 10
+
+        # plot tp
         for metric in self.attrs.tipping_point_metric:
             metric_data = tp_results[tp_results["Metric"] == metric[0]]
+
+            # Get topping point
             idx_tp = metric_data[metric_data["ATP"]].index[0]
             tp = metric_data["sea level"].iloc[idx_tp]
+            tp_value = metric_data["Value"].iloc[idx_tp]
+
+            # Get non-interpolated data
+            idx_min = metric_data[metric_data["sea level"] == tp_slr_min].index[0]
+            idx_max = metric_data[metric_data["sea level"] == tp_slr_max].index[0]
             fig = go.Figure()
 
+            # First trace: plotting the data between idx_min and idx_max
             fig.add_trace(
                 go.Scatter(
-                    x=metric_data["sea level"],
-                    y=metric_data["Value"],
+                    x=metric_data.loc[idx_min:idx_max, "sea level"],
+                    y=metric_data.loc[idx_min:idx_max, "Value"],
                     mode="lines+markers",
                     name=f"{metric[0]}",
                 )
             )
 
-            fig.add_shape(
-                type="line",
-                x0=0,
-                x1=1,
-                y0=metric[1],
-                y1=metric[1],
-                xref="paper",
-                yref="y",
-                line={
-                    "color": "Red",
-                    "width": 3,
-                    "dash": "dash",
-                },
-                name=f"{metric[0]} threshold",
+            # Second trace: plotting data from idx_max + 1 to the end
+            fig.add_trace(
+                go.Scatter(
+                    x=metric_data.loc[idx_max + 1 :, "sea level"],
+                    y=metric_data.loc[idx_max + 1 :, "Value"],
+                    mode="lines+markers",
+                    name=f"Interpolated: {metric[0]}",
+                    line={"color": "Green", "dash": "dash"},
+                )
             )
-            fig.add_annotation(
-                text=f"Tipping point: {tp.round(3)} m",
-                x=0,
-                y=35000,
-                xref="x",
-                yref="y",
+            # Third trace: plotting data from idx_max + 1 to the end
+            fig.add_trace(
+                go.Scatter(
+                    x=metric_data.loc[idx_min - 1 : idx_min, "sea level"],
+                    y=metric_data.loc[idx_min - 1 : idx_min, "Value"],
+                    mode="lines+markers",
+                    name=f"Interpolated: {metric[0]}",
+                    line={"color": "Green", "dash": "dot"},
+                )
             )
-            fig.add_annotation(
-                text="Tipping point metric: A value here",  # TODO grab tp value
-                x=1,
-                y=0,
-                xref="paper",
-                yref="paper",
-                xanchor="left",
-                yanchor="top",
-                showarrow=False,
+
+            # Adding a horizontal line shape for the threshold
+            fig.add_trace(
+                go.Scatter(
+                    x=[
+                        metric_data["sea level"].min(),
+                        metric_data["sea level"].max(),
+                    ],  # x range for the line
+                    y=[metric[1], metric[1]],  # y values for a horizontal line
+                    mode="lines",
+                    name=f"{metric[0]} Threshold",
+                    line={"color": "Red", "width": 3, "dash": "dash"},  # Line style
+                )
             )
+
+            # Adding a horizontal line shape for the threshold
+            fig.add_trace(
+                go.Scatter(
+                    x=[tp],
+                    y=[tp_value],
+                    mode="markers",
+                    name=f"Tipping point: {tp.round(3)} m",
+                    marker={
+                        "color": "Red",
+                        "size": 10,
+                    },  # Use a dictionary literal instead
+                )
+            )
+
+            # Updating layout with titles
             fig.update_layout(
                 title=f"Tipping Point Analysis for {self.attrs.name}",
                 xaxis_title="Sea Level Rise (m)",
