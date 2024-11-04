@@ -3,6 +3,22 @@ import pytest
 import flood_adapt.api.scenarios as api_scenarios
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
+from tests.test_object_model.test_events.test_eventset import test_eventset
+from tests.test_object_model.test_events.test_historical import (
+    setup_nearshore_event,
+    setup_offshore_meteo_event,
+    setup_offshore_scenario,
+)
+from tests.test_object_model.test_events.test_synthetic import test_event_all_synthetic
+
+# To stop ruff from deleting these 'unused' imports
+__all__ = [
+    "test_eventset",
+    "test_event_all_synthetic",
+    "setup_nearshore_event",
+    "setup_offshore_meteo_event",
+    "setup_offshore_scenario",
+]
 
 
 @pytest.fixture()

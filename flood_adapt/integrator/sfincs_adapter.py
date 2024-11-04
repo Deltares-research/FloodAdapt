@@ -2,6 +2,7 @@ import gc
 import logging
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import List, Union
 
@@ -474,7 +475,12 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(forcing, WindFromMeteo):
             time = self._model.get_model_time()
-            self._set_wind_forcing(forcing.get_data(t0=time[0], t1=time[1]))
+            ds = forcing.get_data(t0=time[0], t1=time[1])
+
+            if ds["lon"].min() > 180:
+                ds["lon"] = ds["lon"] - 360
+
+            self._set_wind_forcing(ds)
         elif isinstance(forcing, WindFromTrack):
             # TODO check with @gundula
             self._set_config_spw(forcing.path)
@@ -494,19 +500,25 @@ class SfincsAdapter(IHazardAdapter):
         const_intensity : float, optional
             time-invariant precipitation intensity [mm_hr], by default None
         """
+        t0, t1 = self._model.get_model_time()
         if isinstance(forcing, RainfallConstant):
-            (
-                self._model.setup_precip_forcing(
-                    timeseries=None,
-                    magnitude=forcing.intensity.convert(UnitTypesIntensity.mm_hr),
-                ),
+            self._model.setup_precip_forcing(
+                timeseries=None,
+                magnitude=forcing.intensity.convert(UnitTypesIntensity.mm_hr),
             )
-
         elif isinstance(forcing, RainfallSynthetic):
-            self._model.add_precip_forcing(timeseries=forcing.get_data())
-
+            tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
+            forcing.get_data(t0=t0, t1=t1).to_csv(tmp_path)
+            self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(forcing, RainfallFromMeteo):
-            self._model.setup_precip_forcing_from_grid(precip=forcing.get_data())
+            ds = forcing.get_data(t0=t0, t1=t1)
+
+            if ds["lon"].min() > 180:
+                ds["lon"] = ds["lon"] - 360
+
+            self._model.setup_precip_forcing_from_grid(
+                precip=ds["precip"], aggregate=False
+            )
         else:
             self._logger.warning(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
@@ -1190,9 +1202,6 @@ class SfincsAdapter(IHazardAdapter):
                     ),
                     units=UnitTypesLength(gui_units),
                 )
-                import pdb
-
-                pdb.set_trace()
 
                 if df_gauge is not None:
                     waterlevel = df_gauge.iloc[
