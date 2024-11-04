@@ -134,6 +134,14 @@ class TippingPoint(ITipPoint):
                 return True
         return False
 
+    def check_scenario_has_run(self):
+        if not self.scenarios:
+            self.create_tp_scenarios()
+        for name, scenario in self.scenarios.items():
+            scenario_obj = scenario["object"]
+            if self.scenario_has_run(scenario_obj):
+                return True
+
     def check_tipping_point(self, scenario: Scenario):
         """Load results and check if the tipping point is reached."""
         info_df = pd.read_csv(
@@ -225,6 +233,8 @@ class TippingPoint(ITipPoint):
 
         for metric in self.attrs.tipping_point_metric:
             metric_data = tp_results[tp_results["Metric"] == metric[0]]
+            idx_tp = metric_data[metric_data["ATP"]].index[0]
+            tp = metric_data["sea level"].iloc[idx_tp]
             fig = go.Figure()
 
             fig.add_trace(
@@ -252,7 +262,7 @@ class TippingPoint(ITipPoint):
                 name=f"{metric[0]} threshold",
             )
             fig.add_annotation(
-                text=f"Tipping point: {metric[0]}",
+                text=f"Tipping point: {tp.round(3)} m",
                 x=0,
                 y=35000,
                 xref="x",

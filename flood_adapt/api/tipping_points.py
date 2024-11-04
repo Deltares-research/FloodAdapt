@@ -36,3 +36,8 @@ def create_tipping_point_scenarios(name: str) -> None:
 
 def run_tipping_point(name: str) -> None:
     Database().tipping_points.get(name).run_tp_scenarios()
+
+
+def check_scenario_has_run(name: str) -> None:
+    scenario_ran = Database().tipping_points.get(name).check_scenario_has_run()
+    return scenario_ran
