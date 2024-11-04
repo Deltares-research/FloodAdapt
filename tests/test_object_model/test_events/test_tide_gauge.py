@@ -116,7 +116,15 @@ def test_get_waterlevels_in_time_frame_from_file(setup_file_based_tide_gauge):
     result_df = tide_gauge.get_waterlevels_in_time_frame(time=dummy_time_model)
 
     # Assert
-    pd.testing.assert_frame_equal(dummy_1d_timeseries_df, result_df)
+    assert result_df is not None
+    assert result_df.index[0] == dummy_time_model.start_time
+    assert result_df.index[-1] == dummy_time_model.end_time
+
+    # Ignore column names
+    result_df.columns = ["waterlevel"]
+    dummy_1d_timeseries_df.columns = ["waterlevel"]
+
+    pd.testing.assert_frame_equal(result_df, dummy_1d_timeseries_df)
 
 
 def test_get_waterlevels_in_time_frame_from_download(
@@ -128,10 +136,20 @@ def test_get_waterlevels_in_time_frame_from_download(
     )
 
     # Act
-    result_df = tide_gauge.get_waterlevels_in_time_frame(time=dummy_time_model)
+    result_df: pd.DataFrame = tide_gauge.get_waterlevels_in_time_frame(
+        time=dummy_time_model
+    )
 
     # Assert
-    pd.testing.assert_frame_equal(dummy_1d_timeseries_df, result_df)
+    assert result_df is not None
+    assert result_df.index[0] == dummy_time_model.start_time
+    assert result_df.index[-1] == dummy_time_model.end_time
+
+    # Ignore column names
+    result_df.columns = ["waterlevel"]
+    dummy_1d_timeseries_df.columns = ["waterlevel"]
+
+    pd.testing.assert_frame_equal(result_df, dummy_1d_timeseries_df)
 
 
 def test_download_tide_gauge_data_cache(

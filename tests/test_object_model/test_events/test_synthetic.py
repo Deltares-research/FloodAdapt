@@ -132,7 +132,7 @@ class TestSyntheticEvent:
 
     def test_load_file(self, test_event_all_synthetic, tmp_path):
         path = tmp_path / "test_event.toml"
-        saved_event = SyntheticEvent.load_dict(test_event_all_synthetic)
+        saved_event = test_event_all_synthetic
         saved_event.save(path)
         assert path.exists()
 

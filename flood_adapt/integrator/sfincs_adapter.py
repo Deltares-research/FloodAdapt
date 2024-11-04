@@ -237,7 +237,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def preprocess(self):
         event: IEvent = self.database.events.get(self._scenario.attrs.event)
-        self.set_timing(event.attrs)
+        self.set_timing(event.attrs.time)
 
         # run offshore model or download wl data,
         # copy required files to the simulation folder (or folders for event sets)
@@ -301,16 +301,11 @@ class SfincsAdapter(IHazardAdapter):
         elif event.attrs.mode == Mode.risk:
             self.calculate_rp_floodmaps()
 
-    def set_timing(self, event: IEventModel):
-        """Set model reference times based on event time series."""
-        # Get start and end time of event
-        tstart = event.time.start_time
-        tstop = event.time.end_time
-
-        # Update timing of the model
-        self._model.set_config("tref", tstart)
-        self._model.set_config("tstart", tstart)
-        self._model.set_config("tstop", tstop)
+    def set_timing(self, time: TimeModel):
+        """Set model reference times."""
+        self._model.set_config("tref", time.start_time)
+        self._model.set_config("tstart", time.start_time)
+        self._model.set_config("tstop", time.end_time)
 
     def add_forcing(self, forcing: IForcing):
         """Get forcing data and add it to the sfincs model."""
@@ -470,8 +465,11 @@ class SfincsAdapter(IHazardAdapter):
                 direction=forcing.direction.value,
             )
         elif isinstance(forcing, WindSynthetic):
+            t0, t1 = self._model.get_model_time()
+            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
+            forcing.get_data(t0=t0, t1=t1).to_csv(tmp_path)
             self._model.setup_wind_forcing(
-                timeseries=forcing.path, magnitude=None, direction=None
+                timeseries=tmp_path, magnitude=None, direction=None
             )
         elif isinstance(forcing, WindFromMeteo):
             time = self._model.get_model_time()
@@ -542,8 +540,9 @@ class SfincsAdapter(IHazardAdapter):
         #     self._model.setup_discharge_forcing(
         #         timeseries=forcing.get_data(),
         #     )
+        t0, t1 = self._model.get_model_time()
         if isinstance(forcing, DischargeSynthetic):
-            self._set_discharge_forcing(forcing.get_data())
+            self._set_discharge_forcing(forcing.get_data(t0=t0, t1=t1))
         else:
             self._logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
@@ -792,6 +791,8 @@ class SfincsAdapter(IHazardAdapter):
                         f"Incompatible river coordinates for river: {river.name}.\nsite.toml: ({river.x_coordinate}, {river.y_coordinate})\nSFINCS template model ({gdf_locs.geometry[ii + 1].x}, {gdf_locs.geometry[ii + 1].y})."
                     )
 
+            # rename all columns as integers starting from 1, otherwise hydromt-sfincs will raise an error
+            list_df.columns = range(1, len(list_df.columns) + 1)
             self._model.setup_discharge_forcing(
                 timeseries=list_df, locations=gdf_locs, merge=False
             )

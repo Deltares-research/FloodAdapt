@@ -62,7 +62,8 @@ class WindConstant(IWind):
 class WindSynthetic(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
 
-    timeseries: SyntheticTimeseriesModel
+    magnitude: SyntheticTimeseriesModel
+    direction: SyntheticTimeseriesModel
 
     def get_data(
         self,
@@ -71,9 +72,17 @@ class WindSynthetic(IWind):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
+        t0, t1 = self.parse_time(t0, t1)
+        time = pd.date_range(
+            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
+        )
+        magnitude = SyntheticTimeseries().load_dict(self.magnitude).calculate_data()
+        direction = SyntheticTimeseries().load_dict(self.direction).calculate_data()
+
         try:
             return pd.DataFrame(
-                SyntheticTimeseries().load_dict(self.timeseries).calculate_data()
+                index=time,
+                data={"mag": magnitude, "dir": direction},
             )
         except Exception as e:
             if strict:
@@ -84,7 +93,8 @@ class WindSynthetic(IWind):
     @staticmethod
     def default() -> "WindSynthetic":
         return WindSynthetic(
-            timeseries=SyntheticTimeseriesModel.default(UnitfulVelocity)
+            magnitude=SyntheticTimeseriesModel.default(UnitfulVelocity),
+            direction=SyntheticTimeseriesModel.default(UnitfulDirection),
         )
 
 

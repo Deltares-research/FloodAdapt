@@ -1,15 +1,15 @@
 from abc import abstractmethod
 
 from flood_adapt.integrator.interface.model_adapter import IAdapter
-from flood_adapt.object_model.hazard.interface.events import IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import IForcing
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.measure.hazard_measure import HazardMeasure
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 
 
 class IHazardAdapter(IAdapter):
     @abstractmethod
-    def set_timing(self, event: IEventModel):
+    def set_timing(self, time: TimeModel):
         """
         Implement this to handle the timing of the event from the EventModel.
 

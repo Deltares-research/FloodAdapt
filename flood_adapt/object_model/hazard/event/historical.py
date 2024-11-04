@@ -141,7 +141,7 @@ class HistoricalEvent(IEvent):
         )
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
             # Edit offshore model
-            _offshore_model.set_timing(self.attrs)
+            _offshore_model.set_timing(self.attrs.time)
 
             # Add water levels
             physical_projection = self.database.projections.get(
