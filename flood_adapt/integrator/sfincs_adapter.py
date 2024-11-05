@@ -1029,10 +1029,10 @@ class SfincsAdapter(IHazardAdapter):
         da = self._model.results["point_zs"]
         df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
 
+        names = []
+        descriptions = []
         # get station names from site.toml
         if self.database.site.attrs.obs_point is not None:
-            names = []
-            descriptions = []
             obs_points = self.database.site.attrs.obs_point
             for pt in obs_points:
                 names.append(pt.name)

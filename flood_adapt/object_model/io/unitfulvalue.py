@@ -295,6 +295,11 @@ class UnitfulVelocity(IUnitFullValue):
 
 
 class UnitfulDirection(IUnitFullValue):
+    CONVERSION_FACTORS: ClassVar[dict[UnitTypesDirection, float]] = {
+        UnitTypesDirection.degrees: 1.0,
+    }
+    DEFAULT_UNIT: ClassVar[UnitTypesDischarge] = UnitTypesDirection.degrees
+
     value: float = Field(ge=0.0, le=360.0)
     units: UnitTypesDirection
 

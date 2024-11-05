@@ -77,31 +77,28 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
     return adapter
 
 
-def setup_synthetic_forcing(forcing_cls, **kwargs):
-    if forcing_cls not in [
-        WindSynthetic,
-        RainfallSynthetic,
-        WaterlevelSynthetic,
-        DischargeSynthetic,
-    ]:
-        raise ValueError(f"Unsupported forcing class: {forcing_cls}")
-
-    @pytest.fixture()
-    def _synthetic_forcing():
-        return forcing_cls(
-            timeseries=SyntheticTimeseriesModel(
-                shape_type=ShapeType.triangle,
-                duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
-                peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
-                peak_value=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr),
-            )
+@pytest.fixture()
+def synthetic_discharge():
+    return DischargeSynthetic(
+        timeseries=SyntheticTimeseriesModel(
+            shape_type=ShapeType.triangle,
+            duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
+            peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
+            peak_value=UnitfulDischarge(value=10, units=UnitTypesDischarge.cms),
         )
+    )
 
-    return _synthetic_forcing
 
-
-synthetic_discharge = setup_synthetic_forcing(DischargeSynthetic)
-synthetic_rainfall = setup_synthetic_forcing(RainfallSynthetic)
+@pytest.fixture()
+def synthetic_rainfall():
+    return RainfallSynthetic(
+        timeseries=SyntheticTimeseriesModel(
+            shape_type=ShapeType.triangle,
+            duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
+            peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
+            peak_value=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr),
+        )
+    )
 
 
 @pytest.fixture()
@@ -252,26 +249,13 @@ class TestAddForcing:
             )
             sfincs_adapter._add_forcing_rain(forcing)
 
-            # sfincs_adapter._model.setup_precip_forcing.assert_called_once_with(
-            #     timeseries=None,
-            #     magnitude=forcing.intensity.value,
-            # )
-
         def test_add_forcing_rain_synthetic(self, sfincs_adapter, synthetic_rainfall):
             sfincs_adapter._add_forcing_rain(synthetic_rainfall)
-
-            # sfincs_adapter._model.add_precip_forcing.assert_called_once_with(
-            #     timeseries=forcing.get_data()
-            # )
 
         def test_add_forcing_rain_from_meteo(self, sfincs_adapter):
             forcing = RainfallFromMeteo()
 
             sfincs_adapter._add_forcing_rain(forcing)
-
-            # sfincs_adapter._model.setup_precip_forcing_from_grid.assert_called_once_with(
-            #     precip=forcing.get_data()
-            # )
 
         def test_add_forcing_rain_unsupported(self, sfincs_adapter):
             class UnsupportedRain(IRainfall):
