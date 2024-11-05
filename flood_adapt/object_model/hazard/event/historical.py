@@ -26,14 +26,22 @@ class HistoricalEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
-        ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.METEO],
-        ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.METEO],
+        ForcingType.RAINFALL: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.METEO,
+        ],
+        ForcingType.WIND: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.METEO,
+        ],
         ForcingType.WATERLEVEL: [
             ForcingSource.CSV,
             ForcingSource.MODEL,
             ForcingSource.GAUGED,
         ],
-        ForcingType.DISCHARGE: [ForcingSource.CONSTANT],
+        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.CSV],
     }
 
     @staticmethod
@@ -156,7 +164,7 @@ class HistoricalEvent(IEvent):
                 _offshore_model._add_forcing_wind(wind_forcing)
 
                 # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
-                if wind_forcing._source == ForcingSource.TRACK:
+                if wind_forcing._source == ForcingSource.METEO:
                     _offshore_model._add_pressure_forcing_from_grid(
                         ds=MeteoHandler().read(self.attrs.time)
                     )

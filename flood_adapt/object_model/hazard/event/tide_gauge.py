@@ -49,6 +49,9 @@ class TideGauge(ITideGauge):
         pd.DataFrame
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
+        self._logger.info(
+            f"Retrieving waterlevels for tide gauge {self.attrs.ID} from {time.start_time} to {time.end_time}"
+        )
         if self.attrs.file:
             gauge_data = self._read_imported_waterlevels(
                 time=time, path=self.attrs.file
@@ -58,6 +61,9 @@ class TideGauge(ITideGauge):
 
         if gauge_data is None:
             # TODO warning?
+            self._logger.warning(
+                f"Could not retrieve waterlevels for tide gauge {self.attrs.ID}"
+            )
             return pd.DataFrame()
 
         gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]

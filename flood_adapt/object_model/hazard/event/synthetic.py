@@ -19,7 +19,6 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         ForcingType.WIND: [
             ForcingSource.CONSTANT,
             ForcingSource.CSV,
-            ForcingSource.SYNTHETIC,
         ],
         ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
@@ -38,7 +37,7 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
                     ForcingType.RAINFALL, ForcingSource.SYNTHETIC
                 ),
                 ForcingType.WIND: ForcingFactory.get_default_forcing(
-                    ForcingType.WIND, ForcingSource.SYNTHETIC
+                    ForcingType.WIND, ForcingSource.CONSTANT
                 ),
                 ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
                     ForcingType.WATERLEVEL, ForcingSource.SYNTHETIC

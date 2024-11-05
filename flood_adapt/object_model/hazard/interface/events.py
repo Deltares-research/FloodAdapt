@@ -192,10 +192,10 @@ class IEvent(IDatabaseUser):
         if not isinstance(other, self.__class__):
             return False
         _self = self.attrs.model_dump(
-            exclude=("name", "description"), exclude_none=True
+            exclude={"name", "description"}, exclude_none=True
         )
         _other = other.attrs.model_dump(
-            exclude=["name", "description"], exclude_none=True
+            exclude={"name", "description"}, exclude_none=True
         )
         return _self == _other
 
@@ -229,15 +229,16 @@ class IEvent(IDatabaseUser):
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
 
-        if source := self.attrs.forcings[ForcingType.WATERLEVEL]._source in [
+        if self.attrs.forcings[ForcingType.WATERLEVEL]._source in [
             ForcingSource.METEO,
             ForcingSource.MODEL,
         ]:
             self.logger.warning(
-                f"Plotting not supported for waterlevel data from {source}"
+                f"Plotting not supported for waterlevel data from {self.attrs.forcings[ForcingType.WATERLEVEL]._source}"
             )
             return ""
 
+        self.logger.debug("Plotting water level data")
         units = units or self.database.site.attrs.gui.default_length_units
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
@@ -319,6 +320,8 @@ class IEvent(IDatabaseUser):
             )
             return ""
 
+        self.logger.debug("Plotting rainfall data")
+
         # set timing
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
@@ -376,6 +379,8 @@ class IEvent(IDatabaseUser):
 
         if self.attrs.forcings[ForcingType.DISCHARGE] is None:
             return ""
+
+        self.logger.debug("Plotting discharge data")
 
         rivers = self.attrs.forcings[ForcingType.DISCHARGE]
 
@@ -456,6 +461,9 @@ class IEvent(IDatabaseUser):
                 "Plotting not supported for wind data from track or meteo"
             )
             return ""
+
+        self.logger.debug("Plotting wind data")
+
         velocity_units = (
             velocity_units or self.database.site.attrs.gui.default_velocity_units
         )

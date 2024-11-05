@@ -1,5 +1,6 @@
+import shutil
 from pathlib import Path
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 import pyproj
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -34,12 +35,12 @@ class HurricaneEventModel(IEventModel):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
-            ForcingSource.MODEL,
+            ForcingSource.METEO,
             ForcingSource.TRACK,
         ],
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
-        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
+        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.CSV],
     }
 
     hurricane_translation: TranslationModel
@@ -78,11 +79,36 @@ class HurricaneEvent(IEvent):
     attrs: HurricaneEventModel
 
     def process(self, scenario: IScenario = None):
-        """Prepare HurricaneEvent forcings."""
-        return
+        """Prepare the forcings of the hurricane event.
 
-    def make_spw_file(self, model_dir: Path):
-        # Location of tropical cyclone database
+        If the forcings require it, this function will:
+        - preprocess and run offshore model: prepare and run the offshore model to obtain water levels for the boundary condition of the nearshore model.
+
+        """
+        self._scenario = scenario
+        self.meteo_ds = None
+        sim_path = self._get_simulation_path()
+        if self._require_offshore_run():
+            if self.site.attrs.sfincs.offshore_model is None:
+                raise ValueError(
+                    f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
+                )
+
+            sim_path.mkdir(parents=True, exist_ok=True)
+            self._preprocess_sfincs_offshore(sim_path)
+            self._run_sfincs_offshore(sim_path)
+
+        self.logger.info("Collecting forcing data ...")
+        for forcing in self.attrs.forcings.values():
+            if forcing is None:
+                continue
+
+            # FIXME added temp implementations here to make forcing.get_data() succeed,
+            # move this to the forcings themselves?
+            # if isinstance(forcing, WaterlevelFromModel):
+            #     forcing.path = sim_path
+
+    def make_spw_file(self, output_dir: Optional[Path] = None):
         cyc_file = self.database.events.get_database_path().joinpath(
             f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
         )
@@ -103,12 +129,10 @@ class HurricaneEvent(IEvent):
             )
 
         # Location of spw file
-        filename = "hurricane.spw"
-        spw_file = (
-            self.database.events.get_database_path(get_input_path=False)
-            / self.attrs.name
-            / filename
-        )
+        if output_dir is None:
+            spw_file = cyc_file.parent / f"{self.attrs.track_name}.spw"
+        else:
+            spw_file = output_dir / f"{self.attrs.track_name}.spw"
 
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
@@ -135,3 +159,67 @@ class HurricaneEvent(IEvent):
         tc.track = tc.track.to_crs(epsg=4326)
 
         return tc
+
+    def _preprocess_sfincs_offshore(self, sim_path: Path):
+        """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
+
+        This function is reused for ForcingSources: MODEL & TRACK.
+
+        Args:
+            sim_path path to the root of the offshore model
+        """
+        self.logger.info("Preparing offshore model to generate waterlevels...")
+        from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+
+        # Initialize
+        if Path(sim_path).exists():
+            shutil.rmtree(sim_path)
+        Path(sim_path).mkdir(parents=True, exist_ok=True)
+
+        template_offshore = self.database.static_path.joinpath(
+            "templates", self.database.site.attrs.sfincs.offshore_model
+        )
+        with SfincsAdapter(model_root=template_offshore) as _offshore_model:
+            # Edit offshore model
+            _offshore_model.set_timing(self.attrs.time)
+
+            # Add water levels
+            physical_projection = self.database.projections.get(
+                self._scenario.attrs.projection
+            ).get_physical_projection()
+
+            _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
+
+            self.make_spw_file(sim_path)
+            _offshore_model._set_config_spw(f"{self.attrs.track_name}.spw")
+
+            # write sfincs model in output destination
+            _offshore_model.write(path_out=sim_path)
+
+    def _run_sfincs_offshore(self, sim_path):
+        self.logger.info("Running offshore model...")
+        from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+
+        with SfincsAdapter(model_root=sim_path) as _offshore_model:
+            _offshore_model.execute()
+
+    def _get_simulation_path(self) -> Path:
+        if self.attrs.mode == Mode.risk:
+            return (
+                self.database.scenarios.get_database_path(get_input_path=False)
+                / self._scenario.attrs.name
+                / "Flooding"
+                / "simulations"
+                / self.attrs.name
+                / self.database.site.attrs.sfincs.offshore_model
+            )
+        elif self.attrs.mode == Mode.single_event:
+            return (
+                self.database.scenarios.get_database_path(get_input_path=False)
+                / self._scenario.attrs.name
+                / "Flooding"
+                / "simulations"
+                / self.database.site.attrs.sfincs.offshore_model
+            )
+        else:
+            raise ValueError(f"Unknown mode: {self.attrs.mode}")
