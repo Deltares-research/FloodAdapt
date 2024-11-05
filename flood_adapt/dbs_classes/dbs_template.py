@@ -103,8 +103,27 @@ class DbsTemplate(AbstractDatabaseElement):
         # After changing the name and description, receate the model to re-trigger the validators
         copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.model_dump())
 
-        # Then save. Checking whether the name is already in use is done in the save function
-        self.save(copy_object)
+        EXCLUDE_SUFFIX = [".spw"]
+        try:
+            # Copy the folder
+            shutil.copytree(
+                self.input_path / old_name,
+                self.input_path / new_name,
+                ignore=shutil.ignore_patterns(*EXCLUDE_SUFFIX),
+            )
+
+            # Rename the toml file to not raise in the name check
+            os.rename(
+                self.input_path / new_name / f"{old_name}.toml",
+                self.input_path / new_name / f"{new_name}.toml",
+            )
+
+            # Check new name is valid and update toml file
+            self.save(copy_object, overwrite=True)
+        except:
+            # If an error occurs, delete the folder and raise the error
+            shutil.rmtree(self.input_path / new_name, ignore_errors=True)
+            raise
 
     def save(
         self,

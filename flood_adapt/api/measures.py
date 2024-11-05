@@ -35,8 +35,6 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         Dictionary of attributes for the measure.
     type : str
         Type of measure to create.
-    database : IDatabase, optional
-        Database to use for creating the measure, by default None
 
     Returns
     -------
@@ -55,6 +53,8 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         return Pump.load_dict(attrs)
     elif type in ["water_square", "total_storage", "greening"]:
         return GreenInfrastructure.load_dict(attrs)
+    else:
+        raise ValueError(f"Invalid measure type: {type}")
 
 
 def save_measure(measure: IMeasure) -> None:

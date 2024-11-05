@@ -34,22 +34,30 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-def test_floodwall_read(test_db):
-    test_toml = test_db.input_path / "measures" / "seawall" / "seawall.toml"
-    assert test_toml.is_file()
+@pytest.fixture
+def test_floodwall(test_data_dir):
+    floodwall_model = {
+        "name": "test_seawall",
+        "description": "seawall",
+        "type": HazardType.floodwall,
+        "selection_type": SelectionType.polygon,
+        "elevation": UnitfulLength(value=12, units=UnitTypesLength.feet),
+        "polygon_file": str(test_data_dir / "polyline.geojson"),
+    }
+    return FloodWall(floodwall_model)
 
-    floodwall = FloodWall.load_file(test_toml)
 
-    assert isinstance(floodwall.attrs.name, str)
-    assert isinstance(floodwall.attrs.description, str)
-    assert isinstance(floodwall.attrs.type, HazardType)
-    assert isinstance(floodwall.attrs.elevation, UnitfulLength)
+def test_floodwall_read(test_floodwall):
+    assert isinstance(test_floodwall.attrs.name, str)
+    assert isinstance(test_floodwall.attrs.description, str)
+    assert isinstance(test_floodwall.attrs.type, HazardType)
+    assert isinstance(test_floodwall.attrs.elevation, UnitfulLength)
 
-    assert floodwall.attrs.name == "seawall"
-    assert floodwall.attrs.description == "seawall"
-    assert floodwall.attrs.type == "floodwall"
-    assert floodwall.attrs.elevation.value == 12
-    assert floodwall.attrs.elevation.units == UnitTypesLength.feet
+    assert test_floodwall.attrs.name == "test_seawall"
+    assert test_floodwall.attrs.description == "seawall"
+    assert test_floodwall.attrs.type == "floodwall"
+    assert test_floodwall.attrs.elevation.value == 12
+    assert test_floodwall.attrs.elevation.units == UnitTypesLength.feet
 
 
 def test_elevate_aggr_area_read(test_db):

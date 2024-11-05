@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -57,45 +56,6 @@ class DbsEvent(DbsTemplate):
         events["description"] = [obj.attrs.description for obj in objects]
         events["objects"] = objects
         return events
-
-    def copy(self, old_name: str, new_name: str, new_description: str):
-        """Copy (duplicate) an existing object, and give it a new name.
-
-        Parameters
-        ----------
-        old_name : str
-            name of the existing measure
-        new_name : str
-            name of the new measure
-        new_description : str
-            description of the new measure
-        """
-        # Check if the provided old_name is valid
-        if old_name not in self.list_objects()["name"]:
-            raise ValueError(
-                f"{self._object_class.class_name} '{old_name}' does not exist."
-            )
-
-        # First do a get and change the name and description
-        copy_object = self.get(old_name)
-        copy_object.attrs.name = new_name
-        copy_object.attrs.description = new_description
-
-        # After changing the name and description, receate the model to re-trigger the validators
-        copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.model_dump())
-
-        # Then a save. Checking whether the name is already in use is done in the save function
-        self.save(copy_object)
-
-        # Then save all the accompanied files
-        src = self.input_path / old_name
-        dest = self.input_path / new_name
-
-        EXCLUDE = [".spw", ".toml"]
-        for file in src.glob("*"):
-            if file.suffix in EXCLUDE:
-                continue
-            shutil.copy(file, dest / file.name)
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if an event is a standard event.

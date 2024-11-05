@@ -34,6 +34,7 @@ class GreenInfrastructure(HazardMeasure[GreenInfrastructureModel]):
                 self.dir_name, self.attrs.name, self.attrs.polygon_file
             )
             path = save_file_to_database(src_path, Path(toml_path).parent)
+
             # Update the shapefile path in the object so it is saved in the toml file as well
             self.attrs.polygon_file = path.name
 
