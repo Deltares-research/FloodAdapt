@@ -103,7 +103,7 @@ class DbsTemplate(AbstractDatabaseElement):
         # After changing the name and description, receate the model to re-trigger the validators
         copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.model_dump())
 
-        EXCLUDE_SUFFIX = [".spw"]
+        EXCLUDE_SUFFIX = ["*.spw"]
         try:
             # Copy the folder
             shutil.copytree(
