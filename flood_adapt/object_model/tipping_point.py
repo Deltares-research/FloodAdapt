@@ -286,11 +286,11 @@ class TippingPoint(ITipPoint):
                     x=[
                         metric_data["sea level"].min(),
                         metric_data["sea level"].max(),
-                    ],  # x range for the line
-                    y=[metric[1], metric[1]],  # y values for a horizontal line
+                    ],
+                    y=[metric[1], metric[1]],
                     mode="lines",
                     name=f"{metric[0]} Threshold",
-                    line={"color": "Red", "width": 3, "dash": "dash"},  # Line style
+                    line={"color": "Red", "width": 3, "dash": "dash"},
                 )
             )
 
@@ -304,7 +304,7 @@ class TippingPoint(ITipPoint):
                     marker={
                         "color": "Red",
                         "size": 10,
-                    },  # Use a dictionary literal instead
+                    },
                 )
             )
 
