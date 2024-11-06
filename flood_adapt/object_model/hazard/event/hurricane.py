@@ -8,6 +8,9 @@ from pydantic import BaseModel
 from shapely.affinity import translate
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+    WaterlevelFromModel,
+)
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -34,8 +37,6 @@ class HurricaneEventModel(IEventModel):
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
-            ForcingSource.CONSTANT,
-            ForcingSource.METEO,
             ForcingSource.TRACK,
         ],
         ForcingType.WIND: [ForcingSource.TRACK],
@@ -88,28 +89,36 @@ class HurricaneEvent(IEvent):
         self._scenario = scenario
         self.meteo_ds = None
         sim_path = self._get_simulation_path()
-        if self._require_offshore_run():
-            if self.site.attrs.sfincs.offshore_model is None:
-                raise ValueError(
-                    f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
-                )
 
-            sim_path.mkdir(parents=True, exist_ok=True)
-            self._preprocess_sfincs_offshore(sim_path)
-            self._run_sfincs_offshore(sim_path)
+        if self.database.site.attrs.sfincs.offshore_model is None:
+            raise ValueError(
+                f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
+            )
+
+        sim_path.mkdir(parents=True, exist_ok=True)
+        self._preprocess_sfincs_offshore(sim_path)
+        self._run_sfincs_offshore(sim_path)
 
         self.logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
-            if forcing is None:
-                continue
+            # temporary fix to set the path of the forcing
+            if isinstance(forcing, WaterlevelFromModel):
+                forcing.path = sim_path
 
-            # FIXME added temp implementations here to make forcing.get_data() succeed,
-            # move this to the forcings themselves?
-            # if isinstance(forcing, WaterlevelFromModel):
-            #     forcing.path = sim_path
+    def make_spw_file(
+        self, cyc_file: Optional[Path] = None, output_dir: Optional[Path] = None
+    ):
+        """
+        Create a spiderweb file from a given TropicalCyclone track.
 
-    def make_spw_file(self, output_dir: Optional[Path] = None):
-        cyc_file = self.database.events.get_database_path().joinpath(
+        Parameters
+        ----------
+        cyc_file : Path, optional
+            Path to the cyc file, if None the .cyc file in the event's input directory is used
+        output_dir : Path, optional
+            Directory to save the spiderweb file, if None the spiderweb file is saved in the event's input directory
+        """
+        cyc_file = cyc_file or self.database.events.get_database_path().joinpath(
             f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
         )
         # Initialize the tropical cyclone database
@@ -190,7 +199,7 @@ class HurricaneEvent(IEvent):
 
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
 
-            self.make_spw_file(sim_path)
+            self.make_spw_file(output_dir=sim_path)
             _offshore_model._set_config_spw(f"{self.attrs.track_name}.spw")
 
             # write sfincs model in output destination

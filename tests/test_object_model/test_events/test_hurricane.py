@@ -1,0 +1,156 @@
+import shutil
+import tempfile
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+    RainfallFromTrack,
+)
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+    WaterlevelFromModel,
+)
+from flood_adapt.object_model.hazard.event.forcing.wind import (
+    WindFromTrack,
+)
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingType,
+    Mode,
+    Template,
+    TimeModel,
+)
+from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitfulDischarge,
+    UnitfulLength,
+    UnitTypesDischarge,
+    UnitTypesLength,
+)
+from flood_adapt.object_model.scenario import Scenario
+from tests.fixtures import TEST_DATA_DIR
+
+
+@pytest.fixture()
+def setup_hurricane_event():
+    event_attrs = {
+        "name": "hurricane",
+        "time": TimeModel(),
+        "template": Template.Hurricane,
+        "mode": Mode.single_event,
+        "forcings": {
+            "WATERLEVEL": WaterlevelFromModel(),
+            "WIND": WindFromTrack(),
+            "RAINFALL": RainfallFromTrack(),
+            "DISCHARGE": DischargeConstant(
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+            ),
+        },
+        "track_name": "IAN",
+        "hurricane_translation": {
+            "eastwest_translation": UnitfulLength(
+                value=0.0, units=UnitTypesLength.meters
+            ),
+            "northsouth_translation": UnitfulLength(
+                value=0.0, units=UnitTypesLength.meters
+            ),
+        },
+    }
+    return HurricaneEvent.load_dict(event_attrs)
+
+
+@pytest.fixture()
+def setup_hurricane_scenario(setup_hurricane_event: HurricaneEvent):
+    scenario_attrs = {
+        "name": "test_scenario",
+        "event": setup_hurricane_event.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    return Scenario.load_dict(scenario_attrs), setup_hurricane_event
+
+
+class TestHurricaneEvent:
+    def test_save_event_toml(
+        self, setup_hurricane_event: HurricaneEvent, tmp_path: Path
+    ):
+        path = tmp_path / "test_event.toml"
+        event = setup_hurricane_event
+        event.save(path)
+        assert path.exists()
+
+    def test_load_file(self, setup_hurricane_event: HurricaneEvent, tmp_path: Path):
+        path = tmp_path / "test_event.toml"
+        saved_event = setup_hurricane_event
+        saved_event.save(path)
+        assert path.exists()
+
+        loaded_event = HurricaneEvent.load_file(path)
+
+        assert loaded_event == saved_event
+
+    def test_make_spw_file(
+        self,
+        setup_hurricane_event: HurricaneEvent,
+    ):
+        # Arrange
+        cyc_file = TEST_DATA_DIR / "IAN.cyc"
+        spw_file = Path(tempfile.gettempdir()) / "IAN.spw"
+        setup_hurricane_event.attrs.track_name = "IAN"
+
+        # Act
+        setup_hurricane_event.make_spw_file(
+            cyc_file=cyc_file, output_dir=spw_file.parent
+        )
+
+        # Assert
+        assert spw_file.exists()
+
+    def test_make_spw_file_no_args(
+        self, setup_hurricane_event: HurricaneEvent, test_db: IDatabase
+    ):
+        # Arrange
+        spw_file = (
+            test_db.events.get_database_path()
+            / setup_hurricane_event.attrs.name
+            / "IAN.spw"
+        )
+        setup_hurricane_event.attrs.track_name = "IAN"
+        test_db.events.save(setup_hurricane_event)
+
+        cyc_file = TEST_DATA_DIR / "IAN.cyc"
+        shutil.copy2(
+            cyc_file,
+            test_db.events.get_database_path()
+            / setup_hurricane_event.attrs.name
+            / "IAN.cyc",
+        )
+
+        # Act
+        setup_hurricane_event.make_spw_file()
+
+        # Assert
+        assert spw_file.exists()
+
+    def test_process_sfincs_offshore(
+        self, test_db, setup_hurricane_scenario: tuple[Scenario, HurricaneEvent]
+    ):
+        # Arrange
+        scenario, hurricane_event = setup_hurricane_scenario
+        undefined_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
+
+        # Act
+        hurricane_event.process(scenario)
+        sim_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
+
+        # Assert
+        assert undefined_path is None
+        assert sim_path.exists()
+
+        with SfincsAdapter(model_root=sim_path) as _offshore_model:
+            wl_df = _offshore_model._get_wl_df_from_offshore_his_results()
+
+        assert isinstance(wl_df, pd.DataFrame)
