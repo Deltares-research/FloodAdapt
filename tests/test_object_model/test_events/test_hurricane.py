@@ -92,7 +92,7 @@ class TestHurricaneEvent:
 
         assert loaded_event == saved_event
 
-    def test_make_spw_file(
+    def test_make_spw_file_with_args(
         self,
         setup_hurricane_event: HurricaneEvent,
     ):
@@ -136,11 +136,18 @@ class TestHurricaneEvent:
         assert spw_file.exists()
 
     def test_process_sfincs_offshore(
-        self, test_db, setup_hurricane_scenario: tuple[Scenario, HurricaneEvent]
+        self,
+        test_db: IDatabase,
+        setup_hurricane_scenario: tuple[Scenario, HurricaneEvent],
     ):
         # Arrange
         scenario, hurricane_event = setup_hurricane_scenario
         undefined_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
+        test_db.events.save(hurricane_event)
+        shutil.copy2(
+            TEST_DATA_DIR / "IAN.cyc",
+            test_db.events.get_database_path() / hurricane_event.attrs.name / "IAN.cyc",
+        )
 
         # Act
         hurricane_event.process(scenario)
