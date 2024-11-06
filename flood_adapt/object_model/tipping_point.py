@@ -265,7 +265,7 @@ class TippingPoint(ITipPoint):
                     x=metric_data.loc[idx_max + 1 :, "sea level"],
                     y=metric_data.loc[idx_max + 1 :, "Value"],
                     mode="lines+markers",
-                    name=f"Interpolated: {metric[0]}",
+                    name="Extrapolated",
                     line={"color": "Green", "dash": "dash"},
                 )
             )
@@ -275,7 +275,7 @@ class TippingPoint(ITipPoint):
                     x=metric_data.loc[idx_min - 1 : idx_min, "sea level"],
                     y=metric_data.loc[idx_min - 1 : idx_min, "Value"],
                     mode="lines+markers",
-                    name=f"Interpolated: {metric[0]}",
+                    name="Extrapolated",
                     line={"color": "Green", "dash": "dot"},
                 )
             )
@@ -289,7 +289,7 @@ class TippingPoint(ITipPoint):
                     ],
                     y=[metric[1], metric[1]],
                     mode="lines",
-                    name=f"{metric[0]} Threshold",
+                    name="Threshold",
                     line={"color": "Red", "width": 3, "dash": "dash"},
                 )
             )
@@ -312,7 +312,7 @@ class TippingPoint(ITipPoint):
             fig.update_layout(
                 title=f"Tipping Point Analysis for {self.attrs.name}",
                 xaxis_title="Sea Level Rise (m)",
-                yaxis_title=f"Tipping point metric: {metric[0]}",
+                yaxis_title=f"{metric[0]}",
             )
 
             # write html to results folder
