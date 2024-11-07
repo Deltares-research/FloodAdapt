@@ -17,7 +17,7 @@ class PhysicalProjectionModel(BaseModel):
         value=0.0, units=UnitTypesLength.meters
     )
     subsidence: UnitfulLength = UnitfulLength(value=0.0, units=UnitTypesLength.meters)
-    rainfall_increase: float = 0.0
+    rainfall_multiplier: float = Field(default=1.0, ge=0.0)
     storm_frequency_increase: float = 0.0
 
 

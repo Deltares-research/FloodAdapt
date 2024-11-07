@@ -83,7 +83,7 @@ def test_elevate_aggr_area_read_fail(test_db):
         "property_type": "RES",
     }
 
-    Elevate.load_dict(test_dict, test_db.input_path)
+    Elevate.load_dict(test_dict)
 
 
 def test_elevate_aggr_area_save(test_db):

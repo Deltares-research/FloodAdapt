@@ -19,14 +19,6 @@ class IDatabaseUser(ABC):
         return self._database_instance
 
     @property
-    def database_input_path(self):
-        FloodAdaptLogging.deprecation_warning(
-            version="0.2.0",
-            reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
-        )
-        return self.database.input_path
-
-    @property
     def logger(self):
         if self._logger is not None:
             return self._logger

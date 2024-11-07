@@ -221,9 +221,7 @@ class IMeasure(IDatabaseUser):
 
     @staticmethod
     @abstractmethod
-    def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike] = None
-    ):
+    def load_dict(data: dict[str, Any]):
         """Get Measure attributes from an object, e.g. when initialized from GUI."""
         ...
 

@@ -4,7 +4,6 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.measure.hazard_measure import (
     HazardMeasure,
 )
@@ -31,14 +30,8 @@ class Pump(HazardMeasure, IPump):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike, None] = None,
     ) -> IPump:
         """Create Floodwall from object, e.g. when initialized from GUI."""
-        if database_input_path is not None:
-            FloodAdaptLogging.deprecation_warning(
-                version="0.2.0",
-                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
-            )
         obj = Pump()
         obj.attrs = PumpModel.model_validate(data)
         return obj

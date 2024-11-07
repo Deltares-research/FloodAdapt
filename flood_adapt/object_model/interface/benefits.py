@@ -43,7 +43,7 @@ class IBenefit(IDatabaseUser):
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
+    def load_dict(data: dict[str, Any]):
         """Get Benefit attributes from an object, e.g. when initialized from GUI."""
         ...
 

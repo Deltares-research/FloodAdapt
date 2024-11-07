@@ -222,7 +222,7 @@ def test_preprocess_prob_eventset(test_db, test_scenarios):
 
 
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR")
-def test_preprocess_rainfall_increase(test_db, test_scenarios):
+def test_preprocess_rainfall_multiplier(test_db, test_scenarios):
     test_scenario: Scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.projection = "SLR_2ft"
     test_scenario.attrs.name = "SLR_2ft_test_set_no_measures"
@@ -257,7 +257,7 @@ def test_preprocess_rainfall_increase(test_db, test_scenarios):
 
 
 @pytest.mark.skip(reason="Fails in CICD. REFACTOR")
-def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
+def test_preprocess_rainfall_multiplier_alternate(test_db, test_scenarios):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
     test_scenario.attrs.name = "current_extreme12ft_precip_no_measures"
     test_scenario.init_object_model()
@@ -292,9 +292,7 @@ def test_preprocess_rainfall_increase_alternate(test_db, test_scenarios):
     )
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
-    test_scenario.direct_impacts.hazard.physical_projection.attrs.rainfall_increase = (
-        10  # in percent
-    )
+    test_scenario.direct_impacts.hazard.physical_projection.attrs.rainfall_multiplier = 10  # in percent
     test_scenario.direct_impacts.hazard.preprocess_models()
 
     precip_file2 = (

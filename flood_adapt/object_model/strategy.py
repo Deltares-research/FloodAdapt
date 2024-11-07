@@ -5,7 +5,6 @@ from typing import Any, Union
 import tomli
 import tomli_w
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
@@ -86,7 +85,6 @@ class Strategy(IStrategy):
     @staticmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike] = None,
         validate: bool = True,
     ):
         """_summary_.
@@ -95,8 +93,6 @@ class Strategy(IStrategy):
         ----------
         data : dict[str, Any]
             dictionary with the data
-        database_input_path : Union[str, os.PathLike]
-            path like object pointing to the location of the input files
         validate : bool, optional
             if this is true the affected buildings from the impact-measures
             will be checked to ensure they do not overlap, by default True
@@ -106,12 +102,6 @@ class Strategy(IStrategy):
         IStrategy
             _description_
         """
-        if database_input_path is not None:
-            FloodAdaptLogging.deprecation_warning(
-                version="0.2.0",
-                reason="`database_input_path` parameter is deprecated. Use the database attribute instead.",
-            )
-
         obj = Strategy()
         obj.attrs = StrategyModel.model_validate(data)
         # Need to ensure that the strategy can be created

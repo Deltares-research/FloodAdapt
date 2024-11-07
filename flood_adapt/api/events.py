@@ -6,7 +6,6 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 import flood_adapt.dbs_classes.database as db
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
@@ -68,14 +67,6 @@ def get_event(name: str) -> IEvent:
 def get_event_mode(name: str) -> str:
     filename = db.Database().events.get_database_path() / f"{name}" / f"{name}.toml"
     return EventFactory.read_mode(filename)
-
-
-def create_synthetic_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
-    FloodAdaptLogging.deprecation_warning(
-        version="0.2.0",
-        reason="`create_synthetic_event` is deprecated. Use `create_event` instead.",
-    )
-    return create_event(attrs)
 
 
 def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:

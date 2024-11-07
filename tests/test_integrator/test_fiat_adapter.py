@@ -34,14 +34,12 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
-                scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
-            )
+            scenario_obj.results_path
+            / "Impacts"
+            / "fiat_model"
+            / "exposure"
+            / "exposure.csv"
         )
-        path = test_db.scenarios.get_database_path(get_input_path=False).joinpath(
-            scenario_name, "Impacts", "fiat_model", "exposure", "exposure.csv"
-        )
-        exposure_scenario = pd.read_csv(path)
 
         # check if exposure is left unchanged
         assert_frame_equal(exposure_scenario, exposure_template, check_dtype=False)
@@ -112,11 +110,9 @@ class TestFiatAdapter:
             0
         ].attrs.elevation.value
         # Read the base flood map information
-        bfes = pd.read_csv(
-            test_scenario.database_input_path.parent.joinpath(
-                "static", "bfe", "bfe.csv"
-            )
-        )
+
+        bfes = pd.read_csv(test_db.static_path / "bfe" / "bfe.csv")
+
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on="Object ID")[
             ["Object ID", "bfe", "Ground Floor Height"]

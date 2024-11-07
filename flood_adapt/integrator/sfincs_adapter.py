@@ -96,12 +96,6 @@ class SfincsAdapter(IHazardAdapter):
             model_root (str): Root directory of overland sfincs model.
         """
         self._logger = FloodAdaptLogging.getLogger(__name__)
-        if database is not None:
-            FloodAdaptLogging.deprecation_warning(
-                version="0.2.0",
-                reason="the `database` parameter is deprecated. Use the database attribute instead.",
-            )
-
         self._site = Site.load_file(
             Settings().database_path / "static" / "site" / "site.toml"
         )
@@ -351,19 +345,27 @@ class SfincsAdapter(IHazardAdapter):
             projection = projection.get_physical_projection()
 
         if projection.attrs.sea_level_rise:
-            wl_df = self.get_waterlevel_forcing()
-            new_wl_df = wl_df.apply(
-                lambda x: x + projection.attrs.sea_level_rise.convert("meters")
+            self._model.forcing["bzs"] += projection.attrs.sea_level_rise.convert(
+                "meters"
             )
-            self._set_waterlevel_forcing(new_wl_df)
 
         # TODO investigate how/if to add subsidence to model
         # projection.attrs.subsidence
 
-        # rainfall = self.get_rainfall() + projection.attrs.rainfall_increase
-        # self._set_rainfall_forcing(rainfall)
+        if projection.attrs.rainfall_multiplier:
+            self.logger.info("Adding rainfall multiplier to model.")
+            if "precip_2d" in self._model.forcing:
+                self._model.forcing["precip_2d"] *= projection.attrs.rainfall_multiplier
+            elif "precip" in self._model.forcing:
+                self._model.forcing["precip"] *= projection.attrs.rainfall_multiplier
+            else:
+                # TODO check if this is the correct way to handle this. Maybe raise an error?
+                self._logger.warning(
+                    "Failed to add rainfall multiplier, no rainfall forcing found in the model."
+                )
 
         # TODO investigate how/if to add storm frequency increase to model
+        # this is only for return period calculations?
         # projection.attrs.storm_frequency_increase
 
     def run_completed(self) -> bool:
@@ -439,6 +441,25 @@ class SfincsAdapter(IHazardAdapter):
         if aggregate:
             wl_df = wl_df.groupby("time").mean()
         return wl_df.to_frame()
+
+    def get_rainfall_forcing(self) -> pd.DataFrame:
+        """Get the current water levels set in the model.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with datetime index called 'time', each timestep then specifies the precipitation for the entire model or for each cell
+        """
+        if "precip_2d" in self._model.forcing:
+            rainfall_df = self._model.forcing["precip_2d"]
+        elif "precip" in self._model.forcing:
+            rainfall_df = self._model.forcing["precip"]
+        else:
+            self.logger.warning(
+                "Failed to get rainfall foring, no rainfall forcing found in the model."
+            )
+            return
+        return rainfall_df.to_frame()
 
     ### PRIVATE METHODS - Should not be called from outside of this class ###
 

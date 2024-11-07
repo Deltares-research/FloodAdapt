@@ -26,7 +26,6 @@ class IStrategy(IDatabaseUser):
     @abstractmethod
     def load_dict(
         data: dict[str, Any],
-        database_input_path: Union[str, os.PathLike] = None,
         validate: bool = True,
     ):
         """Get Strategy attributes from an object, e.g. when initialized from GUI."""

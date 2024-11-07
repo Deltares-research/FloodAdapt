@@ -43,16 +43,10 @@ class DirectImpacts(IDatabaseUser):
     impact_strategy: ImpactStrategy
     hazard: FloodMap
 
-    def __init__(self, scenario: ScenarioModel, results_path: Path = None) -> None:
+    def __init__(self, scenario: ScenarioModel) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
         self.name = scenario.name
         self.scenario = scenario
-
-        if results_path is not None:
-            FloodAdaptLogging.deprecation_warning(
-                version="0.2.0",
-                reason="`results_path` parameter is deprecated. Use the `results_path` property instead.",
-            )
 
         self.set_socio_economic_change(scenario.projection)
         self.set_impact_strategy(scenario.strategy)
@@ -372,15 +366,17 @@ class DirectImpacts(IDatabaseUser):
                 for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
                 if aggr.name == aggr_label
             ][0]
+
             if not self.site_info.attrs.fiat.aggregation[ind].equity:
                 continue
-
             fiat_data = pd.read_csv(file)
 
             # Create Equity object
             equity = Equity(
-                census_table=self.database.static_path.joinpath(
-                    self.site_info.attrs.fiat.aggregation[ind].equity.census_data
+                census_table=str(
+                    self.database.static_path.joinpath(
+                        self.site_info.attrs.fiat.aggregation[ind].equity.census_data
+                    )
                 ),
                 damages_table=fiat_data,
                 aggregation_label=self.site_info.attrs.fiat.aggregation[ind].field_name,
@@ -435,6 +431,7 @@ class DirectImpacts(IDatabaseUser):
         for file in metrics_fold.glob(f"Infometrics_{self.name}_*.csv"):
             # Load metrics
             metrics = pd.read_csv(file)
+
             # Load aggregation areas
             aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [

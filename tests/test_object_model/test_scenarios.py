@@ -83,10 +83,8 @@ def test_scs_rainfall(test_db: db.Database, test_scenarios: dict[str, Scenario])
         type="type_3",
     )
 
-    scsfile = hazard.database_input_path.parent.joinpath(
-        "static", "scs", hazard.site.attrs.scs.file
-    )
-    scstype = hazard.site.attrs.scs.type
+    scsfile = test_db.static_path / "scs" / test_db.site.attrs.scs.file
+    scstype = test_db.site.attrs.scs.type
 
     # event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
     hazard.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)

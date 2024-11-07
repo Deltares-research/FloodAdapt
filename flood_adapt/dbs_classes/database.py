@@ -714,7 +714,7 @@ class Database(IDatabase):
                     [row["projection"], row["event"], row["strategy"]]
                 )
 
-                scenario_obj = Scenario.load_dict(scenario_dict, self.input_path)
+                scenario_obj = Scenario.load_dict(scenario_dict)
                 # Check if scenario already exists (because it was created before in the loop)
                 try:
                     self.scenarios.save(scenario_obj)

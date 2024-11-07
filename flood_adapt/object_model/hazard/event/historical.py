@@ -165,9 +165,12 @@ class HistoricalEvent(IEvent):
 
                 # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                 if wind_forcing._source == ForcingSource.METEO:
-                    _offshore_model._add_pressure_forcing_from_grid(
-                        ds=MeteoHandler().read(self.attrs.time)
-                    )
+                    ds = MeteoHandler().read(self.attrs.time)
+                    if (
+                        ds["lon"].min() > 180
+                    ):  # TODO move this ifstatement to meteohandler.read() ?
+                        ds["lon"] = ds["lon"] - 360
+                    _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)

@@ -2,7 +2,6 @@ import os
 from enum import Enum
 from pathlib import Path
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
@@ -51,14 +50,6 @@ class FloodMap(IDatabaseUser):
                 self.database.site.attrs.risk.return_periods
             )
             return all(check_files) & check_rps
-
-    @property
-    def has_run_check(self):
-        FloodAdaptLogging.deprecation_warning(
-            version="0.2.0",
-            reason="`has_run_check` parameter is deprecated. Use has_run instead.",
-        )
-        return self.has_run
 
     @property
     def scenario(self):

@@ -11,7 +11,6 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
 from flood_adapt.object_model.scenario import Scenario
 
@@ -79,13 +78,6 @@ class Benefit(IBenefit):
         )
         return check
 
-    def get_output(self) -> dict:
-        FloodAdaptLogging.deprecation_warning(
-            version="0.2.0",
-            reason="`get_output` is deprecated. Use self.results instead",
-        )
-        return self.results
-
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created.
 
@@ -135,7 +127,7 @@ class Benefit(IBenefit):
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scenario_obj = Scenario.load_dict(scn_dict, self.database.input_path)
+            scenario_obj = Scenario.load_dict(scn_dict)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]
