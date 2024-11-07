@@ -6,4 +6,36 @@ lightbox: auto
 jupyter: python3
 ---
 
-[SFINCS](https://download.deltares.nl/en/sfincs) is the open-source compound flood model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a SFINCS model in the project area. This is considered the 'baseline' SFINCS model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by selecting a hurricane or developing a synthetic event.
+[SFINCS](https://download.deltares.nl/en/sfincs) is the open-source compound flood model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to set up a SFINCS model in the project area. This is considered the 'baseline' SFINCS model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by selecting a hurricane or developing a synthetic event.
+
+![SFINCS can model compound flooding due to multiple drivers](../../_static/images/sfincs_intro.png){width=50% fig-align=center #fig-sfincsIntro}
+
+SFINCS can model compound flooding due to multiple drivers (@fig-sfincsIntro). In FloodAdapt, the SFINCS flood drivers currently included are storm surge, tides, rainfall, and river discharge. There are typically two SFINCS models in fully-functional FloodAdapt setups, an **offshore model**, and an **overland** model. The offshore model is needed to simulate storm surge from large scale storm systems, such as hurricanes, and propagate the storm surge to the area of interest. The data from the offshore model is then passed to the overland model in a process called "grid nesting". The overland model includes **boundary points** along the water level boundary, the calculated time series of water levels at these locations is collected from the offshore model, and used as input to the overland model. Some FloodAdapt scenarios don't require running the offshore model, for example a historical event using gauged water levels, as the water levels from a tide gauge are used as input to the overland model.
+
+A SFINCS model is comprised of three main ingredients, a model grid, topography and bathymetry data mapped to the model grid, and ititial/boundary conditions that describe the water levels at the start of the simulation/ information about how those water levels change at the model boundaries over time. The water levels inside the model boundaries are then calculated, and results are saved as time series at selected output points and maps of the overall model area. The SFINCS model-builder tool was created to help facilitate setting up a SFINCS model for use within FloodAdapt. The model-builder focuses on creating a model grid, mapping the topography and bathymetry data to the grid, defining active cells, defining the water level boundary, defining boundary points for communication between the offshore and overland models, and defining river discharge points. @fig-sfincsOverview shows a simplified schematic of these components.
+
+![Components of a SFINCS model that can be defined using the SFINCS model-builer](../../_static/images/sfincs_overview.png){width=100% fig-align=center #fig-sfincsOverview}
+
+## Overview of SFINCS data requirements
+
+After completing the steps in the FloodAdapt model-builder installation, the folder structure below is created:
+```
+├───📁 FloodAdaptModelBuilder/
+    |
+    ├───📁 _internal/
+    |
+    ├───📁 data/
+    │   │    
+    |   ├───📁 topobathy/
+    |   │   └───📄 dem.tif
+    |   └───📁 watersheds/
+    |       └───📄 watersheds.gpkg
+    |
+    ├───🔵 FloodAdaptModelBuilder.exe
+    |
+    ├───🔵 unins000.dat
+    |
+    └───🔵 unins000.exe
+```
+
+There are two files that are required by the user to insert into the FloodAdaptModelBuilder folder structure for the model-builder software to have full functionality. Specifically, a DEM in tif format named "dem.tif", and a geopackage that defines watershed areas named "watersheds.gpkg". To learn how to create a SFINCS model using the model-builder software, continue to the [SFINCS model-builder documentation](hydromt_sfincs_gui.qmd).
