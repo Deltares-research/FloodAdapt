@@ -788,7 +788,7 @@ class Database:
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
                 )
-                # roads = roads.to_crs(4326)
+                roads = roads.to_crs(4326)
                 if roads_path.exists():
                     roads_path.unlink()
                 roads.to_file(roads_path)
