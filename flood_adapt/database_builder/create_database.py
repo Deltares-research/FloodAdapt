@@ -1000,27 +1000,28 @@ class Database:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
-        roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
-        roads["geometry"] = roads.geometry.centroid  # get centroids
+        if "roads" in self.fiat_model.exposure.geom_names:
+            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+            roads["geometry"] = roads.geometry.centroid  # get centroids
 
-        x_points = xr.DataArray(roads["geometry"].x, dims="points")
-        y_points = xr.DataArray(roads["geometry"].y, dims="points")
-        roads["elev"] = (
-            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-            * conversion_factor
-        )
+            x_points = xr.DataArray(roads["geometry"].x, dims="points")
+            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            roads["elev"] = (
+                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+                * conversion_factor
+            )
 
-        exposure.loc[
-            exposure["Primary Object Type"] == "road", "Ground Floor Height"
-        ] = 0
-        exposure = exposure.merge(
-            roads[["Object ID", "elev"]], on="Object ID", how="left"
-        )
-        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
-        )
-        del exposure["elev"]
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Floor Height"
+            ] = 0
+            exposure = exposure.merge(
+                roads[["Object ID", "elev"]], on="Object ID", how="left"
+            )
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Elevation"
+            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+            del exposure["elev"]
 
         buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
