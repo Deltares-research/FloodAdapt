@@ -24,6 +24,7 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
+from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
@@ -389,7 +390,11 @@ class Database:
         physical and socio-economic conditions, and saves them to the database.
         """
         # Load database
-        read_database(self.root.parent, self.config.name)
+        Settings(
+            database_root=self.root.parent,
+            database_name=self.config.name,
+        )
+        read_database(Settings().database_root, Settings().database_name)
         # Create no measures strategy
         strategy = create_strategy({"name": "no_measures", "measures": []})
         save_strategy(strategy)
