@@ -13,6 +13,7 @@ from flood_adapt.object_model.hazard.event.historical import (
 from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEvent,
     HurricaneEventModel,
+    TranslationModel,
 )
 from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
@@ -24,6 +25,8 @@ from flood_adapt.object_model.hazard.interface.events import (
     Mode,
     Template,
 )
+
+__all__ = ["TranslationModel"]
 
 
 class EventFactory:

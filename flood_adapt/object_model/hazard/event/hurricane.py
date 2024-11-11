@@ -36,9 +36,7 @@ class HurricaneEventModel(IEventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
-        ForcingType.RAINFALL: [
-            ForcingSource.TRACK,
-        ],
+        ForcingType.RAINFALL: [ForcingSource.TRACK],
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.CSV],

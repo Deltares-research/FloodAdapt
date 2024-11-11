@@ -6,7 +6,16 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 import flood_adapt.dbs_classes.database as db
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.event_factory import (
+    EventFactory,
+    HistoricalEvent,
+    HistoricalEventModel,
+    HurricaneEvent,
+    HurricaneEventModel,
+    SyntheticEvent,
+    SyntheticEventModel,
+    TranslationModel,
+)
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
@@ -52,6 +61,13 @@ __all__ = [
     "IWaterlevel",
     "IWind",
     "UnitTypesTime",
+    "SyntheticEvent",
+    "SyntheticEventModel",
+    "HistoricalEventModel",
+    "HistoricalEvent",
+    "HurricaneEvent",
+    "HurricaneEventModel",
+    "TranslationModel",
 ]
 
 
