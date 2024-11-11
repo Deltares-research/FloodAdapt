@@ -1,9 +1,15 @@
+import shutil
+
 import pytest
 
 import flood_adapt.api.scenarios as api_scenarios
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
-from tests.test_object_model.test_events.test_eventset import test_eventset
+from tests.test_object_model.test_events.test_eventset import (
+    test_eventset,
+    test_sub_event,
+)
 from tests.test_object_model.test_events.test_historical import (
     setup_nearshore_event,
     setup_offshore_meteo_event,
@@ -14,6 +20,7 @@ from tests.test_object_model.test_events.test_synthetic import test_event_all_sy
 # To stop ruff from deleting these 'unused' imports
 __all__ = [
     "test_eventset",
+    "test_sub_event",
     "test_event_all_synthetic",
     "setup_nearshore_event",
     "setup_offshore_meteo_event",
@@ -63,16 +70,35 @@ def setup_synthetic_scenario(test_db, test_event_all_synthetic):
 
 
 @pytest.fixture()
-def setup_eventset_scenario(test_db, test_eventset):
+def setup_eventset_scenario(
+    test_db: IDatabase,
+    test_eventset,
+    dummy_pump_measure,
+    dummy_buyout_measure,
+    dummy_projection,
+    dummy_strategy,
+):
+    pump, geojson = dummy_pump_measure
+    dst_path = test_db.measures.get_database_path() / pump.attrs.name / geojson.name
+    test_db.measures.save(pump)
+    shutil.copy2(geojson, dst_path)
+
+    test_db.measures.save(dummy_buyout_measure)
+    test_db.projections.save(dummy_projection)
+    test_db.strategies.save(dummy_strategy)
+
+    test_eventset, sub_events = test_eventset
     test_db.events.save(test_eventset)
-    test_dict = {
-        "name": "eventset",
-        "description": "current_extreme12ft_no_measures",
-        "event": test_eventset.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    return Scenario.load_dict(test_dict)
+
+    scn = Scenario.load_dict(
+        {
+            "name": "test_eventset",
+            "event": test_eventset.attrs.name,
+            "projection": dummy_projection.attrs.name,
+            "strategy": dummy_strategy.attrs.name,
+        }
+    )
+    return test_db, scn, test_eventset
 
 
 def test_run_offshore_scenario(test_db, setup_offshore_meteo_scenario):
@@ -105,13 +131,13 @@ def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
     )
 
 
-def test_run_eventset_scenario(test_db, setup_eventset_scenario):
-    api_scenarios.save_scenario(setup_eventset_scenario)
-    api_scenarios.run_scenario(setup_eventset_scenario.attrs.name)
+def test_run_eventset_scenario(setup_eventset_scenario):
+    test_db, scn, event_set = setup_eventset_scenario
+    api_scenarios.save_scenario(scn)
+    api_scenarios.run_scenario(scn.attrs.name)
 
     assert finished_file_exists(
-        test_db.scenarios.get_database_path(get_input_path=False)
-        / setup_eventset_scenario.attrs.name
+        test_db.scenarios.get_database_path(get_input_path=False) / event_set.attrs.name
     )
 
 
@@ -145,17 +171,3 @@ def test_create_save_scenario(test_db, setup_offshore_meteo_event):
     # If user presses delete scenario the measure is deleted
     api_scenarios.delete_scenario("test1")
     test_db.scenarios.list_objects()
-
-
-@pytest.mark.skip(reason="Part of test_has_hazard_run")
-def test_single_event_run(test_db):
-    # Initialize database object
-    scenario_name = "current_extreme12ft_no_measures"
-    test_db.run_scenario(scenario_name)
-
-
-@pytest.mark.skip(reason="test takes too much time")
-def test_risk_run(test_db):
-    # Initialize database object
-    scenario_name = "current_test_set_no_measures"
-    test_db.run_scenario(scenario_name)

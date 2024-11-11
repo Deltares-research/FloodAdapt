@@ -1,10 +1,12 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
+from tempfile import gettempdir
 from unittest.mock import patch
 
 import pytest
 
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
@@ -14,6 +16,7 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
+from flood_adapt.object_model.hazard.interface.events import IEventModel
 from flood_adapt.object_model.hazard.interface.models import (
     Mode,
     ShapeType,
@@ -42,17 +45,14 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
-def test_eventset():
-    attrs = {
-        "name": "test_eventset_synthetic",
+def test_sub_event():
+    return {
         "time": TimeModel(
             start_time=datetime(2020, 1, 1),
             end_time=datetime(2020, 1, 2),
         ),
         "template": Template.Synthetic,
-        "mode": Mode.risk,
-        "sub_events": ["event_0001", "event_0039", "event_0078"],
-        "frequency": [0.5, 0.2, 0.02],
+        "mode": Mode.single_event,
         "forcings": {
             "WIND": WindConstant(
                 speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
@@ -83,11 +83,26 @@ def test_eventset():
             ),
         },
     }
-    return EventSet.load_dict(attrs)
 
 
 @pytest.fixture()
-def test_db_with_dummyscn_and_eventset(
+def test_eventset(test_sub_event) -> tuple[EventSet, list[IEventModel]]:
+    sub_events: list[IEventModel] = []
+    for i in [1, 39, 78]:
+        test_sub_event["name"] = f"subevent_{i:04d}"
+        sub_events.append(EventFactory.load_dict(test_sub_event).attrs)
+
+    attrs = {
+        "name": "test_eventset_synthetic",
+        "mode": Mode.risk,
+        "sub_events": sub_events,
+        "frequency": [0.5, 0.2, 0.02],
+    }
+    return EventSet.load_dict(attrs), sub_events
+
+
+@pytest.fixture()
+def setup_eventset_scenario(
     test_db: IDatabase,
     test_eventset,
     dummy_pump_measure,
@@ -101,55 +116,54 @@ def test_db_with_dummyscn_and_eventset(
     shutil.copy2(geojson, dst_path)
 
     test_db.measures.save(dummy_buyout_measure)
-
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 
-    event_set = test_eventset
-    test_db.events.save(event_set)
+    test_eventset, sub_events = test_eventset
+    test_db.events.save(test_eventset)
 
     scn = Scenario.load_dict(
         {
             "name": "test_eventset",
-            "event": event_set.attrs.name,
+            "event": test_eventset.attrs.name,
             "projection": dummy_projection.attrs.name,
             "strategy": dummy_strategy.attrs.name,
         }
     )
     test_db.scenarios.save(scn)
 
-    return test_db, scn, event_set
+    return test_db, scn, test_eventset
 
 
 class TestEventSet:
-    def test_get_subevent_paths(self, test_db, test_eventset: EventSet):
-        subevent_paths = test_eventset.get_sub_event_paths()
-        assert len(subevent_paths) == len(test_eventset.attrs.sub_events)
+    def test_save_all_sub_events(
+        self, test_eventset: tuple[EventSet, list[IEventModel]]
+    ):
+        event_set, _ = test_eventset
 
-    def test_get_subevents_create_sub_events(self, test_db, test_eventset: EventSet):
-        subevent_paths = test_eventset.get_sub_event_paths()
+        tmp_path = Path(gettempdir()) / "test_eventset.toml"
+        event_set.save_additional(tmp_path)
 
-        subevents = test_eventset.get_subevents()
-
-        assert len(subevents) == len(test_eventset.attrs.sub_events)
-        assert all(subevent_path.exists() for subevent_path in subevent_paths)
-
-        assert test_eventset.attrs.mode == Mode.risk
-        assert all(subevent.attrs.mode == Mode.single_event for subevent in subevents)
+        for sub_event in event_set.attrs.sub_events:
+            assert (
+                tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
+            ).exists()
 
     @patch("flood_adapt.object_model.hazard.event.synthetic.SyntheticEvent.process")
     def test_eventset_synthetic_process(
         self,
         mock_process,
-        test_db_with_dummyscn_and_eventset: tuple[IDatabase, Scenario, EventSet],
+        setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet],
     ):
-        test_db, scn, event_set = test_db_with_dummyscn_and_eventset
+        test_db, scn, event_set = setup_eventset_scenario
         event_set.process(scn)
 
         assert mock_process.call_count == len(event_set.attrs.sub_events)
 
-    def test_calculate_rp_floodmaps(self, test_db_with_dummyscn_and_eventset: tuple):
-        test_db, scn, event_set = test_db_with_dummyscn_and_eventset
+    def test_calculate_rp_floodmaps(
+        self, setup_eventset_scenario: tuple[IDatabase, Scenario, EventSet]
+    ):
+        test_db, scn, event_set = setup_eventset_scenario
 
         scn.run()
         output_path = (

@@ -115,7 +115,10 @@ class DbsTemplate(AbstractDatabaseElement):
             shutil.copy(file, dest / file.name)
 
     def save(
-        self, object_model: ObjectModel, overwrite: bool = False, toml_only: bool = True
+        self,
+        object_model: ObjectModel,
+        overwrite: bool = False,
+        toml_only: bool = False,
     ):
         """Save an object in the database. This only saves the toml file. If the object also contains a geojson file, this should be saved separately.
 

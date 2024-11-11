@@ -22,6 +22,7 @@ from numpy import matlib
 from flood_adapt.integrator.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeSynthetic,
 )
@@ -231,6 +232,15 @@ class SfincsAdapter(IHazardAdapter):
 
     def preprocess(self):
         event: IEvent = self.database.events.get(self._scenario.attrs.event)
+        sim_paths = self._get_simulation_paths()
+
+        if isinstance(event, EventSet):
+            for sub_event, sim_path in zip(event.events, sim_paths):
+                self._preprocess_single_event(sub_event, output_path=sim_path)
+        else:
+            self._preprocess_single_event(event, output_path=sim_paths[0])
+
+    def _preprocess_single_event(self, event: IEvent, output_path: Path):
         self.set_timing(event.attrs.time)
 
         # run offshore model or download wl data,
@@ -255,15 +265,8 @@ class SfincsAdapter(IHazardAdapter):
         # add observation points from site.toml
         self._add_obs_points()
 
-        # write sfincs model in output destination(s)
-        sim_paths = self._get_simulation_paths()
-        if event.attrs.mode == Mode.single_event:
-            self.write(path_out=sim_paths[0])
-        elif event.attrs.mode == Mode.risk:
-            for sim_path in sim_paths:
-                self.write(path_out=sim_path)
-        else:
-            raise ValueError(f"Unsupported event mode: {event.attrs.mode}")
+        # write sfincs model in output destination
+        self.write(path_out=output_path)
 
     def process(self):
         event = self.database.events.get(self._scenario.attrs.event)
@@ -979,7 +982,7 @@ class SfincsAdapter(IHazardAdapter):
         elif event.attrs.mode == Mode.risk:
             return [
                 base_path.parent / sub_event.attrs.name / base_path.name
-                for sub_event in event.get_subevents()
+                for sub_event in event.events
             ]
 
     def _get_simulation_path_offshore(self) -> List[Path]:
@@ -996,7 +999,7 @@ class SfincsAdapter(IHazardAdapter):
         elif event.attrs.mode == Mode.risk:
             return [
                 base_path.parent / sub_event.attrs.name / base_path.name
-                for sub_event in event.get_subevents()
+                for sub_event in event.events
             ]
 
     def _get_flood_map_paths(self) -> list[Path]:
@@ -1266,7 +1269,7 @@ class SfincsAdapter(IHazardAdapter):
 
         result_path = self._get_result_path()
         sim_paths = self._get_simulation_paths()
-        sub_events = eventset.get_subevents()
+
         phys_proj: PhysicalProjection = self.database.projections.get(
             self._scenario.attrs.projection
         ).get_physical_projection()
@@ -1276,7 +1279,7 @@ class SfincsAdapter(IHazardAdapter):
         # adjust storm frequency for hurricane events
         if phys_proj.attrs.storm_frequency_increase != 0:
             storminess_increase = phys_proj.attrs.storm_frequency_increase / 100.0
-            for ii, event in enumerate(sub_events):
+            for ii, event in enumerate(eventset.events):
                 if event.attrs.template == Template.Hurricane:
                     frequencies[ii] = frequencies[ii] * (1 + storminess_increase)
 
