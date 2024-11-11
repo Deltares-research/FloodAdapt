@@ -112,7 +112,7 @@ def get_infographic(name: str) -> str:
     metrics_outputs_path = output_path.joinpath(f"Infometrics_{impact.name}.csv")
 
     infographic_path = InforgraphicFactory.create_infographic_file_writer(
-        infographic_mode=impact.hazard.event_mode,
+        infographic_mode=impact.hazard.mode,
         scenario_name=impact.name,
         metrics_full_path=metrics_outputs_path,
         config_base_path=config_path,
