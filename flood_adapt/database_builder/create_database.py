@@ -506,10 +506,10 @@ class Database:
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
-                if "BF_FID" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("BF_FID")
+                if "BF_FID" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
-                    footprints_path = fiat_path.joinpath(footprints.file)
+                    footprints_path = fiat_path.joinpath(footprints["file"])
                     check_file = footprints_path.exists()
             else:
                 check_file = False
@@ -753,17 +753,17 @@ class Database:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
                 add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("SVI")
+                if "SVI" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("SVI")
                     svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi.file)
+                    svi_path = fiat_path.joinpath(svi["file"])
                     self.site_attrs["fiat"]["svi"] = {}
                     self.site_attrs["fiat"]["svi"]["geom"] = str(
                         Path(svi_path.relative_to(self.static_path)).as_posix()
                     )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
                     self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['field_name']}"
                     )
                 else:
                     self.logger.warning("No SVI map found!")
