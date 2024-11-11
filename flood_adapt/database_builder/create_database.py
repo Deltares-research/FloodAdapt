@@ -511,6 +511,8 @@ class Database:
                     footprints = add_attrs[ind]
                     footprints_path = fiat_path.joinpath(footprints["file"])
                     check_file = footprints_path.exists()
+                else:
+                    check_file = False
             else:
                 check_file = False
             if check_file and not check_col:
