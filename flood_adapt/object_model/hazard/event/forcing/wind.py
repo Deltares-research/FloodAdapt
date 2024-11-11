@@ -104,10 +104,10 @@ class WindFromTrack(IWind):
     path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         if self.path:
-            shutil.copy2(self.path, path)
-            self.path = path / self.path.name
+            shutil.copy2(self.path, toml_dir)
+            self.path = toml_dir / self.path.name
 
     @staticmethod
     def default() -> "WindFromTrack":
@@ -134,10 +134,10 @@ class WindFromCSV(IWind):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         if self.path:
-            shutil.copy2(self.path, path)
-            self.path = path / self.path.name
+            shutil.copy2(self.path, toml_dir)
+            self.path = toml_dir / self.path.name
 
     @staticmethod
     def default() -> "WindFromCSV":

@@ -82,7 +82,7 @@ class IForcing(BaseModel, ABC):
         data["_source"] = self._source.value if self._source else None
         return data
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         """Save additional data of the forcing."""
         return
 

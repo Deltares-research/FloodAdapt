@@ -145,11 +145,11 @@ class WaterlevelFromCSV(IWaterlevel):
             else:
                 self._logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         if self.path:
-            shutil.copy2(self.path, path)
+            shutil.copy2(self.path, toml_dir)
             self.path = (
-                path / self.path.name
+                toml_dir / self.path.name
             )  # update the path to the new location so the toml also gets updated
 
     @staticmethod

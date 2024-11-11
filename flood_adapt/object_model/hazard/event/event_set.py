@@ -70,14 +70,12 @@ class EventSet(IDatabaseUser):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         for sub_event in self.events:
-            sub_path = (
-                path.parent / sub_event.attrs.name / f"{sub_event.attrs.name}.toml"
-            )
-            sub_path.parent.mkdir(parents=True, exist_ok=True)
-            sub_event.save_additional(sub_path)
-            sub_event.save(sub_path)
+            sub_dir = toml_dir / sub_event.attrs.name
+            sub_dir.mkdir(parents=True, exist_ok=True)
+            sub_event.save_additional(sub_dir)
+            sub_event.save(sub_dir / f"{sub_event.attrs.name}.toml")
 
     def process(self, scenario: IScenario = None):
         """Prepare the forcings of the event set.

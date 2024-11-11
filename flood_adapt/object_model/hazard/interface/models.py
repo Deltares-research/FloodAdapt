@@ -60,10 +60,12 @@ class Template(str, Enum):
     """Class describing the accepted input for the variable template in Event."""
 
     Synthetic = "Synthetic"
-    Hurricane = "Historical_hurricane"
+    Hurricane = "Hurricane"
+    Historical = "Historical"
+
+    Historical_Hurricane = "Historical_hurricane"
     Historical_nearshore = "Historical_nearshore"
     Historical_offshore = "Historical_offshore"
-    Historical = "Historical"
 
 
 class ForcingType(str, Enum):

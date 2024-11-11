@@ -123,10 +123,10 @@ class RainfallFromTrack(IRainfall):
 
         return self.path  # TODO implement
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         if self.path:
-            shutil.copy2(self.path, path)
-            self.path = path / self.path.name
+            shutil.copy2(self.path, toml_dir)
+            self.path = toml_dir / self.path.name
 
     @staticmethod
     def default() -> "RainfallFromTrack":

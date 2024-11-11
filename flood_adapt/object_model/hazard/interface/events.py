@@ -163,15 +163,15 @@ class IEvent(IDatabaseUser):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    def save_additional(self, path: Path):
+    def save_additional(self, toml_dir: Path):
         for forcing in self.attrs.forcings.values():
             if forcing is None:
                 continue
             if isinstance(forcing, dict):
                 for _, _forcing in forcing.items():
-                    _forcing.save_additional(path)
+                    _forcing.save_additional(toml_dir)
             else:
-                forcing.save_additional(path)
+                forcing.save_additional(toml_dir)
 
     @abstractmethod
     def process(self, scenario: IScenario = None):

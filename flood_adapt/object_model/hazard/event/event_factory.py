@@ -44,6 +44,7 @@ class EventFactory:
         Template.Historical_offshore: (HistoricalEvent, HistoricalEventModel),
         Template.Synthetic: (SyntheticEvent, SyntheticEventModel),
         # TODO remove below, and add to db update script
+        "Historical_hurricane": (HurricaneEvent, HurricaneEventModel),
         "Historical_offshore": (HistoricalEvent, HistoricalEventModel),
         "Historical_nearshore": (HistoricalEvent, HistoricalEventModel),
     }
