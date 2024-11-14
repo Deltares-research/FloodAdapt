@@ -190,7 +190,7 @@ class HistoricalEvent(IEvent):
     def _get_simulation_path(self) -> Path:
         if self.attrs.mode == Mode.risk:
             return (
-                self.database.scenarios.get_database_path(get_input_path=False)
+                self.database.scenarios.output_path
                 / self._scenario.attrs.name
                 / "Flooding"
                 / "simulations"
@@ -199,7 +199,7 @@ class HistoricalEvent(IEvent):
             )
         elif self.attrs.mode == Mode.single_event:
             return (
-                self.database.scenarios.get_database_path(get_input_path=False)
+                self.database.scenarios.output_path
                 / self._scenario.attrs.name
                 / "Flooding"
                 / "simulations"

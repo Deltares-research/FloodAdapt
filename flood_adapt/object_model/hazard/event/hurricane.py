@@ -105,7 +105,7 @@ class HurricaneEvent(IEvent):
 
     def make_spw_file(
         self, cyc_file: Optional[Path] = None, output_dir: Optional[Path] = None
-    ):
+    ) -> Path:
         """
         Create a spiderweb file from a given TropicalCyclone track.
 
@@ -115,8 +115,13 @@ class HurricaneEvent(IEvent):
             Path to the cyc file, if None the .cyc file in the event's input directory is used
         output_dir : Path, optional
             Directory to save the spiderweb file, if None the spiderweb file is saved in the event's input directory
+
+        Returns
+        -------
+        Path
+            the path to the created spiderweb file
         """
-        cyc_file = cyc_file or self.database.events.get_database_path().joinpath(
+        cyc_file = cyc_file or self.database.events.input_path.joinpath(
             f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
         )
         # Initialize the tropical cyclone database
@@ -143,6 +148,8 @@ class HurricaneEvent(IEvent):
 
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
+
+        return spw_file
 
     def translate_tc_track(self, tc: TropicalCyclone):
         # First convert geodataframe to the local coordinate system
@@ -213,7 +220,7 @@ class HurricaneEvent(IEvent):
     def _get_simulation_path(self) -> Path:
         if self.attrs.mode == Mode.risk:
             return (
-                self.database.scenarios.get_database_path(get_input_path=False)
+                self.database.scenarios.output_path
                 / self._scenario.attrs.name
                 / "Flooding"
                 / "simulations"
@@ -222,7 +229,7 @@ class HurricaneEvent(IEvent):
             )
         elif self.attrs.mode == Mode.single_event:
             return (
-                self.database.scenarios.get_database_path(get_input_path=False)
+                self.database.scenarios.output_path
                 / self._scenario.attrs.name
                 / "Flooding"
                 / "simulations"

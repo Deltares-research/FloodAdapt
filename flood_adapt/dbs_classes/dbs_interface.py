@@ -13,7 +13,13 @@ ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefi
 
 
 class AbstractDatabaseElement(ABC):
-    def __init__(self):
+    """Abstract class for database elements."""
+
+    input_path: Path
+    output_path: Path
+
+    @abstractmethod
+    def __init__(self, database) -> None:
         """Initialize any necessary attributes."""
         pass
 
@@ -135,21 +141,5 @@ class AbstractDatabaseElement(ABC):
         -------
         list[str]
             list of higher level objects that use the object
-        """
-        pass
-
-    @abstractmethod
-    def get_database_path(self, get_input_path: bool = True) -> Path:
-        """Return the path to the database.
-
-        Parameters
-        ----------
-        get_input_path : bool
-            whether to return the input or output path
-
-        Returns
-        -------
-        Path
-            path to the database
         """
         pass

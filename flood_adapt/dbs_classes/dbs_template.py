@@ -16,16 +16,17 @@ ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefi
 
 
 class DbsTemplate(AbstractDatabaseElement):
-    _type = ""
-    _folder_name = ""
-    _object_model_class = None
-    _path = None
-    _database = None
+    _type: str  # What is displayed in the error messages
+    _folder_name: str  # Name of the folder in which the objects are stored
+    _object_model_class: (
+        ObjectModel  # The object model class that is used to load from the database
+    )
+    _database: IDatabase  # The parent database containing all FloodAdapt objects
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
-        self.input_path = database.input_path
-        self._path = self.input_path / self._folder_name
+        self.input_path = database.input_path / self._folder_name
+        self.output_path = database.output_path / self._folder_name
         self._database = database
 
     def get(self, name: str) -> ObjectModel:
@@ -42,7 +43,7 @@ class DbsTemplate(AbstractDatabaseElement):
             object of the type of the specified object model
         """
         # Make the full path to the object
-        full_path = self._path / name / f"{name}.toml"
+        full_path = self.input_path / name / f"{name}.toml"
 
         # Check if the object exists
         if not Path(full_path).is_file():
@@ -99,15 +100,15 @@ class DbsTemplate(AbstractDatabaseElement):
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
-        # After changing the name and description, receate the model to re-trigger the validators
+        # After changing the name and description, recreate the model to re-trigger the validators
         copy_object.attrs = type(copy_object.attrs)(**copy_object.attrs.dict())
 
         # Then a save. Checking whether the name is already in use is done in the save function
         self.save(copy_object)
 
         # Then save accompanied files excluding the toml file
-        src = self._path / old_name
-        dest = self._path / new_name
+        src = self.input_path / old_name
+        dest = self.input_path / new_name
         EXCLUDE = [".toml"]
         for file in src.glob("*"):
             if file.suffix in EXCLUDE:
@@ -147,18 +148,20 @@ class DbsTemplate(AbstractDatabaseElement):
             )
 
         # If the folder doesnt exist yet, make the folder and save the object
-        if not (self._path / object_model.attrs.name).exists():
-            (self._path / object_model.attrs.name).mkdir()
+        if not (self.input_path / object_model.attrs.name).exists():
+            (self.input_path / object_model.attrs.name).mkdir()
 
         # Save additional files first, so that any attached files can be copied first from anywhere to the new location
         # Then change the path attributes on the object to the new location
         if not toml_only:
             if hasattr(object_model, "save_additional"):
-                object_model.save_additional(self._path / object_model.attrs.name)
+                object_model.save_additional(self.input_path / object_model.attrs.name)
 
         # Then save the object
         object_model.save(
-            self._path / object_model.attrs.name / f"{object_model.attrs.name}.toml"
+            self.input_path
+            / object_model.attrs.name
+            / f"{object_model.attrs.name}.toml"
         )
 
     def edit(self, object_model: ObjectModel):
@@ -214,7 +217,7 @@ class DbsTemplate(AbstractDatabaseElement):
             )
 
         # Once all checks are passed, delete the object
-        path = self._path / name
+        path = self.input_path / name
         if toml_only:
             # Only delete the toml file
             toml_path = path / f"{name}.toml"
@@ -261,24 +264,6 @@ class DbsTemplate(AbstractDatabaseElement):
         # level object. By default, return an empty list
         return []
 
-    def get_database_path(self, get_input_path: bool = True) -> Path:
-        """Return the path to the database.
-
-        Parameters
-        ----------
-        get_input_path : bool
-            whether to return the input path or the output path
-
-        Returns
-        -------
-        Path
-            path to the database
-        """
-        if get_input_path:
-            return Path(self._path)
-        else:
-            return Path(self._database.output_path / self._folder_name)
-
     def _get_object_list(self) -> dict[Path, datetime]:
         """Get a dictionary with all the toml paths and last modification dates that exist in the database of the given object_type.
 
@@ -287,8 +272,7 @@ class DbsTemplate(AbstractDatabaseElement):
         dict[str, Any]
             Includes 'path' and 'last_modification_date' info
         """
-        base_path = self.input_path / self._folder_name
-        directories = list(base_path.iterdir())
+        directories = list(self.input_path.iterdir())
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
         names = [dir.name for dir in directories]
         last_modification_date = [

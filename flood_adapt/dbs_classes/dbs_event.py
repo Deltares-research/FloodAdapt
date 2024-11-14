@@ -26,7 +26,7 @@ class DbsEvent(DbsTemplate):
             event object
         """
         # Get event path
-        event_path = self._path / f"{name}" / f"{name}.toml"
+        event_path = self.input_path / f"{name}" / f"{name}.toml"
 
         # Check if the object exists
         if not Path(event_path).is_file():
@@ -77,8 +77,8 @@ class DbsEvent(DbsTemplate):
         self.save(copy_object)
 
         # Then save all the accompanied files
-        src = self._path / old_name
-        dest = self._path / new_name
+        src = self.input_path / old_name
+        dest = self.input_path / new_name
 
         EXCLUDE = [".spw", ".toml"]
         for file in src.glob("*"):

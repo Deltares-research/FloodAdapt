@@ -137,7 +137,7 @@ class ForcingFactory(IForcingFactory):
         return [ftype.value for ftype in FORCING_TYPES.keys()]
 
     @staticmethod
-    def list_forcings(as_string: bool = True) -> List[str | IForcing]:
+    def list_forcings(as_string: bool = True) -> List[str] | List[IForcing]:
         """List all available forcing classes."""
         forcing_classes = set()
         for source_map in FORCING_TYPES.values():

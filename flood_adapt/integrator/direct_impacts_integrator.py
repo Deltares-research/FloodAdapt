@@ -31,7 +31,6 @@ from flood_adapt.object_model.utils import cd
 
 
 # TODO move code that is related to fiat to the Fiat Adapter
-# TODO move other code to the Controller class
 class DirectImpacts(IDatabaseUser):
     """All information related to the direct impacts of the scenario.
 
@@ -59,9 +58,7 @@ class DirectImpacts(IDatabaseUser):
 
     @property
     def results_path(self) -> Path:
-        return (
-            self.database.scenarios.get_database_path(get_input_path=False) / self.name
-        )
+        return self.database.scenarios.output_path / self.name
 
     @property
     def impacts_path(self) -> Path:
@@ -204,7 +201,7 @@ class DirectImpacts(IDatabaseUser):
         if self.socio_economic_change.attrs.population_growth_new != 0:
             # Get path of new development area geometry
             area_path = (
-                self.database.projections.get_database_path()
+                self.database.projections.input_path
                 / self.scenario.projection
                 / self.socio_economic_change.attrs.new_development_shapefile
             )
@@ -548,9 +545,7 @@ class DirectImpacts(IDatabaseUser):
         ]
 
         # Specify the metrics output path
-        metrics_outputs_path = self.database.scenarios.get_database_path(
-            get_input_path=False
-        ).joinpath(
+        metrics_outputs_path = self.database.scenarios.output_path.joinpath(
             self.name,
             f"Infometrics_{self.name}.csv",
         )
@@ -602,7 +597,5 @@ class DirectImpacts(IDatabaseUser):
             config_base_path=self.database.static_path.joinpath(
                 "templates", "Infographics"
             ),
-            output_base_path=self.database.scenarios.get_database_path(
-                get_input_path=False
-            ).joinpath(self.name),
+            output_base_path=self.database.scenarios.output_path.joinpath(self.name),
         ).write_infographics_to_file()

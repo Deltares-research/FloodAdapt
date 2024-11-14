@@ -6,6 +6,7 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
@@ -50,7 +51,7 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import HazardType, IMeasure
-from flood_adapt.object_model.interface.site import Obs_pointModel
+from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -80,14 +81,31 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
 
 @pytest.fixture()
 def synthetic_discharge():
-    return DischargeSynthetic(
-        timeseries=SyntheticTimeseriesModel(
-            shape_type=ShapeType.triangle,
-            duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
-            peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
-            peak_value=UnitfulDischarge(value=10, units=UnitTypesDischarge.cms),
+    if river := Database().site.attrs.river:
+        return DischargeSynthetic(
+            river=river[0],
+            timeseries=SyntheticTimeseriesModel(
+                shape_type=ShapeType.triangle,
+                duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
+                peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
+                peak_value=UnitfulDischarge(value=10, units=UnitTypesDischarge.cms),
+            ),
         )
+
+
+@pytest.fixture()
+def test_river() -> RiverModel:
+    return RiverModel(
+        name="test_river",
+        mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+        x_coordinate=0,
+        y_coordinate=0,
     )
+
+
+@pytest.fixture()
+def river_in_db() -> RiverModel:
+    return Database().site.attrs.river[0]
 
 
 @pytest.fixture()
@@ -205,7 +223,7 @@ class TestAddForcing:
             # )
 
         def test_add_forcing_wind_synthetic(
-            self, default_sfincs_adapter, synthetic_wind
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_wind
         ):
             default_sfincs_adapter._add_forcing_wind(synthetic_wind)
 
@@ -240,7 +258,7 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_rain(forcing)
 
         def test_add_forcing_rain_synthetic(
-            self, default_sfincs_adapter, synthetic_rainfall
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_rainfall
         ):
             default_sfincs_adapter._add_forcing_rain(synthetic_rainfall)
 
@@ -264,14 +282,17 @@ class TestAddForcing:
 
     class TestDischarge:
         def test_add_forcing_discharge_synthetic(
-            self, default_sfincs_adapter, synthetic_discharge
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
             default_sfincs_adapter.set_timing(TimeModel())
+
             # Act
             default_sfincs_adapter._add_forcing_discharge(synthetic_discharge)
 
-        def test_add_forcing_discharge_unsupported(self, default_sfincs_adapter):
+        def test_add_forcing_discharge_unsupported(
+            self, default_sfincs_adapter: SfincsAdapter, test_river
+        ):
             # Arrange
             sfincs_adapter = default_sfincs_adapter
 
@@ -280,7 +301,7 @@ class TestAddForcing:
                     return UnsupportedDischarge
 
             sfincs_adapter._logger.warning = mock.Mock()
-            forcing = UnsupportedDischarge()
+            forcing = UnsupportedDischarge(river=test_river)
 
             # Act
             sfincs_adapter._add_forcing_discharge(forcing)
@@ -290,25 +311,29 @@ class TestAddForcing:
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
 
-        def test_set_discharge_forcing_no_rivers(self, default_sfincs_adapter):
+        @mock.patch(
+            "flood_adapt.integrator.sfincs_adapter.SfincsModel.forcing['dis'].vector.to_gdf"
+        )
+        def test_set_discharge_forcing_no_defined_rivers_raises(
+            self, mock_to_gdf, default_sfincs_adapter: SfincsAdapter, river_in_db
+        ):
             # Arrange
-            sfincs_adapter = default_sfincs_adapter
-            sfincs_adapter.database.site.attrs.river = []
+            mock_to_gdf.return_value = gpd.GeoDataFrame({"geometry": []}, index=[])
 
+            sfincs_adapter = default_sfincs_adapter
             forcing = DischargeConstant(
-                discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms)
+                river=river_in_db,
+                discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
             )
-            t0, t1 = sfincs_adapter._model.get_model_time()
 
             # Act
-            sfincs_adapter._set_discharge_forcing(
-                list_df=forcing.get_data(t0=t0, t1=t1)
-            )
-
             # Assert
+            msg = f"River {forcing.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
+            with pytest.raises(ValueError, match=msg):
+                sfincs_adapter._set_single_river_forcing(discharge=forcing)
 
         def test_set_discharge_forcing_matching_rivers(
-            self, default_sfincs_adapter, synthetic_discharge
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             # Arrange
 
@@ -318,7 +343,7 @@ class TestAddForcing:
             # Assert
 
         def test_set_discharge_forcing_mismatched_coordinates(
-            self, test_db, default_sfincs_adapter, synthetic_discharge
+            self, test_db, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
             overland_path = test_db.static_path / "templates" / "overland"
 
@@ -340,7 +365,7 @@ class TestAddForcing:
 
         def test_set_discharge_forcing_mismatched_river_count(
             self,
-            default_sfincs_adapter,
+            default_sfincs_adapter: SfincsAdapter,
         ):
             sfincs_adapter = default_sfincs_adapter
             list_df = pd.DataFrame(
@@ -361,7 +386,7 @@ class TestAddForcing:
 
     class TestWaterLevel:
         def test_add_forcing_waterlevels_csv(
-            self, default_sfincs_adapter, synthetic_waterlevels
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_waterlevels
         ):
             tmp_path = Path(tempfile.gettempdir()) / "waterleves.csv"
             synthetic_waterlevels.get_data().to_csv(tmp_path)
@@ -370,7 +395,7 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_waterlevels(forcing)
 
         def test_add_forcing_waterlevels_synthetic(
-            self, default_sfincs_adapter, synthetic_waterlevels
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_waterlevels
         ):
             default_sfincs_adapter._add_forcing_waterlevels(synthetic_waterlevels)
 
@@ -472,7 +497,9 @@ class TestAddMeasure:
             test_db.measures.save(floodwall)
             return floodwall
 
-        def test_add_measure_floodwall(self, default_sfincs_adapter, floodwall):
+        def test_add_measure_floodwall(
+            self, default_sfincs_adapter: SfincsAdapter, floodwall
+        ):
             default_sfincs_adapter._add_measure_floodwall(floodwall)
             # Asserts?
 
@@ -491,7 +518,7 @@ class TestAddMeasure:
             test_db.measures.save(pump)
             return pump
 
-        def test_add_measure_pump(self, default_sfincs_adapter, pump):
+        def test_add_measure_pump(self, default_sfincs_adapter: SfincsAdapter, pump):
             # sfincs_adapter._model.setup_drainage_structures = mock.Mock()
             # pump = test_db.measures.get("pump")
             default_sfincs_adapter._add_measure_pump(pump)
@@ -513,14 +540,18 @@ class TestAddMeasure:
             test_db.measures.save(green_infra)
             return green_infra
 
-        def test_add_measure_greeninfra(self, default_sfincs_adapter, water_square):
+        def test_add_measure_greeninfra(
+            self, default_sfincs_adapter: SfincsAdapter, water_square
+        ):
             default_sfincs_adapter._add_measure_greeninfra(water_square)
 
 
 class TestAddProjection:
     """Class to test the add_projection method of the SfincsAdapter class."""
 
-    def test_add_slr(self, default_sfincs_adapter, dummy_projection: Projection):
+    def test_add_slr(
+        self, default_sfincs_adapter: SfincsAdapter, dummy_projection: Projection
+    ):
         adapter = default_sfincs_adapter
         adapter._set_waterlevel_forcing(
             pd.DataFrame(
@@ -585,9 +616,7 @@ class TestAddObsPoint:
             model._add_obs_points()
             # write sfincs model in output destination
             new_model_dir = (
-                test_db.scenarios.get_database_path(get_input_path=False)
-                / scenario_name
-                / "sfincs_model_obs_test"
+                test_db.scenarios.output_path / scenario_name / "sfincs_model_obs_test"
             )
             model.write(path_out=new_model_dir)
 

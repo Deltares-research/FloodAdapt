@@ -27,11 +27,7 @@ class FloodMap(IDatabaseUser):
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name
-        base_dir = (
-            self.database.scenarios.get_database_path(get_input_path=False)
-            / scenario_name
-            / "Flooding"
-        )
+        base_dir = self.database.scenarios.output_path / scenario_name / "Flooding"
 
         if self.mode == Mode.single_event:
             self.path = base_dir / "max_water_level_map.nc"

@@ -138,7 +138,7 @@
 #             event_name (str): name of event used in scenario.
 #         """
 #         self.event_set_path = (
-#             self.database.events.get_database_path()
+#             self.database.events.input_path
 #             / self.event_name
 #             / f"{self.event_name}.toml"
 #         )
@@ -157,7 +157,7 @@
 
 #             for subevent in subevents:
 #                 event_path = (
-#                     self.database.events.get_database_path()
+#                     self.database.events.input_path
 #                     / self.event_name
 #                     / subevent
 #                     / f"{subevent}.toml"
@@ -522,7 +522,7 @@
 #             # Add hazard measures if included
 #             if self.hazard_strategy.measures is not None:
 #                 for measure in self.hazard_strategy.measures:
-#                     measure_path = self.database.measures.get_database_path().joinpath(
+#                     measure_path = self.database.measures.input_path.joinpath(
 #                         measure.attrs.name
 #                     )
 #                     if measure.attrs.type == "floodwall":
@@ -582,12 +582,12 @@
 #         )
 #         if self.event_mode == Mode.risk:
 #             event_dir = (
-#                 self.database.events.get_database_path()
+#                 self.database.events.input_path
 #                 / self.event_set.attrs.name
 #                 / self.event.attrs.name
 #             )
 #         else:
-#             event_dir = self.database.events.get_database_path() / self.event.attrs.name
+#             event_dir = self.database.events.input_path / self.event.attrs.name
 
 #         # Create folders for offshore model
 #         self.simulation_paths_offshore[ii].mkdir(parents=True, exist_ok=True)

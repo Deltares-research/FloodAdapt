@@ -12,6 +12,7 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
@@ -22,25 +23,35 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
+@pytest.fixture()
+def river() -> RiverModel:
+    return RiverModel(
+        name="test_river",
+        mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+        x_coordinate=0,
+        y_coordinate=0,
+    )
+
+
 class TestDischargeConstant:
-    def test_discharge_constant_get_data(self):
+    def test_discharge_constant_get_data(self, river):
         # Arrange
         _discharge = 100
         discharge = UnitfulDischarge(value=_discharge, units=UnitTypesDischarge.cms)
 
         # Act
-        discharge_df = DischargeConstant(discharge=discharge).get_data()
+        discharge_df = DischargeConstant(river=river, discharge=discharge).get_data()
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
         assert not discharge_df.empty
         assert len(discharge_df.columns) == 1
-        assert discharge_df["data_0"].max() == pytest.approx(_discharge, rel=1e-2)
-        assert discharge_df["data_0"].min() == pytest.approx(_discharge, rel=1e-2)
+        assert discharge_df[river.name].max() == pytest.approx(_discharge, rel=1e-2)
+        assert discharge_df[river.name].min() == pytest.approx(_discharge, rel=1e-2)
 
 
 class TestDischargeSynthetic:
-    def test_discharge_synthetic_get_data(self):
+    def test_discharge_synthetic_get_data(self, river):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.constant,
@@ -50,7 +61,7 @@ class TestDischargeSynthetic:
         )
 
         # Act
-        discharge_df = DischargeSynthetic(timeseries=timeseries).get_data()
+        discharge_df = DischargeSynthetic(river=river, timeseries=timeseries).get_data()
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -65,7 +76,7 @@ class TestDischargeSynthetic:
 
 class TestDischargeCSV:
     def test_discharge_from_csv_get_data(
-        self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame
+        self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame, river
     ):
         # Arrange
         path = Path(tmp_path) / "test.csv"
@@ -74,7 +85,7 @@ class TestDischargeCSV:
         t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        discharge_df = DischargeFromCSV(path=path).get_data(t0=t0, t1=t1)
+        discharge_df = DischargeFromCSV(river=river, path=path).get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)

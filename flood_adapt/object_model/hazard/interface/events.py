@@ -298,7 +298,7 @@ class IEvent(IDatabaseUser):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.get_database_path() / self.attrs.name
+        output_dir = self.database.events.input_path / self.attrs.name
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "waterlevel_timeseries.html"
@@ -363,7 +363,7 @@ class IEvent(IDatabaseUser):
         )
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.get_database_path() / self.attrs.name
+        output_dir = self.database.events.input_path / self.attrs.name
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "rainfall_timeseries.html"
@@ -438,7 +438,7 @@ class IEvent(IDatabaseUser):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.get_database_path() / self.attrs.name
+        output_dir = self.database.events.input_path / self.attrs.name
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "discharge_timeseries.html"
@@ -535,7 +535,7 @@ class IEvent(IDatabaseUser):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.get_database_path() / self.attrs.name
+        output_dir = self.database.events.input_path / self.attrs.name
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "wind_timeseries.html"

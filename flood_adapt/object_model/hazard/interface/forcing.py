@@ -14,6 +14,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ForcingType,
 )
+from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulTime, UnitTypesTime
 
 
@@ -101,6 +102,7 @@ class IForcing(BaseModel, ABC):
 
 class IDischarge(IForcing):
     _type: ClassVar[ForcingType] = ForcingType.DISCHARGE
+    river: RiverModel
 
 
 class IRainfall(IForcing):

@@ -23,9 +23,7 @@ class Benefit(IBenefit):
 
     @property
     def results_path(self):
-        return self.database.benefits.get_database_path(get_input_path=False).joinpath(
-            self.attrs.name
-        )
+        return self.database.benefits.output_path.joinpath(self.attrs.name)
 
     @property
     def site_info(self):

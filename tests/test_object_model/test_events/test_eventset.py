@@ -111,7 +111,7 @@ def setup_eventset_scenario(
     dummy_strategy,
 ):
     pump, geojson = dummy_pump_measure
-    dst_path = test_db.measures.get_database_path() / pump.attrs.name / geojson.name
+    dst_path = test_db.measures.input_path / pump.attrs.name / geojson.name
     test_db.measures.save(pump)
     shutil.copy2(geojson, dst_path)
 
@@ -166,11 +166,7 @@ class TestEventSet:
         test_db, scn, event_set = setup_eventset_scenario
 
         scn.run()
-        output_path = (
-            Path(test_db.scenarios.get_database_path(get_input_path=False))
-            / scn.attrs.name
-            / "Flooding"
-        )
+        output_path = Path(test_db.scenarios.output_path) / scn.attrs.name / "Flooding"
 
         for rp in test_db.site.attrs.risk.return_periods:
             assert (output_path / f"RP_{rp:04d}_maps.nc").exists()

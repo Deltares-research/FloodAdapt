@@ -27,7 +27,7 @@ class DbsMeasure(DbsTemplate):
         IMeasure
             measure object
         """
-        measure_path = self._path / name / f"{name}.toml"
+        measure_path = self.input_path / name / f"{name}.toml"
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
 

@@ -1,5 +1,4 @@
 import gc
-import logging
 import os
 import subprocess
 import tempfile
@@ -12,6 +11,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import shapely
 import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
@@ -24,6 +24,8 @@ from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
+    DischargeConstant,
+    DischargeFromCSV,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
@@ -68,7 +70,7 @@ from flood_adapt.object_model.hazard.physical_projection import PhysicalProjecti
 from flood_adapt.object_model.interface.measures import HazardType
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import ISite, RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDischarge,
@@ -83,8 +85,6 @@ from flood_adapt.object_model.utils import cd
 
 
 class SfincsAdapter(IHazardAdapter):
-    _logger: logging.Logger
-
     _site: ISite
     _scenario: IScenario
     _model: SfincsModel
@@ -96,20 +96,19 @@ class SfincsAdapter(IHazardAdapter):
             database (IDatabase): Reference to the database containing all objectmodels and site specific information.
             model_root (str): Root directory of overland sfincs model.
         """
-        self._logger = FloodAdaptLogging.getLogger(__name__)
         self._site = Site.load_file(
             Settings().database_path / "static" / "site" / "site.toml"
         )
-        self._model = SfincsModel(root=model_root, mode="r", logger=self._logger)
+        self._model = SfincsModel(root=model_root, mode="r")  # TODO check logger
         self._model.read()
 
     def __del__(self):
         """Close the log file associated with the logger and clean up file handles."""
-        if hasattr(self, "_logger") and hasattr(self._logger, "handlers"):
+        if hasattr(self, "_logger") and hasattr(self.logger, "handlers"):
             # Close the log file associated with the logger
-            for handler in self._logger.handlers:
+            for handler in self.logger.handlers:
                 handler.close()
-            self._logger.handlers.clear()
+            self.logger.handlers.clear()
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
@@ -198,7 +197,7 @@ class SfincsAdapter(IHazardAdapter):
                     stderr=subprocess.PIPE,
                     text=True,
                 )
-                self._logger.debug(process.stdout)
+                self.logger.debug(process.stdout)
 
         if process.returncode != 0:
             # Remove all files in the simulation folder except for the log files
@@ -215,7 +214,7 @@ class SfincsAdapter(IHazardAdapter):
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {sim_path}.")
             else:
-                self._logger.error(f"SFINCS model failed to run in {sim_path}.")
+                self.logger.error(f"SFINCS model failed to run in {sim_path}.")
 
         return process.returncode == 0
 
@@ -319,7 +318,7 @@ class SfincsAdapter(IHazardAdapter):
             case ForcingType.WATERLEVEL:
                 self._add_forcing_waterlevels(forcing)
             case _:
-                self._logger.warning(
+                self.logger.warning(
                     f"Skipping unsupported forcing type {forcing.__class__.__name__}"
                 )
                 return
@@ -337,7 +336,7 @@ class SfincsAdapter(IHazardAdapter):
             case HazardType.pump:
                 self._add_measure_pump(measure)
             case _:
-                self._logger.warning(
+                self.logger.warning(
                     f"Skipping unsupported measure type {measure.__class__.__name__}"
                 )
                 return
@@ -362,8 +361,7 @@ class SfincsAdapter(IHazardAdapter):
             elif "precip" in self._model.forcing:
                 self._model.forcing["precip"] *= projection.attrs.rainfall_multiplier
             else:
-                # TODO check if this is the correct way to handle this. Maybe raise an error?
-                self._logger.warning(
+                self.logger.warning(
                     "Failed to add rainfall multiplier, no rainfall forcing found in the model."
                 )
 
@@ -482,6 +480,7 @@ class SfincsAdapter(IHazardAdapter):
         const_dir : float, optional
             direction of time-invariant wind forcing [deg], by default None
         """
+        t0, t1 = self._model.get_model_time()
         if isinstance(forcing, WindConstant):
             self._model.setup_wind_forcing(
                 timeseries=None,
@@ -489,25 +488,22 @@ class SfincsAdapter(IHazardAdapter):
                 direction=forcing.direction.value,
             )
         elif isinstance(forcing, WindSynthetic):
-            t0, t1 = self._model.get_model_time()
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             forcing.get_data(t0=t0, t1=t1).to_csv(tmp_path)
             self._model.setup_wind_forcing(
                 timeseries=tmp_path, magnitude=None, direction=None
             )
         elif isinstance(forcing, WindFromMeteo):
-            time = self._model.get_model_time()
-            ds = forcing.get_data(t0=time[0], t1=time[1])
+            ds = forcing.get_data(t0, t1)
 
             if ds["lon"].min() > 180:
                 ds["lon"] = ds["lon"] - 360
 
             self._set_wind_forcing(ds)
         elif isinstance(forcing, WindFromTrack):
-            # TODO check with @gundula
             self._set_config_spw(forcing.path)
         else:
-            self._logger.warning(
+            self.logger.warning(
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
             )
             return
@@ -542,7 +538,7 @@ class SfincsAdapter(IHazardAdapter):
                 precip=ds["precip"], aggregate=False
             )
         else:
-            self._logger.warning(
+            self.logger.warning(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
             )
             return
@@ -552,37 +548,31 @@ class SfincsAdapter(IHazardAdapter):
 
         Parameters
         ----------
-        timeseries : Union[str, os.PathLike], optional
-            path to file of timeseries file (.csv) which has two columns: time and discharge, by default None
-        const_discharge : float, optional
-            time-invariant discharge magnitude [m3/s], by default None
+        forcing : IDischarge
+            The discharge forcing to add to the model.
+            Can be a constant, synthetic or from a csv file.
+            Also contains the river information.
         """
-        # TODO investigate where to include rivers from site.toml
-
-        # TODO check with @gundula for constant discharge hydromt_sfincs function
-        # if isinstance(forcing, DischargeConstant):
-        #     self._model.setup_discharge_forcing(
-        #         timeseries=forcing.get_data(),
-        #     )
-        t0, t1 = self._model.get_model_time()
-        if isinstance(forcing, DischargeSynthetic):
-            self._set_discharge_forcing(forcing.get_data(t0=t0, t1=t1))
+        if isinstance(
+            forcing, (DischargeConstant, DischargeFromCSV, DischargeSynthetic)
+        ):
+            self._set_single_river_forcing(discharge=forcing)
         else:
-            self._logger.warning(
+            self.logger.warning(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
-            return
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
+        t0, t1 = self._model.get_model_time()
         if isinstance(
             forcing, (WaterlevelSynthetic, WaterlevelFromCSV, WaterlevelFromGauged)
         ):
-            self._set_waterlevel_forcing(forcing.get_data())
+            self._set_waterlevel_forcing(forcing.get_data(t0, t1))
         elif isinstance(forcing, WaterlevelFromModel):
-            self._set_waterlevel_forcing(forcing.get_data())
+            self._set_waterlevel_forcing(forcing.get_data(t0, t1))
             self._turn_off_bnd_press_correction()
         else:
-            self._logger.warning(
+            self.logger.warning(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
 
@@ -597,7 +587,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         # HydroMT function: get geodataframe from filename
         polygon_file = (
-            self.database.measures.get_database_path()
+            self.database.measures.input_path
             / floodwall.attrs.name
             / floodwall.attrs.polygon_file
         )
@@ -621,9 +611,9 @@ class SfincsAdapter(IHazardAdapter):
                 for height in gdf_floodwall["z"]
             ]
             gdf_floodwall["z"] = heights
-            self._logger.info("Using floodwall height from shape file.")
+            self.logger.info("Using floodwall height from shape file.")
         except Exception:
-            self._logger.warning(
+            self.logger.warning(
                 f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
                 Using uniform height of {floodwall.attrs.elevation.convert(UnitTypesLength("meters"))} meters instead."""
             )
@@ -641,7 +631,7 @@ class SfincsAdapter(IHazardAdapter):
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.attrs.selection_type == "polygon":
             polygon_file = (
-                self.database.measures.get_database_path()
+                self.database.measures.input_path
                 / green_infrastructure.attrs.name
                 / green_infrastructure.attrs.polygon_file
             )
@@ -698,7 +688,7 @@ class SfincsAdapter(IHazardAdapter):
             pump information
         """
         polygon_file = (
-            self.database.measures.get_database_path()
+            self.database.measures.input_path
             / pump.attrs.name
             / pump.attrs.polygon_file
         )
@@ -717,18 +707,8 @@ class SfincsAdapter(IHazardAdapter):
 
     ### PROJECTIONS HELPERS - not needed at the moment ###
 
-    ##### OLD CODE BELOW #####
-    # @Gundula: I have renamed some the functions and added comments to some that explain when they were called in the original hazard.py just to keep track.
-    # Im not super familiar with hydromt_sfincs and its functions, so I have not changed the logic of the functions, only the names and comments.
-    # It could be the case that some of the functions in here are not needed anymore, but we can always remove them later if needed.
-
-    # I have also added a '_' to the start of all functions I see as private.
-    # Public functions can be called from outside of the class, all private functions should not be called from outside of the class.
-    # (even though python does not care and will allow it anyways, we can still follow the convention just to make it clear)
-
     ### SFINCS SETTERS ###
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
-        # ALL
         """Add waterlevel dataframe to sfincs model.
 
         Parameters
@@ -755,9 +735,6 @@ class SfincsAdapter(IHazardAdapter):
     def _set_rainfall_forcing(
         self, timeseries: Union[str, os.PathLike] = None, const_precip: float = None
     ):
-        # rainfall from file
-        # synthetic rainfall
-        # constant rainfall
         """Add spatially uniform precipitation to sfincs model.
 
         Parameters
@@ -767,29 +744,80 @@ class SfincsAdapter(IHazardAdapter):
         const_precip : float, optional
             time-invariant precipitation magnitude [mm_hr], by default None
         """
-        # Add precipitation to SFINCS model
-
         self._model.setup_precip_forcing(timeseries=timeseries, magnitude=const_precip)
 
-    def _set_discharge_forcing(self, list_df: pd.DataFrame, site_river: list = None):
-        # Should always be called if rivers in site > 0
-        # then use site as default values, and overwrite if discharge is provided.
+    def _set_single_river_forcing(self, discharge: IDischarge):
+        """Add discharge to overland sfincs model.
+
+        Parameters
+        ----------
+        discharge : IDischarge
+            Discharge object with discharge timeseries data and river information.
+        """
+        if isinstance(
+            discharge, (DischargeConstant, DischargeSynthetic, DischargeFromCSV)
+        ):
+            self.logger.info(
+                f"Setting discharge forcing for river: {discharge.river.name}"
+            )
+            t0, t1 = self._model.get_model_time()
+            model_rivers = self._model.forcing["dis"].vector.to_gdf()
+
+            # Check that the river is defined in the model and that the coordinates match
+            river_loc = shapely.Point(
+                discharge.river.x_coordinate, discharge.river.y_coordinate
+            )
+            idx = model_rivers[model_rivers.geom_equals(river_loc)].index.to_list()
+            if len(idx) != 1:
+                raise ValueError(
+                    f"River {discharge.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
+                )
+
+            # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
+            df = discharge.get_data(t0, t1)
+            df = df.rename(columns={df.columns[0]: idx[0]})
+
+            # HydroMT function: set discharge forcing from time series and river coordinates
+            self._model.setup_discharge_forcing(
+                locations=model_rivers[model_rivers.geom_equals(river_loc)],
+                timeseries=df,
+                merge=True,
+            )
+        else:
+            self.logger.warning(
+                f"Unsupported discharge forcing type: {discharge.__class__.__name__}"
+            )
+
+    def _set_discharge_forcing(
+        self, list_df: pd.DataFrame, site_river: list[RiverModel] = None
+    ):
         """Add discharge to overland sfincs model based on new discharge time series.
 
         Parameters
         ----------
-        df_ts : pd.DataFrame
-            time series of discharge, index should be Pandas DateRange
+        list_df : pd.DataFrame
+            Dataframe with datetime index and columns with discharge time series data for each discharge point.
+        site_river : list[RiverModel], optional
+            List of discharge points to be used. Leaving this as None will use the site.toml in the database.
+
+        Raises
+        ------
+        ValueError
+            If the number of rivers in the site.toml and the number of rivers in the SFINCS model are not compatible.
+        ValueError
+            If the location and/or order of rivers in `site_river` does not match the locations and/or order of rivers in the SFINCS model.
+
+        Assumptions
+        -----------
+        - The order of the rivers is the same as the site.toml file.
         """
-        # Determine bnd points from reference overland model
-        # ASSUMPTION: Order of the rivers is the same as the site.toml file
         site_river = site_river or self.database.site.attrs.river
         if np.any(list_df):
             gdf_locs = self._model.forcing["dis"].vector.to_gdf()
             gdf_locs.crs = self._model.crs
 
             if len(list_df.columns) != len(gdf_locs.geometry):
-                self._logger.error(
+                self.logger.error(
                     """The number of rivers of the site.toml does not match the
                     number of rivers in the SFINCS model. Please check the number
                     of coordinates in the SFINCS *.src file."""
@@ -805,7 +833,7 @@ class SfincsAdapter(IHazardAdapter):
                     np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
                     and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
                 ):
-                    self._logger.error(
+                    self.logger.error(
                         """The location and/or order of rivers in the site.toml does not match the
                                 locations and/or order of rivers in the SFINCS model. Please check the
                                 coordinates and their order in the SFINCS *.src file and ensure they are
@@ -850,9 +878,7 @@ class SfincsAdapter(IHazardAdapter):
     def _add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
         if self.database.site.attrs.obs_point is not None:
-            self._logger.info(
-                "Adding observation points to the overland flood model..."
-            )
+            self.logger.info("Adding observation points to the overland flood model...")
 
             obs_points = self.database.site.attrs.obs_point
             names = []
@@ -940,13 +966,14 @@ class SfincsAdapter(IHazardAdapter):
         model_dir : Path
             Output path of the model
         """
-        historical_hurricane.make_spw_file(
-            database_path=self.database.base_path,
-            model_dir=model_dir,
-            site=self.database.site,
+        spw_file = historical_hurricane.make_spw_file(
+            cyc_file=self.database.events.input_path
+            / historical_hurricane.attrs.name
+            / f"{historical_hurricane.attrs.track_name}.cyc",
+            output_dir=model_dir,
         )
         # TODO check with @gundula
-        self._set_config_spw(historical_hurricane.spw_file)
+        self._set_config_spw(spw_file.name)
 
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario_name: str = None) -> Path:
@@ -963,11 +990,7 @@ class SfincsAdapter(IHazardAdapter):
             else:
                 scenario_name = self._model.root
 
-        return (
-            self.database.scenarios.get_database_path(get_input_path=False)
-            / scenario_name
-            / "Flooding"
-        )
+        return self.database.scenarios.output_path / scenario_name / "Flooding"
 
     def _get_simulation_paths(self) -> List[Path]:
         event = self.database.events.get(self._scenario.attrs.event)
@@ -984,6 +1007,8 @@ class SfincsAdapter(IHazardAdapter):
                 base_path.parent / sub_event.attrs.name / base_path.name
                 for sub_event in event.events
             ]
+        else:
+            raise ValueError(f"Unsupported mode: {event.attrs.mode}")
 
     def _get_simulation_path_offshore(self) -> List[Path]:
         # Get the path to the offshore model (will not be used if offshore model is not created)
@@ -1001,6 +1026,8 @@ class SfincsAdapter(IHazardAdapter):
                 base_path.parent / sub_event.attrs.name / base_path.name
                 for sub_event in event.events
             ]
+        else:
+            raise ValueError(f"Unsupported mode: {event.attrs.mode}")
 
     def _get_flood_map_paths(self) -> list[Path]:
         """_summary_."""
@@ -1014,6 +1041,8 @@ class SfincsAdapter(IHazardAdapter):
             map_fn = []
             for rp in self.database.site.attrs.risk.return_periods:
                 map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
+        else:
+            raise ValueError(f"Unsupported mode: {mode}")
 
         return map_fn
 
@@ -1051,7 +1080,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         self._model.read_results()
         da = self._model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values())
 
         names = []
         descriptions = []
@@ -1339,7 +1368,7 @@ class SfincsAdapter(IHazardAdapter):
             np.copy(zb), len(floodmap_rp), 1
         )  # if not flooded (i.e. not in valid_cells) revert to bed_level, read from SFINCS results so it is the minimum bed level in a grid cell
 
-        self._logger.info("Calculating flood risk maps, this may take some time...")
+        self.logger.info("Calculating flood risk maps, this may take some time...")
         for jj in valid_cells:  # looping over all non-masked cells.
             # linear interpolation for all return periods to evaluate
             h[:, jj] = np.interp(

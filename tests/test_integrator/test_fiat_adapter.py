@@ -51,7 +51,7 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+            test_db.scenarios.output_path.joinpath(
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )
@@ -195,7 +195,7 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            test_db.scenarios.get_database_path(get_input_path=False).joinpath(
+            test_db.scenarios.output_path.joinpath(
                 scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
             )
         )

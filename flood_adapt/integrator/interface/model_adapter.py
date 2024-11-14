@@ -37,7 +37,7 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         """Use the adapter as a context manager to handle opening/closing of the model and attached resources.
 
         This method should return the adapter object itself, so that it can be used in a with statement.
