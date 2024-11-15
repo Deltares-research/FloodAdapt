@@ -151,12 +151,11 @@ def test_run_synthetic_scenario(test_db, setup_synthetic_scenario):
 
 
 def test_run_hurricane_scenario(test_db, setup_hurricane_scenario):
-    api_scenarios.save_scenario(setup_hurricane_scenario)
-    api_scenarios.run_scenario(setup_hurricane_scenario.attrs.name)
+    scn, event = setup_hurricane_scenario
+    api_scenarios.save_scenario(scn)
+    api_scenarios.run_scenario(scn.attrs.name)
 
-    assert finished_file_exists(
-        test_db.scenarios.output_path / setup_synthetic_scenario.attrs.name
-    )
+    assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
 
 
 def test_run_eventset_scenario(setup_eventset_scenario):

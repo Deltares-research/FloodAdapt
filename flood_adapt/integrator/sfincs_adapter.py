@@ -70,7 +70,7 @@ from flood_adapt.object_model.hazard.physical_projection import PhysicalProjecti
 from flood_adapt.object_model.interface.measures import HazardType
 from flood_adapt.object_model.interface.projections import PhysicalProjectionModel
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import ISite, RiverModel
+from flood_adapt.object_model.interface.site import ISite
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDischarge,
@@ -754,100 +754,40 @@ class SfincsAdapter(IHazardAdapter):
         discharge : IDischarge
             Discharge object with discharge timeseries data and river information.
         """
-        if isinstance(
+        if not isinstance(
             discharge, (DischargeConstant, DischargeSynthetic, DischargeFromCSV)
         ):
-            self.logger.info(
-                f"Setting discharge forcing for river: {discharge.river.name}"
-            )
-            t0, t1 = self._model.get_model_time()
-            model_rivers = self._model.forcing["dis"].vector.to_gdf()
-
-            # Check that the river is defined in the model and that the coordinates match
-            river_loc = shapely.Point(
-                discharge.river.x_coordinate, discharge.river.y_coordinate
-            )
-            idx = model_rivers[model_rivers.geom_equals(river_loc)].index.to_list()
-            if len(idx) != 1:
-                raise ValueError(
-                    f"River {discharge.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
-                )
-
-            # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
-            df = discharge.get_data(t0, t1)
-            df = df.rename(columns={df.columns[0]: idx[0]})
-
-            # HydroMT function: set discharge forcing from time series and river coordinates
-            self._model.setup_discharge_forcing(
-                locations=model_rivers[model_rivers.geom_equals(river_loc)],
-                timeseries=df,
-                merge=True,
-            )
-        else:
             self.logger.warning(
                 f"Unsupported discharge forcing type: {discharge.__class__.__name__}"
             )
+            return
 
-    def _set_discharge_forcing(
-        self, list_df: pd.DataFrame, site_river: list[RiverModel] = None
-    ):
-        """Add discharge to overland sfincs model based on new discharge time series.
+        self.logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
+        t0, t1 = self._model.get_model_time()
+        model_rivers = self._model.forcing["dis"].vector.to_gdf()
 
-        Parameters
-        ----------
-        list_df : pd.DataFrame
-            Dataframe with datetime index and columns with discharge time series data for each discharge point.
-        site_river : list[RiverModel], optional
-            List of discharge points to be used. Leaving this as None will use the site.toml in the database.
-
-        Raises
-        ------
-        ValueError
-            If the number of rivers in the site.toml and the number of rivers in the SFINCS model are not compatible.
-        ValueError
-            If the location and/or order of rivers in `site_river` does not match the locations and/or order of rivers in the SFINCS model.
-
-        Assumptions
-        -----------
-        - The order of the rivers is the same as the site.toml file.
-        """
-        site_river = site_river or self.database.site.attrs.river
-        if np.any(list_df):
-            gdf_locs = self._model.forcing["dis"].vector.to_gdf()
-            gdf_locs.crs = self._model.crs
-
-            if len(list_df.columns) != len(gdf_locs.geometry):
-                self.logger.error(
-                    """The number of rivers of the site.toml does not match the
-                    number of rivers in the SFINCS model. Please check the number
-                    of coordinates in the SFINCS *.src file."""
-                )
-
-                raise ValueError(
-                    "Number of rivers in site.toml and SFINCS template model not compatible"
-                )
-
-            # Test order of rivers is the same in the site file as in the SFICNS model
-            for ii, river in enumerate((site_river)):
-                if not (
-                    np.abs(gdf_locs.geometry[ii + 1].x - river.x_coordinate) < 5
-                    and np.abs(gdf_locs.geometry[ii + 1].y - river.y_coordinate) < 5
-                ):
-                    self.logger.error(
-                        """The location and/or order of rivers in the site.toml does not match the
-                                locations and/or order of rivers in the SFINCS model. Please check the
-                                coordinates and their order in the SFINCS *.src file and ensure they are
-                                consistent with the coordinates and order orf rivers in the site.toml file."""
-                    )
-                    raise ValueError(
-                        f"Incompatible river coordinates for river: {river.name}.\nsite.toml: ({river.x_coordinate}, {river.y_coordinate})\nSFINCS template model ({gdf_locs.geometry[ii + 1].x}, {gdf_locs.geometry[ii + 1].y})."
-                    )
-
-            # rename all columns as integers starting from 1, otherwise hydromt-sfincs will raise an error
-            list_df.columns = range(1, len(list_df.columns) + 1)
-            self._model.setup_discharge_forcing(
-                timeseries=list_df, locations=gdf_locs, merge=False
+        # Check that the river is defined in the model and that the coordinates match
+        river_loc = shapely.Point(
+            discharge.river.x_coordinate, discharge.river.y_coordinate
+        )
+        tolerance = 0.001  # in degrees, ~111 meters at the equator. (0.0001: 11 meters at the equator)
+        river_gdf = model_rivers[model_rivers.distance(river_loc) <= tolerance]
+        river_inds = river_gdf.index.to_list()
+        if len(river_inds) != 1:
+            raise ValueError(
+                f"River {discharge.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
             )
+
+        # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
+        df = discharge.get_data(t0, t1)
+        df = df.rename(columns={df.columns[0]: river_inds[0]})
+
+        # HydroMT function: set discharge forcing from time series and river coordinates
+        self._model.setup_discharge_forcing(
+            locations=river_gdf,
+            timeseries=df,
+            merge=True,
+        )
 
     def _set_wind_forcing(self, ds: xr.DataArray):
         # if self.event.attrs.template != "Historical_hurricane":
@@ -1080,7 +1020,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         self._model.read_results()
         da = self._model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values())
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
 
         names = []
         descriptions = []

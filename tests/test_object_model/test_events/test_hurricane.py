@@ -24,6 +24,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulLength,
@@ -46,7 +47,16 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             "WIND": WindFromTrack(),
             "RAINFALL": RainfallFromTrack(),
             "DISCHARGE": DischargeConstant(
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+                river=RiverModel(
+                    name="cooper",
+                    description="Cooper River",
+                    x_coordinate=595546.3,
+                    y_coordinate=3675590.6,
+                    mean_discharge=UnitfulDischarge(
+                        value=5000, units=UnitTypesDischarge.cfs
+                    ),
+                ),
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
             ),
         },
         "track_name": "IAN",
@@ -60,6 +70,24 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
         },
     }
     return HurricaneEvent.load_dict(event_attrs), TEST_DATA_DIR / "IAN.cyc"
+
+
+@pytest.fixture()
+def setup_hurricane_scenario(
+    test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
+) -> tuple[Scenario, HurricaneEvent]:
+    event, cyc_file = setup_hurricane_event
+    scenario_attrs = {
+        "name": "test_scenario",
+        "event": event.attrs.name,
+        "projection": "current",
+        "strategy": "no_measures",
+    }
+    scn = Scenario.load_dict(scenario_attrs)
+    test_db.events.save(event)
+    shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
+    test_db.scenarios.save(scn)
+    return scn, event
 
 
 class TestHurricaneEvent:
@@ -127,7 +155,7 @@ class TestHurricaneEvent:
         # Arrange
         scenario, hurricane_event = setup_hurricane_scenario
         undefined_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
-        test_db.events.save(hurricane_event)
+        # test_db.events.save(hurricane_event, overwrite=True)
         shutil.copy2(
             TEST_DATA_DIR / "IAN.cyc",
             test_db.events.input_path / hurricane_event.attrs.name / "IAN.cyc",

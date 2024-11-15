@@ -25,6 +25,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -55,7 +56,16 @@ def setup_nearshore_event():
                 intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
             ),
             "DISCHARGE": DischargeConstant(
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+                river=RiverModel(
+                    name="cooper",
+                    description="Cooper River",
+                    x_coordinate=595546.3,
+                    y_coordinate=3675590.6,
+                    mean_discharge=UnitfulDischarge(
+                        value=5000, units=UnitTypesDischarge.cfs
+                    ),
+                ),
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
             ),
         },
     }
@@ -74,7 +84,16 @@ def setup_offshore_meteo_event():
             "WIND": WindFromMeteo(),
             "RAINFALL": RainfallFromMeteo(),
             "DISCHARGE": DischargeConstant(
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+                river=RiverModel(
+                    name="cooper",
+                    description="Cooper River",
+                    x_coordinate=595546.3,
+                    y_coordinate=3675590.6,
+                    mean_discharge=UnitfulDischarge(
+                        value=5000, units=UnitTypesDischarge.cfs
+                    ),
+                ),
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
             ),
         },
     }

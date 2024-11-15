@@ -311,18 +311,21 @@ class TestAddForcing:
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
 
-        @mock.patch(
-            "flood_adapt.integrator.sfincs_adapter.SfincsModel.forcing['dis'].vector.to_gdf"
-        )
-        def test_set_discharge_forcing_no_defined_rivers_raises(
-            self, mock_to_gdf, default_sfincs_adapter: SfincsAdapter, river_in_db
+        def test_set_discharge_forcing_incorrect_rivers_raises(
+            self,
+            default_sfincs_adapter: SfincsAdapter,
         ):
             # Arrange
-            mock_to_gdf.return_value = gpd.GeoDataFrame({"geometry": []}, index=[])
-
             sfincs_adapter = default_sfincs_adapter
             forcing = DischargeConstant(
-                river=river_in_db,
+                river=RiverModel(
+                    name="test_river",
+                    mean_discharge=UnitfulDischarge(
+                        value=0, units=UnitTypesDischarge.cms
+                    ),
+                    x_coordinate=0,
+                    y_coordinate=0,
+                ),
                 discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
             )
 
@@ -343,46 +346,20 @@ class TestAddForcing:
             # Assert
 
         def test_set_discharge_forcing_mismatched_coordinates(
-            self, test_db, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
+            self, test_db, synthetic_discharge, default_sfincs_adapter
         ):
-            overland_path = test_db.static_path / "templates" / "overland"
-
-            with open(overland_path / "sfincs.src", "w") as f:
-                f.write("10\t20\n")
-
-            sfincs_adapter = SfincsAdapter(model_root=overland_path)
-            sfincs_adapter._logger = mock.Mock()
-            sfincs_adapter._logger.handlers = []
-
-            expected_message = (
-                r"Incompatible river coordinates for river: .+\.\n"
-                r"site.toml: \(.+\)\n"
-                r"SFINCS template model \(.+\)."
+            sfincs_adapter = default_sfincs_adapter
+            synthetic_discharge.river = RiverModel(
+                name="test_river",
+                mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+                x_coordinate=0,
+                y_coordinate=0,
             )
+
+            expected_message = r"River .+ is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
 
             with pytest.raises(ValueError, match=expected_message):
                 sfincs_adapter._add_forcing_discharge(synthetic_discharge)
-
-        def test_set_discharge_forcing_mismatched_river_count(
-            self,
-            default_sfincs_adapter: SfincsAdapter,
-        ):
-            sfincs_adapter = default_sfincs_adapter
-            list_df = pd.DataFrame(
-                index=pd.date_range(start="2023-01-01", periods=3, freq="D"),
-                data={
-                    "discharge1": [10, 20, 30],
-                    "discharge2": [15, 25, 35],
-                    "discharge3": [15, 25, 35],
-                    "discharge4": [15, 25, 35],
-                },
-            )
-
-            with pytest.raises(
-                ValueError,
-                match="Number of rivers in site.toml and SFINCS template model not compatible",
-            ):
-                sfincs_adapter._set_discharge_forcing(list_df)
 
     class TestWaterLevel:
         def test_add_forcing_waterlevels_csv(

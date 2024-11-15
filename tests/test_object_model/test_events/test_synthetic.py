@@ -20,6 +20,7 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -55,7 +56,16 @@ def test_projection_event_all_synthetic():
                 intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
             ),
             "DISCHARGE": DischargeConstant(
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+                river=RiverModel(
+                    name="cooper",
+                    description="Cooper River",
+                    x_coordinate=595546.3,
+                    y_coordinate=3675590.6,
+                    mean_discharge=UnitfulDischarge(
+                        value=5000, units=UnitTypesDischarge.cfs
+                    ),
+                ),
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
             ),
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
@@ -98,7 +108,16 @@ def test_event_all_synthetic():
                 intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
             ),
             "DISCHARGE": DischargeConstant(
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs)
+                river=RiverModel(
+                    name="cooper",
+                    description="Cooper River",
+                    x_coordinate=595546.3,
+                    y_coordinate=3675590.6,
+                    mean_discharge=UnitfulDischarge(
+                        value=5000, units=UnitTypesDischarge.cfs
+                    ),
+                ),
+                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
             ),
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
