@@ -97,7 +97,11 @@ class TestHurricaneEvent:
         path = tmp_path / "test_event.toml"
         event, cyc_file = setup_hurricane_event
         event.save(path)
+        event.attrs.forcings[ForcingType.WIND].path = cyc_file
+
+        event.save_additional(path.parent)
         assert path.exists()
+        assert (path.parent / cyc_file.name).exists()
 
     def test_load_file(
         self, setup_hurricane_event: tuple[HurricaneEvent, Path], tmp_path: Path
@@ -155,7 +159,7 @@ class TestHurricaneEvent:
         # Arrange
         scenario, hurricane_event = setup_hurricane_scenario
         undefined_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
-        # test_db.events.save(hurricane_event, overwrite=True)
+
         shutil.copy2(
             TEST_DATA_DIR / "IAN.cyc",
             test_db.events.input_path / hurricane_event.attrs.name / "IAN.cyc",

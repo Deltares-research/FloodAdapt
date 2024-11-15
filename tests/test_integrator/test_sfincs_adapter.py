@@ -216,12 +216,6 @@ class TestAddForcing:
             )
             default_sfincs_adapter._add_forcing_wind(forcing)
 
-            # sfincs_adapter._model.setup_wind_forcing.assert_called_once_with(
-            #     timeseries=None,
-            #     magnitude=forcing.speed.convert(UnitTypesVelocity.mps),
-            #     direction=forcing.direction.value,
-            # )
-
         def test_add_forcing_wind_synthetic(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_wind
         ):
@@ -233,8 +227,7 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_wind(forcing)
 
         def test_add_forcing_wind_from_track(self, default_sfincs_adapter):
-            forcing = WindFromTrack()
-
+            forcing = WindFromTrack(path=TEST_DATA_DIR / "IAN.spw")
             default_sfincs_adapter._add_forcing_wind(forcing)
 
         def test_add_forcing_wind_unsupported(self, default_sfincs_adapter):

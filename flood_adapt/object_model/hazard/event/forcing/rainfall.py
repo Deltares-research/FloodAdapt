@@ -121,7 +121,7 @@ class RainfallFromTrack(IRainfall):
     ) -> Optional[pd.DataFrame]:
         t0, t1 = self.parse_time(t0, t1)
 
-        return self.path  # TODO implement
+        return self.path
 
     def save_additional(self, toml_dir: Path):
         if self.path:

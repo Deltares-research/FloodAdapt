@@ -15,6 +15,7 @@ import shapely
 import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
+from floodadapt_gui.callback.objects.events.event_editor import ForcingSource
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
@@ -31,6 +32,7 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallFromMeteo,
+    RainfallFromTrack,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -198,18 +200,18 @@ class SfincsAdapter(IHazardAdapter):
                     text=True,
                 )
                 self.logger.debug(process.stdout)
-
         if process.returncode != 0:
-            # Remove all files in the simulation folder except for the log files
-            for subdir, _, files in os.walk(sim_path):
-                for file in files:
-                    if not file.endswith(".log"):
-                        os.remove(os.path.join(subdir, file))
+            if Settings().delete_crashed_runs:
+                # Remove all files in the simulation folder except for the log files
+                for subdir, _, files in os.walk(sim_path):
+                    for file in files:
+                        if not file.endswith(".log"):
+                            os.remove(os.path.join(subdir, file))
 
-            # Remove all empty directories in the simulation folder (so only folders with log files remain)
-            for subdir, _, files in os.walk(sim_path):
-                if not files:
-                    os.rmdir(subdir)
+                # Remove all empty directories in the simulation folder (so only folders with log files remain)
+                for subdir, _, files in os.walk(sim_path):
+                    if not files:
+                        os.rmdir(subdir)
 
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {sim_path}.")
@@ -222,12 +224,21 @@ class SfincsAdapter(IHazardAdapter):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
         try:
             self._scenario = scenario
+            self._event = self.database.events.get(self._scenario.attrs.event)
+            self._projection = self.database.projections.get(
+                self._scenario.attrs.projection
+            )
+            self._strategy = self.database.strategies.get(self._scenario.attrs.strategy)
+
             self.preprocess()
             self.process()
             self.postprocess()
 
         finally:
             self._scenario = None
+            self._event = None
+            self._projection = None
+            self._strategy = None
 
     def preprocess(self):
         event: IEvent = self.database.events.get(self._scenario.attrs.event)
@@ -241,6 +252,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def _preprocess_single_event(self, event: IEvent, output_path: Path):
         self.set_timing(event.attrs.time)
+        self._sim_path = output_path
 
         # run offshore model or download wl data,
         # copy required files to the simulation folder (or folders for event sets)
@@ -250,16 +262,13 @@ class SfincsAdapter(IHazardAdapter):
         for forcing in event.attrs.forcings.values():
             self.add_forcing(forcing)
 
-        strategy = self.database.strategies.get(self._scenario.attrs.strategy)
         measures = [
-            self.database.measures.get(name) for name in strategy.attrs.measures
+            self.database.measures.get(name) for name in self._strategy.attrs.measures
         ]
         for measure in measures:
             self.add_measure(measure)
 
-        self.add_projection(
-            self.database.projections.get(self._scenario.attrs.projection)
-        )
+        self.add_projection(self._projection)
 
         # add observation points from site.toml
         self._add_obs_points()
@@ -268,13 +277,11 @@ class SfincsAdapter(IHazardAdapter):
         self.write(path_out=output_path)
 
     def process(self):
-        event = self.database.events.get(self._scenario.attrs.event)
-
-        if event.attrs.mode == Mode.single_event:
+        if self._event.attrs.mode == Mode.single_event:
             sim_path = self._get_simulation_paths()[0]
             self.execute(sim_path)
 
-        elif event.attrs.mode == Mode.risk:
+        elif self._event.attrs.mode == Mode.risk:
             sim_paths = self._get_simulation_paths()
             for sim_path in sim_paths:
                 self.execute(sim_path)
@@ -287,14 +294,13 @@ class SfincsAdapter(IHazardAdapter):
     def postprocess(self):
         if not self.sfincs_completed():
             raise RuntimeError("SFINCS was not run successfully!")
-        event = self.database.events.get(self._scenario.attrs.event)
 
-        if event.attrs.mode == Mode.single_event:
+        if self._event.attrs.mode == Mode.single_event:
             self._write_floodmap_geotiff()
             self._plot_wl_obs()
             self._write_water_level_map()
 
-        elif event.attrs.mode == Mode.risk:
+        elif self._event.attrs.mode == Mode.risk:
             self.calculate_rp_floodmaps()
 
     def set_timing(self, time: TimeModel):
@@ -501,7 +507,8 @@ class SfincsAdapter(IHazardAdapter):
 
             self._set_wind_forcing(ds)
         elif isinstance(forcing, WindFromTrack):
-            self._set_config_spw(forcing.path)
+            self._add_forcing_spw(forcing)
+            # TODO somehow copy the spw file from event input to the simulation folder
         else:
             self.logger.warning(
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
@@ -537,6 +544,9 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing_from_grid(
                 precip=ds["precip"], aggregate=False
             )
+        elif isinstance(forcing, RainfallFromTrack):
+            self._add_forcing_spw(forcing)
+            # TODO somehow copy the spw file from event input to the simulation folder
         else:
             self.logger.warning(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
@@ -839,9 +849,6 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_observation_points(locations=gdf, merge=False)
 
     def _add_pressure_forcing_from_grid(self, ds: xr.DataArray):
-        # if self.event.attrs.template == "Historical_offshore":
-        # if self.event.attrs.wind.source == "map":
-        # add to offshore only?
         """Add spatially varying barometric pressure to sfincs model.
 
         Parameters
@@ -890,29 +897,14 @@ class SfincsAdapter(IHazardAdapter):
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def _add_forcing_spw(
-        self,
-        historical_hurricane: HurricaneEvent,
-        model_dir: Path,
-    ):
-        """Add spiderweb forcing to the sfincs model.
-
-        Parameters
-        ----------
-        historical_hurricane : HistoricalHurricane
-            Information of the historical hurricane event
-        database_path : Path
-            Path of the main database
-        model_dir : Path
-            Output path of the model
-        """
-        spw_file = historical_hurricane.make_spw_file(
-            cyc_file=self.database.events.input_path
-            / historical_hurricane.attrs.name
-            / f"{historical_hurricane.attrs.track_name}.cyc",
-            output_dir=model_dir,
-        )
-        # TODO check with @gundula
+    def _add_forcing_spw(self, forcing_from_track: IForcing):
+        """Add spiderweb forcing to the sfincs model."""
+        if forcing_from_track._source != ForcingSource.TRACK:
+            raise ValueError(
+                f"Unsupported forcing source: {forcing_from_track._source}"
+            )
+        self._event: HurricaneEvent
+        spw_file = self._event.make_spw_file(output_dir=self._sim_path)
         self._set_config_spw(spw_file.name)
 
     ### PRIVATE GETTERS ###

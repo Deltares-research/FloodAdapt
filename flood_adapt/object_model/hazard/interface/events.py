@@ -59,11 +59,17 @@ class IEventModel(BaseModel):
             forcings = {}
             for ftype, forcing_attrs in self["forcings"].items():
                 if isinstance(forcing_attrs, IForcing):
+                    # forcing_attrs is already a forcing object
                     forcings[ftype] = forcing_attrs
-
-                elif isinstance(forcing_attrs, dict) and not all(
-                    v in forcing_attrs for v in ["_type" and "_source"]
+                elif (
+                    isinstance(forcing_attrs, dict)
+                    and "_type" in forcing_attrs
+                    and "_source" in forcing_attrs
                 ):
+                    # forcing_attrs is a dict with forcing attributes
+                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
+                else:
+                    # forcing_attrs is a dict with sub-forcing attributes. Currently only used for discharge forcing
                     for name, sub_forcing in forcing_attrs.items():
                         if ftype not in forcings:
                             forcings[ftype] = {}
@@ -74,8 +80,6 @@ class IEventModel(BaseModel):
                             forcings[ftype][name] = ForcingFactory.load_dict(
                                 sub_forcing
                             )
-                else:
-                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
             self["forcings"] = forcings
         return self
 
