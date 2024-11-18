@@ -143,7 +143,7 @@ class TestHistoricalEvent:
         ]
 
         # Act
-        event.save_additional(path.parent)
+        event.save_additional(output_dir=path.parent)
 
         # Assert
         assert all(csv.exists() for csv in expected_csvs)

@@ -1,4 +1,3 @@
-import shutil
 from datetime import datetime
 from pathlib import Path
 from tempfile import gettempdir
@@ -120,11 +119,7 @@ def setup_eventset_scenario(
     dummy_projection,
     dummy_strategy,
 ):
-    pump, geojson = dummy_pump_measure
-    dst_path = test_db.measures.input_path / pump.attrs.name / geojson.name
-    test_db.measures.save(pump)
-    shutil.copy2(geojson, dst_path)
-
+    test_db.measures.save(dummy_pump_measure)
     test_db.measures.save(dummy_buyout_measure)
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
@@ -152,7 +147,7 @@ class TestEventSet:
         event_set, _ = test_eventset
 
         tmp_path = Path(gettempdir()) / "test_eventset.toml"
-        event_set.save_additional(tmp_path)
+        event_set.save_additional(output_dir=tmp_path.parent)
 
         for sub_event in event_set.attrs.sub_events:
             assert (

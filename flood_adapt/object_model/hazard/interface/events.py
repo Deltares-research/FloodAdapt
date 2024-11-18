@@ -1,16 +1,14 @@
+import os
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, ClassVar, List, Optional, Type
+from typing import Any, ClassVar, List, Type
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import tomli
-import tomli_w
 from pydantic import (
-    BaseModel,
     Field,
     field_serializer,
     model_validator,
@@ -27,7 +25,8 @@ from flood_adapt.object_model.hazard.interface.models import (
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import ObjectDir
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
@@ -39,11 +38,9 @@ from flood_adapt.object_model.io.unitfulvalue import (
 )
 
 
-class IEventModel(BaseModel):
+class IEventModel(IObjectModel):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]]
 
-    name: str
-    description: Optional[str] = None
     time: TimeModel
     template: Template
     mode: Mode
@@ -148,34 +145,21 @@ class IEventModel(BaseModel):
         ...
 
 
-class IEvent(IDatabaseUser):
+class IEvent(IObject[IEventModel]):
     MODEL_TYPE: Type[IEventModel]
+    dir_name = ObjectDir.event
+
     attrs: IEventModel
 
-    @classmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> "IEvent":
-        obj = cls()
-        obj.attrs = cls.MODEL_TYPE.model_validate(attrs)
-        return obj
-
-    @classmethod
-    def load_file(cls, path: Path) -> "IEvent":
-        with open(path, "rb") as f:
-            return cls.load_dict(tomli.load(f))
-
-    def save(self, path: Path):
-        with open(path, "wb") as f:
-            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
-
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for forcing in self.attrs.forcings.values():
             if forcing is None:
                 continue
             if isinstance(forcing, dict):
                 for _, _forcing in forcing.items():
-                    _forcing.save_additional(toml_dir)
+                    _forcing.save_additional(output_dir)
             else:
-                forcing.save_additional(toml_dir)
+                forcing.save_additional(output_dir)
 
     @abstractmethod
     def process(self, scenario: IScenario = None):
@@ -243,6 +227,7 @@ class IEvent(IDatabaseUser):
             return ""
 
         self.logger.debug("Plotting water level data")
+
         units = units or self.database.site.attrs.gui.default_length_units
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 

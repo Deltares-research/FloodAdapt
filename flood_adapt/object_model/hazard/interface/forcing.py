@@ -26,7 +26,7 @@ class IForcing(BaseModel, ABC):
 
     _type: ClassVar[ForcingType]
     _source: ClassVar[ForcingSource]
-    _logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
+    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
 
     @classmethod
     def load_file(cls, path: Path):

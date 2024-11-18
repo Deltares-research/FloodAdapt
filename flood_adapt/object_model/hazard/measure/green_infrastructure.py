@@ -1,52 +1,43 @@
 import os
-from typing import Any, Union
+from pathlib import Path
+from typing import Any
 
 import geopandas as gpd
 import pyproj
-import tomli
-import tomli_w
 
-from flood_adapt.object_model.hazard.measure.hazard_measure import (
-    HazardMeasure,
-)
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
-    IGreenInfrastructure,
+    HazardMeasure,
 )
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulArea,
     UnitfulHeight,
 )
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
+class GreenInfrastructure(HazardMeasure[GreenInfrastructureModel]):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
 
     attrs: GreenInfrastructureModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
-        """Create GreenInfrastructure from toml file."""
-        obj = GreenInfrastructure()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = GreenInfrastructureModel.model_validate(toml)
-        return obj
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, GreenInfrastructureModel):
+            self.attrs = data
+        else:
+            self.attrs = GreenInfrastructureModel.model_validate(data)
 
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any],
-    ) -> IGreenInfrastructure:
-        """Create Green Infrastructure from object, e.g. when initialized from GUI."""
-        obj = GreenInfrastructure()
-        obj.attrs = GreenInfrastructureModel.model_validate(data)
-        return obj
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.attrs.polygon_file:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            src_path = resolve_filepath(
+                self.dir_name, self.attrs.name, self.attrs.polygon_file
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
 
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Green Infra to a toml file."""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.polygon_file = path.name
 
     @staticmethod
     def calculate_volume(
@@ -79,14 +70,14 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         return volume
 
     @staticmethod
-    def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: ISite) -> float:
+    def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
         """Calculate area of a GeoDataFrame Polygon.
 
         Parameters
         ----------
         gdf : gpd.GeoDataFrame
             Polygon object
-        site : ISite
+        site : Site
             site config (used for CRS)
 
         Returns

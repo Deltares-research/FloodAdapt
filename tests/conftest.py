@@ -165,6 +165,11 @@ test_db_package = make_db_fixture("package")
 test_db_session = make_db_fixture("session")
 
 
+@pytest.fixture
+def test_data_dir():
+    return Path(__file__).parent / "data"
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_runtest_setup(item):
     test_name = item.name

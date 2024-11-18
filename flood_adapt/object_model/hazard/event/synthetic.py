@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import Any, ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
@@ -28,7 +28,7 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
     def default() -> "SyntheticEventModel":
         """Set default values for Synthetic event."""
         return SyntheticEventModel(
-            name="Synthetic Event",
+            name="DefaultSyntheticEvent",
             time=TimeModel(),
             template=Template.Synthetic,
             mode=Mode.single_event,
@@ -53,6 +53,12 @@ class SyntheticEvent(IEvent):
     MODEL_TYPE = SyntheticEventModel
 
     attrs: SyntheticEventModel
+
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, SyntheticEventModel):
+            self.attrs = data
+        else:
+            self.attrs = SyntheticEventModel.model_validate(data)
 
     def process(self, scenario: IScenario = None):
         """Synthetic events do not require any processing."""

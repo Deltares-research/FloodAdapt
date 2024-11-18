@@ -7,6 +7,7 @@ from typing import Any, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
@@ -31,10 +32,13 @@ from flood_adapt.object_model.hazard.interface.events import IEvent
 # from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
+)
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -55,9 +59,10 @@ class Database(IDatabase):
     static_path: Path
     output_path: Path
 
-    _site: ISite
+    _site: Site
 
     static_sfincs_model: SfincsAdapter
+    cyclone_track_database: CycloneTrackDatabase
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -106,24 +111,27 @@ class Database(IDatabase):
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
-        self._logger = FloodAdaptLogging.getLogger(__name__)
-        self._logger.info(
+        self.logger = FloodAdaptLogging.getLogger(__name__)
+        self.logger.info(
             f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
         self.database_path = database_path
         self.database_name = database_name
 
         # Set the paths
+
         self.base_path = Path(database_path) / database_name
-        self.input_path = self.base_path / "input"
-        self.static_path = self.base_path / "static"
-        self.output_path = self.base_path / "output"
+        self.input_path = db_path(TopLevelDir.input)
+        self.static_path = db_path(TopLevelDir.static)
+        self.output_path = db_path(TopLevelDir.output)
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
         # Get the static sfincs model
-        sfincs_path = self.static_path.joinpath(
-            "templates", self._site.attrs.sfincs.overland_model
+        sfincs_path = str(
+            db_path(TopLevelDir.static)
+            / "templates"
+            / self._site.attrs.sfincs.overland_model
         )
         self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path)
 
@@ -155,7 +163,7 @@ class Database(IDatabase):
         self._site = None
 
         self.static_sfincs_model = None
-        self._logger = None
+        self.logger = None
         self._static = None
         self._events = None
         self._scenarios = None
@@ -166,7 +174,7 @@ class Database(IDatabase):
 
     # Property methods
     @property
-    def site(self) -> ISite:
+    def site(self) -> Site:
         return self._site
 
     @property
@@ -351,7 +359,7 @@ class Database(IDatabase):
                 xlim2 = event.attrs.time.duration_after_t0
             case "Historical_nearshore":
                 if input_wl_df is None:
-                    self._logger.warning(
+                    self.logger.warning(
                         "No water level data provided to plot for historical nearshore event, continuing..."
                     )
                     return ""
@@ -419,19 +427,22 @@ class Database(IDatabase):
 
         match event.attrs.rainfall.source:
             case "shape":
+                scs_file, scs_type = None, None
                 if event.attrs.rainfall.shape_type == "scs":
-                    scsfile = self.input_path.parent.joinpath(
-                        "static", "scs", self.site.attrs.scs.file
-                    )
-                    if not scsfile.is_file():
+                    if self.site.attrs.scs is None:
                         ValueError(
                             "Information about SCS file and type missing in site.toml"
                         )
-                event.add_rainfall_ts(scsfile=scsfile, scstype=self.site.attrs.scs.type)
+                    else:
+                        scs_file = self.input_path.parent.joinpath(
+                            "static", "scs", self.site.attrs.scs.file
+                        )
+                        scs_type = self.site.attrs.scs.type
+                event.add_rainfall_ts(scsfile=scs_file, scstype=scs_type)
                 df = event.rain_ts
             case "timeseries":
                 if input_rainfall_df is None:
-                    self._logger.warning(
+                    self.logger.warning(
                         "No rainfall data provided to plot for timeseries event, continuing..."
                     )
                     return ""
@@ -450,20 +461,21 @@ class Database(IDatabase):
                     },
                 )
             case _:
-                self._logger.warning(
+                self.logger.warning(
                     "Plotting only available for timeseries, shape and constant rainfall."
                 )
                 return ""
 
         # set timing relative to T0 if event is synthetic
         if event.attrs.template == "Synthetic":
-            df.index = np.arange(
-                -event.attrs.time.duration_before_t0,
-                event.attrs.time.duration_after_t0 + 1 / 3600,
-                1 / 6,
-            )
             xlim1 = -event.attrs.time.duration_before_t0
-            xlim2 = event.attrs.time.duration_after_t0
+            xlim2 = event.attrs.time.duration_after_t0 + 1 / 3600
+            step = (xlim2 - xlim1) / df.index.size
+            df.index = np.arange(
+                xlim1,
+                xlim2,
+                step,
+            )
         else:
             xlim1 = pd.to_datetime(event.attrs.time.start_time)
             xlim2 = pd.to_datetime(event.attrs.time.end_time)
@@ -508,7 +520,7 @@ class Database(IDatabase):
         if any(df.empty for df in input_river_df) and any(
             river.source == "timeseries" for river in event.attrs.river
         ):
-            self._logger.warning(
+            self.logger.warning(
                 "No/incomplete river discharge data provided to plot for timeseries event, continuing..."
             )
             return ""
@@ -580,7 +592,7 @@ class Database(IDatabase):
             event = EventFactory.get_event(event["template"]).load_dict(event)
 
         if event.attrs.wind.source not in ["timeseries", "constant"]:
-            self._logger.warning(
+            self.logger.warning(
                 "Plotting only available for timeseries and constant type wind."
             )
             return ""
@@ -588,7 +600,7 @@ class Database(IDatabase):
         match event.attrs.wind.source:
             case "timeseries":
                 if input_wind_df is None:
-                    self._logger.warning(
+                    self.logger.warning(
                         "No wind data provided to plot for timeseries event, continuing..."
                     )
                     return ""
@@ -611,7 +623,7 @@ class Database(IDatabase):
                     },
                 )
             case _:
-                self._logger.warning(
+                self.logger.warning(
                     "Plotting only available for timeseries and constant type wind."
                 )
                 return ""
@@ -985,7 +997,7 @@ class Database(IDatabase):
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
-                    self._logger.info(
+                    self.logger.info(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
 
@@ -1034,16 +1046,16 @@ class Database(IDatabase):
         if not Settings().delete_crashed_runs:
             return
 
-        scn_input_path = self.scenarios.input_path
-        scn_output_path = self.scenarios.output_path
-        if not scn_output_path.is_dir():
+        if not self.scenarios.output_path.is_dir():
             return
 
         input_scenarios = [
-            (scn_input_path / dir).resolve() for dir in os.listdir(scn_input_path)
+            (self.scenarios.input_path / dir).resolve()
+            for dir in os.listdir(self.scenarios.input_path)
         ]
         output_scenarios = [
-            (scn_output_path / dir).resolve() for dir in os.listdir(scn_output_path)
+            (self.scenarios.output_path / dir).resolve()
+            for dir in os.listdir(self.scenarios.output_path)
         ]
 
         for dir in output_scenarios:

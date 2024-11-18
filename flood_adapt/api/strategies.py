@@ -15,7 +15,7 @@ def get_strategy(name: str) -> IStrategy:
 
 
 def create_strategy(attrs: dict[str, Any]) -> IStrategy:
-    return Strategy.load_dict(attrs, Database().input_path)
+    return Strategy.load_dict(attrs)
 
 
 def save_strategy(strategy: IStrategy) -> None:

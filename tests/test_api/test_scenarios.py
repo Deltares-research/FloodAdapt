@@ -95,17 +95,9 @@ def setup_synthetic_scenario(test_db, test_event_all_synthetic):
 def setup_eventset_scenario(
     test_db: IDatabase,
     test_eventset,
-    dummy_pump_measure,
-    dummy_buyout_measure,
     dummy_projection,
     dummy_strategy,
 ):
-    pump, geojson = dummy_pump_measure
-    dst_path = test_db.measures.input_path / pump.attrs.name / geojson.name
-    test_db.measures.save(pump)
-    shutil.copy2(geojson, dst_path)
-
-    test_db.measures.save(dummy_buyout_measure)
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 

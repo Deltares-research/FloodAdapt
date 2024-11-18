@@ -84,7 +84,7 @@ class DischargeSynthetic(IDischarge):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error loading synthetic discharge timeseries: {e}")
+                self.logger.error(f"Error loading synthetic discharge timeseries: {e}")
 
     @classmethod
     def default(cls) -> "DischargeSynthetic":
@@ -123,12 +123,13 @@ class DischargeFromCSV(IDischarge):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error reading CSV file: {self.path}. {e}")
+                self.logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path):
         if self.path:
-            shutil.copy2(self.path, toml_dir)
-            self.path = toml_dir / self.path.name
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
 
     @classmethod
     def default(cls) -> "DischargeFromCSV":

@@ -1,30 +1,23 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Type
 
-from flood_adapt.object_model.hazard.interface.events import IEvent
-from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.strategies import IStrategy
-
-ObjectModel = Union[IScenario, IEvent, IProjection, IStrategy, IMeasure, IBenefit]
+from flood_adapt.object_model.interface.object_model import IObject
 
 
 class AbstractDatabaseElement(ABC):
-    """Abstract class for database elements."""
+    _object_class: Type[IObject]
 
     input_path: Path
     output_path: Path
 
     @abstractmethod
-    def __init__(self, database) -> None:
-        """Initialize any necessary attributes."""
+    def __init__(self):
+        """Abstract class for database elements."""
         pass
 
     @abstractmethod
-    def get(self, name: str) -> ObjectModel:
+    def get(self, name: str) -> IObject:
         """Return the object of the type of the database with the given name.
 
         Parameters
@@ -34,13 +27,13 @@ class AbstractDatabaseElement(ABC):
 
         Returns
         -------
-        ObjectModel
+        IObject
             object of the type of the specified object model
         """
         pass
 
     @abstractmethod
-    def list_objects(self) -> dict[str, Any]:
+    def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
 
         Returns
@@ -68,9 +61,8 @@ class AbstractDatabaseElement(ABC):
     @abstractmethod
     def save(
         self,
-        object_model: ObjectModel,
+        object_model: IObject,
         overwrite: bool = False,
-        toml_only: bool = False,
     ):
         """Save an object in the database.
 
@@ -94,12 +86,12 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def edit(self, object_model: ObjectModel):
+    def edit(self, object_model: IObject):
         """Edits an already existing object in the database.
 
         Parameters
         ----------
-        object : ObjectModel
+        object : IObject
             object to be edited in the database
 
         Raises

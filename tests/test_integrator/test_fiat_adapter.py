@@ -2,6 +2,10 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from flood_adapt.object_model.interface.path_builder import (
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.scenario import Scenario
 
 
@@ -34,12 +38,14 @@ class TestFiatAdapter:
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
         exposure_scenario = pd.read_csv(
-            scenario_obj.results_path
-            / "Impacts"
-            / "fiat_model"
-            / "exposure"
-            / "exposure.csv"
+            test_db.scenarios.output_path.joinpath(
+                scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
+            )
         )
+        path = test_db.scenarios.output_path.joinpath(
+            scenario_name, "Impacts", "fiat_model", "exposure", "exposure.csv"
+        )
+        exposure_scenario = pd.read_csv(path)
 
         # check if exposure is left unchanged
         assert_frame_equal(exposure_scenario, exposure_template, check_dtype=False)
@@ -110,8 +116,7 @@ class TestFiatAdapter:
             0
         ].attrs.elevation.value
         # Read the base flood map information
-
-        bfes = pd.read_csv(test_db.static_path / "bfe" / "bfe.csv")
+        bfes = pd.read_csv(db_path(TopLevelDir.static) / "bfe" / "bfe.csv")
 
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on="Object ID")[

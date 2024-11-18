@@ -25,9 +25,8 @@ from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
+from flood_adapt.object_model.interface.site import Obs_pointModel, Site, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
-from flood_adapt.object_model.site import Site
 
 config_path = None
 
@@ -686,22 +685,22 @@ class Database:
         else:
             for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
                 # Make sure paths are correct
-                aggr.file = str(
-                    self.static_path.joinpath("templates", "fiat", aggr.file)
+                aggr["file"] = str(
+                    self.static_path.joinpath("templates", "fiat", aggr["file"])
                     .relative_to(self.static_path)
                     .as_posix()
                 )
-                if aggr.equity is not None:
-                    aggr.equity.census_data = str(
+                if aggr["equity"] is not None:
+                    aggr["equity"]["census_data"] = str(
                         self.static_path.joinpath(
-                            "templates", "fiat", aggr.equity.census_data
+                            "templates", "fiat", aggr["equity"]["census_data"]
                         )
                         .relative_to(self.static_path)
                         .as_posix()
                     )
-                self.site_attrs["fiat"]["aggregation"].append(aggr.model_dump())
+                self.site_attrs["fiat"]["aggregation"].append(aggr)
             self.logger.info(
-                f"The aggregation types {[aggr.name for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
+                f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
             )
 
         # Read SVI
@@ -1579,7 +1578,7 @@ class Database:
         site_config_path.parent.mkdir()
 
         site = Site.load_dict(self.site_attrs)
-        site.save(filepath=site_config_path)
+        site.save(toml_path=site_config_path)
 
     def _get_default_units(self):
         """

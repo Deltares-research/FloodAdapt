@@ -1,11 +1,12 @@
-import os
-from abc import abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any, Generic, Optional, TypeVar
 
-from pydantic import BaseModel, Field, field_validator, model_validator, validator
+from pydantic import Field, model_validator, validator
 
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+)
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
     UnitfulHeight,
@@ -47,27 +48,33 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class MeasureModel(BaseModel):
+T = TypeVar("T")
+
+
+class MeasureModel(IObjectModel, Generic[T]):
     """BaseModel describing the expected variables and data types of attributes common to all measures."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
-    type: Union[HazardType, ImpactType]
+    type: T
+
+    @model_validator(mode="after")
+    def validate_type(self) -> "MeasureModel":
+        if not isinstance(self.type, (ImpactType, HazardType)):
+            raise ValueError(
+                f"Type must be one of {ImpactType.__members__} or {HazardType.__members__}"
+            )
+        return self
 
 
-class HazardMeasureModel(MeasureModel):
+class HazardMeasureModel(MeasureModel[HazardType]):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
     type: HazardType
     selection_type: SelectionType
-    polygon_file: Optional[str] = None
-
-    @field_validator("polygon_file")
-    @classmethod
-    def validate_polygon_file(cls, v: Optional[str]) -> Optional[str]:
-        if len(v) == 0:
-            raise ValueError("Polygon file path cannot be empty")
-        return v
+    polygon_file: Optional[str] = Field(
+        None,
+        min_length=1,
+        description="Path to a polygon file, either absolute or relative to the measure path.",
+    )
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "HazardMeasureModel":
@@ -82,15 +89,19 @@ class HazardMeasureModel(MeasureModel):
         return self
 
 
-class ImpactMeasureModel(MeasureModel):
+class ImpactMeasureModel(MeasureModel[ImpactType]):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
     type: ImpactType
     selection_type: SelectionType
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
-    polygon_file: Optional[str] = None
-    property_type: str
+    polygon_file: Optional[str] = Field(
+        None,
+        min_length=1,
+        description="Path to a polygon file, relative to the database path.",
+    )
+    property_type: str  # TODO make enum
 
     # TODO #94 pydantic validators do not currently work
 
@@ -118,6 +129,7 @@ class ImpactMeasureModel(MeasureModel):
             raise ValueError(
                 "If `selection_type` is 'polygon', then `polygon_file` needs to be set."
             )
+
         return polygon_file
 
 
@@ -208,59 +220,29 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-class IMeasure(IDatabaseUser):
+MeasureModelType = TypeVar("MeasureModelType", bound=MeasureModel)
+
+
+class IMeasure(IObject[MeasureModelType]):
     """A class for a FloodAdapt measure."""
 
-    attrs: MeasureModel
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Measure attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """Get Measure attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Measure attributes to a toml file."""
+    dir_name = ObjectDir.measure
+    attrs: MeasureModelType
 
 
-class IElevate(IMeasure):
-    """A class for a FloodAdapt "elevate" measure."""
-
-    attrs: ElevateModel
+HazardMeasureModelType = TypeVar("HazardMeasureModelType", bound=HazardMeasureModel)
 
 
-class IBuyout(IMeasure):
-    """A class for a FloodAdapt "buyout" measure."""
+class HazardMeasure(IMeasure[HazardMeasureModel], Generic[HazardMeasureModelType]):
+    """HazardMeasure class that holds all the information for a specific measure type that affects the impact model."""
 
-    attrs: BuyoutModel
-
-
-class IFloodProof(IMeasure):
-    """A class for a FloodAdapt "floodproof" measure."""
-
-    attrs: FloodProofModel
+    attrs: HazardMeasureModel
 
 
-class IFloodWall(IMeasure):
-    """A class for a FloodAdapt "floodwall" measure."""
-
-    attrs: FloodWallModel
+ImpactMeasureModelType = TypeVar("ImpactMeasureModelType", bound=ImpactMeasureModel)
 
 
-class IPump(IMeasure):
-    """A class for a FloodAdapt "pump" measure."""
+class ImpactMeasure(IMeasure[ImpactMeasureModel], Generic[ImpactMeasureModelType]):
+    """All the information for a specific measure type that affects the impact model."""
 
-    attrs: PumpModel
-
-
-class IGreenInfrastructure(IMeasure):
-    """A class for a FloodAdapt "green infrastrcutre" measure."""
-
-    attrs: GreenInfrastructureModel
+    attrs: ImpactMeasureModel

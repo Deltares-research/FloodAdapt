@@ -6,9 +6,7 @@ from flood_adapt.object_model.interface.benefits import IBenefit
 
 
 class DbsBenefit(DbsTemplate):
-    _type = "benefit"
-    _folder_name = "benefits"
-    _object_model_class = Benefit
+    _object_class = Benefit
 
     def save(self, benefit: IBenefit, overwrite: bool = False):
         """Save a benefit object in the database.
@@ -54,8 +52,7 @@ class DbsBenefit(DbsTemplate):
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = self._database.benefits.output_path / name
-
+        output_path = self.output_path / name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
@@ -76,7 +73,6 @@ class DbsBenefit(DbsTemplate):
         super().edit(benefit)
 
         # Delete output if edited
-        output_path = self._database.benefits.output_path / benefit.attrs.name
-
+        output_path = self.output_path / benefit.attrs.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)

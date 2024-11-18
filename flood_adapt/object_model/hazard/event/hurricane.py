@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from typing import ClassVar, List, Optional
+from typing import Any, ClassVar, List, Optional
 
 import pyproj
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -18,8 +18,16 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
+from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class TranslationModel(BaseModel):
@@ -50,7 +58,7 @@ class HurricaneEventModel(IEventModel):
     def default() -> "HurricaneEventModel":
         """Set default values for HurricaneEvent."""
         return HurricaneEventModel(
-            name="Hurricane Event",
+            name="DefaultHurricaneEvent",
             time=TimeModel(),
             template=Template.Hurricane,
             mode=Mode.single_event,
@@ -78,6 +86,22 @@ class HurricaneEvent(IEvent):
 
     attrs: HurricaneEventModel
 
+    track_file: Path
+
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, HurricaneEventModel):
+            self.attrs = data
+        else:
+            self.attrs = HurricaneEventModel.model_validate(data)
+
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
+        self.track_file = (
+            db_path(
+                TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name
+            )
+            / f"{self.attrs.track_name}.cyc"
+        )
+
     def process(self, scenario: IScenario = None):
         """Prepare the forcings of the hurricane event.
 
@@ -89,7 +113,7 @@ class HurricaneEvent(IEvent):
         self.meteo_ds = None
         sim_path = self._get_offshore_path()
 
-        if self.database.site.attrs.sfincs.offshore_model is None:
+        if self.site.attrs.sfincs.offshore_model is None:
             raise ValueError(
                 f"An offshore model needs to be defined in the site.toml with sfincs.offshore_model to run an event of type '{self.__class__.__name__}'"
             )
@@ -109,7 +133,6 @@ class HurricaneEvent(IEvent):
 
     def make_spw_file(
         self,
-        cyc_file: Optional[Path] = None,
         recreate: bool = False,
         output_dir: Optional[Path] = None,
     ) -> Path:
@@ -133,11 +156,9 @@ class HurricaneEvent(IEvent):
         Path
             the path to the created spiderweb file
         """
-        cyc_file = cyc_file or self.database.events.input_path.joinpath(
-            f"{self.attrs.name}", f"{self.attrs.track_name}.cyc"
-        )
-        spw_file = cyc_file.parent.joinpath(f"{self.attrs.track_name}.spw")
-        output_dir = output_dir or cyc_file.parent
+        spw_file = self.track_file.parent.joinpath(f"{self.attrs.track_name}.spw")
+
+        output_dir = output_dir or self.track_file.parent.parent
         output_dir.mkdir(parents=True, exist_ok=True)
 
         if spw_file.exists() and not recreate:
@@ -153,7 +174,7 @@ class HurricaneEvent(IEvent):
 
         # Initialize the tropical cyclone
         tc = TropicalCyclone()
-        tc.read_track(filename=cyc_file, fmt="ddb_cyc")
+        tc.read_track(filename=self.track_file, fmt="ddb_cyc")
 
         # Alter the track of the tc if necessary
         if (
@@ -180,7 +201,7 @@ class HurricaneEvent(IEvent):
     def translate_tc_track(self, tc: TropicalCyclone):
         self.logger.info("Translating the track of the tropical cyclone...")
         # First convert geodataframe to the local coordinate system
-        crs = pyproj.CRS.from_string(self.database.site.attrs.sfincs.csname)
+        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.csname)
         tc.track = tc.track.to_crs(crs)
 
         # Translate the track in the local coordinate system
@@ -220,8 +241,10 @@ class HurricaneEvent(IEvent):
         sim_path.mkdir(parents=True, exist_ok=True)
         spw_file = self.make_spw_file(output_dir=sim_path)
 
-        template_offshore = self.database.static_path.joinpath(
-            "templates", self.database.site.attrs.sfincs.offshore_model
+        template_offshore = (
+            db_path(TopLevelDir.static)
+            / "templates"
+            / self.site.attrs.sfincs.offshore_model
         )
 
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
@@ -229,12 +252,15 @@ class HurricaneEvent(IEvent):
             _offshore_model.set_timing(self.attrs.time)
 
             # Add water levels
-            physical_projection = self.database.projections.get(
-                self._scenario.attrs.projection
-            ).get_physical_projection()
-
+            path = (
+                db_path(
+                    object_dir=ObjectDir.projection,
+                    obj_name=self._scenario.attrs.projection,
+                )
+                / f"{self._scenario.attrs.projection}.toml"
+            )
+            physical_projection = Projection.load_file(path).get_physical_projection()
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
-
             _offshore_model._set_config_spw(spw_file.name)
 
             # write sfincs model in output destination
@@ -248,33 +274,34 @@ class HurricaneEvent(IEvent):
             _offshore_model.execute()
 
     def _get_offshore_path(self) -> Path:
+        base_path = (
+            db_path(
+                top_level_dir=TopLevelDir.output,
+                object_dir=ObjectDir.scenario,
+                obj_name=self._scenario.attrs.name,
+            )
+            / "Flooding"
+            / "simulations"
+        )
         if self.attrs.mode == Mode.risk:
-            return (
-                self.database.scenarios.output_path
-                / self._scenario.attrs.name
-                / "Flooding"
-                / "simulations"
-                / self.attrs.name
-                / self.database.site.attrs.sfincs.offshore_model
-            )
+            return base_path / self.attrs.name / self.site.attrs.sfincs.offshore_model
         elif self.attrs.mode == Mode.single_event:
-            return (
-                self.database.scenarios.output_path
-                / self._scenario.attrs.name
-                / "Flooding"
-                / "simulations"
-                / self.database.site.attrs.sfincs.offshore_model
-            )
+            return base_path / self.site.attrs.sfincs.offshore_model
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
 
-    def save_additional(self, toml_dir: Path):
-        # Save the cyc file
-        cyc_file = toml_dir.joinpath(f"{self.attrs.track_name}.cyc")
-        shutil.copy2(
-            self.database.events.input_path
-            / self.attrs.name
-            / f"{self.attrs.track_name}.cyc",
-            cyc_file,
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        default = (
+            db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
+            / f"{self.attrs.track_name}.cyc"
         )
-        return super().save_additional(toml_dir)
+        if self.track_file != default:
+            src_path = resolve_filepath(
+                self.dir_name,
+                self.attrs.name,
+                self.track_file,
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
+            self.track_file = path
+
+        return super().save_additional(output_dir)

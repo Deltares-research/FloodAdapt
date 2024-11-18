@@ -7,9 +7,10 @@ import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.site import ISite
+from flood_adapt.object_model.interface.site import Site
 
 
 class IDatabase(ABC):
@@ -18,7 +19,15 @@ class IDatabase(ABC):
     output_path: Path
     static_path: Path
 
-    site: ISite
+    static_sfincs_model: SfincsAdapter
+
+    @property
+    @abstractmethod
+    def site(self) -> Site: ...
+
+    @property
+    @abstractmethod
+    def static(self) -> AbstractDatabaseElement: ...
 
     @property
     @abstractmethod
@@ -43,10 +52,6 @@ class IDatabase(ABC):
     @property
     @abstractmethod
     def benefits(self) -> AbstractDatabaseElement: ...
-
-    @property
-    @abstractmethod
-    def static(self) -> AbstractDatabaseElement: ...
 
     @abstractmethod
     def __init__(

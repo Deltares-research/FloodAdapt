@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any, List
 
@@ -29,7 +30,7 @@ class EventSetModel(BaseModel):
     def default() -> "EventSetModel":
         """Set default values for Synthetic event."""
         return EventSetModel(
-            name="EventSet",
+            name="DefaultEventSet",
             sub_events=[SyntheticEventModel.default(), SyntheticEventModel.default()],
             frequency=[0.5, 0.5],
         )
@@ -70,11 +71,11 @@ class EventSet(IDatabaseUser):
         with open(path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for sub_event in self.events:
-            sub_dir = toml_dir / sub_event.attrs.name
+            sub_dir = Path(output_dir) / sub_event.attrs.name
             sub_dir.mkdir(parents=True, exist_ok=True)
-            sub_event.save_additional(sub_dir)
+            sub_event.save_additional(output_dir=sub_dir)
             sub_event.save(sub_dir / f"{sub_event.attrs.name}.toml")
 
     def process(self, scenario: IScenario = None):

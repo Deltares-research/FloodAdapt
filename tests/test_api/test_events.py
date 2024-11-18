@@ -58,20 +58,20 @@ def test_create_synthetic_event_invalid_dict(test_db, test_dict):
 def test_save_synthetic_event_already_exists(test_db, test_dict):
     event = api_events.create_event(test_dict)
     if test_dict["name"] not in api_events.get_events()["name"]:
-        api_events.save_event_toml(event)
+        api_events.save_event(event)
 
     with pytest.raises(ValueError):
-        api_events.save_event_toml(event)
+        api_events.save_event(event)
     # TODO assert error msg
 
 
-def test_save_event_toml_valid(test_db, test_dict):
+def test_save_event_valid(test_db, test_dict):
     # Change name to something new
     test_dict["name"] = "testNew"
     event = api_events.create_event(test_dict)
     if test_dict["name"] in api_events.get_events()["name"]:
         api_events.delete_event(test_dict["name"])
-    api_events.save_event_toml(event)
+    api_events.save_event(event)
     # TODO assert event attrs
 
 

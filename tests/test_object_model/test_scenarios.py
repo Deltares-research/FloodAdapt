@@ -10,12 +10,11 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.database import IDatabase
 
 # from flood_adapt.object_model.interface.events import RainfallModel, TideModel
-from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.interface.site import SCSModel
+from flood_adapt.object_model.interface.site import SCSModel, Site
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 
 
 @pytest.fixture(autouse=True)
@@ -44,8 +43,6 @@ def test_scenarios(test_db, test_tomls) -> dict[str, Scenario]:
 def test_initObjectModel_validInput(test_db, test_scenarios):
     test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
 
-    test_scenario.init_object_model()
-
     assert isinstance(test_scenario.site_info, Site)
     assert isinstance(test_scenario.direct_impacts, DirectImpacts)
     assert isinstance(
@@ -64,8 +61,6 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
 @pytest.mark.skip(reason="Refactor to use the new event model")
 def test_scs_rainfall(test_db: IDatabase, test_scenarios: dict[str, Scenario]):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
-    test_scenario.init_object_model()
 
     # event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
 
@@ -140,5 +135,5 @@ class Test_scenario_run:
 
         # use event template to get the associated Event child class
         test_scenario = Scenario.load_file(test_toml)
-        test_scenario.init_object_model()
+
         test_scenario.infographic()

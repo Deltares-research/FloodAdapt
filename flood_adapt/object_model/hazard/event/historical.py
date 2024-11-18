@@ -1,8 +1,7 @@
 import shutil
 from pathlib import Path
-from typing import ClassVar, List
+from typing import Any, ClassVar, List
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelFromModel,
@@ -19,7 +18,14 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IForcing,
 )
 from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.projection import Projection
 
 
 class HistoricalEventModel(IEventModel):
@@ -48,7 +54,7 @@ class HistoricalEventModel(IEventModel):
     def default() -> "HistoricalEventModel":
         """Set default values for Synthetic event."""
         return HistoricalEventModel(
-            name="Historical Event",
+            name="DefaultHistoricalEvent",
             time=TimeModel(),
             template=Template.Historical,
             mode=Mode.single_event,
@@ -74,12 +80,12 @@ class HistoricalEvent(IEvent):
 
     attrs: HistoricalEventModel
 
-    def __init__(self):
-        self._logger = FloodAdaptLogging.getLogger(__name__)
-
-    @property
-    def site(self):
-        return self.database.site
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, HistoricalEventModel):
+            self.attrs = data
+        else:
+            self.attrs = HistoricalEventModel.model_validate(data)
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
 
     def process(self, scenario: IScenario = None):
         """Prepare the forcings of the historical event.
@@ -101,7 +107,7 @@ class HistoricalEvent(IEvent):
             self._preprocess_sfincs_offshore(sim_path)
             self._run_sfincs_offshore(sim_path)
 
-        self._logger.info("Collecting forcing data ...")
+        self.logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
             if forcing is None:
                 continue
@@ -136,7 +142,7 @@ class HistoricalEvent(IEvent):
         Args:
             sim_path path to the root of the offshore model
         """
-        self._logger.info("Preparing offshore model to generate waterlevels...")
+        self.logger.info("Preparing offshore model to generate waterlevels...")
         from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
         # Initialize
@@ -144,16 +150,25 @@ class HistoricalEvent(IEvent):
             shutil.rmtree(sim_path)
         Path(sim_path).mkdir(parents=True, exist_ok=True)
 
-        template_offshore = self.database.static_path.joinpath(
-            "templates", self.site.attrs.sfincs.offshore_model
+        template_offshore = (
+            db_path(TopLevelDir.static)
+            / "templates"
+            / self.site.attrs.sfincs.offshore_model
         )
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
             # Edit offshore model
             _offshore_model.set_timing(self.attrs.time)
 
             # Add water levels
-            physical_projection = self.database.projections.get(
-                self._scenario.attrs.projection
+            projection_path = (
+                db_path(
+                    object_dir=ObjectDir.projection,
+                    obj_name=self._scenario.attrs.projection,
+                )
+                / f"{self._scenario.attrs.projection}.toml"
+            )
+            physical_projection = Projection.load_file(
+                projection_path
             ).get_physical_projection()
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
 
@@ -176,7 +191,7 @@ class HistoricalEvent(IEvent):
             _offshore_model.write(path_out=sim_path)
 
     def _run_sfincs_offshore(self, sim_path):
-        self._logger.info("Running offshore model...")
+        self.logger.info("Running offshore model...")
         from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
@@ -190,8 +205,11 @@ class HistoricalEvent(IEvent):
     def _get_simulation_path(self) -> Path:
         if self.attrs.mode == Mode.risk:
             return (
-                self.database.scenarios.output_path
-                / self._scenario.attrs.name
+                db_path(
+                    TopLevelDir.output,
+                    object_dir=ObjectDir.scenario,
+                    obj_name=self._scenario.attrs.name,
+                )
                 / "Flooding"
                 / "simulations"
                 / self.attrs.name
@@ -199,8 +217,11 @@ class HistoricalEvent(IEvent):
             )
         elif self.attrs.mode == Mode.single_event:
             return (
-                self.database.scenarios.output_path
-                / self._scenario.attrs.name
+                db_path(
+                    TopLevelDir.output,
+                    object_dir=ObjectDir.scenario,
+                    obj_name=self._scenario.attrs.name,
+                )
                 / "Flooding"
                 / "simulations"
                 / self.site.attrs.sfincs.offshore_model

@@ -5,7 +5,7 @@ from pathlib import Path
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.interface.site import Site
 
 
 def test_database_controller(test_db):
@@ -121,7 +121,7 @@ def test_shutdown_AfterShutdown_VarsAreNone():
     assert dbs.output_path is None
     assert dbs._site is None
     assert dbs.static_sfincs_model is None
-    assert dbs._logger is None
+    assert dbs.logger is None
     assert dbs._static is None
     assert dbs._events is None
     assert dbs._scenarios is None
@@ -150,7 +150,7 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
     assert dbs.output_path is not None
     assert dbs._site is not None
     assert dbs.static_sfincs_model is not None
-    assert dbs._logger is not None
+    assert dbs.logger is not None
     assert dbs._static is not None
     assert dbs._events is not None
     assert dbs._scenarios is not None

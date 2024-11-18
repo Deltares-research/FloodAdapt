@@ -17,7 +17,7 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLen
 
 class TideGauge(ITideGauge):
     _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
-    _logger = FloodAdaptLogging.getLogger(__name__)
+    logger = FloodAdaptLogging.getLogger(__name__)
 
     def __init__(self, attrs: TideGaugeModel):
         if isinstance(attrs, TideGaugeModel):
@@ -49,7 +49,7 @@ class TideGauge(ITideGauge):
         pd.DataFrame
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
-        self._logger.info(
+        self.logger.info(
             f"Retrieving waterlevels for tide gauge {self.attrs.ID} from {time.start_time} to {time.end_time}"
         )
         if self.attrs.file:
@@ -61,7 +61,7 @@ class TideGauge(ITideGauge):
 
         if gauge_data is None:
             # TODO warning?
-            self._logger.warning(
+            self.logger.warning(
                 f"Could not retrieve waterlevels for tide gauge {self.attrs.ID}"
             )
             return pd.DataFrame()
@@ -141,7 +141,7 @@ class TideGauge(ITideGauge):
             df = pd.DataFrame(data=series, index=index)
 
         except COOPSAPIError as e:
-            self._logger.error(
+            self.logger.error(
                 f"Could not download tide gauge data for station {self.attrs.ID}. {e}"
             )
             return None

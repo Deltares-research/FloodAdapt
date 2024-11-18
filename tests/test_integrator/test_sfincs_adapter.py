@@ -75,7 +75,9 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
     adapter = SfincsAdapter(model_root=overland_path)
     adapter.set_timing(TimeModel())
     adapter._logger = mock.Mock()
-    adapter._logger.handlers = []
+    adapter.logger.handlers = []
+    adapter.logger.warning = mock.Mock()
+
     return adapter
 
 
@@ -169,7 +171,6 @@ class TestAddForcing:
         @pytest.fixture()
         def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
             adapter = default_sfincs_adapter
-
             adapter._add_forcing_wind = mock.Mock()
             adapter._add_forcing_rain = mock.Mock()
             adapter._add_forcing_discharge = mock.Mock()
@@ -204,7 +205,7 @@ class TestAddForcing:
             forcing = mock.Mock(spec=IForcing)
             forcing._type = "unsupported_type"
             sfincs_adapter.add_forcing(forcing)
-            sfincs_adapter._logger.warning.assert_called_once_with(
+            sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Skipping unsupported forcing type {forcing.__class__.__name__}"
             )
 
@@ -226,8 +227,20 @@ class TestAddForcing:
 
             default_sfincs_adapter._add_forcing_wind(forcing)
 
-        def test_add_forcing_wind_from_track(self, default_sfincs_adapter):
-            forcing = WindFromTrack(path=TEST_DATA_DIR / "IAN.spw")
+        def test_add_forcing_wind_from_track(
+            self, test_db, tmp_path, default_sfincs_adapter
+        ):
+            from cht_cyclones.tropical_cyclone import TropicalCyclone
+
+            track_file = TEST_DATA_DIR / "IAN.cyc"
+            spw_file = tmp_path / "IAN.spw"
+            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+
+            tc = TropicalCyclone()
+            tc.read_track(track_file, fmt="ddb_cyc")
+            tc.to_spiderweb(spw_file)
+
+            forcing = WindFromTrack(path=spw_file)
             default_sfincs_adapter._add_forcing_wind(forcing)
 
         def test_add_forcing_wind_unsupported(self, default_sfincs_adapter):
@@ -239,7 +252,7 @@ class TestAddForcing:
 
             default_sfincs_adapter._add_forcing_wind(forcing)
 
-            default_sfincs_adapter._logger.warning.assert_called_once_with(
+            default_sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Unsupported wind forcing type: {forcing.__class__.__name__}"
             )
 
@@ -269,7 +282,7 @@ class TestAddForcing:
 
             default_sfincs_adapter._add_forcing_rain(forcing)
 
-            default_sfincs_adapter._logger.warning.assert_called_once_with(
+            default_sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
             )
 
@@ -293,14 +306,14 @@ class TestAddForcing:
                 def default():
                     return UnsupportedDischarge
 
-            sfincs_adapter._logger.warning = mock.Mock()
+            sfincs_adapter.logger.warning = mock.Mock()
             forcing = UnsupportedDischarge(river=test_river)
 
             # Act
             sfincs_adapter._add_forcing_discharge(forcing)
 
             # Assert
-            sfincs_adapter._logger.warning.assert_called_once_with(
+            sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
             )
 
@@ -358,7 +371,7 @@ class TestAddForcing:
         def test_add_forcing_waterlevels_csv(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_waterlevels
         ):
-            tmp_path = Path(tempfile.gettempdir()) / "waterleves.csv"
+            tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
             synthetic_waterlevels.get_data().to_csv(tmp_path)
             forcing = WaterlevelFromCSV(path=tmp_path)
 
@@ -390,7 +403,7 @@ class TestAddForcing:
             default_sfincs_adapter._turn_off_bnd_press_correction.assert_called_once()
 
         def test_add_forcing_waterlevels_unsupported(self, default_sfincs_adapter):
-            default_sfincs_adapter._logger.warning = mock.Mock()
+            default_sfincs_adapter.logger.warning = mock.Mock()
 
             class UnsupportedWaterLevel(IWaterlevel):
                 def default():
@@ -399,7 +412,7 @@ class TestAddForcing:
             forcing = UnsupportedWaterLevel()
             default_sfincs_adapter._add_forcing_waterlevels(forcing)
 
-            default_sfincs_adapter._logger.warning.assert_called_once_with(
+            default_sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
             )
 
@@ -415,7 +428,7 @@ class TestAddMeasure:
             adapter._add_measure_floodwall = mock.Mock()
             adapter._add_measure_greeninfra = mock.Mock()
             adapter._add_measure_pump = mock.Mock()
-            adapter._logger.warning = mock.Mock()
+            adapter.logger.warning = mock.Mock()
 
             return adapter
 
@@ -448,7 +461,7 @@ class TestAddMeasure:
             measure.attrs = mock.Mock()
             measure.attrs.type = "UnsupportedMeasure"
             sfincs_adapter.add_measure(measure)
-            sfincs_adapter._logger.warning.assert_called_once_with(
+            sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 

@@ -85,7 +85,7 @@ class TestWindFromCSV:
         expected_csv = tmp_path / "output" / "wind.csv"
 
         # Act
-        wind.save_additional(expected_csv.parent)
+        wind.save_additional(output_dir=expected_csv.parent)
 
         # Assert
         assert expected_csv.exists()

@@ -85,24 +85,27 @@ def dummy_pump_measure():
         name="dummy_pump_measure",
         type=HazardType.pump,
         selection_type=SelectionType.polyline,
-        polygon_file="pump.geojson",
+        polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
         discharge=UnitfulDischarge(value=100, units=UnitTypesDischarge.cfs),
     )
-    PUMP_GEOJSON = TEST_DATA_DIR / "pump.geojson"
 
-    return Pump.load_dict(model), PUMP_GEOJSON
+    return Pump.load_dict(model)
 
 
 @pytest.fixture()
-def dummy_strategy(dummy_buyout_measure, dummy_pump_measure):
+def dummy_strategy(test_db, dummy_buyout_measure, dummy_pump_measure):
+    pump = dummy_pump_measure
+    buyout = dummy_buyout_measure
     model = StrategyModel(
         name="dummy_strategy",
         description="",
-        measures=[dummy_buyout_measure.attrs.name, dummy_pump_measure[0].attrs.name],
+        measures=[buyout.attrs.name, pump.attrs.name],
     )
-    # with validate=True, the measures will be checked to exist in the database, which is not the case here
-    strat = Strategy.load_dict(model, validate=False)
-    return strat
+
+    for measure in [buyout, pump]:
+        test_db.measures.save(measure)
+
+    return Strategy.load_dict(model)
 
 
 def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeModel) -> pd.DataFrame:

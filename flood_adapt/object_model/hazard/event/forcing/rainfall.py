@@ -72,7 +72,7 @@ class RainfallSynthetic(IRainfall):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error loading synthetic rainfall timeseries: {e}")
+                self.logger.error(f"Error loading synthetic rainfall timeseries: {e}")
 
     @staticmethod
     def default() -> "RainfallSynthetic":
@@ -99,7 +99,7 @@ class RainfallFromMeteo(IRainfall):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error reading meteo data: {self.path}. {e}")
+                self.logger.error(f"Error reading meteo data: {self.path}. {e}")
 
     @staticmethod
     def default() -> "RainfallFromMeteo":
@@ -123,10 +123,11 @@ class RainfallFromTrack(IRainfall):
 
         return self.path
 
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path):
         if self.path:
-            shutil.copy2(self.path, toml_dir)
-            self.path = toml_dir / self.path.name
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
 
     @staticmethod
     def default() -> "RainfallFromTrack":

@@ -1,39 +1,27 @@
 import os
-from typing import Any, Union
+from pathlib import Path
+from typing import Any
 
-import tomli
-import tomli_w
-
-from flood_adapt.object_model.direct_impact.measure.impact_measure import (
-    ImpactMeasure,
-)
-from flood_adapt.object_model.interface.measures import FloodProofModel, IFloodProof
+from flood_adapt.object_model.interface.measures import FloodProofModel, ImpactMeasure
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class FloodProof(ImpactMeasure, IFloodProof):
+class FloodProof(ImpactMeasure[FloodProofModel]):
     """Subclass of ImpactMeasure describing the measure of flood-proof buildings."""
 
     attrs: FloodProofModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]) -> IFloodProof:
-        """Create FloodProof from toml file."""
-        obj = FloodProof()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = FloodProofModel.model_validate(toml)
-        return obj
+    def __init__(self, data: dict[str, Any]) -> None:
+        if isinstance(data, FloodProofModel):
+            self.attrs = data
+        else:
+            self.attrs = FloodProofModel.model_validate(data)
 
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any],
-    ) -> IFloodProof:
-        """Create FloodProof from object, e.g. when initialized from GUI."""
-        obj = FloodProof()
-        obj.attrs = FloodProofModel.model_validate(data)
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save FloodProof to a toml file."""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.attrs.polygon_file:
+            src_path = resolve_filepath(
+                self.dir_name, self.attrs.name, self.attrs.polygon_file
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.polygon_file = path.name

@@ -9,10 +9,10 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.site import Site
 
 # from flood_adapt.object_model.interface.events import RainfallModel, TideModel
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.object_model.site import Site
 
 # from tests.test_object_model.test_events.test_synthetic import test_event_all_synthetic
 # from tests.test_object_model.test_strategies import test_attrs

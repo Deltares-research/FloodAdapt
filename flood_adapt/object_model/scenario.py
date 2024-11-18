@@ -1,15 +1,19 @@
 import os
-from pathlib import Path
-from typing import Any, Union
-
-import tomli
-import tomli_w
+from typing import Any
 
 from flood_adapt import __version__
 from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
+from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.strategy import Strategy
 from flood_adapt.object_model.utils import finished_file_exists, write_finished_file
 
 
@@ -20,63 +24,36 @@ class Scenario(IScenario):
 
     direct_impacts: DirectImpacts
 
-    @property
-    def results_path(self) -> Path:
-        return self.database.scenarios.output_path.joinpath(self.attrs.name)
-
-    @property
-    def site_info(self):
-        return self.database.site
-
-    def __init__(self) -> None:
-        self._logger = FloodAdaptLogging.getLogger(__name__)
-
-    def init_object_model(self) -> "Scenario":
+    def __init__(self, data: dict[str, Any]) -> None:
         """Create a Direct Impact object."""
+        if isinstance(data, ScenarioModel):
+            self.attrs = data
+        else:
+            self.attrs = ScenarioModel.model_validate(data)
+
+        self.site_info = Site.load_file(
+            db_path(TopLevelDir.static, ObjectDir.site) / "site.toml"
+        )
+        self.results_path = db_path(TopLevelDir.output, self.dir_name, self.attrs.name)
         self.direct_impacts = DirectImpacts(
             scenario=self.attrs,
         )
-        return self
-
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Create Scenario from toml file."""
-        obj = Scenario()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = ScenarioModel.model_validate(toml)
-        return obj
-
-    @staticmethod
-    def load_dict(data: dict[str, Any]):
-        """Create Scenario from object, e.g. when initialized from GUI."""
-        obj = Scenario()
-        obj.attrs = ScenarioModel.model_validate(data)
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Scenario to a toml file."""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
 
     def run(self):  # TODO move to controller
         """Run direct impact models for the scenario."""
-        self.init_object_model()
         os.makedirs(self.results_path, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
         log_file = self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
         with FloodAdaptLogging.to_file(file_path=log_file):
-            self._logger.info(f"FloodAdapt version {__version__}")
-            self._logger.info(
+            self.logger.info(f"FloodAdapt version {__version__}")
+            self.logger.info(
                 f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
 
             # preprocess model input data first, then run, then post-process
             if not self.direct_impacts.hazard.has_run:
-                template_path = Path(
-                    self.database.static_path / "templates" / "overland"
-                )
+                template_path = db_path(TopLevelDir.static) / "templates" / "overland"
                 with SfincsAdapter(model_root=template_path) as sfincs_adapter:
                     sfincs_adapter.run(self)
             else:
@@ -91,7 +68,7 @@ class Scenario(IScenario):
                     f"Direct impacts for scenario '{self.attrs.name}' has already been run."
                 )
 
-            self._logger.info(
+            self.logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
 
@@ -104,16 +81,35 @@ class Scenario(IScenario):
 
     def equal_hazard_components(self, scenario: "IScenario") -> bool:
         """Check if two scenarios have the same hazard components."""
-        same_events = self.database.events.get(
-            self.attrs.event
-        ) == self.database.events.get(scenario.attrs.event)
-        same_projections = self.database.projections.get(
-            self.attrs.projection
-        ) == self.database.projections.get(scenario.attrs.projection)
-        same_strategies = self.database.strategies.get(
-            self.attrs.strategy
-        ) == self.database.strategies.get(scenario.attrs.strategy)
-        return same_events & same_projections & same_strategies
+
+        def equal_hazard_strategy():
+            lhs = Strategy.load_file(
+                db_path(object_dir=ObjectDir.strategy, obj_name=self.attrs.strategy)
+                / f"{self.attrs.strategy}.toml"
+            ).get_hazard_strategy()
+            rhs = Strategy.load_file(
+                db_path(object_dir=ObjectDir.strategy, obj_name=scenario.attrs.strategy)
+                / f"{scenario.attrs.strategy}.toml"
+            ).get_hazard_strategy()
+            return lhs == rhs
+
+        def equal_events():
+            return self.attrs.event == scenario.attrs.event
+
+        def equal_projections():
+            lhs = Projection.load_file(
+                db_path(object_dir=ObjectDir.projection, obj_name=self.attrs.projection)
+                / f"{self.attrs.projection}.toml"
+            ).get_physical_projection()
+            rhs = Projection.load_file(
+                db_path(
+                    object_dir=ObjectDir.projection, obj_name=scenario.attrs.projection
+                )
+                / f"{scenario.attrs.projection}.toml"
+            ).get_physical_projection()
+            return lhs == rhs
+
+        return equal_hazard_strategy() & equal_events() & equal_projections()
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):

@@ -23,13 +23,13 @@ from flood_adapt.object_model.hazard.interface.models import (
     ShapeType,
     TimeModel,
 )
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitfulTime,
     UnitTypesLength,
     UnitTypesTime,
 )
-from flood_adapt.object_model.site import Site
 
 
 class SurgeModel(BaseModel):
@@ -143,14 +143,14 @@ class WaterlevelFromCSV(IWaterlevel):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error reading CSV file: {self.path}. {e}")
+                self.logger.error(f"Error reading CSV file: {self.path}. {e}")
 
     def save_additional(self, toml_dir: Path):
         if self.path:
             shutil.copy2(self.path, toml_dir)
-            self.path = (
-                toml_dir / self.path.name
-            )  # update the path to the new location so the toml also gets updated
+
+            # update the path to the new location so the toml also gets updated
+            self.path = toml_dir / self.path.name
 
     @staticmethod
     def default() -> "WaterlevelFromCSV":
@@ -180,7 +180,7 @@ class WaterlevelFromModel(IWaterlevel):
             if strict:
                 raise
             else:
-                self._logger.error(f"Error reading model results: {self.path}. {e}")
+                self.logger.error(f"Error reading model results: {self.path}. {e}")
 
     @staticmethod
     def default() -> "WaterlevelFromModel":
@@ -208,7 +208,7 @@ class WaterlevelFromGauged(IWaterlevel):
             if strict:
                 raise e
             else:
-                self._logger.error(f"Error reading gauge data: {e}")
+                self.logger.error(f"Error reading gauge data: {e}")
                 return None
 
     @staticmethod

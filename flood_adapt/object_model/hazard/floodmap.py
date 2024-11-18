@@ -3,9 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.interface.models import Mode
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.database_user import IDatabaseUser
 
 
@@ -20,10 +18,10 @@ class FloodMap(IDatabaseUser):
 
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]
-    mode: Mode
     event_set: EventSet
-    physical_projection: PhysicalProjection
-    hazard_strategy: HazardStrategy
+    # mode: Mode
+    # physical_projection: PhysicalProjection
+    # hazard_strategy: HazardStrategy
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name
