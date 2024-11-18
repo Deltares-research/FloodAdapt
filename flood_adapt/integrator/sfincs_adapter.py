@@ -15,7 +15,6 @@ import shapely
 import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
-from floodadapt_gui.callback.objects.events.event_editor import ForcingSource
 from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
@@ -29,6 +28,7 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeFromCSV,
     DischargeSynthetic,
 )
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingSource
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallFromMeteo,

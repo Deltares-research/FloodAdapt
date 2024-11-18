@@ -5,7 +5,7 @@ from typing import Any, List, Union
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-import flood_adapt.dbs_classes.database as db
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.hazard.event.event_factory import (
     EventFactory,
     HistoricalEvent,
@@ -73,15 +73,15 @@ __all__ = [
 
 def get_events() -> dict[str, Any]:
     # use PyQt table / sorting and filtering either with PyQt table or in the API
-    return db.Database().events.list_objects()
+    return Database().events.list_objects()
 
 
 def get_event(name: str) -> IEvent:
-    return db.Database().events.get(name)
+    return Database().events.get(name)
 
 
 def get_event_mode(name: str) -> str:
-    filename = db.Database().events.input_path / f"{name}" / f"{name}.toml"
+    filename = Database().events.input_path / f"{name}" / f"{name}.toml"
     return EventFactory.read_mode(filename)
 
 
@@ -119,27 +119,27 @@ def get_template_description(template: Template) -> str:
 
 
 def save_event_toml(event: IEvent) -> None:
-    db.Database().events.save(event)
+    Database().events.save(event)
 
 
 def save_event_additional(event: IEvent) -> None:
-    db.Database().events.save(event, toml_only=False)
+    Database().events.save(event, toml_only=False)
 
 
 def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
-    db.Database().write_to_csv(name, event, df)
+    Database().write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent) -> None:
-    db.Database().events.edit(event)
+    Database().events.edit(event)
 
 
 def delete_event(name: str) -> None:
-    db.Database().events.delete(name)
+    Database().events.delete(name)
 
 
 def copy_event(old_name: str, new_name: str, new_description: str) -> None:
-    db.Database().events.copy(old_name, new_name, new_description)
+    Database().events.copy(old_name, new_name, new_description)
 
 
 def check_higher_level_usage(name: str) -> list[str]:
@@ -156,7 +156,7 @@ def check_higher_level_usage(name: str) -> list[str]:
         list of scenario names where the event is used
 
     """
-    return db.Database().events.check_higher_level_usage(name)
+    return Database().events.check_higher_level_usage(name)
 
 
 def download_wl_data(
@@ -178,23 +178,23 @@ def plot_forcing(event, forcingtype) -> str | None:
 
 
 def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
-    return db.Database().plot_wl(event, input_wl_df)
+    return Database().plot_wl(event, input_wl_df)
 
 
 def plot_river(
     event: IEvent,
     input_river_df: list[pd.DataFrame],
 ) -> str:
-    return db.Database().plot_river(event, input_river_df)
+    return Database().plot_river(event, input_river_df)
 
 
 def plot_rainfall(event: IEvent, input_rainfall_df: pd.DataFrame = None) -> str:
-    return db.Database().plot_rainfall(event, input_rainfall_df)
+    return Database().plot_rainfall(event, input_rainfall_df)
 
 
 def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
-    return db.Database().plot_wind(event, input_wind_df)
+    return Database().plot_wind(event, input_wind_df)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):
-    db.Database().write_cyc(event, track)
+    Database().write_cyc(event, track)

@@ -6,40 +6,40 @@ import pandas as pd
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-import flood_adapt.dbs_classes.database as db
+from flood_adapt.dbs_classes.database import Database
 
 
 def get_outputs() -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
-    return db.Database().get_outputs()
+    return Database().get_outputs()
 
 
 def get_topobathy_path() -> str:
-    return db.Database().get_topobathy_path()
+    return Database().get_topobathy_path()
 
 
 def get_index_path() -> str:
-    return db.Database().get_index_path()
+    return Database().get_index_path()
 
 
 def get_depth_conversion() -> float:
-    return db.Database().get_depth_conversion()
+    return Database().get_depth_conversion()
 
 
 def get_max_water_level(name: str, rp: int = None) -> np.array:
-    return db.Database().get_max_water_level(name, rp)
+    return Database().get_max_water_level(name, rp)
 
 
 def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
-    return db.Database().get_fiat_footprints(name)
+    return Database().get_fiat_footprints(name)
 
 
 def get_aggregation(name: str) -> dict[gpd.GeoDataFrame]:
-    return db.Database().get_aggregation(name)
+    return Database().get_aggregation(name)
 
 
 def get_roads(name: str) -> gpd.GeoDataFrame:
-    return db.Database().get_roads(name)
+    return Database().get_roads(name)
 
 
 def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
@@ -58,7 +58,7 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
         The HTML strings of the water level timeseries
     """
     # Get the direct_impacts objects from the scenario
-    hazard = db.Database().scenarios.get(name).direct_impacts.hazard
+    hazard = Database().scenarios.get(name).direct_impacts.hazard
 
     # Check if the scenario has run
     if not hazard.has_run_check():
@@ -66,8 +66,8 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
             f"Scenario {name} has not been run. Please run the scenario first."
         )
 
-    output_path = db.Database().scenarios.output_path.joinpath(hazard.name)
-    gdf = db.Database().static.get_obs_points()
+    output_path = Database().scenarios.output_path.joinpath(hazard.name)
+    gdf = Database().static.get_obs_points()
     gdf["html"] = [
         str(output_path.joinpath("Flooding", f"{station}_timeseries.html"))
         for station in gdf.name
@@ -92,7 +92,7 @@ def get_infographic(name: str) -> str:
         The HTML string of the infographic.
     """
     # Get the direct_impacts objects from the scenario
-    database = db.Database()
+    database = Database()
     impact = database.scenarios.get(name).direct_impacts
 
     # Check if the scenario has run
@@ -136,7 +136,7 @@ def get_infometrics(name: str) -> pd.DataFrame:
         If the metrics file does not exist.
     """
     # Create the infographic path
-    metrics_path = db.Database().scenarios.output_path.joinpath(
+    metrics_path = Database().scenarios.output_path.joinpath(
         name,
         f"Infometrics_{name}.csv",
     )

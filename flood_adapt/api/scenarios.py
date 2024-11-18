@@ -1,17 +1,17 @@
 from typing import Any, Union
 
-import flood_adapt.dbs_classes.database as db
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
 
 def get_scenarios() -> dict[str, Any]:
     # sorting and filtering either with PyQt table or in the API
-    return db.Database().scenarios.list_objects()
+    return Database().scenarios.list_objects()
 
 
 def get_scenario(name: str) -> IScenario:
-    return db.Database().scenarios.get(name)
+    return Database().scenarios.get(name)
 
 
 def create_scenario(attrs: dict[str, Any]) -> IScenario:
@@ -36,19 +36,19 @@ def save_scenario(scenario: IScenario) -> tuple[bool, str]:
         The error message if the scenario was not saved successfully.
     """
     try:
-        db.Database().scenarios.save(scenario)
+        Database().scenarios.save(scenario)
         return True, ""
     except Exception as e:
         return False, str(e)
 
 
 def edit_scenario(scenario: IScenario) -> None:
-    db.Database().scenarios.edit(scenario)
+    Database().scenarios.edit(scenario)
 
 
 def delete_scenario(name: str) -> None:
-    db.Database().scenarios.delete(name)
+    Database().scenarios.delete(name)
 
 
 def run_scenario(name: Union[str, list[str]]) -> None:
-    db.Database().run_scenario(name)
+    Database().run_scenario(name)

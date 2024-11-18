@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import flood_adapt.dbs_classes.database as db
 from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
@@ -13,6 +12,7 @@ from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 
 # from flood_adapt.object_model.interface.events import RainfallModel, TideModel
+from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.site import SCSModel
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.site import Site
@@ -62,7 +62,7 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
 
 
 @pytest.mark.skip(reason="Refactor to use the new event model")
-def test_scs_rainfall(test_db: db.Database, test_scenarios: dict[str, Scenario]):
+def test_scs_rainfall(test_db: IDatabase, test_scenarios: dict[str, Scenario]):
     test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
 
     test_scenario.init_object_model()
@@ -104,7 +104,7 @@ def test_scs_rainfall(test_db: db.Database, test_scenarios: dict[str, Scenario])
 
 class Test_scenario_run:
     @pytest.fixture(scope="class")
-    def test_scenario_before_after_run(self, test_db_class: db.Database):
+    def test_scenario_before_after_run(self, test_db_class: IDatabase):
         before_run_name = "current_extreme12ft_no_measures"
         after_run_name = "current_extreme12ft_no_measures_run"
 
