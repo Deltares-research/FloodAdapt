@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+import pytest
 import xarray as xr
 
 from flood_adapt.object_model.hazard.event.forcing.wind import (
@@ -53,19 +54,17 @@ class TestWindFromMeteo:
 
 
 class TestWindFromCSV:
-    def test_wind_from_csv_get_data(
-        self, tmp_path, dummy_2d_timeseries_df: pd.DataFrame
-    ):
+    @pytest.fixture()
+    def _create_dummy_csv(
+        self, tmp_path: Path, dummy_2d_timeseries_df: pd.DataFrame
+    ) -> Path:
+        return tmp_path / "wind.csv"
+
+    def test_wind_from_csv_get_data(self, _create_dummy_csv: Path):
         # Arrange
-        path = Path(tmp_path) / "wind/test.csv"
+        path = _create_dummy_csv
         if not path.parent.exists():
             path.parent.mkdir(parents=True)
-
-        # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
-        # Required coordinates: ['time', 'y', 'x']
-
-        dummy_2d_timeseries_df.columns = ["wind_u", "wind_v"]
-        dummy_2d_timeseries_df.to_csv(path)
 
         # Act
         wind_df = WindFromCSV(path=path).get_data()
@@ -73,3 +72,20 @@ class TestWindFromCSV:
         # Assert
         assert isinstance(wind_df, pd.DataFrame)
         assert not wind_df.empty
+
+    def test_wind_from_csv_save_additional(
+        self, tmp_path: Path, dummy_2d_timeseries_df: pd.DataFrame
+    ):
+        # Arrange
+        path = tmp_path / "wind.csv"
+        dummy_2d_timeseries_df.columns = ["wind_u", "wind_v"]
+        dummy_2d_timeseries_df.to_csv(path)
+
+        wind = WindFromCSV(path=path)
+        expected_csv = tmp_path / "output" / "wind.csv"
+
+        # Act
+        wind.save_additional(expected_csv.parent)
+
+        # Assert
+        assert expected_csv.exists()

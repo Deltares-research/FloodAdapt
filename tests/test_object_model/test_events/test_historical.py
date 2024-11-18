@@ -1,16 +1,20 @@
+import tempfile
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.event.forcing.discharge import (
+    DischargeConstant,
+    DischargeFromCSV,
+)
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallFromMeteo,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromGauged,
+    WaterlevelFromCSV,
     WaterlevelFromModel,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
@@ -40,14 +44,19 @@ from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
-def setup_nearshore_event():
+def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
+    def _tmp_timeseries_csv(name: str):
+        tmp_csv = Path(tempfile.gettempdir()) / name
+        dummy_1d_timeseries_df.to_csv(tmp_csv)
+        return Path(tmp_csv)
+
     event_attrs = {
         "name": "nearshore_gauged",
         "time": TimeModel(),
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelFromGauged(),
+            "WATERLEVEL": WaterlevelFromCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
             "WIND": WindConstant(
                 speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
                 direction=UnitfulDirection(value=60, units=UnitTypesDirection.degrees),
@@ -55,7 +64,7 @@ def setup_nearshore_event():
             "RAINFALL": RainfallConstant(
                 intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
             ),
-            "DISCHARGE": DischargeConstant(
+            "DISCHARGE": DischargeFromCSV(
                 river=RiverModel(
                     name="cooper",
                     description="Cooper River",
@@ -65,7 +74,7 @@ def setup_nearshore_event():
                         value=5000, units=UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
+                path=_tmp_timeseries_csv("discharge.csv"),
             ),
         },
     }
@@ -121,6 +130,23 @@ class TestHistoricalEvent:
         event = setup_offshore_meteo_event
         event.save(path)
         assert path.exists()
+
+    def test_save_additional_csv(
+        self, setup_nearshore_event: HistoricalEvent, tmp_path: Path
+    ):
+        # Arrange
+        path = tmp_path / "test_event.toml"
+        event = setup_nearshore_event
+        expected_csvs = [
+            path.parent / "waterlevel.csv",
+            path.parent / "discharge.csv",
+        ]
+
+        # Act
+        event.save_additional(path.parent)
+
+        # Assert
+        assert all(csv.exists() for csv in expected_csvs)
 
     def test_load_file(
         self, setup_offshore_meteo_event: HistoricalEvent, tmp_path: Path

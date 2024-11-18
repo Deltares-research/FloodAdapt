@@ -177,3 +177,16 @@ class TestHurricaneEvent:
             wl_df = _offshore_model._get_wl_df_from_offshore_his_results()
 
         assert isinstance(wl_df, pd.DataFrame)
+
+    def test_save_additional_saves_cyc_file(
+        self, setup_hurricane_event: tuple[HurricaneEvent, Path]
+    ):
+        # Arrange
+        event, cyc_file = setup_hurricane_event
+        toml_path = Path(tempfile.gettempdir()) / "test_event.toml"
+
+        # Act
+        event.save_additional(toml_path.parent)
+
+        # Assert
+        assert (toml_path.parent / cyc_file.name).exists()

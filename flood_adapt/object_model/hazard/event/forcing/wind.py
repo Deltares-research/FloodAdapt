@@ -136,8 +136,10 @@ class WindFromCSV(IWind):
 
     def save_additional(self, toml_dir: Path):
         if self.path:
-            shutil.copy2(self.path, toml_dir)
-            self.path = toml_dir / self.path.name
+            dst = toml_dir / self.path.name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, dst)
+            self.path = dst
 
     @staticmethod
     def default() -> "WindFromCSV":

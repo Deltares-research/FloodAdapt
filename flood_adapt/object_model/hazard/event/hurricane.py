@@ -267,3 +267,14 @@ class HurricaneEvent(IEvent):
             )
         else:
             raise ValueError(f"Unknown mode: {self.attrs.mode}")
+
+    def save_additional(self, toml_dir: Path):
+        # Save the cyc file
+        cyc_file = toml_dir.joinpath(f"{self.attrs.track_name}.cyc")
+        shutil.copy2(
+            self.database.events.input_path
+            / self.attrs.name
+            / f"{self.attrs.track_name}.cyc",
+            cyc_file,
+        )
+        return super().save_additional(toml_dir)
