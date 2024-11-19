@@ -122,10 +122,6 @@ def save_event(event: IEvent) -> None:
     Database().events.save(event)
 
 
-def save_event_additional(event: IEvent) -> None:
-    Database().events.save(event, toml_only=False)
-
-
 def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
     Database().write_to_csv(name, event, df)
 

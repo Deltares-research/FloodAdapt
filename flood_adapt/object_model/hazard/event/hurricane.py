@@ -16,6 +16,7 @@ from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
+    IForcing,
 )
 from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.interface.path_builder import (
@@ -124,6 +125,9 @@ class HurricaneEvent(IEvent):
 
         self.logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
+            if not isinstance(forcing, IForcing):
+                continue
+
             if forcing._source == ForcingSource.TRACK:
                 forcing.path = spw_file
 

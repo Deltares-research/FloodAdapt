@@ -156,6 +156,7 @@ class IEvent(IObject[IEventModel]):
     dir_name = ObjectDir.event
 
     attrs: IEventModel
+    _site = None
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for forcing in self.attrs.forcings.values():

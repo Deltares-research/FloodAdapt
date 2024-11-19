@@ -2,7 +2,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar
 
 import tomli
 import tomli_w
@@ -35,6 +35,7 @@ class IObjectModel(BaseModel):
 
 
 ObjectModel = TypeVar("ObjectModel", bound=IObjectModel)
+T = TypeVar("T", bound="IObject")
 
 
 class IObject(ABC, Generic[ObjectModel]):
@@ -106,14 +107,14 @@ class IObject(ABC, Generic[ObjectModel]):
         return self.__class__.__name__.capitalize()
 
     @classmethod
-    def load_file(cls, file_path: Path | str | os.PathLike) -> "IObject":
+    def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:
         """Load object from file."""
         with open(file_path, mode="rb") as fp:
             toml = tomli.load(fp)
         return cls.load_dict(toml)
 
     @classmethod
-    def load_dict(cls, data: dict[str, Any]) -> "IObject":
+    def load_dict(cls: Type[T], data: dict[str, Any]) -> T:
         """Load object from dictionary."""
         obj = cls(data)
         return obj

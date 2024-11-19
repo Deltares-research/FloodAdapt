@@ -150,7 +150,11 @@ class Settings(BaseSettings):
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
-    unit_system: UnitSystem = UnitSystem()
+    unit_system: UnitSystem = Field(
+        default=UnitSystem(),
+        description="The unit system to use for the calculations. Must be 'imperial' or 'metric'.",
+        exclude=True,
+    )
 
     @computed_field
     @property
