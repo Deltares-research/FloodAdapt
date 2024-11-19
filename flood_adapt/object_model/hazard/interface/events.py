@@ -14,6 +14,7 @@ from pydantic import (
     model_validator,
 )
 
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -26,8 +27,13 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+    TopLevelDir,
+    db_path,
+)
 from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulLength,
     UnitTypesDirection,
@@ -199,6 +205,12 @@ class IEvent(IObject[IEventModel]):
         ) = None,
     ) -> str | None:
         """Plot the forcing data for the event."""
+        if self._site is None:
+            self._site = Site.load_file(
+                db_path(top_level_dir=TopLevelDir.static, object_dir=ObjectDir.site)
+                / "site.toml"
+            )
+
         match forcing_type:
             case ForcingType.RAINFALL:
                 return self.plot_rainfall(units=units)
@@ -228,7 +240,7 @@ class IEvent(IObject[IEventModel]):
 
         self.logger.debug("Plotting water level data")
 
-        units = units or self.database.site.attrs.gui.default_length_units
+        units = units or Settings().unit_system.length
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         data = None
@@ -247,20 +259,18 @@ class IEvent(IObject[IEventModel]):
             return
 
         # Plot actual thing
-        fig = px.line(
-            data + self.database.site.attrs.water_level.msl.height.convert(units)
-        )
+        fig = px.line(data + self._site.attrs.water_level.msl.height.convert(units))
 
         # plot reference water levels
         fig.add_hline(
-            y=self.database.site.attrs.water_level.msl.height.convert(units),
+            y=self._site.attrs.water_level.msl.height.convert(units),
             line_dash="dash",
             line_color="#000000",
             annotation_text="MSL",
             annotation_position="bottom right",
         )
-        if self.database.site.attrs.water_level.other:
-            for wl_ref in self.database.site.attrs.water_level.other:
+        if self._site.attrs.water_level.other:
+            for wl_ref in self._site.attrs.water_level.other:
                 fig.add_hline(
                     y=wl_ref.height.convert(units),
                     line_dash="dash",
@@ -287,7 +297,7 @@ class IEvent(IObject[IEventModel]):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.input_path / self.attrs.name
+        output_dir = db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "waterlevel_timeseries.html"
@@ -296,7 +306,8 @@ class IEvent(IObject[IEventModel]):
         return str(output_loc)
 
     def plot_rainfall(self, units: UnitTypesIntensity = None) -> str | None:
-        units = units or self.database.site.attrs.gui.default_intensity_units
+        units = units or Settings().unit_system.intensity
+
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
             return ""
 
@@ -352,7 +363,7 @@ class IEvent(IObject[IEventModel]):
         )
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.input_path / self.attrs.name
+        output_dir = db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "rainfall_timeseries.html"
@@ -361,7 +372,7 @@ class IEvent(IObject[IEventModel]):
         return str(output_loc)
 
     def plot_discharge(self, units: UnitTypesDischarge = None) -> str:
-        units = units or self.database.site.attrs.gui.default_discharge_units
+        units = units or Settings().unit_system.discharge
 
         # set timing relative to T0 if event is synthetic
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
@@ -393,8 +404,8 @@ class IEvent(IObject[IEventModel]):
             )
             return ""
 
-        river_names = [i.name for i in self.database.site.attrs.river]
-        river_descriptions = [i.description for i in self.database.site.attrs.river]
+        river_names = [i.name for i in self._site.attrs.river]
+        river_descriptions = [i.description for i in self._site.attrs.river]
         river_descriptions = np.where(
             river_descriptions is None, river_names, river_descriptions
         ).tolist()
@@ -427,7 +438,7 @@ class IEvent(IObject[IEventModel]):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.input_path / self.attrs.name
+        output_dir = db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "discharge_timeseries.html"
@@ -453,12 +464,8 @@ class IEvent(IObject[IEventModel]):
 
         self.logger.debug("Plotting wind data")
 
-        velocity_units = (
-            velocity_units or self.database.site.attrs.gui.default_velocity_units
-        )
-        direction_units = (
-            direction_units or self.database.site.attrs.gui.default_direction_units
-        )
+        velocity_units = velocity_units or Settings().unit_system.velocity
+        direction_units = direction_units or Settings().unit_system.direction
 
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
@@ -524,7 +531,7 @@ class IEvent(IObject[IEventModel]):
 
         # Only save to the the event folder if that has been created already.
         # Otherwise this will create the folder and break the db since there is no event.toml yet
-        output_dir = self.database.events.input_path / self.attrs.name
+        output_dir = db_path(object_dir=self.dir_name, obj_name=self.attrs.name)
         if not output_dir.exists():
             output_dir = gettempdir()
         output_loc = Path(output_dir) / "wind_timeseries.html"

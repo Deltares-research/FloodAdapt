@@ -14,6 +14,57 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from flood_adapt import SRC_DIR
+from flood_adapt.object_model.io.unitfulvalue import (
+    UnitTypesArea,
+    UnitTypesDirection,
+    UnitTypesDischarge,
+    UnitTypesIntensity,
+    UnitTypesLength,
+    UnitTypesVelocity,
+    UnitTypesVolume,
+)
+
+
+class UnitSystem:
+    length: UnitTypesLength
+    distance: UnitTypesLength
+    area: UnitTypesArea
+    volume: UnitTypesVolume
+    velocity: UnitTypesVelocity
+    direction: UnitTypesDirection
+    discharge: UnitTypesDischarge
+    intensity: UnitTypesIntensity
+    cumulative: UnitTypesLength
+
+    def __init__(self, system: str = "imperial"):
+        if system == "imperial":
+            self.set_imperial()
+        elif system == "metric":
+            self.set_metric()
+        else:
+            raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
+
+    def set_imperial(self):
+        self.length = UnitTypesLength.feet
+        self.distance = UnitTypesLength.miles
+        self.area = UnitTypesArea.sf
+        self.volume = UnitTypesVolume.cf
+        self.velocity = UnitTypesVelocity.mph
+        self.direction = UnitTypesDirection.degrees
+        self.discharge = UnitTypesDischarge.cfs
+        self.intensity = UnitTypesIntensity.inch_hr
+        self.cumulative = UnitTypesLength.feet
+
+    def set_metric(self):
+        self.length = UnitTypesLength.meters
+        self.distance = UnitTypesLength.meters
+        self.area = UnitTypesArea.m2
+        self.volume = UnitTypesVolume.m3
+        self.velocity = UnitTypesVelocity.mps
+        self.direction = UnitTypesDirection.degrees
+        self.discharge = UnitTypesDischarge.cms
+        self.intensity = UnitTypesIntensity.mm_hr
+        self.cumulative = UnitTypesLength.meters
 
 
 class Settings(BaseSettings):
@@ -50,6 +101,8 @@ class Settings(BaseSettings):
         The root directory of the system folder containing the kernels.
     delete_crashed_runs : bool
         Whether to delete crashed/corrupted runs immediately after they are detected.
+    unit_system : UnitSystem
+        The unit system to use for the calculations. Must be 'imperial' or 'metric'.
 
     Properties
     ----------
@@ -97,6 +150,7 @@ class Settings(BaseSettings):
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
+    unit_system: UnitSystem = UnitSystem()
 
     @computed_field
     @property

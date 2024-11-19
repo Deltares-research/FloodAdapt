@@ -89,7 +89,6 @@ include = [
 [tool.setuptools.package-data]
 flood_adapt = [
     "py.typed",
-    # "system/**", uncomment when other os are supported as well
 ]
 
 [tool.ruff]
@@ -128,6 +127,10 @@ fixable = [
     "F",
     "D"
 ]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F403", "F405"] # allow * imports
+
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
