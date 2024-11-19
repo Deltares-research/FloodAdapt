@@ -61,7 +61,7 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     hazard = Database().scenarios.get(name).direct_impacts.hazard
 
     # Check if the scenario has run
-    if not hazard.has_run_check():
+    if not hazard.has_run:
         raise ValueError(
             f"Scenario {name} has not been run. Please run the scenario first."
         )

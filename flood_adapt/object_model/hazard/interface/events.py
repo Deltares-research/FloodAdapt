@@ -158,6 +158,20 @@ class IEvent(IObject[IEventModel]):
     attrs: IEventModel
     _site = None
 
+    def get_forcings(self) -> list[IForcing]:
+        forcings = []
+        for forcing in self.attrs.forcings.values():
+            if isinstance(forcing, IForcing):
+                forcings.append(forcing)
+            elif isinstance(forcing, dict):
+                for _, _forcing in forcing.items():
+                    forcings.append(_forcing)
+            else:
+                raise ValueError(
+                    f"Invalid forcing type: {forcing}. Forcings must be of type IForcing or dict[str, IForcing]."
+                )
+        return forcings
+
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for forcing in self.attrs.forcings.values():
             if forcing is None:

@@ -162,7 +162,7 @@ class HurricaneEvent(IEvent):
         """
         spw_file = self.track_file.parent.joinpath(f"{self.attrs.track_name}.spw")
 
-        output_dir = output_dir or self.track_file.parent.parent
+        output_dir = output_dir or self.track_file.parent
         output_dir.mkdir(parents=True, exist_ok=True)
 
         if spw_file.exists() and not recreate:

@@ -272,7 +272,7 @@ class SfincsAdapter(IHazardAdapter):
         # write forcing data to event object
         event.process(self._scenario)
 
-        for forcing in event.attrs.forcings.values():
+        for forcing in event.get_forcings():
             self.add_forcing(forcing)
 
         for measure in self._strategy.get_hazard_strategy().measures:
