@@ -112,6 +112,7 @@ def test_shutdown_AfterShutdown_VarsAreNone():
 
     # Assert
     assert dbs.__class__._instance is None
+    assert dbs._instance is None
     assert dbs._init_done is False
     assert dbs.database_path is None
     assert dbs.database_name is None
@@ -141,6 +142,7 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
 
     # Assert
     assert dbs.__class__._instance is not None
+    assert dbs._instance is not None
     assert dbs._init_done
     assert dbs.database_path is not None
     assert dbs.database_name is not None

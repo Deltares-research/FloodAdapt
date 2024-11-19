@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Generic, Type, TypeVar
 
 from flood_adapt.object_model.interface.object_model import IObject
 
+T = TypeVar("T", bound=IObject)
 
-class AbstractDatabaseElement(ABC):
-    _object_class: Type[IObject]
+
+class AbstractDatabaseElement(ABC, Generic[T]):
+    _object_class: Type[T]
 
     input_path: Path
     output_path: Path
@@ -17,7 +19,7 @@ class AbstractDatabaseElement(ABC):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> IObject:
+    def get(self, name: str) -> T:
         """Return the object of the type of the database with the given name.
 
         Parameters

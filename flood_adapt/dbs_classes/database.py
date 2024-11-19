@@ -152,6 +152,7 @@ class Database(IDatabase):
     def shutdown(self):
         """Explicitly shut down the database controller singleton and clear all data stored in its memory."""
         self.__class__._instance = None
+        self._instance = None
         self._init_done = False
         self.database_path = None
         self.database_name = None
@@ -990,7 +991,7 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.attrs.name, "Flooding"
                 )
-                if scn.direct_impacts.hazard.has_run_check():  # only copy results if the hazard model has actually finished and skip simulation folders
+                if scn.direct_impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,

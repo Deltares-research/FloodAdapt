@@ -2,7 +2,7 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.projection import Projection
 
 
-class DbsProjection(DbsTemplate):
+class DbsProjection(DbsTemplate[Projection]):
     _object_class = Projection
 
     def _check_standard_objects(self, name: str) -> bool:

@@ -10,28 +10,18 @@ class IDatabaseUser(ABC):
     _database_instance = None
     _logger = None
 
-    @classmethod
-    def get_logger(cls) -> logging.Logger:
-        """Return the logger for the object."""
-        if cls._logger is None:
-            cls._logger = FloodAdaptLogging.getLogger(cls.__name__)
-        return cls._logger
-
-    @classmethod
-    def get_database(cls):
-        """Return the database for the object."""
-        if cls._database_instance is None:
-            from flood_adapt.dbs_classes.database import Database
-
-            cls._database_instance = Database()
-        return cls._database_instance
-
     @property
     def database(self):
         """Return the database for the object."""
-        return self.get_database()
+        if self._database_instance is None:
+            from flood_adapt.dbs_classes.database import Database
+
+            self._database_instance = Database()
+        return self._database_instance
 
     @property
     def logger(self) -> logging.Logger:
         """Return the logger for the object."""
-        return self.get_logger()
+        if self._logger is None:
+            self._logger = FloodAdaptLogging.getLogger(self.__class__.__name__)
+        return self._logger

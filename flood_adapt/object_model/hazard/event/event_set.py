@@ -75,7 +75,6 @@ class EventSet(IDatabaseUser):
         for sub_event in self.events:
             sub_dir = Path(output_dir) / sub_event.attrs.name
             sub_dir.mkdir(parents=True, exist_ok=True)
-            sub_event.save_additional(output_dir=sub_dir)
             sub_event.save(sub_dir / f"{sub_event.attrs.name}.toml")
 
     def process(self, scenario: IScenario = None):

@@ -5,7 +5,7 @@ from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 
 
-class DbsBenefit(DbsTemplate):
+class DbsBenefit(DbsTemplate[Benefit]):
     _object_class = Benefit
 
     def save(self, benefit: IBenefit, overwrite: bool = False):

@@ -125,7 +125,7 @@ class HurricaneEvent(IEvent):
         self.logger.info("Collecting forcing data ...")
         for forcing in self.attrs.forcings.values():
             if forcing._source == ForcingSource.TRACK:
-                forcing.path = spw_file.name
+                forcing.path = spw_file
 
             # temporary fix to set the path of the forcing
             if isinstance(forcing, WaterlevelFromModel):

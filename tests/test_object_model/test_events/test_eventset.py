@@ -114,13 +114,13 @@ def test_eventset(test_sub_event) -> tuple[EventSet, list[IEventModel]]:
 def setup_eventset_scenario(
     test_db: IDatabase,
     test_eventset,
-    dummy_pump_measure,
-    dummy_buyout_measure,
+    # dummy_pump_measure,
+    # dummy_buyout_measure,
     dummy_projection,
     dummy_strategy,
 ):
-    test_db.measures.save(dummy_pump_measure)
-    test_db.measures.save(dummy_buyout_measure)
+    # test_db.measures.save(dummy_pump_measure)
+    # test_db.measures.save(dummy_buyout_measure)
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 

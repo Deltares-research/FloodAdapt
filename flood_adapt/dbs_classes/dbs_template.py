@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Type, TypeVar
 
 from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
 from flood_adapt.object_model.interface.database import IDatabase
@@ -12,9 +12,11 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 
+T = TypeVar("T", bound=IObject)
 
-class DbsTemplate(AbstractDatabaseElement):
-    _object_class: Type[IObject]
+
+class DbsTemplate(AbstractDatabaseElement[T]):
+    _object_class: Type[T]
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
@@ -27,7 +29,7 @@ class DbsTemplate(AbstractDatabaseElement):
         )
         self.standard_objects = []
 
-    def get(self, name: str) -> IObject:
+    def get(self, name: str) -> T:
         """Return an object of the type of the database with the given name.
 
         Parameters

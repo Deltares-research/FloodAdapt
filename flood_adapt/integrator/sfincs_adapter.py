@@ -921,6 +921,7 @@ class SfincsAdapter(IHazardAdapter):
             raise ValueError(
                 "Spw file path is not set. Ensure it is created see `event.process()`"
             )
+        self._sim_path.mkdir(parents=True, exist_ok=True)
         shutil.copy2(forcing_from_track.path, self._sim_path)
         self._set_config_spw(forcing_from_track.path.name)
 

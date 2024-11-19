@@ -1,3 +1,4 @@
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -104,8 +105,11 @@ class WindFromTrack(IWind):
     path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
 
-    def save_additional(self, output_dir: Path):
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
+            output_dir = Path(output_dir)
+            if self.path == output_dir / self.path.name:
+                return
             output_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
@@ -135,12 +139,14 @@ class WindFromCSV(IWind):
             else:
                 self.logger.error(f"Error reading CSV file: {self.path}. {e}")
 
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            dst = toml_dir / self.path.name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.path, dst)
-            self.path = dst
+            output_dir = Path(output_dir)
+            if self.path == output_dir / self.path.name:
+                return
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
 
     @staticmethod
     def default() -> "WindFromCSV":

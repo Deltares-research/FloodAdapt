@@ -8,7 +8,7 @@ from flood_adapt.object_model.measure_factory import MeasureFactory
 from flood_adapt.object_model.utils import resolve_filepath
 
 
-class DbsMeasure(DbsTemplate):
+class DbsMeasure(DbsTemplate[IMeasure]):
     _object_class = IMeasure
 
     def get(self, name: str) -> IMeasure:

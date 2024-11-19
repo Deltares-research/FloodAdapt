@@ -8,7 +8,7 @@ from flood_adapt.object_model.measure import ImpactType
 from flood_adapt.object_model.strategy import Strategy
 
 
-class DbsStrategy(DbsTemplate):
+class DbsStrategy(DbsTemplate[Strategy]):
     _object_class = Strategy
 
     def save(

@@ -58,7 +58,10 @@ class TestWindFromCSV:
     def _create_dummy_csv(
         self, tmp_path: Path, dummy_2d_timeseries_df: pd.DataFrame
     ) -> Path:
-        return tmp_path / "wind.csv"
+        path = tmp_path / "wind.csv"
+        dummy_2d_timeseries_df.columns = ["wind_u", "wind_v"]
+        dummy_2d_timeseries_df.to_csv(path)
+        return path
 
     def test_wind_from_csv_get_data(self, _create_dummy_csv: Path):
         # Arrange
@@ -74,12 +77,10 @@ class TestWindFromCSV:
         assert not wind_df.empty
 
     def test_wind_from_csv_save_additional(
-        self, tmp_path: Path, dummy_2d_timeseries_df: pd.DataFrame
+        self, tmp_path: Path, _create_dummy_csv: Path
     ):
         # Arrange
-        path = tmp_path / "wind.csv"
-        dummy_2d_timeseries_df.columns = ["wind_u", "wind_v"]
-        dummy_2d_timeseries_df.to_csv(path)
+        path = _create_dummy_csv
 
         wind = WindFromCSV(path=path)
         expected_csv = tmp_path / "output" / "wind.csv"

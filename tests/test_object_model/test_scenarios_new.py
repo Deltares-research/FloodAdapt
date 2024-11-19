@@ -31,8 +31,6 @@ def test_scenarios(test_db):
 def test_initObjectModel_validInput(test_db, test_scenarios: dict[str, Scenario]):
     test_scenario = test_db.scenarios.get("all_projections_extreme12ft_strategy_comb")
 
-    test_scenario.init_object_model()
-
     assert isinstance(test_scenario.site_info, Site)
     assert isinstance(test_scenario.direct_impacts, DirectImpacts)
     assert isinstance(

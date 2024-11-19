@@ -124,9 +124,10 @@ class TestHurricaneEvent:
         spw_file = Path(tempfile.gettempdir()) / "IAN.spw"
         hurricane_event, cyc_file = setup_hurricane_event
         hurricane_event.attrs.track_name = "IAN"
+        hurricane_event.track_file = cyc_file
 
         # Act
-        hurricane_event.make_spw_file(cyc_file=cyc_file, output_dir=spw_file.parent)
+        hurricane_event.make_spw_file(recreate=True, output_dir=spw_file.parent)
 
         # Assert
         assert spw_file.exists()
@@ -183,6 +184,7 @@ class TestHurricaneEvent:
     ):
         # Arrange
         event, cyc_file = setup_hurricane_event
+        event.track_file = cyc_file
         toml_path = Path(tempfile.gettempdir()) / "test_event.toml"
 
         # Act

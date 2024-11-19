@@ -52,6 +52,7 @@ class Benefit(IBenefit):
         if hasattr(self, "_results"):
             return self._results
         self._results = self.get_output()
+        return self._results
 
     def get_output(self):
         if not self.has_run:

@@ -1,4 +1,5 @@
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -83,7 +84,7 @@ class IForcing(BaseModel, ABC):
         data["_source"] = self._source.value if self._source else None
         return data
 
-    def save_additional(self, toml_dir: Path):
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save additional data of the forcing."""
         return
 
