@@ -33,7 +33,7 @@ dependencies = [
     "geojson",
     "geopandas",
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git",
-    "hydromt-sfincs@ git+https://github.com/deltares-research/hydromt_sfincs_insiders.git@FA_quadtree",
+    "hydromt-sfincs@ git+https://github.com/Deltares-research/hydromt_sfincs_insiders.git@FA_quadtree",
     "numpy < 2.0",
     "numpy-financial",
     "pandas",
