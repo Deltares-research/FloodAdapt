@@ -172,11 +172,7 @@ class EventFactory:
                 | Template.Historical_nearshore
                 | Template.Historical_offshore
             ):
-                return """
-                        Select a time period for a historic event. This method can use offshore wind and pressure fields for \n
-                        the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. \n
-                        These water levels are used together with rainfall and river discharge input to simulate flooding in the site area.
-                        """
+                return "Select a time period for a historic event. This method can use offshore wind and pressure fields for the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. These water levels are used together with rainfall and river discharge input to simulate flooding in the site area."
             case Template.Hurricane:
                 return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
             case Template.Synthetic:
