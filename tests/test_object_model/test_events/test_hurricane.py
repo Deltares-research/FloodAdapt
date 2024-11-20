@@ -175,7 +175,7 @@ class TestHurricaneEvent:
         assert sim_path.exists()
 
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            wl_df = _offshore_model._get_wl_df_from_offshore_his_results()
+            wl_df = _offshore_model.get_wl_df_from_offshore_his_results()
 
         assert isinstance(wl_df, pd.DataFrame)
 

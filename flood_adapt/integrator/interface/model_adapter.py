@@ -37,7 +37,7 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
         """Use the adapter as a context manager to handle opening/closing of the model and attached resources.
 
         This method should return the adapter object itself, so that it can be used in a with statement.
@@ -59,7 +59,7 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def write(self, path: Path):
+    def write(self, path_out: Path, overwrite: bool = True):
         """Write the current model configuration to a path or other destination."""
         pass
 
@@ -74,7 +74,7 @@ class IAdapter(IDatabaseUser):
         pass
 
     @abstractmethod
-    def execute(self):
+    def execute(self) -> bool:
         """Execute a model run without any further processing."""
         pass
 

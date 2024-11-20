@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from flood_adapt import SRC_DIR
+from flood_adapt import __path__
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -18,6 +18,9 @@ from .fixtures import *  # noqa
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"
 logs_dir = Path(__file__).absolute().parent / "logs"
+src_dir = Path(
+    *__path__
+).resolve()  # __path__ is a list of paths to the package, but has only one element
 
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
@@ -73,14 +76,14 @@ def restore_db_from_snapshot():
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
     Settings(
-        database_root=SRC_DIR.parents[1] / "Database",
+        database_root=src_dir.parents[1] / "Database",
         database_name="charleston_test_hazardrefactor",
         # leave system_folder empty to use the envvar or default system folder
     )
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
-        file_path=log_path,
+        file_path=str(log_path),
         loglevel_console=logging.DEBUG,
         loglevel_root=logging.DEBUG,
         loglevel_files=logging.DEBUG,

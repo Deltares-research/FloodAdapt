@@ -13,7 +13,6 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flood_adapt import SRC_DIR
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesArea,
     UnitTypesDirection,
@@ -130,9 +129,10 @@ class Settings(BaseSettings):
     )  # empty env uses default
 
     database_root: Path = Field(
-        default=SRC_DIR.parents[1] / "Database",
+        default=Path(__file__).parents[3]
+        / "Database",  # If you clone FloodAdapt, default is to look for the Database next to the FloodAdapt folder
         env="DATABASE_ROOT",
-        description="The root directory of the database that contains site(s). Usually the directory name is 'Database'.",
+        description="The root directory of the database that contains site(s). Usually the directory name is 'Database'. Default is to look for the Database in the same dir as the FloodAdapt cloned repo.",
     )
     database_name: str = Field(
         default="",
@@ -140,9 +140,9 @@ class Settings(BaseSettings):
         description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
     )
     system_folder: Path = Field(
-        default=SRC_DIR / "system",
+        default=Path(__file__).parents[1] / "system",
         env="SYSTEM_FOLDER",
-        description="The path of the system folder containing the kernels that run the calculations.",
+        description="The path of the system folder containing the kernels that run the calculations. Default is to look for the system folder in `FloodAdapt/flood_adapt/system`",
     )
     delete_crashed_runs: bool = Field(
         default=True,

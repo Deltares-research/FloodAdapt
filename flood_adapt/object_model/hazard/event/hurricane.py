@@ -265,7 +265,7 @@ class HurricaneEvent(IEvent):
             )
             physical_projection = Projection.load_file(path).get_physical_projection()
             _offshore_model._add_bzs_from_bca(self.attrs, physical_projection.attrs)
-            _offshore_model._set_config_spw(spw_file.name)
+            _offshore_model._add_forcing_spw(spw_file)
 
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)

@@ -174,7 +174,7 @@ class TestWaterlevelFromModel:
         # Arrange
         mock_instance = mock_sfincs_adapter.return_value
         mock_instance.__enter__.return_value = mock_instance
-        mock_instance._get_wl_df_from_offshore_his_results.return_value = (
+        mock_instance.get_wl_df_from_offshore_his_results.return_value = (
             dummy_1d_timeseries_df
         )
 

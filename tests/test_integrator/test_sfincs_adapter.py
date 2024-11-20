@@ -535,22 +535,40 @@ class TestAddProjection:
     def test_add_slr(
         self, default_sfincs_adapter: SfincsAdapter, dummy_projection: Projection
     ):
+        # Arrange
         adapter = default_sfincs_adapter
         adapter._set_waterlevel_forcing(
             pd.DataFrame(
                 index=pd.date_range("2023-01-01", periods=3, freq="D"),
-                data={"waterlevel": [1, 2, 3]},
+                data={"waterlevel": [1.0, 2.0, 3.0]},
             )
         )
-        slr = dummy_projection.get_physical_projection().attrs.sea_level_rise
-        wl_df_before = adapter.get_waterlevel_forcing()
+        slr = UnitfulLength(value=1.0, units=UnitTypesLength.meters)
+        dummy_projection.attrs.physical_projection.sea_level_rise = slr
+
+        wl_df_before = (
+            adapter._model.forcing["bzs"]
+            .to_dataframe()["bzs"]
+            .groupby("time")
+            .mean()
+            .to_frame()
+        )
+
         wl_df_expected = wl_df_before.apply(
             lambda x: x + slr.convert(UnitTypesLength.meters)
         )
 
+        # Act
         adapter.add_projection(dummy_projection)
-        wl_df_after = adapter.get_waterlevel_forcing()
+        wl_df_after = (
+            adapter._model.forcing["bzs"]
+            .to_dataframe()["bzs"]
+            .groupby("time")
+            .mean()
+            .to_frame()
+        )
 
+        # Assert
         assert wl_df_expected.equals(wl_df_after)
 
     def test_add_rainfall_multiplier(

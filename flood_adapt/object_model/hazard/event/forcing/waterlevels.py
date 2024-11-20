@@ -178,7 +178,7 @@ class WaterlevelFromModel(IWaterlevel):
             from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
             with SfincsAdapter(model_root=self.path) as _offshore_model:
-                return _offshore_model._get_wl_df_from_offshore_his_results()
+                return _offshore_model.get_wl_df_from_offshore_his_results()
         except Exception as e:
             if strict:
                 raise
