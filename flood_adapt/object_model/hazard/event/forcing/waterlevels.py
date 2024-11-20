@@ -129,7 +129,7 @@ class WaterlevelSynthetic(IWaterlevel):
         )
 
 
-class WaterlevelFromCSV(IWaterlevel):
+class WaterlevelCSV(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: Path
@@ -156,11 +156,11 @@ class WaterlevelFromCSV(IWaterlevel):
             self.path = output_dir / self.path.name
 
     @staticmethod
-    def default() -> "WaterlevelFromCSV":
-        return WaterlevelFromCSV(path="path/to/waterlevel.csv")
+    def default() -> "WaterlevelCSV":
+        return WaterlevelCSV(path="path/to/waterlevel.csv")
 
 
-class WaterlevelFromModel(IWaterlevel):
+class WaterlevelModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
 
     path: Optional[Path] = Field(default=None)
@@ -186,11 +186,11 @@ class WaterlevelFromModel(IWaterlevel):
                 self.logger.error(f"Error reading model results: {self.path}. {e}")
 
     @staticmethod
-    def default() -> "WaterlevelFromModel":
-        return WaterlevelFromModel()
+    def default() -> "WaterlevelModel":
+        return WaterlevelModel()
 
 
-class WaterlevelFromGauged(IWaterlevel):
+class WaterlevelGauged(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
 
     def get_data(
@@ -215,5 +215,5 @@ class WaterlevelFromGauged(IWaterlevel):
                 return None
 
     @staticmethod
-    def default() -> "WaterlevelFromGauged":
-        return WaterlevelFromGauged()
+    def default() -> "WaterlevelGauged":
+        return WaterlevelGauged()

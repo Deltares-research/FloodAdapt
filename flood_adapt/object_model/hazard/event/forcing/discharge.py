@@ -101,7 +101,7 @@ class DischargeSynthetic(IDischarge):
         )
 
 
-class DischargeFromCSV(IDischarge):
+class DischargeCSV(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: Path
@@ -136,11 +136,11 @@ class DischargeFromCSV(IDischarge):
             self.path = output_dir / self.path.name
 
     @classmethod
-    def default(cls) -> "DischargeFromCSV":
+    def default(cls) -> "DischargeCSV":
         river = RiverModel(
             name="default_river",
             mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
             x_coordinate=0,
             y_coordinate=0,
         )
-        return DischargeFromCSV(river=river, path="path/to/discharge.csv")
+        return DischargeCSV(river=river, path="path/to/discharge.csv")

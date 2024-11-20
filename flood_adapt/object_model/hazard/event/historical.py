@@ -4,7 +4,7 @@ from typing import Any, ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromModel,
+    WaterlevelModel,
 )
 from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.interface.events import (
@@ -114,7 +114,7 @@ class HistoricalEvent(IEvent):
 
             # FIXME added temp implementations here to make forcing.get_data() succeed,
             # move this to the forcings themselves?
-            if isinstance(forcing, WaterlevelFromModel):
+            if isinstance(forcing, WaterlevelModel):
                 forcing.path = sim_path
 
     def _require_offshore_run(self) -> bool:

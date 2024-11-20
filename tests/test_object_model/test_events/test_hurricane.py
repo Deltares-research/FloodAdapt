@@ -8,13 +8,13 @@ import pytest
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
-    RainfallFromTrack,
+    RainfallTrack,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromModel,
+    WaterlevelModel,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
-    WindFromTrack,
+    WindTrack,
 )
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.interface.models import (
@@ -43,9 +43,9 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
         "template": Template.Hurricane,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelFromModel(),
-            "WIND": WindFromTrack(),
-            "RAINFALL": RainfallFromTrack(),
+            "WATERLEVEL": WaterlevelModel(),
+            "WIND": WindTrack(),
+            "RAINFALL": RainfallTrack(),
             "DISCHARGE": DischargeConstant(
                 river=RiverModel(
                     name="cooper",

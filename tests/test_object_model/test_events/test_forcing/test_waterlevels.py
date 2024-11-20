@@ -6,9 +6,9 @@ import pytest
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
-    WaterlevelFromCSV,
-    WaterlevelFromGauged,
-    WaterlevelFromModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
@@ -149,7 +149,7 @@ class TestWaterlevelSynthetic:
         ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['data_0'].min()}"
 
 
-class TestWaterlevelFromCSV:
+class TestWaterlevelCSV:
     # Arrange
     def test_waterlevel_from_csv_get_data(
         self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame
@@ -159,14 +159,14 @@ class TestWaterlevelFromCSV:
         t0 = dummy_1d_timeseries_df.index[0]
         t1 = dummy_1d_timeseries_df.index[-1]
         # Act
-        wl_df = WaterlevelFromCSV(path=path).get_data(t0=t0, t1=t1)
+        wl_df = WaterlevelCSV(path=path).get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
         pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
 
 
-class TestWaterlevelFromModel:
+class TestWaterlevelModel:
     @patch("flood_adapt.integrator.sfincs_adapter.SfincsAdapter")
     def test_waterlevel_from_model_get_data(
         self, mock_sfincs_adapter, dummy_1d_timeseries_df, test_db: IDatabase, tmp_path
@@ -181,14 +181,14 @@ class TestWaterlevelFromModel:
         test_path = tmp_path / "test_wl_from_model"
 
         # Act
-        wl_df = WaterlevelFromModel(path=test_path).get_data()
+        wl_df = WaterlevelModel(path=test_path).get_data()
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
         pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
 
 
-class TestWaterlevelFromGauged:
+class TestWaterlevelGauged:
     @pytest.fixture()
     def mock_tide_gauge(self, dummy_1d_timeseries_df: pd.DataFrame):
         with patch(
@@ -204,7 +204,7 @@ class TestWaterlevelFromGauged:
         t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        wl_df = WaterlevelFromGauged(tide_gauge=test_db.site.attrs.tide_gauge).get_data(
+        wl_df = WaterlevelGauged(tide_gauge=test_db.site.attrs.tide_gauge).get_data(
             t0=t0, t1=t1
         )
 

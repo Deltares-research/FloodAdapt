@@ -5,7 +5,7 @@ import pytest
 
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
-    DischargeFromCSV,
+    DischargeCSV,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
@@ -85,7 +85,7 @@ class TestDischargeCSV:
         t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        discharge_df = DischargeFromCSV(river=river, path=path).get_data(t0=t0, t1=t1)
+        discharge_df = DischargeCSV(river=river, path=path).get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)

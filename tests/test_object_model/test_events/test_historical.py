@@ -7,19 +7,19 @@ import pytest
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
-    DischargeFromCSV,
+    DischargeCSV,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromMeteo,
+    RainfallMeteo,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromCSV,
-    WaterlevelFromModel,
+    WaterlevelCSV,
+    WaterlevelModel,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
-    WindFromMeteo,
+    WindMeteo,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.models import (
@@ -56,7 +56,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelFromCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
+            "WATERLEVEL": WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
             "WIND": WindConstant(
                 speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
                 direction=UnitfulDirection(value=60, units=UnitTypesDirection.degrees),
@@ -64,7 +64,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
             "RAINFALL": RainfallConstant(
                 intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
             ),
-            "DISCHARGE": DischargeFromCSV(
+            "DISCHARGE": DischargeCSV(
                 river=RiverModel(
                     name="cooper",
                     description="Cooper River",
@@ -89,9 +89,9 @@ def setup_offshore_meteo_event():
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelFromModel(),
-            "WIND": WindFromMeteo(),
-            "RAINFALL": RainfallFromMeteo(),
+            "WATERLEVEL": WaterlevelModel(),
+            "WIND": WindMeteo(),
+            "RAINFALL": RainfallMeteo(),
             "DISCHARGE": DischargeConstant(
                 river=RiverModel(
                     name="cooper",

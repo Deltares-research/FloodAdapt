@@ -5,29 +5,28 @@ import tomli
 
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
-    DischargeFromCSV,
+    DischargeCSV,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromMeteo,
-    RainfallFromTrack,
+    RainfallCSV,
+    RainfallMeteo,
     RainfallSynthetic,
+    RainfallTrack,
 )
-
-# RainfallfromCSV,
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromCSV,
-    WaterlevelFromGauged,
-    WaterlevelFromModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
-    WindFromCSV,
-    WindFromMeteo,
-    WindFromTrack,
+    WindCSV,
+    WindMeteo,
     WindSynthetic,
+    WindTrack,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
     IForcing,
@@ -40,31 +39,31 @@ from flood_adapt.object_model.hazard.interface.models import (
 
 FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
     ForcingType.WATERLEVEL: {
-        ForcingSource.MODEL: WaterlevelFromModel,
+        ForcingSource.MODEL: WaterlevelModel,
         ForcingSource.TRACK: None,
-        ForcingSource.CSV: WaterlevelFromCSV,
+        ForcingSource.CSV: WaterlevelCSV,
         ForcingSource.SYNTHETIC: WaterlevelSynthetic,
         ForcingSource.CONSTANT: None,
-        ForcingSource.GAUGED: WaterlevelFromGauged,
+        ForcingSource.GAUGED: WaterlevelGauged,
     },
     ForcingType.RAINFALL: {
-        ForcingSource.METEO: RainfallFromMeteo,
-        ForcingSource.TRACK: RainfallFromTrack,
-        ForcingSource.CSV: None,
+        ForcingSource.METEO: RainfallMeteo,
+        ForcingSource.TRACK: RainfallTrack,
+        ForcingSource.CSV: RainfallCSV,
         ForcingSource.SYNTHETIC: RainfallSynthetic,
         ForcingSource.CONSTANT: RainfallConstant,
     },
     ForcingType.WIND: {
-        ForcingSource.METEO: WindFromMeteo,
-        ForcingSource.TRACK: WindFromTrack,
-        ForcingSource.CSV: WindFromCSV,
+        ForcingSource.METEO: WindMeteo,
+        ForcingSource.TRACK: WindTrack,
+        ForcingSource.CSV: WindCSV,
         ForcingSource.SYNTHETIC: WindSynthetic,
         ForcingSource.CONSTANT: WindConstant,
     },
     ForcingType.DISCHARGE: {
         ForcingSource.MODEL: None,
         ForcingSource.TRACK: None,
-        ForcingSource.CSV: DischargeFromCSV,
+        ForcingSource.CSV: DischargeCSV,
         ForcingSource.SYNTHETIC: DischargeSynthetic,
         ForcingSource.CONSTANT: DischargeConstant,
     },

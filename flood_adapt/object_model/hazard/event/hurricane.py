@@ -10,7 +10,7 @@ from shapely.affinity import translate
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromModel,
+    WaterlevelModel,
 )
 from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
@@ -132,7 +132,7 @@ class HurricaneEvent(IEvent):
                 forcing.path = spw_file
 
             # temporary fix to set the path of the forcing
-            if isinstance(forcing, WaterlevelFromModel):
+            if isinstance(forcing, WaterlevelModel):
                 forcing.path = sim_path
 
     def make_spw_file(

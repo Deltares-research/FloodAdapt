@@ -99,7 +99,7 @@ class WindSynthetic(IWind):
         )
 
 
-class WindFromTrack(IWind):
+class WindTrack(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
 
     path: Optional[Path] = Field(default=None)
@@ -115,11 +115,11 @@ class WindFromTrack(IWind):
             self.path = output_dir / self.path.name
 
     @staticmethod
-    def default() -> "WindFromTrack":
-        return WindFromTrack()
+    def default() -> "WindTrack":
+        return WindTrack()
 
 
-class WindFromCSV(IWind):
+class WindCSV(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.CSV
 
     path: Path
@@ -149,11 +149,11 @@ class WindFromCSV(IWind):
             self.path = output_dir / self.path.name
 
     @staticmethod
-    def default() -> "WindFromCSV":
-        return WindFromCSV(path="path/to/wind.csv")
+    def default() -> "WindCSV":
+        return WindCSV(path="path/to/wind.csv")
 
 
-class WindFromMeteo(IWind):
+class WindMeteo(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
 
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
@@ -177,5 +177,5 @@ class WindFromMeteo(IWind):
                 self.logger.error(f"Error reading meteo data: {e}")
 
     @staticmethod
-    def default() -> "WindFromMeteo":
-        return WindFromMeteo()
+    def default() -> "WindMeteo":
+        return WindMeteo()

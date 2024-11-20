@@ -27,26 +27,26 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
-    DischargeFromCSV,
+    DischargeCSV,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromMeteo,
-    RainfallFromTrack,
+    RainfallMeteo,
     RainfallSynthetic,
+    RainfallTrack,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
-    WaterlevelFromCSV,
-    WaterlevelFromGauged,
-    WaterlevelFromModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
-    WindFromMeteo,
-    WindFromTrack,
+    WindMeteo,
     WindSynthetic,
+    WindTrack,
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
@@ -478,7 +478,7 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_wind_forcing(
                 timeseries=tmp_path, magnitude=None, direction=None
             )
-        elif isinstance(forcing, WindFromMeteo):
+        elif isinstance(forcing, WindMeteo):
             ds = forcing.get_data(t0, t1)
 
             if ds["lon"].min() > 180:
@@ -486,7 +486,7 @@ class SfincsAdapter(IHazardAdapter):
 
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
-        elif isinstance(forcing, WindFromTrack):
+        elif isinstance(forcing, WindTrack):
             self._add_forcing_spw(forcing.path)
         else:
             self.logger.warning(
@@ -514,7 +514,7 @@ class SfincsAdapter(IHazardAdapter):
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             forcing.get_data(t0=t0, t1=t1).to_csv(tmp_path)
             self._model.setup_precip_forcing(timeseries=tmp_path)
-        elif isinstance(forcing, RainfallFromMeteo):
+        elif isinstance(forcing, RainfallMeteo):
             ds = forcing.get_data(t0=t0, t1=t1)
 
             if ds["lon"].min() > 180:
@@ -523,7 +523,7 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing_from_grid(
                 precip=ds["precip"], aggregate=False
             )
-        elif isinstance(forcing, RainfallFromTrack):
+        elif isinstance(forcing, RainfallTrack):
             self._add_forcing_spw(forcing.path)
         else:
             self.logger.warning(
@@ -541,9 +541,7 @@ class SfincsAdapter(IHazardAdapter):
             Can be a constant, synthetic or from a csv file.
             Also contains the river information.
         """
-        if isinstance(
-            forcing, (DischargeConstant, DischargeFromCSV, DischargeSynthetic)
-        ):
+        if isinstance(forcing, (DischargeConstant, DischargeCSV, DischargeSynthetic)):
             self._set_single_river_forcing(discharge=forcing)
         else:
             self.logger.warning(
@@ -552,11 +550,9 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         t0, t1 = self._model.get_model_time()
-        if isinstance(
-            forcing, (WaterlevelSynthetic, WaterlevelFromCSV, WaterlevelFromGauged)
-        ):
+        if isinstance(forcing, (WaterlevelSynthetic, WaterlevelCSV, WaterlevelGauged)):
             self._set_waterlevel_forcing(forcing.get_data(t0, t1))
-        elif isinstance(forcing, WaterlevelFromModel):
+        elif isinstance(forcing, WaterlevelModel):
             self._set_waterlevel_forcing(forcing.get_data(t0, t1))
             self._turn_off_bnd_press_correction()
         else:
@@ -731,7 +727,7 @@ class SfincsAdapter(IHazardAdapter):
             Discharge object with discharge timeseries data and river information.
         """
         if not isinstance(
-            discharge, (DischargeConstant, DischargeSynthetic, DischargeFromCSV)
+            discharge, (DischargeConstant, DischargeSynthetic, DischargeCSV)
         ):
             self.logger.warning(
                 f"Unsupported discharge forcing type: {discharge.__class__.__name__}"

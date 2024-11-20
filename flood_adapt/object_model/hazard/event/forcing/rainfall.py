@@ -11,6 +11,7 @@ from pydantic import Field
 from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.event.timeseries import (
     DEFAULT_TIMESTEP,
+    CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
@@ -82,7 +83,7 @@ class RainfallSynthetic(IRainfall):
         )
 
 
-class RainfallFromMeteo(IRainfall):
+class RainfallMeteo(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.METEO
 
     def get_data(
@@ -103,11 +104,11 @@ class RainfallFromMeteo(IRainfall):
                 self.logger.error(f"Error reading meteo data: {self.path}. {e}")
 
     @staticmethod
-    def default() -> "RainfallFromMeteo":
-        return RainfallFromMeteo()
+    def default() -> "RainfallMeteo":
+        return RainfallMeteo()
 
 
-class RainfallFromTrack(IRainfall):
+class RainfallTrack(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.TRACK
 
     path: Optional[Path] = Field(default=None)
@@ -132,5 +133,36 @@ class RainfallFromTrack(IRainfall):
             self.path = output_dir / self.path.name
 
     @staticmethod
-    def default() -> "RainfallFromTrack":
-        return RainfallFromTrack()
+    def default() -> "RainfallTrack":
+        return RainfallTrack()
+
+
+class RainfallCSV(IRainfall):
+    _source: ClassVar[ForcingSource] = ForcingSource.CSV
+
+    path: Path
+
+    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
+        t0, t1 = self.parse_time(t0, t1)
+        try:
+            return CSVTimeseries.load_file(path=self.path).to_dataframe(
+                start_time=t0, end_time=t1
+            )
+        except Exception as e:
+            if strict:
+                raise
+            else:
+                self.logger.error(f"Error reading CSV file: {self.path}. {e}")
+
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.path:
+            output_dir = Path(output_dir)
+            if self.path == output_dir / self.path.name:
+                return
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
+
+    @staticmethod
+    def default() -> "RainfallCSV":
+        return RainfallCSV(path="path/to/rainfall.csv")

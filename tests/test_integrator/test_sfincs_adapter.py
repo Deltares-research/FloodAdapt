@@ -14,22 +14,22 @@ from flood_adapt.object_model.hazard.event.forcing.discharge import (
 )
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromMeteo,
+    RainfallMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
-    WaterlevelFromCSV,
-    WaterlevelFromGauged,
-    WaterlevelFromModel,
+    WaterlevelCSV,
+    WaterlevelGauged,
+    WaterlevelModel,
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
-    WindFromMeteo,
-    WindFromTrack,
+    WindMeteo,
     WindSynthetic,
+    WindTrack,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
@@ -223,7 +223,7 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_wind(synthetic_wind)
 
         def test_add_forcing_wind_from_meteo(self, default_sfincs_adapter):
-            forcing = WindFromMeteo()
+            forcing = WindMeteo()
 
             default_sfincs_adapter._add_forcing_wind(forcing)
 
@@ -240,7 +240,7 @@ class TestAddForcing:
             tc.read_track(track_file, fmt="ddb_cyc")
             tc.to_spiderweb(spw_file)
 
-            forcing = WindFromTrack(path=spw_file)
+            forcing = WindTrack(path=spw_file)
             default_sfincs_adapter._add_forcing_wind(forcing)
 
         def test_add_forcing_wind_unsupported(self, default_sfincs_adapter):
@@ -269,7 +269,7 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_rain(synthetic_rainfall)
 
         def test_add_forcing_rain_from_meteo(self, default_sfincs_adapter):
-            forcing = RainfallFromMeteo()
+            forcing = RainfallMeteo()
 
             default_sfincs_adapter._add_forcing_rain(forcing)
 
@@ -373,7 +373,7 @@ class TestAddForcing:
         ):
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
             synthetic_waterlevels.get_data().to_csv(tmp_path)
-            forcing = WaterlevelFromCSV(path=tmp_path)
+            forcing = WaterlevelCSV(path=tmp_path)
 
             default_sfincs_adapter._add_forcing_waterlevels(forcing)
 
@@ -383,14 +383,14 @@ class TestAddForcing:
             default_sfincs_adapter._add_forcing_waterlevels(synthetic_waterlevels)
 
         def test_add_forcing_waterlevels_gauged(self, default_sfincs_adapter):
-            forcing = WaterlevelFromGauged()
+            forcing = WaterlevelGauged()
             default_sfincs_adapter._set_waterlevel_forcing(forcing.get_data())
 
         def test_add_forcing_waterlevels_model(self, default_sfincs_adapter):
             default_sfincs_adapter._set_waterlevel_forcing = mock.Mock()
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
 
-            forcing = mock.Mock(spec=WaterlevelFromModel)
+            forcing = mock.Mock(spec=WaterlevelModel)
             forcing.get_data.return_value = pd.DataFrame(
                 data={"waterlevel": [1, 2, 3]},
                 index=pd.date_range("2023-01-01", periods=3, freq="D"),

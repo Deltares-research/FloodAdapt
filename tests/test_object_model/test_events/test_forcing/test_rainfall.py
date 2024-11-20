@@ -6,7 +6,7 @@ import xarray as xr
 
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
-    RainfallFromMeteo,
+    RainfallMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.interface.events import TimeModel
@@ -60,7 +60,7 @@ class TestRainfallSynthetic:
         assert rf_df.min().min() == pytest.approx(2, rel=1e-2), f"{rf_df.min()} != 2"
 
 
-class TestRainfallFromMeteo:
+class TestRainfallMeteo:
     def test_rainfall_from_meteo_get_data(self, test_db):
         # Arrange
         time = TimeModel(
@@ -69,7 +69,7 @@ class TestRainfallFromMeteo:
         )
 
         # Act
-        wl_df = RainfallFromMeteo().get_data(t0=time.start_time, t1=time.end_time)
+        wl_df = RainfallMeteo().get_data(t0=time.start_time, t1=time.end_time)
 
         # Assert
         assert isinstance(wl_df, xr.Dataset)

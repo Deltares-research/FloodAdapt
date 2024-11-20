@@ -6,7 +6,7 @@ from flood_adapt.object_model.hazard.event.forcing.forcing_factory import (
     ForcingSource,
     ForcingType,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import WaterlevelFromCSV
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import WaterlevelCSV
 
 
 class TestForcingFactory:
@@ -14,7 +14,7 @@ class TestForcingFactory:
         forcing_class = ForcingFactory.get_forcing_class(
             ForcingType.WATERLEVEL, ForcingSource.CSV
         )
-        assert forcing_class == WaterlevelFromCSV
+        assert forcing_class == WaterlevelCSV
 
     def test_read_forcing(self, tmp_path):
         for expected_type, expected_sources in FORCING_TYPES.items():
