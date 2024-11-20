@@ -154,6 +154,7 @@ class IEventModel(IObjectModel):
 class IEvent(IObject[IEventModel]):
     MODEL_TYPE: Type[IEventModel]
     dir_name = ObjectDir.event
+    display_name = "Event"
 
     attrs: IEventModel
     _site = None

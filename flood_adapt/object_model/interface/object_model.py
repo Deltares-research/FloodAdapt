@@ -43,12 +43,17 @@ class IObject(ABC, Generic[ObjectModel]):
 
     Contains methods for loading and saving objects to disk.
 
-    Attributes
-    ----------
-    attrs : ObjectModel
-        The object model containing the data for the object. It should be a subclass of IObjectModel.
+    Class Attributes
+    ----------------
     dir_name : ObjectDir
         The directory name of the object used in the database.
+    display_name : str
+        The display name of the object used in the UI.
+
+    Instance Attributes
+    -------------------
+    attrs : ObjectModel
+        The object model containing the data for the object. It should be a subclass of IObjectModel.
 
     Methods
     -------
@@ -65,6 +70,8 @@ class IObject(ABC, Generic[ObjectModel]):
     attrs: ObjectModel
 
     dir_name: ObjectDir
+    display_name: str
+
     _logger: logging.Logger = None
 
     @abstractmethod
@@ -100,11 +107,6 @@ class IObject(ABC, Generic[ObjectModel]):
     def logger(self) -> logging.Logger:
         """Return the logger for the object."""
         return self.get_logger()
-
-    @property
-    def class_name(self) -> str:
-        """Return the capitalized class name of the object."""
-        return self.__class__.__name__.capitalize()
 
     @classmethod
     def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:

@@ -227,6 +227,8 @@ class IMeasure(IObject[MeasureModelType]):
     """A class for a FloodAdapt measure."""
 
     dir_name = ObjectDir.measure
+    display_name = "Measure"
+
     attrs: MeasureModelType
 
 

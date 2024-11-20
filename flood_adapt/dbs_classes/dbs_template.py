@@ -49,7 +49,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
         # Check if the object exists
         if not Path(full_path).is_file():
             raise ValueError(
-                f"{self._object_class.class_name} '{name}' does not exist."
+                f"{self._object_class.display_name}: '{name}' does not exist."
             )
 
         # Load and return the object
@@ -69,7 +69,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
         object_list = self._get_object_list()
         if not all(Path(path).is_file() for path in object_list["path"]):
             raise ValueError(
-                f"Error in {self._object_class.class_name} database. Some {self._object_class.class_name} are missing from the database."
+                f"Error in {self._object_class.display_name} database. Some {self._object_class.display_name} are missing from the database."
             )
 
         # Load all objects
@@ -96,7 +96,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
         # Check if the provided old_name is valid
         if old_name not in self.list_objects()["name"]:
             raise ValueError(
-                f"'{old_name}' {self._object_class.class_name} does not exist."
+                f"{self._object_class.display_name}: '{old_name}' does not exist."
             )
 
         # First do a get and change the name and description
@@ -159,7 +159,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
             self.delete(object_model.attrs.name, toml_only=True)
         elif not overwrite and object_exists:
             raise ValueError(
-                f"'{object_model.attrs.name}' name is already used by another {self._object_class.class_name}. Choose a different name"
+                f"'{object_model.attrs.name}' name is already used by another {self._object_class.display_name.lower()}. Choose a different name"
             )
 
         # If the folder doesnt exist yet, make the folder and save the object
@@ -189,7 +189,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
         # Check if the object exists
         if object_model.attrs.name not in self.list_objects()["name"]:
             raise ValueError(
-                f"'{object_model.attrs.name}' {self._object_class.class_name} does not exist. You cannot edit an {self._object_class.class_name} that does not exist."
+                f"{self._object_class.display_name}: '{object_model.attrs.name}' does not exist. You cannot edit an {self._object_class.display_name.lower()} that does not exist."
             )
 
         # Check if it is possible to delete the object by saving with overwrite. This then
@@ -216,13 +216,13 @@ class DbsTemplate(AbstractDatabaseElement[T]):
         # Check if the object is a standard object. If it is, raise an error
         if self._check_standard_objects(name):
             raise ValueError(
-                f"'{name}' cannot be deleted/modified since it is a standard {self._object_class.class_name}."
+                f"'{name}' cannot be deleted/modified since it is a standard {self._object_class.display_name}."
             )
 
         # Check if object is used in a higher level object. If it is, raise an error
         if used_in := self.check_higher_level_usage(name):
             raise ValueError(
-                f"'{name}' {self._object_class.class_name} cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
+                f"{self._object_class.display_name}: '{name}' cannot be deleted/modified since it is already used in: {', '.join(used_in)}"
             )
 
         # Once all checks are passed, delete the object

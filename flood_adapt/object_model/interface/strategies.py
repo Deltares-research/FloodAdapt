@@ -8,4 +8,6 @@ class StrategyModel(IObjectModel):
 
 class IStrategy(IObject[StrategyModel]):
     dir_name = ObjectDir.strategy
+    display_name = "Strategy"
+
     attrs: StrategyModel

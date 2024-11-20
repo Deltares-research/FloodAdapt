@@ -29,7 +29,7 @@ class DbsEvent(DbsTemplate[IEvent]):
         # Check if the object exists
         if not Path(event_path).is_file():
             raise ValueError(
-                f"{self._object_class.class_name} '{name}' does not exist."
+                f"{self._object_class.display_name} '{name}' does not exist."
             )
 
         # Load event

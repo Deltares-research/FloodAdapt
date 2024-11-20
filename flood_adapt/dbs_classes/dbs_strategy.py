@@ -41,7 +41,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
             self.delete(object_model.attrs.name, toml_only=True)
         elif not overwrite and object_exists:
             raise ValueError(
-                f"'{object_model.attrs.name}' name is already used by another {self._object_class.class_name}. Choose a different name"
+                f"'{object_model.attrs.name}' name is already used by another {object_model.display_name}. Choose a different name"
             )
 
         # Check if any measures overlap

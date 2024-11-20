@@ -17,6 +17,7 @@ class ScenarioModel(IObjectModel):
 class IScenario(IObject[ScenarioModel]):
     attrs: ScenarioModel
     dir_name = ObjectDir.scenario
+    display_name = "Scenario"
 
     @abstractmethod
     def run(self) -> None: ...

@@ -284,6 +284,7 @@ class SiteModel(IObjectModel):
 class Site(IObject[SiteModel]):
     attrs: SiteModel
     dir_name = ObjectDir.site
+    display_name = "Site"
 
     def __init__(self, data: dict[str, Any]) -> None:
         if isinstance(data, SiteModel):

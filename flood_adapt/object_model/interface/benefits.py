@@ -33,6 +33,7 @@ class BenefitModel(IObjectModel):
 class IBenefit(IObject[BenefitModel]):
     attrs: BenefitModel
     dir_name = ObjectDir.benefit
+    display_name = "Benefit"
 
     results_path: Path
     scenarios: pd.DataFrame
