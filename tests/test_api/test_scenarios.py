@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-import flood_adapt.api.scenarios as api_scenarios
+from flood_adapt.api import scenarios as api_scenarios
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.scenario import Scenario

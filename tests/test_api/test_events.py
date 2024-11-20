@@ -1,6 +1,6 @@
 import pytest
 
-import flood_adapt.api.events as api_events
+from flood_adapt.api import events as api_events
 
 
 @pytest.fixture()
