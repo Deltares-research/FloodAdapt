@@ -19,6 +19,7 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     ITimeseriesCalculationStrategy,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.interface.path_builder import TopLevelDir, db_path
 from flood_adapt.object_model.io.csv import read_csv
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulTime,
@@ -31,18 +32,16 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
-        if not (attrs.scs_file_path):
-            raise ValueError("SCS file path is not set.")
-        if not attrs.scs_type:
-            raise ValueError("SCS type is not set.")
-
         _duration = attrs.duration.convert(UnitTypesTime.seconds)
         _start_time = attrs.start_time.convert(UnitTypesTime.seconds)
         _timestep = timestep.convert(UnitTypesTime.seconds)
         tt = np.arange(0, _duration + 1, _timestep)
 
         # rainfall
-        scs_df = pd.read_csv(attrs.scs_file_path, index_col=0)
+        scs_path = (
+            db_path(top_level_dir=TopLevelDir.static) / "scs" / attrs.scs_file_name
+        )
+        scs_df = pd.read_csv(scs_path, index_col=0)
         scstype_df = scs_df[attrs.scs_type]
         tt_rain = _start_time + scstype_df.index.to_numpy() * _duration
         rain_series = scstype_df.to_numpy()

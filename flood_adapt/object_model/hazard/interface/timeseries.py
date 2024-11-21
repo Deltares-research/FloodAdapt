@@ -13,6 +13,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
     TIMESERIES_VARIABLE,
+    Scstype,
     ShapeType,
 )
 from flood_adapt.object_model.io.csv import read_csv
@@ -52,8 +53,8 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     cumulative: Optional[TIMESERIES_VARIABLE] = None
 
     # Optional
-    scs_file_path: Optional[Path] = None
-    scs_type: Optional[str] = None
+    scs_file_name: Optional[str] = None
+    scs_type: Optional[Scstype] = None
 
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
@@ -76,9 +77,9 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     @model_validator(mode="after")
     def validate_scs_timeseries(self):
         if self.shape_type == ShapeType.scs:
-            if not (self.scs_file_path and self.scs_type and self.cumulative):
+            if not (self.scs_file_name and self.scs_type and self.cumulative):
                 raise ValueError(
-                    "SCS timeseries must have scs_file_path, scs_type and cumulative specified."
+                    f"SCS timeseries must have scs_file_name, scs_type and cumulative specified. {self.scs_file_name, self.scs_type, self.cumulative}"
                 )
         return self
 

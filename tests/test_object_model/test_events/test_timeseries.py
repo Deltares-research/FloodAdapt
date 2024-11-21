@@ -20,7 +20,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesTime,
 )
-from tests.fixtures import TEST_DATA_DIR
 
 
 class TestTimeseriesModel:
@@ -37,7 +36,7 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": UnitTypesTime.hours},
             "duration": {"value": 1, "units": UnitTypesTime.hours},
             "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
-            "scs_file_path": TEST_DATA_DIR / "scs_rainfall.csv",
+            "scs_file_name": "scs_rainfall.csv",
             "scs_type": Scstype.type1.value,
         }
 
@@ -90,7 +89,7 @@ class TestTimeseriesModel:
         # Assert
         assert timeseries == loaded_model
 
-    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path"])
+    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_name"])
     def test_TimeseriesModel_invalid_input_shapetype_scs(self, to_remove):
         # Arrange
         model = self.get_test_model(ShapeType.scs)
@@ -104,7 +103,7 @@ class TestTimeseriesModel:
         errors = e.value.errors()
         assert len(errors) == 1
         assert (
-            "SCS timeseries must have scs_file_path, scs_type and cumulative specified."
+            "SCS timeseries must have scs_file_name, scs_type and cumulative specified."
             in errors[0]["ctx"]["error"].args[0]
         )
 
@@ -176,7 +175,7 @@ class TestSyntheticTimeseries:
                 peak_time=UnitfulTime(3, UnitTypesTime.hours),
                 duration=UnitfulTime(6, UnitTypesTime.hours),
                 cumulative=UnitfulLength(10, UnitTypesLength.inch),
-                scs_file_path=TEST_DATA_DIR / "scs_rainfall.csv",
+                scs_file_name="scs_rainfall.csv",
                 scs_type=Scstype.type3,
             )
         else:

@@ -65,20 +65,6 @@ class IDatabase(ABC):
     def plot_slr_scenarios(self) -> str: ...
 
     @abstractmethod
-    def plot_wl(self, event: IEvent, input_wl_df: pd.DataFrame = None) -> str: ...
-
-    @abstractmethod
-    def plot_river(self, event: IEvent, input_river_df: list[pd.DataFrame]) -> str: ...
-
-    @abstractmethod
-    def plot_rainfall(
-        self, event: IEvent, input_rainfall_df: pd.DataFrame = None
-    ) -> str: ...
-
-    @abstractmethod
-    def plot_wind(self, event: IEvent, input_wind_df: pd.DataFrame = None) -> str: ...
-
-    @abstractmethod
     def write_to_csv(self, name: str, event: IEvent, df: pd.DataFrame) -> None: ...
 
     @abstractmethod

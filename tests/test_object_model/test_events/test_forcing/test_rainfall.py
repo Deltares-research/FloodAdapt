@@ -23,7 +23,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesTime,
 )
-from tests.fixtures import TEST_DATA_DIR
 
 
 class TestRainfallConstant:
@@ -68,7 +67,7 @@ class TestRainfallSynthetic:
             duration=UnitfulTime(value=4, units=UnitTypesTime.hours),
             peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
             cumulative=UnitfulLength(value=2, units=UnitTypesLength.meters),
-            scs_file_path=TEST_DATA_DIR / "scs.csv",
+            scs_file_name="scs_rainfall.csv",
             scs_type=Scstype.type1,
         )
 

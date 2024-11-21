@@ -2,7 +2,7 @@ import os
 from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, ClassVar, List, Type
+from typing import Any, ClassVar, List, Optional, Type
 
 import numpy as np
 import pandas as pd
@@ -219,6 +219,7 @@ class IEvent(IObject[IEventModel]):
             | UnitTypesVelocity
             | None
         ) = None,
+        **kwargs,
     ) -> str | None:
         """Plot the forcing data for the event."""
         if self._site is None:
@@ -229,19 +230,19 @@ class IEvent(IObject[IEventModel]):
 
         match forcing_type:
             case ForcingType.RAINFALL:
-                return self.plot_rainfall(units=units)
+                return self.plot_rainfall(units=units, **kwargs)
             case ForcingType.WIND:
-                return self.plot_wind(velocity_units=units)
+                return self.plot_wind(velocity_units=units, **kwargs)
             case ForcingType.WATERLEVEL:
-                return self.plot_waterlevel(units=units)
+                return self.plot_waterlevel(units=units, **kwargs)
             case ForcingType.DISCHARGE:
-                return self.plot_discharge(units=units)
+                return self.plot_discharge(units=units, **kwargs)
             case _:
                 raise NotImplementedError(
                     "Plotting only available for rainfall, wind, waterlevel, and discharge forcings."
                 )
 
-    def plot_waterlevel(self, units: UnitTypesLength):
+    def plot_waterlevel(self, units: UnitTypesLength, **kwargs) -> str:
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
 
@@ -266,13 +267,13 @@ class IEvent(IObject[IEventModel]):
             )
         except Exception as e:
             self.logger.error(f"Error getting water level data: {e}")
-            return
+            return ""
 
         if data is not None and data.empty:
             self.logger.error(
                 f"Could not retrieve waterlevel data: {self.attrs.forcings[ForcingType.WATERLEVEL]} {data}"
             )
-            return
+            return ""
 
         # Plot actual thing
         fig = px.line(data + self._site.attrs.water_level.msl.height.convert(units))
@@ -321,7 +322,12 @@ class IEvent(IObject[IEventModel]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_rainfall(self, units: UnitTypesIntensity = None) -> str | None:
+    def plot_rainfall(
+        self,
+        units: Optional[UnitTypesIntensity] = None,
+        rainfall_multiplier: Optional[float] = None,
+        **kwargs,
+    ) -> str | None:
         units = units or Settings().unit_system.intensity
 
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
@@ -359,6 +365,10 @@ class IEvent(IObject[IEventModel]):
             )
             return
 
+        # Optionally add multiplier
+        if rainfall_multiplier:
+            data *= rainfall_multiplier
+
         # Plot actual thing
         fig = px.line(data_frame=data)
 
@@ -387,7 +397,7 @@ class IEvent(IObject[IEventModel]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_discharge(self, units: UnitTypesDischarge = None) -> str:
+    def plot_discharge(self, units: UnitTypesDischarge = None, **kwargs) -> str:
         units = units or Settings().unit_system.discharge
 
         # set timing relative to T0 if event is synthetic
@@ -465,6 +475,7 @@ class IEvent(IObject[IEventModel]):
         self,
         velocity_units: UnitTypesVelocity = None,
         direction_units: UnitTypesDirection = None,
+        **kwargs,
     ) -> str:
         if self.attrs.forcings[ForcingType.WIND] is None:
             return ""
