@@ -262,7 +262,7 @@ class Database(IDatabase):
         except ValueError(
             "Column " "units" " in input/static/slr/slr.csv file missing."
         ) as e:
-            print(e)
+            self.logger.info(e)
 
         try:
             if "year" in df.columns:
@@ -272,7 +272,7 @@ class Database(IDatabase):
         except ValueError(
             "Column " "year" " in input/static/slr/slr.csv file missing."
         ) as e:
-            print(e)
+            self.logger.info(e)
 
         ref_year = self.site.attrs.slr.scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():

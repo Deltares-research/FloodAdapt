@@ -325,7 +325,6 @@ class SfincsAdapter(IHazardAdapter):
                 UnitTypesLength.meters
             )
 
-        # TODO investigate how/if to add subsidence to model
         # projection.attrs.subsidence
 
         if projection.attrs.rainfall_multiplier:
@@ -338,10 +337,6 @@ class SfincsAdapter(IHazardAdapter):
                 self.logger.warning(
                     "Failed to add rainfall multiplier, no rainfall forcing found in the model."
                 )
-
-        # TODO investigate how/if to add storm frequency increase to model
-        # this is only for return period calculations?
-        # projection.attrs.storm_frequency_increase
 
     def run_completed(self) -> bool:
         """Check if the entire model run has been completed successfully by checking if all flood maps exist that are created in postprocess().
@@ -588,7 +583,6 @@ class SfincsAdapter(IHazardAdapter):
         if (gdf_floodwall.geometry.type == "MultiLineString").any():
             gdf_floodwall = gdf_floodwall.explode()
 
-        # TODO: Choice of height data from file or uniform height and column name with height data should be adjustable in the GUI
         try:
             heights = [
                 float(

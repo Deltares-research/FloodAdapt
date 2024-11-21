@@ -381,7 +381,6 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        print(repr(excinfo.value))
         assert len(excinfo.value.errors()) == 1
 
         error = excinfo.value.errors()[0]

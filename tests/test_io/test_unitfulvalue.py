@@ -550,7 +550,6 @@ class TestIUnitFullValue:
     ):
         operation, name = operation
         with pytest.raises(TypeError):
-            print(name)
             operation(value)
 
     @pytest.mark.parametrize("scalar", [2, 0.5])

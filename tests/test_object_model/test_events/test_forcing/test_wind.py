@@ -29,7 +29,7 @@ class TestWindConstant:
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).get_data()
-        print(wind_df)
+
         # Assert
         assert isinstance(wind_df, pd.DataFrame)
         assert not wind_df.empty

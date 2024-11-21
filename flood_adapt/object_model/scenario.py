@@ -39,7 +39,7 @@ class Scenario(IScenario):
             scenario=self.attrs,
         )
 
-    def run(self):  # TODO move to controller
+    def run(self):
         """Run direct impact models for the scenario."""
         os.makedirs(self.results_path, exist_ok=True)
 
@@ -57,14 +57,16 @@ class Scenario(IScenario):
                 with SfincsAdapter(model_root=template_path) as sfincs_adapter:
                     sfincs_adapter.run(self)
             else:
-                print(f"Hazard for scenario '{self.attrs.name}' has already been run.")
+                self.logger.info(
+                    f"Hazard for scenario '{self.attrs.name}' has already been run."
+                )
 
             if not self.direct_impacts.has_run:
                 self.direct_impacts.preprocess_models()
                 self.direct_impacts.run_models()
                 self.direct_impacts.postprocess_models()
             else:
-                print(
+                self.logger.info(
                     f"Direct impacts for scenario '{self.attrs.name}' has already been run."
                 )
 

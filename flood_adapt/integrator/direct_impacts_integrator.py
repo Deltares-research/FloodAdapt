@@ -142,7 +142,9 @@ class DirectImpacts(IDatabaseUser):
         start_time = time.time()
         self.preprocess_fiat()
         end_time = time.time()
-        print(f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds")
+        self.logger.info(
+            f"FIAT preprocessing took {str(round(end_time - start_time, 2))} seconds"
+        )
 
     def run_models(self):
         self.logger.info("Running impact models...")
