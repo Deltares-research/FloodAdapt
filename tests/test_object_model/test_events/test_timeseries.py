@@ -11,14 +11,16 @@ from flood_adapt.object_model.hazard.event.timeseries import (
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, Scstype
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulIntensity,
+    UnitfulLength,
     UnitfulTime,
     UnitTypesIntensity,
     UnitTypesLength,
     UnitTypesTime,
 )
+from tests.fixtures import TEST_DATA_DIR
 
 
 class TestTimeseriesModel:
@@ -30,21 +32,20 @@ class TestTimeseriesModel:
             "peak_time": {"value": 0, "units": UnitTypesTime.hours},
             "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
         }
-        # _TIMESERIES_MODEL_SCS = {
-        #     "shape_type": ShapeType.scs.value,
-        #     "peak_time": {"value": 0, "units": UnitTypesTime.hours},
-        #     "duration": {"value": 1, "units": UnitTypesTime.hours},
-        #     "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
-        #     "scs_file_path": "test_scs.csv",
-        #     "scs_type": Scstype.type1.value,
-        # }
+        _TIMESERIES_MODEL_SCS = {
+            "shape_type": ShapeType.scs.value,
+            "peak_time": {"value": 0, "units": UnitTypesTime.hours},
+            "duration": {"value": 1, "units": UnitTypesTime.hours},
+            "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
+            "scs_file_path": TEST_DATA_DIR / "scs_rainfall.csv",
+            "scs_type": Scstype.type1.value,
+        }
 
         models = {
             ShapeType.constant: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.gaussian: _TIMESERIES_MODEL_SIMPLE,
             ShapeType.triangle: _TIMESERIES_MODEL_SIMPLE,
-            ShapeType.harmonic: _TIMESERIES_MODEL_SIMPLE,
-            # ShapeType.scs: _TIMESERIES_MODEL_SCS,
+            ShapeType.scs: _TIMESERIES_MODEL_SCS,
         }
         return models[shape_type]
 
@@ -54,7 +55,7 @@ class TestTimeseriesModel:
             ShapeType.constant,
             ShapeType.gaussian,
             ShapeType.triangle,
-            ShapeType.harmonic,
+            ShapeType.scs,
         ],
     )
     def test_TimeseriesModel_valid_input_simple_shapetypes(self, shape_type):
@@ -89,46 +90,23 @@ class TestTimeseriesModel:
         # Assert
         assert timeseries == loaded_model
 
-    # def test_TimeseriesModel_valid_input_scs_shapetype(self, tmp_path):
-    #     # Arrange
-    #     temp_file = tmp_path / "data.csv"
-    #     temp_file.write_text("test")
-    #     model = self.get_test_model(ShapeType.scs)
-    #     model["scs_file_path"] = Path(temp_file)
+    @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path"])
+    def test_TimeseriesModel_invalid_input_shapetype_scs(self, to_remove):
+        # Arrange
+        model = self.get_test_model(ShapeType.scs)
+        model.pop(to_remove)
 
-    #     # Act
-    #     timeseries_model = SyntheticTimeseriesModel.model_validate(model)
+        # Act
+        with pytest.raises(ValidationError) as e:
+            SyntheticTimeseriesModel.model_validate(model)
 
-    #     # Assert
-    #     assert timeseries_model.shape_type == ShapeType.scs
-    #     assert timeseries_model.peak_time == UnitfulTime(0, UnitTypesTime.hours)
-    #     assert timeseries_model.duration == UnitfulTime(1, UnitTypesTime.hours)
-    #     assert timeseries_model.cumulative == UnitfulLength(
-    #         1, UnitTypesLength.millimeters
-    #     )
-    # assert timeseries_model.scs_file_path == Path(temp_file)
-    # assert timeseries_model.scs_type == Scstype.type1
-
-    # @pytest.mark.parametrize("to_remove", ["scs_type", "scs_file_path", "cumulative"])
-    # def test_TimeseriesModel_invalid_input_shapetype_scs(self, tmp_path, to_remove):
-    #     # Arrange
-    #     temp_file = tmp_path / "data.csv"
-    #     temp_file.write_text("test")
-    #     model = self.get_test_model(ShapeType.scs)
-    #     model["scs_file_path"] = Path(temp_file)
-    #     model.pop(to_remove)
-
-    #     # Act
-    #     with pytest.raises(ValidationError) as e:
-    #         SyntheticTimeseriesModel.model_validate(model)
-
-    #     # Assert
-    #     errors = e.value.errors()
-    #     assert len(errors) == 1
-    #     assert (
-    #         "scs_file, scs_type and cumulative must be provided for SCS timeseries:"
-    #         in errors[0]["ctx"]["error"].args[0]
-    #     )
+        # Assert
+        errors = e.value.errors()
+        assert len(errors) == 1
+        assert (
+            "SCS timeseries must have scs_file_path, scs_type and cumulative specified."
+            in errors[0]["ctx"]["error"].args[0]
+        )
 
     @pytest.mark.parametrize(
         "shape_type",
@@ -136,7 +114,6 @@ class TestTimeseriesModel:
             ShapeType.constant,
             ShapeType.gaussian,
             ShapeType.triangle,
-            ShapeType.harmonic,
         ],
     )
     def test_TimeseriesModel_invalid_input_simple_shapetypes_both_peak_and_cumulative(
@@ -165,7 +142,6 @@ class TestTimeseriesModel:
             ShapeType.constant,
             ShapeType.gaussian,
             ShapeType.triangle,
-            ShapeType.harmonic,
         ],
     )
     def test_TimeseriesModel_invalid_input_simple_shapetypes_neither_peak_nor_cumulative(
@@ -192,17 +168,27 @@ class TestTimeseriesModel:
 
 class TestSyntheticTimeseries:
     @staticmethod
-    def get_test_timeseries():
+    def get_test_timeseries(scs=False):
         ts = SyntheticTimeseries()
-        ts.attrs = SyntheticTimeseriesModel(
-            shape_type=ShapeType.constant,
-            peak_time=UnitfulTime(0, UnitTypesTime.hours),
-            duration=UnitfulTime(1, UnitTypesTime.hours),
-            peak_value=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
-        )
+        if scs:
+            ts.attrs = SyntheticTimeseriesModel(
+                shape_type=ShapeType.scs,
+                peak_time=UnitfulTime(3, UnitTypesTime.hours),
+                duration=UnitfulTime(6, UnitTypesTime.hours),
+                cumulative=UnitfulLength(10, UnitTypesLength.inch),
+                scs_file_path=TEST_DATA_DIR / "scs_rainfall.csv",
+                scs_type=Scstype.type3,
+            )
+        else:
+            ts.attrs = SyntheticTimeseriesModel(
+                shape_type=ShapeType.constant,
+                peak_time=UnitfulTime(0, UnitTypesTime.hours),
+                duration=UnitfulTime(1, UnitTypesTime.hours),
+                peak_value=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
+            )
         return ts
 
-    def test_calculate_data(self):
+    def test_calculate_data_normal(self):
         ts = self.get_test_timeseries()
 
         timestep = UnitfulTime(1, UnitTypesTime.seconds)
@@ -212,6 +198,26 @@ class TestSyntheticTimeseries:
             ts.attrs.duration / timestep == len(data) - 1
         ), f"{ts.attrs.duration}/{timestep} should eq {ts.attrs.duration/timestep}, but it is: {len(data) - 1}."
         assert np.amax(data) == ts.attrs.peak_value.value
+
+    def test_calculate_data_scs(self):
+        ts = self.get_test_timeseries(scs=True)
+        timestep = UnitfulTime(1, UnitTypesTime.seconds)
+
+        df = ts.to_dataframe(
+            start_time=REFERENCE_TIME,
+            end_time=REFERENCE_TIME + ts.attrs.duration.to_timedelta(),
+            time_step=timestep,
+        )
+
+        dt = df.index.to_series().diff().dt.total_seconds().to_numpy()
+
+        cum_rainfall_ts = np.sum(df.to_numpy().squeeze() * dt[1:].mean()) / 3600
+        cum_rainfall_toml = ts.attrs.cumulative.value
+        assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
+        assert isinstance(df, pd.DataFrame)
+        assert (
+            ts.attrs.duration / timestep == len(df.index) - 1
+        ), f"{ts.attrs.duration}/{timestep} should eq {ts.attrs.duration/timestep}, but it is: {len(df.index) - 1}."
 
     def test_load_file(self):
         fd, path = tempfile.mkstemp(suffix=".toml")

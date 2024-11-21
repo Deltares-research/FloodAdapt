@@ -21,7 +21,6 @@ from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
     REFERENCE_TIME,
     ForcingSource,
-    ShapeType,
     TimeModel,
 )
 from flood_adapt.object_model.interface.site import Site
@@ -45,14 +44,6 @@ class TideModel(BaseModel):
     harmonic_amplitude: UnitfulLength
     harmonic_period: UnitfulTime
     harmonic_phase: UnitfulTime
-
-    def to_timeseries_model(self) -> SyntheticTimeseriesModel:
-        return SyntheticTimeseriesModel(
-            shape_type=ShapeType.harmonic,
-            duration=self.harmonic_period,
-            peak_time=self.harmonic_phase,
-            peak_value=self.harmonic_amplitude,
-        )
 
     def to_dataframe(
         self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP

@@ -19,7 +19,6 @@ from flood_adapt.object_model.io.unitfulvalue import (
 ### CONSTANTS ###
 REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 TIDAL_PERIOD = UnitfulTime(value=12.4, units=UnitTypesTime.hours)
-MAX_TIDAL_CYCLES = 20
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_TIMESTEP = UnitfulTime(value=600, units=UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
@@ -38,15 +37,14 @@ class ShapeType(str, Enum):
     gaussian = "gaussian"
     constant = "constant"
     triangle = "triangle"
-    harmonic = "harmonic"
     scs = "scs"
 
 
 class Scstype(str, Enum):
-    type1 = "type1"
-    type1a = "type1a"
-    type2 = "type2"
-    type3 = "type3"
+    type1 = "type_1"
+    type1a = "type_1a"
+    type2 = "type_2"
+    type3 = "type_3"
 
 
 class Mode(str, Enum):

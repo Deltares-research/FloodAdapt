@@ -51,6 +51,10 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     peak_value: Optional[TIMESERIES_VARIABLE] = None
     cumulative: Optional[TIMESERIES_VARIABLE] = None
 
+    # Optional
+    scs_file_path: Optional[Path] = None
+    scs_type: Optional[str] = None
+
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
         if self.duration.value < 0:
@@ -67,6 +71,15 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
             raise ValueError(
                 "Either peak_value or cumulative must be specified for the timeseries model."
             )
+        return self
+
+    @model_validator(mode="after")
+    def validate_scs_timeseries(self):
+        if self.shape_type == ShapeType.scs:
+            if not (self.scs_file_path and self.scs_type and self.cumulative):
+                raise ValueError(
+                    "SCS timeseries must have scs_file_path, scs_type and cumulative specified."
+                )
         return self
 
     @staticmethod

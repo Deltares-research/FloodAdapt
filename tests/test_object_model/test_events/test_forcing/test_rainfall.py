@@ -10,6 +10,7 @@ from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.interface.events import TimeModel
+from flood_adapt.object_model.hazard.interface.models import Scstype
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
@@ -22,6 +23,7 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesLength,
     UnitTypesTime,
 )
+from tests.fixtures import TEST_DATA_DIR
 
 
 class TestRainfallConstant:
@@ -58,6 +60,24 @@ class TestRainfallSynthetic:
         assert not rf_df.empty
         assert rf_df.max().max() == pytest.approx(2, rel=1e-2), f"{rf_df.max()} != 2"
         assert rf_df.min().min() == pytest.approx(2, rel=1e-2), f"{rf_df.min()} != 2"
+
+    def test_rainfall_synthetic_scs_get_data(self):
+        # Arrange
+        timeseries = SyntheticTimeseriesModel(
+            shape_type=ShapeType.scs,
+            duration=UnitfulTime(value=4, units=UnitTypesTime.hours),
+            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
+            cumulative=UnitfulLength(value=2, units=UnitTypesLength.meters),
+            scs_file_path=TEST_DATA_DIR / "scs.csv",
+            scs_type=Scstype.type1,
+        )
+
+        # Act
+        rf_df = RainfallSynthetic(timeseries=timeseries).get_data()
+
+        # Assert
+        assert isinstance(rf_df, pd.DataFrame)
+        assert not rf_df.empty
 
 
 class TestRainfallMeteo:

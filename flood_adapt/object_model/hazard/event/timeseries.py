@@ -31,23 +31,26 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self, attrs: SyntheticTimeseriesModel, timestep: UnitfulTime
     ) -> np.ndarray:
+        if not (attrs.scs_file_path):
+            raise ValueError("SCS file path is not set.")
+        if not attrs.scs_type:
+            raise ValueError("SCS type is not set.")
+
         _duration = attrs.duration.convert(UnitTypesTime.seconds)
-        _shape_start = attrs.peak_time.convert(UnitTypesTime.seconds) - _duration / 2
-        _shape_end = attrs.peak_time.convert(UnitTypesTime.seconds) + _duration / 2
-
+        _start_time = attrs.start_time.convert(UnitTypesTime.seconds)
         _timestep = timestep.convert(UnitTypesTime.seconds)
-        _scs_path = attrs.scs_file_path
-        _scstype = attrs.scs_type
-
         tt = np.arange(0, _duration + 1, _timestep)
 
         # rainfall
-        scs_df = pd.read_csv(_scs_path, index_col=0)
-        scstype_df = scs_df[_scstype]
-        tt_rain = _shape_start + scstype_df.index.to_numpy() * _duration
+        scs_df = pd.read_csv(attrs.scs_file_path, index_col=0)
+        scstype_df = scs_df[attrs.scs_type]
+        tt_rain = _start_time + scstype_df.index.to_numpy() * _duration
         rain_series = scstype_df.to_numpy()
         rain_instantaneous = np.diff(rain_series) / np.diff(
-            tt_rain / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds)
+            tt_rain
+            / UnitfulTime(value=1, units=UnitTypesTime.hours).convert(
+                UnitTypesTime.seconds
+            )
         )  # divide by time in hours to get mm/hour
 
         # interpolate instanetaneous rain intensity timeseries to tt
@@ -64,7 +67,10 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
             * attrs.cumulative.value
             / np.trapz(
                 rain_interp,
-                tt / UnitfulTime(1, UnitTypesTime.hours).convert(UnitTypesTime.seconds),
+                tt
+                / UnitfulTime(value=1, units=UnitTypesTime.hours).convert(
+                    UnitTypesTime.seconds
+                ),
             )
         )
         return rainfall
@@ -152,7 +158,6 @@ class SyntheticTimeseries(ITimeseries):
         ShapeType.scs: ScsTimeseriesCalculator(),
         ShapeType.constant: ConstantTimeseriesCalculator(),
         ShapeType.triangle: TriangleTimeseriesCalculator(),
-        # ShapeType.harmonic: HarmonicTimeseriesCalculator(),
     }
     attrs: SyntheticTimeseriesModel
 
