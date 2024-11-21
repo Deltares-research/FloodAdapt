@@ -82,6 +82,41 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
 
 
 @pytest.fixture()
+def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapter]:
+    overland_2_rivers = test_db.static_path / "templates" / "overland_2_rivers"
+    with open(overland_2_rivers / "sfincs.dis", "r") as f:
+        l = f.readline()
+        timestep, discharges = l.split("\t")
+        discharges = [float(d) for d in discharges.split()]
+
+    rivers = []
+    with open(overland_2_rivers / "sfincs.src", "r") as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            x, y = line.split()
+            x = float(x)
+            y = float(y)
+            rivers.append(
+                RiverModel(
+                    name=f"river_{x}_{y}",
+                    mean_discharge=UnitfulDischarge(
+                        value=discharges[i], units=UnitTypesDischarge.cms
+                    ),
+                    x_coordinate=x,
+                    y_coordinate=y,
+                )
+            )
+    test_db.site.attrs.river = rivers
+    adapter = SfincsAdapter(model_root=str(overland_2_rivers))
+    adapter.set_timing(TimeModel())
+    adapter._logger = mock.Mock()
+    adapter.logger.handlers = []
+    adapter.logger.warning = mock.Mock()
+
+    return adapter, test_db
+
+
+@pytest.fixture()
 def synthetic_discharge():
     if river := Database().site.attrs.river:
         return DischargeSynthetic(
@@ -340,6 +375,42 @@ class TestAddForcing:
             msg = f"River {forcing.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
             with pytest.raises(ValueError, match=msg):
                 sfincs_adapter._set_single_river_forcing(discharge=forcing)
+
+        def test_set_discharge_forcing_multiple_rivers(
+            self,
+            sfincs_adapter_2_rivers: tuple[SfincsAdapter, IDatabase],
+        ):
+            # Arrange
+            num_rivers = 2
+            sfincs_adapter, db = sfincs_adapter_2_rivers
+            assert db.site.attrs.river is not None
+            assert len(db.site.attrs.river) == num_rivers
+
+            for i, river in enumerate(db.site.attrs.river):
+                discharge = DischargeConstant(
+                    river=river,
+                    discharge=UnitfulDischarge(
+                        value=i * 1000, units=UnitTypesDischarge.cms
+                    ),
+                )
+
+                # Act
+                sfincs_adapter._set_single_river_forcing(discharge=discharge)
+
+            # Assert
+            river_locations = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
+            river_discharges = sfincs_adapter._model.forcing["dis"].to_dataframe()[
+                "dis"
+            ]
+
+            for i, river in enumerate(db.site.attrs.river):
+                assert (
+                    river_locations.geometry[i + 1].x == river.x_coordinate
+                )  # 1-based indexing for some reason
+                assert (
+                    river_locations.geometry[i + 1].y == river.y_coordinate
+                )  # 1-based indexing for some reason
+                assert river_discharges[i] == i * 1000
 
         def test_set_discharge_forcing_matching_rivers(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
