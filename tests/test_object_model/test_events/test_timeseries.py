@@ -54,7 +54,6 @@ class TestTimeseriesModel:
             ShapeType.constant,
             ShapeType.gaussian,
             ShapeType.triangle,
-            ShapeType.scs,
         ],
     )
     def test_TimeseriesModel_valid_input_simple_shapetypes(self, shape_type):
@@ -74,6 +73,26 @@ class TestTimeseriesModel:
         )
         assert timeseries_model.peak_value == UnitfulIntensity(
             value=1, units=UnitTypesIntensity.mm_hr
+        )
+
+    def test_TimeseriesModel_valid_input_scs_shapetype(self):
+        # Arrange
+        model = self.get_test_model(ShapeType.scs)
+
+        # Act
+        timeseries_model = SyntheticTimeseriesModel.model_validate(model)
+
+        # Assert
+        assert timeseries_model.shape_type == ShapeType.scs
+        assert timeseries_model.peak_time == UnitfulTime(
+            value=0, units=UnitTypesTime.hours
+        )
+        assert timeseries_model.duration == UnitfulTime(
+            value=1, units=UnitTypesTime.hours
+        )
+        assert timeseries_model.peak_value is None
+        assert timeseries_model.cumulative == UnitfulLength(
+            value=1, units=UnitTypesLength.millimeters
         )
 
     def test_SyntheticTimeseries_save_load(self, tmp_path):

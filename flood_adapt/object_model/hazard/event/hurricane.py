@@ -254,6 +254,7 @@ class HurricaneEvent(IEvent):
         with SfincsAdapter(model_root=template_offshore) as _offshore_model:
             # Edit offshore model
             _offshore_model.set_timing(self.attrs.time)
+            _offshore_model._sim_path = sim_path
 
             # Add water levels
             path = (

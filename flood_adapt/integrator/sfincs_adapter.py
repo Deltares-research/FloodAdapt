@@ -842,7 +842,11 @@ class SfincsAdapter(IHazardAdapter):
         if not spw_path.exists():
             raise FileNotFoundError(f"SPW file not found: {spw_path}")
         self._sim_path.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(spw_path, self._sim_path)
+
+        # prevent SameFileError
+        if spw_path != self._sim_path / spw_path.name:
+            shutil.copy2(spw_path, self._sim_path)
+
         self._model.set_config("spwfile", spw_path.name)
 
     def get_wl_df_from_offshore_his_results(self) -> pd.DataFrame:
