@@ -67,7 +67,9 @@ class FiatAdapter:
 
         # Add the hazard data to a data catalog with the unit conversion
         wl_current_units = UnitfulLength(value=1.0, units="meters")
-        conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
+        conversion_factor = wl_current_units.convert(
+            self.fiat_model.exposure.length_unit
+        )
 
         self.fiat_model.setup_hazard(
             map_fn=map_fn,
