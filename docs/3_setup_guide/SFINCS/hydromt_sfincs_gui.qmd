@@ -30,8 +30,8 @@ This guide is organized in seven sections:
 To get started building your SFINCS model:
 
 * Open the Model Builder application; this contains functionality to build a SFINCS and a Delft-FIAT model
-*  Click "Model" in the top menu bar and choose "SFINCS (HydroMT)"
-*  Click "File" in the top menu bar and choose "Select Working Directory"
+* Click "Model" in the top menu bar and choose "SFINCS (HydroMT)"
+* Click "File" in the top menu bar and choose "Select Working Directory"
 * Select an existing folder or create a new one where your model will be saved
 
 ## Defining the model domain and grid {#sec-domain}
