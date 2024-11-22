@@ -137,11 +137,14 @@ class SurgeSource(str, Enum):
     shape = "shape"
 
 
+class SurgeShape(Enum):
+    gaussian = "gaussian"
+
 class SurgeModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
     source: SurgeSource
-    shape_type: Optional[str] = "gaussian"
+    shape_type: SurgeShape = SurgeShape.gaussian
     shape_duration: Optional[float] = None
     shape_peak_time: Optional[float] = None
     shape_peak: Optional[UnitfulLength] = None
@@ -162,7 +165,7 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     """BaseModel describing the expected variables and data types of attributes common to all event types."""
 
     name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
+    description: str = ""
     mode: Mode
     template: Template
     timing: Timing
