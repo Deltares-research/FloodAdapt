@@ -3,7 +3,10 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
+from pydantic.functional_validators import AfterValidator
+
+from typing_extensions import Annotated
 
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDischarge,
@@ -17,6 +20,11 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesVolume,
 )
 
+def ensure_ascii(s: str):
+    assert s.isascii()
+    return s
+
+AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
 
 class Cstype(str, Enum):
     """The accepted input for the variable cstype in Site."""
@@ -42,11 +50,11 @@ class TideGaugeSource(str, Enum):
 class SfincsModel(BaseModel):
     """The accepted input for the variable sfincs in Site."""
 
-    csname: str
+    csname: AsciiStr
     cstype: Cstype
-    version: Optional[str] = ""
-    offshore_model: Optional[str] = None
-    overland_model: str
+    version: Optional[AsciiStr] = ""
+    offshore_model: Optional[AsciiStr] = None
+    overland_model: AsciiStr
     floodmap_units: UnitTypesLength
     save_simulation: Optional[bool] = False
 
@@ -54,7 +62,7 @@ class SfincsModel(BaseModel):
 class VerticalReferenceModel(BaseModel):
     """The accepted input for the variable vertical_reference in Site."""
 
-    name: str
+    name: AsciiStr
     height: UnitfulLength
 
 
@@ -63,19 +71,19 @@ class WaterLevelReferenceModel(BaseModel):
 
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = Field(default_factory=list)  # only for plotting
 
 
 class Cyclone_track_databaseModel(BaseModel):
     """The accepted input for the variable cyclone_track_database in Site."""
 
-    file: str
+    file: AsciiStr
 
 
 class SlrScenariosModel(BaseModel):
     """The accepted input for the variable slr.scenarios ."""
 
-    file: str
+    file: AsciiStr
     relative_to_year: int
 
 
@@ -106,8 +114,8 @@ class MapboxLayersModel(BaseModel):
     footprints_dmg_type: DamageType = "absolute"
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
-    svi_bins: Optional[list[float]] = []
-    svi_colors: Optional[list[str]] = []
+    svi_bins: Optional[list[float]] = Field(default_factory=list)
+    svi_colors: Optional[list[str]] = Field(default_factory=list)
     benefits_bins: list[float]
     benefits_colors: list[str]
     benefits_threshold: Optional[float] = None
@@ -123,8 +131,8 @@ class VisualizationLayersModel(BaseModel):
     layer_long_names: list[str]
     layer_paths: list[str]
     field_names: list[str]
-    bins: Optional[list[list[float]]] = []
-    colors: Optional[list[list[str]]] = []
+    bins: Optional[list[list[float]]] = Field(default_factory=list)
+    colors: Optional[list[list[str]]] = Field(default_factory=list)
 
 
 class GuiModel(BaseModel):
@@ -159,32 +167,32 @@ class FloodFrequencyModel(BaseModel):
 class DemModel(BaseModel):
     """The accepted input for the variable dem in Site."""
 
-    filename: str
+    filename: AsciiStr
     units: UnitTypesLength
 
 
 class EquityModel(BaseModel):
-    census_data: str
+    census_data: AsciiStr
     percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
 
 class AggregationModel(BaseModel):
-    name: str
-    file: str
-    field_name: str
+    name: AsciiStr
+    file: AsciiStr
+    field_name: AsciiStr
     equity: Optional[EquityModel] = None
 
 
 class BFEModel(BaseModel):
-    geom: str
-    table: Optional[str] = None
-    field_name: str
+    geom: AsciiStr
+    table: Optional[AsciiStr] = None
+    field_name: AsciiStr
 
 
 class SVIModel(BaseModel):
-    geom: str
-    field_name: str
+    geom: AsciiStr
+    field_name: AsciiStr
 
 
 class FiatModel(BaseModel):
@@ -194,7 +202,7 @@ class FiatModel(BaseModel):
     bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
     floodmap_type: Floodmap_type
-    non_building_names: Optional[list[str]]
+    non_building_names: Optional[list[str]] = None
     damage_unit: Optional[str] = "$"
     building_footprints: Optional[str] = None
     roads_file_name: Optional[str] = None
@@ -207,8 +215,8 @@ class FiatModel(BaseModel):
 class RiverModel(BaseModel):
     """Model that describes the accepted input for the variable river in Site."""
 
-    name: str
-    description: str
+    name: AsciiStr
+    description: AsciiStr
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
@@ -220,11 +228,11 @@ class TideGaugeModel(BaseModel):
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
-    name: Optional[Union[int, str]] = None
-    description: Optional[str] = ""
+    name: Optional[Union[int, AsciiStr]] = None
+    description: Optional[AsciiStr] = ""
     source: TideGaugeSource
     ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
-    file: Optional[str] = None  # for locally stored data
+    file: Optional[AsciiStr] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
 
@@ -248,21 +256,21 @@ class Obs_pointModel(BaseModel):
     obs_points is used to define output locations in the hazard model, which will be plotted in the user interface.
     """
 
-    name: Union[int, str]
-    description: Optional[str] = ""
+    name: Union[int, AsciiStr]
+    description: Optional[AsciiStr] = ""
     ID: Optional[int] = (
         None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
     )
-    file: Optional[str] = None  # for locally stored data
+    file: Optional[AsciiStr] = None  # for locally stored data
     lat: float
     lon: float
 
 
 class BenefitsModel(BaseModel):
     current_year: int
-    current_projection: str
-    baseline_strategy: str
-    event_set: str
+    current_projection: AsciiStr
+    baseline_strategy: AsciiStr
+    event_set: AsciiStr
 
 
 class SCSModel(BaseModel):
@@ -272,23 +280,23 @@ class SCSModel(BaseModel):
 
     """
 
-    file: str
-    type: str
+    file: AsciiStr
+    type: AsciiStr
 
 
 class StandardObjectModel(BaseModel):
     """The accepted input for the variable standard_object in Site."""
 
-    events: Optional[list[str]] = []
-    projections: Optional[list[str]] = []
-    strategies: Optional[list[str]] = []
+    events: Optional[list[AsciiStr]] =Field(default_factory=list)
+    projections: Optional[list[AsciiStr]] = Field(default_factory=list)
+    strategies: Optional[list[AsciiStr]] = Field(default_factory=list)
 
 
 class SiteModel(BaseModel):
     """The expected variables and data types of attributes of the Site class."""
 
-    name: str
-    description: Optional[str] = ""
+    name: AsciiStr
+    description: Optional[AsciiStr] = ""
     lat: float
     lon: float
     sfincs: SfincsModel
