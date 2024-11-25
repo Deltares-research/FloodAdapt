@@ -137,14 +137,11 @@ class SurgeSource(str, Enum):
     shape = "shape"
 
 
-class SurgeShape(Enum):
-    gaussian = "gaussian"
-
 class SurgeModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
     source: SurgeSource
-    shape_type: SurgeShape = SurgeShape.gaussian
+    shape_type: ShapeType = ShapeType.gaussian
     shape_duration: Optional[float] = None
     shape_peak_time: Optional[float] = None
     shape_peak: Optional[UnitfulLength] = None
