@@ -307,6 +307,7 @@ class SfincsAdapter(IHazardAdapter):
             projection = projection.get_physical_projection()
 
         if projection.attrs.sea_level_rise:
+            self.logger.info("Adding sea level rise to model.")
             self.waterlevels += projection.attrs.sea_level_rise.convert(
                 uv.UnitTypesLength.meters
             )
@@ -837,6 +838,8 @@ class SfincsAdapter(IHazardAdapter):
             direction of time-invariant wind forcing [deg], by default None
         """
         t0, t1 = self._model.get_model_time()
+        self.logger.info("Adding wind to the overland flood model...")
+
         if isinstance(forcing, WindConstant):
             # HydroMT function: set wind forcing from constant magnitude and direction
             self._model.setup_wind_forcing(
@@ -878,6 +881,8 @@ class SfincsAdapter(IHazardAdapter):
         const_intensity : float, optional
             time-invariant precipitation intensity [mm_hr], by default None
         """
+        self.logger.info("Adding rainfall to the overland flood model...")
+
         t0, t1 = self._model.get_model_time()
         if isinstance(forcing, RainfallConstant):
             self._model.setup_precip_forcing(
@@ -915,6 +920,8 @@ class SfincsAdapter(IHazardAdapter):
             Can be a constant, synthetic or from a csv file.
             Also contains the river information.
         """
+        self.logger.info("Adding discharge to the overland flood model...")
+
         if isinstance(forcing, (DischargeConstant, DischargeCSV, DischargeSynthetic)):
             self._set_single_river_forcing(discharge=forcing)
         else:
@@ -924,6 +931,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         t0, t1 = self._model.get_model_time()
+        self.logger.info("Adding waterlevels to the overland flood model...")
 
         if isinstance(
             forcing,
@@ -999,6 +1007,8 @@ class SfincsAdapter(IHazardAdapter):
         self._model.setup_structures(structures=gdf_floodwall, stype="weir", merge=True)
 
     def _add_measure_greeninfra(self, green_infrastructure: GreenInfrastructure):
+        self.logger.info("Adding green infrastructure to the overland flood model...")
+
         # HydroMT function: get geodataframe from filename
         if green_infrastructure.attrs.selection_type == "polygon":
             polygon_file = resolve_filepath(
@@ -1059,6 +1069,8 @@ class SfincsAdapter(IHazardAdapter):
         pump : PumpModel
             pump information
         """
+        self.logger.info("Adding pump to the overland flood model...")
+
         polygon_file = resolve_filepath(
             ObjectDir.measure, pump.attrs.name, pump.attrs.polygon_file
         )
@@ -1120,6 +1132,7 @@ class SfincsAdapter(IHazardAdapter):
         )
 
     def _turn_off_bnd_press_correction(self):
+        """Turn off the boundary pressure correction in the sfincs model."""
         self._model.set_config("pavbnd", -9999)
 
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
