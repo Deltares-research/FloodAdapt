@@ -297,7 +297,9 @@ class SiteModel(BaseModel):
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
-    flood_frequency: FloodFrequencyModel = FloodFrequencyModel(flooding_threshold= UnitfulLength(value=0.0, units=UnitTypesLength.metersd))
+    flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
+        flooding_threshold=UnitfulLength(value=0.0, units=UnitTypesLength.metersd)
+    )
     dem: DemModel
     fiat: FiatModel
     tide_gauge: Optional[TideGaugeModel] = None
