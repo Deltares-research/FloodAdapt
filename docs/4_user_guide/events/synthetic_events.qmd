@@ -5,13 +5,6 @@ filters:
 lightbox: auto
 ---
 
-::: {.callout-tip}
-## Watch our video - add a synthetic event
-Don't feel like reading? No problem! Check out our video about how to add a synthetic event in FloodAdapt.
-**TO BE ADDED**
-:::
-
-
 When the user selects the “Synthetic” option from the **Events** tab, they will see the event template window shown in @fig-syntheticWindow. This window allows the user to input synthetic time series for:
 
 (1) [Water level - Tide + Surge](#water-levels---tide-surge)
@@ -70,6 +63,6 @@ For a synthetic event, the user can only enter either **none** (default), or a *
 ## River discharge
 The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a **constant** discharge or a **shape**, which is a synthetic timeseries.
 
-A constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.
+**Constant** - A constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.
 
-The shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value.
+**Shape** - The shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value.

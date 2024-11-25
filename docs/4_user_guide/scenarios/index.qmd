@@ -11,11 +11,11 @@ A scenario in FloodAdapt is a what-if situation and consists of a hydro-meteorol
 For an event scenario FloodAdapt calculates the flooding and impacts for one single weather event, such as a hurricane or a king tide with rainfall. The scenario can include future projections and measures, but always represents just one single event. For a risk scenario, in contrast, FloodAdapt calculates flooding for a set of events with different probabilities. From this output, FloodAdapt derives return period flood maps (such as the 10-year, 25-year, or 100-year flood maps) and return period damage maps. It then combines this information to further derive *expected annual damages*, which is the metric associated with economic risk.
 :::
 
-::: {.callout-tip}
+<!--::: {.callout-tip}
 ## Translating planning questions into FloodAdapt scenarios
 **Coming soon**…watch a video for examples how different planning questions can be translated into FloodAdapt scenarios
 :::
-
+-->
 In the “Scenarios” tab (see @fig-scenarios) you will see a tabulated overview of any scenarios that have already been created. You can sort existing scenarios by name, date created, scenario component (event, project, or strategy), or run status (column "finished") which indicates whether the scenario has been run (True) or not (False). Next to the table there are buttons to add, edit, or delete scenarios. Note that scenarios can only be edited or deleted if they have not yet been run.
 
 ![**Scenarios tab in FloodAdapt**](../../_static/images/scenarios_mainWindow.png){width=70% fig-align=left #fig-scenarios}
