@@ -2,7 +2,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Generic, Optional, Type, TypeVar
+from typing import Any, Generic, Type, TypeVar
 
 import tomli
 import tomli_w
@@ -31,7 +31,7 @@ class IObjectModel(BaseModel):
         min_length=1,
         pattern='^[^<>:"/\\\\|?* ]*$',
     )
-    description: Optional[str] = Field("", description="Description of the object.")
+    description: str = Field(default="", description="Description of the object.")
 
 
 ObjectModel = TypeVar("ObjectModel", bound=IObjectModel)
@@ -72,10 +72,10 @@ class IObject(ABC, Generic[ObjectModel]):
     dir_name: ObjectDir
     display_name: str
 
-    _logger: logging.Logger = None
+    _logger: logging.Logger
 
     @abstractmethod
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | ObjectModel) -> None:
         """Implement this method in the subclass to initialize the object.
 
         This method should validate the object model passed in as 'data' and assign it to self.attrs.
@@ -94,12 +94,11 @@ class IObject(ABC, Generic[ObjectModel]):
             # ... Additional initialization code here ...
         ```
         """
-        ...
 
     @classmethod
     def get_logger(cls) -> logging.Logger:
         """Return the logger for the object."""
-        if cls._logger is None:
+        if not hasattr(cls, "_logger") or cls._logger is None:
             cls._logger = FloodAdaptLogging.getLogger(cls.__name__)
         return cls._logger
 
@@ -116,7 +115,7 @@ class IObject(ABC, Generic[ObjectModel]):
         return cls.load_dict(toml)
 
     @classmethod
-    def load_dict(cls: Type[T], data: dict[str, Any]) -> T:
+    def load_dict(cls: Type[T], data: dict[str, Any] | ObjectModel) -> T:
         """Load object from dictionary."""
         obj = cls(data)
         return obj
@@ -131,7 +130,7 @@ class IObject(ABC, Generic[ObjectModel]):
 
     def save(self, toml_path: Path | str | os.PathLike) -> None:
         """Save object to disk, including any additional files."""
-        self.save_additional(output_dir=toml_path.parent)
+        self.save_additional(output_dir=Path(toml_path).parent)
         with open(toml_path, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 

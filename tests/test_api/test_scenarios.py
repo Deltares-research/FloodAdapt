@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.api import scenarios as api_scenarios
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
 from tests.test_object_model.test_events.test_eventset import (

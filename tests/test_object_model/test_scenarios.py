@@ -2,15 +2,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
-    SocioEconomicChange,
-)
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.projections import (
+    PhysicalProjection,
+    SocioEconomicChange,
+)
 
 # from flood_adapt.object_model.interface.events import RainfallModel, TideModel
 from flood_adapt.object_model.interface.site import SCSModel, Site
@@ -66,7 +66,7 @@ def test_scs_rainfall(test_db: IDatabase, test_scenarios: dict[str, Scenario]):
 
     # event.attrs.rainfall = RainfallModel(
     #     source="shape",
-    #     cumulative=UnitfulLength(value=10.0, units="inch"),
+    #     cumulative=uv.UnitfulLength(value=10.0, units="inch"),
     #     shape_type="scs",
     #     shape_start_time=-24,
     #     shape_duration=10,

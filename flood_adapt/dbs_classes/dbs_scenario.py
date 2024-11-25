@@ -48,7 +48,7 @@ class DbsScenario(DbsTemplate[Scenario]):
         if (self.output_path / name).exists():
             shutil.rmtree(self.output_path / name, ignore_errors=False)
 
-    def edit(self, scenario: Scenario):
+    def edit(self, object_model: Scenario):
         """Edits an already existing scenario in the database.
 
         Parameters
@@ -63,10 +63,10 @@ class DbsScenario(DbsTemplate[Scenario]):
         """
         # Check if it is possible to edit the scenario. This then also covers checking whether the
         # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        super().edit(scenario)
+        super().edit(object_model)
 
         # Delete output if edited
-        output_path = self.output_path / scenario.attrs.name
+        output_path = self.output_path / object_model.attrs.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 

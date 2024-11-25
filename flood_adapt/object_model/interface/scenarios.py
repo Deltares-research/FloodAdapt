@@ -1,9 +1,10 @@
 from abc import abstractmethod
 
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
-from flood_adapt.object_model.interface.path_builder import (
-    ObjectDir,
-)
+from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.strategies import IStrategy
 
 
 class ScenarioModel(IObjectModel):
@@ -23,4 +24,13 @@ class IScenario(IObject[ScenarioModel]):
     def run(self) -> None: ...
 
     @abstractmethod
-    def equal_hazard_components(self, scenario: "IScenario") -> bool: ...
+    def equal_hazard_components(self, other: "IScenario") -> bool: ...
+
+    @abstractmethod
+    def get_event(self) -> IEvent: ...
+
+    @abstractmethod
+    def get_projection(self) -> IProjection: ...
+
+    @abstractmethod
+    def get_strategy(self) -> IStrategy: ...

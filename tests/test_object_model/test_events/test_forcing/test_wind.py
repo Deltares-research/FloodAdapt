@@ -5,18 +5,13 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindCSV,
     WindMeteo,
 )
-from flood_adapt.object_model.hazard.interface.events import TimeModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulVelocity,
-    UnitTypesDirection,
-    UnitTypesVelocity,
-)
+from flood_adapt.object_model.interface.events import TimeModel
 
 
 class TestWindConstant:
@@ -24,8 +19,8 @@ class TestWindConstant:
         # Arrange
         _speed = 10
         _dir = 90
-        speed = UnitfulVelocity(_speed, UnitTypesVelocity.mps)
-        direction = UnitfulDirection(_dir, UnitTypesDirection.degrees)
+        speed = uv.UnitfulVelocity(_speed, uv.UnitTypesVelocity.mps)
+        direction = uv.UnitfulDirection(_dir, uv.UnitTypesDirection.degrees)
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).get_data()

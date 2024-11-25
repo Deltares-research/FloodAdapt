@@ -2,10 +2,10 @@ import shutil
 import tempfile
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+import flood_adapt.object_model.io.unitfulvalue as uv
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallTrack,
@@ -23,14 +23,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitTypesDischarge,
-    UnitTypesLength,
-)
 from flood_adapt.object_model.scenario import Scenario
 from tests.fixtures import TEST_DATA_DIR
 
@@ -52,20 +45,22 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=UnitfulDischarge(
-                        value=5000, units=UnitTypesDischarge.cfs
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
+                discharge=uv.UnitfulDischarge(
+                    value=5000, units=uv.UnitTypesDischarge.cfs
+                ),
             ),
         },
         "track_name": "IAN",
         "hurricane_translation": {
-            "eastwest_translation": UnitfulLength(
-                value=0.0, units=UnitTypesLength.meters
+            "eastwest_translation": uv.UnitfulLength(
+                value=0.0, units=uv.UnitTypesLength.meters
             ),
-            "northsouth_translation": UnitfulLength(
-                value=0.0, units=UnitTypesLength.meters
+            "northsouth_translation": uv.UnitfulLength(
+                value=0.0, units=uv.UnitTypesLength.meters
             ),
         },
     }
@@ -151,33 +146,6 @@ class TestHurricaneEvent:
 
         # Assert
         assert spw_file.exists()
-
-    def test_process_sfincs_offshore(
-        self,
-        test_db: IDatabase,
-        setup_hurricane_scenario: tuple[Scenario, HurricaneEvent],
-    ):
-        # Arrange
-        scenario, hurricane_event = setup_hurricane_scenario
-        undefined_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
-
-        shutil.copy2(
-            TEST_DATA_DIR / "IAN.cyc",
-            test_db.events.input_path / hurricane_event.attrs.name / "IAN.cyc",
-        )
-
-        # Act
-        hurricane_event.process(scenario)
-        sim_path = hurricane_event.attrs.forcings[ForcingType.WATERLEVEL].path
-
-        # Assert
-        assert undefined_path is None
-        assert sim_path.exists()
-
-        with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            wl_df = _offshore_model.get_wl_df_from_offshore_his_results()
-
-        assert isinstance(wl_df, pd.DataFrame)
 
     def test_save_additional_saves_cyc_file(
         self, setup_hurricane_event: tuple[HurricaneEvent, Path]

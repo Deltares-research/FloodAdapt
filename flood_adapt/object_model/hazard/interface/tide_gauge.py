@@ -6,8 +6,8 @@ from typing import Optional
 import pandas as pd
 from pydantic import BaseModel, model_validator
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
 
 class TideGaugeSource(str, Enum):
@@ -56,7 +56,7 @@ class ITideGauge(ABC):
         self,
         time: TimeModel,
         out_path: Optional[Path] = None,
-        units: UnitTypesLength = UnitTypesLength.meters,
+        units: uv.UnitTypesLength = uv.UnitTypesLength.meters,
     ) -> pd.DataFrame: ...
 
     @abstractmethod

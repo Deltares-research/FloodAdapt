@@ -4,13 +4,13 @@ from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.interface.events import IEvent
+from flood_adapt.object_model.hazard.event.template_event import Event
 
 
-class DbsEvent(DbsTemplate[IEvent]):
-    _object_class = IEvent
+class DbsEvent(DbsTemplate[Event]):
+    _object_class = Event
 
-    def get(self, name: str) -> IEvent:
+    def get(self, name: str) -> Event:
         """Return an event object.
 
         Parameters
@@ -20,7 +20,7 @@ class DbsEvent(DbsTemplate[IEvent]):
 
         Returns
         -------
-        IEvent
+        Event
             event object
         """
         # Get event path

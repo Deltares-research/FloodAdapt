@@ -5,6 +5,7 @@ import cht_observations.observation_stations as cht_station
 import pandas as pd
 from noaa_coops.station import COOPSAPIError
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
@@ -12,7 +13,6 @@ from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
 )
 from flood_adapt.object_model.io.csv import read_csv
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
 
 
 class TideGauge(ITideGauge):
@@ -29,7 +29,7 @@ class TideGauge(ITideGauge):
         self,
         time: TimeModel,
         out_path: Optional[Path] = None,
-        units: UnitTypesLength = UnitTypesLength.meters,
+        units: uv.UnitTypesLength = uv.UnitTypesLength.meters,
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
@@ -41,8 +41,8 @@ class TideGauge(ITideGauge):
             Tide gauge model.
         out_path : Optional[Path], optional
             Path to save the data, by default None.
-        units : UnitTypesLength, optional
-            Unit of the waterlevel, by default UnitTypesLength.meters.
+        units : uv.UnitTypesLength, optional
+            Unit of the waterlevel, by default uv.UnitTypesLength.meters.
 
         Returns
         -------
@@ -67,8 +67,8 @@ class TideGauge(ITideGauge):
             return pd.DataFrame()
 
         gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]
-        gauge_data = gauge_data * UnitfulLength(
-            value=1.0, units=UnitTypesLength.meters
+        gauge_data = gauge_data * uv.UnitfulLength(
+            value=1.0, units=uv.UnitTypesLength.meters
         ).convert(units)
 
         if out_path is not None:
@@ -122,6 +122,7 @@ class TideGauge(ITideGauge):
         """
         cache_key = f"{self.attrs.ID}_{time.start_time}_{time.end_time}"
         if cache_key in self.__class__._cached_data:
+            self.logger.info("Tide gauge data retrieved from cache")
             return self.__class__._cached_data[cache_key]
 
         try:

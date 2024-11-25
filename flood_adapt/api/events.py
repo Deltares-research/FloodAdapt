@@ -1,10 +1,12 @@
 # Event tab
 import os
+from pathlib import Path
 from typing import Any, List, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.hazard.event.event_factory import (
     EventFactory,
@@ -16,9 +18,9 @@ from flood_adapt.object_model.hazard.event.event_factory import (
     SyntheticEventModel,
     TranslationModel,
 )
+from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
     IForcing,
@@ -35,7 +37,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength, UnitTypesTime
+from flood_adapt.object_model.interface.events import IEvent, IEventModel
 
 # Ensure all objects are imported and available for use if this module is imported
 __all__ = [
@@ -60,7 +62,6 @@ __all__ = [
     "IRainfall",
     "IWaterlevel",
     "IWind",
-    "UnitTypesTime",
     "SyntheticEvent",
     "SyntheticEventModel",
     "HistoricalEventModel",
@@ -76,7 +77,7 @@ def get_events() -> dict[str, Any]:
     return Database().events.list_objects()
 
 
-def get_event(name: str) -> IEvent:
+def get_event(name: str) -> IEvent | EventSet:
     return Database().events.get(name)
 
 
@@ -85,7 +86,7 @@ def get_event_mode(name: str) -> str:
     return EventFactory.read_mode(filename)
 
 
-def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
+def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
     """Create a event object from a dictionary of attributes.
 
     Parameters
@@ -95,7 +96,7 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent:
 
     Returns
     -------
-    IEvent
+    Event
         Depending on attrs.template an event object.
         Can be of type: Synthetic, Historical_nearshore, Historical_offshore, or Historical_hurricane.
     """
@@ -106,7 +107,7 @@ def list_forcing_types() -> list[str]:
     return ForcingFactory.list_forcing_types()
 
 
-def list_forcings(as_string: bool) -> list[str | IForcing]:
+def list_forcings(as_string: bool) -> list[str] | list[IForcing]:
     return ForcingFactory.list_forcings(as_string=as_string)
 
 
@@ -156,12 +157,12 @@ def check_higher_level_usage(name: str) -> list[str]:
 
 
 def download_wl_data(
-    station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
+    tide_gauge: TideGauge, time: TimeModel, units: uv.UnitTypesLength, out_path: str
 ) -> pd.DataFrame:
-    return TideGauge().get_waterlevels_in_time_frame(
-        time=TimeModel(start_time=start_time, end_time=end_time),
+    return tide_gauge.get_waterlevels_in_time_frame(
+        time=time,
         units=units,
-        out_path=file,
+        out_path=Path(out_path),
     )
 
 

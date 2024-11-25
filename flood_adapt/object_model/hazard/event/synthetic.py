@@ -1,14 +1,14 @@
+from pathlib import Path
 from typing import Any, ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.interface.events import (
+from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.interface.events import (
     ForcingSource,
     ForcingType,
-    IEvent,
     IEventModel,
 )
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
-from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Synthetic event
@@ -24,10 +24,10 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
     }
 
-    @staticmethod
-    def default() -> "SyntheticEventModel":
+    @classmethod
+    def default(cls) -> "SyntheticEventModel":
         """Set default values for Synthetic event."""
-        return SyntheticEventModel(
+        return cls(
             name="DefaultSyntheticEvent",
             time=TimeModel(),
             template=Template.Synthetic,
@@ -49,7 +49,7 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         )
 
 
-class SyntheticEvent(IEvent):
+class SyntheticEvent(Event):
     MODEL_TYPE = SyntheticEventModel
 
     attrs: SyntheticEventModel
@@ -60,6 +60,5 @@ class SyntheticEvent(IEvent):
         else:
             self.attrs = SyntheticEventModel.model_validate(data)
 
-    def process(self, scenario: IScenario = None):
-        """Synthetic events do not require any processing."""
-        return
+    def preprocess(self, output_dir: Path):
+        pass

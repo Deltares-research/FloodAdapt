@@ -1,164 +1,32 @@
 import os
-from abc import abstractmethod
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Any, ClassVar, List, Optional, Type
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from pydantic import (
-    Field,
-    field_serializer,
-    model_validator,
-)
+from plotly.subplots import make_subplots
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.interface.forcing import (
+from flood_adapt.object_model.interface.events import (
     ForcingSource,
     ForcingType,
+    IEvent,
+    IEventModel,
     IForcing,
 )
-from flood_adapt.object_model.hazard.interface.models import (
-    Mode,
-    Template,
-    TimeModel,
-)
-from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulLength,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesVelocity,
-)
 
 
-class IEventModel(IObjectModel):
-    ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]]
-
-    time: TimeModel
-    template: Template
-    mode: Mode
-    water_level_offset: UnitfulLength = UnitfulLength(
-        value=0, units=UnitTypesLength.meters
-    )
-
-    forcings: dict[ForcingType, Any] = Field(default_factory=dict)
-
-    @model_validator(mode="before")
-    def create_forcings(self):
-        if "forcings" in self:
-            forcings = {}
-            for ftype, forcing_attrs in self["forcings"].items():
-                if isinstance(forcing_attrs, IForcing):
-                    # forcing_attrs is already a forcing object
-                    forcings[ftype] = forcing_attrs
-                elif (
-                    isinstance(forcing_attrs, dict)
-                    and "_type" in forcing_attrs
-                    and "_source" in forcing_attrs
-                ):
-                    # forcing_attrs is a dict with forcing attributes
-                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
-                else:
-                    # forcing_attrs is a dict with sub-forcing attributes. Currently only used for discharge forcing
-                    for name, sub_forcing in forcing_attrs.items():
-                        if ftype not in forcings:
-                            forcings[ftype] = {}
-
-                        if isinstance(sub_forcing, IForcing):
-                            forcings[ftype][name] = sub_forcing
-                        else:
-                            forcings[ftype][name] = ForcingFactory.load_dict(
-                                sub_forcing
-                            )
-            self["forcings"] = forcings
-        return self
-
-    @model_validator(mode="after")
-    def validate_forcings(self):
-        def validate_concrete_forcing(concrete_forcing):
-            _type = concrete_forcing._type
-            _source = concrete_forcing._source
-
-            # Check type
-            if _type not in self.__class__.ALLOWED_FORCINGS:
-                allowed_types = ", ".join(
-                    t.value for t in self.__class__.ALLOWED_FORCINGS.keys()
-                )
-                raise ValueError(
-                    f"Forcing type {_type.value} is not allowed. Allowed types are: {allowed_types}"
-                )
-
-            # Check source
-            if _source not in self.__class__.ALLOWED_FORCINGS[_type]:
-                allowed_sources = ", ".join(
-                    s.value for s in self.__class__.ALLOWED_FORCINGS[_type]
-                )
-                raise ValueError(
-                    f"Forcing source {_source.value} is not allowed for forcing type {_type.value}. "
-                    f"Allowed sources are: {allowed_sources}"
-                )
-
-        for concrete_forcing in self.forcings.values():
-            if concrete_forcing is None:
-                continue
-
-            if isinstance(concrete_forcing, dict):
-                for _, _concrete_forcing in concrete_forcing.items():
-                    validate_concrete_forcing(_concrete_forcing)
-            else:
-                validate_concrete_forcing(concrete_forcing)
-
-        return self
-
-    @field_serializer("forcings")
-    @classmethod
-    def serialize_forcings(
-        cls, value: dict[ForcingType, IForcing | dict[str, IForcing]]
-    ) -> dict[str, dict[str, Any]]:
-        dct = {}
-        for ftype, forcing in value.items():
-            if not forcing:
-                continue
-            if isinstance(forcing, IForcing):
-                dct[ftype.value] = forcing.model_dump(exclude_none=True)
-            else:
-                dct[ftype.value] = {
-                    name: forcing.model_dump(exclude_none=True)
-                    for name, forcing in forcing.items()
-                }
-        return dct
-
-    @classmethod
-    def get_allowed_forcings(cls) -> dict[str, List[str]]:
-        return {k.value: [s.value for s in v] for k, v in cls.ALLOWED_FORCINGS.items()}
-
-    @abstractmethod
-    def default(cls) -> "IEventModel":
-        """Return the default event model."""
-        ...
-
-
-class IEvent(IObject[IEventModel]):
-    MODEL_TYPE: Type[IEventModel]
-    dir_name = ObjectDir.event
-    display_name = "Event"
-
-    attrs: IEventModel
-    _site = None
-
+class Event(IEvent[IEventModel]):
     def get_forcings(self) -> list[IForcing]:
         forcings = []
         for forcing in self.attrs.forcings.values():
@@ -174,29 +42,8 @@ class IEvent(IObject[IEventModel]):
         return forcings
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
-        for forcing in self.attrs.forcings.values():
-            if forcing is None:
-                continue
-            if isinstance(forcing, dict):
-                for _, _forcing in forcing.items():
-                    _forcing.save_additional(output_dir)
-            else:
-                forcing.save_additional(output_dir)
-
-    @abstractmethod
-    def process(self, scenario: IScenario = None):
-        """
-        Process the event to generate forcing data.
-
-        The simplest implementation of the process method is to do nothing.
-        Some forcings are just data classes that do not require processing as they contain all information as attributes.
-        For more complicated events, overwrite this method in the subclass and implement the necessary steps to generate the forcing data.
-
-        - Read event- ( and possibly scenario) to see what forcings are needed
-        - Prepare forcing data (download, run offshore model, etc.)
-        - Set forcing data in forcing objects if necessary
-        """
-        ...
+        for forcing in self.get_forcings():
+            forcing.save_additional(output_dir)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -212,13 +59,12 @@ class IEvent(IObject[IEventModel]):
     def plot_forcing(
         self,
         forcing_type: ForcingType,
-        units: (
-            UnitTypesLength
-            | UnitTypesIntensity
-            | UnitTypesDischarge
-            | UnitTypesVelocity
-            | None
-        ) = None,
+        units: Optional[
+            uv.UnitTypesLength
+            | uv.UnitTypesIntensity
+            | uv.UnitTypesDischarge
+            | uv.UnitTypesVelocity
+        ] = None,
         **kwargs,
     ) -> str | None:
         """Plot the forcing data for the event."""
@@ -242,7 +88,9 @@ class IEvent(IObject[IEventModel]):
                     "Plotting only available for rainfall, wind, waterlevel, and discharge forcings."
                 )
 
-    def plot_waterlevel(self, units: UnitTypesLength, **kwargs) -> str:
+    def plot_waterlevel(
+        self, units: Optional[uv.UnitTypesLength] = None, **kwargs
+    ) -> str:
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
 
@@ -324,7 +172,7 @@ class IEvent(IObject[IEventModel]):
 
     def plot_rainfall(
         self,
-        units: Optional[UnitTypesIntensity] = None,
+        units: Optional[uv.UnitTypesIntensity] = None,
         rainfall_multiplier: Optional[float] = None,
         **kwargs,
     ) -> str | None:
@@ -397,7 +245,9 @@ class IEvent(IObject[IEventModel]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_discharge(self, units: UnitTypesDischarge = None, **kwargs) -> str:
+    def plot_discharge(
+        self, units: Optional[uv.UnitTypesDischarge] = None, **kwargs
+    ) -> str:
         units = units or Settings().unit_system.discharge
 
         # set timing relative to T0 if event is synthetic
@@ -473,8 +323,8 @@ class IEvent(IObject[IEventModel]):
 
     def plot_wind(
         self,
-        velocity_units: UnitTypesVelocity = None,
-        direction_units: UnitTypesDirection = None,
+        velocity_units: Optional[uv.UnitTypesVelocity] = None,
+        direction_units: Optional[uv.UnitTypesDirection] = None,
         **kwargs,
     ) -> str:
         if self.attrs.forcings[ForcingType.WIND] is None:
@@ -510,8 +360,6 @@ class IEvent(IObject[IEventModel]):
 
         # Plot actual thing
         # Create figure with secondary y-axis
-        import plotly.graph_objects as go
-        from plotly.subplots import make_subplots
 
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 

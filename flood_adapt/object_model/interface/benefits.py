@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 from pydantic import BaseModel
@@ -47,4 +47,29 @@ class IBenefit(IObject[BenefitModel]):
     @abstractmethod
     def run_cost_benefit(self):
         """Run the cost benefit analysis."""
+        ...
+
+    @abstractmethod
+    def cba(self):
+        """Return the cost benefit analysis results."""
+        ...
+
+    @abstractmethod
+    def cba_aggregation(self):
+        """Return the cost benefit analysis results."""
+        ...
+
+    @abstractmethod
+    def get_output(self) -> dict[str, Any]:
+        """Return the output of the cost benefit analysis."""
+        ...
+
+    @abstractmethod
+    def has_run_check(self) -> bool:
+        """Check if the benefit analysis has been run."""
+        ...
+
+    @abstractmethod
+    def ready_to_run(self) -> bool:
+        """Check if the benefit analysis is ready to run."""
         ...

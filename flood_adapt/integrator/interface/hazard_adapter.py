@@ -1,10 +1,13 @@
 from abc import abstractmethod
+from typing import Any
+
+import geopandas as gpd
 
 from flood_adapt.integrator.interface.model_adapter import IAdapter
 from flood_adapt.object_model.hazard.interface.forcing import IForcing
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
 from flood_adapt.object_model.interface.measures import HazardMeasure
+from flood_adapt.object_model.interface.projections import PhysicalProjection
 
 
 class IHazardAdapter(IAdapter):
@@ -50,4 +53,18 @@ class IHazardAdapter(IAdapter):
         A projection is a projection of the future, i.e. sea level rise, subsidence, rainfall multiplier, storm frequency increase, etc.
         PhysicalProjections contains all information needed to implement the projection in the hazard model. (parameters, etc.)
         """
+        pass
+
+    @abstractmethod
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
+        """
+        Implement this to return the model boundary of the hazard model.
+
+        The model boundary is a geospatial file that defines the boundary of the hazard model.
+        """
+        pass
+
+    @abstractmethod
+    def get_model_grid(self) -> Any:
+        """Implement this to return the model grid of the hazard model."""
         pass

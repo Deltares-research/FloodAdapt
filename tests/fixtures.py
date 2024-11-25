@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
 from flood_adapt.object_model.hazard.measure.pump import Pump
@@ -20,10 +21,6 @@ from flood_adapt.object_model.interface.projections import (
     SocioEconomicChangeModel,
 )
 from flood_adapt.object_model.interface.strategies import StrategyModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitTypesDischarge,
-)
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.strategy import Strategy
 
@@ -86,7 +83,7 @@ def dummy_pump_measure():
         type=HazardType.pump,
         selection_type=SelectionType.polyline,
         polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
-        discharge=UnitfulDischarge(value=100, units=UnitTypesDischarge.cfs),
+        discharge=uv.UnitfulDischarge(value=100, units=uv.UnitTypesDischarge.cfs),
     )
 
     return Pump.load_dict(model)

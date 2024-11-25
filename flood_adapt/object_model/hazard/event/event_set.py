@@ -8,13 +8,12 @@ from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from flood_adapt.object_model.hazard.event.synthetic import SyntheticEventModel
-from flood_adapt.object_model.hazard.interface.events import (
+from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.interface.database_user import DatabaseUser
+from flood_adapt.object_model.interface.events import (
     IEvent,
     IEventModel,
 )
-from flood_adapt.object_model.hazard.interface.models import Mode
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
-from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 class EventSetModel(BaseModel):
@@ -36,29 +35,29 @@ class EventSetModel(BaseModel):
         )
 
 
-class EventSet(IDatabaseUser):
+class EventSet(DatabaseUser):
     attrs: EventSetModel
     events: List[IEvent]
 
     @classmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> "EventSet":
+    def load_dict(cls, attrs: dict[str, Any] | EventSetModel) -> "EventSet":
         from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
         obj = cls()
         obj.events = []
         sub_models = []
+        if isinstance(attrs, EventSetModel):
+            attrs = attrs.model_dump()
 
         for sub_event in attrs["sub_events"]:
             sub_event = EventFactory.load_dict(sub_event)
-            sub_models.append(sub_event.attrs)
+            if isinstance(sub_event, EventSet):
+                raise ValueError("EventSet cannot contain other EventSets")
             obj.events.append(sub_event)
+            sub_models.append(sub_event.attrs)
 
         attrs["sub_events"] = sub_models
-
         obj.attrs = EventSetModel.model_validate(attrs)
-        obj.events = [
-            EventFactory.load_dict(sub_model) for sub_model in obj.attrs.sub_events
-        ]
         return obj
 
     @classmethod
@@ -77,7 +76,7 @@ class EventSet(IDatabaseUser):
             sub_dir.mkdir(parents=True, exist_ok=True)
             sub_event.save(sub_dir / f"{sub_event.attrs.name}.toml")
 
-    def process(self, scenario: IScenario = None):
+    def preprocess(self, output_dir: Path) -> None:
         """Prepare the forcings of the event set.
 
         Which is to say, prepare the forcings of the subevents of the event set.
@@ -94,4 +93,4 @@ class EventSet(IDatabaseUser):
         # I dont think I've seen any code that changes the forcings of the subevents wrt eachother, is that correct?
         # So, just run the first subevent and then copy the results to the other subevents ?
         for sub_event in self.events:
-            sub_event.process(scenario)
+            sub_event.preprocess(output_dir / sub_event.attrs.name)

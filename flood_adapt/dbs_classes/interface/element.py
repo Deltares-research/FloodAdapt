@@ -63,7 +63,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
     @abstractmethod
     def save(
         self,
-        object_model: IObject,
+        object_model: T,
         overwrite: bool = False,
     ):
         """Save an object in the database.
@@ -74,7 +74,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
         ----------
         object_model : ObjectModel
             object to be saved in the database
-        overwrite : OverwriteMode, optional
+        overwrite : bool, optional
             whether to overwrite the object if it already exists in the
             database, by default False
         toml_only : bool, optional
@@ -88,7 +88,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def edit(self, object_model: IObject):
+    def edit(self, object_model: T):
         """Edits an already existing object in the database.
 
         Parameters

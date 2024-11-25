@@ -16,8 +16,6 @@ from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.scenario import Scenario
 
 
 class Benefit(IBenefit):
@@ -35,13 +33,18 @@ class Benefit(IBenefit):
 
         # Get output path based on database path
         self.check_scenarios()
-        self.results_path = db_path(
-            TopLevelDir.output, ObjectDir.benefit, self.attrs.name
-        )
-        self.site_info = Site.load_file(
-            db_path(TopLevelDir.static, ObjectDir.site, "site.toml")
-        )
+        self.results_path = self.database.benefits.output_path.joinpath(self.attrs.name)
+        self.site_info = self.database.site
         self.unit = self.site_info.attrs.fiat.damage_unit
+
+    @property
+    def database(self):
+        """Return the database for the object."""
+        if not hasattr(self, "_database_instance") or self._database_instance is None:
+            from flood_adapt.dbs_classes.database import Database
+
+            self._database_instance = Database()
+        return self._database_instance
 
     @property
     def has_run(self):
@@ -54,7 +57,7 @@ class Benefit(IBenefit):
         self._results = self.get_output()
         return self._results
 
-    def get_output(self):
+    def get_output(self) -> dict[str, Any]:
         if not self.has_run:
             raise RuntimeError(
                 f"Cannot read output since benefit analysis '{self.attrs.name}' has not been run yet."
@@ -125,21 +128,13 @@ class Benefit(IBenefit):
                 scenarios_calc[scenario]["strategy"] = self.attrs.strategy
 
         # Get the available scenarios
-        # TODO this should be done with a function of the database controller
-        # but the way it is set-up now there will be issues with cyclic imports
-        scenarios_avail = []
-        for scenario_path in list(
-            db_path(TopLevelDir.input, ObjectDir.scenario).glob("*")
-        ):
-            scenarios_avail.append(
-                Scenario.load_file(scenario_path.joinpath(f"{scenario_path.name}.toml"))
-            )
+        scenarios_avail = self.database.scenarios.list_objects()["objects"]
 
         # Check if any of the needed scenarios are already there
         for scenario in scenarios_calc.keys():
             scn_dict = scenarios_calc[scenario].copy()
             scn_dict["name"] = scenario
-            scenario_obj = Scenario.load_dict(scn_dict)
+            scenario_obj = self.database.scenarios._object_class.load_dict(scn_dict)
             created = [
                 scn_avl for scn_avl in scenarios_avail if scenario_obj == scn_avl
             ]

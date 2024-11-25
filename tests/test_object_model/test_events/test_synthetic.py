@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
@@ -21,20 +22,6 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulTime,
-    UnitfulVelocity,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesTime,
-    UnitTypesVelocity,
-)
 
 
 @pytest.fixture()
@@ -49,11 +36,15 @@ def test_projection_event_all_synthetic():
         "mode": Mode.single_event,
         "forcings": {
             "WIND": WindConstant(
-                speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
-                direction=UnitfulDirection(value=60, units=UnitTypesDirection.degrees),
+                speed=uv.UnitfulVelocity(value=5, units=uv.UnitTypesVelocity.mps),
+                direction=uv.UnitfulDirection(
+                    value=60, units=uv.UnitTypesDirection.degrees
+                ),
             ),
             "RAINFALL": RainfallConstant(
-                intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
+                intensity=uv.UnitfulIntensity(
+                    value=20, units=uv.UnitTypesIntensity.mm_hr
+                )
             ),
             "DISCHARGE": DischargeConstant(
                 river=RiverModel(
@@ -61,27 +52,35 @@ def test_projection_event_all_synthetic():
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=UnitfulDischarge(
-                        value=5000, units=UnitTypesDischarge.cfs
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
+                discharge=uv.UnitfulDischarge(
+                    value=5000, units=uv.UnitTypesDischarge.cfs
+                ),
             ),
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
                         shape_type=ShapeType.triangle,
-                        duration=UnitfulTime(value=1, units=UnitTypesTime.days),
-                        peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
-                        peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                        duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
+                        peak_time=uv.UnitfulTime(value=8, units=uv.UnitTypesTime.hours),
+                        peak_value=uv.UnitfulLength(
+                            value=1, units=uv.UnitTypesLength.meters
+                        ),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=UnitfulLength(
-                        value=1, units=UnitTypesLength.meters
+                    harmonic_amplitude=uv.UnitfulLength(
+                        value=1, units=uv.UnitTypesLength.meters
                     ),
-                    harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours),
-                    harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
+                    harmonic_period=uv.UnitfulTime(
+                        value=12.4, units=uv.UnitTypesTime.hours
+                    ),
+                    harmonic_phase=uv.UnitfulTime(
+                        value=0, units=uv.UnitTypesTime.hours
+                    ),
                 ),
             ),
         },
@@ -101,11 +100,15 @@ def test_event_all_synthetic():
         "mode": Mode.single_event,
         "forcings": {
             "WIND": WindConstant(
-                speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
-                direction=UnitfulDirection(value=60, units=UnitTypesDirection.degrees),
+                speed=uv.UnitfulVelocity(value=5, units=uv.UnitTypesVelocity.mps),
+                direction=uv.UnitfulDirection(
+                    value=60, units=uv.UnitTypesDirection.degrees
+                ),
             ),
             "RAINFALL": RainfallConstant(
-                intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
+                intensity=uv.UnitfulIntensity(
+                    value=20, units=uv.UnitTypesIntensity.mm_hr
+                )
             ),
             "DISCHARGE": DischargeConstant(
                 river=RiverModel(
@@ -113,27 +116,35 @@ def test_event_all_synthetic():
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=UnitfulDischarge(
-                        value=5000, units=UnitTypesDischarge.cfs
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
+                discharge=uv.UnitfulDischarge(
+                    value=5000, units=uv.UnitTypesDischarge.cfs
+                ),
             ),
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
                         shape_type=ShapeType.triangle,
-                        duration=UnitfulTime(value=1, units=UnitTypesTime.days),
-                        peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
-                        peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                        duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
+                        peak_time=uv.UnitfulTime(value=8, units=uv.UnitTypesTime.hours),
+                        peak_value=uv.UnitfulLength(
+                            value=1, units=uv.UnitTypesLength.meters
+                        ),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=UnitfulLength(
-                        value=1, units=UnitTypesLength.meters
+                    harmonic_amplitude=uv.UnitfulLength(
+                        value=1, units=uv.UnitTypesLength.meters
                     ),
-                    harmonic_period=UnitfulTime(value=12.4, units=UnitTypesTime.hours),
-                    harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
+                    harmonic_period=uv.UnitfulTime(
+                        value=12.4, units=uv.UnitTypesTime.hours
+                    ),
+                    harmonic_phase=uv.UnitfulTime(
+                        value=0, units=uv.UnitTypesTime.hours
+                    ),
                 ),
             ),
         },

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.interface.models import Mode
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.database_user import DatabaseUser
 
 
 class FloodMapType(str, Enum):
@@ -13,7 +13,7 @@ class FloodMapType(str, Enum):
     WATER_LEVEL = "water_level"  # TODO make caps, but hydromt_fiat expects lowercase
 
 
-class FloodMap(IDatabaseUser):
+class FloodMap(DatabaseUser):
     _type: FloodMapType = FloodMapType.WATER_LEVEL
 
     name: str

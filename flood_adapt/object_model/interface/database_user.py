@@ -4,7 +4,7 @@ from abc import ABC
 from flood_adapt.misc.log import FloodAdaptLogging
 
 
-class IDatabaseUser(ABC):
+class DatabaseUser(ABC):
     """Abstract class for FloodAdapt classes that need to use / interact with the FloodAdapt database."""
 
     _database_instance = None

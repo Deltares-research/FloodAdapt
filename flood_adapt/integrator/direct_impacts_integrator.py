@@ -19,23 +19,21 @@ from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 from flood_adapt.integrator.fiat_adapter import FiatAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
-    SocioEconomicChange,
-)
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.models import Mode
-from flood_adapt.object_model.interface.database_user import IDatabaseUser
+from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
+from flood_adapt.object_model.interface.projections import SocioEconomicChange
 from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.utils import cd
 
 
 # TODO move code that is related to fiat to the Fiat Adapter
-class DirectImpacts(IDatabaseUser):
+class DirectImpacts(DatabaseUser):
     """All information related to the direct impacts of the scenario.
 
     Includes methods to run the impact model or check if it has already been run.

@@ -4,6 +4,7 @@ import geopandas as gpd
 import pytest
 import tomli
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -22,16 +23,6 @@ from flood_adapt.object_model.interface.measures import (
     PumpModel,
     SelectionType,
 )
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulHeight,
-    UnitfulLength,
-    UnitfulLengthRefValue,
-    UnitfulVolume,
-    UnitTypesLength,
-    UnitTypesVolume,
-    VerticalReference,
-)
 
 
 @pytest.fixture
@@ -41,7 +32,7 @@ def test_floodwall(test_data_dir):
         "description": "seawall",
         "type": HazardType.floodwall,
         "selection_type": SelectionType.polygon,
-        "elevation": UnitfulLength(value=12, units=UnitTypesLength.feet),
+        "elevation": uv.UnitfulLength(value=12, units=uv.UnitTypesLength.feet),
         "polygon_file": str(test_data_dir / "polyline.geojson"),
     }
     return FloodWall(floodwall_model)
@@ -51,13 +42,13 @@ def test_floodwall_read(test_floodwall):
     assert isinstance(test_floodwall.attrs.name, str)
     assert isinstance(test_floodwall.attrs.description, str)
     assert isinstance(test_floodwall.attrs.type, HazardType)
-    assert isinstance(test_floodwall.attrs.elevation, UnitfulLength)
+    assert isinstance(test_floodwall.attrs.elevation, uv.UnitfulLength)
 
     assert test_floodwall.attrs.name == "test_seawall"
     assert test_floodwall.attrs.description == "seawall"
     assert test_floodwall.attrs.type == "floodwall"
     assert test_floodwall.attrs.elevation.value == 12
-    assert test_floodwall.attrs.elevation.units == UnitTypesLength.feet
+    assert test_floodwall.attrs.elevation.units == uv.UnitTypesLength.feet
 
 
 def test_elevate_aggr_area_read(test_db):
@@ -74,7 +65,7 @@ def test_elevate_aggr_area_read(test_db):
     assert isinstance(elevate.attrs.name, str)
     assert isinstance(elevate.attrs.description, str)
     assert isinstance(elevate.attrs.type, ImpactType)
-    assert isinstance(elevate.attrs.elevation, UnitfulLengthRefValue)
+    assert isinstance(elevate.attrs.elevation, uv.UnitfulLengthRefValue)
     assert isinstance(elevate.attrs.selection_type, SelectionType)
     assert isinstance(elevate.attrs.aggregation_area_name, str)
 
@@ -82,7 +73,7 @@ def test_elevate_aggr_area_read(test_db):
     assert elevate.attrs.description == "raise_property_aggregation_area"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
-    assert elevate.attrs.elevation.units == UnitTypesLength.feet
+    assert elevate.attrs.elevation.units == uv.UnitTypesLength.feet
     assert elevate.attrs.elevation.type == "floodmap"
     assert elevate.attrs.selection_type == "aggregation_area"
     assert elevate.attrs.aggregation_area_type == "aggr_lvl_2"
@@ -95,7 +86,7 @@ def test_elevate_aggr_area_read_fail(test_db):
         "name": "test1",
         "description": "test1",
         "type": "elevate_properties",
-        "elevation": {"value": 1, "units": UnitTypesLength.feet, "type": "floodmap"},
+        "elevation": {"value": 1, "units": uv.UnitTypesLength.feet, "type": "floodmap"},
         "selection_type": "aggregation_area",
         # "aggregation_area_name": "test_area",
         "property_type": "RES",
@@ -147,7 +138,7 @@ def test_elevate_polygon_read(test_db):
     assert isinstance(elevate.attrs.name, str)
     assert isinstance(elevate.attrs.description, str)
     assert isinstance(elevate.attrs.type, ImpactType)
-    assert isinstance(elevate.attrs.elevation, UnitfulLengthRefValue)
+    assert isinstance(elevate.attrs.elevation, uv.UnitfulLengthRefValue)
     assert isinstance(elevate.attrs.selection_type, SelectionType)
     assert isinstance(elevate.attrs.polygon_file, str)
 
@@ -155,7 +146,7 @@ def test_elevate_polygon_read(test_db):
     assert elevate.attrs.description == "raise_property_polygon"
     assert elevate.attrs.type == "elevate_properties"
     assert elevate.attrs.elevation.value == 1
-    assert elevate.attrs.elevation.units == UnitTypesLength.feet
+    assert elevate.attrs.elevation.units == uv.UnitTypesLength.feet
     assert elevate.attrs.elevation.type == "floodmap"
     assert elevate.attrs.selection_type == "polygon"
     assert elevate.attrs.polygon_file == "raise_property_polygon.geojson"
@@ -199,7 +190,7 @@ def test_pump_read(test_db):
 
     assert isinstance(pump.attrs.name, str)
     assert isinstance(pump.attrs.type, HazardType)
-    assert isinstance(pump.attrs.discharge, UnitfulDischarge)
+    assert isinstance(pump.attrs.discharge, uv.UnitfulDischarge)
 
     test_geojson = test_db.input_path / "measures" / "pump" / pump.attrs.polygon_file
 
@@ -216,8 +207,8 @@ def test_green_infra_read(test_db):
     assert isinstance(green_infra.attrs.name, str)
     assert isinstance(green_infra.attrs.description, str)
     assert isinstance(green_infra.attrs.type, HazardType)
-    assert isinstance(green_infra.attrs.volume, UnitfulVolume)
-    assert isinstance(green_infra.attrs.height, UnitfulLength)
+    assert isinstance(green_infra.attrs.volume, uv.UnitfulVolume)
+    assert isinstance(green_infra.attrs.height, uv.UnitfulLength)
 
     test_geojson = (
         test_db.input_path / "measures" / "green_infra" / green_infra.attrs.polygon_file
@@ -242,7 +233,7 @@ def test_pump(test_db, test_data_dir):
         name="test_pump",
         description="test_pump",
         type=HazardType.pump,
-        discharge=UnitfulDischarge(value=100, units="cfs"),
+        discharge=uv.UnitfulDischarge(value=100, units="cfs"),
         selection_type=SelectionType.polygon,
         polygon_file=str(test_data_dir / "polyline.geojson"),
     )
@@ -257,8 +248,8 @@ def test_elevate(test_db, test_data_dir):
         name="test_elevate",
         description="test_elevate",
         type=ImpactType.elevate_properties,
-        elevation=UnitfulLengthRefValue(
-            value=1, units=UnitTypesLength.feet, type="floodmap"
+        elevation=uv.UnitfulLengthRefValue(
+            value=1, units=uv.UnitTypesLength.feet, type="floodmap"
         ),
         selection_type=SelectionType.polygon,
         property_type="RES",
@@ -292,8 +283,8 @@ def test_floodproof(test_db, test_data_dir):
         description="test_floodproof",
         type=ImpactType.floodproof_properties,
         selection_type=SelectionType.polygon,
-        elevation=UnitfulLengthRefValue(
-            value=1, units=UnitTypesLength.feet, type=VerticalReference.floodmap
+        elevation=uv.UnitfulLengthRefValue(
+            value=1, units=uv.UnitTypesLength.feet, type=uv.VerticalReference.floodmap
         ),
         property_type="RES",
         polygon_file=str(test_data_dir / "polygon.geojson"),
@@ -310,8 +301,8 @@ def test_green_infra(test_db, test_data_dir):
         name="test_green_infra",
         description="test_green_infra",
         type=HazardType.greening,
-        volume=UnitfulVolume(value=100, units=UnitTypesVolume.cf),
-        height=UnitfulHeight(value=1, units=UnitTypesLength.feet),
+        volume=uv.UnitfulVolume(value=100, units=uv.UnitTypesVolume.cf),
+        height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.feet),
         selection_type=SelectionType.polygon,
         polygon_file=str(test_data_dir / "polygon.geojson"),
         percent_area=10,

@@ -4,8 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Type, TypeVar
 
-from flood_adapt.dbs_classes.dbs_interface import AbstractDatabaseElement
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.object_model.interface.object_model import IObject
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
@@ -100,7 +100,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
             )
 
         # First do a get and change the name and description
-        copy_object = self.get(old_name)
+        copy_object: T = self.get(old_name)
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
@@ -131,7 +131,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
 
     def save(
         self,
-        object_model: IObject,
+        object_model: T,
         overwrite: bool = False,
     ):
         """Save an object in the database and all associated files.
@@ -173,7 +173,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
             / f"{object_model.attrs.name}.toml",
         )
 
-    def edit(self, object_model: IObject):
+    def edit(self, object_model: T):
         """Edit an already existing object in the database.
 
         Parameters

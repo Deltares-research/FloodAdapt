@@ -1,22 +1,16 @@
 import pytest
 
-from flood_adapt.dbs_classes.database import Database
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
-    SocioEconomicChange,
-)
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
+from flood_adapt.object_model.interface.projections import (
+    PhysicalProjection,
+    SocioEconomicChange,
+)
 from flood_adapt.object_model.interface.site import Site
-
-# from flood_adapt.object_model.interface.events import RainfallModel, TideModel
 from flood_adapt.object_model.scenario import Scenario
-
-# from tests.test_object_model.test_events.test_synthetic import test_event_all_synthetic
-# from tests.test_object_model.test_strategies import test_attrs
-# from tests.test_object_model.test_projections import test_dict
 
 
 @pytest.fixture(autouse=True)
@@ -67,7 +61,7 @@ class Test_scenario_run:
     #     yield test_db_class, proj, strat, event, scn, _proj, _strat, _event, _scn
 
     @pytest.fixture(scope="class")
-    def test_scenario_before_after_run(self, test_db_class: Database):
+    def test_scenario_before_after_run(self, test_db_class: IDatabase):
         run_name = "all_projections_extreme12ft_strategy_comb"
         not_run_name = f"{run_name}_NOT_RUN"
 
@@ -83,7 +77,7 @@ class Test_scenario_run:
         yield test_db_class, run_name, not_run_name
 
     def test_run_change_has_run(
-        self, test_scenario_before_after_run: tuple[Database, str, str]
+        self, test_scenario_before_after_run: tuple[IDatabase, str, str]
     ):
         test_db, run_name, not_run_name = test_scenario_before_after_run
 

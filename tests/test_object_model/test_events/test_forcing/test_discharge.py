@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -13,21 +14,13 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitfulTime,
-    UnitTypesDischarge,
-    UnitTypesLength,
-    UnitTypesTime,
-)
 
 
 @pytest.fixture()
 def river() -> RiverModel:
     return RiverModel(
         name="test_river",
-        mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+        mean_discharge=uv.UnitfulDischarge(value=0, units=uv.UnitTypesDischarge.cms),
         x_coordinate=0,
         y_coordinate=0,
     )
@@ -37,7 +30,9 @@ class TestDischargeConstant:
     def test_discharge_constant_get_data(self, river):
         # Arrange
         _discharge = 100
-        discharge = UnitfulDischarge(value=_discharge, units=UnitTypesDischarge.cms)
+        discharge = uv.UnitfulDischarge(
+            value=_discharge, units=uv.UnitTypesDischarge.cms
+        )
 
         # Act
         discharge_df = DischargeConstant(river=river, discharge=discharge).get_data()
@@ -55,9 +50,9 @@ class TestDischargeSynthetic:
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.constant,
-            duration=UnitfulTime(value=4, units=UnitTypesTime.hours),
-            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
-            peak_value=UnitfulLength(value=2, units=UnitTypesLength.meters),
+            duration=uv.UnitfulTime(value=4, units=uv.UnitTypesTime.hours),
+            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
+            peak_value=uv.UnitfulLength(value=2, units=uv.UnitTypesLength.meters),
         )
 
         # Act

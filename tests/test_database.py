@@ -120,7 +120,6 @@ def test_shutdown_AfterShutdown_VarsAreNone():
     assert dbs.static_path is None
     assert dbs.output_path is None
     assert dbs._site is None
-    assert dbs.static_sfincs_model is None
     assert dbs.logger is None
     assert dbs._static is None
     assert dbs._events is None
@@ -150,7 +149,6 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
     assert dbs.static_path is not None
     assert dbs.output_path is not None
     assert dbs._site is not None
-    assert dbs.static_sfincs_model is not None
     assert dbs.logger is not None
     assert dbs._static is not None
     assert dbs._events is not None

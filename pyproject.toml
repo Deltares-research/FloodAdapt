@@ -113,7 +113,8 @@ select = [
 ignore = [
     "D10",
     "D417",
-
+    "F403", # allow * imports
+    "F405", # allow * imports
     "PD010",
     "PD013",
     "PD901",
@@ -127,9 +128,6 @@ fixable = [
     "F",
     "D"
 ]
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F403", "F405"] # allow * imports
-
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

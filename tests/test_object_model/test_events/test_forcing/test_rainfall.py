@@ -4,32 +4,25 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.events import TimeModel
 from flood_adapt.object_model.hazard.interface.models import Scstype
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulTime,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesTime,
-)
+from flood_adapt.object_model.interface.events import TimeModel
 
 
 class TestRainfallConstant:
     def test_rainfall_constant_get_data(self):
         # Arrange
         val = 10
-        intensity = UnitfulIntensity(value=val, units=UnitTypesIntensity.mm_hr)
+        intensity = uv.UnitfulIntensity(value=val, units=uv.UnitTypesIntensity.mm_hr)
 
         # Act
         rf_df = RainfallConstant(intensity=intensity).get_data()
@@ -46,9 +39,9 @@ class TestRainfallSynthetic:
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.constant,
-            duration=UnitfulTime(value=4, units=UnitTypesTime.hours),
-            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
-            peak_value=UnitfulLength(value=2, units=UnitTypesLength.meters),
+            duration=uv.UnitfulTime(value=4, units=uv.UnitTypesTime.hours),
+            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
+            peak_value=uv.UnitfulLength(value=2, units=uv.UnitTypesLength.meters),
         )
 
         # Act
@@ -64,9 +57,9 @@ class TestRainfallSynthetic:
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.scs,
-            duration=UnitfulTime(value=4, units=UnitTypesTime.hours),
-            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
-            cumulative=UnitfulLength(value=2, units=UnitTypesLength.meters),
+            duration=uv.UnitfulTime(value=4, units=uv.UnitTypesTime.hours),
+            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
+            cumulative=uv.UnitfulLength(value=2, units=uv.UnitTypesLength.meters),
             scs_file_name="scs_rainfall.csv",
             scs_type=Scstype.type1,
         )

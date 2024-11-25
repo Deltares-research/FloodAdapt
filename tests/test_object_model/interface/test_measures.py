@@ -1,19 +1,13 @@
 import pytest
 from pydantic import ValidationError
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
     HazardMeasureModel,
     HazardType,
     MeasureModel,
     SelectionType,
-)
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulHeight,
-    UnitfulLength,
-    UnitfulVolume,
-    UnitTypesLength,
-    UnitTypesVolume,
 )
 
 
@@ -168,8 +162,8 @@ class TestGreenInfrastructureModel:
             selection_type=SelectionType.aggregation_area,
             aggregation_area_name="test_aggregation_area_name",
             aggregation_area_type="test_aggregation_area_type",
-            volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-            height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
+            volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+            height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
             percent_area=100.0,
         )
 
@@ -185,11 +179,11 @@ class TestGreenInfrastructureModel:
         assert (
             green_infrastructure.aggregation_area_type == "test_aggregation_area_type"
         )
-        assert green_infrastructure.volume == UnitfulVolume(
-            value=1, units=UnitTypesVolume.m3
+        assert green_infrastructure.volume == uv.UnitfulVolume(
+            value=1, units=uv.UnitTypesVolume.m3
         )
-        assert green_infrastructure.height == UnitfulHeight(
-            value=1, units=UnitTypesLength.meters
+        assert green_infrastructure.height == uv.UnitfulHeight(
+            value=1, units=uv.UnitTypesLength.meters
         )
         assert green_infrastructure.percent_area == 100.0
 
@@ -201,7 +195,7 @@ class TestGreenInfrastructureModel:
             type=HazardType.total_storage,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
-            volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
+            volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
         )  # No height or percent_area needed for total storage
 
         # Assert
@@ -210,8 +204,8 @@ class TestGreenInfrastructureModel:
         assert green_infrastructure.type == "total_storage"
         assert green_infrastructure.polygon_file == "test_polygon_file"
         assert green_infrastructure.selection_type == "polygon"
-        assert green_infrastructure.volume == UnitfulVolume(
-            value=1, units=UnitTypesVolume.m3
+        assert green_infrastructure.volume == uv.UnitfulVolume(
+            value=1, units=uv.UnitTypesVolume.m3
         )
 
     def test_green_infrastructure_model_correct_water_square_polygon_input(self):
@@ -222,8 +216,8 @@ class TestGreenInfrastructureModel:
             type=HazardType.water_square,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
-            volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-            height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
+            volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+            height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
         )  # No percent_area needed for water square
 
         # Assert
@@ -243,8 +237,8 @@ class TestGreenInfrastructureModel:
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_type="test_aggregation_area_type",
-                volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
@@ -264,8 +258,8 @@ class TestGreenInfrastructureModel:
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
-                volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
@@ -289,8 +283,8 @@ class TestGreenInfrastructureModel:
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
                 aggregation_area_type="test_aggregation_area_type",
-                volume=UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                height=UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                volume=uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                height=uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 percent_area=100.0,
             )
 
@@ -307,43 +301,43 @@ class TestGreenInfrastructureModel:
         [
             (
                 None,
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 100.0,
                 "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
                 None,
                 100.0,
                 "Height and percent_area needs to be set for greening type measures",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=0, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulLength(value=0, units=uv.UnitTypesLength.meters),
                 None,
                 "height.value\n  Input should be greater than 0",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulLength(value=-1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulLength(value=-1, units=uv.UnitTypesLength.meters),
                 None,
                 "height.value\n  Input should be greater than 0",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 None,
                 "Height and percent_area needs to be set for greening type measures",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 -1,
                 "percent_area\n  Input should be greater than or equal to 0",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 101,
                 "percent_area\n  Input should be less than or equal to 100",
             ),
@@ -351,8 +345,8 @@ class TestGreenInfrastructureModel:
         ids=[
             "volume_none",
             "height_none",
-            "unitfulLength_zero",  # You should still be able to set as a unitfull length. However, during the conversion to height, it should trigger the height validator
-            "unitfulLength_negative",  # You should still be able to set as a unitfull length. However, during the conversion to height, it should trigger the height validator
+            "unitfulLength_zero",  # You should still be able to set as a uv.Unitfull length. However, during the conversion to height, it should trigger the height validator
+            "unitfulLength_negative",  # You should still be able to set as a uv.Unitfull length. However, during the conversion to height, it should trigger the height validator
             "percent_area_none",
             "percent_area_negative",
             "percent_area_above_100",
@@ -396,13 +390,13 @@ class TestGreenInfrastructureModel:
                 "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 None,
                 "Height and percent_area cannot be set for total storage type measures",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
                 None,
                 100,
                 "Height and percent_area cannot be set for total storage type measures",
@@ -443,19 +437,19 @@ class TestGreenInfrastructureModel:
         [
             (
                 None,
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 None,
                 "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
                 None,
                 None,
                 "Height needs to be set for water square type measures",
             ),
             (
-                UnitfulVolume(value=1, units=UnitTypesVolume.m3),
-                UnitfulHeight(value=1, units=UnitTypesLength.meters),
+                uv.UnitfulVolume(value=1, units=uv.UnitTypesVolume.m3),
+                uv.UnitfulHeight(value=1, units=uv.UnitTypesLength.meters),
                 100,
                 "Percentage_area cannot be set for water square type measures",
             ),

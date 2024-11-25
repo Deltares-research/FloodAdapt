@@ -7,8 +7,9 @@ from typing import Any, ClassVar, Optional
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.event.timeseries import (
@@ -24,12 +25,6 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulLength,
-    UnitfulTime,
-    UnitTypesLength,
-    UnitTypesTime,
-)
 
 
 class SurgeModel(BaseModel):
@@ -41,9 +36,9 @@ class SurgeModel(BaseModel):
 class TideModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
-    harmonic_amplitude: UnitfulLength
-    harmonic_period: UnitfulTime
-    harmonic_phase: UnitfulTime
+    harmonic_amplitude: uv.UnitfulLength
+    harmonic_period: uv.UnitfulTime
+    harmonic_phase: uv.UnitfulTime
 
     def to_dataframe(
         self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP
@@ -110,12 +105,14 @@ class WaterlevelSynthetic(IWaterlevel):
     def default() -> "WaterlevelSynthetic":
         return WaterlevelSynthetic(
             surge=SurgeModel(
-                timeseries=SyntheticTimeseriesModel.default(UnitfulLength)
+                timeseries=SyntheticTimeseriesModel.default(uv.UnitfulLength)
             ),
             tide=TideModel(
-                harmonic_amplitude=UnitfulLength(value=0, units=UnitTypesLength.meters),
-                harmonic_period=UnitfulTime(value=0, units=UnitTypesTime.seconds),
-                harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.seconds),
+                harmonic_amplitude=uv.UnitfulLength(
+                    value=0, units=uv.UnitTypesLength.meters
+                ),
+                harmonic_period=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.seconds),
+                harmonic_phase=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.seconds),
             ),
         )
 
@@ -154,27 +151,22 @@ class WaterlevelCSV(IWaterlevel):
 class WaterlevelModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
 
-    path: Optional[Path] = Field(default=None)
-    # simpath of the offshore model, set this when running the offshore model
-
     def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
-        # Note that this does not run the offshore simulation, it only tries to read the results from the model.
-        # Running the model is done in the process method of the event.
+        from flood_adapt.integrator.offshore import OffshoreSfincsHandler
+
         try:
-            if self.path is None:
+            if (scn := kwargs.get("scenario", None)) is None:
                 raise ValueError(
-                    "Model path is not set. Run the offshore model first using event.process() method."
+                    "Scenario is not set. Provide a scenario to run the offshore model."
                 )
-
-            from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
-
-            with SfincsAdapter(model_root=self.path) as _offshore_model:
-                return _offshore_model.get_wl_df_from_offshore_his_results()
+            return OffshoreSfincsHandler().get_resulting_waterlevels(scenario=scn)
         except Exception as e:
             if strict:
                 raise
             else:
-                self.logger.error(f"Error reading model results: {self.path}. {e}")
+                self.logger.error(
+                    f"Error reading model results: {kwargs.get('scenario', None)}. {e}"
+                )
 
     @staticmethod
     def default() -> "WaterlevelModel":

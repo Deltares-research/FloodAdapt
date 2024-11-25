@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from typing import Any
 
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
+from flood_adapt.object_model.interface.projections import (
+    IProjection,
+    PhysicalProjection,
+    ProjectionModel,
     SocioEconomicChange,
 )
-from flood_adapt.object_model.hazard.physical_projection import PhysicalProjection
-from flood_adapt.object_model.interface.projections import IProjection, ProjectionModel
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 

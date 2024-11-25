@@ -9,6 +9,7 @@ import pandas as pd
 import tomli
 from pydantic import BaseModel, field_serializer
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.timeseries import REFERENCE_TIME
 from flood_adapt.object_model.hazard.interface.models import (
@@ -16,7 +17,6 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingType,
 )
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulTime, UnitTypesTime
 
 
 class IForcing(BaseModel, ABC):
@@ -63,16 +63,19 @@ class IForcing(BaseModel, ABC):
         """
         Parse the time inputs to ensure they are datetime objects.
 
-        If the inputs are UnitfulTime objects (Synthetic), convert them to datetime objects using the reference time as the base time.
+        If the inputs are uv.UnitfulTime objects (Synthetic), convert them to datetime objects using the reference time as the base time.
         """
         if t0 is None:
             t0 = REFERENCE_TIME
-        elif isinstance(t0, UnitfulTime):
+        elif isinstance(t0, uv.UnitfulTime):
             t0 = REFERENCE_TIME + t0.to_timedelta()
 
         if t1 is None:
-            t1 = t0 + UnitfulTime(value=1, units=UnitTypesTime.hours).to_timedelta()
-        elif isinstance(t1, UnitfulTime):
+            t1 = (
+                t0
+                + uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours).to_timedelta()
+            )
+        elif isinstance(t1, uv.UnitfulTime):
             t1 = t0 + t1.to_timedelta()
         return t0, t1
 

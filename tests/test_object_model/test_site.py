@@ -1,5 +1,6 @@
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.interface.site import (
     DemModel,
     RiverModel,
@@ -8,7 +9,6 @@ from flood_adapt.object_model.interface.site import (
     SiteModel,
     TideGaugeModel,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 
 
 @pytest.fixture()
@@ -225,7 +225,7 @@ def test_loadFile_validFile_returnSiteModel(test_sites):
 
 def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
     test_site = test_sites["site.toml"]
-    assert isinstance(test_site.attrs.water_level.other[0].height, UnitfulLength)
+    assert isinstance(test_site.attrs.water_level.other[0].height, uv.UnitfulLength)
 
     assert test_site.attrs.lat == 32.77
     assert test_site.attrs.slr.vertical_offset.value == 0.6
@@ -278,7 +278,7 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
         assert isinstance(test_site_multiple_rivers.attrs.river[i].name, str)
         assert isinstance(test_site_multiple_rivers.attrs.river[i].x_coordinate, float)
         assert isinstance(
-            test_site_multiple_rivers.attrs.river[i].mean_discharge, UnitfulDischarge
+            test_site_multiple_rivers.attrs.river[i].mean_discharge, uv.UnitfulDischarge
         )
         assert (
             test_site_multiple_rivers.attrs.river[i].mean_discharge.value

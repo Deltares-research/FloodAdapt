@@ -6,20 +6,13 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.timeseries import (
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, Scstype
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulTime,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesTime,
-)
 
 
 class TestTimeseriesModel:
@@ -27,15 +20,15 @@ class TestTimeseriesModel:
     def get_test_model(shape_type: ShapeType):
         _TIMESERIES_MODEL_SIMPLE = {
             "shape_type": ShapeType.constant.value,
-            "duration": {"value": 1, "units": UnitTypesTime.hours},
-            "peak_time": {"value": 0, "units": UnitTypesTime.hours},
-            "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
+            "duration": {"value": 1, "units": uv.UnitTypesTime.hours},
+            "peak_time": {"value": 0, "units": uv.UnitTypesTime.hours},
+            "peak_value": {"value": 1, "units": uv.UnitTypesIntensity.mm_hr},
         }
         _TIMESERIES_MODEL_SCS = {
             "shape_type": ShapeType.scs.value,
-            "peak_time": {"value": 0, "units": UnitTypesTime.hours},
-            "duration": {"value": 1, "units": UnitTypesTime.hours},
-            "cumulative": {"value": 1, "units": UnitTypesLength.millimeters},
+            "peak_time": {"value": 0, "units": uv.UnitTypesTime.hours},
+            "duration": {"value": 1, "units": uv.UnitTypesTime.hours},
+            "cumulative": {"value": 1, "units": uv.UnitTypesLength.millimeters},
             "scs_file_name": "scs_rainfall.csv",
             "scs_type": Scstype.type1.value,
         }
@@ -65,14 +58,14 @@ class TestTimeseriesModel:
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.constant
-        assert timeseries_model.peak_time == UnitfulTime(
-            value=0, units=UnitTypesTime.hours
+        assert timeseries_model.peak_time == uv.UnitfulTime(
+            value=0, units=uv.UnitTypesTime.hours
         )
-        assert timeseries_model.duration == UnitfulTime(
-            value=1, units=UnitTypesTime.hours
+        assert timeseries_model.duration == uv.UnitfulTime(
+            value=1, units=uv.UnitTypesTime.hours
         )
-        assert timeseries_model.peak_value == UnitfulIntensity(
-            value=1, units=UnitTypesIntensity.mm_hr
+        assert timeseries_model.peak_value == uv.UnitfulIntensity(
+            value=1, units=uv.UnitTypesIntensity.mm_hr
         )
 
     def test_TimeseriesModel_valid_input_scs_shapetype(self):
@@ -84,15 +77,15 @@ class TestTimeseriesModel:
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.scs
-        assert timeseries_model.peak_time == UnitfulTime(
-            value=0, units=UnitTypesTime.hours
+        assert timeseries_model.peak_time == uv.UnitfulTime(
+            value=0, units=uv.UnitTypesTime.hours
         )
-        assert timeseries_model.duration == UnitfulTime(
-            value=1, units=UnitTypesTime.hours
+        assert timeseries_model.duration == uv.UnitfulTime(
+            value=1, units=uv.UnitTypesTime.hours
         )
         assert timeseries_model.peak_value is None
-        assert timeseries_model.cumulative == UnitfulLength(
-            value=1, units=UnitTypesLength.millimeters
+        assert timeseries_model.cumulative == uv.UnitfulLength(
+            value=1, units=uv.UnitTypesLength.millimeters
         )
 
     def test_SyntheticTimeseries_save_load(self, tmp_path):
@@ -139,8 +132,8 @@ class TestTimeseriesModel:
     ):
         # Arrange
         model = self.get_test_model(shape_type)
-        model["peak_value"] = {"value": 1, "units": UnitTypesIntensity.mm_hr}
-        model["cumulative"] = {"value": 1, "units": UnitTypesLength.millimeters}
+        model["peak_value"] = {"value": 1, "units": uv.UnitTypesIntensity.mm_hr}
+        model["cumulative"] = {"value": 1, "units": uv.UnitTypesLength.millimeters}
 
         # Act
         with pytest.raises(ValidationError) as e:
@@ -191,25 +184,25 @@ class TestSyntheticTimeseries:
         if scs:
             ts.attrs = SyntheticTimeseriesModel(
                 shape_type=ShapeType.scs,
-                peak_time=UnitfulTime(3, UnitTypesTime.hours),
-                duration=UnitfulTime(6, UnitTypesTime.hours),
-                cumulative=UnitfulLength(10, UnitTypesLength.inch),
+                peak_time=uv.UnitfulTime(3, uv.UnitTypesTime.hours),
+                duration=uv.UnitfulTime(6, uv.UnitTypesTime.hours),
+                cumulative=uv.UnitfulLength(10, uv.UnitTypesLength.inch),
                 scs_file_name="scs_rainfall.csv",
                 scs_type=Scstype.type3,
             )
         else:
             ts.attrs = SyntheticTimeseriesModel(
                 shape_type=ShapeType.constant,
-                peak_time=UnitfulTime(0, UnitTypesTime.hours),
-                duration=UnitfulTime(1, UnitTypesTime.hours),
-                peak_value=UnitfulIntensity(1, UnitTypesIntensity.mm_hr),
+                peak_time=uv.UnitfulTime(0, uv.UnitTypesTime.hours),
+                duration=uv.UnitfulTime(1, uv.UnitTypesTime.hours),
+                peak_value=uv.UnitfulIntensity(1, uv.UnitTypesIntensity.mm_hr),
             )
         return ts
 
     def test_calculate_data_normal(self):
         ts = self.get_test_timeseries()
 
-        timestep = UnitfulTime(1, UnitTypesTime.seconds)
+        timestep = uv.UnitfulTime(1, uv.UnitTypesTime.seconds)
         data = ts.calculate_data(timestep)
 
         assert (
@@ -219,7 +212,7 @@ class TestSyntheticTimeseries:
 
     def test_calculate_data_scs(self):
         ts = self.get_test_timeseries(scs=True)
-        timestep = UnitfulTime(1, UnitTypesTime.seconds)
+        timestep = uv.UnitfulTime(1, uv.UnitTypesTime.seconds)
 
         df = ts.to_dataframe(
             start_time=REFERENCE_TIME,
@@ -257,14 +250,14 @@ class TestSyntheticTimeseries:
                 pytest.fail(str(e))
 
             assert model.attrs.shape_type == ShapeType.constant
-            assert model.attrs.peak_time == UnitfulTime(
-                value=0, units=UnitTypesTime.hours
+            assert model.attrs.peak_time == uv.UnitfulTime(
+                value=0, units=uv.UnitTypesTime.hours
             )
-            assert model.attrs.duration == UnitfulTime(
-                value=1, units=UnitTypesTime.hours
+            assert model.attrs.duration == uv.UnitfulTime(
+                value=1, units=uv.UnitTypesTime.hours
             )
-            assert model.attrs.peak_value == UnitfulIntensity(
-                1, UnitTypesIntensity.mm_hr
+            assert model.attrs.peak_value == uv.UnitfulIntensity(
+                1, uv.UnitTypesIntensity.mm_hr
             )
 
         finally:
@@ -276,9 +269,11 @@ class TestSyntheticTimeseries:
             temp_path = "test.toml"
             ts.attrs = SyntheticTimeseriesModel(
                 shape_type=ShapeType.constant,
-                peak_time=UnitfulTime(value=0, units=UnitTypesTime.hours),
-                duration=UnitfulTime(value=1, units=UnitTypesTime.hours),
-                peak_value=UnitfulIntensity(value=1, units=UnitTypesIntensity.mm_hr),
+                peak_time=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.hours),
+                duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours),
+                peak_value=uv.UnitfulIntensity(
+                    value=1, units=uv.UnitTypesIntensity.mm_hr
+                ),
             )
             try:
                 ts.save(temp_path)
@@ -291,18 +286,18 @@ class TestSyntheticTimeseries:
             os.remove(temp_path)
 
     def test_to_dataframe(self):
-        duration = UnitfulTime(2, UnitTypesTime.hours)
+        duration = uv.UnitfulTime(2, uv.UnitTypesTime.hours)
         ts = SyntheticTimeseries().load_dict(
             {
                 "shape_type": "constant",
                 "peak_time": {"value": 1, "units": "hours"},
                 "duration": {"value": 2, "units": "hours"},
-                "peak_value": {"value": 1, "units": UnitTypesIntensity.mm_hr},
+                "peak_value": {"value": 1, "units": uv.UnitTypesIntensity.mm_hr},
             }
         )
         start = REFERENCE_TIME
         end = start + duration.to_timedelta()
-        timestep = UnitfulTime(value=10, units=UnitTypesTime.seconds)
+        timestep = uv.UnitfulTime(value=10, units=uv.UnitTypesTime.seconds)
 
         # Call the to_dataframe method
         df = ts.to_dataframe(
@@ -317,7 +312,9 @@ class TestSyntheticTimeseries:
 
         # Check that the DataFrame has the correct content
         expected_data = ts.calculate_data(
-            time_step=UnitfulTime(value=timestep.value, units=UnitTypesTime.seconds)
+            time_step=uv.UnitfulTime(
+                value=timestep.value, units=uv.UnitTypesTime.seconds
+            )
         )
         expected_time_range = pd.date_range(
             start=REFERENCE_TIME,

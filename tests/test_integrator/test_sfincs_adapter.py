@@ -6,7 +6,9 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.dbs_classes.database import Database
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
@@ -38,33 +40,18 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import ForcingType, TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
-    UnitfulTime,
 )
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.measures import HazardType, IMeasure
 from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulLength,
-    UnitfulVelocity,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesTime,
-    UnitTypesVelocity,
-)
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
 
@@ -99,8 +86,8 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
             rivers.append(
                 RiverModel(
                     name=f"river_{x}_{y}",
-                    mean_discharge=UnitfulDischarge(
-                        value=discharges[i], units=UnitTypesDischarge.cms
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=discharges[i], units=uv.UnitTypesDischarge.cms
                     ),
                     x_coordinate=x,
                     y_coordinate=y,
@@ -123,9 +110,11 @@ def synthetic_discharge():
             river=river[0],
             timeseries=SyntheticTimeseriesModel(
                 shape_type=ShapeType.triangle,
-                duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
-                peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
-                peak_value=UnitfulDischarge(value=10, units=UnitTypesDischarge.cms),
+                duration=uv.UnitfulTime(value=3, units=uv.UnitTypesTime.hours),
+                peak_time=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours),
+                peak_value=uv.UnitfulDischarge(
+                    value=10, units=uv.UnitTypesDischarge.cms
+                ),
             ),
         )
 
@@ -134,7 +123,7 @@ def synthetic_discharge():
 def test_river() -> RiverModel:
     return RiverModel(
         name="test_river",
-        mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+        mean_discharge=uv.UnitfulDischarge(value=0, units=uv.UnitTypesDischarge.cms),
         x_coordinate=0,
         y_coordinate=0,
     )
@@ -150,9 +139,9 @@ def synthetic_rainfall():
     return RainfallSynthetic(
         timeseries=SyntheticTimeseriesModel(
             shape_type=ShapeType.triangle,
-            duration=UnitfulTime(value=3, units=UnitTypesTime.hours),
-            peak_time=UnitfulTime(value=1, units=UnitTypesTime.hours),
-            peak_value=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr),
+            duration=uv.UnitfulTime(value=3, units=uv.UnitTypesTime.hours),
+            peak_time=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours),
+            peak_value=uv.UnitfulIntensity(value=10, units=uv.UnitTypesIntensity.mm_hr),
         )
     )
 
@@ -162,15 +151,15 @@ def synthetic_wind():
     return WindSynthetic(
         magnitude=SyntheticTimeseriesModel(
             shape_type=ShapeType.triangle,
-            duration=UnitfulTime(value=1, units=UnitTypesTime.days),
-            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
-            peak_value=UnitfulVelocity(value=1, units=UnitTypesVelocity.mps),
+            duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
+            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
+            peak_value=uv.UnitfulVelocity(value=1, units=uv.UnitTypesVelocity.mps),
         ),
         direction=SyntheticTimeseriesModel(
             shape_type=ShapeType.triangle,
-            duration=UnitfulTime(value=1, units=UnitTypesTime.days),
-            peak_time=UnitfulTime(value=2, units=UnitTypesTime.hours),
-            peak_value=UnitfulVelocity(value=1, units=UnitTypesVelocity.mps),
+            duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
+            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
+            peak_value=uv.UnitfulVelocity(value=1, units=uv.UnitTypesVelocity.mps),
         ),
     )
 
@@ -181,15 +170,17 @@ def synthetic_waterlevels():
         surge=SurgeModel(
             timeseries=SyntheticTimeseriesModel(
                 shape_type=ShapeType.triangle,
-                duration=UnitfulTime(value=1, units=UnitTypesTime.days),
-                peak_time=UnitfulTime(value=8, units=UnitTypesTime.hours),
-                peak_value=UnitfulLength(value=1, units=UnitTypesLength.meters),
+                duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
+                peak_time=uv.UnitfulTime(value=8, units=uv.UnitTypesTime.hours),
+                peak_value=uv.UnitfulLength(value=1, units=uv.UnitTypesLength.meters),
             )
         ),
         tide=TideModel(
-            harmonic_amplitude=UnitfulLength(value=1, units=UnitTypesLength.meters),
-            harmonic_period=UnitfulTime(value=12.42, units=UnitTypesTime.hours),
-            harmonic_phase=UnitfulTime(value=0, units=UnitTypesTime.hours),
+            harmonic_amplitude=uv.UnitfulLength(
+                value=1, units=uv.UnitTypesLength.meters
+            ),
+            harmonic_period=uv.UnitfulTime(value=12.42, units=uv.UnitTypesTime.hours),
+            harmonic_phase=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.hours),
         ),
     )
 
@@ -213,30 +204,30 @@ class TestAddForcing:
             return adapter
 
         def test_add_forcing_wind(self, sfincs_adapter):
-            forcing = mock.Mock(spec=IForcing)
-            forcing._type = ForcingType.WIND
+            forcing = mock.Mock(spec=IWind)
+
             sfincs_adapter.add_forcing(forcing)
             sfincs_adapter._add_forcing_wind.assert_called_once_with(forcing)
 
-        def test_add_forcing_rain(self, sfincs_adapter):
-            forcing = mock.Mock(spec=IForcing)
-            forcing._type = ForcingType.RAINFALL
+        def test_add_forcing_rain(self, sfincs_adapter: SfincsAdapter):
+            forcing = mock.Mock(spec=IRainfall)
+
             sfincs_adapter.add_forcing(forcing)
             sfincs_adapter._add_forcing_rain.assert_called_once_with(forcing)
 
-        def test_add_forcing_discharge(self, sfincs_adapter):
-            forcing = mock.Mock(spec=IForcing)
-            forcing._type = ForcingType.DISCHARGE
+        def test_add_forcing_discharge(self, sfincs_adapter: SfincsAdapter):
+            forcing = mock.Mock(spec=IDischarge)
+
             sfincs_adapter.add_forcing(forcing)
             sfincs_adapter._add_forcing_discharge.assert_called_once_with(forcing)
 
-        def test_add_forcing_waterlevels(self, sfincs_adapter):
-            forcing = mock.Mock(spec=IForcing)
-            forcing._type = ForcingType.WATERLEVEL
+        def test_add_forcing_waterlevels(self, sfincs_adapter: SfincsAdapter):
+            forcing = mock.Mock(spec=IWaterlevel)
+
             sfincs_adapter.add_forcing(forcing)
             sfincs_adapter._add_forcing_waterlevels.assert_called_once_with(forcing)
 
-        def test_add_forcing_unsupported(self, sfincs_adapter):
+        def test_add_forcing_unsupported(self, sfincs_adapter: SfincsAdapter):
             forcing = mock.Mock(spec=IForcing)
             forcing._type = "unsupported_type"
             sfincs_adapter.add_forcing(forcing)
@@ -245,10 +236,12 @@ class TestAddForcing:
             )
 
     class TestWind:
-        def test_add_forcing_wind_constant(self, default_sfincs_adapter):
+        def test_add_forcing_wind_constant(self, default_sfincs_adapter: SfincsAdapter):
             forcing = WindConstant(
-                speed=UnitfulVelocity(value=10, units=UnitTypesVelocity.mps),
-                direction=UnitfulDirection(value=20, units=UnitTypesDirection.degrees),
+                speed=uv.UnitfulVelocity(value=10, units=uv.UnitTypesVelocity.mps),
+                direction=uv.UnitfulDirection(
+                    value=20, units=uv.UnitTypesDirection.degrees
+                ),
             )
             default_sfincs_adapter._add_forcing_wind(forcing)
 
@@ -257,13 +250,15 @@ class TestAddForcing:
         ):
             default_sfincs_adapter._add_forcing_wind(synthetic_wind)
 
-        def test_add_forcing_wind_from_meteo(self, default_sfincs_adapter):
+        def test_add_forcing_wind_from_meteo(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             forcing = WindMeteo()
 
             default_sfincs_adapter._add_forcing_wind(forcing)
 
         def test_add_forcing_wind_from_track(
-            self, test_db, tmp_path, default_sfincs_adapter
+            self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
         ):
             from cht_cyclones.tropical_cyclone import TropicalCyclone
 
@@ -278,7 +273,9 @@ class TestAddForcing:
             forcing = WindTrack(path=spw_file)
             default_sfincs_adapter._add_forcing_wind(forcing)
 
-        def test_add_forcing_wind_unsupported(self, default_sfincs_adapter):
+        def test_add_forcing_wind_unsupported(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             class UnsupportedWind(IWind):
                 def default():
                     return UnsupportedWind
@@ -292,9 +289,11 @@ class TestAddForcing:
             )
 
     class TestRainfall:
-        def test_add_forcing_rain_constant(self, default_sfincs_adapter):
+        def test_add_forcing_rain_constant(self, default_sfincs_adapter: SfincsAdapter):
             forcing = RainfallConstant(
-                intensity=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr)
+                intensity=uv.UnitfulIntensity(
+                    value=10, units=uv.UnitTypesIntensity.mm_hr
+                )
             )
             default_sfincs_adapter._add_forcing_rain(forcing)
 
@@ -303,12 +302,16 @@ class TestAddForcing:
         ):
             default_sfincs_adapter._add_forcing_rain(synthetic_rainfall)
 
-        def test_add_forcing_rain_from_meteo(self, default_sfincs_adapter):
+        def test_add_forcing_rain_from_meteo(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             forcing = RainfallMeteo()
 
             default_sfincs_adapter._add_forcing_rain(forcing)
 
-        def test_add_forcing_rain_unsupported(self, default_sfincs_adapter):
+        def test_add_forcing_rain_unsupported(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             class UnsupportedRain(IRainfall):
                 def default():
                     return UnsupportedRain
@@ -361,13 +364,13 @@ class TestAddForcing:
             forcing = DischargeConstant(
                 river=RiverModel(
                     name="test_river",
-                    mean_discharge=UnitfulDischarge(
-                        value=0, units=UnitTypesDischarge.cms
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=0, units=uv.UnitTypesDischarge.cms
                     ),
                     x_coordinate=0,
                     y_coordinate=0,
                 ),
-                discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+                discharge=uv.UnitfulDischarge(value=0, units=uv.UnitTypesDischarge.cms),
             )
 
             # Act
@@ -389,8 +392,8 @@ class TestAddForcing:
             for i, river in enumerate(db.site.attrs.river):
                 discharge = DischargeConstant(
                     river=river,
-                    discharge=UnitfulDischarge(
-                        value=i * 1000, units=UnitTypesDischarge.cms
+                    discharge=uv.UnitfulDischarge(
+                        value=i * 1000, units=uv.UnitTypesDischarge.cms
                     ),
                 )
 
@@ -423,12 +426,14 @@ class TestAddForcing:
             # Assert
 
         def test_set_discharge_forcing_mismatched_coordinates(
-            self, test_db, synthetic_discharge, default_sfincs_adapter
+            self, test_db, synthetic_discharge, default_sfincs_adapter: SfincsAdapter
         ):
             sfincs_adapter = default_sfincs_adapter
             synthetic_discharge.river = RiverModel(
                 name="test_river",
-                mean_discharge=UnitfulDischarge(value=0, units=UnitTypesDischarge.cms),
+                mean_discharge=uv.UnitfulDischarge(
+                    value=0, units=uv.UnitTypesDischarge.cms
+                ),
                 x_coordinate=0,
                 y_coordinate=0,
             )
@@ -453,27 +458,35 @@ class TestAddForcing:
         ):
             default_sfincs_adapter._add_forcing_waterlevels(synthetic_waterlevels)
 
-        def test_add_forcing_waterlevels_gauged(self, default_sfincs_adapter):
+        def test_add_forcing_waterlevels_gauged(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             forcing = WaterlevelGauged()
-            default_sfincs_adapter._set_waterlevel_forcing(forcing.get_data())
+            default_sfincs_adapter._add_forcing_waterlevels(forcing.get_data())
 
-        def test_add_forcing_waterlevels_model(self, default_sfincs_adapter):
-            default_sfincs_adapter._set_waterlevel_forcing = mock.Mock()
+        def test_add_forcing_waterlevels_model(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
+            default_sfincs_adapter._scenario = mock.Mock()
 
             forcing = mock.Mock(spec=WaterlevelModel)
+            dummy_wl = [1, 2, 3]
             forcing.get_data.return_value = pd.DataFrame(
-                data={"waterlevel": [1, 2, 3]},
-                index=pd.date_range("2023-01-01", periods=3, freq="D"),
+                data={"waterlevel": dummy_wl},
+                index=pd.date_range("2023-01-01", periods=len(dummy_wl), freq="D"),
             )
+
             default_sfincs_adapter._add_forcing_waterlevels(forcing)
 
-            default_sfincs_adapter._set_waterlevel_forcing.assert_called_once_with(
-                forcing.get_data()
-            )
+            current_wl = default_sfincs_adapter.waterlevels.to_numpy()[:, 0]
+
+            assert all(current_wl == dummy_wl)
             default_sfincs_adapter._turn_off_bnd_press_correction.assert_called_once()
 
-        def test_add_forcing_waterlevels_unsupported(self, default_sfincs_adapter):
+        def test_add_forcing_waterlevels_unsupported(
+            self, default_sfincs_adapter: SfincsAdapter
+        ):
             default_sfincs_adapter.logger.warning = mock.Mock()
 
             class UnsupportedWaterLevel(IWaterlevel):
@@ -493,7 +506,9 @@ class TestAddMeasure:
 
     class TestDispatch:
         @pytest.fixture()
-        def sfincs_adapter(self, default_sfincs_adapter) -> SfincsAdapter:
+        def sfincs_adapter(
+            self, default_sfincs_adapter: SfincsAdapter
+        ) -> SfincsAdapter:
             adapter = default_sfincs_adapter
 
             adapter._add_measure_floodwall = mock.Mock()
@@ -503,28 +518,28 @@ class TestAddMeasure:
 
             return adapter
 
-        def test_add_measure_pump(self, sfincs_adapter):
+        def test_add_measure_pump(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=Pump)
             measure.attrs = mock.Mock()
             measure.attrs.type = HazardType.pump
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_pump.assert_called_once_with(measure)
 
-        def test_add_measure_greeninfra(self, sfincs_adapter):
+        def test_add_measure_greeninfra(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=GreenInfrastructure)
             measure.attrs = mock.Mock()
             measure.attrs.type = HazardType.greening
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_greeninfra.assert_called_once_with(measure)
 
-        def test_add_measure_floodwall(self, sfincs_adapter):
+        def test_add_measure_floodwall(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=FloodWall)
             measure.attrs = mock.Mock()
             measure.attrs.type = HazardType.floodwall
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_floodwall.assert_called_once_with(measure)
 
-        def test_add_measure_unsupported(self, sfincs_adapter):
+        def test_add_measure_unsupported(self, sfincs_adapter: SfincsAdapter):
             class UnsupportedMeasure(IMeasure):
                 pass
 
@@ -543,7 +558,7 @@ class TestAddMeasure:
                 "name": "test_seawall",
                 "description": "seawall",
                 "type": HazardType.floodwall,
-                "elevation": UnitfulLength(value=12, units=UnitTypesLength.feet),
+                "elevation": uv.UnitfulLength(value=12, units=uv.UnitTypesLength.feet),
                 "selection_type": "polyline",
                 "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
             }
@@ -564,7 +579,9 @@ class TestAddMeasure:
                 "name": "test_pump",
                 "description": "pump",
                 "type": HazardType.pump,
-                "discharge": UnitfulDischarge(value=100, units=UnitTypesDischarge.cfs),
+                "discharge": uv.UnitfulDischarge(
+                    value=100, units=uv.UnitTypesDischarge.cfs
+                ),
                 "selection_type": "polyline",
                 "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
             }
@@ -614,7 +631,7 @@ class TestAddProjection:
                 data={"waterlevel": [1.0, 2.0, 3.0]},
             )
         )
-        slr = UnitfulLength(value=1.0, units=UnitTypesLength.meters)
+        slr = uv.UnitfulLength(value=1.0, units=uv.UnitTypesLength.meters)
         dummy_projection.attrs.physical_projection.sea_level_rise = slr
 
         wl_df_before = (
@@ -626,7 +643,7 @@ class TestAddProjection:
         )
 
         wl_df_expected = wl_df_before.apply(
-            lambda x: x + slr.convert(UnitTypesLength.meters)
+            lambda x: x + slr.convert(uv.UnitTypesLength.meters)
         )
 
         # Act
@@ -648,7 +665,7 @@ class TestAddProjection:
         # Arrange
         adapter = default_sfincs_adapter
         rainfall = RainfallConstant(
-            intensity=UnitfulIntensity(value=10, units=UnitTypesIntensity.mm_hr)
+            intensity=uv.UnitfulIntensity(value=10, units=uv.UnitTypesIntensity.mm_hr)
         )
         adapter._add_forcing_rain(rainfall)
         rainfall_before = adapter._model.forcing["precip"]
@@ -685,7 +702,7 @@ class TestAddObsPoint:
         )
 
         with SfincsAdapter(model_root=path_in) as model:
-            model._add_obs_points()
+            model.add_obs_points()
             # write sfincs model in output destination
             new_model_dir = (
                 test_db.scenarios.output_path / scenario_name / "sfincs_model_obs_test"

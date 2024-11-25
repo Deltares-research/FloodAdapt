@@ -13,27 +13,19 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitTypesArea,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesVelocity,
-    UnitTypesVolume,
-)
+import flood_adapt.object_model.io.unitfulvalue as uv
 
 
 class UnitSystem:
-    length: UnitTypesLength
-    distance: UnitTypesLength
-    area: UnitTypesArea
-    volume: UnitTypesVolume
-    velocity: UnitTypesVelocity
-    direction: UnitTypesDirection
-    discharge: UnitTypesDischarge
-    intensity: UnitTypesIntensity
-    cumulative: UnitTypesLength
+    length: uv.UnitTypesLength
+    distance: uv.UnitTypesLength
+    area: uv.UnitTypesArea
+    volume: uv.UnitTypesVolume
+    velocity: uv.UnitTypesVelocity
+    direction: uv.UnitTypesDirection
+    discharge: uv.UnitTypesDischarge
+    intensity: uv.UnitTypesIntensity
+    cumulative: uv.UnitTypesLength
 
     def __init__(self, system: str = "imperial"):
         if system == "imperial":
@@ -44,26 +36,26 @@ class UnitSystem:
             raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
 
     def set_imperial(self):
-        self.length = UnitTypesLength.feet
-        self.distance = UnitTypesLength.miles
-        self.area = UnitTypesArea.sf
-        self.volume = UnitTypesVolume.cf
-        self.velocity = UnitTypesVelocity.mph
-        self.direction = UnitTypesDirection.degrees
-        self.discharge = UnitTypesDischarge.cfs
-        self.intensity = UnitTypesIntensity.inch_hr
-        self.cumulative = UnitTypesLength.feet
+        self.length = uv.UnitTypesLength.feet
+        self.distance = uv.UnitTypesLength.miles
+        self.area = uv.UnitTypesArea.sf
+        self.volume = uv.UnitTypesVolume.cf
+        self.velocity = uv.UnitTypesVelocity.mph
+        self.direction = uv.UnitTypesDirection.degrees
+        self.discharge = uv.UnitTypesDischarge.cfs
+        self.intensity = uv.UnitTypesIntensity.inch_hr
+        self.cumulative = uv.UnitTypesLength.feet
 
     def set_metric(self):
-        self.length = UnitTypesLength.meters
-        self.distance = UnitTypesLength.meters
-        self.area = UnitTypesArea.m2
-        self.volume = UnitTypesVolume.m3
-        self.velocity = UnitTypesVelocity.mps
-        self.direction = UnitTypesDirection.degrees
-        self.discharge = UnitTypesDischarge.cms
-        self.intensity = UnitTypesIntensity.mm_hr
-        self.cumulative = UnitTypesLength.meters
+        self.length = uv.UnitTypesLength.meters
+        self.distance = uv.UnitTypesLength.meters
+        self.area = uv.UnitTypesArea.m2
+        self.volume = uv.UnitTypesVolume.m3
+        self.velocity = uv.UnitTypesVelocity.mps
+        self.direction = uv.UnitTypesDirection.degrees
+        self.discharge = uv.UnitTypesDischarge.cms
+        self.intensity = uv.UnitTypesIntensity.mm_hr
+        self.cumulative = uv.UnitTypesLength.meters
 
 
 class Settings(BaseSettings):

@@ -3,11 +3,11 @@ from typing import Any, Callable, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
-from geopandas import GeoDataFrame
 from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.static import IDbsStatic
+from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -29,13 +29,21 @@ def cache_method_wrapper(func: Callable) -> Callable:
     return wrapper
 
 
-class DbsStatic:
+class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
     _database: IDatabase
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
+
+    def get_static_sfincs_model(self) -> SfincsAdapter:
+        sfincs_path = (
+            self._database.static_path
+            / "templates"
+            / self._database.site.attrs.sfincs.overland_model
+        )
+        return SfincsAdapter(model_root=str(sfincs_path))
 
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict:
@@ -45,8 +53,8 @@ class DbsStatic:
 
         Returns
         -------
-        list[GeoDataFrame]
-            list of geodataframes with the polygons defining the aggregation areas
+        list[gpd.GeoDataFrame]
+            list of gpd.GeoDataFrames with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
         for aggr_dict in self._database.site.attrs.fiat.aggregation:
@@ -65,13 +73,13 @@ class DbsStatic:
         return aggregation_areas
 
     @cache_method_wrapper
-    def get_model_boundary(self) -> GeoDataFrame:
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
-        bnd = self._database.static_sfincs_model.get_model_boundary()
+        bnd = self.get_static_sfincs_model().get_model_boundary()
         return bnd
 
     @cache_method_wrapper
-    def get_model_grid(self) -> QuadtreeGrid:
+    def get_model_grid(self):
         """Get the model grid from the SFINCS model.
 
         Returns
@@ -79,11 +87,11 @@ class DbsStatic:
         QuadtreeGrid
             The model grid
         """
-        grid = self._database.static_sfincs_model.get_model_grid()
+        grid = self.get_static_sfincs_model().get_model_grid()
         return grid
 
     @cache_method_wrapper
-    def get_obs_points(self) -> GeoDataFrame:
+    def get_obs_points(self) -> gpd.GeoDataFrame:
         """Get the observation points from the flood hazard model."""
         names = []
         descriptions = []
@@ -97,16 +105,16 @@ class DbsStatic:
                 lat.append(pt.lat)
                 lon.append(pt.lon)
 
-        # create GeoDataFrame from obs_points in site file
+        # create gpd.GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"name": names, "description": descriptions})
         # TODO: make crs flexible and add this as a parameter to site.toml?
-        gdf = gpd.GeoDataFrame(
+        gdf = gpd.gpd.GeoDataFrame(
             df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
         )
         return gdf
 
     @cache_method_wrapper
-    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
+    def get_static_map(self, path: Union[str, Path]) -> gpd.gpd.GeoDataFrame:
         """Get a map from the static folder.
 
         Parameters
@@ -116,8 +124,8 @@ class DbsStatic:
 
         Returns
         -------
-        gpd.GeoDataFrame
-            GeoDataFrame with the map in crs 4326
+        gpd.gpd.GeoDataFrame
+            gpd.GeoDataFrame with the map in crs 4326
 
         Raises
         ------
@@ -184,7 +192,7 @@ class DbsStatic:
         return df
 
     @cache_method_wrapper
-    def get_buildings(self) -> GeoDataFrame:
+    def get_buildings(self) -> gpd.GeoDataFrame:
         """Get the building footprints from the FIAT model.
 
         This should only be the buildings excluding any other types (e.g., roads)
@@ -192,7 +200,7 @@ class DbsStatic:
 
         Returns
         -------
-        GeoDataFrame
+        gpd.GeoDataFrame
             building footprints with all the FIAT columns
         """
         # use hydromt-fiat to load the fiat model

@@ -3,6 +3,10 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
+import flood_adapt.object_model.io.unitfulvalue as uv
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallMeteo
 from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -11,12 +15,15 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
+from flood_adapt.object_model.hazard.event.forcing.wind import WindMeteo
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.database import IDatabase
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitfulTime
+from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.scenario import Scenario
 
 
 class TestWaterlevelSynthetic:
@@ -25,84 +32,84 @@ class TestWaterlevelSynthetic:
         [  # "surge_shape,       peak_time,                surge_duration,           surge_peak_value,           tide_amplitude,             tide_period,
             (
                 ShapeType.gaussian,
-                UnitfulTime(12, "hours"),
-                UnitfulTime(24, "hours"),
-                UnitfulLength(3, "meters"),
-                UnitfulLength(1.5, "meters"),
-                UnitfulTime(12, "hours"),
-                UnitfulTime(8, "hours"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulTime(24, "hours"),
+                uv.UnitfulLength(3, "meters"),
+                uv.UnitfulLength(1.5, "meters"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulTime(8, "hours"),
             ),
             (
                 ShapeType.gaussian,
-                UnitfulTime(18, "hours"),
-                UnitfulTime(36, "hours"),
-                UnitfulLength(4, "meters"),
-                UnitfulLength(2, "meters"),
-                UnitfulTime(14, "hours"),
-                UnitfulTime(6, "hours"),
+                uv.UnitfulTime(18, "hours"),
+                uv.UnitfulTime(36, "hours"),
+                uv.UnitfulLength(4, "meters"),
+                uv.UnitfulLength(2, "meters"),
+                uv.UnitfulTime(14, "hours"),
+                uv.UnitfulTime(6, "hours"),
             ),
             (
                 ShapeType.gaussian,
-                UnitfulTime(14, "hours"),
-                UnitfulTime(28, "hours"),
-                UnitfulLength(2, "meters"),
-                UnitfulLength(0.8, "meters"),
-                UnitfulTime(8, "hours"),
-                UnitfulTime(4, "hours"),
+                uv.UnitfulTime(14, "hours"),
+                uv.UnitfulTime(28, "hours"),
+                uv.UnitfulLength(2, "meters"),
+                uv.UnitfulLength(0.8, "meters"),
+                uv.UnitfulTime(8, "hours"),
+                uv.UnitfulTime(4, "hours"),
             ),
             (
                 ShapeType.constant,
-                UnitfulTime(12, "hours"),
-                UnitfulTime(12, "hours"),
-                UnitfulLength(2, "meters"),
-                UnitfulLength(1, "meters"),
-                UnitfulTime(10, "hours"),
-                UnitfulTime(4, "hours"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulLength(2, "meters"),
+                uv.UnitfulLength(1, "meters"),
+                uv.UnitfulTime(10, "hours"),
+                uv.UnitfulTime(4, "hours"),
             ),
             (
                 ShapeType.constant,
-                UnitfulTime(6, "hours"),
-                UnitfulTime(6, "hours"),
-                UnitfulLength(1, "meters"),
-                UnitfulLength(0.5, "meters"),
-                UnitfulTime(6, "hours"),
-                UnitfulTime(2, "hours"),
+                uv.UnitfulTime(6, "hours"),
+                uv.UnitfulTime(6, "hours"),
+                uv.UnitfulLength(1, "meters"),
+                uv.UnitfulLength(0.5, "meters"),
+                uv.UnitfulTime(6, "hours"),
+                uv.UnitfulTime(2, "hours"),
             ),
             (
                 ShapeType.constant,
-                UnitfulTime(10, "hours"),
-                UnitfulTime(20, "hours"),
-                UnitfulLength(3, "meters"),
-                UnitfulLength(1.2, "meters"),
-                UnitfulTime(12, "hours"),
-                UnitfulTime(6, "hours"),
+                uv.UnitfulTime(10, "hours"),
+                uv.UnitfulTime(20, "hours"),
+                uv.UnitfulLength(3, "meters"),
+                uv.UnitfulLength(1.2, "meters"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulTime(6, "hours"),
             ),
             (
                 ShapeType.triangle,
-                UnitfulTime(12, "hours"),
-                UnitfulTime(18, "hours"),
-                UnitfulLength(1.5, "meters"),
-                UnitfulLength(0.5, "meters"),
-                UnitfulTime(8, "hours"),
-                UnitfulTime(3, "hours"),
+                uv.UnitfulTime(12, "hours"),
+                uv.UnitfulTime(18, "hours"),
+                uv.UnitfulLength(1.5, "meters"),
+                uv.UnitfulLength(0.5, "meters"),
+                uv.UnitfulTime(8, "hours"),
+                uv.UnitfulTime(3, "hours"),
             ),
             (
                 ShapeType.triangle,
-                UnitfulTime(8, "hours"),
-                UnitfulTime(16, "hours"),
-                UnitfulLength(2.5, "meters"),
-                UnitfulLength(1, "meters"),
-                UnitfulTime(10, "hours"),
-                UnitfulTime(5, "hours"),
+                uv.UnitfulTime(8, "hours"),
+                uv.UnitfulTime(16, "hours"),
+                uv.UnitfulLength(2.5, "meters"),
+                uv.UnitfulLength(1, "meters"),
+                uv.UnitfulTime(10, "hours"),
+                uv.UnitfulTime(5, "hours"),
             ),
             (
                 ShapeType.triangle,
-                UnitfulTime(16, "hours"),
-                UnitfulTime(32, "hours"),
-                UnitfulLength(3.5, "meters"),
-                UnitfulLength(1.5, "meters"),
-                UnitfulTime(10, "hours"),
-                UnitfulTime(7, "hours"),
+                uv.UnitfulTime(16, "hours"),
+                uv.UnitfulTime(32, "hours"),
+                uv.UnitfulLength(3.5, "meters"),
+                uv.UnitfulLength(1.5, "meters"),
+                uv.UnitfulTime(10, "hours"),
+                uv.UnitfulTime(7, "hours"),
             ),
         ],
     )
@@ -167,25 +174,69 @@ class TestWaterlevelCSV:
 
 
 class TestWaterlevelModel:
-    @patch("flood_adapt.integrator.sfincs_adapter.SfincsAdapter")
-    def test_waterlevel_from_model_get_data(
-        self, mock_sfincs_adapter, dummy_1d_timeseries_df, test_db: IDatabase, tmp_path
+    @pytest.fixture()
+    def setup_offshore_scenario(self, test_db: IDatabase):
+        event_attrs = {
+            "name": "test_historical_offshore_meteo",
+            "time": TimeModel(),
+            "template": Template.Historical,
+            "mode": Mode.single_event,
+            "forcings": {
+                "WATERLEVEL": WaterlevelModel(),
+                "WIND": WindMeteo(),
+                "RAINFALL": RainfallMeteo(),
+                "DISCHARGE": DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=uv.UnitfulDischarge(
+                            value=5000, units=uv.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    ),
+                ),
+            },
+        }
+
+        event = HistoricalEvent.load_dict(event_attrs)
+        test_db.events.save(event)
+
+        scenario_attrs = {
+            "name": "test_scenario",
+            "event": event.attrs.name,
+            "projection": "current",
+            "strategy": "no_measures",
+        }
+        scn = Scenario.load_dict(scenario_attrs)
+        test_db.scenarios.save(scn)
+
+        return test_db, scn, event
+
+    def test_process_sfincs_offshore(
+        self, setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent]
     ):
         # Arrange
-        mock_instance = mock_sfincs_adapter.return_value
-        mock_instance.__enter__.return_value = mock_instance
-        mock_instance.get_wl_df_from_offshore_his_results.return_value = (
-            dummy_1d_timeseries_df
-        )
-
-        test_path = tmp_path / "test_wl_from_model"
+        _, scenario, _ = setup_offshore_scenario
 
         # Act
-        wl_df = WaterlevelModel(path=test_path).get_data()
+        wl_df = WaterlevelModel().get_data(scenario=scenario)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
-        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
+
+    def test_waterlevel_from_model_get_data(self, setup_offshore_scenario):
+        # Arrange
+        _, scenario, _ = setup_offshore_scenario
+
+        # Act
+        wl_df = WaterlevelModel().get_data(scenario=scenario)
+
+        # Assert
+        assert isinstance(wl_df, pd.DataFrame)
 
 
 class TestWaterlevelGauged:

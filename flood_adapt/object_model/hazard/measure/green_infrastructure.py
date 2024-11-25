@@ -5,15 +5,12 @@ from typing import Any
 import geopandas as gpd
 import pyproj
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
     HazardMeasure,
 )
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulArea,
-    UnitfulHeight,
-)
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
@@ -41,17 +38,17 @@ class GreenInfrastructure(HazardMeasure[GreenInfrastructureModel]):
 
     @staticmethod
     def calculate_volume(
-        area: UnitfulArea,
-        height: UnitfulHeight,
+        area: uv.UnitfulArea,
+        height: uv.UnitfulHeight,
         percent_area: float = 100.0,
     ) -> float:
         """Determine volume from area of the polygon and infiltration height.
 
         Parameters
         ----------
-        area : UnitfulArea
+        area : uv.UnitfulArea
             Area of polygon with units (calculated using calculate_polygon_area)
-        height : UnitfulHeight
+        height : uv.UnitfulHeight
             Water height with units
         percent_area : float, optional
             Percentage area covered by green infrastructure [%], by default 100.0

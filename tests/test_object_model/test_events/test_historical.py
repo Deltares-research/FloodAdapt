@@ -4,7 +4,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+import flood_adapt.object_model.io.unitfulvalue as uv
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -23,23 +24,11 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.interface.models import (
-    ForcingType,
     Mode,
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.database import IDatabase
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDirection,
-    UnitfulDischarge,
-    UnitfulIntensity,
-    UnitfulVelocity,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesVelocity,
-)
 from flood_adapt.object_model.scenario import Scenario
 
 
@@ -58,11 +47,15 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         "forcings": {
             "WATERLEVEL": WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
             "WIND": WindConstant(
-                speed=UnitfulVelocity(value=5, units=UnitTypesVelocity.mps),
-                direction=UnitfulDirection(value=60, units=UnitTypesDirection.degrees),
+                speed=uv.UnitfulVelocity(value=5, units=uv.UnitTypesVelocity.mps),
+                direction=uv.UnitfulDirection(
+                    value=60, units=uv.UnitTypesDirection.degrees
+                ),
             ),
             "RAINFALL": RainfallConstant(
-                intensity=UnitfulIntensity(value=20, units=UnitTypesIntensity.mm_hr)
+                intensity=uv.UnitfulIntensity(
+                    value=20, units=uv.UnitTypesIntensity.mm_hr
+                )
             ),
             "DISCHARGE": DischargeCSV(
                 river=RiverModel(
@@ -70,8 +63,8 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=UnitfulDischarge(
-                        value=5000, units=UnitTypesDischarge.cfs
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
                     ),
                 ),
                 path=_tmp_timeseries_csv("discharge.csv"),
@@ -98,11 +91,13 @@ def setup_offshore_meteo_event():
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=UnitfulDischarge(
-                        value=5000, units=UnitTypesDischarge.cfs
+                    mean_discharge=uv.UnitfulDischarge(
+                        value=5000, units=uv.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=UnitfulDischarge(value=5000, units=UnitTypesDischarge.cfs),
+                discharge=uv.UnitfulDischarge(
+                    value=5000, units=uv.UnitTypesDischarge.cfs
+                ),
             ),
         },
     }
@@ -159,23 +154,3 @@ class TestHistoricalEvent:
         loaded_event = HistoricalEvent.load_file(path)
 
         assert loaded_event == saved_event
-
-    def test_process_sfincs_offshore(
-        self, setup_offshore_scenario: tuple[Scenario, HistoricalEvent]
-    ):
-        # Arrange
-        scenario, historical_event = setup_offshore_scenario
-        undefined_path = historical_event.attrs.forcings[ForcingType.WATERLEVEL].path
-
-        # Act
-        historical_event.process(scenario)
-        sim_path = historical_event.attrs.forcings[ForcingType.WATERLEVEL].path
-
-        # Assert
-        assert undefined_path is None
-        assert sim_path.exists()
-
-        with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            wl_df = _offshore_model.get_wl_df_from_offshore_his_results()
-
-        assert isinstance(wl_df, pd.DataFrame)

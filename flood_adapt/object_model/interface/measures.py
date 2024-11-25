@@ -3,16 +3,10 @@ from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import Field, model_validator, validator
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
-)
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulHeight,
-    UnitfulLength,
-    UnitfulLengthRefValue,
-    UnitfulVolume,
 )
 
 
@@ -136,7 +130,7 @@ class ImpactMeasureModel(MeasureModel[ImpactType]):
 class ElevateModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
 
-    elevation: UnitfulLengthRefValue
+    elevation: uv.UnitfulLengthRefValue
 
 
 class BuyoutModel(ImpactMeasureModel):
@@ -148,27 +142,27 @@ class BuyoutModel(ImpactMeasureModel):
 class FloodProofModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
 
-    elevation: UnitfulLength
+    elevation: uv.UnitfulLength
 
 
 class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
 
-    elevation: UnitfulLength
+    elevation: uv.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
 
 class PumpModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
 
-    discharge: UnitfulDischarge
+    discharge: uv.UnitfulDischarge
 
 
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
 
-    volume: UnitfulVolume
-    height: Optional[UnitfulHeight] = None
+    volume: uv.UnitfulVolume
+    height: Optional[uv.UnitfulHeight] = None
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = Field(None, ge=0, le=100)
@@ -188,13 +182,13 @@ class GreenInfrastructureModel(HazardMeasureModel):
                 raise ValueError(
                     f"{e_msg}\nPercentage_area cannot be set for water square type measures"
                 )
-            elif not isinstance(self.height, UnitfulHeight):
+            elif not isinstance(self.height, uv.UnitfulHeight):
                 raise ValueError(
                     f"{e_msg}\nHeight needs to be set for water square type measures"
                 )
             return self
         elif self.type == HazardType.greening:
-            if not isinstance(self.height, UnitfulHeight) or not isinstance(
+            if not isinstance(self.height, uv.UnitfulHeight) or not isinstance(
                 self.percent_area, float
             ):
                 raise ValueError(

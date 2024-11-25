@@ -19,7 +19,7 @@ from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
 )
-from flood_adapt.object_model.hazard.interface.events import (
+from flood_adapt.object_model.interface.events import (
     IEvent,
     IEventModel,
     Mode,
@@ -36,7 +36,7 @@ class EventFactory:
 
     Attributes
     ----------
-    _EVENT_TEMPLATES : dict[str, (IEvent, IEventModel)]
+    _EVENT_TEMPLATES : dict[str, (Event, IEventModel)]
         Dictionary mapping event templates to event classes and models
     """
 
@@ -97,7 +97,7 @@ class EventFactory:
             toml = tomli.load(fp)
         if toml.get("template") is None:
             raise ValueError(f"Event template not found in {filepath}")
-        return toml.get("template")
+        return Template(toml.get("template"))
 
     @staticmethod
     def read_mode(filepath: Path) -> Mode:
@@ -108,10 +108,10 @@ class EventFactory:
             toml = tomli.load(fp)
         if toml.get("mode") is None:
             raise ValueError(f"Event mode not found in {filepath}")
-        return toml.get("mode")
+        return Mode(toml.get("mode"))
 
     @staticmethod
-    def load_file(toml_file: Path) -> IEvent:
+    def load_file(toml_file: Path) -> IEvent | EventSet:
         """Return event object based on toml file.
 
         Parameters
@@ -130,10 +130,12 @@ class EventFactory:
         elif mode == Mode.single_event:
             template = Template(EventFactory.read_template(toml_file))
             event_type = EventFactory.get_event_from_template(template)
+        else:
+            raise ValueError(f"Invalid event mode: {mode}")
         return event_type.load_file(toml_file)
 
     @staticmethod
-    def load_dict(attrs: dict[str, Any]) -> IEvent:
+    def load_dict(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
         """Return event object based on attrs dict.
 
         Parameters
@@ -143,20 +145,22 @@ class EventFactory:
 
         Returns
         -------
-        IEvent
+        Event
             Event object based on template
         """
-        if issubclass(type(attrs), IEventModel):
+        if isinstance(attrs, IEventModel):
             mode = attrs.mode
             template = attrs.template
         else:
-            mode = attrs.get("mode")
-            template = attrs.get("template")
+            mode = Mode(attrs.get("mode"))
+            template = Template(attrs.get("template"))
 
         if mode == Mode.risk:
             return EventSet.load_dict(attrs)
         elif mode == Mode.single_event:
             return EventFactory.get_event_from_template(template).load_dict(attrs)
+        else:
+            raise ValueError(f"Invalid event mode: {mode}")
 
     @staticmethod
     def get_allowed_forcings(template) -> dict[str, List[str]]:

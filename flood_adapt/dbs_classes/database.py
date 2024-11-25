@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 import numpy as np
@@ -14,6 +14,7 @@ from plotly.express import line
 from plotly.express.colors import sample_colorscale
 from xarray import open_dataarray, open_dataset
 
+import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -21,21 +22,16 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.events import IEvent
-
-# from flood_adapt.object_model.hazard.event.synthetic import Synthetic
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength, UnitTypesLength
-from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -58,8 +54,7 @@ class Database(IDatabase):
 
     _site: Site
 
-    static_sfincs_model: SfincsAdapter
-    cyclone_track_database: CycloneTrackDatabase
+    cyclone_track_database: CycloneTrackDatabase  # move to static ?
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -124,14 +119,6 @@ class Database(IDatabase):
 
         self._site = Site.load_file(self.static_path / "site" / "site.toml")
 
-        # Get the static sfincs model
-        sfincs_path = str(
-            db_path(TopLevelDir.static)
-            / "templates"
-            / self._site.attrs.sfincs.overland_model
-        )
-        self.static_sfincs_model = SfincsAdapter(model_root=sfincs_path)
-
         # Initialize the different database objects
         self._static = DbsStatic(self)
         self._events = DbsEvent(self)
@@ -160,7 +147,6 @@ class Database(IDatabase):
         self.output_path = None
         self._site = None
 
-        self.static_sfincs_model = None
         self.logger = None
         self._static = None
         self._events = None
@@ -242,7 +228,7 @@ class Database(IDatabase):
                 )
             else:
                 ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
-                new_slr = UnitfulLength(
+                new_slr = uv.UnitfulLength(
                     value=slr - ref_slr,
                     units=df["units"][0],
                 )
@@ -258,7 +244,7 @@ class Database(IDatabase):
         ncolors = len(df.columns) - 2
         try:
             units = df["units"].iloc[0]
-            units = UnitTypesLength(units)
+            units = uv.UnitTypesLength(units)
         except ValueError(
             "Column " "units" " in input/static/slr/slr.csv file missing."
         ) as e:
@@ -287,7 +273,7 @@ class Database(IDatabase):
 
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = UnitfulLength(value=1.0, units=units)
+        slr_current_units = uv.UnitfulLength(value=1.0, units=units)
         conversion_factor = slr_current_units.convert(
             self.site.attrs.gui.default_length_units
         )
@@ -369,6 +355,8 @@ class Database(IDatabase):
         ----------
         benefit : IBenefit
         """
+        from flood_adapt.object_model.scenario import Scenario
+
         # If the check has not been run yet, do it now
         if not hasattr(benefit, "scenarios"):
             benefit.check_scenarios()
@@ -466,16 +454,18 @@ class Database(IDatabase):
             conversion factor
         """
         # Get conresion factor need to get from the sfincs units to the gui units
-        units = UnitfulLength(value=1, units=self.site.attrs.gui.default_length_units)
-        unit_cor = units.convert(new_units=UnitTypesLength.meters)
+        units = uv.UnitfulLength(
+            value=1, units=self.site.attrs.gui.default_length_units
+        )
+        unit_cor = units.convert(new_units=uv.UnitTypesLength.meters)
 
         return unit_cor
 
     def get_max_water_level(
         self,
         scenario_name: str,
-        return_period: int = None,
-    ) -> np.array:
+        return_period: Optional[int] = None,
+    ) -> np.ndarray:
         """Return an array with the maximum water levels during an event.
 
         Parameters
@@ -548,7 +538,7 @@ class Database(IDatabase):
         gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]:
         """Return a dictionary with the aggregated impacts as geodataframes.
 
         Parameters
@@ -569,7 +559,9 @@ class Database(IDatabase):
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
 
-    def get_aggregation_benefits(self, benefit_name: str) -> dict[GeoDataFrame]:
+    def get_aggregation_benefits(
+        self, benefit_name: str
+    ) -> dict[str, gpd.GeoDataFrame]:
         """Get a dictionary with the aggregated benefits as geodataframes.
 
         Parameters
