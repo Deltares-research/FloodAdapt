@@ -17,7 +17,7 @@ from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
 from flood_adapt.config import Settings
-from flood_adapt.integrator.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.direct_impact.socio_economic_change import (
