@@ -130,7 +130,6 @@ def create_env(
 
     print("Running commands:")
     [print(c) for c in command_list]
-    Path.cwd()
 
     print(f"\n\nBuilding environment {env_name}... This might take some time.\n\n")
     process = subprocess.Popen(
