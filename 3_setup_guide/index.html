@@ -343,7 +343,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Database Builder</span></a>
+ <span class="menu-text">Database-Builder</span></a>
   </div>
 </li>
       </ul>
@@ -389,7 +389,13 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#installation-of-setup-tools" id="toc-installation-of-setup-tools" class="nav-link active" data-scroll-target="#installation-of-setup-tools">Installation of setup tools</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -412,22 +418,45 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <p>The FloodAdapt application can be freely downloaded and used in any coastal community. However, for FloodAdapt to operate, it requires a site-specific database. The FloodAdapt database must contain at minimum an overland flood model (currently the open-source compound flood SFINCS model is supported), a flood impact model (currently the open-source Delft-FIAT model is supported), and some site specific information such as the name and location of the site. The amount of information included in the FloodAdapt database will determine the degree to which its functionalities will be activated (this is described in detail in the <a href="../3_setup_guide/database.html">database setup section</a>). Most notably, to be able to run risk and benefit calculations, an event set must be prepared.</p>
-<p>To make it easier for communities to get started with FloodAdapt, supporting tools and guidance have been created. This setup guide walks a technical user through the setup process for FloodAdapt, focusing on three key database ingredients: The SFINCS model, the Delft-FIAT model, and the probabilistic event set for risk analysis. Special model-builder software has been created to prepare a SFINCS and Delft-FIAT model, as well as special software to create the FloodAdapt database once these models have been set up. <a href="#fig-setupOverview">Figure&nbsp;1</a> shows the workflow for getting a FloodAdapt system operational in a new community. The preparation of the event set is optional. FloodAdapt will be able to run event scenarios with full functionality without an event set.</p>
+<p>To make it easier for communities to get started with FloodAdapt, supporting tools and guidance have been created. This setup guide walks a technical user through the setup process for FloodAdapt, focusing on three key database ingredients: The SFINCS model, the Delft-FIAT model, and the probabilistic event set for risk analysis. Model-builder software has been created to prepare a SFINCS and Delft-FIAT model, built on open-source model-building functionalities for these two software products. Software was also developed to create the FloodAdapt database once The SFINCS and Delft-FIAT models have been set up. <a href="#fig-setupOverview">Figure&nbsp;1</a> shows the workflow for getting a FloodAdapt system operational in a new community. The preparation of the event set is optional. FloodAdapt will be able to run event scenarios with full functionality without an event set.</p>
 <div id="fig-setupOverview" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/setup_overview.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Overview of the setup process for FloodAdapt. A SFINCS and Delft-FIAT model are required; an event set (which allows users to calculate risk and risk-reduction benefits) is optional"><img src="../_static/images/setup_overview.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>Overview of the setup process for FloodAdapt. A SFINCS and Delft-FIAT model are required; an event set (which allows users to calculate risk and risk-reduction benefits) is optional</strong></figcaption>
+<p><a href="../_static/images/setup_overview_diagram.png" class="lightbox" title="Overview of the setup process for FloodAdapt. A SFINCS and Delft-FIAT model are required; an event set (which allows users to calculate risk and risk-reduction benefits) is optional. Tools have been developed to build a SFINCS and Delft-FIAT model, and to prepare the FloodAdapt database" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/setup_overview_diagram.png" class="img-fluid figure-img" style="width:75.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>Overview of the setup process for FloodAdapt. A SFINCS and Delft-FIAT model are required; an event set (which allows users to calculate risk and risk-reduction benefits) is optional. Tools have been developed to build a SFINCS and Delft-FIAT model, and to prepare the FloodAdapt database</strong></figcaption>
 </figure>
 </div>
 <p>The setup guide consists of the following sections:</p>
 <ol type="1">
-<li><p><a href="../3_setup_guide/SFINCS/index.html">SFINCS Setup</a> - gives an overvivew of the SFINCS model and walks the user through the use of the SFINCS model-builder to create an overland SFINCS model.</p></li>
-<li><p><a href="../3_setup_guide/Delft_Fiat/index.html">Delft FIAT Setup</a> - gives an overview of the Delft-FIAT model and walks the user through the use of the Delft-FIAT model-builder.</p></li>
-<li><p><a href="../3_setup_guide/risk_analysis.html">Event Set</a> - provides guidance and examples how to create a probabilistic event set for risk analysis in a compound flood area.</p></li>
-<li><p><a href="../3_setup_guide/database.html">Database Setup</a> - describes the preparation of a configuration file to use with the database-builder tool to create a FloodAdapt database.</p></li>
+<li><p><a href="../3_setup_guide/SFINCS/index.html"><strong>SFINCS Setup</strong></a> - gives an overvivew of the SFINCS model and walks the user through the use of the <a href="../3_setup_guide/SFINCS/hydromt_sfincs_gui.html">SFINCS model-builder</a> to create an overland SFINCS model.</p></li>
+<li><p><a href="../3_setup_guide/Delft_Fiat/index.html"><strong>Delft FIAT Setup</strong></a> - gives an overview of the Delft-FIAT model and walks the user through the use of the <a href="../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html">Delft-FIAT model-builder</a>.</p></li>
+<li><p><a href="../3_setup_guide/risk_analysis.html"><strong>Event Set</strong></a> - provides guidance and examples how to create a probabilistic event set for risk analysis in a compound flood area.</p></li>
+<li><p><a href="../3_setup_guide/database.html"><strong>Database Setup</strong></a> - describes the preparation of a configuration file to use with the database-builder tool to create a FloodAdapt database.</p></li>
 </ol>
+<section id="installation-of-setup-tools" class="level2">
+<h2 class="anchored" data-anchor-id="installation-of-setup-tools">Installation of setup tools</h2>
+<p>To download and install the <strong>FloodAdapt model-builder</strong> on your computer:</p>
+<ul>
+<li>Download the FloodAdapt model-builder installer from the <a href="https://www.deltares-usa.us/floodadapt-model-builders">Deltares USA website</a>.</li>
+<li>Double-click the “FloodAdaptModelBuilder_Installer” file and the setup wizard will open (see <a href="#fig-setupWizard">Figure&nbsp;2</a>). Follow the steps of the installation wizard.</li>
+</ul>
+<div id="fig-setupWizard" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/installation_modelbuilders_setupWizard.png" class="lightbox" title="FloodAdapt model-builder installation setup wizard" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/installation_modelbuilders_setupWizard.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>FloodAdapt model-builder installation setup wizard</strong></figcaption>
+</figure>
+</div>
+<ul>
+<li>Guidance how to use the model-builder software to build a SFINCS model is provided in the <a href="../3_setup_guide/SFINCS/hydromt_sfincs_gui.html">SFINCS setup guide</a> and guidance to use the software to build a Delft-FIAT model is provided in the <a href="../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html">Delft-FIAT setup guide</a></li>
+</ul>
+<p>To download and install the <strong>FloodAdapt database builder</strong> on your computer:</p>
+<ul>
+<li>Download the FloodAdapt database-builder executable from the <a href="https://www.deltares-usa.us/floodadapt-database-builder">Deltares USA website</a>.</li>
+<li>The database-builder is an executable file and does not require any installation. Just double-click to use it.</li>
+<li>Guidance how to use the database-builder is provided in the <a href="../3_setup_guide/database.html">Database Builder guide</a></li>
+</ul>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -802,7 +831,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","openEffect":"zoom","descPosition":"bottom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"loop":true,"openEffect":"zoom","descPosition":"bottom","selector":".lightbox","closeEffect":"zoom"});</script>
 
 
 

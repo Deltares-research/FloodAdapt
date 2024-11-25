@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Setting up a Delft-FIAT model</title>
+<title>Delft-FIAT</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -343,7 +343,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Database Builder</span></a>
+ <span class="menu-text">Database-Builder</span></a>
   </div>
 </li>
       </ul>
@@ -402,7 +402,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Setting up a Delft-FIAT model</h1>
+<h1 class="title">Delft-FIAT</h1>
 </div>
 
 
@@ -417,7 +417,22 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p><a href="https://deltares.github.io/Delft-FIAT/stable/">Delft-FIAT</a> is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the ‘baseline’ Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. <a href="#fig-DF_concept">Figure&nbsp;1</a> shows the flood impact modeling concept on which Delft-FIAT is based. It relates a <strong>hazard</strong> (the flood waters), <strong>exposure</strong> (buildings or roads that might be flooded), and <strong>vulnerability</strong> (the propensity of assets to be damaged when flooded).</p>
+<p><a href="https://deltares.github.io/Delft-FIAT/stable/">Delft-FIAT</a> is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the ‘baseline’ Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. To facilitate the setup of a Delft-FIAT model, the <a href="../../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html">Delft-FIAT model-builder</a> was created.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The Delft-FIAT model-builder
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This page gives an overview of the Delft-FIAT model.</p>
+<p>Please check out the sub-page on the <a href="../../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html"><strong>Delft-FIAT model-builder</strong></a> for guidance on the steps to prepare a Delft-FIAT model.</p>
+</div>
+</div>
+<p><a href="#fig-DF_concept">Figure&nbsp;1</a> shows the flood impact modeling concept on which Delft-FIAT is based. It relates a <strong>hazard</strong> (the flood waters), <strong>exposure</strong> (buildings or roads that might be flooded), and <strong>vulnerability</strong> (the propensity of assets to be damaged when flooded).</p>
 <div id="fig-DF_concept" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
 <p><a href="../../_static/images/DelftFIAT_concept.png" class="lightbox" title="Damage modeling concept" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/DelftFIAT_concept.png" class="img-fluid figure-img" style="width:75.0%"></a></p>
@@ -463,10 +478,10 @@ Why are some data optional?
 </div>
 </div>
 <p><strong>Vulnerability data</strong> in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (<a href="#fig-damagefunction">Figure&nbsp;4</a>). The depth-damage curve is related to the building type (e.g.&nbsp;‘residential 1-story building’) and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.</p>
-<div id="fig-damagefunction" class="quarto-figure quarto-figure-center anchored">
+<div id="fig-damagefunction" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/damage_curves.png" class="lightbox" title="Example of depth-damage functions." data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/damage_curves.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;4: Example of depth-damage functions.</figcaption>
+<p><a href="../../_static/images/damage_curves.png" class="lightbox" title="Example of depth-damage functions" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/damage_curves.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;4: <strong>Example of depth-damage functions</strong></figcaption>
 </figure>
 </div>
 
@@ -846,7 +861,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","selector":".lightbox","openEffect":"zoom","closeEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom","loop":true});</script>
 
 
 

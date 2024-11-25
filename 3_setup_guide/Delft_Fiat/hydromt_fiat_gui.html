@@ -345,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Database Builder</span></a>
+ <span class="menu-text">Database-Builder</span></a>
   </div>
 </li>
       </ul>
@@ -445,7 +445,7 @@ ul.task-list li input[type="checkbox"] {
 <p><a href="#fig-homeScreen">Figure&nbsp;1</a> shows the Delft-FIAT model builder. There are seven tabs shown at the top. For generating an automatic Delft-FIAT model using open data, you will only need to use the first of these tabs, the “Model Boundary | Quick Build” tab. The remaining tabs are for tailoring your Delft-FIAT model and are described in the <a href="#sec-tailored_model">tailored Delft-FIAT model</a> section.</p>
 <div id="fig-homeScreen" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/model_builder_homeScreen.png" class="lightbox" title="The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt." data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/model_builder_homeScreen.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/model_builder_homeScreen.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt."><img src="../../_static/images/model_builder_homeScreen.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.</figcaption>
 </figure>
 </div>
@@ -480,10 +480,10 @@ Which model boundary option should I choose?
 </div>
 <div class="callout-body-container callout-body">
 <p>When setting up FloodAdapt in a project area, you will also have to set up a SFINCS model for the flood estimation. You may want to have your damage model active everywhere where there will be flood information. If that is the case, choose the “SFINCS model domain”.</p>
-<p>Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). If this is the case, you can better pick one of the other options.</p>
+<p>Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). In this case, you can choose based on the following considerations:</p>
 <ul>
-<li>To look at damages for an adminstative area like a city or a county, you can best upload the city or county boundary shapefile using the “Upload file” option</li>
-<li>To quickly get started and you don’t have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.</li>
+<li>To look at damages for an adminstative area like a city or a county, the best option would be to upload the city or county boundary shapefile using the “Upload file” option</li>
+<li>To quickly get started if you don’t have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.</li>
 </ul>
 </div>
 </div>
@@ -565,7 +565,7 @@ Watch a video tutorial for building a Delft-FIAT model with the Quick Build opti
 <li><a href="#sec_vulnerability">Add vulnerability curves</a></li>
 <li><a href="#sec-createModel">Create your Delft-FIAT model</a></li>
 </ol>
-<p>In addition to these mandatory steps, there are many options to refine data sources and default options. When creating a tailored Delft-FIAT model, you always start by building a <a href="#sec-basemodel">base exposure dataset</a> using open data, which can then be refined. The Delft-FIAT model tabs (see Figure x) — Exposure, Vulnerability, Equity, and Additional Attributes — enable specific refinements, which are highlighted in the list below and detailed in the following sections.</p>
+<p>In addition to these mandatory steps, there are many options to refine data sources and default options. When creating a tailored Delft-FIAT model, you always start by building a <a href="#sec-basemodel">base exposure dataset</a> using open data, which can then be refined. The Delft-FIAT model tabs (see <a href="#fig-homeScreen">Figure&nbsp;1</a>) — Exposure, Vulnerability, Equity, and Additional Attributes — enable specific refinements, which are highlighted in the list below and detailed in the following sections.</p>
 <ul>
 <li><a href="#sec-basemodel">Step 1: Set up a base exposure dataset</a></li>
 <li><a href="#sec_update_exposure">Exposure updates</a> <!--* **SHOULDN'T CLASSIFICATION BE HERE TOO?** -->
@@ -636,19 +636,6 @@ Watch a video tutorial for setting up a base exposure dataset for a Delft-FIAT m
 <p>If this video is not visible for you, try this <a href="https://youtu.be/VdtFwzO1530?rel=0">link</a></p>
 </div>
 </div>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch a video tutorial for setting up a base exposure dataset for a Delft-FIAT model outside of the U.S.
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coming soon…</p>
-</div>
-</div>
 </section>
 <section id="sec_update_exposure" class="level3">
 <h3 class="anchored" data-anchor-id="sec_update_exposure">Updating exposure data</h3>
@@ -694,7 +681,7 @@ Watch a video tutorial for updating the finished floor height of buildings in yo
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Coming soon…</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/5B6pHrmjrAc?rel=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 </div>
 </div>
 </section>
@@ -733,19 +720,6 @@ Important note for those who will use the FloodAdapt database builder
 </ul></li>
 <li>Click “Add to model”.</li>
 </ol>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch a video tutorial for updating ground elevation in your Delft-FIAT model
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coming soon…</p>
-</div>
-</div>
 </section>
 <section id="sec-maximum_potential_damages" class="level4">
 <h4 class="anchored" data-anchor-id="sec-maximum_potential_damages">Updating maximum potential damages</h4>
@@ -774,19 +748,6 @@ Optional settings for spatially joining exposure points and maximum potential da
 <p>In the “Max Potential Damages” tab there is a “Settings” button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the <em>nearest</em> method for points and the <em>intersection</em> method for polygons when doing the spatial join. The default maximum distance for the <em>nearest</em> method is 10 meters.</p>
 </div>
 </div>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch a video tutorial for updating the maximum potential damages in your Delft-FIAT model
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coming soon…</p>
-</div>
-</div>
 </section>
 </section>
 <section id="sec_vulnerability" class="level3">
@@ -798,22 +759,9 @@ Watch a video tutorial for updating the maximum potential damages in your Delft-
 </ul>
 <div id="fig-DDF_defaults" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/DDF_defaults_structure.png" class="lightbox" title="Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be coming soon as will an overview of the default curves for content" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/DDF_defaults_structure.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/DDF_defaults_structure.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be coming soon as will an overview of the default curves for content"><img src="../../_static/images/DDF_defaults_structure.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be <strong>coming soon</strong> as will an overview of the default curves for content</figcaption>
 </figure>
-</div>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch a video tutorial for adding depth damage curves to your Delft-FIAT model
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coming soon…</p>
-</div>
 </div>
 <section id="sec_update_vulnerability" class="level4">
 <h4 class="anchored" data-anchor-id="sec_update_vulnerability">Updating vulnerability curves</h4>
@@ -839,7 +787,7 @@ There are two data sources which the vulnerability curves can be downloaded from
 </ul>
 <div id="fig-secOccType" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/damageCurves_occupancyTypes_Hazus.png" class="lightbox" title="Secondary occupancy type definitions from the HAZUS technical manual, Table 3.2. Note: “occupancy class” and “object type” are used interchangeably." data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/damageCurves_occupancyTypes_Hazus.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/damageCurves_occupancyTypes_Hazus.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Secondary occupancy type definitions from the HAZUS technical manual, Table 3.2. Note: “occupancy class” and “object type” are used interchangeably."><img src="../../_static/images/damageCurves_occupancyTypes_Hazus.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: Secondary occupancy type definitions from the <a href="https://www.fema.gov/sites/default/files/2020-09/fema_hazus_earthquake-model_technical-manual_2.1.pdf">HAZUS technical manual</a>, Table 3.2. Note: “occupancy class” and “object type” are used interchangeably.</figcaption>
 </figure>
 </div>
@@ -855,23 +803,20 @@ Watch a video tutorial for changing depth-damage curves for a U.S. Delft-FIAT mo
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Coming soon…</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/ofCbYD4yZks?rel=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 </div>
 </div>
 </section>
 </section>
 <section id="sec-equity" class="level3">
 <h3 class="anchored" data-anchor-id="sec-equity">Equity</h3>
-<p>FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepare the income and population data needed to calculate equity weights, per capita income and population are obtain from the U.S. Census Bureau at the block group scale. Adding this data to your Delft-FIAT model is easy, and described in the steps below:</p>
+<p>FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepare the income and population data needed to calculate equity weights, per capita income and population are obtained from the U.S. Census Bureau at the block group scale. Adding this data to your Delft-FIAT model is easy, and described in the steps below:</p>
 <ul>
 <li>Open the <strong>Equity</strong> tab on the top panel.</li>
 <li>In the bottom panel, specify the year you for which census data will be downloaded.</li>
 <li>Check the checkbox to download Equity data.</li>
 <li>Click “Add to model”</li>
 </ul>
-<!-- This line was just sitting at the end of the equity section. Is this not for the classification tab?
-Add additional attributes to your model. In this example, a land use layer is added to the model, and assets are assigned to the land use category that encompasses each asset.
--->
 </section>
 <section id="sec-addl-attributes" class="level3">
 <h3 class="anchored" data-anchor-id="sec-addl-attributes">Additional Attributes</h3>
@@ -931,7 +876,7 @@ Watch a video tutorial for adding additional attributes to your Delft-FIAT model
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Coming soon…</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/Z_eqiBgwFlA?rel=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 </div>
 </div>
 </section>
@@ -952,19 +897,6 @@ Watch a video tutorial for adding additional attributes to your Delft-FIAT model
 <li>Roads</li>
 </ul>
 <p>There is also a button “Exposure output”. This opens the full model data, which is also stored as a CSV in the model output folder. This allows you to quickly view the complete dataset without having to look for the file on your computer.</p>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch a video tutorial for visualizing your Delft-FIAT model
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Coming soon…</p>
-</div>
-</div>
 </section>
 <section id="delft-fiat-model-folder-structure" class="level2">
 <h2 class="anchored" data-anchor-id="delft-fiat-model-folder-structure">Delft-FIAT model folder structure</h2>
@@ -1372,7 +1304,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","loop":true,"openEffect":"zoom","selector":".lightbox","descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","loop":true,"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom"});</script>
 <script>videojs(video_shortcode_videojs_video1);</script>
 
 
