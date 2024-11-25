@@ -1,3 +1,4 @@
+name: flood_adapt
 channels:
 - conda-forge
 dependencies:
@@ -15,4 +16,3 @@ dependencies:
   - .\geospatial-wheels\rasterio-1.3.9-cp310-cp310-win_amd64.whl
   - .\geospatial-wheels\Rtree-1.2.0-cp310-cp310-win_amd64.whl
   - .\geospatial-wheels\shapely-2.0.3-cp310-cp310-win_amd64.whl
-name: flood_adapt
