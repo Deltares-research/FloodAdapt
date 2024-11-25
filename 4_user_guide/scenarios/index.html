@@ -433,21 +433,21 @@ What is the difference between an event scenario and a risk scenario
 <p>In the “Scenarios” tab (see <a href="#fig-scenarios">Figure&nbsp;1</a>) you will see a tabulated overview of any scenarios that have already been created. You can sort existing scenarios by name, date created, scenario component (event, project, or strategy), or run status (column “finished”) which indicates whether the scenario has been run (True) or not (False). Next to the table there are buttons to add, edit, or delete scenarios. Note that scenarios can only be edited or deleted if they have not yet been run.</p>
 <div id="fig-scenarios" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/scenarios_mainWindow.png" class="lightbox" title="Scenarios tab in FloodAdapt" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/scenarios_mainWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/scenarios_mainWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Scenarios tab in FloodAdapt"><img src="../../_static/images/scenarios_mainWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Scenarios tab in FloodAdapt</strong></figcaption>
 </figure>
 </div>
 <p>To create a new scenario, click “Add scenario” to open the specification window (see <a href="#fig-scenariosSpecs">Figure&nbsp;2</a>). In this window there are three panels for each of your scenario ingredients: event, projection, and strategy. Select the desired event, projection, and strategy for your scenario. The scenario name will automatically be generated based on your choice. You can keep that name or overwrite it with your own preferred scenario name (no spaces or special characters); you can also enter an optional description. When you have made your selection and are happy with the scenario name, click “OK” to add the scenario to the scenario window.</p>
 <div id="fig-scenariosSpecs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/scenarios_specWindow.png" class="lightbox" title="Specifying a scenario in FloodAdapt, shown here for the scenario of Hurricane Ian with 1 foot of sea level rise and elevated homes" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/scenarios_specWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/scenarios_specWindow.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Specifying a scenario in FloodAdapt, shown here for the scenario of Hurricane Ian with 1 foot of sea level rise and elevated homes"><img src="../../_static/images/scenarios_specWindow.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Specifying a scenario in FloodAdapt, shown here for the scenario of Hurricane Ian with 1 foot of sea level rise and elevated homes</strong></figcaption>
 </figure>
 </div>
 <p>To run a scenario, select the scenario in the table and click the button “Run scenario”. The simulation will start and a pop-up window will appear informing that the scenario is running (see <a href="#fig-scenarios_runningPopup">Figure&nbsp;3</a>). Sometimes the header in the popup window may say “Not Responding” but this can be ignored. The simulation may take several minutes. While the simulation is running you will not be able to work in the FloodAdapt application. When the simulation is finished, the pop-up window will disappear and the run status for your scenario will change from “False” to “True”.</p>
 <div id="fig-scenarios_runningPopup" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/scenarios_runningScenario_popup.png" class="lightbox" title="Popup indicating that a scenario is running" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/scenarios_runningScenario_popup.png" class="img-fluid figure-img" style="width:20.0%"></a></p>
+<p><a href="../../_static/images/scenarios_runningScenario_popup.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Popup indicating that a scenario is running"><img src="../../_static/images/scenarios_runningScenario_popup.png" class="img-fluid figure-img" style="width:20.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Popup indicating that a scenario is running</strong></figcaption>
 </figure>
 </div>
@@ -854,7 +854,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","selector":".lightbox","loop":true,"openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","loop":true,"descPosition":"bottom","openEffect":"zoom"});</script>
 
 
 
