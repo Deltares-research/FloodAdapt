@@ -167,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historic Events</span></a>
+ <span class="menu-text">Historical Events</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -395,7 +395,8 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#system-requirements" id="toc-system-requirements" class="nav-link active" data-scroll-target="#system-requirements">System requirements</a></li>
   <li><a href="#installation-steps" id="toc-installation-steps" class="nav-link" data-scroll-target="#installation-steps">Installation steps</a></li>
-  <li><a href="#floodadapt-folder-structure" id="toc-floodadapt-folder-structure" class="nav-link" data-scroll-target="#floodadapt-folder-structure">FloodAdapt folder structure</a></li>
+  <li><a href="#opening-floodadapt" id="toc-opening-floodadapt" class="nav-link" data-scroll-target="#opening-floodadapt">Opening FloodAdapt</a></li>
+  <li><a href="#floodadapt-database" id="toc-floodadapt-database" class="nav-link" data-scroll-target="#floodadapt-database">FloodAdapt database</a></li>
   </ul>
 </nav>
     </div>
@@ -419,45 +420,78 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>This section covers <a href="#system-requirements">system requirements</a> for running FloodAdapt, initial <a href="#installation-steps">installation steps</a>, and the <a href="#floodadapt-folder-structure">folder structure of FloodAdapt</a>.</p>
+<p>This section covers <a href="#system-requirements">system requirements</a> for running FloodAdapt, initial <a href="#installation-steps">installation steps</a>, <a href="#opening-floodadapt">opening FloodAdapt</a>, and the <a href="#floodadapt-database">FloodAdapt database folder structure</a>.</p>
 <section id="system-requirements" class="level2">
 <h2 class="anchored" data-anchor-id="system-requirements">System requirements</h2>
 <p>In order to run FloodAdapt, the following are required:</p>
 <ul>
-<li><p>Your computer must be running a Windows operating system.</p></li>
-<li><p>The first time the FloodAdapt application is opened must be by a user with administrative rights</p></li>
-<li><p>The computer must have access to the internet</p></li>
-<li><p>At least 2 GB of storage for the FloodAdapt system files and the underlying database</p></li>
-<li><p>Approximately 150 MB of storage for each user-generated scenario</p></li>
+<li>Your computer must be running a Windows operating system.</li>
+<li>The first time the FloodAdapt application is opened must be by a user with administrative rights</li>
+<li>The computer must have access to the internet</li>
+<li>At least 2 GB of storage for the FloodAdapt system files and the underlying database</li>
+<li>Approximately 150 MB of storage for each user-generated scenario</li>
 </ul>
-<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Warning
+Which windows systems have been tested?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Be sure to save the FloodAdapt folder in a high-level directory. For example: D:\&nbsp;FloodAdapt. This is because Windows has a 260-character path-name limit, and FloodAdapt includes user-selected scenario names in both folder and file names, which can lead to exceedance of the limit. Placing the FloodAdapt folder in a high-level directory will reduce the likelihood of this happening.</p>
+<p>FloodAdapt has been tested on Windows 10 and 11. It is expected to work on older systems, but has not been tested.</p>
 </div>
 </div>
 </section>
 <section id="installation-steps" class="level2">
 <h2 class="anchored" data-anchor-id="installation-steps">Installation steps</h2>
-<p>The FloodAdapt application does not require an installation, it can be used by directly double-clicking the FloodAdapt executable icon.</p>
-<p>The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.</p>
-</section>
-<section id="floodadapt-folder-structure" class="level2">
-<h2 class="anchored" data-anchor-id="floodadapt-folder-structure">FloodAdapt folder structure</h2>
-<p>The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. This section describes the folder structure and indicates where your user-generated scenario data are stored.</p>
-<p><a href="#fig-folderStructure">Figure&nbsp;1</a> shows the overall folder structure. The main FloodAdapt folder contains three sub-folders: <em>System</em>, <em>FloodAdapt_gui</em> and <em>Database</em>. The System folder contains the underlying modeling software to calculate flooding and impacts. The FloodAdapt_gui folder contains files related to the graphical user interface. It also contains the executable file <em>floodadapt_gui.exe</em> that opens the FloodAdapt application. The System and Floodadapt_gui folders are the same for every site location. The Database folder contains three sub-folders: <em>Input</em>, <em>Output</em>, and <em>Static</em>. The Static folder contains information that is prepared as system set-up to tailor FloodAdapt for a particular site location. The Input and Output folders are populated by the FloodAdapt user via the user interface. These contain information about the events, projections, measures, strategies, and scenarios that a user has created.</p>
-<p>The Output folder contains all of the flooding and impact data generated for the scenarios that a user runs via the user interface. The user may want to access this folder to create their own visualization in third party software, such as ArcGIS.</p>
-<div id="fig-folderStructure" class="quarto-figure quarto-figure-center anchored">
+<p>To download and install FloodAdapt on your computer:</p>
+<ul>
+<li>Download the FloodAdapt installer from the <a href="https://www.deltares-usa.us/floodadapt-application">Deltares USA website</a>.</li>
+<li>Double-click the “FloodAdaptInstaller” file and the setup wizard will open (see <a href="#fig-setupWizard">Figure&nbsp;1</a>). Follow the steps of the installation wizard.</li>
+</ul>
+<div id="fig-setupWizard" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/folderStructure.png" class="lightbox" title="Folder structure of FloodAdapt." data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/folderStructure.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>Folder structure of FloodAdapt.</strong></figcaption>
+<p><a href="../_static/images/installation_setupWizard.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="FloodAdapt installation setup wizard"><img src="../_static/images/installation_setupWizard.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: <strong>FloodAdapt installation setup wizard</strong></figcaption>
+</figure>
+</div>
+</section>
+<section id="opening-floodadapt" class="level2">
+<h2 class="anchored" data-anchor-id="opening-floodadapt">Opening FloodAdapt</h2>
+<p>When you open the FloodAdapt application you will be prompted to select a database root folder. This is the location where you store one or more FloodAdapt databases. Once you select a root folder, the databases within the root folder will appear. Select the database you want to work with and click “Start” to open the FloodAdapt application. Each time you open FloodAdapt you have the opportunity to change the database root and/or select a different database.</p>
+<div id="fig-installation_databaseSelector" class="quarto-figure quarto-figure-left anchored">
+<figure class="figure">
+<p><a href="../_static/images/installation_databaseSelector.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Database selector when opening FloodAdapt"><img src="../_static/images/installation_databaseSelector.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: <strong>Database selector when opening FloodAdapt</strong></figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why do I have to select a database?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The FloodAdapt application is a calculation “shell” that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the <a href="../3_setup_guide/index.html">Setup Guide</a>.</p>
+</div>
+</div>
+
+<!--The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.
+-->
+</section>
+<section id="floodadapt-database" class="level2">
+<h2 class="anchored" data-anchor-id="floodadapt-database">FloodAdapt database</h2>
+<p>The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. <a href="#fig-installation_database_structure">Figure&nbsp;3</a> shows the overall folder structure. The “Database Root Folder” is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the <a href="../4_user_guide/output/index.html">Output</a> section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the <a href="../3_setup_guide/index.html">Setup Guide</a>).</p>
+<div id="fig-installation_database_structure" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><a href="../_static/images/installation_database_structure.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="FloodAdapt database folder structure"><img src="../_static/images/installation_database_structure.png" class="img-fluid figure-img"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;3: <strong>FloodAdapt database folder structure</strong></figcaption>
 </figure>
 </div>
 
@@ -837,7 +871,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","closeEffect":"zoom","descPosition":"bottom","selector":".lightbox","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","openEffect":"zoom","descPosition":"bottom","loop":true});</script>
 
 
 

@@ -167,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historic Events</span></a>
+ <span class="menu-text">Historical Events</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -411,11 +411,11 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>A probabilistic event set is the combination of a set of synthetic events and their occurrence probabilities. These can be both tropical storms (hurricanes), as well as non-tropical events. They should include all event types that can lead to flooding in the site area (now or in the future), and can be <em>compound</em> flood events, meaning a combination of different flood drivers, like water level, rainfall, river discharge, or wind. It can be complicated to set up this set of events, and is therefore recommended to be done by an expert during the set-up of FloodAdapt for the site location.</p>
+<p>A probabilistic event set is the combination of a set of synthetic events and their occurrence probabilities. These can be both tropical storms (hurricanes), as well as non-tropical events. They should include all event types that can lead to flooding in the site area (now or in the future), and can be <em>compound</em> flood events, meaning a combination of different flood drivers, like water level, rainfall, river discharge, or wind. It can be complicated to set up this set of events, and is therefore recommended to be done by an expert during the set-up of FloodAdapt for the site location (see guidance on <a href="../../3_setup_guide/risk_analysis.html">setting up an event set</a> in the Setup Guide)</p>
 <p>In the events tab in FloodAdapt, a probabilistic event set can be recognized by the Type specification at the bottom of the window (see <a href="#fig-probEventSet">Figure&nbsp;1</a>). These event sets cannot be modified or deleted via the user interface.</p>
 <div id="fig-probEventSet" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><a href="../../_static/images/probEventSet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Probabilistic event set in the Events window. The Type is specified as Probabilistic Event Set and cannot be modified"><img src="../../_static/images/probEventSet.png" class="img-fluid figure-img"></a></p>
+<p><a href="../../_static/images/probEventSet.png" class="lightbox" title="Probabilistic event set in the Events window. The Type is specified as Probabilistic Event Set and cannot be modified" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/probEventSet.png" class="img-fluid figure-img"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Probabilistic event set in the Events window. The Type is specified as <em>Probabilistic Event Set</em> and cannot be modified</strong></figcaption>
 </figure>
 </div>
@@ -429,7 +429,8 @@ How are probabilistic event sets used in FloodAdapt?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When a user selects a scenario with a probabilistic event set, FloodAdapt calculates the flooding for each of the events in the event set. Using the flood output for the events and information about the frequencies of the events (also provided as part of the event set), FloodAdapt calculates return period flood maps (such as the <em>100 year flood map</em>), return period damages, and expected annual damages (risk) for the scenario. For an example how to use a probabilistic event set in a scenario, let’s say a user wants to explore the risk to their community with 1 foot of sea level rise and with a floodwall in place. Their scenario components would be: projection = 1 ft. sea level rise, strategy = floodwall, event = probabilistic event set. The calculation of risk allows a user to explore the risk-reduction <a href="../../4_user_guide/benefits.html">benefits</a> of adaptation options, as well as obtaining more comprehensive insight into how risk is distributed. The page on <a href="../../4_user_guide/scenarios/index.html">scenarios</a> gives more examples how users can define scenarios to answer different questions.</p>
+<p>When a user selects a scenario with a probabilistic event set, FloodAdapt calculates the flooding for each of the events in the event set. Using the flood output for the events and information about the frequencies of the events (also provided as part of the event set), FloodAdapt calculates return period flood maps (such as the <em>100 year flood map</em>), return period damages, and expected annual damages (risk) for the scenario. Details of how FloodAdapt makes these calculations is presented in the <a href="../../5_technical_docs/RiskScenario.html">Technical Documentation</a>.</p>
+<p>For an example how to use a probabilistic event set in a scenario, let’s say a user wants to explore the risk to their community with 1 foot of sea level rise and with a floodwall in place. Their scenario components would be: projection = 1 ft. sea level rise, strategy = floodwall, event = probabilistic event set. The calculation of risk allows a user to explore the risk-reduction <a href="../../4_user_guide/benefits.html">benefits</a> of adaptation options, as well as obtaining more comprehensive insight into how risk is distributed. The page on <a href="../../4_user_guide/scenarios/index.html">scenarios</a> gives more examples how users can define scenarios to answer different questions.</p>
 </div>
 </div>
 
@@ -808,7 +809,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","selector":".lightbox","openEffect":"zoom","closeEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","closeEffect":"zoom","loop":true,"descPosition":"bottom"});</script>
 
 
 

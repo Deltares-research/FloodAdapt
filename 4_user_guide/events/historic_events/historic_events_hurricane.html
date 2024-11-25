@@ -108,7 +108,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../4_user_guide/index.html">User Guide</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/index.html">Events</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/historic_events/index.html">Historic Events</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/historic_events/historic_events_hurricane.html">Historical Hurricanes</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../4_user_guide/index.html">User Guide</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/index.html">Events</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/historic_events/index.html">Historical Events</a></li><li class="breadcrumb-item"><a href="../../../4_user_guide/events/historic_events/historic_events_hurricane.html">Historical Hurricanes</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -167,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historic Events</span></a>
+ <span class="menu-text">Historical Events</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -456,10 +456,10 @@ Editing the hurricane start and stop time
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.</p>
+<p>The automatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.</p>
 </div>
 </div>
-<p>Under the “Surge and Tide” block, the user can <strong>shift the hurricane track</strong> by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.</p>
+<p>Under the “Surge and Tide” block, the user can <strong>shift the hurricane track</strong> by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. Note that when shifting a historical hurricane track, the new track will be assigned the attributes of the original hurricane (like wind and pressure fields).</p>
 <p>The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.</p>
 <p>The river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge.</p>
 <div id="fig-hurricaneTemplate" class="quarto-figure quarto-figure-center anchored">
@@ -823,7 +823,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="../../../4_user_guide/events/historic_events/index.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Historic Events</span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Historical Events</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
@@ -844,7 +844,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","loop":true,"closeEffect":"zoom","descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom"});</script>
 
 
 

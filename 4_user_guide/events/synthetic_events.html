@@ -167,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Historic Events</span></a>
+ <span class="menu-text">Historical Events</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -424,19 +424,6 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Watch our video - add a synthetic event
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Don’t feel like reading? No problem! Check out our video about how to add a synthetic event in FloodAdapt. <strong>TO BE ADDED</strong></p>
-</div>
-</div>
 <p>When the user selects the “Synthetic” option from the <strong>Events</strong> tab, they will see the event template window shown in <a href="#fig-syntheticWindow">Figure&nbsp;1</a>. This window allows the user to input synthetic time series for:</p>
 <ol type="1">
 <li><a href="#water-levels---tide-surge">Water level - Tide + Surge</a></li>
@@ -524,8 +511,8 @@ The zero point and the datums in the water level plots
 <section id="river-discharge" class="level2">
 <h2 class="anchored" data-anchor-id="river-discharge">River discharge</h2>
 <p>The river discharge represents the discharge in a river at the model boundary. If there are multiple rivers at the model boundary, the user will be able to select each river to specify the discharge. The user has two options for specifying the river discharge: a <strong>constant</strong> discharge or a <strong>shape</strong>, which is a synthetic timeseries.</p>
-<p>A constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.</p>
-<p>The shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value.</p>
+<p><strong>Constant</strong> - A constant discharge is the default option. An average discharge value is filled in, which is specified in a FloodAdapt configuration folder at system setup. The user can change the value of the constant discharge.</p>
+<p><strong>Shape</strong> - The shape option uses a Gaussian curve. The user must specify the base discharge (this can be left at the default value, which is the average discharge), a peak discharge, a duration, and a peak time. The duration refers to the duration that the river discharge is above its base value.</p>
 
 
 </section>
@@ -903,7 +890,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"openEffect":"zoom","selector":".lightbox","closeEffect":"zoom","descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","loop":true,"selector":".lightbox","openEffect":"zoom","closeEffect":"zoom"});</script>
 
 
 
