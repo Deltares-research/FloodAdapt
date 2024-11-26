@@ -48,7 +48,7 @@ An increase in storm frequency is given as a percentage in the projections windo
 
 ::: callout-tip
 ## Example - increased storm frequency
-For example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.22, or once in about 45 years.
+For example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.022, or once in about 45 years.
 :::
 
 ### Why is this only for probabilistic event sets?

@@ -19,6 +19,10 @@ The following sections will describe how to create a benefit analysis, how benef
 * [Viewing benefit output in the Benefits tab](#viewing-benefit-output-in-the-benefits-tab)
 * [Benefits output folder](#benefits-output-folder).
 
+::: {.callout-note}
+#### What is required to run a benefit analysis?
+To run a benefit analysis, you must have a [probabilistic event set](events/probabilistic_events.qmd) prepared for your site. This event set enables the calculation of risk, which is needed when calculating the risk-reduction benefits of adaptation strategies.
+:::
 ## Creating a new benefit analysis
 FloodAdapt users can evaluate the risk-reduction benefits of any strategy they have created (which can be composed of a single measure or a collection of measures). To do this, go to the Benefits tab in FloodAdapt, and in the bottom panel click on "Add benefit analysis". A popup window will appear within which you will specify important choices about your benefit analysis.
 

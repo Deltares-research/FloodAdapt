@@ -24,10 +24,10 @@ The historical hurricane event template window is shown in @fig-hurricaneTemplat
 
 ::: {.callout-tip}
 ## Editing the hurricane start and stop time
-The autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.
+The automatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.
 :::
 
-Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.
+Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. Note that when shifting a historical hurricane track, the new track will be assigned the attributes of the original hurricane (like wind and pressure fields).
 
 The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.
 
