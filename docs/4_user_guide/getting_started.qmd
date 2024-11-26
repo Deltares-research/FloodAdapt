@@ -37,7 +37,7 @@ When you open the FloodAdapt application you will be prompted to select a databa
 
 ::: {.callout-note}
 #### Why do I have to select a database?
-The FloodAdapt application is a calculation "shell" that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the [Setup Guide](../3_setup_guide/index.qmd).
+The FloodAdapt application is a calculation "shell" that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the [Setup Guide](3_setup_guide/index.qmd).
 :::
 
 <!--The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.
@@ -45,6 +45,6 @@ The FloodAdapt application is a calculation "shell" that requires a FloodAdapt d
 
 ## FloodAdapt database
 The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge.
-@fig-installation_database_structure shows the overall folder structure. The "Database Root Folder" is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the [Output](output/index.qmd) section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the [Setup Guide](../3_setup_guide/index.qmd)).
+@fig-installation_database_structure shows the overall folder structure. The "Database Root Folder" is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the [Output](output/index.qmd) section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the [Setup Guide](C:/Users/rautenba/repos/FloodAdapt/docs/3_setup_guide/index.qmd)).
 
 ![**FloodAdapt database folder structure**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_database_structure.png){#fig-installation_database_structure}

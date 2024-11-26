@@ -7,7 +7,7 @@ lightbox: auto
 
 Flood adaptation measures are designed to reduce flood risk, and are typically evaluated by calculating their risk-reduction **benefits** and the **benefit-cost ratio**, which compares benefits with the implementation and maintenance costs of the measure(s).
 
-FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits. The [user guide section on benefits](../4_user_guide/benefits.qmd) provides comprehensive guidance on preparing and evaluating benefits in FloodAdapt. This technical documentation is limited to the description of the benefit calculation.
+FloodAdapt supports users in evaluating the risk-reduction benefits of strategies by automating the benefit calculation and guiding the user in the creation of the scenarios needed to calculate benefits. The [user guide section on benefits](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/benefits.qmd) provides comprehensive guidance on preparing and evaluating benefits in FloodAdapt. This technical documentation is limited to the description of the benefit calculation.
 
 The benefit calculation uses output from four scenarios:
 

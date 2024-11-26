@@ -89,7 +89,7 @@ First an exclamation mark - [here comes the name] (here comes the path to the fi
 
 add "fig-" before the label name to be able to cross reference.
 
-![Floodadapt](../_static/logo.png){#fig-logo width=200px height=200px}
+![Floodadapt](C:/Users/rautenba/repos/FloodAdapt/docs/_static/logo.png){#fig-logo width=200px height=200px}
 
 ### Cross reference figure
 I want to reference the @fig-logo.

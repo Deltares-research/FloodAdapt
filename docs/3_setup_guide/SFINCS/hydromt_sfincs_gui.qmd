@@ -11,7 +11,7 @@ format: html
 
 The SFINCS ModelBuilder is a user-friendly interface built on top of the HydroMT-SFINCS Python package. It simplifies the process of setting up a basic SFINCS model for an area using local data, without requiring programming expertise.
 
-![The ModelBuilder start screen.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_model_builder_homeScreen.png){width=100% fig-align=left #fig-sfincsHomeScreen}
+![The ModelBuilder start screen.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_model_builder_homeScreen.png){width=100% fig-align=left #fig-sfincsHomeScreen}
 
 @fig-sfincsHomeScreen shows the SFINCS ModelBuilder interface, which includes six tabs in the upper section. For generating a SFINCS model compatible with FloodAdapt, you will primarily use the first tab, the 'Model Maker' tab. The other tabs are designed for creating standalone SFINCS models for use outside of FloodAdapt, but can be used for customizations such as editing  automatically defined boundary points or setting river discharge points. Within the 'Model Maker' tab, the five sub-tabs at the bottom guide you through the process of creating a SFINCS model.
 
@@ -62,7 +62,7 @@ The process of transferring water levels from the surge model to the overland mo
 
  @fig-sfincsDomain shows the 'Model Maker - Domain' tab with the "Select Watershed" pop-up.
 
-![The SFINCS ModelBuilder 'Model Maker - Domain' tab and "Select Watershed" pop-up.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_domaintab.png){width=100% fig-align=left #fig-sfincsDomain}
+![The SFINCS ModelBuilder 'Model Maker - Domain' tab and "Select Watershed" pop-up.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_domaintab.png){width=100% fig-align=left #fig-sfincsDomain}
 
 After completing the steps above, a new box will appear for defining the model resolution.
 
@@ -99,7 +99,7 @@ To map topography and bathymetry data onto your model grid, follow these steps:
 
 @fig-sfincsTopobathy illustrates the 'Model Maker - TopoBathy' tab with a topo-bathymetric dataset mapped to the model grid.
 
-![The SFINCS ModelBuilder 'Model Maker - TopoBathy' tab.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_topobathytab.png){width=100% fig-align=left #fig-sfincsTopobathy}
+![The SFINCS ModelBuilder 'Model Maker - TopoBathy' tab.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_topobathytab.png){width=100% fig-align=left #fig-sfincsTopobathy}
 
 ## Defining active cells {#sec-active-cells}
 
@@ -126,7 +126,7 @@ SFINCS optimizes simulations by only performing computations in "active cells" â
 
 @fig-sfincsActivecells shows the SFINSC model-builder "Active Cells" tab, with active cells highlighted in yellow.
 
-![The SFINCS model-builder 'Model Maker - Active Cells' tab.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_activecellstab.png){width=100% fig-align=left #fig-sfincsActivecells}
+![The SFINCS model-builder 'Model Maker - Active Cells' tab.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_activecellstab.png){width=100% fig-align=left #fig-sfincsActivecells}
 
 ## Defining boundary cells {#sec-boundary-cells}
 
@@ -148,7 +148,7 @@ To define the boundary cells, follow these steps:
   - Use polygons to restrict the boundary area if needed.
   - Alternatively, use a "water depth threshold" to automatically select boundary cells.
 
-![The SFINCS ModelBuilder 'Model Maker - Boundary Cells' tab.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_boundarycellstab.png){width=100% fig-align=left #fig-sfincsBoundarycells}
+![The SFINCS ModelBuilder 'Model Maker - Boundary Cells' tab.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_boundarycellstab.png){width=100% fig-align=left #fig-sfincsBoundarycells}
 
 ## Build model {#sec-build-model}
 
@@ -180,7 +180,7 @@ At this point, the model is ready to be built.
 
 This completes the process of setting up a SFINCS model for FloodAdapt.
 
-![The SFINCS ModelBuilder 'Model Maker - Build Model' tab.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_buildmodeltab.png){width=100% fig-align=left #fig-sfincsBuildmodel}
+![The SFINCS ModelBuilder 'Model Maker - Build Model' tab.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_buildmodeltab.png){width=100% fig-align=left #fig-sfincsBuildmodel}
 
 ## Editing boundary points (Optional) {#sec-boundary-points}
 

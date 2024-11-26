@@ -14,7 +14,7 @@ FloodAdapt includes a module which automatically calculates equity weights and a
 
 Inputs to the method are:
 
-* Mean per capita income ($M$) and population $(P)$ at aggregated scale, for example census block groups. This information can be obtained automatically when setting up the [Delft-FIAT model](../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd)
+* Mean per capita income ($M$) and population $(P)$ at aggregated scale, for example census block groups. This information can be obtained automatically when setting up the [Delft-FIAT model](C:/Users/rautenba/repos/FloodAdapt/docs/3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd)
 
 * Return period damages per building $D$ (output from the impact module in a [risk calculation](RiskScenario.qmd)).
 

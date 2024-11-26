@@ -7,7 +7,7 @@ lightbox: auto
 
 Urban green infrastructure integrates natural elements like parks, green roofs, and permeable pavements into city landscapes to absorb, slow down, and manage stormwater runoff, thereby reducing flood risk and enhancing urban resilience. FloodAdapt includes a high-level representation of urban green infrastructure that is intended to help users identify the required capacity of urban green infrastructure solutions and the best placement of these options within the city to achieve community objectives. Currently there are three 'flavors' of urban green infrastructure that can be simulated and evaluated with FloodAdapt: [water square](#water-square), [greening](#greening), and [total storage](#total-storage). This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.
 
-![**Green infrastructure options in FloodAdapt include: water squares, greening, and total storage**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_greenInfra.png){fig-align=left #fig-measures_buildingLevel}
+![**Green infrastructure options in FloodAdapt include: water squares, greening, and total storage**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_greenInfra.png){fig-align=left #fig-measures_buildingLevel}
 
 
 To specify a green infrastructure measure, go to the Measures tab, and in the "Category" drop-down menu select "Green infrastructure". Then for "Measure" choose one of the three measure types: [water square](#water-square), [greening](#greening), or [total storage](#total-storage). Next, choose an "Area type". This indicates how you will select the area to which you want to apply the green infrastructure measure. There are three options:
@@ -29,31 +29,31 @@ FloodAdapt is intended to be used at a high level of green infrastructure planni
 ## How are green infrastructure measures represented in the modeling?
 All the green infrastructure measure types in FloodAdapt are represented in the modeling in the same way. The total storage volume from the green infrastructure is added to the underlying flood model in the cells where the green infrastructure is placed. When green infrastructure is implemented over multiple flood model cells, the volume is distributed over the cells proportionally according to their share of the green infrastructure area. For example, in the figure below, 80% of the storage volume would go into the cell with 80% of the area, and 20% would go to the cell with 20% of the area. When you run a scenario, the flood model removes water entering the cells where green infrastructure is placed until the storage volume for that cell has been reached. Note that the storage volume in each cell is handled uniformly throughout the cell, so you may have flood reductions in areas within the cell but outside the green infrastructure polygon.
 
-![](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_greenInfra_distributionOfStorageVolume.png){width=40% fig-align=left}
+![](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_greenInfra_distributionOfStorageVolume.png){width=40% fig-align=left}
 :::
 
 ## Water Square
 A water square is a multi-functional urban space designed to temporarily store excess rainwater during heavy rainfall, reducing flooding while providing recreational and aesthetic benefits during dry periods. A schematic of a water square is shown in @fig-measures_waterSquare_schematic.
 
-![**A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare_example.png){width=30% fig-align=left #fig-measures_waterSquare_schematic}
+![**A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare_example.png){width=30% fig-align=left #fig-measures_waterSquare_schematic}
 
 To implement a water square in FloodAdapt:
 
-* Go to the [Measures](../measures/index.qmd) tab
+* Go to the [Measures](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/measures/index.qmd) tab
 * Select "Green infrastructure" for the Category
 * From the Measure drop-down menu, select "Water square"
 * Select one of the "Area Type" options and then click "Add Measure"
 
-![**Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare.png){width=70% fig-align=left #fig-measures_waterSquare}
+![**Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare.png){width=70% fig-align=left #fig-measures_waterSquare}
 
 If you selected "Draw Polygon", you can now begin drawing the polygon that represents the shape of your water square. It is useful to turn on the "show grid" option so you can see where your water square will be implemented in the flood model. @fig-measures_waterSquare shows an implementation of a water square in FloodAdapt. In this example, the water square is implemented over two flood model grid cells, so those cells will have a higher storage capacity because of the water square. When you have finished drawing your polygon, you can double click to open the specification window. If you select "Aggregation area" or "Import polygon" to define your water square area, the specification window will open immediately when you click "Add measure", and you will additionally be asked to specify the aggregation area or to upload your polygon as a spatial file, depending on what you chose.
 
 The specification window is shown in @fig-measures_waterSquare_specs. In this window, you enter a name for the measure (no spaces or special characters), an optional description, and the depth of the water square. After entering the depth, click Enter. FloodAdapt will then automatically calculate the area of the water square (based on the selected area for the water square) and the total storage volume by multiplying the area with the specified water square depth. Additionally, there is also a "Look-up table" button. This shows suggestions for infiltration depths for different types of green infrastructure measures; see @fig-measures_lookup. For the **water square** measure type, only the entry about water squares would be relevant.
 
-![**Water square specification window**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare_specs.png){width=40% fig-align=left #fig-measures_waterSquare_specs}
+![**Water square specification window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_waterSquare_specs.png){width=40% fig-align=left #fig-measures_waterSquare_specs}
 
 
-![**Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_lookupTable.png){width=40% fig-align=left #fig-measures_lookup}
+![**Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_lookupTable.png){width=40% fig-align=left #fig-measures_lookup}
 
 
 ::: {.callout-note}
@@ -65,24 +65,24 @@ The suggested infiltration depths in the green infrastructure lookup-table are b
 
 Greening in FloodAdapt refers to the implementation of a collection of different types of individual measures that may be part of a green infrastructure design. This option allows you to specify an area and the percentage of that area where green infrastructure will be implemented. For example, let's say the area of interest is a neighborhood, and the measure under consideration is a bioswale. In this case, you could estimate the area of the neighborhood where there are roads (for example, let's say 10%), and then specify that 10% of the area will have an infiltration depth appropriate for a bioswale (see the lookup table shown in @fig-measures_lookup).
 
-![**Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening_options.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
+![**Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening_options.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
 
 
 To implement the **greening** option in FloodAdapt:
 
-* Go to the [Measures](../measures/index.qmd) tab
+* Go to the [Measures](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/measures/index.qmd) tab
 * Select "Green infrastructure" for the Category
 * From the Measure drop-down menu, select "Greening"
 * Select one of the "Area Type" options and then click "Add Measure"
 
 If you selected "Draw Polygon", you can now begin drawing the polygon for the area where you want to apply green infrastructure. When you have finished drawing your polygon, you can double click to open the specification window. If you select "Aggregation area" or "Import polygon" to define your area, the specification window will open immediately when you click "Add measure", and you will additionally be asked to specify the aggregation area or to upload your polygon as a spatial file, depending on what you chose.
 
-![**Selecting an aggregation area for applying the green infrastructure option "greening".**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
+![**Selecting an aggregation area for applying the green infrastructure option "greening".**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
 
 
 The specification window is shown in @fig-measures_waterSquare_specs. In this window, you enter a name for the measure (no spaces or special characters), an optional description, the percent of the selected area you wish to apply green infrastructure measures, and the infiltration depth of the measures. For this last entry, you can use the Look-up table (see @fig-measures_lookup). This shows suggestions for infiltration depths for different types of green infrastructure measures. After entering the depth, click Enter. FloodAdapt will then automatically calculate the area where the green infrastructure will be applied (based on the selected area and the percent area to green) and the total storage volume by multiplying the green infrastructure area with the specified infiltration depth.
 
-![**Greening specification window**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening_specs.png){width=40% fig-align=left #fig-measures_waterSquare_specs}
+![**Greening specification window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_greening_specs.png){width=40% fig-align=left #fig-measures_waterSquare_specs}
 
 
 ## Total storage
@@ -90,7 +90,7 @@ Total storage is the most appropriate option for high-level strategic planning o
 
 To implement the **Total storage** option in FloodAdapt:
 
-* Go to the [Measures](../measures/index.qmd) tab
+* Go to the [Measures](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/measures/index.qmd) tab
 * Select "Green infrastructure" for the Category
 * From the Measure drop-down menu, select "Total storage"
 * Select one of the "Area Type" options and then click "Add Measure"
@@ -99,4 +99,4 @@ If you selected "Draw Polygon", you can now begin drawing the polygon for the ar
 
 The specification window is shown in @fig-measures_totalStorage_specs. In this window, you enter a name for the measure (no spaces or special characters), an optional description, and the total increased storage volume.
 
-![**Total storage specification window**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_totalStorage_specs.png){width=40% fig-align=left #fig-measures_totalStorage_specs}
+![**Total storage specification window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_GI_totalStorage_specs.png){width=40% fig-align=left #fig-measures_totalStorage_specs}

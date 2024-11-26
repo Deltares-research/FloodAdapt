@@ -16,7 +16,7 @@ Please check out the sub-page on the [**Delft-FIAT model-builder**](hydromt_fiat
 
 @fig-DF_concept shows the flood impact modeling concept on which Delft-FIAT is based. It relates a **hazard** (the flood waters), **exposure** (buildings or roads that might be flooded), and **vulnerability** (the propensity of assets to be damaged when flooded).
 
-![Damage modeling concept](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_concept.png){width=75% fig-align=left #fig-DF_concept}
+![Damage modeling concept](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_concept.png){width=75% fig-align=left #fig-DF_concept}
 
 @fig-DF_overview illustrates how damages are calculated in Delft-FIAT. The steps involved in a Delft-FIAT calculation are:
 
@@ -25,7 +25,7 @@ Please check out the sub-page on the [**Delft-FIAT model-builder**](hydromt_fiat
 * A depth-damage curve is used to translate the inundation depth into a damage fraction
 * The damage fraction is multiplied by the max potential (structure and content) damages to obtain the damage per asset
 
-![Overview of the calculation method in Delft-FIAT](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_overview.png){width=75% fig-align=left #fig-DF_overview}
+![Overview of the calculation method in Delft-FIAT](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_overview.png){width=75% fig-align=left #fig-DF_overview}
 
 Delft-FIAT is considered a 'calculation engine', which means it is designed to make damage calculations, but does not come prepopulated with data. When we say 'setting up a Delft-FIAT model' for a project location, this refers to collecting and formatting exposure and vulnerability data for the area. This document provides an [overview](#overview-of-delft-fiat-data-requirements) of the data needed to set up a Delft-FIAT model, and a [user guide](hydromt_fiat_gui.qmd) on how to build a Delft-FIAT model in your project location using the Delft-FIAT model-builder. This model-builder makes it easy to rapidly prepare a Delft-FIAT model using open data, but also supports tailored model-building by allowing you to bring in local or more accurate data when available.
 
@@ -34,7 +34,7 @@ This section describes the exposure and vulnerability requirements to set up a D
 
 The **exposure data** describe the assets within a project area. @fig-exposure shows the types of exposure data needed (and also optionally accepted) to set up a Delft-FIAT model.
 
-![Exposure data used to build a Delft-FIAT model - including both required and optional fields](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_exposure.png){width=70% fig-align=left #fig-exposure}
+![Exposure data used to build a Delft-FIAT model - including both required and optional fields](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DelftFIAT_exposure.png){width=70% fig-align=left #fig-exposure}
 
 ::: {.callout-note}
 ## Why are some data optional?
@@ -45,4 +45,4 @@ The **secondary occupancy type** can be optional, but will sometimes be required
 
 **Vulnerability data** in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.
 
-![**Example of depth-damage functions**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/damage_curves.png){width=50% fig-align=left #fig-damagefunction}
+![**Example of depth-damage functions**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/damage_curves.png){width=50% fig-align=left #fig-damagefunction}

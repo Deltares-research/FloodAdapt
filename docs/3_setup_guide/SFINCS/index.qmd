@@ -7,7 +7,7 @@ lightbox: auto
 
 [SFINCS](https://download.deltares.nl/en/sfincs) is an open-source model for simulating compound flooding that can be integrated into the FloodAdapt platform. To set up FloodAdapt in a new location, you first need to create a SFINCS model for the project area. This initial model, called the "baseline" SFINCS model, can then modified through FloodAdapt's user interface to simulate scenarios such as hurricanes or synthetic events, and include future conditions like sea level rise.
 
-![SFINCS can model compound flooding caused by multiple drivers](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_intro.png){width=50% fig-align=center #fig-sfincsIntro}
+![SFINCS can model compound flooding caused by multiple drivers](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_intro.png){width=50% fig-align=center #fig-sfincsIntro}
 
 SFINCS is designed to simulate compound flooding caused by various drivers, including storm surge, tides, rainfall, and river discharge (@fig-sfincsIntro). A fully functional FloodAdapt setup typically includes two SFINCS models:
 
@@ -39,7 +39,7 @@ The **SFINCS Model-Builder** tool simplifies the creation of SFINCS models for F
 
 @fig-sfincsOverview is a schematic overview of the SFINCS model components:
 
-![Components of a SFINCS model created using the SFINCS model-builer](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_overview.png){width=100% fig-align=center #fig-sfincsOverview}
+![Components of a SFINCS model created using the SFINCS model-builer](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/sfincs_overview.png){width=100% fig-align=center #fig-sfincsOverview}
 
 ## SFINCS Data Requirements
 

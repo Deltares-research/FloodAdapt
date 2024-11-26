@@ -6,7 +6,7 @@ lightbox: auto
 ---
 This section will describe how future projections of [sea level rise](#sea-level-rise), [precipitation](#increase-precipitation) and [tropical storm frequencies](#increased-storm-frequency) are specified and implemented in FloodAdapt.
 
-![**Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_climate.png){width=70% fig-align=left #fig-projectionsClimate}
+![**Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_climate.png){width=70% fig-align=left #fig-projectionsClimate}
 
 
 ## Sea level rise
@@ -14,11 +14,11 @@ There are two ways to specify sea level rise in the projections window: ***manua
 
 If you select ***manually***, you can type a number in the "Sea Level Rise" (see @fig-projectionsSLR_manual). You can then give your projection a name and (optionally) a description and click "OK" and your projection will show up in the FlodoAdapt Projections tab.
 
-![**Manually entering a sea level rise projection**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_SLR_manual.png){width=70% fig-align=left #fig-projectionsSLR_manual}
+![**Manually entering a sea level rise projection**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_SLR_manual.png){width=70% fig-align=left #fig-projectionsSLR_manual}
 
 If you select ***from scenario***, a dropdown box will appear from which you can select the sea level rise scenario you want to use (see @fig-projectionsSLR). These options are configurable and are specified at system setup. Once you select a scenario, you specify a year and FloodAdapt will automatically calculate the sea level rise for that year, using the selected sea level rise scenario. You can then give your projection a name and (optionally) a description and click "OK" and your projection will show up in the FlodoAdapt Projections tab.
 
-![**Using a sea level rise scenario and a year to enter a sea level rise projection**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_SLR.png){width=70% fig-align=left #fig-projectionsSLR}
+![**Using a sea level rise scenario and a year to enter a sea level rise projection**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_SLR.png){width=70% fig-align=left #fig-projectionsSLR}
 
 ::: {.callout-note}
 ## Sea level rise - since when?
@@ -27,21 +27,21 @@ Sea level rise scenarios have a starting point where sea level rise is zero (oft
 
 ::: {.callout-note}
 ## How is the sea level rise projection represented in the modeling?
-When a user runs a scenario with a sea level rise projection, the sea level rise is added to the flood model's coastal boundary condition. FloodAdapt treats this addition differently depending on the type of event. For a [recent event using gauged water levels](../events/historic_events/historic_events_gauged.qmd), the sea level rise in the current year relative to mean sea level is already represented in the measured water levels, so only the relative rise between the current year and future year is added. For a [recent event without gauged water levels](../events/historic_events/historic_events_ungauged.qmd) and for a [historical hurricane](../events/historic_events/historic_events_hurricane.qmd), the offshore model calculates the nearshore coastal water levels relative to mean sea level. To correct for the sea level rise in the current year relative to mean sea level, an 'offset' is added which is specified at system set-up. On top of this, the relative sea level rise between the current year and the future year is added to represent the future conditions.
+When a user runs a scenario with a sea level rise projection, the sea level rise is added to the flood model's coastal boundary condition. FloodAdapt treats this addition differently depending on the type of event. For a [recent event using gauged water levels](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/historic_events/historic_events_gauged.qmd), the sea level rise in the current year relative to mean sea level is already represented in the measured water levels, so only the relative rise between the current year and future year is added. For a [recent event without gauged water levels](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/historic_events/historic_events_ungauged.qmd) and for a [historical hurricane](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/historic_events/historic_events_hurricane.qmd), the offshore model calculates the nearshore coastal water levels relative to mean sea level. To correct for the sea level rise in the current year relative to mean sea level, an 'offset' is added which is specified at system set-up. On top of this, the relative sea level rise between the current year and the future year is added to represent the future conditions.
 :::
 
 ## Increased precipitation
 An increase in precipitation is given as a percentage in the projections window (see @fig-projectionsPrecip). You can give the projection a name and (optionally) a description and click "OK" and the projection will be added in the projections tab.
 
 ### Why is this only for probabilistic event sets?
-In the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a 'what-if' scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a [historical event](../events/historic_events/historic_events_gauged.qmd#rainfall-magnifier-with-the-timeseries-and-map-options), or with complete flexibility in defining rainfall for a [synthetic event](../events/synthetic_events.qmd)). For [probabilistic event sets](../events/probabilistic_events.qmd), the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.
+In the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a 'what-if' scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a [historical event](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/historic_events/historic_events_gauged.qmd#rainfall-magnifier-with-the-timeseries-and-map-options), or with complete flexibility in defining rainfall for a [synthetic event](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/synthetic_events.qmd)). For [probabilistic event sets](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/events/probabilistic_events.qmd), the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.
 
 ::: {.callout-note}
 ## What happens if I choose this projection for a single event scenario?
 If you choose a projection of increased precipitation for a single event, it will work exactly as expected, and is identical to the precipitation magnifier option when you define your event. If you prefer to specify the increased precipitation via the projections tab instead of as a precipitation magnifier in the event tab, that is completely fine! Just be careful not to choose both, or the increase will be applied twice.
 :::
 
-![**Entering increased precipitation as a percentage increase**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_precip.png){width=70% fig-align=left #fig-projectionsPrecip}
+![**Entering increased precipitation as a percentage increase**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_precip.png){width=70% fig-align=left #fig-projectionsPrecip}
 
 ## Increased storm frequency
 An increase in storm frequency is given as a percentage in the projections window (see @fig-projectionsPrecip). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.
@@ -59,4 +59,4 @@ The change in storm frequency will only affect the frequency of the storm. This 
 If you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won't do any harm, but it won't have any effect on the resulting event-scenario flood and impact results.
 :::
 
-![**Entering increased storm frequency as a percentage increase**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_stormFreq.png){width=70% fig-align=left #fig-projectionsPrecip}
+![**Entering increased storm frequency as a percentage increase**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/projections_stormFreq.png){width=70% fig-align=left #fig-projectionsPrecip}

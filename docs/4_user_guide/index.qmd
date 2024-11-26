@@ -5,7 +5,7 @@ filters:
 lightbox: auto
 ---
 
-Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios to assess current and future flood impacts and risk and evaluate the effectiveness and benefits of adaptation options. The FloodAdapt application supports the creation, running, visualization, and comparison of scenarios. For more background on what FloodAdapt is and does, please visit the [Introduction page](../1_introduction/index.qmd)
+Welcome to the FloodAdapt user guide! This guide will help you specify and run scenarios to assess current and future flood impacts and risk and evaluate the effectiveness and benefits of adaptation options. The FloodAdapt application supports the creation, running, visualization, and comparison of scenarios. For more background on what FloodAdapt is and does, please visit the [Introduction page](C:/Users/rautenba/repos/FloodAdapt/docs/1_introduction/index.qmd)
 
 ::: {.callout-note}
 ## What is a scenario in FloodAdapt?

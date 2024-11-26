@@ -18,7 +18,7 @@ The historical hurricane event allows the user to select and shift a historical 
 It is not recommended to use the **Historical hurricane** option for a hurricane that passed far offshore of the site. In those cases, it is recommended to use the “Historical event without gauged water levels” event type.
 :::
 
-![**Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_hurricaneSelector.png){#fig-hurricaneSelector}
+![**Hurricane selector window. You can search by name, and can filter the selection by distance to the site or time window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_hurricaneSelector.png){#fig-hurricaneSelector}
 
 The historical hurricane event template window is shown in @fig-hurricaneTemplate. After a user selects a hurricane from the hurricane selector window, the event name and description of the hurricane and the timing will be automatically filled in. The user can edit these if desired.
 
@@ -33,4 +33,4 @@ The wind and rain are automatically derived from information about the hurricane
 
 The river discharge represents the discharge at the model boundary and will be automatically filled to a default value specified during system set-up. The user can modify this value. If there are multiple rivers at the model boundary, the user will be able to select each river to view or modify the discharge.
 
-![**Event template window for a historical hurricane.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_hurricaneTemplate.png){#fig-hurricaneTemplate}
+![**Event template window for a historical hurricane.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_hurricaneTemplate.png){#fig-hurricaneTemplate}

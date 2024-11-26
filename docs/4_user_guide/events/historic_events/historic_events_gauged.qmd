@@ -18,7 +18,7 @@ When the user selects the “Historical event - using gauged water levels” opt
 (3) [Wind](#wind)
 (4) [River discharge](#river-discharge)
 
-![**Event template window for a historic event with gauged water levels.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_gaugedEventWindow2.png){#fig-gaugedWindow}
+![**Event template window for a historic event with gauged water levels.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/popup_gaugedEventWindow2.png){#fig-gaugedWindow}
 
 
 ## Water levels
@@ -37,7 +37,7 @@ The plot window will then show the time series of the water levels over the dura
 
  Alternatively, a user can import a **water level time series**. The water level time series should be a two-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column contains the water level relative to mean sea level (MSL). The units of the water level will depend on how the system is configured. In the event specification window, you will find an "i" button next to the option to import a time series. Clicking this button will display an example of the format required for the csv, including the water level units.
 
-![**Example of the "required format" popup for water levels when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_waterLevel_TSformat.png){fig-align=left #fig-gaugedWindow_format}
+![**Example of the "required format" popup for water levels when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_waterLevel_TSformat.png){fig-align=left #fig-gaugedWindow_format}
 
 ## Rainfall
 The user has four options for entering the rainfall for the event:
@@ -48,7 +48,7 @@ The user has four options for entering the rainfall for the event:
 
 **Timeseries** - The user can upload a rainfall time series; this should be a two-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, and the second column contains the rainfall intensity (depth/time). The units of the rainfall will depend on how the system is configured. In the event specification window, when you choose 'timeseries' for the rainfall source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the rainfall intensity units.
 
-![**Example of the "required format" popup for rainfall when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_rainfall_TSformat.png){fig-align=left #fig-TS_rain}
+![**Example of the "required format" popup for rainfall when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_rainfall_TSformat.png){fig-align=left #fig-TS_rain}
 
 **Map** - The map option downloads spatially and temporally varying rainfall at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data.
 
@@ -70,7 +70,7 @@ The user has four options for entering wind for the event:
 
 **Timeseries** - The user can upload a wind time series; this should be a three-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the wind speed, and the third column contains the wind direction. The units of the wind speed and direction will depend on how the system is configured. In the event specification window, when you choose 'timeseries' for the wind source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the units.
 
-![**Example of the "required format" popup for wind when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_wind_TSformat.png){fig-align=left #fig-TS_wind}
+![**Example of the "required format" popup for wind when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_wind_TSformat.png){fig-align=left #fig-TS_wind}
 
 **Map** - The map option downloads spatially and temporally varying wind data at coarse spatial resolution (0.5 degrees for dates prior to February 2021, and 0.25 degrees after) from the [NOAA global forecasting system](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) reanalysis data.
 
@@ -81,4 +81,4 @@ The river discharge represents the discharge in a river at the model boundary. I
 
 **Timeseries** - - The user can upload a river discharge time series; this should be a two-column csv. The first column contains the date and time in the format yyyy-mm-dd hh:mm:ss, the second column contains the river discharge. The units of the river discharge will depend on how the system is configured. In the event specification window, when you choose 'timeseries' for the river discharge source, you will see an "i" button appear. Clicking this button will display an example of the format required for the csv, including the units.
 
-![**Example of the "required format" popup for river discharge when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](../../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_discharge_TSformat.png){fig-align=left #fig-TS_discharge}
+![**Example of the "required format" popup for river discharge when choosing the "timeseries" option. This popup will reflect the units specified when your system was configured and may differ from what is shown here.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/events_discharge_TSformat.png){fig-align=left #fig-TS_discharge}

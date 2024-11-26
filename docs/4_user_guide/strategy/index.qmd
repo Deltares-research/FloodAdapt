@@ -4,15 +4,15 @@ filters:
   - lightbox
 lightbox: auto
 ---
-A strategy in FloodAdapt refers to a combination of [measures](../measures/index.qmd). Users can define and name these strategies according to their own ideas and terminology. For example, a “business as usual” strategy could consist of no measures; a “protect” strategy could consist of floodwalls and levees, or an “adapt” strategy could consist of elevating, floodproofing, or buying out properties. Defining at least one strategy is mandatory in FloodAdapt to run a scenario.
+A strategy in FloodAdapt refers to a combination of [measures](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/measures/index.qmd). Users can define and name these strategies according to their own ideas and terminology. For example, a “business as usual” strategy could consist of no measures; a “protect” strategy could consist of floodwalls and levees, or an “adapt” strategy could consist of elevating, floodproofing, or buying out properties. Defining at least one strategy is mandatory in FloodAdapt to run a scenario.
 
 The "Strategies" tab (see @fig-strategies) contains an overview of the strategies that have already been created. You can select existing strategies in the left panel and in the right panel see the measures that are included in the strategy. The measures in the selected strategy also appear in the map window. If a description was added to the strategy when it was created, this will also appear to the right for the selected strategy. Next to the left panel there are buttons to add or delete strategies.
 
-![**Strategy tab in FloodAdapt**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_mainWindow.png){width=70% fig-align=left #fig-strategies}
+![**Strategy tab in FloodAdapt**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_mainWindow.png){width=70% fig-align=left #fig-strategies}
 
 To create a new strategy, click “Add strategy”. A dialogue window opens up (see @fig-strategiesSpecs) within which you can choose the measures you want to include in your strategy. To add a measure to your strategy, select it in the left-hand panel and click the "Apply measure” button. You can do this multiple times until you have selected all the measures you want to include in the strategy. In the right-hand panel you see the collection of measures that have been selected. If you want to remove one of these, you can select it in the right-hand panel and click the “Remove measure” button. You can give your strategy a name; this cannot contain any special characters or spaces. You can then (optionally) give a description of your strategy for future reference. Once you have selected the measures in your strategy and provided a name, click “OK” and the strategy will be added to the strategy window.
 
-![**Adding a strategy in FloodAdapt**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_specWindow.png){width=70% fig-align=left #fig-strategiesSpecs}
+![**Adding a strategy in FloodAdapt**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_specWindow.png){width=70% fig-align=left #fig-strategiesSpecs}
 
 
 ::: {.callout-note}
@@ -22,7 +22,7 @@ To create a no-measure strategy (also commonly referred to as "current situation
 
 ::: {.callout-warning}
 ## Multiple building-level measures are not allowed on the same buildings
-When building a strategy, users are not permitted to apply multiple [building-level measures](../measures/buildings.qmd) to the same buildings. This is because it wouldn't make sense to elevate a home and then also buyout or floodproof the same home. If a user does build a strategy that would result in multiple buildling-level measures being applied to the same buildings, the user will get an error like the one shown below.
+When building a strategy, users are not permitted to apply multiple [building-level measures](C:/Users/rautenba/repos/FloodAdapt/docs/4_user_guide/measures/buildings.qmd) to the same buildings. This is because it wouldn't make sense to elevate a home and then also buyout or floodproof the same home. If a user does build a strategy that would result in multiple buildling-level measures being applied to the same buildings, the user will get an error like the one shown below.
 
-![**Error warning when applying multiple building-level measures to the same buildings**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_errorWindow.png){width=50% fig-align=left #fig-strategiesError}
+![**Error warning when applying multiple building-level measures to the same buildings**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/strategies_errorWindow.png){width=50% fig-align=left #fig-strategiesError}
 :::
