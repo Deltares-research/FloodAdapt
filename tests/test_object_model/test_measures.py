@@ -232,7 +232,7 @@ def test_pump(test_db, test_data_dir):
         name="test_pump",
         description="test_pump",
         type=HazardType.pump,
-        discharge=uv.UnitfulDischarge(value=100, units="cfs"),
+        discharge=uv.UnitfulDischarge(value=100, units=uv.UnitTypesDischarge.cfs),
         selection_type=SelectionType.polygon,
         polygon_file=str(test_data_dir / "polyline.geojson"),
     )
@@ -248,7 +248,7 @@ def test_elevate(test_db, test_data_dir):
         description="test_elevate",
         type=ImpactType.elevate_properties,
         elevation=uv.UnitfulLengthRefValue(
-            value=1, units=uv.UnitTypesLength.feet, type="floodmap"
+            value=1, units=uv.UnitTypesLength.feet, type=uv.VerticalReference.floodmap
         ),
         selection_type=SelectionType.polygon,
         property_type="RES",
