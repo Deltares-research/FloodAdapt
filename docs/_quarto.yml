@@ -74,7 +74,7 @@ website:
           - section: "Events"
             file: "4_user_guide/events/index.qmd"
             contents:
-              - section: "Historic Events"
+              - section: "Historical Events"
                 file: "4_user_guide/events/historic_events/index.qmd"
                 contents:
                   - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"

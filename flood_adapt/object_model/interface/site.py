@@ -33,7 +33,7 @@ class Cstype(str, Enum):
     spherical = "spherical"
 
 
-class Floodmap_type(str, Enum):
+class FloodmapType(str, Enum):
     """The accepted input for the variable floodmap in Site."""
 
     water_level = "water_level"
@@ -74,7 +74,7 @@ class WaterLevelReferenceModel(BaseModel):
     other: Optional[list[VerticalReferenceModel]] = Field(default_factory=list)  # only for plotting
 
 
-class Cyclone_track_databaseModel(BaseModel):
+class CycloneTrackDatabaseModel(BaseModel):
     """The accepted input for the variable cyclone_track_database in Site."""
 
     file: AsciiStr
@@ -111,7 +111,7 @@ class MapboxLayersModel(BaseModel):
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
-    footprints_dmg_type: DamageType = "absolute"
+    footprints_dmg_type: DamageType = DamageType.absolute
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
     svi_bins: Optional[list[float]] = Field(default_factory=list)
@@ -201,9 +201,9 @@ class FiatModel(BaseModel):
     exposure_crs: str
     bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
-    floodmap_type: Floodmap_type
+    floodmap_type: FloodmapType
     non_building_names: Optional[list[str]] = None
-    damage_unit: Optional[str] = "$"
+    damage_unit: str = "$"
     building_footprints: Optional[str] = None
     roads_file_name: Optional[str] = None
     new_development_file_name: Optional[str] = None
@@ -229,7 +229,7 @@ class TideGaugeModel(BaseModel):
     """
 
     name: Optional[Union[int, AsciiStr]] = None
-    description: Optional[AsciiStr] = ""
+    description: Optional[AsciiStr] = None
     source: TideGaugeSource
     ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
     file: Optional[AsciiStr] = None  # for locally stored data
@@ -250,7 +250,7 @@ class TideGaugeModel(BaseModel):
         return self
 
 
-class Obs_pointModel(BaseModel):
+class ObsPointModel(BaseModel):
     """The accepted input for the variable obs_point in Site.
 
     obs_points is used to define output locations in the hazard model, which will be plotted in the user interface.
@@ -301,19 +301,18 @@ class SiteModel(BaseModel):
     lon: float
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
-    cyclone_track_database: Optional[Cyclone_track_databaseModel] = None
+    cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
-    # TODO what should the default be
-    flood_frequency: Optional[FloodFrequencyModel] = {
-        "flooding_threshold": UnitfulLength(value=0.0, units="meters")
-    }
+    flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
+        flooding_threshold=UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+    )
     dem: DemModel
     fiat: FiatModel
     tide_gauge: Optional[TideGaugeModel] = None
     river: Optional[list[RiverModel]] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[ObsPointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
 
