@@ -2,17 +2,16 @@ import os
 import tempfile
 
 import numpy as np
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-from pydantic import ValidationError
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.event.timeseries import (
+from object_model.hazard.event.timeseries import (
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, Scstype
+from object_model.hazard.interface.models import REFERENCE_TIME, Scstype
+from pydantic import ValidationError
 
 
 class TestTimeseriesModel:

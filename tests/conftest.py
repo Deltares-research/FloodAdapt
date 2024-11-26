@@ -7,13 +7,12 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from api.static import read_database
+from misc.config import Settings
+from misc.log import FloodAdaptLogging
 
 from flood_adapt import __path__
-from flood_adapt.api.static import read_database
-from flood_adapt.misc.config import Settings
-from flood_adapt.misc.log import FloodAdaptLogging
-
-from .fixtures import *  # noqa
+from tests.fixtures import *  # noqa
 
 session_tmp_dir = Path(tempfile.mkdtemp())
 snapshot_dir = session_tmp_dir / "database_snapshot"

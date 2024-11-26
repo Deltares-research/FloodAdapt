@@ -3,9 +3,8 @@ import numpy as np
 import pandas as pd
 import pytest
 import tomli
-
-from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.interface.benefits import IBenefit
+from object_model.benefit import Benefit
+from object_model.interface.benefits import IBenefit
 
 _RAND = np.random.default_rng(2021)  # Value to make sure randomizing is always the same
 _TEST_NAMES = {

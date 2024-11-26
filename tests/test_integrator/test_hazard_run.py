@@ -3,15 +3,14 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+from object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from flood_adapt.object_model.scenario import Scenario
+from object_model.scenario import Scenario
 
 
 @pytest.fixture()

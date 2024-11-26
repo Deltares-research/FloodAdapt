@@ -1,35 +1,34 @@
 import tempfile
 from pathlib import Path
 
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from dbs_classes.interface.database import IDatabase
+from object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from object_model.hazard.event.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelModel,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindMeteo,
 )
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.interface.models import (
+from object_model.hazard.event.historical import HistoricalEvent
+from object_model.hazard.interface.models import (
     Mode,
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.scenario import Scenario
+from object_model.interface.site import RiverModel
+from object_model.scenario import Scenario
 
 
 @pytest.fixture()

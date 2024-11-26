@@ -1,7 +1,6 @@
+import object_model.io.unitfulvalue as uv
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.interface.site import (
+from object_model.interface.site import (
     DemModel,
     RiverModel,
     SfincsModel,

@@ -1,14 +1,13 @@
+import object_model.io.unitfulvalue as uv
 import pytest
-from pydantic import ValidationError
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.interface.measures import (
+from object_model.interface.measures import (
     GreenInfrastructureModel,
     HazardMeasureModel,
     HazardType,
     MeasureModel,
     SelectionType,
 )
+from pydantic import ValidationError
 
 
 class TestMeasureModel:

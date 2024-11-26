@@ -1,20 +1,19 @@
 import numpy as np
 import pandas as pd
 import pytest
-
-from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
-from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.hazard.floodmap import FloodMap
-from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
-from flood_adapt.object_model.interface.projections import (
+from adapter.direct_impacts_integrator import DirectImpacts
+from dbs_classes.interface.database import IDatabase
+from object_model.direct_impact.impact_strategy import ImpactStrategy
+from object_model.hazard.floodmap import FloodMap
+from object_model.hazard.hazard_strategy import HazardStrategy
+from object_model.interface.projections import (
     PhysicalProjection,
     SocioEconomicChange,
 )
 
-# from flood_adapt.object_model.interface.events import RainfallModel, TideModel
-from flood_adapt.object_model.interface.site import SCSModel, Site
-from flood_adapt.object_model.scenario import Scenario
+# from object_model.interface.events import RainfallModel, TideModel
+from object_model.interface.site import SCSModel, Site
+from object_model.scenario import Scenario
 
 
 @pytest.fixture(autouse=True)

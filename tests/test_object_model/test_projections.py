@@ -2,15 +2,14 @@ from pathlib import Path
 
 import pytest
 import tomli
-
-from flood_adapt.object_model.interface.projections import (
+from object_model.interface.projections import (
     PhysicalProjection,
     PhysicalProjectionModel,
     ProjectionModel,
     SocioEconomicChange,
     SocioEconomicChangeModel,
 )
-from flood_adapt.object_model.projection import Projection
+from object_model.projection import Projection
 
 
 @pytest.fixture()

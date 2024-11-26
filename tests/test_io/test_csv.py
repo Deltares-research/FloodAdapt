@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
-
-from flood_adapt.object_model.io.csv import read_csv
+from object_model.io.csv import read_csv
 
 CSV_CONTENT_HEADER = """time,data_0
 2023-01-01,1.0

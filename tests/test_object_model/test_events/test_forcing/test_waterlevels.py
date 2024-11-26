@@ -1,13 +1,12 @@
 from unittest.mock import patch
 
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallMeteo
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from dbs_classes.interface.database import IDatabase
+from object_model.hazard.event.forcing.discharge import DischargeConstant
+from object_model.hazard.event.forcing.rainfall import RainfallMeteo
+from object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
@@ -15,15 +14,15 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindMeteo
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from object_model.hazard.event.forcing.wind import WindMeteo
+from object_model.hazard.event.historical import HistoricalEvent
+from object_model.hazard.interface.models import Mode, Template, TimeModel
+from object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.scenario import Scenario
+from object_model.interface.site import RiverModel
+from object_model.scenario import Scenario
 
 
 class TestWaterlevelSynthetic:

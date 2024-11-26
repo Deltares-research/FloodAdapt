@@ -1,27 +1,26 @@
 from datetime import datetime
 
+import object_model.io.unitfulvalue as uv
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from object_model.hazard.event.forcing.discharge import DischargeConstant
+from object_model.hazard.event.forcing.rainfall import RainfallConstant
+from object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
-from flood_adapt.object_model.hazard.event.synthetic import SyntheticEvent
-from flood_adapt.object_model.hazard.interface.models import (
+from object_model.hazard.event.forcing.wind import WindConstant
+from object_model.hazard.event.synthetic import SyntheticEvent
+from object_model.hazard.interface.models import (
     Mode,
     ShapeType,
     Template,
     TimeModel,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
+from object_model.interface.site import RiverModel
 
 
 @pytest.fixture()

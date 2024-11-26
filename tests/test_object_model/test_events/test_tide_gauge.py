@@ -4,14 +4,13 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 from noaa_coops.station import COOPSAPIError
-
-from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.interface.tide_gauge import (
+from object_model.hazard.event.tide_gauge import TideGauge
+from object_model.hazard.interface.models import TimeModel
+from object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
     TideGaugeSource,
 )
-from flood_adapt.object_model.io.csv import read_csv
+from object_model.io.csv import read_csv
 
 
 @pytest.fixture

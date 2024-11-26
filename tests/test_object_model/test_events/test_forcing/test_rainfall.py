@@ -1,21 +1,20 @@
 from datetime import datetime
 
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.models import Scstype
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from object_model.hazard.interface.models import Scstype
+from object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.events import TimeModel
+from object_model.interface.events import TimeModel
 
 
 class TestRainfallConstant:

@@ -3,23 +3,22 @@ from pathlib import Path
 from unittest import mock
 
 import geopandas as gpd
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
-from flood_adapt.dbs_classes.database import Database
-from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from adapter.sfincs_adapter import SfincsAdapter
+from dbs_classes.database import Database
+from dbs_classes.interface.database import IDatabase
+from object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
@@ -27,32 +26,33 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindMeteo,
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.interface.forcing import (
+from object_model.hazard.interface.forcing import (
     IDischarge,
     IForcing,
     IRainfall,
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from object_model.hazard.interface.models import TimeModel
+from object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
-from flood_adapt.object_model.hazard.measure.green_infrastructure import (
+from object_model.hazard.measure.floodwall import FloodWall
+from object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.measures import HazardType, IMeasure
-from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel
-from flood_adapt.object_model.projection import Projection
+from object_model.hazard.measure.pump import Pump
+from object_model.interface.measures import HazardType, IMeasure
+from object_model.interface.site import Obs_pointModel, RiverModel
+from object_model.projection import Projection
+
 from tests.fixtures import TEST_DATA_DIR
 
 

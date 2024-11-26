@@ -1,28 +1,27 @@
 from pathlib import Path
 
 import numpy as np
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
-from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.measures import (
+from object_model.direct_impact.measure.buyout import Buyout
+from object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
+from object_model.hazard.measure.pump import Pump
+from object_model.interface.measures import (
     BuyoutModel,
     HazardType,
     ImpactType,
     PumpModel,
     SelectionType,
 )
-from flood_adapt.object_model.interface.projections import (
+from object_model.interface.projections import (
     PhysicalProjectionModel,
     ProjectionModel,
     SocioEconomicChangeModel,
 )
-from flood_adapt.object_model.interface.strategies import StrategyModel
-from flood_adapt.object_model.projection import Projection
-from flood_adapt.object_model.strategy import Strategy
+from object_model.interface.strategies import StrategyModel
+from object_model.projection import Projection
+from object_model.strategy import Strategy
 
 __all__ = [
     "dummy_time_model",

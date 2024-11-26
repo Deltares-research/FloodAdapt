@@ -1,19 +1,18 @@
 from pathlib import Path
 
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import (
+from object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
+from object_model.interface.site import RiverModel
 
 
 @pytest.fixture()

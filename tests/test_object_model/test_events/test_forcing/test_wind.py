@@ -1,17 +1,16 @@
 from datetime import datetime
 from pathlib import Path
 
+import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
-
-import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindCSV,
     WindMeteo,
 )
-from flood_adapt.object_model.interface.events import TimeModel
+from object_model.interface.events import TimeModel
 
 
 class TestWindConstant:

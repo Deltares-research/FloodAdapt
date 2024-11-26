@@ -5,9 +5,9 @@ from typing import Callable, Optional
 from unittest.mock import patch
 
 import pytest
+from misc.config import Settings
 from pydantic import ValidationError
 
-from flood_adapt.misc.config import Settings
 from tests.utils import modified_environ
 
 
