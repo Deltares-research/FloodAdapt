@@ -36,7 +36,7 @@ The **SFINCS Model-Builder** tool simplifies the creation of SFINCS models for F
 * Define active cells
 * Define the water level boundaries
 * Define boundary points for offshore-overland model communication
-* Define discharge points for river discharge 
+* Define discharge points for river discharge
 
 @fig-sfincsOverview is a schematic overview of the SFINCS model components:
 
@@ -51,7 +51,7 @@ After installing the FloodAdapt Model-Builder, the following folder structure is
     ├───📁 _internal/
     |
     ├───📁 data/
-    │   │    
+    │   │
     |   ├───📁 topobathy/
     |   │   └───📄 dem.tif
     |   └───📁 watersheds/
