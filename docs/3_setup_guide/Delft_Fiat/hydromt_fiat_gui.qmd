@@ -22,7 +22,7 @@ This guide is organized in six sections:
 
 @fig-homeScreen shows the Delft-FIAT model builder. There are seven tabs shown at the top. For generating an automatic Delft-FIAT model using open data, you will only need to use the first of these tabs, the "Model Boundary | Quick Build" tab. The remaining tabs are for tailoring your Delft-FIAT model and are described in the [tailored Delft-FIAT model](#sec-tailored_model) section.
 
-![The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.](../../_static/images/model_builder_homeScreen.png){width=50% fig-align=left #fig-homeScreen}
+![The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/model_builder_homeScreen.png){width=50% fig-align=left #fig-homeScreen}
 
 ## Getting started {#sec-getting-started}
 
@@ -235,7 +235,7 @@ Delft-FIAT uses vulnerability curves (also known as depth-damage curves) to rela
 * Open the **Vulnerability** tab on the top panel. The default damage curves are already selected.
 * Click "Add to model"
 
-![Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be **coming soon** as will an overview of the default curves for content](../../_static/images/DDF_defaults_structure.png){width=50% fig-align=left #fig-DDF_defaults}
+![Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be **coming soon** as will an overview of the default curves for content](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/DDF_defaults_structure.png){width=50% fig-align=left #fig-DDF_defaults}
 
 #### Updating vulnerability curves {#sec_update_vulnerability}
 If you are building your model in the U.S., you can change the damage curve assignment. Updating damage curves is currently only possible in the U.S. The functionality is facilitated by the alignment between [HAZUS damage curves](https://msc.fema.gov/portal/resources/hazus) and the secondary object types in the [National Structure Inventory](https://www.hec.usace.army.mil/confluence/nsi) (see secondary object types in @fig-secOccType). Users can only choose new damage curve assignments from existing damage curves within the HAZUS damage curve database. User-defined damage curves are currently not possible from within the Delft-FIAT model builder. Future releases of the Delft-FIAT model builder may offer more flexibility.
@@ -258,7 +258,7 @@ How to change the damage curve assignment (U.S. only):
     * When finished, click "OK" to close the pop-up window.
   * Click "Add to model" to complete.
 
-![Secondary occupancy type definitions from the [HAZUS technical manual](https://www.fema.gov/sites/default/files/2020-09/fema_hazus_earthquake-model_technical-manual_2.1.pdf), Table 3.2. Note: "occupancy class" and "object type" are used interchangeably.](../../_static/images/damageCurves_occupancyTypes_Hazus.png){width=50% fig-align=left #fig-secOccType}
+![Secondary occupancy type definitions from the [HAZUS technical manual](https://www.fema.gov/sites/default/files/2020-09/fema_hazus_earthquake-model_technical-manual_2.1.pdf), Table 3.2. Note: "occupancy class" and "object type" are used interchangeably.](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/damageCurves_occupancyTypes_Hazus.png){width=50% fig-align=left #fig-secOccType}
 
 <!--![Workflow to assign vulnerability curves to assets with option to update default NSI vulnerability curves.](../../_static/figures/vulnerability.svg){#fig-vulnerability_curve}
 -->

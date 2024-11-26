@@ -10,7 +10,7 @@ FloodAdapt supports users in evaluating the risk-reduction benefits of strategie
 
 When you first go to the Benefits tab in FloodAdapt (see @fig-benefitEmpty) you will see an empty list box in the lower panel. Once you create benefit analyses these will appear in the list. To the right of the list box there are buttons to add, edit, or delete a benefit analysis. Before creating your first benefit analysis, only the 'Add benefit analysis' button is active.
 
-![**Benefit tab before any benefit analyses have been created**](../_static/images/benefitTab_empty.png){width=70% fig-align=left #fig-benefitEmpty}
+![**Benefit tab before any benefit analyses have been created**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefitTab_empty.png){width=70% fig-align=left #fig-benefitEmpty}
 
 The following sections will describe how to create a benefit analysis, how benefits are calculated, how to view benefit analysis output in the Benefits tab, and where you can find output on your computer for more detailed investigation.
 
@@ -26,7 +26,7 @@ To run a benefit analysis, you must have a [probabilistic event set](events/prob
 ## Creating a new benefit analysis
 FloodAdapt users can evaluate the risk-reduction benefits of any strategy they have created (which can be composed of a single measure or a collection of measures). To do this, go to the Benefits tab in FloodAdapt, and in the bottom panel click on "Add benefit analysis". A popup window will appear within which you will specify important choices about your benefit analysis.
 
-![**Benefit analysis popup window**](../_static/images/benefitAnalysisWindow.png){width=70% fig-align=left #fig-benefitPopup}
+![**Benefit analysis popup window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefitAnalysisWindow.png){width=70% fig-align=left #fig-benefitPopup}
 
 For the following description please refer to @fig-benefitPopup. To create a new benefit analysis:
 
@@ -40,19 +40,19 @@ For the following description please refer to @fig-benefitPopup. To create a new
 * **Create missing scenarios**: If any of the required scenarios is missing when you click "Check scenarios", you can click "Create missing scenarios" and FloodAdapt will automatically create the missing scenarios and place them in the scenarios table in the [Scenarios](scenarios/index.qmd) tab.
 * **Click "OK" to add the analysis to the Benefits tab**
 
-![**The "Check scenarios" feature in the Benefit analysis popup window**](../_static/images/benefitAnalysisWindow_checkScenarios.png){width=70% fig-align=left #fig-benefitCheckScenarios}
+![**The "Check scenarios" feature in the Benefit analysis popup window**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefitAnalysisWindow_checkScenarios.png){width=70% fig-align=left #fig-benefitCheckScenarios}
 
 :::{.callout-note}
 ## Required scenarios need to be run before running your benefit analysis
 The "Check scenarios" and "Create missing scenarios" buttons guide users to ensure the required scenarios are created for the benefit analysis. However, scenarios can only be run from the [Scenarios](scenarios/index.qmd) tab. If any of the four required scenarios have not been run, you need to go to the Scenarios tab and run them. If any of the required scenarios have not yet been run, the "Calculate benefits" button will be greyed out and you will see text beneath it informing you that "You cannot calculate benefits before running the required scenarios (use Scenarios tab)", see @fig-benefitCalcFirst.
 
-![**All required scenarios must first be simulated before running a benefit analysis**](../_static/images/benefits_calcFirst.png){width=70% fig-align=left #fig-benefitCalcFirst}
+![**All required scenarios must first be simulated before running a benefit analysis**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefits_calcFirst.png){width=70% fig-align=left #fig-benefitCalcFirst}
 :::
 
 ## Calculating benefits
 Once the required scenarios have been simulated, the "Calculate benefits" button will be active, see @fig-benefitReady. When the button is clicked, the benefit calculation happens on-the-fly, but because the risk information is already calculated, the benefit calculation happens very quickly and the results appear instantly.
 
-![**When all scenarios have been run, "Calculate benefits" button is active**](../_static/images/benefit_readyToRun.png){width=70% fig-align=left #fig-benefitReady}
+![**When all scenarios have been run, "Calculate benefits" button is active**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefit_readyToRun.png){width=70% fig-align=left #fig-benefitReady}
 
 The benefit calculation uses output from four scenarios:
 
@@ -111,15 +111,15 @@ The present value of the costs, benefit cost ratio, net present value, and inter
 In addition to the above results which can be viewed in the Output tab, FloodAdapt also calculates - when implementation and/or maintenance cost information is provided - the net present value and the internal rate of return. These are provided in a results text file in the [benefits output folder](#benefits-output-folder).
 :::
 
-![**The FloodAdapt Benefits tab showing a selected benefit analysis**](../_static/images/Benefits_tab.png){width=80% fig-align=left #fig-benefitTab}
+![**The FloodAdapt Benefits tab showing a selected benefit analysis**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/Benefits_tab.png){width=80% fig-align=left #fig-benefitTab}
 
 The benefits can also be viewed spatially; the lower panel contains map visualization options (see @fig-benefitTab). The user can click "Aggregated benefits" to see the spatial distribution of benefits (see @fig-benefitDist for an example). They can choose from the "Aggregation" drop-down menu which aggregation level they would like to view, for example neighborhoods or census blocks.
 
-![**Visualizing the benefits spatially**](../_static/images/Benefits_distributedBenefits.png){width=80% fig-align=left #fig-benefitDist}
+![**Visualizing the benefits spatially**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/Benefits_distributedBenefits.png){width=80% fig-align=left #fig-benefitDist}
 
 In the map visualization options, there is also an equity-weighted button. When this is checked the distributed (aggregated) benefits are displayed using equity weights, see @fig-benefitEquity. The figure shows the benefits without equity weights on the left and with equity weights on the right. In the figure, blue stars have been added (outside of FloodAdapt) to highlight how the equity weighting affects lower-income census-block groups. When equity weights are applied, the benefits of these lower-income areas will be weighted more heavily; in contrast, high-income area benefits will be weighted less heavily. Equity weights are calculated in FloodAdapt using information on income. Risk estimates are multiplied by the equity weights to derive equity-weighted risk estimates, from which equity-weighted benefits are calculated. This visualization is only available at the same scale for which income data is available. This will typically be census block level.
 
-![**Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)**](../_static/images/benefits_equity.png){width=80% fig-align=left #fig-benefitEquity}
+![**Visualizing equity-weighted benefits. The blue stars indicate lower-income census block groups. Their benefits are more weighted more heavily when equity-weights are applied (right side versus left side)**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefits_equity.png){width=80% fig-align=left #fig-benefitEquity}
 
 ## Benefits output folder
 The output from a benefit analysis is saved on a user’s computer, aspiring to provide full access and transparency. This section will describe the output files saved from the benefit analysis.
@@ -128,7 +128,7 @@ The output from a benefit analysis is saved on a user’s computer, aspiring to 
 ## Where can I find the output folder?
 @fig-folderStruct shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.
 
-![**Location of the "output" folder within the FloodAdapt folder structure**](../_static/images/output_folderStructure.png){width=15% fig-align=left #fig-folderStruct}
+![**Location of the "output" folder within the FloodAdapt folder structure**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/output_folderStructure.png){width=15% fig-align=left #fig-folderStruct}
 :::
 The output folder contains a subfolder named “Benefits”. Within this subfolder you will find one folder for each benefit analysis that has been run. The name of the folder will be the name of the benefit analysis. Each folder will contain several files (see @fig-benefitsOutput):
 
@@ -138,4 +138,4 @@ The output folder contains a subfolder named “Benefits”. Within this subfold
 * Summary results of the benefit analysis as a text file (TOML file). This file always contains the total benefits (present value). If cost information was provided when setting up the benefit analysis, this file will also contain costs (present value), net present value (NPV), the benefit cost ratio (BCR), and the internal rate of return (IRR).
 * A time series of annual risk with and without the strategy implemented, annual costs and benefits (absolute and discounted), and annual profit as the difference between benefits and costs (absolute and discounted).
 
-![**Benefits output folder**](../_static/images/benefits_output.png){width=50% fig-align=left #fig-benefitsOutput}
+![**Benefits output folder**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/benefits_output.png){width=50% fig-align=left #fig-benefitsOutput}

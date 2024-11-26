@@ -9,7 +9,7 @@ A probabilistic event set is the combination of a set of synthetic events and th
 
 In the events tab in FloodAdapt, a probabilistic event set can be recognized by the Type specification at the bottom of the window (see @fig-probEventSet). These event sets cannot be modified or deleted via the user interface.
 
-![**Probabilistic event set in the Events window. The Type is specified as *Probabilistic Event Set* and cannot be modified**](../../_static/images/probEventSet.png){#fig-probEventSet}
+![**Probabilistic event set in the Events window. The Type is specified as *Probabilistic Event Set* and cannot be modified**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/probEventSet.png){#fig-probEventSet}
 
 ::: {.callout-note}
 ## How are probabilistic event sets used in FloodAdapt?

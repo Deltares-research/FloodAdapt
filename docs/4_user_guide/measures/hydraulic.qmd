@@ -7,9 +7,9 @@ lightbox: auto
 
 Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and infrastructure through construction of structures or pumps. More natural measures to prevent flooding are described in the section on [urban green infrastructure](green_infra.qmd). FloodAdapt can simulate two main types of hydraulic (grey) measures: [floodwalls and levees](#floodwalls-and-levees) and [pumps](#pumps). This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.
 
-![**Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps**](../../_static/images/measures_hydraulic.png){width=40% fig-align=left #fig-measures_buildingLevel}
+![**Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_hydraulic.png){width=40% fig-align=left #fig-measures_buildingLevel}
 
-![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../../_static/images/measures_hydraulic_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
+![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_hydraulic_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
 
 To specify a hydraulic measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Hydraulic" (see @fig-measures_buildingLevel_GUI). The user can then choose for "Measure" one of the measure types: [floodwall or levee](#floodwalls-and-levees), or [pumps](#pumps). For each of these measures, the user will choose an "Area type". This indicates how the user will specify the location of the measure. There are two options:
 
@@ -32,9 +32,9 @@ If you selected "Draw polyline", you can now begin clicking within the map to dr
 
 
 
-![**Implementing a floodwall in FloodAdapt by drawing a polyline**](../../_static/images/measure_floodwall_map.png){width=50% fig-align=left #fig-measures_floodwall_map}
+![**Implementing a floodwall in FloodAdapt by drawing a polyline**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_floodwall_map.png){width=50% fig-align=left #fig-measures_floodwall_map}
 
-![**Using the "show grid", "grid snapper" and topography layers to better specify your floodwall or levee**](../../_static/images/measure_floodwall_snapper_topo.png){width=50% fig-align=left #fig-measures_floodwall_snapper_topo}
+![**Using the "show grid", "grid snapper" and topography layers to better specify your floodwall or levee**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_floodwall_snapper_topo.png){width=50% fig-align=left #fig-measures_floodwall_snapper_topo}
 
 ::: {.callout-tip}
 ## Turning on the topography layer
@@ -43,7 +43,7 @@ To turn on the topography layer, go to the top menu bar in FloodAdapt, click the
 
 Once you have drawn your polyline or selected to import a polyline, a specification window opens (see @fig-measure_floodwall_properties for the example of a floodwall). In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, and the elevation of the floodwall or levee. Once you enter the information and click "OK", your floodwall or levee will show up in the measures window.
 
-![**Specifying information for a floodwall or levee**](../../_static/images/measure_floodwall_properties.png){width=50% fig-align=left #fig-measure_floodwall_properties}
+![**Specifying information for a floodwall or levee**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_floodwall_properties.png){width=50% fig-align=left #fig-measure_floodwall_properties}
 
 ### Editing a floodwall or levee
 
@@ -62,7 +62,7 @@ Here are the steps to edit the **geometry** of a floodwall or levee:
 
 
 
-![**Editing a floodwall or levee**](../../_static/images/measure_floodwall_edit.png){width=70% fig-align=left #fig-measure_floodwall_edit}
+![**Editing a floodwall or levee**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_floodwall_edit.png){width=70% fig-align=left #fig-measure_floodwall_edit}
 
 Here are the steps to edit the **parameters** of a floodwall or levee:
 

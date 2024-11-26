@@ -86,7 +86,7 @@ Sometimes, data is collected from a period when the system under consideration w
 
 For coastal systems, corrections for sea level rise are almost always necessary. Due to sea level rise, the exceedance probabilities of sea water levels increase over time, making early observations non-representative of current conditions. A simple correction is to add the amount of observed sea level rise since year Y to all observations from that year. For instance, if sea levels have risen by 0.5 ft since 1990, all water levels observed in 1990 should be increased by 0.5 ft to reflect current conditions. This adjustment requires an understanding of the extent of sea level rise, which is complicated by year-to-year fluctuations that can obscure the long-term trend. To address this, a trend line might be fitted through the data, although this process can be somewhat subjective.
 
-![**Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline**](../_static/images/eventSet_trendLine.png){width=50% fig-align=left #fig-trendLine}
+![**Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_trendLine.png){width=50% fig-align=left #fig-trendLine}
 
 @fig-trendLine illustrates annual average observed sea water levels from 1996-2020 in Charleston, SC (blue dots), with the black line representing a linear trend line as derived by NOAA (NOAA SWL trend), and the red line showing a non-linear trend line using the LOWESS method (Cleveland, 1979). The estimated average sea level in 2020 differs by approximately 0.3 feet between the two methods, indicating that the choice of method can significantly influence the estimated flood risk. The linear fit does not account for the notable increase in sea water levels observed since 2014, suggesting the LOWESS fit might be more appropriate. However, this increase could be an anomaly; a similar sharp rise occurred in the 1940s, but by the late 1950s, the data returned to align with the linear trend. This variability demonstrates that past sea level rise is uncertain, and it may be prudent to consider both trend lines when assessing potential impacts on flood risk.
 
@@ -112,7 +112,7 @@ The GEV and GPD are generalized distributions of which other probability distrib
 @fig-GEVGPD shows examples of these distribution functions for daily rainfall. The rainfall is plotted against the corresponding exceedance probability on a semi-logarithmic scale. It shows that the two distribution functions for which the scale parameter is equal to 0 (Gumbel and exponential) are straight lines on this scale. The Weibull distribution is curved “downward”, while the Fréchet distribution is curved “upward”. Similar upward and downward curves can be seen for the GPD (right plot); in both cases the distribution function is called the Pareto distribution.
 According to the theory, only the GEV and GPD or one of the underlying probability distribution functions (Gumbel, Fréchet, Weibull, exponential and Pareto) should be used to fit the set of selected extremes. In practice, however, other probability distribution functions are used as well. For example, the Log-Pearson Type 3 was adopted by US federal agencies for applications in flood frequency analysis.
 
-![**Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). **](../_static/images/eventSet_GEV_GPD.png){width=50% fig-align=left #fig-GEVGPD}
+![**Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). **](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_GEV_GPD.png){width=50% fig-align=left #fig-GEVGPD}
 
 The graphs in @fig-GEVGPD show the probability of exceedance of annual maxima (left) and peaks over threshold (right) data. The exceedance probability of AM also represents the annual exceedance probability of the variable for which the distribution function was derived. For POT data, this is not the case because the number of peaks in a POT data set can be larger or smaller than the number of years. To convert to an annual exceedance probability, the derived exceedance probabilities of POT data must be multiplied by the average number of exceedances of the selected threshold in a year (denoted $\lambda$). Parameter $\lambda$ can be estimated by dividing the number of selected peaks by the number of years in the record. Note that $\lambda$ is a frequency of occurrence (per year). Multiplication of this frequency with a probability of exceedance from the POT data results in a frequency of exceedance.
 
@@ -126,7 +126,7 @@ The next step is to fit the selected distribution function to the set of extreme
 In principle, any of these methods will do, but it is worth considering applying several methods to verify which one provides the best fit. There are statistical methods to quantify the goodness-of-fit like the Kolmogorov-Smirnov test, the Chi Square test or Anderson-Darling test. Each of these tests compares key characteristics of the data set with the fitted distribution function; smaller differences imply a better fit. The outcome of such a test could be that a fit is “rejected”. In that case an alternative distribution function and/or fit method should be considered. The fact that there are different tests to choose from indicates there is some subjectivity involved in determining the “best” fit. It is recommended to also visually compare the fitted distribution function with the data, similar to the example of @fig-fitGPD. If the visual fit is not to satisfaction, a different distribution function and/or different fit methods should be considered.
 
 
-![**Example fit of the GPD function to Peaks Over Threshold data.**](../_static/images/eventSet_fittingGPD.png){width=50% fig-align=left #fig-fitGPD}
+![**Example fit of the GPD function to Peaks Over Threshold data.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_fittingGPD.png){width=50% fig-align=left #fig-fitGPD}
 
 #### Combining statistics of extreme events and average conditions {#combining-statistics}
 In flood risk analysis, the extremes as described in the previous section are the most relevant subset of the data. However, in areas with compound flooding, extremes of flood drivers do not necessarily coincide in time. For example, high intensity rainfall may occur during a period with negligible, low or moderate storm surge, and vice versa. This may result in a (substantially) different flood hazard compared to when both flood drivers are high/extreme. For a flood risk analysis with multiple flood drivers it is therefore necessary to also consider events where only a subset of the flood drivers is extreme. This means it is required to also derive probabilities of moderate/average conditions of flood drivers.
@@ -135,7 +135,7 @@ Similar to the extreme value analysis of the previous section, probability distr
 
 To derive the empirical probability distribution, sort the data in descending order. The largest value has an empirical probability of exceedance of 1/(n+1), where n is the total number of recordings. The second largest value has an empirical probability of exceedance of 2/(n+1), the third largest has an empirical probability of exceedance of 3/(n+1), and this continues all the way down to the smallest value with an empirical probability of exceedance of n/(n+1). Note that these are probabilities per time step of the time series. So, in case of a daily rainfall time series, these are exceedance probabilities per day. These can be translated to exceedance frequencies per year by multiplication with 365 (i.e. the number of days per year). Similarly, derived empirical probabilities of tidal peaks should be multiplied with 705 (i.e., the number of tidal periods in a year) to derive exceedance frequencies per year.
 
-![**Example combination of an empirical distribution and an extreme value distribution.**](../_static/images/eventSet_combiningDists.png){width=50% fig-align=left #fig-combiningDists}
+![**Example combination of an empirical distribution and an extreme value distribution.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_combiningDists.png){width=50% fig-align=left #fig-combiningDists}
 
 
 The variable of interest now has an empirical distribution function, quantifying probabilities of all observed values, and an extreme value distribution function, quantifying exceedance probabilities of extremes. So, for the highest observed values in the record there are two probability estimates available. Ideally, these two probability estimates are the same, but this is often not the case. Especially for variables for which high peaks typically occur in clusters, there will most likely be a substantial difference in the two probability estimates due to the differences in the way these two probabilities were derived. @fig-combiningDists shows the empirical probability distribution (black line) and fitted extreme value distribution (red line) of the tidal peaks at an example location. It shows the exceedance frequencies according to the empirical distribution are higher than those according to the extreme value distribution function. The green dashed line shows a pragmatic way to connect the two distributions and combine them into a single probability distribution function. An alternative approach could be to “lift” the extreme value distribution such that is better connects with the empirical distribution. Such methods may seem like they are corrupting the results, but it is a necessary work-around to combine two distributions that are based on different approaches. The first approach (“each tidal peak should be included”) is valid for average/moderate conditions, whereas the second (“only the highest peak of each event is included”) is valid for extreme events.
@@ -147,7 +147,7 @@ Event probabilities are the joint probabilities of the variables that define the
 
 Statistical dependence between two or more variables can be quantified with Pearson’s correlation coefficient, $\rho$, which can take any value in the range from -1 to 1. A value of 0 indicates two variables are independent, which means the value of one variable provides no information on the likelihood of the value of the other variable. If $\rho$ deviates substantially from 0, the variables are dependent. Positive values of $\rho$ imply that high values of one variable usually coincide with high values of the other variable, and similarly that low values generally coincide as well. Negative values of $\rho$ imply that high values of one variable usually coincide with low values of the other variable and vice versa. @fig-corr shows samples of hypothetical variables *x* and *y* for six different values of Pearson’s correlation coefficient.
 
-![**Samples of hypothetical variables *x* and *y* for six different values of correlation coefficient .**](../_static/images/eventSet_correlation.png){width=50% fig-align=left #fig-corr}
+![**Samples of hypothetical variables *x* and *y* for six different values of correlation coefficient .**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_correlation.png){width=50% fig-align=left #fig-corr}
 
 Pearson’s correlation coefficient assumes a linear relation between the correlated variables, which is not always the case. If two variables are perfectly correlated, but their relation is non-linear, the value of $\rho$ will be less than 1, indicating non-perfect correlation. This is one of the reasons why a rank correlation may be preferred over Pearson’s correlation coefficient. The two most well-known options are Spearman’s and Kendall’s rank correlation coefficients. Similar to Pearson’s correlation coefficient, these two rank correlation coefficients take on values between -1 and 1.
 
@@ -158,11 +158,11 @@ An effective approach to incorporate these types of correlation structures is th
 @fig-copulas shows example realizations of copula variables x and y for four different copulas: the Gumbel-Hougard, Frank, Clayton and Gaussian copula. In each case, the correlation coefficient is equal to 0.8, but there are differences in the overall dependence structure. Application of the Gumbel-Hougard copula results in strong dependence for values of x and y close to 1. In other words, if a sample of the first random variable (x) is relatively large, the accompanying sample of the second variable most likely is relatively large as well. The Clayton copula, on the other hand, generates a stronger dependence structure for low values of x and y. In that respect the Frank copula and the Gaussian copula are more symmetrical, where the latter shows stronger correlation in the extremes (both left and right).
 
 
-![**Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8.**](../_static/images/eventSet_copulas.png){width=50% fig-align=left #fig-copulas}
+![**Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_copulas.png){width=50% fig-align=left #fig-copulas}
 
 Copula variables are uniformly distributed over the interval between 0 and 1. Hydro-meteorological variables like rainfall, river discharge or water level are typically not uniformly distributed and can take on values outside the interval between 0 and 1. Therefore, in order to use the copula to model dependency between hydro-meteorological variables, a statistical transformation is applied. This transformation is done based on “equal probability of exceedance”. The transformation process is illustrated in @fig-varTransform.
 
-![**Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s.**](../_static/images/eventSet_varTransform.png){width=50% fig-align=left #fig-varTransform}
+![**Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_varTransform.png){width=50% fig-align=left #fig-varTransform}
 
 Since copula-variables x and y are correlated, the corresponding real-world variables (e.g. rainfall, surge) will be correlated as well. This way, a set of correlated samples of storm surge and rainfall can be generated. Conversely, the copula function and transformations can also be used to compute the probability of an event of, for example, a river discharge of more than 5,000 cfs in combination with a storm surge of more than 2 feet. To do this, these thresholds of discharge (5,000 cfs) and storm surge (2 feet) need to be translated to their corresponding copula-parameters x and y, using their respective probability distributions.
 
@@ -180,21 +180,21 @@ With **numerical integration**, the range of potential combinations of flood dri
 Both for Monte Carlo and for numerical integration, more events means better accuracy, but comes at a computational cost. For the Monte Carlo approach, a higher number of samples leads to better accuracy. For the Numerical Integration approach, a finer discretization of the variables leads to better accuracy. In each case, simulations with FloodAdapt can be done to assess the trade-off between number of events and accuracy of the risk and flood probability metrics.
 
 
-![**Schematic view of selected grids for numerical integration.**](../_static/images/eventSet_NIgrid.png){width=50% fig-align=left #fig-NIgrid}
+![**Schematic view of selected grids for numerical integration.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_NIgrid.png){width=50% fig-align=left #fig-NIgrid}
 
 
 
 ## Step 5 - Format the events for FloodAdapt {#format-events}
 Once you have selected events and calculated their occurrence frquencies, they must be put in the correct format for FloodAdapt. @fig-eventSet_folderDiagram shows the overall structure of the event set folder. The folder contains a sub-folder for each event in the event set and an event-set TOML file that gives the event names (which should align with the folder names) and the occurrence frequencies of the events. Each event folder should contain an event TOML file defining the event, and the time series (for the event duration) of the flood variables. More details about the [event folder contents](#event-folder-contents) and the [event set TOML file](#eventset-toml-file) are given below.
 
-![**Overview of the setup process for FloodAdapt**](../_static/images/eventSet_folderDiagram.png){width=55% fig-align=left #fig-eventSet_folderDiagram}
+![**Overview of the setup process for FloodAdapt**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_folderDiagram.png){width=55% fig-align=left #fig-eventSet_folderDiagram}
 
 
 ##### **Event folder contents** {#event-folder-contents}
 
 Each event folder must contain a TOML file, with the name [EVENT_NAME].TOML, where [EVENT_NAME] should be replaced with the name of your event (which is also the name of the event folder). For example, if your event is called myEvent001, then the event folder should be called myEvent100, and the TOML file should be called myEvent001.TOML. In addition, the event folder must contain a time series file (CSV format) for each of the event variables that are varying over the duration of the event. @fig-eventSet_eventFolderContents shows the contents for an event named event_001.
 
-![**Contents of an event folder (example)**](../_static/images/eventSet_eventFolderContents.png){width=55% fig-align=left #fig-eventSet_eventFolderContents}
+![**Contents of an event folder (example)**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_eventFolderContents.png){width=55% fig-align=left #fig-eventSet_eventFolderContents}
 
 The time series CSV files are two-column files that contain a datetime in the first column and the variable value in the second column. The units of the variable will depend if you are working with imperial or metric units:
 
@@ -210,7 +210,7 @@ The TOML file specifies the event. @fig-eventSet_eventTOML shows the template fo
 * All potential flood drivers must be defined, even if they are set to zero or none. For example, in @fig-eventSet_eventTOML, the wind is set to "none". Similarly, the discharge is set to "constant" because it is not treated probabilistically in this event set.
 * Although the events are synthetic they use the "Historical_nearshore" template because the event variables are being represented by time series like a historical event. This means that a start time and end time must be given. These can be anything in the past, as long as the duration matches the duration in the variable time series files.
 
-![**Example TOML file for an event named "event_0000"**](../_static/images/eventSet_eventTOML.png){width=80% fig-align=left #fig-eventSet_eventTOML}
+![**Example TOML file for an event named "event_0000"**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_eventTOML.png){width=80% fig-align=left #fig-eventSet_eventTOML}
 
 ##### **Event set TOML file** {#eventset-toml-file}
 
@@ -218,7 +218,7 @@ The TOML file specifies the event. @fig-eventSet_eventTOML shows the template fo
 The event set folder must contain an event set TOML file. This file will specify the names and occurrence frequencies of all of the events in the set. Every event specified in this TOML file must also have an associated event folder.
 @fig-eventSet_probSetToml shows an example of a TOML file for a set named "probabilistic_set".
 
-![**Example TOML file for an event**](../_static/images/eventSet_probSetToml.png){width=100% fig-align=left #fig-eventSet_probSetToml}
+![**Example TOML file for an event**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/eventSet_probSetToml.png){width=100% fig-align=left #fig-eventSet_probSetToml}
 
 The required fields are:
 

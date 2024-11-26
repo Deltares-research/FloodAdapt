@@ -21,7 +21,7 @@ To answer this question, the user would create a scenario: a recent hurricane sh
 
 @fig-GUItabs_landing shows the FloodAdapt application. There are a number of tabs in the lower panel. FloodAdapt is designed for users to walk through these tabs to create events, projections, measures, and strategies. The Scenarios tab then supports the creation and simulation of scenarios, after which results can be viewed in the Output and Comparison tabs. FloodAdapt also supports the evaluation of benefits in the Benefits tab.
 
-![**FloodAdapt opens to the "Site" tab. The user walks through the various tabs to create events, projections, measures, strategies, and scenarios for simulation. There are also tabs for viewing output and for creating benefit analyses. This guide describes the process for each of the FloodAdapt tabs**](../_static/images/FA_GUI_userGuide.png){width=100% fig-align='left' #fig-GUItabs_landing}
+![**FloodAdapt opens to the "Site" tab. The user walks through the various tabs to create events, projections, measures, strategies, and scenarios for simulation. There are also tabs for viewing output and for creating benefit analyses. This guide describes the process for each of the FloodAdapt tabs**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/FA_GUI_userGuide.png){width=100% fig-align='left' #fig-GUItabs_landing}
 
 
 Each of the FloodAdapt tabs is described briefly below with a link to visit the detailed documentation for that tab. The user guide content can also be found in the left-hand navigation pane. @fig-GUItabs presents a diagram showing the tabs of the user interface and highlighting the information needed to run scenarios and benefit analyses, and view results.
@@ -49,4 +49,4 @@ Running a scenario calls the SFINCS and Delft-FIAT models to start the simulatio
 
 * The user can evaluate the risk-reduction benefits of an adaptation strategy, including spatial distribution of benefits, and equity-weighted benefits in the [**Benefits**](benefits.qmd) tab.
 
-![**Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another.**](../_static/images/GUI_Tabs.jpg){width=70% fig-align='left' #fig-GUItabs}
+![**Tabs of the FloodAdapt user interface. Blue-grey fill indicates required user input, and the arrows show the flow of information from one tab to another.**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/GUI_Tabs.jpg){width=70% fig-align='left' #fig-GUItabs}

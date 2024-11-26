@@ -7,9 +7,9 @@ lightbox: auto
 
 FloodAdapt can simulate different types of building-level adaptation actions: [elevate](#elevate), [buyout](#buyout), and [floodproof](#floodproof) properties. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.
 
-![**Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties**](../../_static/images/measures_buildingLevel.png){width=40% fig-align=left #fig-measures_buildingLevel}
+![**Building-level adaptation measures in FloodAdapt: elevate, buyout, and floodproof properties**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_buildingLevel.png){width=40% fig-align=left #fig-measures_buildingLevel}
 
-![**Selection of Building measures in the Measures tab, shown here for the example of elevating buildings**](../../_static/images/measures_buildingLevel_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
+![**Selection of Building measures in the Measures tab, shown here for the example of elevating buildings**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measures_buildingLevel_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
 
 To specify a building-level measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Buildings" (see @fig-measures_buildingLevel_GUI). The user can then choose for "Measure" one of the three measure types: [elevate](#elevation), [buyout](#buyouts), or [floodproof](#floodproofing) properties. For each of these measures, the user will choose an "Area type". This indicates how the user will select the buildings to which they want to apply the measure. There are three options:
 
@@ -27,11 +27,11 @@ Each of the building-level measures allows users to specify a property type to w
 
 Elevating properties refers to raising structures to make them less susceptible to floodwaters. To implement elevating buildings in FloodAdapt, go to the [Measures](../measures/index.qmd) tab, select "Buildings" for the Category, and then from the Measure drop-down menu, select "Elevate properties". Select one of the "Area type" options and then click "Add Measure". If you selected "Draw polygon", you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in @fig-measures_buildingLevel_elevatePoly). When you are finished clicking the polygon, right click or double click to open the measure specification window (see @fig-measures_buildingLevel_fpPoly_spec).
 
-![**Selecting buildings for applying the elevate measure**](../../_static/images/measure_building_poly_elevate.png){width=70% fig-align=left #fig-measures_buildingLevel_elevatePoly}
+![**Selecting buildings for applying the elevate measure**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_building_poly_elevate.png){width=70% fig-align=left #fig-measures_buildingLevel_elevatePoly}
 
 In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the elevation in feet, a specification what this elevation is relative to (see info box below for more details), and the property type that the measure should be applied to. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the "Aggregation area" option for selecting buildings, the specification window will automatically open and they will additionally be asked to choose an aggregation area (see @fig-measure_building_poly_buyout_specification for the example of buyouts)
 
-![**Specifying information for an elevate measure**](../../_static/images/measure_building_elevate_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_elevate_spec}
+![**Specifying information for an elevate measure**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_building_elevate_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_elevate_spec}
 
 ::: {.callout-note}
 ## Elevate properties relative to...
@@ -49,7 +49,7 @@ Buyouts refer to the purchase and subsequent removal of a property, usually one 
 
 In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the property type that the measure should be applied to, and - if you selected "Aggregation area" - the aggregation area where the measure should be applied. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab.
 
-![**Specifying information for a buyout measure**](../../_static/images/measure_building_poly_buyout_specification.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
+![**Specifying information for a buyout measure**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_building_poly_buyout_specification.png){width=50% fig-align=left #fig-measure_building_poly_buyout_specification}
 
 ::: {.callout-note}
 ## How are buyouts represented in the modeling?
@@ -61,11 +61,11 @@ Floodproofing in FloodAdapt refers to *dry floodproofing*, which involves sealin
 
 To implement floodproofing to buildings in FloodAdapt, go to the [Measures](../measures/index.qmd) tab, select "Buildings" for the Category, and then from the Measure drop-down menu, select "Floodproof properties". Select one of the "Area type" options and then click "Add Measure". If you selected "Draw polygon", you can now begin clicking within the map to draw a polygon to enclose the buildings to which you want to apply the measure (see example in @fig-measures_buildingLevel_fpPoly). When you are finished clicking the polygon, right click or double click to open the measure specification window (see @fig-measures_buildingLevel_fpPoly_spec).
 
-![**Selecting buildings for applying the floodproofing measure**](../../_static/images/measure_building_poly_fp.png){width=70% fig-align=left #fig-measures_buildingLevel_fpPoly}
+![**Selecting buildings for applying the floodproofing measure**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_building_poly_fp.png){width=70% fig-align=left #fig-measures_buildingLevel_fpPoly}
 
 In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, the height of the floodproofing, and the property type that the measure should be applied to. The floodproofing height ensures that damages only occur when the inundation depth is greater than the floodproofing height. When these entries are complete, the user can click 'OK' and the measure will be added to the list of measures in the Measures tab. Note that if the user selects the "Aggregation area" option for selecting buildings, the specification window will automatically open when they click "Add measure" and they will additionally be asked to choose an aggregation area (see @fig-measure_building_poly_buyout_specification for the example of buyouts)
 
-![**Specifying information for a floodproofing measure**](../../_static/images/measure_building_poly_fp_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_fpPoly_spec}
+![**Specifying information for a floodproofing measure**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/measure_building_poly_fp_specification.png){width=50% fig-align=left #fig-measures_buildingLevel_fpPoly_spec}
 
 ::: {.callout-note}
 ## How is floodproofing represented in the modeling?

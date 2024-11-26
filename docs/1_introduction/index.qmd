@@ -31,7 +31,7 @@ The backend of FloodAdapt leverages the open-source, state-of-the-art process-ba
 
 When a user specifies a what-if scenario, the backend of FloodAdapt automatically makes changes to the SFINCS and Delft-FIAT models to represent the user choices, the way an expert modeller would. It then simulates the scenario and returns flood and impact maps, scenario comparison visualizations, summary metrics, and an infographic to highlighting flooding or impacts of particular concern to a community. In this way, FloodAdapt allows end-users to unleash the power of advanced models without requiring the technical background, or the laborious pre- and post-processing of models that is usually required for this type of analysis.
 
-![Schematic showing the design concepts behind the FloodAdapt software](../_static/images/floodadapt.png){#fig-logo}
+![Schematic showing the design concepts behind the FloodAdapt software](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/floodadapt.png){#fig-logo}
 
 ## Intended Uses of FloodAdapt
 FloodAdapt was developed to support adaptation and resilience planning, to provide community understanding of the flooding and impacts resulting from different scenarios of interest, to understand the urgency of actions in different areas, to aid in prioritizing investments, and to assess the effectiveness and longevity of different adaptation options.

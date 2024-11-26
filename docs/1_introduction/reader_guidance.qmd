@@ -18,4 +18,4 @@ The section on [Updating FloodAdapt](/5_update_model/index.qmd) describes the st
 Chapter 6 provides a demonstration of a CFRSS application, to help the reader understand how FloodAdapt can support adaptation and resilience planning. Appendix A is a technical write-up walking a user through the preparation of a probabilistic event set for calculating risk with FloodAdapt. A tutorial video has been prepared that aligns with the demonstration in Chapter 6 and can be found at the following link: Add link.
 
 
-![Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section](../_static/images/readerGuidance.svg){#fig-readerGuidance}
+![Guidance to this documentation, showing the different sections, the intended reader, and an indicator of the relative technical skill required to make use of the section](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/readerGuidance.svg){#fig-readerGuidance}

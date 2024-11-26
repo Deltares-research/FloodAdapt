@@ -19,7 +19,7 @@ To compare the spatial output of two scenarios:
 * Select the map layers you wish to view
 * In the map window, drag the slider bar left and right to compare the spatial output
 
-![**Comparing map outputs for two scenarios. This example shows a compound high-tide and rainfall event from 2023 without sea level rise (left scenario) and with sea level rise (right scenario)**](../../_static/images/comparison_map.png){width=100% fig-align=left #fig-comparisonMap}
+![**Comparing map outputs for two scenarios. This example shows a compound high-tide and rainfall event from 2023 without sea level rise (left scenario) and with sea level rise (right scenario)**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/comparison_map.png){width=100% fig-align=left #fig-comparisonMap}
 
 ::: {.callout-note}
 ## Automatic scenario filtering
@@ -43,7 +43,7 @@ If you want to remove a scenario from the metric comparison box:
 * Select the column of the scenario in the metric comparison box
 * Click the "Remove" button
 
-![**Comparing metrics outputs for multiple scenarios. This example shows the metrics for current risk, risk with 1 foot of sea level rise, and risk with 1 foot of sea level rise and a flood wall implemented.**](../../_static/images/Comparison_metrics.png){width=100% fig-align=left #fig-comparisonMetrics}
+![**Comparing metrics outputs for multiple scenarios. This example shows the metrics for current risk, risk with 1 foot of sea level rise, and risk with 1 foot of sea level rise and a flood wall implemented.**](../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/Comparison_metrics.png){width=100% fig-align=left #fig-comparisonMetrics}
 
 ::: {.callout-note}
 ## Automatic scenario filtering

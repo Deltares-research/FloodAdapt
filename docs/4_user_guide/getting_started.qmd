@@ -27,13 +27,13 @@ To download and install FloodAdapt on your computer:
 * Download the FloodAdapt installer from the [Deltares USA website](https://www.deltares-usa.us/floodadapt-application).
 * Double-click the "FloodAdaptInstaller" file and the setup wizard will open (see @fig-setupWizard). Follow the steps of the installation wizard.
 
-![**FloodAdapt installation setup wizard**](../_static/images/installation_setupWizard.png){width=70% fig-align=left #fig-setupWizard}
+![**FloodAdapt installation setup wizard**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_setupWizard.png){width=70% fig-align=left #fig-setupWizard}
 
 ## Opening FloodAdapt
 
 When you open the FloodAdapt application you will be prompted to select a database root folder. This is the location where you store one or more FloodAdapt databases. Once you select a root folder, the databases within the root folder will appear. Select the database you want to work with and click "Start" to open the FloodAdapt application. Each time you open FloodAdapt you have the opportunity to change the database root and/or select a different database.
 
-![**Database selector when opening FloodAdapt**](../_static/images/installation_databaseSelector.png){width=50% fig-align=left #fig-installation_databaseSelector}
+![**Database selector when opening FloodAdapt**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_databaseSelector.png){width=50% fig-align=left #fig-installation_databaseSelector}
 
 ::: {.callout-note}
 #### Why do I have to select a database?
@@ -47,4 +47,4 @@ The FloodAdapt application is a calculation "shell" that requires a FloodAdapt d
 The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge.
 @fig-installation_database_structure shows the overall folder structure. The "Database Root Folder" is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the [Output](output/index.qmd) section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the [Setup Guide](../3_setup_guide/index.qmd)).
 
-![**FloodAdapt database folder structure**](../_static/images/installation_database_structure.png){#fig-installation_database_structure}
+![**FloodAdapt database folder structure**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_database_structure.png){#fig-installation_database_structure}
