@@ -152,7 +152,7 @@ class WaterlevelModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
 
     def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
-        from flood_adapt.integrator.offshore import OffshoreSfincsHandler
+        from flood_adapt.adapter.offshore import OffshoreSfincsHandler
 
         try:
             if (scn := kwargs.get("scenario", None)) is None:

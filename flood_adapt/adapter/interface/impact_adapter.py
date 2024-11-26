@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from flood_adapt.integrator.interface.model_adapter import IAdapter
+from flood_adapt.adapter.interface.model_adapter import IAdapter
 from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.hazard.physical_projection import (
     PhysicalProjection,

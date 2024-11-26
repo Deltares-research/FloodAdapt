@@ -3,8 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from flood_adapt.integrator.interface.offshore import IOffshoreSfincsHandler
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.adapter.interface.offshore import IOffshoreSfincsHandler
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
@@ -23,6 +24,7 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 
 
 class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
+    logger = FloodAdaptLogging.getLogger(__name__)
     template_path: Path
 
     def __init__(self) -> None:
@@ -170,7 +172,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 )
                 / "Flooding"
                 / "simulations"
-                / event.attrs.name  # add sub event name? or do we only run offshore once for the entire event set?
+                / event.attrs.name  # ? add sub event name? or do we only run offshore once for the entire event set?
                 / self.template_path.name
             )
         else:

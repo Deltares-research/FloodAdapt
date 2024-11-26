@@ -2,8 +2,8 @@ import os
 from typing import Any
 
 from flood_adapt import __version__
-from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.events import IEvent

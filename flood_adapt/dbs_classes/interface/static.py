@@ -5,7 +5,7 @@ from typing import Union
 import geopandas as gpd
 import pandas as pd
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 
 
 class IDbsStatic(ABC):

@@ -1,14 +1,10 @@
-import logging
 from abc import ABC
-
-from flood_adapt.misc.log import FloodAdaptLogging
 
 
 class DatabaseUser(ABC):
-    """Abstract class for FloodAdapt classes that need to use / interact with the FloodAdapt database."""
+    """Abstract class for FloodAdapt classes that need to use / interact with the Singleton FloodAdapt database through the lazy-loading self.database property."""
 
     _database_instance = None
-    _logger = None
 
     @property
     def database(self):
@@ -18,10 +14,3 @@ class DatabaseUser(ABC):
 
             self._database_instance = Database()
         return self._database_instance
-
-    @property
-    def logger(self) -> logging.Logger:
-        """Return the logger for the object."""
-        if self._logger is None:
-            self._logger = FloodAdaptLogging.getLogger(self.__class__.__name__)
-        return self._logger

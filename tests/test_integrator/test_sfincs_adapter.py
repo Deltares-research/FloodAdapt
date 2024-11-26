@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 
 import flood_adapt.object_model.io.unitfulvalue as uv
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,

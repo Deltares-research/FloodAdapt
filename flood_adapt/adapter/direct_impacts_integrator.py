@@ -16,8 +16,9 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
 
-from flood_adapt.integrator.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.misc.config import Settings
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.models import Mode
@@ -39,6 +40,7 @@ class DirectImpacts(DatabaseUser):
     Includes methods to run the impact model or check if it has already been run.
     """
 
+    logger = FloodAdaptLogging.getLogger(__name__)
     name: str
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy

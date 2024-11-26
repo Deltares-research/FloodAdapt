@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.integrator.direct_impacts_integrator import DirectImpacts
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy

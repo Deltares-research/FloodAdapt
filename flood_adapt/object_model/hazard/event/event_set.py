@@ -7,6 +7,7 @@ import tomli_w
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.synthetic import SyntheticEventModel
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.interface.database_user import DatabaseUser
@@ -36,6 +37,8 @@ class EventSetModel(BaseModel):
 
 
 class EventSet(DatabaseUser):
+    logger = FloodAdaptLogging.getLogger(__name__)
+
     attrs: EventSetModel
     events: List[IEvent]
 

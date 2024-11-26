@@ -21,7 +21,7 @@ from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
 import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.integrator.interface.hazard_adapter import IHazardAdapter
+from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory

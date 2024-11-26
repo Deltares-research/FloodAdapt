@@ -5,9 +5,9 @@ import geopandas as gpd
 import pandas as pd
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
