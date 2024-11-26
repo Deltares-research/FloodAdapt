@@ -1,7 +1,6 @@
 ---
-title: Test to print the pdf
+title: FloodAdapt Documentation
 subtitle: Floodadapt Guide
-author: "Kathryn Roscoe, Sarah Rautenbach, Lauren Schambach"
 nocite: |
   @*
 format:
