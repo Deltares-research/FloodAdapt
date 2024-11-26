@@ -1,0 +1,49 @@
+{
+
+    // "python.analysis.typeEvaluation.strictDictionaryInference": true,
+    // "python.analysis.typeEvaluation.strictListInference": true,
+    // "python.analysis.typeEvaluation.strictSetInference": true,
+
+    // "python.missingPackage.severity": "Error",
+
+    // "debug.console.closeOnEnd": true,
+    // "debugpy.debugJustMyCode": false,
+    // "git.replaceTagsWhenPull": true,
+    // "diffEditor.ignoreTrimWhitespace": false,
+
+    // Python settings
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/flood_adapt"
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+
+    "python.analysis.exclude": [
+        "**/site-packages/**",
+        "**/_extensions/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/__pycache__/**",
+        "**/.quarto/**",
+        "**/.pixi/**",
+        "**/.github/**",
+        "**/.teamcity/**",
+        "**/.vscode/**",
+        "**/.git/**",
+        "**/.mypy_cache/**",
+        "**/.pytest_cache/**",
+    ],
+
+    // Test settings
+    "python.analysis.enablePytestSupport": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.promptToConfigure": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+
+}

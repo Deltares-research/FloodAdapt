@@ -1,0 +1,37 @@
+line-length = 88
+indent-width = 4
+exclude = [
+    ".teamcity",
+    "docs",
+    "environment",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".svn",
+    ".venv",
+    ".vscode",
+    "build",
+    "dist",
+    "site-packages",
+    ".quarto",
+    ".github",
+]
+
+[format]
+docstring-code-format = true
+indent-style = "space"
+
+[lint]
+# https://docs.astral.sh/ruff/rules/
+select = [ "D", "E", "F", "NPY", "PD", "C4", "I" ]
+ignore = [ "D10", "D417", "F403", "F405", "PD010", "PD013", "PD901", "E501", "E741", "NPY201" ]
+fixable = [ "I", "F", "D" ]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$" # dummy variables start with an underscore: like _ or __ or _var
+
+[lint.pydocstyle]
+convention = "numpy"

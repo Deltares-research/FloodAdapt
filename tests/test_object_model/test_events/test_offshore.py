@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 import flood_adapt.object_model.io.unitfulvalue as uv
-from flood_adapt.adapter.offshore import OffshoreSfincsHandler
+from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,

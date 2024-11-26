@@ -82,6 +82,7 @@ from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
 class SfincsAdapter(IHazardAdapter):
+    logger = FloodAdaptLogging.getLogger(__name__)
     _site: Site
     _model: SfincsModel
 
@@ -312,7 +313,7 @@ class SfincsAdapter(IHazardAdapter):
                 uv.UnitTypesLength.meters
             )
 
-        # projection.attrs.subsidence
+        # ? projection.attrs.subsidence
 
         if projection.attrs.rainfall_multiplier:
             self.logger.info("Adding rainfall multiplier to model.")
