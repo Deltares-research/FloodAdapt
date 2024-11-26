@@ -43,6 +43,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -386,7 +389,14 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#components-of-a-sfincs-model" id="toc-components-of-a-sfincs-model" class="nav-link active" data-scroll-target="#components-of-a-sfincs-model">Components of a SFINCS Model</a></li>
+  <li><a href="#sfincs-data-requirements" id="toc-sfincs-data-requirements" class="nav-link" data-scroll-target="#sfincs-data-requirements">SFINCS Data Requirements</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -408,9 +418,73 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p><a href="https://download.deltares.nl/en/sfincs">SFINCS</a> is the open-source compound flood model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a SFINCS model in the project area. This is considered the ‘baseline’ SFINCS model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by selecting a hurricane or developing a synthetic event.</p>
+<p><a href="https://download.deltares.nl/en/sfincs">SFINCS</a> is an open-source model for simulating compound flooding that can be integrated into the FloodAdapt platform. To set up FloodAdapt in a new location, you first need to create a SFINCS model for the project area. This initial model, called the “baseline” SFINCS model, can then modified through FloodAdapt’s user interface to simulate scenarios such as hurricanes or synthetic events, and include future conditions like sea level rise.</p>
+<div id="fig-sfincsIntro" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><a href="../../_static/images/sfincs_intro.png" class="lightbox" title="SFINCS can model compound flooding caused by multiple drivers" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/sfincs_intro.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;1: SFINCS can model compound flooding caused by multiple drivers</figcaption>
+</figure>
+</div>
+<p>SFINCS is designed to simulate compound flooding caused by various drivers, including storm surge, tides, rainfall, and river discharge (<a href="#fig-sfincsIntro">Figure&nbsp;1</a>). A fully functional FloodAdapt setup typically includes two SFINCS models:</p>
+<ol type="1">
+<li><p><strong>Offshore model</strong>: Simulates large-scale storm surge events, like hurricanes, and propagates the surge toward the area of interest.</p></li>
+<li><p><strong>Overland model</strong>: Uses water level data from the offshore model to simulate flooding over the land via a process called “grid nesting”.</p></li>
+</ol>
+<p>In some scenarios (e.g., historical events with gauged water levels or synthetic events), the offshore model isn’t required. Instead, tide gauge data or synthetic water level signals are directly imposed at the overland model’s water level boundary.</p>
+<section id="components-of-a-sfincs-model" class="level2">
+<h2 class="anchored" data-anchor-id="components-of-a-sfincs-model">Components of a SFINCS Model</h2>
+<p>A SFINCS model is comprised of three key components:</p>
+<ol type="1">
+<li><p><strong>Model grid</strong>: The spatial framework for simulations.</p></li>
+<li><p><strong>Topography and bathymetry data</strong>: These are mapped to the grid to define the terrain and underwater features.</p></li>
+<li><p><strong>Initial and boundary conditions</strong>: Describe starting water levels and how they change over time at model boundaries (or throughout the domain with respect to rainfall, or at a source point with respect to river discharge).</p></li>
+</ol>
+<p>Using this information, SFINCS calculates water levels within the model boundaries and saves the maximum inundation results mapped throughout the model area and time series of water levels at selected points.</p>
+<p>The <strong>SFINCS Model-Builder</strong> tool simplifies the creation of SFINCS models for FloodAdapt. It allows users to:</p>
+<ul>
+<li>Create the model grid</li>
+<li>Map topography and bathymetry data to the grid</li>
+<li>Define active cells</li>
+<li>Define the water level boundaries</li>
+<li>Define boundary points for offshore-overland model communication</li>
+<li>Define discharge points for river discharge</li>
+</ul>
+<p><a href="#fig-sfincsOverview">Figure&nbsp;2</a> is a schematic overview of the SFINCS model components:</p>
+<div id="fig-sfincsOverview" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><a href="../../_static/images/sfincs_overview.png" class="lightbox" title="Components of a SFINCS model created using the SFINCS model-builer" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/sfincs_overview.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<figcaption class="figure-caption">Figure&nbsp;2: Components of a SFINCS model created using the SFINCS model-builer</figcaption>
+</figure>
+</div>
+</section>
+<section id="sfincs-data-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="sfincs-data-requirements">SFINCS Data Requirements</h2>
+<p>After installing the FloodAdapt Model-Builder, the following folder structure is created:</p>
+<pre><code>├───📁 FloodAdaptModelBuilder/
+    |
+    ├───📁 _internal/
+    |
+    ├───📁 data/
+    │   │
+    |   ├───📁 topobathy/
+    |   │   └───📄 dem.tif
+    |   └───📁 watersheds/
+    |       └───📄 watersheds.gpkg
+    |
+    ├───🔵 FloodAdaptModelBuilder.exe
+    |
+    ├───🔵 unins000.dat
+    |
+    └───🔵 unins000.exe</code></pre>
+<p>For full functionality, users must provide:</p>
+<ol type="1">
+<li><strong>DEM (Digital Elevation Model)</strong>: a <code>.tif</code> file named <code>dem.tif</code> in the <code>topobathy</code> folder.</li>
+<li><strong>Watersheds Geopackage</strong>: A <code>.gpkg</code> file named <code>watersheds.gpkg</code> in the <code>watersheds</code> folder.</li>
+</ol>
+<p>For detailed instructions on creating a SFINCS model using the Model-Builder tool, continue to the <a href="../../3_setup_guide/SFINCS/hydromt_sfincs_gui.html">SFINCS model-builder documentation</a>.</p>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -785,6 +859,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"loop":true,"closeEffect":"zoom","openEffect":"zoom","descPosition":"bottom","selector":".lightbox"});</script>
 
 
 
