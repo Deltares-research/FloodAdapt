@@ -15,6 +15,7 @@ from plotly.graph_objects import Figure, Scatter
 from plotly.subplots import make_subplots
 from xarray import open_dataarray, open_dataset
 
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.config import Settings
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -23,7 +24,6 @@ from flood_adapt.dbs_classes.dbs_projection import DbsProjection
 from flood_adapt.dbs_classes.dbs_scenario import DbsScenario
 from flood_adapt.dbs_classes.dbs_static import DbsStatic
 from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
 from flood_adapt.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.interface.benefits import IBenefit
