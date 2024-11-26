@@ -3,9 +3,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, Field, model_validator
 from pydantic.functional_validators import AfterValidator
-
 from typing_extensions import Annotated
 
 from flood_adapt.object_model.io.unitfulvalue import (
@@ -20,11 +19,14 @@ from flood_adapt.object_model.io.unitfulvalue import (
     UnitTypesVolume,
 )
 
+
 def ensure_ascii(s: str):
     assert s.isascii()
     return s
 
+
 AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
+
 
 class Cstype(str, Enum):
     """The accepted input for the variable cstype in Site."""
@@ -71,7 +73,9 @@ class WaterLevelReferenceModel(BaseModel):
 
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]] = Field(default_factory=list)  # only for plotting
+    other: Optional[list[VerticalReferenceModel]] = Field(
+        default_factory=list
+    )  # only for plotting
 
 
 class CycloneTrackDatabaseModel(BaseModel):
@@ -287,7 +291,7 @@ class SCSModel(BaseModel):
 class StandardObjectModel(BaseModel):
     """The accepted input for the variable standard_object in Site."""
 
-    events: Optional[list[AsciiStr]] =Field(default_factory=list)
+    events: Optional[list[AsciiStr]] = Field(default_factory=list)
     projections: Optional[list[AsciiStr]] = Field(default_factory=list)
     strategies: Optional[list[AsciiStr]] = Field(default_factory=list)
 
