@@ -1,6 +1,9 @@
 import pytest
+from pydantic import BaseModel
+from pydantic_core import ValidationError
 
 from flood_adapt.object_model.interface.site import (
+    AsciiStr,
     DemModel,
     RiverModel,
     SfincsModel,
@@ -11,12 +14,11 @@ from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLe
 from flood_adapt.object_model.site import (
     Site,
 )
-from flood_adapt.object_model.interface.site import AsciiStr
-from pydantic_core import ValidationError
-from pydantic import BaseModel
+
 
 class AsciiValidatorTest(BaseModel):
     string: AsciiStr
+
 
 @pytest.fixture()
 def test_dict():
@@ -292,15 +294,28 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
             == test_site_1_river.attrs.river[i].mean_discharge.value
         )
 
+
 # empty string, easy string, giberish and ascii control bytes shoulda ll be accepted
-@pytest.mark.parametrize("string", ["", "hello world", "!@#$%^)(^&)^&)", "\x00","\x09","\x0A","\x0D","\x1B","\x7F"])
+@pytest.mark.parametrize(
+    "string",
+    [
+        "",
+        "hello world",
+        "!@#$%^)(^&)^&)",
+        "\x00",
+        "\x09",
+        "\x0a",
+        "\x0d",
+        "\x1b",
+        "\x7f",
+    ],
+)
 def test_ascii_validator_correct(string):
-    AsciiValidatorTest(string=string) # should not raise an error if it's successful
+    AsciiValidatorTest(string=string)  # should not raise an error if it's successful
 
 
-# zero width spacer, some chinese, the greek questionmark, german town name with umlaut, and the pound sign 
-@pytest.mark.parametrize("string", ["​", "園冬童", ";", "Altötting","\xa3"])
+# zero width spacer, some chinese, the greek questionmark, german town name with umlaut, and the pound sign
+@pytest.mark.parametrize("string", ["​", "園冬童", ";", "Altötting", "\xa3"])
 def test_ascii_validator_incorrect(string):
     with pytest.raises(ValidationError):
         AsciiValidatorTest(string=string)
-        
