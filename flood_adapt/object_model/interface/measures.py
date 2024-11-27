@@ -64,7 +64,7 @@ class HazardMeasureModel(MeasureModel):
     @field_validator("polygon_file")
     @classmethod
     def validate_polygon_file(cls, v: Optional[str]) -> Optional[str]:
-        if len(v) == 0:
+        if v is None or len(v) == 0:
             raise ValueError("Polygon file path cannot be empty")
         return v
 
