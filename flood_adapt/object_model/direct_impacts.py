@@ -1,3 +1,4 @@
+import math
 import shutil
 import subprocess
 import time
@@ -6,6 +7,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import shapely.geometry as geom
 import tomli
 from fiat_toolbox.equity.equity import Equity
 from fiat_toolbox.infographics.infographics_factory import InforgraphicFactory
@@ -15,6 +17,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
+from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.config import Settings
@@ -25,6 +28,34 @@ from flood_adapt.object_model.direct_impact.socio_economic_change import (
 )
 from flood_adapt.object_model.hazard.hazard import Hazard, ScenarioModel
 from flood_adapt.object_model.utils import cd
+
+
+def generate_polygon(point, shape_type, diameter):
+    if shape_type == "circle":
+        return point.buffer(diameter / 2)
+    elif shape_type == "square":
+        half_side = diameter / 2
+        return geom.Polygon(
+            [
+                (point.x - half_side, point.y - half_side),
+                (point.x + half_side, point.y - half_side),
+                (point.x + half_side, point.y + half_side),
+                (point.x - half_side, point.y + half_side),
+            ]
+        )
+    elif shape_type == "triangle":
+        height = (math.sqrt(3) / 2) * diameter
+        return geom.Polygon(
+            [
+                (point.x, point.y + height / 2),
+                (point.x - diameter / 2, point.y - height / 2),
+                (point.x + diameter / 2, point.y - height / 2),
+            ]
+        )
+    else:
+        raise ValueError(
+            "Invalid shape type. Choose from 'circle', 'square', or 'triangle'."
+        )
 
 
 class DirectImpacts:
@@ -449,6 +480,20 @@ class DirectImpacts:
 
         # Read files
         # TODO Will it save time if we load this footprints once when the database is initialized?
+
+        # Read the existing building points
+        fm = FiatModel(root=self.fiat_path, mode="r")
+        fm.read()
+        buildings = fm.exposure.select_objects(
+            primary_object_type="ALL",
+            non_building_names=self.site_info.attrs.fiat.non_building_names,
+            return_gdf=True,
+        )
+        buildings_without_footprint = buildings[buildings["BF_FID"].isna()]
+        shape_type, diameter = "triangle", 0.0002
+        buildings_without_footprint["geometry"] = buildings_without_footprint[
+            "geometry"
+        ].apply(lambda point: generate_polygon(point, shape_type, diameter))
         footprints = gpd.read_file(footprints_path, engine="pyogrio")
         # Step to ensure that results is not a Geodataframe
         if "geometry" in fiat_results_df.columns:
@@ -460,9 +505,16 @@ class DirectImpacts:
         )
         if file_path.exists():
             new_development_area = gpd.read_file(file_path)
+            extra_polygons = (
+                buildings_without_footprint[["Object ID", "geometry"]]
+                .merge(new_development_area["Object ID", "geometry"])
+                .reset_index(drop=True)
+            )
+        else:
+            extra_polygons = buildings_without_footprint[["Object ID", "geometry"]]
         # Save file
         PointsToFootprints.write_footprint_file(
-            footprints, fiat_results_df, outpath, extra_footprints=new_development_area
+            footprints, fiat_results_df, outpath, extra_footprints=extra_polygons
         )
 
     def _add_exeedance_probability(self, fiat_results_path):
