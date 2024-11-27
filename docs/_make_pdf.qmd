@@ -11,6 +11,7 @@ format:
     number-depth: 2
     output-file: "Test_print_docs"
     output-ext:  "pdf"
+    hyperrefoptions: draft
 editor: source
 ---
 <!-- To run please use the terminal : quarto render _make_pdf.qmd --resource-path _static
