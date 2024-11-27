@@ -8,7 +8,6 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.event.timeseries import (
     DEFAULT_TIMESTEP,
@@ -23,12 +22,13 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     TimeModel,
 )
+from flood_adapt.object_model.io import unit_system as us
 
 
 class RainfallConstant(IRainfall):
     _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
 
-    intensity: uv.UnitfulIntensity
+    intensity: us.UnitfulIntensity
 
     def get_data(
         self,
@@ -46,7 +46,7 @@ class RainfallConstant(IRainfall):
     @classmethod
     def default(cls) -> "RainfallConstant":
         return cls(
-            intensity=uv.UnitfulIntensity(value=0, units=uv.UnitTypesIntensity.mm_hr)
+            intensity=us.UnitfulIntensity(value=0, units=us.UnitTypesIntensity.mm_hr)
         )
 
 
@@ -78,7 +78,7 @@ class RainfallSynthetic(IRainfall):
     @staticmethod
     def default() -> "RainfallSynthetic":
         return RainfallSynthetic(
-            timeseries=SyntheticTimeseriesModel.default(uv.UnitfulIntensity)
+            timeseries=SyntheticTimeseriesModel.default(us.UnitfulIntensity)
         )
 
 

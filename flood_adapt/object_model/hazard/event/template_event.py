@@ -9,7 +9,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.interface.events import (
     ForcingSource,
@@ -24,6 +23,7 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 
 
 class Event(IEvent[IEventModel]):
@@ -60,10 +60,10 @@ class Event(IEvent[IEventModel]):
         self,
         forcing_type: ForcingType,
         units: Optional[
-            uv.UnitTypesLength
-            | uv.UnitTypesIntensity
-            | uv.UnitTypesDischarge
-            | uv.UnitTypesVelocity
+            us.UnitTypesLength
+            | us.UnitTypesIntensity
+            | us.UnitTypesDischarge
+            | us.UnitTypesVelocity
         ] = None,
         **kwargs,
     ) -> str | None:
@@ -89,7 +89,7 @@ class Event(IEvent[IEventModel]):
                 )
 
     def plot_waterlevel(
-        self, units: Optional[uv.UnitTypesLength] = None, **kwargs
+        self, units: Optional[us.UnitTypesLength] = None, **kwargs
     ) -> str:
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
@@ -172,7 +172,7 @@ class Event(IEvent[IEventModel]):
 
     def plot_rainfall(
         self,
-        units: Optional[uv.UnitTypesIntensity] = None,
+        units: Optional[us.UnitTypesIntensity] = None,
         rainfall_multiplier: Optional[float] = None,
         **kwargs,
     ) -> str | None:
@@ -246,7 +246,7 @@ class Event(IEvent[IEventModel]):
         return str(output_loc)
 
     def plot_discharge(
-        self, units: Optional[uv.UnitTypesDischarge] = None, **kwargs
+        self, units: Optional[us.UnitTypesDischarge] = None, **kwargs
     ) -> str:
         units = units or Settings().unit_system.discharge
 
@@ -323,8 +323,8 @@ class Event(IEvent[IEventModel]):
 
     def plot_wind(
         self,
-        velocity_units: Optional[uv.UnitTypesVelocity] = None,
-        direction_units: Optional[uv.UnitTypesDirection] = None,
+        velocity_units: Optional[us.UnitTypesVelocity] = None,
+        direction_units: Optional[us.UnitTypesDirection] = None,
         **kwargs,
     ) -> str:
         if self.attrs.forcings[ForcingType.WIND] is None:

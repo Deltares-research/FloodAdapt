@@ -1,7 +1,8 @@
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.io import unit_system
 
-__all__ = ["Settings", "FloodAdaptLogging"]
+__all__ = ["Settings", "FloodAdaptLogging", "unit_system"]
 
 FloodAdaptLogging()  # Initialize logging once for the entire package
 

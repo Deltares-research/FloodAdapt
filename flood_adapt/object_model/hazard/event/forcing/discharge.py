@@ -6,7 +6,6 @@ from typing import Any, ClassVar, Optional
 
 import pandas as pd
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -20,12 +19,13 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
 )
 from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.io import unit_system as us
 
 
 class DischargeConstant(IDischarge):
     _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
 
-    discharge: uv.UnitfulDischarge
+    discharge: us.UnitfulDischarge
 
     def get_data(
         self,
@@ -45,15 +45,15 @@ class DischargeConstant(IDischarge):
     def default(cls) -> "DischargeConstant":
         river = RiverModel(
             name="default_river",
-            mean_discharge=uv.UnitfulDischarge(
-                value=0, units=uv.UnitTypesDischarge.cms
+            mean_discharge=us.UnitfulDischarge(
+                value=0, units=us.UnitTypesDischarge.cms
             ),
             x_coordinate=0,
             y_coordinate=0,
         )
         return DischargeConstant(
             river=river,
-            discharge=uv.UnitfulDischarge(value=0, units=uv.UnitTypesDischarge.cms),
+            discharge=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
         )
 
 
@@ -90,15 +90,15 @@ class DischargeSynthetic(IDischarge):
     def default(cls) -> "DischargeSynthetic":
         river = RiverModel(
             name="default_river",
-            mean_discharge=uv.UnitfulDischarge(
-                value=0, units=uv.UnitTypesDischarge.cms
+            mean_discharge=us.UnitfulDischarge(
+                value=0, units=us.UnitTypesDischarge.cms
             ),
             x_coordinate=0,
             y_coordinate=0,
         )
         return DischargeSynthetic(
             river=river,
-            timeseries=SyntheticTimeseriesModel.default(uv.UnitfulDischarge),
+            timeseries=SyntheticTimeseriesModel.default(us.UnitfulDischarge),
         )
 
 
@@ -140,8 +140,8 @@ class DischargeCSV(IDischarge):
     def default(cls) -> "DischargeCSV":
         river = RiverModel(
             name="default_river",
-            mean_discharge=uv.UnitfulDischarge(
-                value=0, units=uv.UnitTypesDischarge.cms
+            mean_discharge=us.UnitfulDischarge(
+                value=0, units=us.UnitTypesDischarge.cms
             ),
             x_coordinate=0,
             y_coordinate=0,

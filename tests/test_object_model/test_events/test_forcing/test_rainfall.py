@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
@@ -15,13 +14,14 @@ from object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from object_model.interface.events import TimeModel
+from object_model.io import unit_system as us
 
 
 class TestRainfallConstant:
     def test_rainfall_constant_get_data(self):
         # Arrange
         val = 10
-        intensity = uv.UnitfulIntensity(value=val, units=uv.UnitTypesIntensity.mm_hr)
+        intensity = us.UnitfulIntensity(value=val, units=us.UnitTypesIntensity.mm_hr)
 
         # Act
         rf_df = RainfallConstant(intensity=intensity).get_data()
@@ -38,9 +38,9 @@ class TestRainfallSynthetic:
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.constant,
-            duration=uv.UnitfulTime(value=4, units=uv.UnitTypesTime.hours),
-            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
-            peak_value=uv.UnitfulLength(value=2, units=uv.UnitTypesLength.meters),
+            duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
+            peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
         )
 
         # Act
@@ -56,9 +56,9 @@ class TestRainfallSynthetic:
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.scs,
-            duration=uv.UnitfulTime(value=4, units=uv.UnitTypesTime.hours),
-            peak_time=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
-            cumulative=uv.UnitfulLength(value=2, units=uv.UnitTypesLength.meters),
+            duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
+            cumulative=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
             scs_file_name="scs_rainfall.csv",
             scs_type=Scstype.type1,
         )

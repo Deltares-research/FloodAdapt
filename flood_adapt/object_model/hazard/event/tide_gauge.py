@@ -5,13 +5,13 @@ import cht_observations.observation_stations as cht_station
 import pandas as pd
 from noaa_coops.station import COOPSAPIError
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     ITideGauge,
     TideGaugeModel,
 )
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
 
@@ -29,7 +29,7 @@ class TideGauge(ITideGauge):
         self,
         time: TimeModel,
         out_path: Optional[Path] = None,
-        units: uv.UnitTypesLength = uv.UnitTypesLength.meters,
+        units: us.UnitTypesLength = us.UnitTypesLength.meters,
     ) -> pd.DataFrame:
         """Download waterlevel data from NOAA station using station_id, start and stop time.
 
@@ -41,8 +41,8 @@ class TideGauge(ITideGauge):
             Tide gauge model.
         out_path : Optional[Path], optional
             Path to save the data, by default None.
-        units : uv.UnitTypesLength, optional
-            Unit of the waterlevel, by default uv.UnitTypesLength.meters.
+        units : us.UnitTypesLength, optional
+            Unit of the waterlevel, by default us.UnitTypesLength.meters.
 
         Returns
         -------
@@ -67,8 +67,8 @@ class TideGauge(ITideGauge):
             return pd.DataFrame()
 
         gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]
-        gauge_data = gauge_data * uv.UnitfulLength(
-            value=1.0, units=uv.UnitTypesLength.meters
+        gauge_data = gauge_data * us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength.meters
         ).convert(units)
 
         if out_path is not None:

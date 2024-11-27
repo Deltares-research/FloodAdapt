@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -16,6 +15,7 @@ from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 
 
 class FiatAdapter:  # TODO implement ImpactAdapter interface
@@ -67,7 +67,7 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
         is_risk = floodmap.mode == Mode.risk
 
         # Add the floodmap data to a data catalog with the unit conversion
-        wl_current_units = uv.UnitfulLength(value=1.0, units=uv.UnitTypesLength.meters)
+        wl_current_units = us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters)
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
 
         self.fiat_model.setup_hazard(

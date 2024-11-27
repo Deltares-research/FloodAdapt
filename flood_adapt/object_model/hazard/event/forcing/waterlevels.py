@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.event.timeseries import (
@@ -25,6 +24,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 
 
 class SurgeModel(BaseModel):
@@ -36,9 +36,9 @@ class SurgeModel(BaseModel):
 class TideModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
-    harmonic_amplitude: uv.UnitfulLength
-    harmonic_period: uv.UnitfulTime
-    harmonic_phase: uv.UnitfulTime
+    harmonic_amplitude: us.UnitfulLength
+    harmonic_period: us.UnitfulTime
+    harmonic_phase: us.UnitfulTime
 
     def to_dataframe(
         self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP
@@ -90,7 +90,7 @@ class WaterlevelSynthetic(IWaterlevel):
         )
 
         surge_df = pd.DataFrame(surge_ts, index=time_surge)
-        tide_df = self.tide.to_dataframe(t0, t1)  # + msl + slr
+        tide_df = self.tide.to_dataframe(t0, t1)
 
         # Reindex the shorter DataFrame to match the longer one
         surge_df = surge_df.reindex(tide_df.index).fillna(0)
@@ -105,14 +105,14 @@ class WaterlevelSynthetic(IWaterlevel):
     def default() -> "WaterlevelSynthetic":
         return WaterlevelSynthetic(
             surge=SurgeModel(
-                timeseries=SyntheticTimeseriesModel.default(uv.UnitfulLength)
+                timeseries=SyntheticTimeseriesModel.default(us.UnitfulLength)
             ),
             tide=TideModel(
-                harmonic_amplitude=uv.UnitfulLength(
-                    value=0, units=uv.UnitTypesLength.meters
+                harmonic_amplitude=us.UnitfulLength(
+                    value=0, units=us.UnitTypesLength.meters
                 ),
-                harmonic_period=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.seconds),
-                harmonic_phase=uv.UnitfulTime(value=0, units=uv.UnitTypesTime.seconds),
+                harmonic_period=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
+                harmonic_phase=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
             ),
         )
 

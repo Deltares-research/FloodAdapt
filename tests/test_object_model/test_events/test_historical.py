@@ -1,7 +1,6 @@
 import tempfile
 from pathlib import Path
 
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 from dbs_classes.interface.database import IDatabase
@@ -28,6 +27,7 @@ from object_model.hazard.interface.models import (
     TimeModel,
 )
 from object_model.interface.site import RiverModel
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 
@@ -46,14 +46,14 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         "forcings": {
             "WATERLEVEL": WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
             "WIND": WindConstant(
-                speed=uv.UnitfulVelocity(value=5, units=uv.UnitTypesVelocity.mps),
-                direction=uv.UnitfulDirection(
-                    value=60, units=uv.UnitTypesDirection.degrees
+                speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                direction=us.UnitfulDirection(
+                    value=60, units=us.UnitTypesDirection.degrees
                 ),
             ),
             "RAINFALL": RainfallConstant(
-                intensity=uv.UnitfulIntensity(
-                    value=20, units=uv.UnitTypesIntensity.mm_hr
+                intensity=us.UnitfulIntensity(
+                    value=20, units=us.UnitTypesIntensity.mm_hr
                 )
             ),
             "DISCHARGE": DischargeCSV(
@@ -62,8 +62,8 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    mean_discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
                 path=_tmp_timeseries_csv("discharge.csv"),
@@ -90,12 +90,12 @@ def setup_offshore_meteo_event():
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    mean_discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=uv.UnitfulDischarge(
-                    value=5000, units=uv.UnitTypesDischarge.cfs
+                discharge=us.UnitfulDischarge(
+                    value=5000, units=us.UnitTypesDischarge.cfs
                 ),
             ),
         },

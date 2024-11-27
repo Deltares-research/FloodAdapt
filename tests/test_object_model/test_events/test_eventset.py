@@ -3,7 +3,6 @@ from pathlib import Path
 from tempfile import gettempdir
 from unittest.mock import patch
 
-import object_model.io.unitfulvalue as uv
 import pytest
 from dbs_classes.interface.database import IDatabase
 from object_model.hazard.event.event_factory import EventFactory
@@ -27,6 +26,7 @@ from object_model.hazard.interface.timeseries import (
 )
 from object_model.interface.events import IEventModel
 from object_model.interface.site import RiverModel
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 
@@ -41,14 +41,14 @@ def test_sub_event():
         "mode": Mode.single_event,
         "forcings": {
             "WIND": WindConstant(
-                speed=uv.UnitfulVelocity(value=5, units=uv.UnitTypesVelocity.mps),
-                direction=uv.UnitfulDirection(
-                    value=60, units=uv.UnitTypesDirection.degrees
+                speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                direction=us.UnitfulDirection(
+                    value=60, units=us.UnitTypesDirection.degrees
                 ),
             ),
             "RAINFALL": RainfallConstant(
-                intensity=uv.UnitfulIntensity(
-                    value=20, units=uv.UnitTypesIntensity.mm_hr
+                intensity=us.UnitfulIntensity(
+                    value=20, units=us.UnitTypesIntensity.mm_hr
                 )
             ),
             "DISCHARGE": DischargeConstant(
@@ -57,34 +57,34 @@ def test_sub_event():
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    mean_discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=uv.UnitfulDischarge(
-                    value=5000, units=uv.UnitTypesDischarge.cfs
+                discharge=us.UnitfulDischarge(
+                    value=5000, units=us.UnitTypesDischarge.cfs
                 ),
             ),
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
                         shape_type=ShapeType.triangle,
-                        duration=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.days),
-                        peak_time=uv.UnitfulTime(value=8, units=uv.UnitTypesTime.hours),
-                        peak_value=uv.UnitfulLength(
-                            value=1, units=uv.UnitTypesLength.meters
+                        duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
+                        peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
+                        peak_value=us.UnitfulLength(
+                            value=1, units=us.UnitTypesLength.meters
                         ),
                     )
                 ),
                 tide=TideModel(
-                    harmonic_amplitude=uv.UnitfulLength(
-                        value=1, units=uv.UnitTypesLength.meters
+                    harmonic_amplitude=us.UnitfulLength(
+                        value=1, units=us.UnitTypesLength.meters
                     ),
-                    harmonic_period=uv.UnitfulTime(
-                        value=12.4, units=uv.UnitTypesTime.hours
+                    harmonic_period=us.UnitfulTime(
+                        value=12.4, units=us.UnitTypesTime.hours
                     ),
-                    harmonic_phase=uv.UnitfulTime(
-                        value=0, units=uv.UnitTypesTime.hours
+                    harmonic_phase=us.UnitfulTime(
+                        value=0, units=us.UnitTypesTime.hours
                     ),
                 ),
             ),

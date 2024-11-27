@@ -3,10 +3,10 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeModel
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.io import unit_system as us
 
 
 class Cstype(str, Enum):
@@ -31,7 +31,7 @@ class SfincsModel(BaseModel):
     version: Optional[str] = ""
     offshore_model: Optional[str] = None
     overland_model: str
-    floodmap_units: uv.UnitTypesLength
+    floodmap_units: us.UnitTypesLength
     save_simulation: Optional[bool] = False
 
 
@@ -39,7 +39,7 @@ class VerticalReferenceModel(BaseModel):
     """The accepted input for the variable vertical_reference in Site."""
 
     name: str
-    height: uv.UnitfulLength
+    height: us.UnitfulLength
 
 
 class WaterLevelReferenceModel(BaseModel):
@@ -66,7 +66,7 @@ class SlrScenariosModel(BaseModel):
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
-    vertical_offset: uv.UnitfulLength
+    vertical_offset: us.UnitfulLength
     scenarios: Optional[SlrScenariosModel] = None
 
 
@@ -114,16 +114,16 @@ class VisualizationLayersModel(BaseModel):
 class GuiModel(BaseModel):
     """The accepted input for the variable gui in Site."""
 
-    tide_harmonic_amplitude: uv.UnitfulLength
-    default_length_units: uv.UnitTypesLength
-    default_distance_units: uv.UnitTypesLength
-    default_area_units: uv.UnitTypesArea
-    default_volume_units: uv.UnitTypesVolume
-    default_velocity_units: uv.UnitTypesVelocity
-    default_direction_units: uv.UnitTypesDirection
-    default_discharge_units: uv.UnitTypesDischarge
-    default_intensity_units: uv.UnitTypesIntensity
-    default_cumulative_units: uv.UnitTypesLength
+    tide_harmonic_amplitude: us.UnitfulLength
+    default_length_units: us.UnitTypesLength
+    default_distance_units: us.UnitTypesLength
+    default_area_units: us.UnitTypesArea
+    default_volume_units: us.UnitTypesVolume
+    default_velocity_units: us.UnitTypesVelocity
+    default_direction_units: us.UnitTypesDirection
+    default_discharge_units: us.UnitTypesDischarge
+    default_intensity_units: us.UnitTypesIntensity
+    default_cumulative_units: us.UnitTypesLength
     mapbox_layers: MapboxLayersModel
     visualization_layers: VisualizationLayersModel
 
@@ -137,14 +137,14 @@ class RiskModel(BaseModel):
 class FloodFrequencyModel(BaseModel):
     """The accepted input for the variable flood_frequency in Site."""
 
-    flooding_threshold: uv.UnitfulLength
+    flooding_threshold: us.UnitfulLength
 
 
 class DemModel(BaseModel):
     """The accepted input for the variable dem in Site."""
 
     filename: str
-    units: uv.UnitTypesLength
+    units: us.UnitTypesLength
 
 
 class EquityModel(BaseModel):
@@ -193,7 +193,7 @@ class RiverModel(BaseModel):
 
     name: str
     description: Optional[str] = None
-    mean_discharge: uv.UnitfulDischarge
+    mean_discharge: us.UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
 
@@ -254,7 +254,7 @@ class SiteModel(IObjectModel):
     risk: RiskModel
     # TODO what should the default be
     flood_frequency: Optional[FloodFrequencyModel] = FloodFrequencyModel(
-        flooding_threshold=uv.UnitfulLength(value=0.0, units=uv.UnitTypesLength.meters)
+        flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )
     dem: DemModel
     fiat: FiatModel

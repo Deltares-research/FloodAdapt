@@ -1,7 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
@@ -11,6 +10,7 @@ from object_model.hazard.event.forcing.wind import (
     WindMeteo,
 )
 from object_model.interface.events import TimeModel
+from object_model.io import unit_system as us
 
 
 class TestWindConstant:
@@ -18,8 +18,8 @@ class TestWindConstant:
         # Arrange
         _speed = 10
         _dir = 90
-        speed = uv.UnitfulVelocity(_speed, uv.UnitTypesVelocity.mps)
-        direction = uv.UnitfulDirection(_dir, uv.UnitTypesDirection.degrees)
+        speed = us.UnitfulVelocity(_speed, us.UnitTypesVelocity.mps)
+        direction = us.UnitfulDirection(_dir, us.UnitTypesDirection.degrees)
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).get_data()

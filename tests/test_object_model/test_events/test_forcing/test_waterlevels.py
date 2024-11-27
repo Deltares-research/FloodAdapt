@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 from dbs_classes.interface.database import IDatabase
@@ -22,6 +21,7 @@ from object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from object_model.interface.site import RiverModel
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 
@@ -31,84 +31,84 @@ class TestWaterlevelSynthetic:
         [  # "surge_shape,       peak_time,                surge_duration,           surge_peak_value,           tide_amplitude,             tide_period,
             (
                 ShapeType.gaussian,
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulTime(24, "hours"),
-                uv.UnitfulLength(3, "meters"),
-                uv.UnitfulLength(1.5, "meters"),
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulTime(8, "hours"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulTime(24, "hours"),
+                us.UnitfulLength(3, "meters"),
+                us.UnitfulLength(1.5, "meters"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulTime(8, "hours"),
             ),
             (
                 ShapeType.gaussian,
-                uv.UnitfulTime(18, "hours"),
-                uv.UnitfulTime(36, "hours"),
-                uv.UnitfulLength(4, "meters"),
-                uv.UnitfulLength(2, "meters"),
-                uv.UnitfulTime(14, "hours"),
-                uv.UnitfulTime(6, "hours"),
+                us.UnitfulTime(18, "hours"),
+                us.UnitfulTime(36, "hours"),
+                us.UnitfulLength(4, "meters"),
+                us.UnitfulLength(2, "meters"),
+                us.UnitfulTime(14, "hours"),
+                us.UnitfulTime(6, "hours"),
             ),
             (
                 ShapeType.gaussian,
-                uv.UnitfulTime(14, "hours"),
-                uv.UnitfulTime(28, "hours"),
-                uv.UnitfulLength(2, "meters"),
-                uv.UnitfulLength(0.8, "meters"),
-                uv.UnitfulTime(8, "hours"),
-                uv.UnitfulTime(4, "hours"),
+                us.UnitfulTime(14, "hours"),
+                us.UnitfulTime(28, "hours"),
+                us.UnitfulLength(2, "meters"),
+                us.UnitfulLength(0.8, "meters"),
+                us.UnitfulTime(8, "hours"),
+                us.UnitfulTime(4, "hours"),
             ),
             (
                 ShapeType.constant,
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulLength(2, "meters"),
-                uv.UnitfulLength(1, "meters"),
-                uv.UnitfulTime(10, "hours"),
-                uv.UnitfulTime(4, "hours"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulLength(2, "meters"),
+                us.UnitfulLength(1, "meters"),
+                us.UnitfulTime(10, "hours"),
+                us.UnitfulTime(4, "hours"),
             ),
             (
                 ShapeType.constant,
-                uv.UnitfulTime(6, "hours"),
-                uv.UnitfulTime(6, "hours"),
-                uv.UnitfulLength(1, "meters"),
-                uv.UnitfulLength(0.5, "meters"),
-                uv.UnitfulTime(6, "hours"),
-                uv.UnitfulTime(2, "hours"),
+                us.UnitfulTime(6, "hours"),
+                us.UnitfulTime(6, "hours"),
+                us.UnitfulLength(1, "meters"),
+                us.UnitfulLength(0.5, "meters"),
+                us.UnitfulTime(6, "hours"),
+                us.UnitfulTime(2, "hours"),
             ),
             (
                 ShapeType.constant,
-                uv.UnitfulTime(10, "hours"),
-                uv.UnitfulTime(20, "hours"),
-                uv.UnitfulLength(3, "meters"),
-                uv.UnitfulLength(1.2, "meters"),
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulTime(6, "hours"),
+                us.UnitfulTime(10, "hours"),
+                us.UnitfulTime(20, "hours"),
+                us.UnitfulLength(3, "meters"),
+                us.UnitfulLength(1.2, "meters"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulTime(6, "hours"),
             ),
             (
                 ShapeType.triangle,
-                uv.UnitfulTime(12, "hours"),
-                uv.UnitfulTime(18, "hours"),
-                uv.UnitfulLength(1.5, "meters"),
-                uv.UnitfulLength(0.5, "meters"),
-                uv.UnitfulTime(8, "hours"),
-                uv.UnitfulTime(3, "hours"),
+                us.UnitfulTime(12, "hours"),
+                us.UnitfulTime(18, "hours"),
+                us.UnitfulLength(1.5, "meters"),
+                us.UnitfulLength(0.5, "meters"),
+                us.UnitfulTime(8, "hours"),
+                us.UnitfulTime(3, "hours"),
             ),
             (
                 ShapeType.triangle,
-                uv.UnitfulTime(8, "hours"),
-                uv.UnitfulTime(16, "hours"),
-                uv.UnitfulLength(2.5, "meters"),
-                uv.UnitfulLength(1, "meters"),
-                uv.UnitfulTime(10, "hours"),
-                uv.UnitfulTime(5, "hours"),
+                us.UnitfulTime(8, "hours"),
+                us.UnitfulTime(16, "hours"),
+                us.UnitfulLength(2.5, "meters"),
+                us.UnitfulLength(1, "meters"),
+                us.UnitfulTime(10, "hours"),
+                us.UnitfulTime(5, "hours"),
             ),
             (
                 ShapeType.triangle,
-                uv.UnitfulTime(16, "hours"),
-                uv.UnitfulTime(32, "hours"),
-                uv.UnitfulLength(3.5, "meters"),
-                uv.UnitfulLength(1.5, "meters"),
-                uv.UnitfulTime(10, "hours"),
-                uv.UnitfulTime(7, "hours"),
+                us.UnitfulTime(16, "hours"),
+                us.UnitfulTime(32, "hours"),
+                us.UnitfulLength(3.5, "meters"),
+                us.UnitfulLength(1.5, "meters"),
+                us.UnitfulTime(10, "hours"),
+                us.UnitfulTime(7, "hours"),
             ),
         ],
     )
@@ -190,12 +190,12 @@ class TestWaterlevelModel:
                         description="Cooper River",
                         x_coordinate=595546.3,
                         y_coordinate=3675590.6,
-                        mean_discharge=uv.UnitfulDischarge(
-                            value=5000, units=uv.UnitTypesDischarge.cfs
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
             },

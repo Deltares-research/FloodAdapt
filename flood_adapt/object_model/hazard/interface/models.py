@@ -4,21 +4,21 @@ from typing import Union
 
 from pydantic import BaseModel, field_serializer, field_validator
 
-import flood_adapt.object_model.io.unitfulvalue as uv
+import flood_adapt.object_model.io.unit_system as us
 
 ### CONSTANTS ###
 REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
-TIDAL_PERIOD = uv.UnitfulTime(value=12.4, units=uv.UnitTypesTime.hours)
+TIDAL_PERIOD = us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_TIMESTEP = uv.UnitfulTime(value=600, units=uv.UnitTypesTime.seconds)
+DEFAULT_TIMESTEP = us.UnitfulTime(value=600, units=us.UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
-    uv.UnitfulIntensity,
-    uv.UnitfulDischarge,
-    uv.UnitfulVelocity,
-    uv.UnitfulLength,
-    uv.UnitfulHeight,
-    uv.UnitfulArea,
-    uv.UnitfulDirection,
+    us.UnitfulIntensity,
+    us.UnitfulDischarge,
+    us.UnitfulVelocity,
+    us.UnitfulLength,
+    us.UnitfulHeight,
+    us.UnitfulArea,
+    us.UnitfulDirection,
 ]
 
 

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 __all__ = [
     "Unit",
-    "IUnitFullValue",
+    "ValueUnitPair",
     "VerticalReference",
     "UnitTypesLength",
     "UnitTypesArea",
@@ -36,7 +36,7 @@ class Unit(str, Enum):
     pass
 
 
-class IUnitFullValue(BaseModel):
+class ValueUnitPair(BaseModel):
     """
     Represents a value with associated units.
 
@@ -58,9 +58,9 @@ class IUnitFullValue(BaseModel):
     units: Unit
 
     def __init__(self, *args, **kwargs):
-        if type(self) is IUnitFullValue:
+        if type(self) is ValueUnitPair:
             raise TypeError(
-                "IUnitFullValue is an abstract class and cannot be instantiated directly."
+                "ValueUnitPair is an abstract class and cannot be instantiated directly."
             )
         if args and len(args) == 2:
             value, units = args
@@ -108,7 +108,7 @@ class IUnitFullValue(BaseModel):
         )
 
     def __eq__(self, other):
-        if not isinstance(other, IUnitFullValue):
+        if not isinstance(other, ValueUnitPair):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
             )
@@ -245,7 +245,7 @@ class VerticalReference(str, Enum):
     datum = "datum"
 
 
-class UnitfulLength(IUnitFullValue):
+class UnitfulLength(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesLength, float]] = {
         UnitTypesLength.meters: 1.0,
         UnitTypesLength.centimeters: 100.0,
@@ -268,7 +268,7 @@ class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
 
-class UnitfulArea(IUnitFullValue):
+class UnitfulArea(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesArea, float]] = {
         UnitTypesArea.m2: 1,
         UnitTypesArea.dm2: 100,
@@ -282,7 +282,7 @@ class UnitfulArea(IUnitFullValue):
     units: UnitTypesArea
 
 
-class UnitfulVelocity(IUnitFullValue):
+class UnitfulVelocity(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesVelocity, float]] = {
         UnitTypesVelocity.mph: 2.236936,
         UnitTypesVelocity.mps: 1,
@@ -294,7 +294,7 @@ class UnitfulVelocity(IUnitFullValue):
     units: UnitTypesVelocity
 
 
-class UnitfulDirection(IUnitFullValue):
+class UnitfulDirection(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDirection, float]] = {
         UnitTypesDirection.degrees: 1.0,
     }
@@ -304,7 +304,7 @@ class UnitfulDirection(IUnitFullValue):
     units: UnitTypesDirection
 
 
-class UnitfulDischarge(IUnitFullValue):
+class UnitfulDischarge(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDischarge, float]] = {
         UnitTypesDischarge.cfs: 0.02832,
         UnitTypesDischarge.cms: 1,
@@ -315,7 +315,7 @@ class UnitfulDischarge(IUnitFullValue):
     units: UnitTypesDischarge
 
 
-class UnitfulIntensity(IUnitFullValue):
+class UnitfulIntensity(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesIntensity, float]] = {
         UnitTypesIntensity.inch_hr: 1 / 25.39544832,
         UnitTypesIntensity.mm_hr: 1,
@@ -326,7 +326,7 @@ class UnitfulIntensity(IUnitFullValue):
     units: UnitTypesIntensity
 
 
-class UnitfulVolume(IUnitFullValue):
+class UnitfulVolume(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesVolume, float]] = {
         UnitTypesVolume.m3: 1.0,
         UnitTypesVolume.cf: 35.3146667,
@@ -337,7 +337,7 @@ class UnitfulVolume(IUnitFullValue):
     units: UnitTypesVolume
 
 
-class UnitfulTime(IUnitFullValue):
+class UnitfulTime(ValueUnitPair):
     value: float
     units: UnitTypesTime
 

@@ -20,7 +20,6 @@ from hydromt_sfincs import SfincsModel
 from hydromt_sfincs.quadtree import QuadtreeGrid
 from numpy import matlib
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
@@ -77,6 +76,7 @@ from flood_adapt.object_model.interface.projections import (
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
@@ -310,7 +310,7 @@ class SfincsAdapter(IHazardAdapter):
         if projection.attrs.sea_level_rise:
             self.logger.info("Adding sea level rise to model.")
             self.waterlevels += projection.attrs.sea_level_rise.convert(
-                uv.UnitTypesLength.meters
+                us.UnitTypesLength.meters
             )
 
         # ? projection.attrs.subsidence
@@ -476,15 +476,15 @@ class SfincsAdapter(IHazardAdapter):
         # read DEM and convert units to metric units used by SFINCS
 
         demfile_units = self._site.attrs.dem.units
-        dem_conversion = uv.UnitfulLength(value=1.0, units=demfile_units).convert(
-            uv.UnitTypesLength("meters")
+        dem_conversion = us.UnitfulLength(value=1.0, units=demfile_units).convert(
+            us.UnitTypesLength("meters")
         )
         dem = dem_conversion * self._model.data_catalog.get_rasterdataset(demfile)
 
         # determine conversion factor for output floodmap
         floodmap_units = self._site.attrs.sfincs.floodmap_units
-        floodmap_conversion = uv.UnitfulLength(
-            value=1.0, units=uv.UnitTypesLength("meters")
+        floodmap_conversion = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength("meters")
         ).convert(floodmap_units)
 
         utils.downscale_floodmap(
@@ -515,9 +515,9 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_path) as model:
             df, gdf = model._get_zs_points()
 
-        gui_units = uv.UnitTypesLength(self._site.attrs.gui.default_length_units)
-        conversion_factor = uv.UnitfulLength(
-            value=1.0, units=uv.UnitTypesLength("meters")
+        gui_units = us.UnitTypesLength(self._site.attrs.gui.default_length_units)
+        conversion_factor = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength("meters")
         ).convert(gui_units)
 
         for ii, col in enumerate(df.columns):
@@ -577,7 +577,7 @@ class SfincsAdapter(IHazardAdapter):
                         start_time=event.attrs.time.start_time,
                         end_time=event.attrs.time.end_time,
                     ),
-                    units=uv.UnitTypesLength(gui_units),
+                    units=us.UnitTypesLength(gui_units),
                 )
 
                 if df_gauge is not None:
@@ -845,7 +845,7 @@ class SfincsAdapter(IHazardAdapter):
             # HydroMT function: set wind forcing from constant magnitude and direction
             self._model.setup_wind_forcing(
                 timeseries=None,
-                magnitude=forcing.speed.convert(uv.UnitTypesVelocity.mps),
+                magnitude=forcing.speed.convert(us.UnitTypesVelocity.mps),
                 direction=forcing.direction.value,
             )
         elif isinstance(forcing, WindSynthetic):
@@ -888,7 +888,7 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(forcing, RainfallConstant):
             self._model.setup_precip_forcing(
                 timeseries=None,
-                magnitude=forcing.intensity.convert(uv.UnitTypesIntensity.mm_hr),
+                magnitude=forcing.intensity.convert(us.UnitTypesIntensity.mm_hr),
             )
         elif isinstance(forcing, RainfallSynthetic):
             tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
@@ -983,10 +983,10 @@ class SfincsAdapter(IHazardAdapter):
         try:
             heights = [
                 float(
-                    uv.UnitfulLength(
+                    us.UnitfulLength(
                         value=float(height),
                         units=self._site.attrs.gui.default_length_units,
-                    ).convert(uv.UnitTypesLength("meters"))
+                    ).convert(us.UnitTypesLength("meters"))
                 )
                 for height in gdf_floodwall["z"]
             ]
@@ -995,10 +995,10 @@ class SfincsAdapter(IHazardAdapter):
         except Exception:
             self.logger.warning(
                 f"""Could not use height data from file due to missing ""z""-column or missing values therein.\n
-                Using uniform height of {floodwall.attrs.elevation.convert(uv.UnitTypesLength("meters"))} meters instead."""
+                Using uniform height of {floodwall.attrs.elevation.convert(us.UnitTypesLength("meters"))} meters instead."""
             )
             gdf_floodwall["z"] = floodwall.attrs.elevation.convert(
-                uv.UnitTypesLength("meters")
+                us.UnitTypesLength("meters")
             )
 
         # par1 is the overflow coefficient for weirs
@@ -1054,8 +1054,8 @@ class SfincsAdapter(IHazardAdapter):
 
         # Volume is always already calculated and is converted to m3 for SFINCS
         height = None
-        volume = green_infrastructure.attrs.volume.convert(uv.UnitTypesVolume("m3"))
-        volume = green_infrastructure.attrs.volume.convert(uv.UnitTypesVolume("m3"))
+        volume = green_infrastructure.attrs.volume.convert(us.UnitTypesVolume("m3"))
+        volume = green_infrastructure.attrs.volume.convert(us.UnitTypesVolume("m3"))
 
         # HydroMT function: create storage volume
         self._model.setup_storage_volume(
@@ -1084,7 +1084,7 @@ class SfincsAdapter(IHazardAdapter):
         self._model.setup_drainage_structures(
             structures=gdf_pump,
             stype="pump",
-            discharge=pump.attrs.discharge.convert(uv.UnitTypesDischarge("m3/s")),
+            discharge=pump.attrs.discharge.convert(us.UnitTypesDischarge("m3/s")),
             merge=True,
         )
 
@@ -1188,9 +1188,9 @@ class SfincsAdapter(IHazardAdapter):
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert(uv.UnitTypesLength("meters"))
+                + event.water_level_offset.convert(us.UnitTypesLength("meters"))
                 + physical_projection.sea_level_rise.convert(
-                    uv.UnitTypesLength("meters")
+                    us.UnitTypesLength("meters")
                 )
             )
 
@@ -1332,15 +1332,15 @@ class SfincsAdapter(IHazardAdapter):
     def _downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
         demfile_units = self._site.attrs.dem.units
-        dem_conversion = uv.UnitfulLength(value=1.0, units=demfile_units).convert(
-            uv.UnitTypesLength("meters")
+        dem_conversion = us.UnitfulLength(value=1.0, units=demfile_units).convert(
+            us.UnitTypesLength("meters")
         )
         dem = dem_conversion * self._model.data_catalog.get_rasterdataset(demfile)
 
         # determine conversion factor for output floodmap
         floodmap_units = self._site.attrs.sfincs.floodmap_units
-        floodmap_conversion = uv.UnitfulLength(
-            value=1.0, units=uv.UnitTypesLength("meters")
+        floodmap_conversion = us.UnitfulLength(
+            value=1.0, units=us.UnitTypesLength("meters")
         ).convert(floodmap_units)
 
         hmax = utils.downscale_floodmap(

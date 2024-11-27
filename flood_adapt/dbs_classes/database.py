@@ -14,7 +14,6 @@ from plotly.express import line
 from plotly.express.colors import sample_colorscale
 from xarray import open_dataarray, open_dataset
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
 from flood_adapt.dbs_classes.dbs_measure import DbsMeasure
@@ -32,6 +31,7 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -228,7 +228,7 @@ class Database(IDatabase):
                 )
             else:
                 ref_slr = np.interp(ref_year, df["year"], df[slr_scenario])
-                new_slr = uv.UnitfulLength(
+                new_slr = us.UnitfulLength(
                     value=slr - ref_slr,
                     units=df["units"][0],
                 )
@@ -244,7 +244,7 @@ class Database(IDatabase):
         ncolors = len(df.columns) - 2
         try:
             units = df["units"].iloc[0]
-            units = uv.UnitTypesLength(units)
+            units = us.UnitTypesLength(units)
         except ValueError(
             "Column " "units" " in input/static/slr/slr.csv file missing."
         ) as e:
@@ -273,7 +273,7 @@ class Database(IDatabase):
 
         df = df.drop(columns="units").melt(id_vars=["Year"]).reset_index(drop=True)
         # convert to units used in GUI
-        slr_current_units = uv.UnitfulLength(value=1.0, units=units)
+        slr_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = slr_current_units.convert(
             self.site.attrs.gui.default_length_units
         )
@@ -454,10 +454,10 @@ class Database(IDatabase):
             conversion factor
         """
         # Get conresion factor need to get from the sfincs units to the gui units
-        units = uv.UnitfulLength(
+        units = us.UnitfulLength(
             value=1, units=self.site.attrs.gui.default_length_units
         )
-        unit_cor = units.convert(new_units=uv.UnitTypesLength.meters)
+        unit_cor = units.convert(new_units=us.UnitTypesLength.meters)
 
         return unit_cor
 

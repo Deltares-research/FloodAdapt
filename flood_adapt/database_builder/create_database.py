@@ -20,13 +20,13 @@ from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import Obs_pointModel, Site, SlrModel
+from flood_adapt.object_model.io import unit_system as us
 
 config_path = None
 
@@ -126,7 +126,7 @@ class TideGaugeModel(BaseModel):
 
     source: str
     file: Optional[str] = None
-    max_distance: Optional[uv.UnitfulLength] = None
+    max_distance: Optional[us.UnitfulLength] = None
     # TODO add option to add MSL and Datum?
     ref: Optional[str] = None
 
@@ -149,10 +149,10 @@ class SlrModelDef(SlrModel):
 
     Attributes
     ----------
-        vertical_offset (Optional[uv.UnitfulLength]): The vertical offset of the SLR model, measured in meters.
+        vertical_offset (Optional[us.UnitfulLength]): The vertical offset of the SLR model, measured in meters.
     """
 
-    vertical_offset: Optional[uv.UnitfulLength] = uv.UnitfulLength(
+    vertical_offset: Optional[us.UnitfulLength] = us.UnitfulLength(
         value=0, units="meters"
     )
 
@@ -903,7 +903,7 @@ class Database:
             river["description"] = f"river_{i}"
             river["x_coordinate"] = row.geometry.x
             river["y_coordinate"] = row.geometry.y
-            mean_dis = uv.UnitfulDischarge(
+            mean_dis = us.UnitfulDischarge(
                 value=self.sfincs.forcing["dis"]
                 .sel(index=i)
                 .to_numpy()
@@ -985,7 +985,7 @@ class Database:
         self.logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
-        SFINCS_units = uv.UnitfulLength(
+        SFINCS_units = us.UnitfulLength(
             value=1.0, units="meters"
         )  # SFINCS is always in meters
         FIAT_units = self.site_attrs["sfincs"]["floodmap_units"]
@@ -1211,7 +1211,7 @@ class Database:
             0,
         )
         units = self.site_attrs["sfincs"]["floodmap_units"]
-        distance = uv.UnitfulLength(value=distance, units="meters")
+        distance = us.UnitfulLength(value=distance, units="meters")
         self.logger.info(
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.convert(units)} {units} from the SFINCS domain"
         )
@@ -1219,7 +1219,7 @@ class Database:
         # TODO make sure units are explicit for max_distance
         if self.config.tide_gauge.max_distance is not None:
             units_new = self.config.tide_gauge.max_distance.units
-            distance_new = uv.UnitfulLength(
+            distance_new = us.UnitfulLength(
                 value=distance.convert(units_new), units=units_new
             )
             if distance_new.value > self.config.tide_gauge.max_distance.value:

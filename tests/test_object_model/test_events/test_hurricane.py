@@ -2,7 +2,6 @@ import shutil
 import tempfile
 from pathlib import Path
 
-import object_model.io.unitfulvalue as uv
 import pytest
 from dbs_classes.interface.database import IDatabase
 from object_model.hazard.event.forcing.discharge import DischargeConstant
@@ -23,6 +22,7 @@ from object_model.hazard.interface.models import (
     TimeModel,
 )
 from object_model.interface.site import RiverModel
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 from tests.fixtures import TEST_DATA_DIR
@@ -45,22 +45,22 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    mean_discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=uv.UnitfulDischarge(
-                    value=5000, units=uv.UnitTypesDischarge.cfs
+                discharge=us.UnitfulDischarge(
+                    value=5000, units=us.UnitTypesDischarge.cfs
                 ),
             ),
         },
         "track_name": "IAN",
         "hurricane_translation": {
-            "eastwest_translation": uv.UnitfulLength(
-                value=0.0, units=uv.UnitTypesLength.meters
+            "eastwest_translation": us.UnitfulLength(
+                value=0.0, units=us.UnitTypesLength.meters
             ),
-            "northsouth_translation": uv.UnitfulLength(
-                value=0.0, units=uv.UnitTypesLength.meters
+            "northsouth_translation": us.UnitfulLength(
+                value=0.0, units=us.UnitTypesLength.meters
             ),
         },
     }

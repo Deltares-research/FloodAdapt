@@ -3,19 +3,19 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
+from flood_adapt.object_model.io import unit_system as us
 
 
 class PhysicalProjectionModel(BaseModel):
-    sea_level_rise: uv.UnitfulLength = uv.UnitfulLength(
-        value=0.0, units=uv.UnitTypesLength.meters
+    sea_level_rise: us.UnitfulLength = us.UnitfulLength(
+        value=0.0, units=us.UnitTypesLength.meters
     )
-    subsidence: uv.UnitfulLength = uv.UnitfulLength(
-        value=0.0, units=uv.UnitTypesLength.meters
+    subsidence: us.UnitfulLength = us.UnitfulLength(
+        value=0.0, units=us.UnitTypesLength.meters
     )
     rainfall_multiplier: float = Field(default=1.0, ge=0.0)
     storm_frequency_increase: float = 0.0
@@ -42,7 +42,7 @@ class SocioEconomicChangeModel(BaseModel):
     economic_growth: Optional[float] = 0.0
 
     population_growth_new: Optional[float] = 0.0
-    new_development_elevation: Optional[uv.UnitfulLengthRefValue] = None
+    new_development_elevation: Optional[us.UnitfulLengthRefValue] = None
     new_development_shapefile: Optional[str] = None
 
 

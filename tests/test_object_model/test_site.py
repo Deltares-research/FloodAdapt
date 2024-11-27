@@ -1,4 +1,4 @@
-import object_model.io.unitfulvalue as uv
+import object_model.io.unit_system as us
 import pytest
 from object_model.interface.site import (
     DemModel,
@@ -224,7 +224,7 @@ def test_loadFile_validFile_returnSiteModel(test_sites):
 
 def test_loadFile_tomlFile_setAttrs(test_sites, test_dict):
     test_site = test_sites["site.toml"]
-    assert isinstance(test_site.attrs.water_level.other[0].height, uv.UnitfulLength)
+    assert isinstance(test_site.attrs.water_level.other[0].height, us.UnitfulLength)
 
     assert test_site.attrs.lat == 32.77
     assert test_site.attrs.slr.vertical_offset.value == 0.6
@@ -277,7 +277,7 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
         assert isinstance(test_site_multiple_rivers.attrs.river[i].name, str)
         assert isinstance(test_site_multiple_rivers.attrs.river[i].x_coordinate, float)
         assert isinstance(
-            test_site_multiple_rivers.attrs.river[i].mean_discharge, uv.UnitfulDischarge
+            test_site_multiple_rivers.attrs.river[i].mean_discharge, us.UnitfulDischarge
         )
         assert (
             test_site_multiple_rivers.attrs.river[i].mean_discharge.value

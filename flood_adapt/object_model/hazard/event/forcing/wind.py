@@ -8,7 +8,6 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
 from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import IWind
@@ -20,14 +19,15 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
 
 class WindConstant(IWind):
     _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
 
-    speed: uv.UnitfulVelocity
-    direction: uv.UnitfulDirection
+    speed: us.UnitfulVelocity
+    direction: us.UnitfulDirection
 
     def get_data(
         self,
@@ -50,8 +50,8 @@ class WindConstant(IWind):
     @staticmethod
     def default() -> "WindConstant":
         return WindConstant(
-            speed=uv.UnitfulVelocity(value=10, units=uv.UnitTypesVelocity.mps),
-            direction=uv.UnitfulDirection(value=0, units=uv.UnitTypesDirection.degrees),
+            speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps),
+            direction=us.UnitfulDirection(value=0, units=us.UnitTypesDirection.degrees),
         )
 
 
@@ -89,8 +89,8 @@ class WindSynthetic(IWind):
     @staticmethod
     def default() -> "WindSynthetic":
         return WindSynthetic(
-            magnitude=SyntheticTimeseriesModel.default(uv.UnitfulVelocity),
-            direction=SyntheticTimeseriesModel.default(uv.UnitfulDirection),
+            magnitude=SyntheticTimeseriesModel.default(us.UnitfulVelocity),
+            direction=SyntheticTimeseriesModel.default(us.UnitfulDirection),
         )
 
 

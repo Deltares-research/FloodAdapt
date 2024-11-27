@@ -8,7 +8,6 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from pydantic import BaseModel
 from shapely.affinity import translate
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallTrack
 from flood_adapt.object_model.hazard.event.forcing.wind import WindTrack
@@ -24,17 +23,18 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
 class TranslationModel(BaseModel):
     """BaseModel describing the expected variables and data types for translation parameters of hurricane model."""
 
-    eastwest_translation: uv.UnitfulLength = uv.UnitfulLength(
-        value=0.0, units=uv.UnitTypesLength.meters
+    eastwest_translation: us.UnitfulLength = us.UnitfulLength(
+        value=0.0, units=us.UnitTypesLength.meters
     )
-    northsouth_translation: uv.UnitfulLength = uv.UnitfulLength(
-        value=0.0, units=uv.UnitTypesLength.meters
+    northsouth_translation: us.UnitfulLength = us.UnitfulLength(
+        value=0.0, units=us.UnitTypesLength.meters
     )
 
 

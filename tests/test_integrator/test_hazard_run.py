@@ -3,13 +3,13 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 import xarray as xr
 from object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 
@@ -255,7 +255,7 @@ def test_preprocess_rainfall_multiplier_alternate(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
-        uv.UnitfulIntensity(value=5.0, units="inch/hr")
+        us.UnitfulIntensity(value=5.0, units="inch/hr")
     )
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
@@ -279,7 +279,7 @@ def test_preprocess_rainfall_multiplier_alternate(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_type = "block"
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.cumulative = (
-        uv.UnitfulIntensity(value=5.0, units="inch/hr")
+        us.UnitfulIntensity(value=5.0, units="inch/hr")
     )
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_start_time = -3
     test_scenario.direct_impacts.hazard.event.attrs.rainfall.shape_end_time = 3
@@ -411,14 +411,14 @@ def test_multiple_rivers(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.event.attrs.river[1].source = "shape"
     test_scenario.direct_impacts.hazard.event.attrs.river[
         0
-    ].constant_discharge = uv.UnitfulDischarge(value=2000.0, units="cfs")
+    ].constant_discharge = us.UnitfulDischarge(value=2000.0, units="cfs")
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_type = "gaussian"
     test_scenario.direct_impacts.hazard.event.attrs.river[
         1
-    ].base_discharge = uv.UnitfulDischarge(value=1000.0, units="cfs")
+    ].base_discharge = us.UnitfulDischarge(value=1000.0, units="cfs")
     test_scenario.direct_impacts.hazard.event.attrs.river[
         1
-    ].shape_peak = uv.UnitfulDischarge(value=2500.0, units="cfs")
+    ].shape_peak = us.UnitfulDischarge(value=2500.0, units="cfs")
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_duration = 8
     test_scenario.direct_impacts.hazard.event.attrs.river[1].shape_peak_time = 0
 
@@ -439,7 +439,7 @@ def test_multiple_rivers(test_db, test_scenarios):
     test_scenario.direct_impacts.hazard.site.attrs.river[1].y_coordinate = y
     test_scenario.direct_impacts.hazard.site.attrs.river[
         1
-    ].mean_discharge = uv.UnitfulDischarge(value=mean_discharge, units="cfs")
+    ].mean_discharge = us.UnitfulDischarge(value=mean_discharge, units="cfs")
     test_scenario.direct_impacts.hazard.site.attrs.river[1].description = description
 
     # Change name of reference model

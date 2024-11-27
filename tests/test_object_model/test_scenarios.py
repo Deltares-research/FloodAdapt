@@ -65,7 +65,7 @@ def test_scs_rainfall(test_db: IDatabase, test_scenarios: dict[str, Scenario]):
 
     # event.attrs.rainfall = RainfallModel(
     #     source="shape",
-    #     cumulative=uv.UnitfulLength(value=10.0, units="inch"),
+    #     cumulative=us.UnitfulLength(value=10.0, units="inch"),
     #     shape_type="scs",
     #     shape_start_time=-24,
     #     shape_duration=10,

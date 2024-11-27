@@ -13,19 +13,19 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-import flood_adapt.object_model.io.unitfulvalue as uv
+from flood_adapt.object_model.io import unit_system as us
 
 
 class UnitSystem:
-    length: uv.UnitTypesLength
-    distance: uv.UnitTypesLength
-    area: uv.UnitTypesArea
-    volume: uv.UnitTypesVolume
-    velocity: uv.UnitTypesVelocity
-    direction: uv.UnitTypesDirection
-    discharge: uv.UnitTypesDischarge
-    intensity: uv.UnitTypesIntensity
-    cumulative: uv.UnitTypesLength
+    length: us.UnitTypesLength
+    distance: us.UnitTypesLength
+    area: us.UnitTypesArea
+    volume: us.UnitTypesVolume
+    velocity: us.UnitTypesVelocity
+    direction: us.UnitTypesDirection
+    discharge: us.UnitTypesDischarge
+    intensity: us.UnitTypesIntensity
+    cumulative: us.UnitTypesLength
 
     def __init__(self, system: str = "imperial"):
         if system == "imperial":
@@ -36,26 +36,26 @@ class UnitSystem:
             raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
 
     def set_imperial(self):
-        self.length = uv.UnitTypesLength.feet
-        self.distance = uv.UnitTypesLength.miles
-        self.area = uv.UnitTypesArea.sf
-        self.volume = uv.UnitTypesVolume.cf
-        self.velocity = uv.UnitTypesVelocity.mph
-        self.direction = uv.UnitTypesDirection.degrees
-        self.discharge = uv.UnitTypesDischarge.cfs
-        self.intensity = uv.UnitTypesIntensity.inch_hr
-        self.cumulative = uv.UnitTypesLength.feet
+        self.length = us.UnitTypesLength.feet
+        self.distance = us.UnitTypesLength.miles
+        self.area = us.UnitTypesArea.sf
+        self.volume = us.UnitTypesVolume.cf
+        self.velocity = us.UnitTypesVelocity.mph
+        self.direction = us.UnitTypesDirection.degrees
+        self.discharge = us.UnitTypesDischarge.cfs
+        self.intensity = us.UnitTypesIntensity.inch_hr
+        self.cumulative = us.UnitTypesLength.feet
 
     def set_metric(self):
-        self.length = uv.UnitTypesLength.meters
-        self.distance = uv.UnitTypesLength.meters
-        self.area = uv.UnitTypesArea.m2
-        self.volume = uv.UnitTypesVolume.m3
-        self.velocity = uv.UnitTypesVelocity.mps
-        self.direction = uv.UnitTypesDirection.degrees
-        self.discharge = uv.UnitTypesDischarge.cms
-        self.intensity = uv.UnitTypesIntensity.mm_hr
-        self.cumulative = uv.UnitTypesLength.meters
+        self.length = us.UnitTypesLength.meters
+        self.distance = us.UnitTypesLength.meters
+        self.area = us.UnitTypesArea.m2
+        self.volume = us.UnitTypesVolume.m3
+        self.velocity = us.UnitTypesVelocity.mps
+        self.direction = us.UnitTypesDirection.degrees
+        self.discharge = us.UnitTypesDischarge.cms
+        self.intensity = us.UnitTypesIntensity.mm_hr
+        self.cumulative = us.UnitTypesLength.meters
 
 
 class Settings(BaseSettings):

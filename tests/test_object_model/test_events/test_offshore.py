@@ -1,4 +1,3 @@
-import object_model.io.unitfulvalue as uv
 import pandas as pd
 import pytest
 from adapter.sfincs_offshore import OffshoreSfincsHandler
@@ -22,6 +21,7 @@ from object_model.hazard.interface.models import (
     TimeModel,
 )
 from object_model.interface.site import RiverModel
+from object_model.io import unit_system as us
 from object_model.scenario import Scenario
 
 
@@ -42,12 +42,12 @@ def setup_offshore_scenario(test_db: IDatabase):
                     description="Cooper River",
                     x_coordinate=595546.3,
                     y_coordinate=3675590.6,
-                    mean_discharge=uv.UnitfulDischarge(
-                        value=5000, units=uv.UnitTypesDischarge.cfs
+                    mean_discharge=us.UnitfulDischarge(
+                        value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=uv.UnitfulDischarge(
-                    value=5000, units=uv.UnitTypesDischarge.cfs
+                discharge=us.UnitfulDischarge(
+                    value=5000, units=us.UnitTypesDischarge.cfs
                 ),
             ),
         },

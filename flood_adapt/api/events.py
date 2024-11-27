@@ -6,7 +6,6 @@ from typing import Any, List, Union
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.hazard.event.event_factory import (
     EventFactory,
@@ -38,6 +37,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.events import IEvent, IEventModel
+from flood_adapt.object_model.io import unit_system as us
 
 # Ensure all objects are imported and available for use if this module is imported
 __all__ = [
@@ -157,7 +157,7 @@ def check_higher_level_usage(name: str) -> list[str]:
 
 
 def download_wl_data(
-    tide_gauge: TideGauge, time: TimeModel, units: uv.UnitTypesLength, out_path: str
+    tide_gauge: TideGauge, time: TimeModel, units: us.UnitTypesLength, out_path: str
 ) -> pd.DataFrame:
     return tide_gauge.get_waterlevels_in_time_frame(
         time=time,

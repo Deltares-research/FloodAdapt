@@ -7,7 +7,6 @@ import pandas as pd
 import tomli
 import tomli_w
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
@@ -21,17 +20,18 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.path_builder import TopLevelDir, db_path
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
 
 ### CALCULATION STRATEGIES ###
 class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: uv.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
     ) -> np.ndarray:
-        _duration = attrs.duration.convert(uv.UnitTypesTime.seconds)
-        _start_time = attrs.start_time.convert(uv.UnitTypesTime.seconds)
-        _timestep = timestep.convert(uv.UnitTypesTime.seconds)
+        _duration = attrs.duration.convert(us.UnitTypesTime.seconds)
+        _start_time = attrs.start_time.convert(us.UnitTypesTime.seconds)
+        _timestep = timestep.convert(us.UnitTypesTime.seconds)
         tt = np.arange(0, _duration + 1, _timestep)
 
         # rainfall
@@ -44,8 +44,8 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
         rain_series = scstype_df.to_numpy()
         rain_instantaneous = np.diff(rain_series) / np.diff(
             tt_rain
-            / uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours).convert(
-                uv.UnitTypesTime.seconds
+            / us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).convert(
+                us.UnitTypesTime.seconds
             )
         )  # divide by time in hours to get mm/hour
 
@@ -64,8 +64,8 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
             / np.trapz(
                 rain_interp,
                 tt
-                / uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours).convert(
-                    uv.UnitTypesTime.seconds
+                / us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).convert(
+                    us.UnitTypesTime.seconds
                 ),
             )
         )
@@ -74,7 +74,7 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
 class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: uv.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
@@ -93,7 +93,7 @@ class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
 
 class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: uv.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
@@ -113,7 +113,7 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self,
         attrs: SyntheticTimeseriesModel,
-        timestep: uv.UnitfulTime,
+        timestep: us.UnitfulTime,
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
@@ -158,7 +158,7 @@ class SyntheticTimeseries(ITimeseries):
     attrs: SyntheticTimeseriesModel
 
     def calculate_data(
-        self, time_step: uv.UnitfulTime = DEFAULT_TIMESTEP
+        self, time_step: us.UnitfulTime = DEFAULT_TIMESTEP
     ) -> np.ndarray:
         """Calculate the timeseries data using the timestep provided."""
         strategy = SyntheticTimeseries.CALCULATION_STRATEGIES.get(self.attrs.shape_type)
@@ -170,7 +170,7 @@ class SyntheticTimeseries(ITimeseries):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: uv.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
     ) -> pd.DataFrame:
         """
         Interpolate the timeseries data using the timestep provided.
@@ -181,7 +181,7 @@ class SyntheticTimeseries(ITimeseries):
             Start time of the timeseries.
         end_time : datetime | str
             End time of the timeseries.
-        time_step : uv.UnitfulTime, optional
+        time_step : us.UnitfulTime, optional
             Time step of the timeseries, by default DEFAULT_TIMESTEP.
 
         """
@@ -237,7 +237,7 @@ class CSVTimeseries(ITimeseries):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: uv.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
     ) -> pd.DataFrame:
         if isinstance(start_time, str):
             start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
@@ -248,15 +248,15 @@ class CSVTimeseries(ITimeseries):
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
-            ts_start_time=uv.UnitfulTime(0, uv.UnitTypesTime.seconds),
-            ts_end_time=uv.UnitfulTime(
-                (end_time - start_time).total_seconds(), uv.UnitTypesTime.seconds
+            ts_start_time=us.UnitfulTime(0, us.UnitTypesTime.seconds),
+            ts_end_time=us.UnitfulTime(
+                (end_time - start_time).total_seconds(), us.UnitTypesTime.seconds
             ),
         )
 
     def calculate_data(
         self,
-        time_step: uv.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
         ts = read_csv(self.attrs.path)

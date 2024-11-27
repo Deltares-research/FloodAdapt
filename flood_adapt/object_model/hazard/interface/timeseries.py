@@ -9,7 +9,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pydantic import BaseModel, model_validator
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
@@ -17,6 +16,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     Scstype,
     ShapeType,
 )
+from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
 
@@ -41,8 +41,8 @@ class ITimeseriesModel(BaseModel):
 class SyntheticTimeseriesModel(ITimeseriesModel):
     # Required
     shape_type: ShapeType
-    duration: uv.UnitfulTime
-    peak_time: uv.UnitfulTime
+    duration: us.UnitfulTime
+    peak_time: us.UnitfulTime
 
     # Either one of these must be set
     peak_value: Optional[TIMESERIES_VARIABLE] = None
@@ -80,20 +80,20 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
         return self
 
     @staticmethod
-    def default(ts_var: type[uv.IUnitFullValue]) -> "SyntheticTimeseriesModel":
+    def default(ts_var: type[us.ValueUnitPair]) -> "SyntheticTimeseriesModel":
         return SyntheticTimeseriesModel(
             shape_type=ShapeType.gaussian,
-            duration=uv.UnitfulTime(value=2, units=uv.UnitTypesTime.hours),
-            peak_time=uv.UnitfulTime(value=1, units=uv.UnitTypesTime.hours),
+            duration=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
+            peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
             peak_value=ts_var(value=1, units=ts_var.DEFAULT_UNIT),
         )
 
     @property
-    def start_time(self) -> uv.UnitfulTime:
+    def start_time(self) -> us.UnitfulTime:
         return self.peak_time - self.duration / 2
 
     @property
-    def end_time(self) -> uv.UnitfulTime:
+    def end_time(self) -> us.UnitfulTime:
         return self.peak_time + self.duration / 2
 
 
@@ -124,7 +124,7 @@ class ITimeseries(ABC):
 
     @abstractmethod
     def calculate_data(
-        self, time_step: uv.UnitfulTime = DEFAULT_TIMESTEP
+        self, time_step: us.UnitfulTime = DEFAULT_TIMESTEP
     ) -> np.ndarray:
         """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
         ...
@@ -133,9 +133,9 @@ class ITimeseries(ABC):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        ts_start_time: uv.UnitfulTime,
-        ts_end_time: uv.UnitfulTime,
-        time_step: uv.UnitfulTime,
+        ts_start_time: us.UnitfulTime,
+        ts_end_time: us.UnitfulTime,
+        time_step: us.UnitfulTime,
     ) -> pd.DataFrame:
         """
         Convert timeseries data to a pandas DataFrame that has time as the index and intensity as the column.
@@ -150,7 +150,7 @@ class ITimeseries(ABC):
                 start_time is the first index of the dataframe
             end_time (Union[datetime, str]): The end datetime of returned timeseries.
                 end_time is the last index of the dataframe (date time)
-            time_step (uv.UnitfulTime): The time step between data points.
+            time_step (us.UnitfulTime): The time step between data points.
 
         Note:
             - If start_time and end_time are strings, they should be in the format DEFAULT_DATETIME_FORMAT (= "%Y-%m-%d %H:%M:%S")

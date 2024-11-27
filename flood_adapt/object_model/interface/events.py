@@ -9,7 +9,6 @@ from pydantic import (
     model_validator,
 )
 
-import flood_adapt.object_model.io.unitfulvalue as uv
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -25,6 +24,7 @@ from flood_adapt.object_model.interface.object_model import IObject, IObjectMode
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
+from flood_adapt.object_model.io import unit_system as us
 
 
 class IEventModel(IObjectModel):
@@ -33,8 +33,8 @@ class IEventModel(IObjectModel):
     time: TimeModel
     template: Template
     mode: Mode
-    water_level_offset: uv.UnitfulLength = uv.UnitfulLength(
-        value=0, units=uv.UnitTypesLength.meters
+    water_level_offset: us.UnitfulLength = us.UnitfulLength(
+        value=0, units=us.UnitTypesLength.meters
     )
 
     forcings: dict[ForcingType, Any] = Field(default_factory=dict)
@@ -159,36 +159,36 @@ class IEvent(IObject[T]):
         self,
         forcing_type: ForcingType,
         units: Optional[
-            uv.UnitTypesLength
-            | uv.UnitTypesIntensity
-            | uv.UnitTypesDischarge
-            | uv.UnitTypesVelocity
+            us.UnitTypesLength
+            | us.UnitTypesIntensity
+            | us.UnitTypesDischarge
+            | us.UnitTypesVelocity
         ] = None,
         **kwargs,
     ) -> str | None: ...
 
     @abstractmethod
     def plot_waterlevel(
-        self, units: Optional[uv.UnitTypesLength] = None, **kwargs
+        self, units: Optional[us.UnitTypesLength] = None, **kwargs
     ) -> str: ...
 
     @abstractmethod
     def plot_rainfall(
         self,
-        units: Optional[uv.UnitTypesIntensity] = None,
+        units: Optional[us.UnitTypesIntensity] = None,
         rainfall_multiplier: Optional[float] = None,
         **kwargs,
     ) -> str | None: ...
 
     @abstractmethod
     def plot_discharge(
-        self, units: Optional[uv.UnitTypesDischarge] = None, **kwargs
+        self, units: Optional[us.UnitTypesDischarge] = None, **kwargs
     ) -> str: ...
 
     @abstractmethod
     def plot_wind(
         self,
-        velocity_units: Optional[uv.UnitTypesVelocity] = None,
-        direction_units: Optional[uv.UnitTypesDirection] = None,
+        velocity_units: Optional[us.UnitTypesVelocity] = None,
+        direction_units: Optional[us.UnitTypesDirection] = None,
         **kwargs,
     ) -> str: ...
