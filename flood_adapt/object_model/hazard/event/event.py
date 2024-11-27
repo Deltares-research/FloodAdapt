@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
 import tomli
@@ -170,18 +169,24 @@ class Event:
         )
 
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
-        # (will not work when SFINCS model domain extents across the 0 degree longitude so that the meteo download area does not cover the entire model domain)
-        if np.prod(gfs_conus.x_range) < 0:
-            if np.abs(gfs_conus.x_range[0]) > np.abs(gfs_conus.x_range[1]):
-                gfs_conus.x_range = [
-                    gfs_conus.x_range[0] - gfs_conus.x_range[1] - 1,
-                    gfs_conus.x_range[1] - gfs_conus.x_range[1] - 1,
-                ]
-            else:
-                gfs_conus.x_range = [
-                    gfs_conus.x_range[0] - gfs_conus.x_range[0] + 1,
-                    gfs_conus.x_range[1] - gfs_conus.x_range[0] + 1,
-                ]
+        # TODO implement a good solution to this in cht_meteo
+        def _shift_grid_to_positive_lon(grid: MeteoGrid):
+            """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
+            if np.prod(grid.x_range) < 0:
+                if np.abs(grid.x_range[0]) > np.abs(grid.x_range[1]):
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[1] - 1,
+                        grid.x_range[1] - grid.x_range[1] - 1,
+                    ]
+                else:
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[0] + 1,
+                        grid.x_range[1] - grid.x_range[0] + 1,
+                    ]
+            return grid.x_range
+
+        gfs_conus.x_range = _shift_grid_to_positive_lon(gfs_conus)
+
         # Download and collect data
         t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
         t1 = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
