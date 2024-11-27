@@ -8,7 +8,7 @@ lightbox: auto
 ::: {.callout-tip}
 ## Watch a video about entering a historical hurricane
 Don't feel like reading? No problem! Check out our video about how to add a hurricane in FloodAdapt, and also how to shift the hurricane to see how different the flooding and impacts would have been had the hurricane made landfall somewhere else.
-{{< video https://www.youtube.com/watch?v=ojzx3JHeGws >}}
+{{< video https://www.youtube.com/watch?v=ojzx3JHeGws?rel=0 >}}
 :::
 
 The historical hurricane event allows the user to select and shift a historical hurricane from a hurricane track database. When the user selects the “Historical hurricane” option from the **Events** tab, they will see a hurricane selection window appear (see @fig-hurricaneSelector), which is populated with historical hurricanes from the National Hurricane Center (NHC) HURDAT2 database. This database is updated by the NHC annually and will require an annual maintenance update to keep the hurricane database in FloodAdapt up to date.  The user can see all hurricanes within a specified distance of the site, or between specified years.
@@ -24,10 +24,10 @@ The historical hurricane event template window is shown in @fig-hurricaneTemplat
 
 ::: {.callout-tip}
 ## Editing the hurricane start and stop time
-The autommatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.
+The automatically filled-in start and stop time represent the entire duration of the hurricane track. This event duration can be shortened to speed up the calculation. How should you pick the duration? Hover your mouse over the track icons to see date and time stamps. Choose dates from 1-2 days before landfall to 1 day after landfall.
 :::
 
-Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track.
+Under the "Surge and Tide" block, the user can **shift the hurricane track** by specifying the miles of horizontal or vertical shift. The shifted hurricane will be displayed beside the original track. Note that when shifting a historical hurricane track, the new track will be assigned the attributes of the original hurricane (like wind and pressure fields).
 
 The wind and rain are automatically derived from information about the hurricane track. The rainfall is derived from the track using the IPET method. The user does not need to specify any information here.
 
