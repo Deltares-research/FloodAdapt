@@ -83,7 +83,7 @@ class ValueUnitPair(BaseModel):
         in_default_units = self.value / type(self).CONVERSION_FACTORS[self.units]
         return in_default_units * type(self).CONVERSION_FACTORS[new_units]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
 
     def __repr__(self) -> str:

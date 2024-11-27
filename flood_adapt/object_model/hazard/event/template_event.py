@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Optional
+from typing import Optional, Type
 
 import numpy as np
 import pandas as pd
@@ -11,10 +11,10 @@ from plotly.subplots import make_subplots
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.interface.events import (
+    T_EVENT_MODEL,
     ForcingSource,
     ForcingType,
     IEvent,
-    IEventModel,
     IForcing,
 )
 from flood_adapt.object_model.interface.path_builder import (
@@ -26,7 +26,9 @@ from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 
 
-class Event(IEvent[IEventModel]):
+class Event(IEvent[T_EVENT_MODEL]):
+    _attrs_type: Type[T_EVENT_MODEL]
+
     def get_forcings(self) -> list[IForcing]:
         forcings = []
         for forcing in self.attrs.forcings.values():

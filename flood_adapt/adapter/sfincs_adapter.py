@@ -63,15 +63,15 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.events import IEvent, IEventModel
-from flood_adapt.object_model.interface.measures import HazardMeasure
+from flood_adapt.object_model.interface.events import IEvent
+from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
 from flood_adapt.object_model.interface.projections import (
-    PhysicalProjection,
+    IProjection,
     PhysicalProjectionModel,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
@@ -289,7 +289,7 @@ class SfincsAdapter(IHazardAdapter):
                 f"Skipping unsupported forcing type {forcing.__class__.__name__}"
             )
 
-    def add_measure(self, measure: HazardMeasure):
+    def add_measure(self, measure: IMeasure):
         """Get measure data and add it to the sfincs model."""
         if isinstance(measure, FloodWall):
             self._add_measure_floodwall(measure)
@@ -302,23 +302,22 @@ class SfincsAdapter(IHazardAdapter):
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 
-    def add_projection(self, projection: Projection | PhysicalProjection):
+    def add_projection(self, projection: IProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
-        if not isinstance(projection, PhysicalProjection):
-            projection = projection.get_physical_projection()
+        phys_projection = projection.get_physical_projection()
 
-        if projection.attrs.sea_level_rise:
+        if phys_projection.attrs.sea_level_rise:
             self.logger.info("Adding sea level rise to model.")
-            self.waterlevels += projection.attrs.sea_level_rise.convert(
+            self.waterlevels += phys_projection.attrs.sea_level_rise.convert(
                 us.UnitTypesLength.meters
             )
 
-        # ? projection.attrs.subsidence
+        # ? phys_projection.attrs.subsidence
 
-        if projection.attrs.rainfall_multiplier:
+        if phys_projection.attrs.rainfall_multiplier:
             self.logger.info("Adding rainfall multiplier to model.")
             if self.rainfall is not None:
-                self.rainfall *= projection.attrs.rainfall_multiplier
+                self.rainfall *= phys_projection.attrs.rainfall_multiplier
             else:
                 self.logger.warning(
                     "Failed to add rainfall multiplier, no rainfall forcing found in the model."
@@ -817,7 +816,7 @@ class SfincsAdapter(IHazardAdapter):
         for measure in self._strategy.get_hazard_strategy().measures:
             self.add_measure(measure)
 
-        self.add_projection(self._projection.get_physical_projection())
+        self.add_projection(self._projection)
         self.add_obs_points()
 
         self.write(path_out=output_path)
@@ -1167,7 +1166,7 @@ class SfincsAdapter(IHazardAdapter):
         self._model.setup_pressure_forcing_from_grid(press=ds)
 
     def _add_bzs_from_bca(
-        self, event: IEventModel, physical_projection: PhysicalProjectionModel
+        self, event: IEvent, physical_projection: PhysicalProjectionModel
     ):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
@@ -1176,8 +1175,8 @@ class SfincsAdapter(IHazardAdapter):
         sb.read_astro_boundary_conditions(Path(self._model.root) / "sfincs.bca")
 
         times = pd.date_range(
-            start=event.time.start_time,
-            end=event.time.end_time,
+            start=event.attrs.time.start_time,
+            end=event.attrs.time.end_time,
             freq="10T",
         )
 
@@ -1188,7 +1187,7 @@ class SfincsAdapter(IHazardAdapter):
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.water_level_offset.convert(us.UnitTypesLength("meters"))
+                + event.attrs.water_level_offset.convert(us.UnitTypesLength("meters"))
                 + physical_projection.sea_level_rise.convert(
                     us.UnitTypesLength("meters")
                 )

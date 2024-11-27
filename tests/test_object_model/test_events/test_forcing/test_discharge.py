@@ -2,17 +2,18 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from object_model.hazard.event.forcing.discharge import (
+
+from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from object_model.interface.site import RiverModel
-from object_model.io import unit_system as us
+from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.io import unit_system as us
 
 
 @pytest.fixture()

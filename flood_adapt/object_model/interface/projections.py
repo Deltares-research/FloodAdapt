@@ -59,7 +59,7 @@ class ProjectionModel(IObjectModel):
 
 
 class IProjection(IObject[ProjectionModel]):
-    attrs: ProjectionModel
+    _attrs_type = ProjectionModel
     dir_name = ObjectDir.projection
     display_name = "Projection"
 

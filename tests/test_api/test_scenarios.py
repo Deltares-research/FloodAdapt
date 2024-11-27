@@ -2,12 +2,12 @@ import shutil
 from pathlib import Path
 
 import pytest
-from api import scenarios as api_scenarios
-from dbs_classes.interface.database import IDatabase
-from object_model.hazard.event.hurricane import HurricaneEvent
-from object_model.scenario import Scenario
-from object_model.utils import finished_file_exists
 
+from flood_adapt.api import scenarios as api_scenarios
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.utils import finished_file_exists
 from tests.test_object_model.test_events.test_eventset import (
     test_eventset,
     test_sub_event,

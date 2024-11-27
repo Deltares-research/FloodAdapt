@@ -1,33 +1,26 @@
 import os
 from pathlib import Path
-from typing import Any
 
 import geopandas as gpd
 import pyproj
 
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
-    HazardMeasure,
+    IMeasure,
 )
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class GreenInfrastructure(HazardMeasure[GreenInfrastructureModel]):
+class GreenInfrastructure(IMeasure[GreenInfrastructureModel]):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
 
-    attrs: GreenInfrastructureModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, GreenInfrastructureModel):
-            self.attrs = data
-        else:
-            self.attrs = GreenInfrastructureModel.model_validate(data)
+    _attrs_type = GreenInfrastructureModel
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.attrs.polygon_file:
-            output_dir.mkdir(parents=True, exist_ok=True)
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
             src_path = resolve_filepath(
                 self.dir_name, self.attrs.name, self.attrs.polygon_file
             )

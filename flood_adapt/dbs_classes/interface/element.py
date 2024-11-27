@@ -4,11 +4,11 @@ from typing import Any, Generic, Type, TypeVar
 
 from flood_adapt.object_model.interface.object_model import IObject
 
-T = TypeVar("T", bound=IObject)
+T_OBJECT = TypeVar("T_OBJECT", bound=IObject)
 
 
-class AbstractDatabaseElement(ABC, Generic[T]):
-    _object_class: Type[T]
+class AbstractDatabaseElement(ABC, Generic[T_OBJECT]):
+    _object_class: Type[T_OBJECT]
 
     input_path: Path
     output_path: Path
@@ -19,7 +19,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def get(self, name: str) -> T:
+    def get(self, name: str) -> T_OBJECT:
         """Return the object of the type of the database with the given name.
 
         Parameters
@@ -63,7 +63,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
     @abstractmethod
     def save(
         self,
-        object_model: T,
+        object_model: T_OBJECT,
         overwrite: bool = False,
     ):
         """Save an object in the database.
@@ -88,7 +88,7 @@ class AbstractDatabaseElement(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    def edit(self, object_model: T):
+    def edit(self, object_model: T_OBJECT):
         """Edits an already existing object in the database.
 
         Parameters

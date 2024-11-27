@@ -4,13 +4,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 import xarray as xr
-from object_model.hazard.event.forcing.wind import (
+
+from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindCSV,
     WindMeteo,
 )
-from object_model.interface.events import TimeModel
-from object_model.io import unit_system as us
+from flood_adapt.object_model.interface.events import TimeModel
+from flood_adapt.object_model.io import unit_system as us
 
 
 class TestWindConstant:

@@ -1,28 +1,21 @@
 import os
 from pathlib import Path
-from typing import Any
 
 from flood_adapt.object_model.interface.measures import (
-    HazardMeasure,
+    IMeasure,
     PumpModel,
 )
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Pump(HazardMeasure[PumpModel]):
+class Pump(IMeasure[PumpModel]):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height."""
 
-    attrs: PumpModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, PumpModel):
-            self.attrs = data
-        else:
-            self.attrs = PumpModel.model_validate(data)
+    _attrs_type = PumpModel
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.attrs.polygon_file:
-            output_dir.mkdir(parents=True, exist_ok=True)
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
             src_path = resolve_filepath(
                 self.dir_name, self.attrs.name, self.attrs.polygon_file
             )

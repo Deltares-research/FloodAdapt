@@ -66,15 +66,11 @@ class HistoricalEventModel(IEventModel):
         )
 
 
-class HistoricalEvent(Event):
-    MODEL_TYPE = HistoricalEventModel
-    attrs: HistoricalEventModel
+class HistoricalEvent(Event[HistoricalEventModel]):
+    _attrs_type = HistoricalEventModel
 
     def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, HistoricalEventModel):
-            self.attrs = data
-        else:
-            self.attrs = HistoricalEventModel.model_validate(data)
+        super().__init__(data)
         self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
 
     def preprocess(self, output_dir: Path):

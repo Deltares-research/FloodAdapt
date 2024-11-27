@@ -78,18 +78,12 @@ class HurricaneEventModel(IEventModel):
         )
 
 
-class HurricaneEvent(Event):
-    MODEL_TYPE = HurricaneEventModel
-
-    attrs: HurricaneEventModel
-
+class HurricaneEvent(Event[HurricaneEventModel]):
+    _attrs_type = HurricaneEventModel
     track_file: Path
 
     def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, HurricaneEventModel):
-            self.attrs = data
-        else:
-            self.attrs = HurricaneEventModel.model_validate(data)
+        super().__init__(data)
 
         self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
         self.track_file = (

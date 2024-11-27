@@ -7,7 +7,7 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.template_event import Event
 
 
-class DbsEvent(DbsTemplate[Event]):
+class DbsEvent(DbsTemplate):
     _object_class = Event
 
     def get(self, name: str) -> Event:

@@ -1,11 +1,12 @@
 import pytest
-from object_model.hazard.event.forcing.forcing_factory import (
+
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import (
     FORCING_TYPES,
     ForcingFactory,
     ForcingSource,
     ForcingType,
 )
-from object_model.hazard.event.forcing.waterlevels import WaterlevelCSV
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import WaterlevelCSV
 
 
 class TestForcingFactory:

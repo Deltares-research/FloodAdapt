@@ -6,11 +6,12 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from object_model.hazard.measure.green_infrastructure import (
+
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from object_model.io import unit_system as us
-from object_model.scenario import Scenario
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()

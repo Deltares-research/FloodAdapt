@@ -3,18 +3,19 @@ from datetime import datetime
 import pandas as pd
 import pytest
 import xarray as xr
-from object_model.hazard.event.forcing.rainfall import (
+
+from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from object_model.hazard.interface.models import Scstype
-from object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.models import Scstype
+from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from object_model.interface.events import TimeModel
-from object_model.io import unit_system as us
+from flood_adapt.object_model.interface.events import TimeModel
+from flood_adapt.object_model.io import unit_system as us
 
 
 class TestRainfallConstant:

@@ -12,7 +12,7 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.utils import finished_file_exists, write_finished_file
 
@@ -20,17 +20,11 @@ from flood_adapt.object_model.utils import finished_file_exists, write_finished_
 class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
-    attrs: ScenarioModel
-
     direct_impacts: DirectImpacts
 
     def __init__(self, data: dict[str, Any]) -> None:
         """Create a Direct Impact object."""
-        if isinstance(data, ScenarioModel):
-            self.attrs = data
-        else:
-            self.attrs = ScenarioModel.model_validate(data)
-
+        super().__init__(data)
         self.site_info = self.database.site
         self.results_path = self.database.scenarios.output_path / self.attrs.name
         self.direct_impacts = DirectImpacts(

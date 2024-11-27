@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from api import benefits as api_benefits
+
+from flood_adapt.api import benefits as api_benefits
 
 
 @pytest.fixture(scope="session")

@@ -6,8 +6,8 @@ import geopandas as gpd
 from flood_adapt.adapter.interface.model_adapter import IAdapter
 from flood_adapt.object_model.hazard.interface.forcing import IForcing
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.measures import HazardMeasure
-from flood_adapt.object_model.interface.projections import PhysicalProjection
+from flood_adapt.object_model.interface.measures import IMeasure
+from flood_adapt.object_model.interface.projections import IProjection
 
 
 class IHazardAdapter(IAdapter):
@@ -33,7 +33,7 @@ class IHazardAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_measure(self, measure: HazardMeasure):
+    def add_measure(self, measure: IMeasure):
         """
         Implement this to handle each supported measure type for this Hazard model.
 
@@ -46,7 +46,7 @@ class IHazardAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_projection(self, projection: PhysicalProjection):
+    def add_projection(self, projection: IProjection):
         """
         Implement this to handle each supported projection type for this Hazard model.
 

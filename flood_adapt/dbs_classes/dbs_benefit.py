@@ -4,7 +4,7 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.benefit import Benefit
 
 
-class DbsBenefit(DbsTemplate[Benefit]):
+class DbsBenefit(DbsTemplate):
     _object_class = Benefit
 
     def save(self, object_model: Benefit, overwrite: bool = False):
@@ -12,7 +12,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
 
         Parameters
         ----------
-        measure : IBenefit
+        measure : Benefit
             object of scenario type
         overwrite : bool, optional
             whether to overwrite existing benefit with same name, by default False
@@ -60,7 +60,7 @@ class DbsBenefit(DbsTemplate[Benefit]):
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
             benefit to be edited in the database
 
         Raises

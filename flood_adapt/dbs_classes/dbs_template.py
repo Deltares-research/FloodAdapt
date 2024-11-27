@@ -7,29 +7,21 @@ from typing import Any, Type, TypeVar
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.object_model.interface.object_model import IObject
-from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 
-T = TypeVar("T", bound=IObject)
+T_OBJECT = TypeVar("T_OBJECT", bound=IObject)
 
 
-class DbsTemplate(AbstractDatabaseElement[T]):
-    _object_class: Type[T]
+class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
+    _object_class: Type[T_OBJECT]
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
-        self.input_path = db_path(
-            top_level_dir=TopLevelDir.input, object_dir=self._object_class.dir_name
-        )
-        self.output_path = db_path(
-            top_level_dir=TopLevelDir.output, object_dir=self._object_class.dir_name
-        )
+        self.input_path = database.input_path / self._object_class.dir_name.value
+        self.output_path = database.output_path / self._object_class.dir_name.value
         self.standard_objects = []
 
-    def get(self, name: str) -> T:
+    def get(self, name: str) -> T_OBJECT:
         """Return an object of the type of the database with the given name.
 
         Parameters
@@ -100,7 +92,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
             )
 
         # First do a get and change the name and description
-        copy_object: T = self.get(old_name)
+        copy_object = self.get(old_name)
         copy_object.attrs.name = new_name
         copy_object.attrs.description = new_description
 
@@ -131,7 +123,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
 
     def save(
         self,
-        object_model: T,
+        object_model: T_OBJECT,
         overwrite: bool = False,
     ):
         """Save an object in the database and all associated files.
@@ -173,7 +165,7 @@ class DbsTemplate(AbstractDatabaseElement[T]):
             / f"{object_model.attrs.name}.toml",
         )
 
-    def edit(self, object_model: T):
+    def edit(self, object_model: T_OBJECT):
         """Edit an already existing object in the database.
 
         Parameters

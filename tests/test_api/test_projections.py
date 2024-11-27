@@ -1,5 +1,6 @@
 import pytest
-from api import projections as api_projections
+
+from flood_adapt.api import projections as api_projections
 
 
 def test_projection(test_db):

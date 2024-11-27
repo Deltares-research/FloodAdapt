@@ -166,7 +166,7 @@ class EventFactory:
     def get_allowed_forcings(template) -> dict[str, List[str]]:
         return EventFactory.get_event_from_template(
             template
-        ).MODEL_TYPE.get_allowed_forcings()
+        )._attrs_type.get_allowed_forcings()
 
     @staticmethod
     def get_template_description(template):

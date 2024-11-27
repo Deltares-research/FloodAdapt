@@ -4,30 +4,31 @@ from tempfile import gettempdir
 from unittest.mock import patch
 
 import pytest
-from dbs_classes.interface.database import IDatabase
-from object_model.hazard.event.event_factory import EventFactory
-from object_model.hazard.event.event_set import EventSet
-from object_model.hazard.event.forcing.discharge import DischargeConstant
-from object_model.hazard.event.forcing.rainfall import RainfallConstant
-from object_model.hazard.event.forcing.waterlevels import (
+
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelSynthetic,
 )
-from object_model.hazard.event.forcing.wind import WindConstant
-from object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
+from flood_adapt.object_model.hazard.interface.models import (
     Mode,
     ShapeType,
     Template,
     TimeModel,
 )
-from object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
-from object_model.interface.events import IEventModel
-from object_model.interface.site import RiverModel
-from object_model.io import unit_system as us
-from object_model.scenario import Scenario
+from flood_adapt.object_model.interface.events import IEventModel
+from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()

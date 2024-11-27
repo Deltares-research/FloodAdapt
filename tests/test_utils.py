@@ -1,7 +1,8 @@
 from unittest import mock
 
 import pytest
-from object_model.utils import save_file_to_database
+
+from flood_adapt.object_model.utils import save_file_to_database
 
 
 @pytest.fixture

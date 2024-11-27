@@ -4,11 +4,11 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
     get_object_ids,
 )
-from flood_adapt.object_model.measure import ImpactType
+from flood_adapt.object_model.interface.measures import MeasureType
 from flood_adapt.object_model.strategy import Strategy
 
 
-class DbsStrategy(DbsTemplate[Strategy]):
+class DbsStrategy(DbsTemplate):
     _object_class = Strategy
 
     def save(
@@ -66,11 +66,11 @@ class DbsStrategy(DbsTemplate[Strategy]):
         ValueError
             information on which combinations of measures have overlapping properties
         """
-        _measures = [self._database.measures.get(measure) for measure in measures]
+        measure_objects = [self._database.measures.get(measure) for measure in measures]
         impact_measures = [
             measure
-            for measure in _measures
-            if isinstance(measure.attrs.type, ImpactType)
+            for measure in measure_objects
+            if MeasureType.is_impact(measure.attrs.type)
         ]
         ids = [get_object_ids(measure) for measure in impact_measures]
 

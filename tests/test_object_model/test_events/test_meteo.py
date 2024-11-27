@@ -6,8 +6,9 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import xarray as xr
-from object_model.hazard.event.meteo import MeteoHandler
-from object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
+
+from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 
 
 def write_mock_nc_file(

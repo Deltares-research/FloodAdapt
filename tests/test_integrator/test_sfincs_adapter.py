@@ -5,19 +5,20 @@ from unittest import mock
 import geopandas as gpd
 import pandas as pd
 import pytest
-from adapter.sfincs_adapter import SfincsAdapter
-from dbs_classes.database import Database
-from dbs_classes.interface.database import IDatabase
-from object_model.hazard.event.forcing.discharge import (
+
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
@@ -25,34 +26,33 @@ from object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindConstant,
     WindMeteo,
     WindSynthetic,
     WindTrack,
 )
-from object_model.hazard.interface.forcing import (
+from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
     IForcing,
     IRainfall,
     IWaterlevel,
     IWind,
 )
-from object_model.hazard.interface.models import TimeModel
-from object_model.hazard.interface.timeseries import (
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from object_model.hazard.measure.floodwall import FloodWall
-from object_model.hazard.measure.green_infrastructure import (
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from object_model.hazard.measure.pump import Pump
-from object_model.interface.measures import HazardType, IMeasure
-from object_model.interface.site import Obs_pointModel, RiverModel
-from object_model.io import unit_system as us
-from object_model.projection import Projection
-
+from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
+from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
 
 
@@ -521,21 +521,21 @@ class TestAddMeasure:
         def test_add_measure_pump(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=Pump)
             measure.attrs = mock.Mock()
-            measure.attrs.type = HazardType.pump
+            measure.attrs.type = MeasureType.pump
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_pump.assert_called_once_with(measure)
 
         def test_add_measure_greeninfra(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=GreenInfrastructure)
             measure.attrs = mock.Mock()
-            measure.attrs.type = HazardType.greening
+            measure.attrs.type = MeasureType.greening
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_greeninfra.assert_called_once_with(measure)
 
         def test_add_measure_floodwall(self, sfincs_adapter: SfincsAdapter):
             measure = mock.Mock(spec=FloodWall)
             measure.attrs = mock.Mock()
-            measure.attrs.type = HazardType.floodwall
+            measure.attrs.type = MeasureType.floodwall
             sfincs_adapter.add_measure(measure)
             sfincs_adapter._add_measure_floodwall.assert_called_once_with(measure)
 
@@ -557,7 +557,7 @@ class TestAddMeasure:
             data = {
                 "name": "test_seawall",
                 "description": "seawall",
-                "type": HazardType.floodwall,
+                "type": MeasureType.floodwall,
                 "elevation": us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
                 "selection_type": "polyline",
                 "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
@@ -578,7 +578,7 @@ class TestAddMeasure:
             data = {
                 "name": "test_pump",
                 "description": "pump",
-                "type": HazardType.pump,
+                "type": MeasureType.pump,
                 "discharge": us.UnitfulDischarge(
                     value=100, units=us.UnitTypesDischarge.cfs
                 ),
@@ -600,7 +600,7 @@ class TestAddMeasure:
             data = {
                 "name": "test_greeninfra",
                 "description": "greeninfra",
-                "type": HazardType.water_square,
+                "type": MeasureType.water_square,
                 "selection_type": "polygon",
                 "polygon_file": str(TEST_DATA_DIR / "green_infra.geojson"),
                 "volume": {"value": 1, "units": "m3"},

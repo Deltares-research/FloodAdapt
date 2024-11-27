@@ -1,4 +1,4 @@
-from flood_adapt.object_model.interface.measures import HazardMeasure
+from flood_adapt.object_model.interface.measures import IMeasure
 
 
 class HazardStrategy:
@@ -6,10 +6,10 @@ class HazardStrategy:
 
     Parameters
     ----------
-    measures : list[HazardMeasure]
+    measures : list[IMeasure]
     """
 
-    def __init__(self, measures: list[HazardMeasure]) -> None:
+    def __init__(self, measures: list[IMeasure]) -> None:
         self.measures = measures
 
     def __eq__(self, other):

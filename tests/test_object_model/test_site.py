@@ -1,6 +1,7 @@
-import object_model.io.unit_system as us
 import pytest
-from object_model.interface.site import (
+
+import flood_adapt.object_model.io.unit_system as us
+from flood_adapt.object_model.interface.site import (
     DemModel,
     RiverModel,
     SfincsModel,

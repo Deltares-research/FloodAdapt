@@ -4,14 +4,15 @@ import tempfile
 import numpy as np
 import pandas as pd
 import pytest
-from object_model.hazard.event.timeseries import (
+from pydantic import ValidationError
+
+from flood_adapt.object_model.hazard.event.timeseries import (
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from object_model.hazard.interface.models import REFERENCE_TIME, Scstype
-from object_model.io import unit_system as us
-from pydantic import ValidationError
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, Scstype
+from flood_adapt.object_model.io import unit_system as us
 
 
 class TestTimeseriesModel:

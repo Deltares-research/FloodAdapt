@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Any, Generic, Optional, TypeVar
+from typing import Generic, Optional, Type, TypeVar
 
-from pydantic import Field, model_validator, validator
+from pydantic import Field, field_validator, model_validator
 
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
@@ -10,17 +10,15 @@ from flood_adapt.object_model.interface.path_builder import (
 from flood_adapt.object_model.io import unit_system as us
 
 
-class ImpactType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in ImpactMeasure."""
+class MeasureCategory(str, Enum):
+    """Class describing the accepted input for the variable 'type' in Measure."""
 
-    elevate_properties = "elevate_properties"
-    buyout_properties = "buyout_properties"
-    floodproof_properties = "floodproof_properties"
+    impact = "impact"
+    hazard = "hazard"
 
 
-class HazardType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in HazardMeasure."""
-
+class MeasureType(str, Enum):
+    # Hazard measures
     floodwall = "floodwall"
     thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
     levee = "levee"  # For now, same functionality as floodwall TODO: Add levee functionality
@@ -32,6 +30,41 @@ class HazardType(str, Enum):
     greening = "greening"
     total_storage = "total_storage"
 
+    # Impact measures
+    elevate_properties = "elevate_properties"
+    buyout_properties = "buyout_properties"
+    floodproof_properties = "floodproof_properties"
+
+    @classmethod
+    def is_hazard(cls, measure_type: str) -> bool:
+        return measure_type in [
+            cls.floodwall,
+            cls.thin_dam,
+            cls.levee,
+            cls.pump,
+            cls.culvert,
+            cls.water_square,
+            cls.greening,
+            cls.total_storage,
+        ]
+
+    @classmethod
+    def is_impact(cls, measure_type: str) -> bool:
+        return measure_type in [
+            cls.elevate_properties,
+            cls.buyout_properties,
+            cls.floodproof_properties,
+        ]
+
+    @classmethod
+    def get_measure_category(cls, measure_type: str) -> MeasureCategory:
+        if cls.is_hazard(measure_type):
+            return MeasureCategory.hazard
+        elif cls.is_impact(measure_type):
+            return MeasureCategory.impact
+        else:
+            raise ValueError(f"Invalid measure type: {measure_type}")
+
 
 class SelectionType(str, Enum):
     """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure."""
@@ -42,33 +75,27 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-T = TypeVar("T")
-
-
-class MeasureModel(IObjectModel, Generic[T]):
+class MeasureModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures."""
 
-    type: T
-
-    @model_validator(mode="after")
-    def validate_type(self) -> "MeasureModel":
-        if not isinstance(self.type, (ImpactType, HazardType)):
-            raise ValueError(
-                f"Type must be one of {ImpactType.__members__} or {HazardType.__members__}"
-            )
-        return self
+    type: MeasureType
 
 
-class HazardMeasureModel(MeasureModel[HazardType]):
+class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
-    type: HazardType
     selection_type: SelectionType
     polygon_file: Optional[str] = Field(
         None,
         min_length=1,
         description="Path to a polygon file, either absolute or relative to the measure path.",
     )
+
+    @field_validator("type")
+    def validate_type(cls, value):
+        if not MeasureType.is_hazard(value):
+            raise ValueError(f"Invalid hazard type: {value}")
+        return value
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "HazardMeasureModel":
@@ -83,48 +110,45 @@ class HazardMeasureModel(MeasureModel[HazardType]):
         return self
 
 
-class ImpactMeasureModel(MeasureModel[ImpactType]):
+class ImpactMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
-    type: ImpactType
+    type: MeasureType
     selection_type: SelectionType
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     polygon_file: Optional[str] = Field(
-        None,
+        default=None,
         min_length=1,
         description="Path to a polygon file, relative to the database path.",
     )
     property_type: str  # TODO make enum
 
-    # TODO #94 pydantic validators do not currently work
+    @field_validator("type")
+    def validate_type(cls, value):
+        if not MeasureType.is_impact(value):
+            raise ValueError(f"Invalid impact type: {value}")
+        return value
 
-    @validator("aggregation_area_name")
-    def validate_aggregation_area_name(
-        cls, aggregation_area_name: Optional[str], values: Any
-    ) -> Optional[str]:
+    @model_validator(mode="after")
+    def validate_aggregation_area_name(self):
         if (
-            values.get("selection_type") == SelectionType.aggregation_area
-            and aggregation_area_name is None
+            self.selection_type == SelectionType.aggregation_area
+            and self.aggregation_area_name is None
         ):
             raise ValueError(
                 "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
             )
-        return aggregation_area_name
+        return self
 
-    @validator("polygon_file")
-    def validate_polygon_file(
-        cls, polygon_file: Optional[str], values: Any
-    ) -> Optional[str]:
-        if (
-            values.get("selection_type") == SelectionType.polygon
-            and polygon_file is None
-        ):
+    @model_validator(mode="after")
+    def validate_polygon_file(self):
+        if self.selection_type == SelectionType.polygon and self.polygon_file is None:
             raise ValueError(
                 "If `selection_type` is 'polygon', then `polygon_file` needs to be set."
             )
 
-        return polygon_file
+        return self
 
 
 class ElevateModel(ImpactMeasureModel):
@@ -171,13 +195,13 @@ class GreenInfrastructureModel(HazardMeasureModel):
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
         e_msg = f"Error parsing GreenInfrastructureModel: {self.name}"
 
-        if self.type == HazardType.total_storage:
+        if self.type == MeasureType.total_storage:
             if self.height is not None or self.percent_area is not None:
                 raise ValueError(
                     f"{e_msg}\nHeight and percent_area cannot be set for total storage type measures"
                 )
             return self
-        elif self.type == HazardType.water_square:
+        elif self.type == MeasureType.water_square:
             if self.percent_area is not None:
                 raise ValueError(
                     f"{e_msg}\nPercentage_area cannot be set for water square type measures"
@@ -187,7 +211,7 @@ class GreenInfrastructureModel(HazardMeasureModel):
                     f"{e_msg}\nHeight needs to be set for water square type measures"
                 )
             return self
-        elif self.type == HazardType.greening:
+        elif self.type == MeasureType.greening:
             if not isinstance(self.height, us.UnitfulHeight) or not isinstance(
                 self.percent_area, float
             ):
@@ -214,31 +238,13 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-MeasureModelType = TypeVar("MeasureModelType", bound=MeasureModel)
+T_MEASURE_MODEL = TypeVar("T_MEASURE_MODEL", bound=MeasureModel)
 
 
-class IMeasure(IObject[MeasureModelType]):
+class IMeasure(IObject[T_MEASURE_MODEL], Generic[T_MEASURE_MODEL]):
     """A class for a FloodAdapt measure."""
+
+    _attrs_type: Type[T_MEASURE_MODEL]
 
     dir_name = ObjectDir.measure
     display_name = "Measure"
-
-    attrs: MeasureModelType
-
-
-HazardMeasureModelType = TypeVar("HazardMeasureModelType", bound=HazardMeasureModel)
-
-
-class HazardMeasure(IMeasure[HazardMeasureModel], Generic[HazardMeasureModelType]):
-    """HazardMeasure class that holds all the information for a specific measure type that affects the impact model."""
-
-    attrs: HazardMeasureModel
-
-
-ImpactMeasureModelType = TypeVar("ImpactMeasureModelType", bound=ImpactMeasureModel)
-
-
-class ImpactMeasure(IMeasure[ImpactMeasureModel], Generic[ImpactMeasureModelType]):
-    """All the information for a specific measure type that affects the impact model."""
-
-    attrs: ImpactMeasureModel

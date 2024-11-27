@@ -1,7 +1,8 @@
 import shutil
 
 import pytest
-from api import strategies as api_strategies
+
+from flood_adapt.api import strategies as api_strategies
 
 
 @pytest.mark.skip(reason="test fails in TeamCity, TODO investigate")

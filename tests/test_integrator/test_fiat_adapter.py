@@ -1,11 +1,12 @@
 import pandas as pd
 import pytest
-from object_model.interface.path_builder import (
+from pandas.testing import assert_frame_equal
+
+from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from object_model.scenario import Scenario
-from pandas.testing import assert_frame_equal
+from flood_adapt.object_model.scenario import Scenario
 
 
 class TestFiatAdapter:

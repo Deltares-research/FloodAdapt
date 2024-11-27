@@ -1,18 +1,16 @@
-from typing import Any, Union
+from typing import Any
 
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.interface.measures import (
-    HazardMeasure,
-    HazardType,
-    ImpactMeasure,
-    ImpactType,
+    IMeasure,
+    MeasureType,
 )
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     db_path,
 )
-from flood_adapt.object_model.interface.strategies import IStrategy, StrategyModel
+from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.measure_factory import (
     MeasureFactory,
 )
@@ -21,17 +19,12 @@ from flood_adapt.object_model.measure_factory import (
 class Strategy(IStrategy):
     """Strategy class that holds all the information for a specific strategy."""
 
-    attrs: StrategyModel
-
     def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, StrategyModel):
-            self.attrs = data
-        else:
-            self.attrs = StrategyModel.model_validate(data)
+        super().__init__(data)
         self.impact_strategy = self.get_impact_strategy()
         self.hazard_strategy = self.get_hazard_strategy()
 
-    def get_measures(self) -> list[Union[ImpactMeasure, HazardMeasure]]:
+    def get_measures(self) -> list[IMeasure]:
         """Get the measures paths and types."""
         # Get measure paths using a database structure
         measure_paths = [
@@ -44,7 +37,7 @@ class Strategy(IStrategy):
         impact_measures = [
             measure
             for measure in self.get_measures()
-            if isinstance(measure.attrs.type, ImpactType)
+            if MeasureType.is_impact(measure.attrs.type)
         ]
         return ImpactStrategy(
             measures=impact_measures,
@@ -55,6 +48,6 @@ class Strategy(IStrategy):
         hazard_measures = [
             measure
             for measure in self.get_measures()
-            if isinstance(measure.attrs.type, HazardType)
+            if MeasureType.is_hazard(measure.attrs.type)
         ]
         return HazardStrategy(measures=hazard_measures)

@@ -3,28 +3,28 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from dbs_classes.interface.database import IDatabase
-from object_model.hazard.event.forcing.discharge import DischargeConstant
-from object_model.hazard.event.forcing.rainfall import (
+
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.event.forcing.rainfall import (
     RainfallTrack,
 )
-from object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
 )
-from object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindTrack,
 )
-from object_model.hazard.event.hurricane import HurricaneEvent
-from object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.interface.models import (
     ForcingType,
     Mode,
     Template,
     TimeModel,
 )
-from object_model.interface.site import RiverModel
-from object_model.io import unit_system as us
-from object_model.scenario import Scenario
-
+from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.scenario import Scenario
 from tests.fixtures import TEST_DATA_DIR
 
 

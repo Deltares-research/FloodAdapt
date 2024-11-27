@@ -108,7 +108,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             _offshore_model.set_timing(event.attrs.time)
 
             # Add water levels
-            _offshore_model._add_bzs_from_bca(event.attrs, physical_projection.attrs)
+            _offshore_model._add_bzs_from_bca(event, physical_projection.attrs)
 
             # Add spw if applicable
             if isinstance(event, HurricaneEvent):

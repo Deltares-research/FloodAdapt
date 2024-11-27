@@ -1,21 +1,14 @@
 import os
 from pathlib import Path
-from typing import Any
 
-from flood_adapt.object_model.interface.measures import ElevateModel, ImpactMeasure
+from flood_adapt.object_model.interface.measures import ElevateModel, IMeasure
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Elevate(ImpactMeasure[ElevateModel]):
+class Elevate(IMeasure[ElevateModel]):
     """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height."""
 
-    attrs: ElevateModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, ElevateModel):
-            self.attrs = data
-        else:
-            self.attrs = ElevateModel.model_validate(data)
+    _attrs_type = ElevateModel
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """Save the additional files to the database."""

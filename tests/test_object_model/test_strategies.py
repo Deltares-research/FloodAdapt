@@ -1,21 +1,21 @@
 from unittest.mock import patch
 
 import pytest
-from object_model.direct_impact.impact_strategy import ImpactStrategy
-from object_model.direct_impact.measure.buyout import Buyout
-from object_model.direct_impact.measure.elevate import Elevate
-from object_model.direct_impact.measure.floodproof import FloodProof
-from object_model.hazard.hazard_strategy import HazardStrategy
-from object_model.hazard.measure.floodwall import FloodWall
-from object_model.hazard.measure.green_infrastructure import (
+
+from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
+from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
+from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
+from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
+from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
-from object_model.interface.measures import (
-    HazardType,
-    ImpactType,
+from flood_adapt.object_model.interface.measures import (
+    MeasureType,
     SelectionType,
 )
-from object_model.strategy import Strategy
+from flood_adapt.object_model.strategy import Strategy
 
 
 @pytest.fixture()
@@ -120,12 +120,12 @@ def test_strategy_comb_read(test_db, test_strategy):
     assert all(
         measure
         for measure in strategy.get_impact_strategy().measures
-        if measure.attrs.type in ImpactType.__members__.values()
+        if MeasureType.is_impact(measure.attrs.type)
     ), strategy.get_impact_strategy().measures
     assert all(
         measure
         for measure in strategy.get_hazard_strategy().measures
-        if measure.attrs.type in HazardType.__members__.values()
+        if MeasureType.is_hazard(measure.attrs.type)
     ), strategy.get_hazard_strategy().measures
     assert isinstance(strategy.get_impact_strategy().measures[0], Elevate)
     assert isinstance(strategy.get_impact_strategy().measures[1], Buyout)
@@ -188,7 +188,7 @@ def setup_strategy_with_overlapping_measures(test_db, test_data_dir, test_buyout
         attrs = {
             "name": f"test_buyout{i}",
             "description": "test_buyout",
-            "type": ImpactType.buyout_properties,
+            "type": MeasureType.buyout_properties,
             "selection_type": SelectionType.polygon,
             "property_type": "RES",
             "polygon_file": str(test_data_dir / "polygon.geojson"),

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, ClassVar, List
+from typing import ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.template_event import Event
@@ -49,16 +49,8 @@ class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Syntheti
         )
 
 
-class SyntheticEvent(Event):
-    MODEL_TYPE = SyntheticEventModel
-
-    attrs: SyntheticEventModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, SyntheticEventModel):
-            self.attrs = data
-        else:
-            self.attrs = SyntheticEventModel.model_validate(data)
+class SyntheticEvent(Event[SyntheticEventModel]):
+    _attrs_type = SyntheticEventModel
 
     def preprocess(self, output_dir: Path):
         pass

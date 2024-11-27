@@ -1,6 +1,6 @@
 import logging
 import os
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 from typing import Any, Generic, Type, TypeVar
 
@@ -34,11 +34,12 @@ class IObjectModel(BaseModel):
     description: str = Field(default="", description="Description of the object.")
 
 
-ObjectModel = TypeVar("ObjectModel", bound=IObjectModel)
-T = TypeVar("T", bound="IObject")
+# Add typevars so that type checking works correctly
+T_OBJECT = TypeVar("T_OBJECT", bound="IObject")
+T_OBJECTMODEL = TypeVar("T_OBJECTMODEL", bound="IObjectModel")
 
 
-class IObject(ABC, Generic[ObjectModel]):
+class IObject(ABC, Generic[T_OBJECTMODEL]):
     """Base class for all FloodAdapt objects.
 
     Contains methods for loading and saving objects to disk.
@@ -50,13 +51,15 @@ class IObject(ABC, Generic[ObjectModel]):
     display_name : str
         The display name of the object used in the UI.
 
-    Instance Attributes
+    Instance Properties
     -------------------
     attrs : ObjectModel
         The object model containing the data for the object. It should be a subclass of IObjectModel.
 
     Methods
     -------
+    __init__(data: dict[str, Any] | IObjectModel) -> None
+        Initialize the object.
     load_file(file_path: Path | str | os.PathLike) -> IObject
         Load object from file.
     load_dict(data: dict[str, Any]) -> IObject
@@ -67,33 +70,36 @@ class IObject(ABC, Generic[ObjectModel]):
         Save object to disk, including any additional files.
     """
 
-    attrs: ObjectModel
+    _attrs_type: Type[T_OBJECTMODEL]
 
     dir_name: ObjectDir
     display_name: str
 
     _logger: logging.Logger
 
-    @abstractmethod
-    def __init__(self, data: dict[str, Any] | ObjectModel) -> None:
-        """Implement this method in the subclass to initialize the object.
+    def __init__(self, data: dict[str, Any] | T_OBJECTMODEL) -> None:
+        """Validate the object model passed in as 'data' and assign it to self.attrs."""
+        if isinstance(data, self.__class__._attrs_type):
+            self._attrs = data
+        elif isinstance(data, dict):
+            self._attrs = self.__class__._attrs_type.model_validate(data)
+        else:
+            raise TypeError(f"Expected {self._attrs_type} or dict, got {type(data)}")
 
-        This method should validate the object model passed in as 'data' and assign it to self.attrs.
+    @property
+    def attrs(self) -> T_OBJECTMODEL:
+        """Return the object model."""
+        return self._attrs
 
-        Example:
-        --------
-        ```python
-        def __init__(self, data: dict[str, Any]) -> None:
-            if isinstance(data, ObjectModel):
-                self.attrs = data  # load the provided model directly
-            else:
-                self.attrs = ObjectModel.model_validate(
-                    data
-                )  # create a new model from the provided data
-
-            # ... Additional initialization code here ...
-        ```
-        """
+    @attrs.setter
+    def attrs(self, value: T_OBJECTMODEL) -> None:
+        """Set the object model."""
+        if isinstance(value, self._attrs_type):
+            self._attrs = value
+        elif isinstance(value, dict):
+            self._attrs = self._attrs_type.model_validate(value)
+        else:
+            raise TypeError(f"Expected {self._attrs_type} or dict, got {type(value)}")
 
     @classmethod
     def get_logger(cls) -> logging.Logger:
@@ -108,17 +114,18 @@ class IObject(ABC, Generic[ObjectModel]):
         return self.get_logger()
 
     @classmethod
-    def load_file(cls: Type[T], file_path: Path | str | os.PathLike) -> T:
+    def load_file(cls: Type[T_OBJECT], file_path: Path | str | os.PathLike) -> T_OBJECT:
         """Load object from file."""
         with open(file_path, mode="rb") as fp:
             toml = tomli.load(fp)
         return cls.load_dict(toml)
 
     @classmethod
-    def load_dict(cls: Type[T], data: dict[str, Any] | ObjectModel) -> T:
+    def load_dict(
+        cls: Type[T_OBJECT], data: dict[str, Any] | T_OBJECTMODEL
+    ) -> T_OBJECT:
         """Load object from dictionary."""
-        obj = cls(data)
-        return obj
+        return cls(data)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         """

@@ -3,18 +3,18 @@ from itertools import combinations
 from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
     get_object_ids,
 )
-from flood_adapt.object_model.interface.measures import ImpactMeasure
+from flood_adapt.object_model.interface.measures import IMeasure
 
 
 class ImpactStrategy:
     """Class containing only the impact measures of a strategy."""
 
-    def __init__(self, measures: list[ImpactMeasure], validate=False) -> None:
+    def __init__(self, measures: list[IMeasure], validate=False) -> None:
         """Set measures and validates the combination.
 
         Parameters
         ----------
-        measures : list[ImpactMeasure]
+        measures : list[IMeasure]
         """
         self.measures = measures
         if validate:

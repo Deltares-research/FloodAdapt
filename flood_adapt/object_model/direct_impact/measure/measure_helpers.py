@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.object_model.interface.measures import ImpactMeasure
+from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -13,7 +13,7 @@ from flood_adapt.object_model.interface.site import Site
 
 # TODO find a better place for this function. maybe strategy or fiat adapter?
 def get_object_ids(
-    measure: ImpactMeasure, fiat_model: Optional[FiatModel] = None
+    measure: IMeasure, fiat_model: Optional[FiatModel] = None
 ) -> list[Any]:
     """Get ids of objects that are affected by the measure.
 
@@ -22,6 +22,12 @@ def get_object_ids(
     list[Any]
         list of ids
     """
+    if not MeasureType.is_impact(measure.attrs.type):
+        raise ValueError(
+            f"Measure type {measure.attrs.type} is not an impact measure. "
+            "Can only retrieve object ids for impact measures."
+        )
+
     # get the site information
     site = Site.load_file(
         db_path(TopLevelDir.static, object_dir=ObjectDir.site) / "site.toml"

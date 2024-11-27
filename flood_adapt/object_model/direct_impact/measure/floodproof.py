@@ -1,21 +1,14 @@
 import os
 from pathlib import Path
-from typing import Any
 
-from flood_adapt.object_model.interface.measures import FloodProofModel, ImpactMeasure
+from flood_adapt.object_model.interface.measures import FloodProofModel, IMeasure
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class FloodProof(ImpactMeasure[FloodProofModel]):
+class FloodProof(IMeasure[FloodProofModel]):
     """Subclass of ImpactMeasure describing the measure of flood-proof buildings."""
 
-    attrs: FloodProofModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, FloodProofModel):
-            self.attrs = data
-        else:
-            self.attrs = FloodProofModel.model_validate(data)
+    _attrs_type = FloodProofModel
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.attrs.polygon_file:

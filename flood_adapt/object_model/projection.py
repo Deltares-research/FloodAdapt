@@ -1,11 +1,9 @@
 import os
 from pathlib import Path
-from typing import Any
 
 from flood_adapt.object_model.interface.projections import (
     IProjection,
     PhysicalProjection,
-    ProjectionModel,
     SocioEconomicChange,
 )
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
@@ -13,14 +11,6 @@ from flood_adapt.object_model.utils import resolve_filepath, save_file_to_databa
 
 class Projection(IProjection):
     """Projection class that holds all the information for a specific projection."""
-
-    attrs: ProjectionModel
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, ProjectionModel):
-            self.attrs = data
-        else:
-            self.attrs = ProjectionModel.model_validate(data)
 
     def get_physical_projection(self) -> PhysicalProjection:
         return PhysicalProjection(self.attrs.physical_projection)

@@ -1,13 +1,14 @@
 import pytest
-from object_model.interface.measures import (
+from pydantic import ValidationError
+
+from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
     HazardMeasureModel,
-    HazardType,
     MeasureModel,
+    MeasureType,
     SelectionType,
 )
-from object_model.io import unit_system as us
-from pydantic import ValidationError
+from flood_adapt.object_model.io import unit_system as us
 
 
 class TestMeasureModel:
@@ -16,7 +17,7 @@ class TestMeasureModel:
         measure = MeasureModel(
             name="test_measure",
             description="test description",
-            type=HazardType.floodwall,
+            type=MeasureType.floodwall,
         )
 
         # Assert
@@ -26,7 +27,7 @@ class TestMeasureModel:
 
     def test_measure_model_no_description(self):
         # Arrange
-        measure = MeasureModel(name="test_measure", type=HazardType.floodwall)
+        measure = MeasureModel(name="test_measure", type=MeasureType.floodwall)
 
         # Assert
         assert measure.name == "test_measure"
@@ -36,7 +37,7 @@ class TestMeasureModel:
     def test_measure_model_no_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            MeasureModel(type=HazardType.floodwall)
+            MeasureModel(type=MeasureType.floodwall)
 
         # Assert
         assert "validation error for MeasureModel\nname\n  Field required" in str(
@@ -46,7 +47,7 @@ class TestMeasureModel:
     def test_measure_model_invalid_name(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
-            MeasureModel(name="", type=HazardType.floodwall)
+            MeasureModel(name="", type=MeasureType.floodwall)
 
         # Assert
         assert (
@@ -68,8 +69,7 @@ class TestMeasureModel:
         assert len(excinfo.value.errors()) == 1
 
         error = excinfo.value.errors()[0]
-        assert error["type"] == "value_error", error["type"]
-        assert "Type must be one of" in error["msg"], error["msg"]
+        assert error["type"] == "enum", error["type"]
 
 
 class TestHazardMeasureModel:
@@ -78,7 +78,7 @@ class TestHazardMeasureModel:
         hazard_measure = HazardMeasureModel(
             name="test_hazard_measure",
             description="test description",
-            type=HazardType.floodwall,
+            type=MeasureType.floodwall,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.aggregation_area,
         )
@@ -95,7 +95,7 @@ class TestHazardMeasureModel:
         hazard_measure = HazardMeasureModel(
             name="test_hazard_measure",
             description="test description",
-            type=HazardType.floodwall,
+            type=MeasureType.floodwall,
             selection_type=SelectionType.aggregation_area,
         )
 
@@ -112,7 +112,7 @@ class TestHazardMeasureModel:
             HazardMeasureModel(
                 name="test_hazard_measure",
                 description="test description",
-                type=HazardType.floodwall,
+                type=MeasureType.floodwall,
                 selection_type=SelectionType.polygon,
             )
 
@@ -139,7 +139,7 @@ class TestHazardMeasureModel:
             HazardMeasureModel(
                 name="test_hazard_measure",
                 description="test description",
-                type=HazardType.floodwall,
+                type=MeasureType.floodwall,
                 polygon_file="test_polygon_file",
                 selection_type="invalid_selection_type",
             )
@@ -156,7 +156,7 @@ class TestGreenInfrastructureModel:
         green_infrastructure = GreenInfrastructureModel(
             name="test_green_infrastructure",
             description="test description",
-            type=HazardType.greening,
+            type=MeasureType.greening,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.aggregation_area,
             aggregation_area_name="test_aggregation_area_name",
@@ -191,7 +191,7 @@ class TestGreenInfrastructureModel:
         green_infrastructure = GreenInfrastructureModel(
             name="test_green_infrastructure",
             description="test description",
-            type=HazardType.total_storage,
+            type=MeasureType.total_storage,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
             volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
@@ -212,7 +212,7 @@ class TestGreenInfrastructureModel:
         green_infrastructure = GreenInfrastructureModel(
             name="test_green_infrastructure",
             description="test description",
-            type=HazardType.water_square,
+            type=MeasureType.water_square,
             polygon_file="test_polygon_file",
             selection_type=SelectionType.polygon,
             volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
@@ -232,7 +232,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.greening,
+                type=MeasureType.greening,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_type="test_aggregation_area_type",
@@ -253,7 +253,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.greening,
+                type=MeasureType.greening,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
@@ -277,7 +277,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.floodwall,
+                type=MeasureType.floodwall,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
@@ -363,7 +363,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.greening,
+                type=MeasureType.greening,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.aggregation_area,
                 aggregation_area_name="test_aggregation_area_name",
@@ -419,7 +419,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.total_storage,
+                type=MeasureType.total_storage,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.polygon,
                 volume=volume,
@@ -471,7 +471,7 @@ class TestGreenInfrastructureModel:
             GreenInfrastructureModel(
                 name="test_green_infrastructure",
                 description="test description",
-                type=HazardType.water_square,
+                type=MeasureType.water_square,
                 polygon_file="test_polygon_file",
                 selection_type=SelectionType.polygon,
                 volume=volume,

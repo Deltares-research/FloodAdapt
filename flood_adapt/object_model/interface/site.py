@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel
 
@@ -270,12 +270,6 @@ class SiteModel(IObjectModel):
 
 
 class Site(IObject[SiteModel]):
-    attrs: SiteModel
+    _attrs_type = SiteModel
     dir_name = ObjectDir.site
     display_name = "Site"
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        if isinstance(data, SiteModel):
-            self.attrs = data
-        else:
-            self.attrs = SiteModel.model_validate(data)

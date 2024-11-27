@@ -134,15 +134,15 @@ class IEventModel(IObjectModel):
         ...
 
 
-T = TypeVar("T", bound=IEventModel)
+T_EVENT_MODEL = TypeVar("T_EVENT_MODEL", bound=IEventModel)
 
 
-class IEvent(IObject[T]):
-    MODEL_TYPE: Type[T]
+class IEvent(IObject[T_EVENT_MODEL]):
+    _attrs_type: Type[T_EVENT_MODEL]
+
     dir_name = ObjectDir.event
     display_name = "Event"
 
-    attrs: T
     _site = None
 
     @abstractmethod

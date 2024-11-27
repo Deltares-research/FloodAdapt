@@ -1,8 +1,9 @@
 import geopandas as gpd
 import pandas as pd
 import pytest
-from api import output as api_output
-from api import scenarios as api_scenarios
+
+from flood_adapt.api import output as api_output
+from flood_adapt.api import scenarios as api_scenarios
 
 
 class TestAPI_Output:

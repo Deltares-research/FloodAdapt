@@ -10,7 +10,8 @@ import tomli
 import tomli_w
 from fiat_toolbox.metrics_writer.fiat_read_metrics_file import MetricsFileReader
 
-from flood_adapt.object_model.interface.benefits import BenefitModel, IBenefit
+from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -18,33 +19,19 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 
 
-class Benefit(IBenefit):
+class Benefit(IBenefit, DatabaseUser):
     """Object holding all attributes and methods related to a benefit analysis."""
 
-    attrs: BenefitModel
     scenarios: pd.DataFrame
 
     def __init__(self, data: dict[str, Any]):
         """Initialize function called when object is created through the load_file or load_dict methods."""
-        if isinstance(data, BenefitModel):
-            self.attrs = data
-        else:
-            self.attrs = BenefitModel.model_validate(data)
-
+        super().__init__(data)
         # Get output path based on database path
         self.check_scenarios()
         self.results_path = self.database.benefits.output_path.joinpath(self.attrs.name)
         self.site_info = self.database.site
         self.unit = self.site_info.attrs.fiat.damage_unit
-
-    @property
-    def database(self):
-        """Return the database for the object."""
-        if not hasattr(self, "_database_instance") or self._database_instance is None:
-            from flood_adapt.dbs_classes.database import Database
-
-            self._database_instance = Database()
-        return self._database_instance
 
     @property
     def has_run(self):

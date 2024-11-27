@@ -16,7 +16,7 @@ class ScenarioModel(IObjectModel):
 
 
 class IScenario(IObject[ScenarioModel]):
-    attrs: ScenarioModel
+    _attrs_type = ScenarioModel
     dir_name = ObjectDir.scenario
     display_name = "Scenario"
 

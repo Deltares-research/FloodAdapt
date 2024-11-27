@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pytest
-from api import static as api_static
+
+from flood_adapt.api import static as api_static
 
 
 @pytest.mark.skip(reason="test fails in TeamCity, TODO investigate")

@@ -31,13 +31,12 @@ class BenefitModel(IObjectModel):
 
 
 class IBenefit(IObject[BenefitModel]):
-    attrs: BenefitModel
+    _attrs_type = BenefitModel
     dir_name = ObjectDir.benefit
     display_name = "Benefit"
 
     results_path: Path
     scenarios: pd.DataFrame
-    has_run: bool = False
 
     @abstractmethod
     def check_scenarios(self) -> pd.DataFrame:

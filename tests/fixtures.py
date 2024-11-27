@@ -3,25 +3,25 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from object_model.direct_impact.measure.buyout import Buyout
-from object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
-from object_model.hazard.measure.pump import Pump
-from object_model.interface.measures import (
+
+from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
+from flood_adapt.object_model.hazard.interface.models import DEFAULT_TIMESTEP, TimeModel
+from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.measures import (
     BuyoutModel,
-    HazardType,
-    ImpactType,
+    MeasureType,
     PumpModel,
     SelectionType,
 )
-from object_model.interface.projections import (
+from flood_adapt.object_model.interface.projections import (
     PhysicalProjectionModel,
     ProjectionModel,
     SocioEconomicChangeModel,
 )
-from object_model.interface.strategies import StrategyModel
-from object_model.io import unit_system as us
-from object_model.projection import Projection
-from object_model.strategy import Strategy
+from flood_adapt.object_model.interface.strategies import StrategyModel
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.strategy import Strategy
 
 __all__ = [
     "dummy_time_model",
@@ -66,7 +66,7 @@ def dummy_projection():
 def dummy_buyout_measure():
     model = BuyoutModel(
         name="dummy_buyout_measure",
-        type=ImpactType.buyout_properties,
+        type=MeasureType.buyout_properties,
         selection_type=SelectionType.aggregation_area,
         aggregation_area_type="aggr_lvl_2",
         aggregation_area_name="name1",
@@ -79,7 +79,7 @@ def dummy_buyout_measure():
 def dummy_pump_measure():
     model = PumpModel(
         name="dummy_pump_measure",
-        type=HazardType.pump,
+        type=MeasureType.pump,
         selection_type=SelectionType.polyline,
         polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
         discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
