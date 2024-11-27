@@ -24,9 +24,9 @@ The setup guide consists of the following sections:
 To download and install the **FloodAdapt model-builder** on your computer:
 
 * Download the FloodAdapt model-builder installer from the [Deltares USA website](https://www.deltares-usa.us/floodadapt-model-builders).
-* Double-click the "FloodAdaptModelBuilder_Installer" file and the setup wizard will open (see @fig-setupWizard). Follow the steps of the installation wizard.
+* Double-click the "FloodAdaptModelBuilder_Installer" file and the setup wizard will open (see @fig-setupWizard1). Follow the steps of the installation wizard.
 
-![**FloodAdapt model-builder installation setup wizard**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_modelbuilders_setupWizard.png){width=50% fig-align=left #fig-setupWizard}
+![**FloodAdapt model-builder installation setup wizard**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/installation_modelbuilders_setupWizard.png){width=50% fig-align=left #fig-setupWizard1}
 
 * Guidance how to use the model-builder software to build a SFINCS model is provided in the [SFINCS setup guide](SFINCS/hydromt_sfincs_gui.qmd) and guidance to use the software to build a Delft-FIAT model is provided in the [Delft-FIAT setup guide](Delft_Fiat/hydromt_fiat_gui.qmd)
 
