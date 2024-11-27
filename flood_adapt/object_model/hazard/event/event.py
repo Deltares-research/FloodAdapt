@@ -164,18 +164,24 @@ class Event:
             source=gfs_source,
             parameters=params,
             path=path,
-            x_range=[lon - 10, lon + 10], 
+            x_range=[lon - 10, lon + 10],
             y_range=[lat - 10, lat + 10],
             crs=CRS.from_epsg(4326),
         )
 
-        # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude 
+        # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
         # (will not work when SFINCS model domain extents across the 0 degree longitude so that the meteo download area does not cover the entire model domain)
         if np.prod(gfs_conus.x_range) < 0:
-            if np.abs(gfs_conus.x_range[0]) > np.abs(gfs_conus.x_range[1]):          
-                gfs_conus.x_range = [gfs_conus.x_range[0] - gfs_conus.x_range[1]-1, gfs_conus.x_range[1] - gfs_conus.x_range[1]-1]
+            if np.abs(gfs_conus.x_range[0]) > np.abs(gfs_conus.x_range[1]):
+                gfs_conus.x_range = [
+                    gfs_conus.x_range[0] - gfs_conus.x_range[1] - 1,
+                    gfs_conus.x_range[1] - gfs_conus.x_range[1] - 1,
+                ]
             else:
-                gfs_conus.x_range = [gfs_conus.x_range[0] - gfs_conus.x_range[0]+1, gfs_conus.x_range[1] - gfs_conus.x_range[0]+1]
+                gfs_conus.x_range = [
+                    gfs_conus.x_range[0] - gfs_conus.x_range[0] + 1,
+                    gfs_conus.x_range[1] - gfs_conus.x_range[0] + 1,
+                ]
         # Download and collect data
         t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
         t1 = datetime.strptime(self.attrs.time.end_time, "%Y%m%d %H%M%S")
@@ -206,7 +212,7 @@ class Event:
         ds.raster.set_crs(4326)
         # somehow hydromt_sfincs does not like longitudes > 180
         if np.min(ds.lon) > 180:
-            ds["lon"] = ds.lon-360
+            ds["lon"] = ds.lon - 360
 
         return ds
 
