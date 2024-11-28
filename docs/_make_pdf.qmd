@@ -9,7 +9,7 @@ format:
     toc-depth: 2
     number-sections: true
     number-depth: 2
-    output-file: "Test_print_docs"
+    output-file: "Test_print_docs_2"
     output-ext:  "pdf"
     hyperrefoptions: draft
 editor: source
@@ -25,8 +25,11 @@ editor: source
 update_image_paths <- function(content) {
   # Replace ../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/ with C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/
   updated_content <- gsub("\\.\\./\\..*/_static/images/", "C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/", content)
-  updated_content <- gsub("##", "### ", updated_content)
-  updated_content <- gsub("###", "#### ", updated_content)
+  updated_content <- gsub("##", "###", updated_content)
+  updated_content <- gsub("###", "####", updated_content)
+  updated_content <- gsub("####", "####", updated_content)
+  updated_content <- gsub("#####", "####", updated_content)
+  updated_content <- gsub("######", "####", updated_content)
 
   return(updated_content)
 }
