@@ -11,13 +11,12 @@ from shapely.affinity import translate
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallTrack
 from flood_adapt.object_model.hazard.event.forcing.wind import WindTrack
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
-from flood_adapt.object_model.interface.events import IEventModel
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
@@ -38,7 +37,7 @@ class TranslationModel(BaseModel):
     )
 
 
-class HurricaneEventModel(IEventModel):
+class HurricaneEventModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalHurricane that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {

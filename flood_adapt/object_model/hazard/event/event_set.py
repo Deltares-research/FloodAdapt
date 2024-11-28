@@ -26,8 +26,8 @@ class EventSetModel(BaseModel):
     sub_events: List[IEventModel]
     frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
 
-    @staticmethod
-    def default() -> "EventSetModel":
+    @classmethod
+    def default(cls) -> "EventSetModel":
         """Set default values for Synthetic event."""
         return EventSetModel(
             name="DefaultEventSet",

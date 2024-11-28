@@ -58,7 +58,9 @@ class IForcing(BaseModel, ABC):
         return None
 
     def parse_time(
-        self, t0: Optional[datetime], t1: Optional[datetime]
+        self,
+        t0: Optional[datetime | us.UnitfulTime],
+        t1: Optional[datetime | us.UnitfulTime],
     ) -> tuple[datetime, datetime]:
         """
         Parse the time inputs to ensure they are datetime objects.

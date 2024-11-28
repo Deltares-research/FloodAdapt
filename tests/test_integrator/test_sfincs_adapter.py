@@ -94,7 +94,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                 )
             )
     test_db.site.attrs.river = rivers
-    adapter = SfincsAdapter(model_root=str(overland_2_rivers))
+    adapter = SfincsAdapter(model_root=(overland_2_rivers))
     adapter.set_timing(TimeModel())
     adapter._logger = mock.Mock()
     adapter.logger.handlers = []

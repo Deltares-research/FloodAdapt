@@ -23,6 +23,7 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     TimeModel,
 )
+from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 
@@ -44,11 +45,11 @@ class TideModel(BaseModel):
         self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP
     ) -> pd.DataFrame:
         index = pd.date_range(start=t0, end=t1, freq=ts.to_timedelta(), name="time")
-        seconds = np.arange(len(index)) * ts.convert("seconds")
+        seconds = np.arange(len(index)) * ts.convert(us.UnitTypesTime.seconds)
 
         amp = self.harmonic_amplitude.value
-        omega = 2 * math.pi / (self.harmonic_period.convert("seconds"))
-        phase_seconds = self.harmonic_phase.convert("seconds")
+        omega = 2 * math.pi / (self.harmonic_period.convert(us.UnitTypesTime.seconds))
+        phase_seconds = self.harmonic_phase.convert(us.UnitTypesTime.seconds)
 
         tide = amp * np.cos(omega * (seconds - phase_seconds))  # / 86400
         return pd.DataFrame(data=tide, index=index)
@@ -101,8 +102,8 @@ class WaterlevelSynthetic(IWaterlevel):
 
         return wl_df
 
-    @staticmethod
-    def default() -> "WaterlevelSynthetic":
+    @classmethod
+    def default(cls) -> "WaterlevelSynthetic":
         return WaterlevelSynthetic(
             surge=SurgeModel(
                 timeseries=SyntheticTimeseriesModel.default(us.UnitfulLength)
@@ -143,23 +144,31 @@ class WaterlevelCSV(IWaterlevel):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @staticmethod
-    def default() -> "WaterlevelCSV":
+    @classmethod
+    def default(cls) -> "WaterlevelCSV":
         return WaterlevelCSV(path="path/to/waterlevel.csv")
 
 
 class WaterlevelModel(IWaterlevel):
     _source: ClassVar[ForcingSource] = ForcingSource.MODEL
 
-    def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
+    def get_data(
+        self,
+        t0=None,
+        t1=None,
+        strict=True,
+        scenario: Optional[IScenario] = None,
+        **kwargs,
+    ) -> pd.DataFrame:
         from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 
+        if scenario is None:
+            raise ValueError(
+                "Scenario is not set. Provide a scenario to run the offshore model."
+            )
+
         try:
-            if (scn := kwargs.get("scenario", None)) is None:
-                raise ValueError(
-                    "Scenario is not set. Provide a scenario to run the offshore model."
-                )
-            return OffshoreSfincsHandler().get_resulting_waterlevels(scenario=scn)
+            return OffshoreSfincsHandler().get_resulting_waterlevels(scenario=scenario)
         except Exception as e:
             if strict:
                 raise
@@ -168,8 +177,8 @@ class WaterlevelModel(IWaterlevel):
                     f"Error reading model results: {kwargs.get('scenario', None)}. {e}"
                 )
 
-    @staticmethod
-    def default() -> "WaterlevelModel":
+    @classmethod
+    def default(cls) -> "WaterlevelModel":
         return WaterlevelModel()
 
 
@@ -197,6 +206,6 @@ class WaterlevelGauged(IWaterlevel):
                 self.logger.error(f"Error reading gauge data: {e}")
                 return None
 
-    @staticmethod
-    def default() -> "WaterlevelGauged":
+    @classmethod
+    def default(cls) -> "WaterlevelGauged":
         return WaterlevelGauged()

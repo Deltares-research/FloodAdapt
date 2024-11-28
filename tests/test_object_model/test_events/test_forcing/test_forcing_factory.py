@@ -1,7 +1,6 @@
 import pytest
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import (
-    FORCING_TYPES,
     ForcingFactory,
     ForcingSource,
     ForcingType,
@@ -17,7 +16,7 @@ class TestForcingFactory:
         assert forcing_class == WaterlevelCSV
 
     def test_read_forcing(self, tmp_path):
-        for expected_type, expected_sources in FORCING_TYPES.items():
+        for expected_type, expected_sources in ForcingFactory.FORCINGTYPES.items():
             for expected_source, expected_class in expected_sources.items():
                 if expected_class is None:
                     continue
@@ -40,7 +39,10 @@ class TestForcingFactory:
                 )
                 assert forcing_type == expected_type
                 assert forcing_source == expected_source
-                assert forcing_class == FORCING_TYPES[expected_type][expected_source]
+                assert (
+                    forcing_class
+                    == ForcingFactory.FORCINGTYPES[expected_type][expected_source]
+                )
 
     def test_get_forcing_class_invalid_type(self):
         with pytest.raises(ValueError):
@@ -51,7 +53,7 @@ class TestForcingFactory:
             ForcingFactory().get_forcing_class(ForcingType.WATERLEVEL, "invalid_source")
 
     def test_get_forcing_class_not_implemented(self):
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             ForcingFactory().get_forcing_class(
                 ForcingType.WATERLEVEL, ForcingSource.TRACK
             )

@@ -2,16 +2,15 @@ from pathlib import Path
 from typing import ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
 from flood_adapt.object_model.interface.events import (
     ForcingSource,
     ForcingType,
-    IEventModel,
 )
 
 
-class SyntheticEventModel(IEventModel):  # add SurgeModel etc. that fit Synthetic event
+class SyntheticEventModel(EventModel):  # add SurgeModel etc. that fit Synthetic event
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {

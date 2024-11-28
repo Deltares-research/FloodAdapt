@@ -8,9 +8,8 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 class IAdapter(DatabaseUser):
     """Adapter interface for all models run in FloodAdapt."""
 
-    @property
     @abstractmethod
-    def has_run(self) -> bool:
+    def has_run(self, scenario: IScenario) -> bool:
         """Return True if the model has been run."""
         pass
 
@@ -23,7 +22,7 @@ class IAdapter(DatabaseUser):
         Usage:
 
         with Adapter as model:
-            ...
+            ...s
             model.run()
 
         Entering the with block will call adapter.__enter__() and
@@ -64,16 +63,21 @@ class IAdapter(DatabaseUser):
         pass
 
     @abstractmethod
-    def preprocess(self):
+    def preprocess(self, scenario: IScenario):
         """Prepare the model for execution."""
         pass
 
     @abstractmethod
-    def execute(self) -> bool:
-        """Execute a model run without any further processing."""
+    def execute(self, path: Path, strict: bool = True) -> bool:
+        """Run the model kernel at the specified path.
+
+        Returns True if the model ran successfully, False otherwise.
+
+        If strict is True, raise an exception if the model fails to run.
+        """
         pass
 
     @abstractmethod
-    def postprocess(self):
+    def postprocess(self, scenario: IScenario):
         """Process the model output."""
         pass

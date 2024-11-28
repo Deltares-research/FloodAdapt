@@ -1,8 +1,8 @@
-import os
 from typing import Any
 
 from flood_adapt import __version__
 from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
+from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.database_user import DatabaseUser
@@ -20,11 +20,37 @@ from flood_adapt.object_model.utils import finished_file_exists, write_finished_
 class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
-    direct_impacts: DirectImpacts
+    hazards: list[IHazardAdapter]
+    direct_impacts: DirectImpacts  # list[IImpactAdapter]
+
+    @property
+    def event(self) -> IEvent:
+        if not hasattr(self, "_event"):
+            self._event = self.database.events.get(self.attrs.event)
+        return self._event
+
+    @property
+    def projection(self) -> IProjection:
+        if not hasattr(self, "_projection"):
+            self._projection = self.database.projections.get(self.attrs.projection)
+        return self._projection
+
+    @property
+    def strategy(self) -> IStrategy:
+        if not hasattr(self, "_strategy"):
+            self._strategy = self.database.strategies.get(self.attrs.strategy)
+        return self._strategy
 
     def __init__(self, data: dict[str, Any]) -> None:
         """Create a Direct Impact object."""
         super().__init__(data)
+
+        self.hazards = [
+            SfincsAdapter(
+                model_root=(db_path(TopLevelDir.static) / "templates" / "overland")
+            ),  # make default
+        ]
+
         self.site_info = self.database.site
         self.results_path = self.database.scenarios.output_path / self.attrs.name
         self.direct_impacts = DirectImpacts(
@@ -33,25 +59,23 @@ class Scenario(IScenario, DatabaseUser):
 
     def run(self):
         """Run direct impact models for the scenario."""
-        os.makedirs(self.results_path, exist_ok=True)
+        self.results_path.mkdir(parents=True, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
         log_file = self.results_path.joinpath(f"logfile_{self.attrs.name}.log")
-        with FloodAdaptLogging.to_file(file_path=str(log_file)):
+        with FloodAdaptLogging.to_file(file_path=log_file):
             self.logger.info(f"FloodAdapt version {__version__}")
             self.logger.info(
                 f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
 
-            # preprocess model input data first, then run, then post-process
-            if not self.direct_impacts.hazard.has_run:
-                template_path = db_path(TopLevelDir.static) / "templates" / "overland"
-                with SfincsAdapter(model_root=str(template_path)) as sfincs_adapter:
-                    sfincs_adapter.run(self)
-            else:
-                self.logger.info(
-                    f"Hazard for scenario '{self.attrs.name}' has already been run."
-                )
+            for hazard in self.hazards:
+                if not hazard.has_run:
+                    hazard.run(self)
+                else:
+                    self.logger.info(
+                        f"Hazard for scenario '{self.attrs.name}' has already been run."
+                    )
 
             if not self.direct_impacts.has_run:
                 self.direct_impacts.preprocess_models()
@@ -75,37 +99,15 @@ class Scenario(IScenario, DatabaseUser):
 
     def equal_hazard_components(self, other: "IScenario") -> bool:
         """Check if two scenarios have the same hazard components."""
-
-        def equal_hazard_strategy():
-            lhs = self.get_strategy().get_hazard_strategy()
-            rhs = other.get_strategy().get_hazard_strategy()
-
-            return lhs == rhs
-
-        def equal_events():
-            return self.attrs.event == other.attrs.event
-
-        def equal_projections():
-            lhs = self.get_projection().get_physical_projection()
-            rhs = other.get_projection().get_physical_projection()
-            return lhs == rhs
-
-        return equal_hazard_strategy() and equal_events() and equal_projections()
-
-    def get_event(self) -> IEvent:
-        if not hasattr(self, "_event"):
-            self._event = self.database.events.get(self.attrs.event)
-        return self._event
-
-    def get_projection(self) -> IProjection:
-        if not hasattr(self, "_projection"):
-            self._projection = self.database.projections.get(self.attrs.projection)
-        return self._projection
-
-    def get_strategy(self) -> IStrategy:
-        if not hasattr(self, "_strategy"):
-            self._strategy = self.database.strategies.get(self.attrs.strategy)
-        return self._strategy
+        equal_hazard_strategy = (
+            self.strategy.get_hazard_strategy() == other.strategy.get_hazard_strategy()
+        )
+        equal_events = self.attrs.event == other.attrs.event
+        equal_projections = (
+            self.projection.get_physical_projection()
+            == other.projection.get_physical_projection()
+        )
+        return equal_hazard_strategy and equal_events and equal_projections
 
     def __eq__(self, other):
         if not isinstance(other, Scenario):

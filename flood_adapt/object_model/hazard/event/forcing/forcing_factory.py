@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Type
 
 import tomli
 
@@ -37,122 +37,117 @@ from flood_adapt.object_model.hazard.interface.models import (
     ForcingType,
 )
 
-FORCING_TYPES: dict[ForcingType, dict[ForcingSource, IForcing]] = {
-    ForcingType.WATERLEVEL: {
+
+class ForcingFactory(IForcingFactory):
+    """Factory class for creating forcing events based on a template."""
+
+    WATERLEVELS: dict[ForcingSource, Type[IForcing]] = {
         ForcingSource.MODEL: WaterlevelModel,
-        ForcingSource.TRACK: None,
         ForcingSource.CSV: WaterlevelCSV,
         ForcingSource.SYNTHETIC: WaterlevelSynthetic,
-        ForcingSource.CONSTANT: None,
         ForcingSource.GAUGED: WaterlevelGauged,
-    },
-    ForcingType.RAINFALL: {
-        ForcingSource.METEO: RainfallMeteo,
-        ForcingSource.TRACK: RainfallTrack,
-        ForcingSource.CSV: RainfallCSV,
-        ForcingSource.SYNTHETIC: RainfallSynthetic,
-        ForcingSource.CONSTANT: RainfallConstant,
-    },
-    ForcingType.WIND: {
+    }
+
+    WIND: dict[ForcingSource, Type[IForcing]] = {
         ForcingSource.METEO: WindMeteo,
         ForcingSource.TRACK: WindTrack,
         ForcingSource.CSV: WindCSV,
         ForcingSource.SYNTHETIC: WindSynthetic,
         ForcingSource.CONSTANT: WindConstant,
-    },
-    ForcingType.DISCHARGE: {
-        ForcingSource.MODEL: None,
-        ForcingSource.TRACK: None,
+    }
+
+    RAINFALL: dict[ForcingSource, Type[IForcing]] = {
+        ForcingSource.METEO: RainfallMeteo,
+        ForcingSource.TRACK: RainfallTrack,
+        ForcingSource.CSV: RainfallCSV,
+        ForcingSource.SYNTHETIC: RainfallSynthetic,
+        ForcingSource.CONSTANT: RainfallConstant,
+    }
+
+    DISCHARGE: dict[ForcingSource, Type[IForcing]] = {
         ForcingSource.CSV: DischargeCSV,
         ForcingSource.SYNTHETIC: DischargeSynthetic,
         ForcingSource.CONSTANT: DischargeConstant,
-    },
-}
+    }
 
+    FORCINGTYPES: dict[ForcingType, dict[ForcingSource, Type[IForcing]]] = {
+        ForcingType.WATERLEVEL: WATERLEVELS,
+        ForcingType.RAINFALL: RAINFALL,
+        ForcingType.WIND: WIND,
+        ForcingType.DISCHARGE: DISCHARGE,
+    }
 
-class ForcingFactory(IForcingFactory):
-    """Factory class for creating forcing events based on a template."""
-
-    @staticmethod
+    @classmethod
     def read_forcing(
+        cls,
         filepath: Path,
-    ) -> tuple[IForcing, ForcingType, ForcingSource]:
+    ) -> tuple[Type[IForcing], ForcingType, ForcingSource]:
         """Extract forcing type and source from a TOML file."""
         with open(filepath, mode="rb") as fp:
             toml_data = tomli.load(fp)
-        _type = toml_data.get("_type")
-        _source = toml_data.get("_source")
+        type = toml_data.get("_type")
+        source = toml_data.get("_source")
 
-        if _type is None or _source is None:
+        if type is None or source is None:
             raise ValueError(
-                f"Forcing type {_type} or source {_source} not found in {filepath}"
+                f"Forcing type {type} or source {source} not found in {filepath}"
             )
-        _cls = ForcingFactory.get_forcing_class(
-            ForcingType(_type), ForcingSource(_source)
-        )
-        return _cls, ForcingType(_type), ForcingSource(_source)
+        forcing_cls = cls.get_forcing_class(ForcingType(type), ForcingSource(source))
+        return forcing_cls, ForcingType(type), ForcingSource(source)
 
-    @staticmethod
-    def get_forcing_class(_type: ForcingType, source: ForcingSource) -> IForcing:
+    @classmethod
+    def get_forcing_class(
+        cls, type: ForcingType, source: ForcingSource
+    ) -> Type[IForcing]:
         """Get the forcing class corresponding to the type and source."""
-        if _type not in FORCING_TYPES:
-            raise ValueError(f"Invalid forcing type: {_type}")
-        if source not in FORCING_TYPES[_type]:
+        if (sources := cls.FORCINGTYPES.get(type)) is None:
+            raise ValueError(f"Invalid forcing type: {type}")
+
+        if (forcing_cls := sources.get(source)) is None:
             raise ValueError(
-                f"Invalid forcing source: {source} for forcing type: {_type}"
+                f"Invalid forcing source: {source} for forcing type: {type}"
             )
+        return forcing_cls
 
-        forcing_class = FORCING_TYPES[_type][source]
-        if forcing_class is None:
-            raise NotImplementedError(
-                f"Forcing class for {_type} and {source} is not implemented."
-            )
-        return forcing_class
-
-    @staticmethod
-    def load_file(toml_file: Path) -> IForcing:
+    @classmethod
+    def load_file(cls, toml_file: Path) -> IForcing:
         """Create a forcing object from a TOML file."""
         with open(toml_file, mode="rb") as fp:
             toml_data = tomli.load(fp)
-        _ = ForcingFactory.read_forcing(toml_file)
-        return ForcingFactory.load_dict(toml_data)
+        return cls.load_dict(toml_data)
 
-    @staticmethod
-    def load_dict(attrs: dict[str, Any]) -> IForcing:
+    @classmethod
+    def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
-        _type = attrs.get("_type")
-        _source = attrs.get("_source")
-        if _type is None or _source is None:
+        type = attrs.get("_type")
+        source = attrs.get("_source")
+        if type is None or source is None:
             raise ValueError(
-                f"Forcing type {_type} or source {_source} not found in attributes."
+                f"Forcing type {type} or source {source} not found in attributes."
             )
-        return ForcingFactory.get_forcing_class(
-            ForcingType(_type), ForcingSource(_source)
+        return cls.get_forcing_class(
+            ForcingType(type), ForcingSource(source)
         ).model_validate(attrs)
 
-    @staticmethod
-    def list_forcing_types() -> List[str]:
+    @classmethod
+    def list_forcingtypes(cls) -> List[str]:
         """List all available forcing types."""
-        return [ftype.value for ftype in FORCING_TYPES.keys()]
+        return [ftype.value for ftype in cls.FORCINGTYPES.keys()]
 
-    @staticmethod
-    def list_forcings(as_string: bool = True) -> List[str] | List[IForcing]:
+    @classmethod
+    def list_forcings(cls, as_string: bool = True) -> List[str] | List[Type[IForcing]]:
         """List all available forcing classes."""
         forcing_classes = set()
-        for source_map in FORCING_TYPES.values():
+        for source_map in cls.FORCINGTYPES.values():
             for forcing in source_map.values():
                 if forcing is not None:
                     if as_string:
                         forcing = forcing.__name__
                     forcing_classes.add(forcing)
-        return forcing_classes
+        return list(forcing_classes)
 
-    @staticmethod
-    def get_default_forcing(_type: ForcingType, source: ForcingSource) -> IForcing:
+    @classmethod
+    def get_default_forcing(cls, type: ForcingType, source: ForcingSource) -> IForcing:
         """Get the default forcing object for a given type and source."""
-        forcing_class = FORCING_TYPES[_type][source]
-        if forcing_class is None:
-            raise NotImplementedError(
-                f"Forcing class for {_type} and {source} is not implemented."
-            )
+        forcing_class = cls.get_forcing_class(type, source)
         return forcing_class.default()

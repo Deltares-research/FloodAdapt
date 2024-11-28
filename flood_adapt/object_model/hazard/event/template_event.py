@@ -1,20 +1,22 @@
 import os
 from pathlib import Path
 from tempfile import gettempdir
-from typing import Optional, Type
+from typing import Any, List, Optional, Type, TypeVar
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from pydantic import field_serializer, model_validator
 
 from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.interface.events import (
-    T_EVENT_MODEL,
     ForcingSource,
     ForcingType,
     IEvent,
+    IEventModel,
     IForcing,
 )
 from flood_adapt.object_model.interface.path_builder import (
@@ -24,6 +26,100 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
+
+
+class EventModel(IEventModel):
+    @model_validator(mode="before")
+    def create_forcings(self):
+        if "forcings" in self:
+            forcings = {}
+            for ftype, forcing_attrs in self["forcings"].items():
+                if isinstance(forcing_attrs, IForcing):
+                    # forcing_attrs is already a forcing object
+                    forcings[ftype] = forcing_attrs
+                elif (
+                    isinstance(forcing_attrs, dict)
+                    and "_type" in forcing_attrs
+                    and "_source" in forcing_attrs
+                ):
+                    # forcing_attrs is a dict with forcing attributes
+                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
+                else:
+                    # forcing_attrs is a dict with sub-forcing attributes. Currently only used for discharge forcing
+                    for name, sub_forcing in forcing_attrs.items():
+                        if ftype not in forcings:
+                            forcings[ftype] = {}
+
+                        if isinstance(sub_forcing, IForcing):
+                            forcings[ftype][name] = sub_forcing
+                        else:
+                            forcings[ftype][name] = ForcingFactory.load_dict(
+                                sub_forcing
+                            )
+            self["forcings"] = forcings
+        return self
+
+    @model_validator(mode="after")
+    def validate_forcings(self):
+        def validate_concrete_forcing(concrete_forcing):
+            _type = concrete_forcing._type
+            _source = concrete_forcing._source
+
+            # Check type
+            if _type not in self.__class__.ALLOWED_FORCINGS:
+                allowed_types = ", ".join(
+                    t.value for t in self.__class__.ALLOWED_FORCINGS.keys()
+                )
+                raise ValueError(
+                    f"Forcing type {_type.value} is not allowed. Allowed types are: {allowed_types}"
+                )
+
+            # Check source
+            if _source not in self.__class__.ALLOWED_FORCINGS[_type]:
+                allowed_sources = ", ".join(
+                    s.value for s in self.__class__.ALLOWED_FORCINGS[_type]
+                )
+                raise ValueError(
+                    f"Forcing source {_source.value} is not allowed for forcing type {_type.value}. "
+                    f"Allowed sources are: {allowed_sources}"
+                )
+
+        for concrete_forcing in self.forcings.values():
+            if concrete_forcing is None:
+                continue
+
+            if isinstance(concrete_forcing, dict):
+                for _, _concrete_forcing in concrete_forcing.items():
+                    validate_concrete_forcing(_concrete_forcing)
+            else:
+                validate_concrete_forcing(concrete_forcing)
+
+        return self
+
+    @field_serializer("forcings")
+    @classmethod
+    def serialize_forcings(
+        cls, value: dict[ForcingType, IForcing | dict[str, IForcing]]
+    ) -> dict[str, dict[str, Any]]:
+        dct = {}
+        for ftype, forcing in value.items():
+            if not forcing:
+                continue
+            if isinstance(forcing, IForcing):
+                dct[ftype.value] = forcing.model_dump(exclude_none=True)
+            else:
+                dct[ftype.value] = {
+                    name: forcing.model_dump(exclude_none=True)
+                    for name, forcing in forcing.items()
+                }
+        return dct
+
+    @classmethod
+    def get_allowed_forcings(cls) -> dict[str, List[str]]:
+        return {k.value: [s.value for s in v] for k, v in cls.ALLOWED_FORCINGS.items()}
+
+
+T_EVENT_MODEL = TypeVar("T_EVENT_MODEL", bound=EventModel)
 
 
 class Event(IEvent[T_EVENT_MODEL]):

@@ -1,7 +1,8 @@
 import logging
-import os
 import warnings
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Optional
 
 
 class FloodAdaptLogging:
@@ -13,12 +14,12 @@ class FloodAdaptLogging:
 
     def __init__(
         self,
-        file_path: str = None,
+        file_path: Optional[Path] = None,
         loglevel_console: int = logging.WARNING,
         loglevel_root: int = logging.INFO,
         loglevel_files: int = logging.DEBUG,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
-        ignore_warnings: list[type[Warning]] = None,
+        ignore_warnings: Optional[list[type[Warning]]] = None,
     ) -> None:
         """Initialize the logging system for the FloodAdapt."""
         self._formatter = formatter
@@ -44,18 +45,18 @@ class FloodAdaptLogging:
     @classmethod
     def add_file_handler(
         cls,
-        file_path: str,
+        file_path: Path,
         loglevel: int = logging.DEBUG,
-        formatter: logging.Formatter = None,
+        formatter: Optional[logging.Formatter] = None,
     ) -> None:
         """Add a file handler to the logger that directs outputs to a the file."""
         if not file_path:
             raise ValueError("file_path must be provided.")
-        elif not os.path.dirname(file_path):
-            file_path = os.path.join(os.getcwd(), file_path)
 
-        if not os.path.exists(os.path.dirname(file_path)):
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        # check if the path is a only a filename
+        elif file_path == str(file_path):
+            file_path = Path.cwd() / file_path
+        file_path.parent.mkdir(parents=True, exist_ok=True)
 
         file_handler = logging.FileHandler(filename=file_path, mode="a")
         file_handler.setLevel(loglevel)
@@ -66,17 +67,19 @@ class FloodAdaptLogging:
         cls.getLogger().addHandler(file_handler)
 
     @classmethod
-    def remove_file_handler(cls, file_path: str) -> None:
+    def remove_file_handler(cls, file_path: Path) -> None:
         """Remove a file handler from the logger, which stops sending logs to that file and closes it."""
         for handler in cls.getLogger().handlers:
-            if isinstance(
-                handler, logging.FileHandler
-            ) and handler.baseFilename == os.path.abspath(file_path):
+            if isinstance(handler, logging.FileHandler) and handler.baseFilename == str(
+                file_path.resolve()
+            ):
                 handler.close()
                 cls.getLogger().removeHandler(handler)
 
     @classmethod
-    def getLogger(cls, name: str = None, level: int = None) -> logging.Logger:
+    def getLogger(
+        cls, name: Optional[str] = None, level: Optional[int] = None
+    ) -> logging.Logger:
         """Get a logger with the specified name. If no name is provided, return the root logger.
 
         If the logger does not exist, it is created with the specified level. If no level is provided, the logger inherits the level of the root logger.
@@ -118,7 +121,7 @@ class FloodAdaptLogging:
     def to_file(
         cls,
         *,
-        file_path: str = None,
+        file_path: Path,
         loglevel: int = logging.DEBUG,
         formatter: logging.Formatter = _DEFAULT_FORMATTER,
     ):
@@ -147,7 +150,7 @@ class FloodAdaptLogging:
 
     @classmethod
     def configure_warnings(
-        cls, action: str = "default", category: type[Warning] = None
+        cls, action: str = "default", category: Optional[type[Warning]] = None
     ):
         """
         Configure the behavior of Python warnings.

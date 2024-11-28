@@ -47,8 +47,8 @@ class WindConstant(IWind):
 
         return pd.DataFrame(data=data, index=time)
 
-    @staticmethod
-    def default() -> "WindConstant":
+    @classmethod
+    def default(cls) -> "WindConstant":
         return WindConstant(
             speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps),
             direction=us.UnitfulDirection(value=0, units=us.UnitTypesDirection.degrees),
@@ -86,8 +86,8 @@ class WindSynthetic(IWind):
             else:
                 self.logger.error(f"Error loading synthetic wind timeseries: {e}")
 
-    @staticmethod
-    def default() -> "WindSynthetic":
+    @classmethod
+    def default(cls) -> "WindSynthetic":
         return WindSynthetic(
             magnitude=SyntheticTimeseriesModel.default(us.UnitfulVelocity),
             direction=SyntheticTimeseriesModel.default(us.UnitfulDirection),
@@ -109,8 +109,8 @@ class WindTrack(IWind):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @staticmethod
-    def default() -> "WindTrack":
+    @classmethod
+    def default(cls) -> "WindTrack":
         return WindTrack()
 
 
@@ -143,8 +143,8 @@ class WindCSV(IWind):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @staticmethod
-    def default() -> "WindCSV":
+    @classmethod
+    def default(cls) -> "WindCSV":
         return WindCSV(path="path/to/wind.csv")
 
 
@@ -171,6 +171,6 @@ class WindMeteo(IWind):
             else:
                 self.logger.error(f"Error reading meteo data: {e}")
 
-    @staticmethod
-    def default() -> "WindMeteo":
+    @classmethod
+    def default(cls) -> "WindMeteo":
         return WindMeteo()

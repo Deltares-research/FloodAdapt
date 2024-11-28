@@ -45,14 +45,14 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         self.run_offshore(scenario)
 
-        with SfincsAdapter(model_root=str(path)) as _offshore_model:
+        with SfincsAdapter(model_root=path) as _offshore_model:
             return _offshore_model.get_wl_df_from_offshore_his_results()
 
     @staticmethod
     def requires_offshore_run(scenario: IScenario) -> bool:
         return any(
             forcing._source in [ForcingSource.MODEL, ForcingSource.TRACK]
-            for forcing in scenario.get_event().get_forcings()
+            for forcing in scenario.event.get_forcings()
         )
 
     def run_offshore(self, scenario: IScenario):
@@ -82,7 +82,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         sim_path = self._get_simulation_path(scenario)
 
-        with SfincsAdapter(model_root=str(self.template_path)) as _offshore_model:
+        with SfincsAdapter(model_root=self.template_path) as _offshore_model:
             if _offshore_model.sfincs_completed(sim_path):
                 self.logger.info(
                     f"Skip preprocessing offshore model as it has already been run for {scenario.attrs.name}."
@@ -98,8 +98,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             _offshore_model._model.set_root(str(sim_path))
             _offshore_model._scenario = scenario
 
-            event = scenario.get_event()
-            physical_projection = scenario.get_projection().get_physical_projection()
+            event = scenario.event
+            physical_projection = scenario.projection.get_physical_projection()
 
             # Create any event specific files
             event.preprocess(sim_path)
@@ -147,7 +147,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     def _execute_sfincs_offshore(self, sim_path: Path):
         self.logger.info("Running offshore model...")
 
-        with SfincsAdapter(model_root=str(sim_path)) as _offshore_model:
+        with SfincsAdapter(model_root=sim_path) as _offshore_model:
             if _offshore_model.sfincs_completed(sim_path):
                 self.logger.info(
                     "Skip running offshore model as it has already been run."
@@ -162,7 +162,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                 )
 
     def _get_simulation_path(self, scenario: IScenario) -> Path:
-        event = scenario.get_event()
+        event = scenario.strategy
         if isinstance(event, EventSet):
             return (
                 db_path(

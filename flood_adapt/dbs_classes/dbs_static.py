@@ -43,7 +43,7 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.attrs.sfincs.overland_model
         )
-        return SfincsAdapter(model_root=str(sfincs_path))
+        return SfincsAdapter(model_root=(sfincs_path))
 
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict:

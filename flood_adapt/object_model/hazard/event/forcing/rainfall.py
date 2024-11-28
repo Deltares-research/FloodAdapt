@@ -75,8 +75,8 @@ class RainfallSynthetic(IRainfall):
             else:
                 self.logger.error(f"Error loading synthetic rainfall timeseries: {e}")
 
-    @staticmethod
-    def default() -> "RainfallSynthetic":
+    @classmethod
+    def default(cls) -> "RainfallSynthetic":
         return RainfallSynthetic(
             timeseries=SyntheticTimeseriesModel.default(us.UnitfulIntensity)
         )
@@ -102,8 +102,8 @@ class RainfallMeteo(IRainfall):
             else:
                 self.logger.error(f"Error reading meteo data: {self.path}. {e}")
 
-    @staticmethod
-    def default() -> "RainfallMeteo":
+    @classmethod
+    def default(cls) -> "RainfallMeteo":
         return RainfallMeteo()
 
 
@@ -131,8 +131,8 @@ class RainfallTrack(IRainfall):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @staticmethod
-    def default() -> "RainfallTrack":
+    @classmethod
+    def default(cls) -> "RainfallTrack":
         return RainfallTrack()
 
 
@@ -162,6 +162,6 @@ class RainfallCSV(IRainfall):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @staticmethod
-    def default() -> "RainfallCSV":
+    @classmethod
+    def default(cls) -> "RainfallCSV":
         return RainfallCSV(path="path/to/rainfall.csv")

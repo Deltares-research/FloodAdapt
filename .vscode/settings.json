@@ -14,9 +14,9 @@
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingImports": "none"
     },
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}/flood_adapt"
-    ],
+    // "python.analysis.extraPaths": [
+    //     "${workspaceFolder}/flood_adapt"
+    // ],
     "python.envFile": "${workspaceFolder}/.env",
     "python.analysis.exclude": [
         "**/site-packages/**",

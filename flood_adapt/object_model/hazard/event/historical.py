@@ -2,16 +2,13 @@ from pathlib import Path
 from typing import Any, ClassVar, List
 
 from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.event.template_event import Event
+from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
-from flood_adapt.object_model.interface.events import (
-    IEventModel,
-    Mode,
-)
+from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
@@ -19,7 +16,7 @@ from flood_adapt.object_model.interface.path_builder import (
 from flood_adapt.object_model.interface.site import Site
 
 
-class HistoricalEventModel(IEventModel):
+class HistoricalEventModel(EventModel):
     """BaseModel describing the expected variables and data types for parameters of HistoricalNearshore that extend the parent class Event."""
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
