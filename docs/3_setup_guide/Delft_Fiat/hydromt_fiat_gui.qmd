@@ -24,7 +24,7 @@ This guide is organized in six sections:
 
 ![The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/model_builder_homeScreen.png){width=50% fig-align=left #fig-homeScreen}
 
-## Getting started {#sec-getting-started}
+## Getting started {#sec-getting-started-delft-fiat}
 
 The initial steps to set up a Delft-FIAT model are the same whether you set up a [quickbuild](#sec-quickbuild) or [tailored](#sec-tailored_model) model. To get started building your Delft-FIAT model:
 
@@ -69,7 +69,7 @@ After you selected the working directory the Delft-FIAT model builder generates 
 :::
 
 ## Quick Build {#sec-quickbuild}
-The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
+The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started-delft-fiat). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
 
 To use the quick build option to generate a Delft-FIAT model, simply click the "Create model" button on the "Model Boundary | Quick Build" tab after generating your model boundary. That's it!
 
@@ -341,6 +341,34 @@ There is also a button "Exposure output". This opens the full model data, which 
 
 ## Delft-FIAT model folder structure
 Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. Below you can see what the folder structure looks like for a comprehensive model, saved in a working directory named "Delft-FIAT".
-When you create a basic model (without using QuickBuild or any advanced options), the resulting folder structure will contain fewer folders and files. The additional folders and files that appear when using QuickBuild or adding additional attributes to your model are highlighted in @fig-delft_fiat_folder, indicating that the folders (incl. files within) are generated only under those specific conditions.
+When you create a basic model (without using QuickBuild or any advanced options), the resulting folder structure will contain fewer folders and files. The additional folders and files that appear when using QuickBuild or adding additional attributes to your model are highlighted in  the figure below, indicating that the folders (incl. files within) are generated only under those specific conditions.
 
-![**Delft Fiat Folder structure**](C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/delft_fiat_folder.png){width=40% fig-align=left #fig-delft_fiat_folder}
+
+```
+├───📁 Delft-FIAT/
+    |
+    ├───📁 exposure/
+    │      ├───📁 additional_attributes/ (advanced model)
+    │   │    ├─── 📄 base_zone.gpkg
+    │   │    ├─── 📄 land_use.gpkg
+        │     ├───📁 aggregation_areas/ (quickbuild/advanced model)
+    │   │    ├─── 📄 block_groups.gpkg
+        │     ├───📁 equity/ (quickbuild/advanced model)
+    │   │    ├─── 📄 equity_data.gpkg
+    │   ├───📄 buildings.gpkg
+    │   ├───📄 exposure.csv
+    │   ├───📄 region.gpkg
+    │   ├───📄 roads.gpkg
+    |
+    ├───📁 vulnerability/
+    │   ├───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_identifiers.csv
+    |
+    ├───📁 hazard/
+    │
+    ├───📁 output/
+    |
+    ├───📄 hydromt.log
+    ├───📄 settings.toml
+    └───📄 spatial_joins.toml (quickbuild/advanced model)
+```
