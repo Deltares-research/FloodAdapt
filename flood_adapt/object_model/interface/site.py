@@ -232,11 +232,11 @@ class TideGaugeModel(BaseModel):
     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
     """
 
-    name: Optional[Union[int, AsciiStr]] = None
-    description: Optional[AsciiStr] = None
+    name: Optional[Union[int, str]] = None
+    description: Optional[str] = None
     source: TideGaugeSource
     ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
-    file: Optional[AsciiStr] = None  # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
 
@@ -261,7 +261,7 @@ class ObsPointModel(BaseModel):
     """
 
     name: Union[int, AsciiStr]
-    description: Optional[AsciiStr] = ""
+    description: Optional[str] = ""
     ID: Optional[int] = (
         None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
     )
