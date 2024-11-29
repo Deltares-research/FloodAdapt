@@ -15,8 +15,9 @@ class HazardStrategy:
     def __eq__(self, other):
         if not isinstance(other, HazardStrategy):
             # don't attempt to compare against unrelated types
-            return NotImplemented
-        names_1 = [measure.attrs.name for measure in self.measures]
-        names_2 = [measure.attrs.name for measure in other.measures]
+            return False
 
-        return set(names_1) == set(names_2)
+        names_1 = sorted([measure.attrs.name for measure in self.measures])
+        names_2 = sorted([measure.attrs.name for measure in other.measures])
+
+        return names_1 == names_2

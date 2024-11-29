@@ -105,9 +105,10 @@ class Scenario(IScenario):
     def __eq__(self, other):
         if not isinstance(other, Scenario):
             # don't attempt to compare against unrelated types
-            return NotImplemented
+            return False
 
-        test1 = self.attrs.event == other.attrs.event
-        test2 = self.attrs.projection == other.attrs.projection
-        test3 = self.attrs.strategy == other.attrs.strategy
-        return test1 & test2 & test3
+        return (
+            self.attrs.event == other.attrs.event
+            and self.attrs.projection == other.attrs.projection
+            and self.attrs.strategy == other.attrs.strategy
+        )
