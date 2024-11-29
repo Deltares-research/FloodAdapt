@@ -94,7 +94,7 @@ class HistoricalHurricane(Event, IHistoricalHurricane):
         """
         # save toml file
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
     def make_spw_file(self, event_path: Path, model_dir: Path, site=Site):
         # Location of tropical cyclone database
