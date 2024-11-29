@@ -52,11 +52,11 @@ class TideGaugeSource(str, Enum):
 class SfincsModel(BaseModel):
     """The accepted input for the variable sfincs in Site."""
 
-    csname: AsciiStr
+    csname: str
     cstype: Cstype
-    version: Optional[AsciiStr] = ""
-    offshore_model: Optional[AsciiStr] = None
-    overland_model: AsciiStr
+    version: str = ""
+    offshore_model: Optional[str] = None
+    overland_model: str
     floodmap_units: UnitTypesLength
     save_simulation: Optional[bool] = False
 
@@ -64,7 +64,7 @@ class SfincsModel(BaseModel):
 class VerticalReferenceModel(BaseModel):
     """The accepted input for the variable vertical_reference in Site."""
 
-    name: AsciiStr
+    name: str
     height: UnitfulLength
 
 
@@ -73,7 +73,7 @@ class WaterLevelReferenceModel(BaseModel):
 
     localdatum: VerticalReferenceModel
     msl: VerticalReferenceModel
-    other: Optional[list[VerticalReferenceModel]] = Field(
+    other: list[VerticalReferenceModel] = Field(
         default_factory=list
     )  # only for plotting
 
@@ -81,13 +81,13 @@ class WaterLevelReferenceModel(BaseModel):
 class CycloneTrackDatabaseModel(BaseModel):
     """The accepted input for the variable cyclone_track_database in Site."""
 
-    file: AsciiStr
+    file: str
 
 
 class SlrScenariosModel(BaseModel):
     """The accepted input for the variable slr.scenarios ."""
 
-    file: AsciiStr
+    file: str
     relative_to_year: int
 
 
@@ -171,32 +171,32 @@ class FloodFrequencyModel(BaseModel):
 class DemModel(BaseModel):
     """The accepted input for the variable dem in Site."""
 
-    filename: AsciiStr
+    filename: str
     units: UnitTypesLength
 
 
 class EquityModel(BaseModel):
-    census_data: AsciiStr
+    census_data: str
     percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
 
 
 class AggregationModel(BaseModel):
-    name: AsciiStr
-    file: AsciiStr
-    field_name: AsciiStr
+    name: str
+    file: str
+    field_name: str
     equity: Optional[EquityModel] = None
 
 
 class BFEModel(BaseModel):
-    geom: AsciiStr
-    table: Optional[AsciiStr] = None
-    field_name: AsciiStr
+    geom: str
+    table: Optional[str] = None
+    field_name: str
 
 
 class SVIModel(BaseModel):
-    geom: AsciiStr
-    field_name: AsciiStr
+    geom: str
+    field_name: str
 
 
 class FiatModel(BaseModel):
@@ -219,8 +219,8 @@ class FiatModel(BaseModel):
 class RiverModel(BaseModel):
     """Model that describes the accepted input for the variable river in Site."""
 
-    name: AsciiStr
-    description: AsciiStr
+    name: str
+    description: str
     mean_discharge: UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
@@ -265,16 +265,16 @@ class ObsPointModel(BaseModel):
     ID: Optional[int] = (
         None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
     )
-    file: Optional[AsciiStr] = None  # for locally stored data
+    file: Optional[str] = None  # for locally stored data
     lat: float
     lon: float
 
 
 class BenefitsModel(BaseModel):
     current_year: int
-    current_projection: AsciiStr
-    baseline_strategy: AsciiStr
-    event_set: AsciiStr
+    current_projection: str
+    baseline_strategy: str
+    event_set: str
 
 
 class SCSModel(BaseModel):
@@ -284,23 +284,23 @@ class SCSModel(BaseModel):
 
     """
 
-    file: AsciiStr
-    type: AsciiStr
+    file: str
+    type: str
 
 
 class StandardObjectModel(BaseModel):
     """The accepted input for the variable standard_object in Site."""
 
-    events: Optional[list[AsciiStr]] = Field(default_factory=list)
-    projections: Optional[list[AsciiStr]] = Field(default_factory=list)
-    strategies: Optional[list[AsciiStr]] = Field(default_factory=list)
+    events: Optional[list[str]] = Field(default_factory=list)
+    projections: Optional[list[str]] = Field(default_factory=list)
+    strategies: Optional[list[str]] = Field(default_factory=list)
 
 
 class SiteModel(BaseModel):
     """The expected variables and data types of attributes of the Site class."""
 
-    name: AsciiStr
-    description: Optional[AsciiStr] = ""
+    name: str
+    description: Optional[str] = ""
     lat: float
     lon: float
     sfincs: SfincsModel
