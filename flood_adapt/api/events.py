@@ -58,7 +58,6 @@ __all__ = [
     "ForcingType",
     "Template",
     "TimeModel",
-    "IDischarge",
     "IRainfall",
     "IWaterlevel",
     "IWind",

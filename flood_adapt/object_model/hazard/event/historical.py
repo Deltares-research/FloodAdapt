@@ -35,7 +35,11 @@ class HistoricalEventModel(EventModel):
             ForcingSource.MODEL,
             ForcingSource.GAUGED,
         ],
-        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.CSV],
+        ForcingType.DISCHARGE: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+        ],
     }
 
     @classmethod
