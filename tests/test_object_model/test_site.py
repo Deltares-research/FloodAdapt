@@ -4,13 +4,11 @@ from flood_adapt.object_model.interface.site import (
     DemModel,
     RiverModel,
     SfincsModel,
+    Site,
     SiteModel,
     TideGaugeModel,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
-from flood_adapt.object_model.site import (
-    Site,
-)
 
 
 @pytest.fixture()

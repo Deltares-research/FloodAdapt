@@ -7,16 +7,13 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_controller import Database
 from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
+from flood_adapt.object_model.hazard.event.event_factory import (
+    EventFactory,
+    HistoricalHurricane,
     HistoricalNearshore,
-)
-from flood_adapt.object_model.interface.events import (
+    HistoricalOffshore,
     IEvent,
-    IHistoricalHurricane,
-    IHistoricalNearshore,
-    IHistoricalOffshore,
-    ISynthetic,
+    Synthetic,
 )
 from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
 
@@ -31,11 +28,11 @@ def get_event(name: str) -> IEvent:
 
 
 def get_event_mode(name: str) -> str:
-    filename = Database().events.get_database_path() / f"{name}" / f"{name}.toml"
+    filename = Database().events.input_path / f"{name}" / f"{name}.toml"
     return Event.get_mode(filename)
 
 
-def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
+def create_synthetic_event(attrs: dict[str, Any]) -> Synthetic:
     """Create a synthetic event object from a dictionary of attributes.
 
     Parameters
@@ -51,7 +48,7 @@ def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
     return EventFactory.get_event("Synthetic").load_dict(attrs)
 
 
-def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
+def create_historical_nearshore_event(attrs: dict[str, Any]) -> HistoricalNearshore:
     """Create a historical nearshore event object from a dictionary of attributes.
 
     Parameters
@@ -67,7 +64,7 @@ def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNears
     return EventFactory.get_event("Historical_nearshore").load_dict(attrs)
 
 
-def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffshore:
+def create_historical_offshore_event(attrs: dict[str, Any]) -> HistoricalOffshore:
     """Create a historical offshore event object from a dictionary of attributes.
 
     Parameters
@@ -83,7 +80,7 @@ def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffsho
     return EventFactory.get_event("Historical_offshore").load_dict(attrs)
 
 
-def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurricane:
+def create_historical_hurricane_event(attrs: dict[str, Any]) -> HistoricalHurricane:
     """Create a historical hurricane event object from a dictionary of attributes.
 
     Parameters
@@ -99,7 +96,7 @@ def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurri
     return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
 
 
-def save_event_toml(event: IEvent) -> None:
+def save_event(event: IEvent) -> None:
     Database().events.save(event)
 
 
@@ -152,3 +149,7 @@ def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):
     Database().write_cyc(event, track)
+
+
+def get_cyclone_track_by_index(index: int) -> TropicalCyclone:
+    return Database().cyclone_track_database.get_track(index)

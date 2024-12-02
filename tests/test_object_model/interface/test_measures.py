@@ -5,7 +5,6 @@ from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
     HazardMeasureModel,
     HazardType,
-    ImpactType,
     MeasureModel,
     SelectionType,
 )
@@ -65,24 +64,19 @@ class TestMeasureModel:
     def test_measure_model_invalid_type(self):
         # Arrange
         with pytest.raises(ValidationError) as excinfo:
-            MeasureModel(
-                name="test_measure", description="test description", type="invalid_type"
-            )
+            data = {
+                "name": "test_measure",
+                "description": "test description",
+                "type": "invalid_type",
+            }
+            MeasureModel.model_validate(data)
 
         # Assert
-        assert len(excinfo.value.errors()) == 2
+        assert len(excinfo.value.errors()) == 1
 
         error = excinfo.value.errors()[0]
-        assert error["type"] == "enum", error["type"]
-        assert error["loc"] == ("type", "str-enum[HazardType]"), error["loc"]
-        HazardTypeMembers = [member.value for member in HazardType]
-        assert [member in error["msg"] for member in HazardTypeMembers], error["msg"]
-
-        error = excinfo.value.errors()[1]
-        assert error["type"] == "enum", error["type"]
-        assert error["loc"] == ("type", "str-enum[ImpactType]"), error["loc"]
-        ImpactTypeMembers = [member.value for member in ImpactType]
-        assert [member in error["msg"] for member in ImpactTypeMembers], error["msg"]
+        assert error["type"] == "value_error", error["type"]
+        assert "Type must be one of" in error["msg"], error["msg"]
 
 
 class TestHazardMeasureModel:

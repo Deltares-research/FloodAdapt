@@ -1,10 +1,17 @@
-import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from pathlib import Path
+from typing import Optional, TypeVar, Union
 
-from pydantic import BaseModel, Field
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel, model_validator
 
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+)
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io.unitfulvalue import (
     UnitfulDirection,
     UnitfulDischarge,
@@ -158,11 +165,9 @@ class TranslationModel(BaseModel):
     )
 
 
-class EventModel(BaseModel):  # add WindModel etc as this is shared among all? templates
+class EventModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all event types."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: str = ""
     mode: Mode
     template: Template
     timing: Timing
@@ -175,13 +180,9 @@ class EventModel(BaseModel):  # add WindModel etc as this is shared among all? t
     surge: SurgeModel
 
 
-class EventSetModel(
-    BaseModel
-):  # add WindModel etc as this is shared among all? templates
+class EventSetModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to a risk event that describes the probabilistic event set."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     mode: Mode
     subevent_name: Optional[list[str]] = []
     frequency: Optional[list[float]] = []
@@ -204,39 +205,53 @@ class HistoricalHurricaneModel(EventModel):
 
     hurricane_translation: TranslationModel
     track_name: str
+    cyc_file: Optional[str] = None
+
+    @model_validator(mode="after")
+    def set_cycfile(self) -> "HistoricalHurricaneModel":
+        if self.cyc_file is None:
+            self.cyc_file = f"{self.track_name}.cyc"
+        return self
 
 
-class IEvent(ABC):
-    attrs: EventModel
+EventModelType = TypeVar("EventModelType", bound=EventModel)
+
+
+class IEvent(IObject[EventModelType]):
+    attrs: EventModelType
+    dir_name = ObjectDir.event
 
     @staticmethod
     @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Event attributes from toml file."""
-        ...
+    def get_template(filepath: Path): ...
 
     @staticmethod
     @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """Get Event attributes from an object, e.g. when initialized from GUI."""
-        ...
+    def get_mode(filepath: Path) -> Mode: ...
+
+    @staticmethod
+    @abstractmethod
+    def timeseries_shape(
+        shape_type: str, duration: float, peak: float, **kwargs
+    ) -> np.ndarray: ...
+
+    @staticmethod
+    @abstractmethod
+    def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame: ...
 
     @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Event attributes to a toml file."""
+    def download_meteo(self, site: Site, path: Path): ...
 
+    @abstractmethod
+    def add_dis_ts(
+        self,
+        event_dir: Path,
+        site_river: list,
+        input_river_df_list: Optional[list[pd.DataFrame]] = [],
+    ): ...
 
-class ISynthetic(IEvent):
-    attrs: SyntheticModel
+    @abstractmethod
+    def add_rainfall_ts(self, **kwargs): ...
 
-
-class IHistoricalNearshore(IEvent):
-    attrs: HistoricalNearshoreModel
-
-
-class IHistoricalOffshore(IEvent):
-    attrs: HistoricalOffshoreModel
-
-
-class IHistoricalHurricane(IEvent):
-    attrs: HistoricalHurricaneModel
+    @abstractmethod
+    def add_wind_ts(self): ...
