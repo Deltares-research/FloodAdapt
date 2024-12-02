@@ -531,6 +531,8 @@ class SfincsAdapter:
         QuadtreeGrid
             QuadtreeGrid with the model grid
         """
+        if not self.sf_model.quadtree:
+            raise ValueError("No quadtree grid found in model.")
         return self.sf_model.quadtree
 
     def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
