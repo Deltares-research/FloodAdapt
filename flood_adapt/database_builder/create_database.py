@@ -25,7 +25,7 @@ from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import Obs_pointModel, Site, SlrModel
+from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
 from flood_adapt.object_model.io import unit_system as us
 
 config_path = None
@@ -195,7 +195,7 @@ class ConfigModel(BaseModel):
         Indicates if cyclones are enabled.
     cyclone_basin : Optional[Basins], default None
         The cyclone basin.
-    obs_point : Optional[list[Obs_pointModel]], default None
+    obs_point : Optional[list[ObsPointModel]], default None
         The list of observation point models.
     probabilistic_set : Optional[str], default None
         The probabilistic set path.
@@ -221,7 +221,7 @@ class ConfigModel(BaseModel):
     road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[ObsPointModel]] = None
     probabilistic_set: Optional[str] = None
     infographics: Optional[bool] = True
 

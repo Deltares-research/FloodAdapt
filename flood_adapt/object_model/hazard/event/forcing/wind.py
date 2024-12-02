@@ -151,7 +151,7 @@ class WindCSV(IWind):
 class WindMeteo(IWind):
     source: ForcingSource = ForcingSource.METEO
 
-    # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
+    # Required variables: ['wind10_u' (m/s), 'wind10_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']
     def get_data(
         self,

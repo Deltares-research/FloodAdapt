@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 from cht_meteo.meteo import (
@@ -43,6 +44,25 @@ class MeteoHandler:
             y_range=[self.site.attrs.lat - 10, self.site.attrs.lat + 10],
             crs=CRS.from_epsg(4326),
         )
+
+        # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
+        # TODO implement a good solution to this in cht_meteo
+        def _shift_grid_to_positive_lon(grid: MeteoGrid):
+            """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
+            if np.prod(grid.x_range) < 0:
+                if np.abs(grid.x_range[0]) > np.abs(grid.x_range[1]):
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[1] - 1,
+                        grid.x_range[1] - grid.x_range[1] - 1,
+                    ]
+                else:
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[0] + 1,
+                        grid.x_range[1] - grid.x_range[0] + 1,
+                    ]
+            return grid.x_range
+
+        gfs_conus.x_range = _shift_grid_to_positive_lon(gfs_conus)
 
         # Download and collect data
         t0 = time.start_time

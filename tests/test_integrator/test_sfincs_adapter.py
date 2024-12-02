@@ -53,7 +53,7 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
-from flood_adapt.object_model.interface.site import Obs_pointModel, RiverModel
+from flood_adapt.object_model.interface.site import ObsPointModel, RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
@@ -684,7 +684,7 @@ class TestAddObsPoint:
     def test_add_obs_points(self, test_db: IDatabase):
         if test_db.site.attrs.obs_point is None:
             test_db.site.attrs.obs_point = [
-                Obs_pointModel(
+                ObsPointModel(
                     name="obs1",
                     description="Ashley River - James Island Expy",
                     lat=32.7765,

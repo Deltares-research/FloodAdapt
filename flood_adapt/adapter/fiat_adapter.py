@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt import unit_system as us
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -15,7 +16,6 @@ from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.interface.events import Mode
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io import unit_system as us
 
 
 class FiatAdapter:  # TODO implement ImpactAdapter interface

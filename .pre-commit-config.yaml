@@ -9,7 +9,8 @@ repos:
     -   id: check-toml
     -   id: check-merge-conflict
     -   id: check-added-large-files
-        exclude: '^environment/'
+        exclude: ^(environment/)$
+        args: [--maxkb=10240] # 10MB
     -   id: check-merge-conflict
     -   id: trailing-whitespace
 - repo: https://github.com/astral-sh/ruff-pre-commit

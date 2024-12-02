@@ -6,4 +6,4 @@ __all__ = ["Settings", "FloodAdaptLogging", "unit_system"]
 
 FloodAdaptLogging()  # Initialize logging once for the entire package
 
-__version__ = "0.1.1"
+__version__ = "0.1.3"

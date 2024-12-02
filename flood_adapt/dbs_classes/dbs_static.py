@@ -37,14 +37,6 @@ class DbsStatic(IDbsStatic):
         """Initialize any necessary attributes."""
         self._database = database
 
-    def get_static_sfincs_model(self) -> SfincsAdapter:
-        sfincs_path = (
-            self._database.static_path
-            / "templates"
-            / self._database.site.attrs.sfincs.overland_model
-        )
-        return SfincsAdapter(model_root=(sfincs_path))
-
     @cache_method_wrapper
     def get_aggregation_areas(self) -> dict:
         """Get a list of the aggregation areas that are provided in the site configuration.
@@ -75,7 +67,7 @@ class DbsStatic(IDbsStatic):
     @cache_method_wrapper
     def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
-        bnd = self.get_static_sfincs_model().get_model_boundary()
+        bnd = self.get_overland_sfincs_model().get_model_boundary()
         return bnd
 
     @cache_method_wrapper
@@ -87,7 +79,7 @@ class DbsStatic(IDbsStatic):
         QuadtreeGrid
             The model grid
         """
-        grid = self.get_static_sfincs_model().get_model_grid()
+        grid = self.get_overland_sfincs_model().get_model_grid()
         return grid
 
     @cache_method_wrapper
@@ -252,15 +244,18 @@ class DbsStatic(IDbsStatic):
             / "templates"
             / self._database.site.attrs.sfincs.overland_model
         )
-        return SfincsAdapter(model_root=overland_path)
+        with SfincsAdapter(model_root=overland_path) as overland_model:
+            return overland_model
 
     def get_offshore_sfincs_model(self) -> SfincsAdapter:
         """Get the template overland Sfincs model."""
         if self._database.site.attrs.sfincs.offshore_model is None:
             raise ValueError("No offshore model defined in the site configuration.")
+
         offshore_path = (
             self._database.static_path
             / "templates"
             / self._database.site.attrs.sfincs.offshore_model
         )
-        return SfincsAdapter(model_root=offshore_path)
+        with SfincsAdapter(model_root=offshore_path) as offshore_model:
+            return offshore_model

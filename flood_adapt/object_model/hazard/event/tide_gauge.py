@@ -108,7 +108,7 @@ class TideGauge(ITideGauge):
 
         Parameters
         ----------
-        obs_point : Obs_pointModel
+        obs_point : ObsPointModel
             Observation point model.
         source : str
             Source of the data.

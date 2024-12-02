@@ -16,7 +16,7 @@ class Cstype(str, Enum):
     spherical = "spherical"
 
 
-class Floodmap_type(str, Enum):
+class FloodmapType(str, Enum):
     """The accepted input for the variable floodmap in Site."""
 
     water_level = "water_level"
@@ -50,7 +50,7 @@ class WaterLevelReferenceModel(BaseModel):
     other: Optional[list[VerticalReferenceModel]] = []  # only for plotting
 
 
-class Cyclone_track_databaseModel(BaseModel):
+class CycloneTrackDatabaseModel(BaseModel):
     """The accepted input for the variable cyclone_track_database in Site."""
 
     file: str
@@ -87,7 +87,7 @@ class MapboxLayersModel(BaseModel):
     flood_map_colors: list[str]
     aggregation_dmg_bins: list[float]
     aggregation_dmg_colors: list[str]
-    footprints_dmg_type: DamageType = "absolute"
+    footprints_dmg_type: DamageType = DamageType.absolute
     footprints_dmg_bins: list[float]
     footprints_dmg_colors: list[str]
     svi_bins: Optional[list[float]] = []
@@ -177,9 +177,9 @@ class FiatModel(BaseModel):
     exposure_crs: str
     bfe: Optional[BFEModel] = None
     aggregation: list[AggregationModel]
-    floodmap_type: Floodmap_type
+    floodmap_type: FloodmapType
     non_building_names: Optional[list[str]]
-    damage_unit: Optional[str] = "$"
+    damage_unit: str = "$"
     building_footprints: Optional[str] = None
     roads_file_name: Optional[str] = None
     new_development_file_name: Optional[str] = None
@@ -198,14 +198,42 @@ class RiverModel(BaseModel):
     y_coordinate: float
 
 
-class Obs_pointModel(BaseModel):
+# class TideGaugeModel(BaseModel):
+#     """The accepted input for the variable tide_gauge in Site.
+
+#     The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
+#     """
+
+#     name: Optional[Union[int, str]] = None
+#     description: str = ""
+#     source: TideGaugeSource
+#     ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
+#     file: Optional[str] = None  # for locally stored data
+#     lat: Optional[float] = None
+#     lon: Optional[float] = None
+
+#     @model_validator(mode="after")
+#     def validate_selection_type(self) -> "TideGaugeModel":
+#         if self.source == "file" and self.file is None:
+#             raise ValueError(
+#                 "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
+#             )
+#         elif self.source == "noaa_coops" and self.ID is None:
+#             raise ValueError(
+#                 "If `source` is 'noaa_coops' the id of the station should be provided with the attribute 'ID'."
+#             )
+
+#         return self
+
+
+class ObsPointModel(BaseModel):
     """The accepted input for the variable obs_point in Site.
 
     obs_points is used to define output locations in the hazard model, which will be plotted in the user interface.
     """
 
     name: Union[int, str]
-    description: Optional[str] = ""
+    description: str = ""
     ID: Optional[int] = (
         None  # if the observation station is also a tide gauge, this ID should be the same as for obs_station
     )
@@ -248,19 +276,18 @@ class SiteModel(IObjectModel):
     crs: str = "EPSG:4326"
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
-    cyclone_track_database: Optional[Cyclone_track_databaseModel] = None
+    cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
     slr: SlrModel
     gui: GuiModel
     risk: RiskModel
-    # TODO what should the default be
-    flood_frequency: Optional[FloodFrequencyModel] = FloodFrequencyModel(
+    flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )
     dem: DemModel
     fiat: FiatModel
     tide_gauge: Optional[TideGaugeModel] = None
     river: Optional[list[RiverModel]] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[ObsPointModel]] = None
     benefits: BenefitsModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
 

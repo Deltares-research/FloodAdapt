@@ -82,7 +82,7 @@ def session_setup_teardown():
 
     log_path = logs_dir / f"test_run_{datetime.now().strftime('%m-%d_%Hh-%Mm')}.log"
     FloodAdaptLogging(
-        file_path=str(log_path),
+        file_path=log_path,
         loglevel_console=logging.DEBUG,
         loglevel_root=logging.DEBUG,
         loglevel_files=logging.DEBUG,
