@@ -31,6 +31,23 @@ from flood_adapt.object_model.utils import cd
 
 
 def generate_polygon(point, shape_type, diameter):
+    """
+    Generate a polygon of a specified shape and diameter centered at a given point.
+
+    Parameters
+    ----------
+    point (shapely.geometry.Point): The center point of the polygon.
+    shape_type (str): The type of shape to generate. Must be one of 'circle', 'square', or 'triangle'.
+    diameter (float): The diameter of the shape.
+
+    Returns
+    -------
+    shapely.geometry.Polygon: The generated polygon.
+
+    Raises
+    ------
+    ValueError: If the shape_type is not one of 'circle', 'square', or 'triangle'.
+    """
     if shape_type == "circle":
         return point.buffer(diameter / 2)
     elif shape_type == "square":
@@ -47,9 +64,9 @@ def generate_polygon(point, shape_type, diameter):
         height = (math.sqrt(3) / 2) * diameter
         return geom.Polygon(
             [
-                (point.x, point.y + height / 2),
-                (point.x - diameter / 2, point.y - height / 2),
-                (point.x + diameter / 2, point.y - height / 2),
+                (point.x, point.y - height / 2),
+                (point.x - diameter / 2, point.y + height / 2),
+                (point.x + diameter / 2, point.y + height / 2),
             ]
         )
     else:
@@ -489,29 +506,52 @@ class DirectImpacts:
             non_building_names=self.site_info.attrs.fiat.non_building_names,
             return_gdf=True,
         )
-        buildings_without_footprint = buildings[buildings["BF_FID"].isna()]
-        shape_type, diameter = "triangle", 0.0002
-        buildings_without_footprint["geometry"] = buildings_without_footprint[
-            "geometry"
-        ].apply(lambda point: generate_polygon(point, shape_type, diameter))
+        # Find buildings with no footprint connected
+        buildings_without_footprint = buildings[
+            (buildings["BF_FID"].isna()) & (buildings.geometry.type == "Point")
+        ]
+        if len(buildings_without_footprint) > 1:
+            init_crs = buildings_without_footprint.crs
+            buildings_without_footprint = buildings_without_footprint.to_crs(
+                buildings_without_footprint.estimate_utm_crs()
+            )
+            shape_type = self.site_info.attrs.fiat.no_footprints.shape
+            diameter = self.site_info.attrs.fiat.no_footprints.diameter_meters
+
+            # Transform points to shapes
+            buildings_without_footprint["geometry"] = buildings_without_footprint[
+                "geometry"
+            ].apply(lambda point: generate_polygon(point, shape_type, diameter))
+            buildings_without_footprint = buildings_without_footprint.to_crs(init_crs)
+
+        # Read building footprints
         footprints = gpd.read_file(footprints_path, engine="pyogrio")
+
         # Step to ensure that results is not a Geodataframe
         if "geometry" in fiat_results_df.columns:
             del fiat_results_df["geometry"]
-        # Check if there is new development area
+
+        # Check if there is new development area and compile the extra polygons together
         new_development_area = None
         file_path = self.fiat_path.joinpath(
             "output", self.site_info.attrs.fiat.new_development_file_name
         )
         if file_path.exists():
             new_development_area = gpd.read_file(file_path)
-            extra_polygons = (
-                buildings_without_footprint[["Object ID", "geometry"]]
-                .merge(new_development_area["Object ID", "geometry"])
-                .reset_index(drop=True)
+            new_development_area = new_development_area.to_crs(
+                buildings_without_footprint.crs
             )
+            extra_polygons = pd.concat(
+                [
+                    buildings_without_footprint[["Object ID", "geometry"]],
+                    new_development_area[["Object ID", "geometry"]],
+                ]
+            ).reset_index(drop=True)
         else:
-            extra_polygons = buildings_without_footprint[["Object ID", "geometry"]]
+            extra_polygons = buildings_without_footprint[
+                ["Object ID", "geometry"]
+            ].reset_index(drop=True)
+
         # Save file
         PointsToFootprints.write_footprint_file(
             footprints, fiat_results_df, outpath, extra_footprints=extra_polygons
