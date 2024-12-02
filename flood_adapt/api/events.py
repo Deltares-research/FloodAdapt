@@ -1,7 +1,7 @@
 # Event tab
 import os
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Type, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -107,8 +107,8 @@ def list_forcing_types() -> list[str]:
     return ForcingFactory.list_forcing_types()
 
 
-def list_forcings(as_string: bool) -> list[str] | list[IForcing]:
-    return ForcingFactory.list_forcings(as_string=as_string)
+def list_forcings() -> list[Type[IForcing]]:
+    return ForcingFactory.list_forcings()
 
 
 def get_allowed_forcings(template: Template) -> dict[str, List[str]]:

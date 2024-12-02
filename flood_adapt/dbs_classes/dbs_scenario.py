@@ -5,7 +5,7 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.scenario import Scenario
 
 
-class DbsScenario(DbsTemplate):
+class DbsScenario(DbsTemplate[Scenario]):
     _object_class = Scenario
 
     def list_objects(self) -> dict[str, list[Any]]:

@@ -17,7 +17,7 @@ class FloodMapType(str, Enum):
 class FloodMap(DatabaseUser):
     logger = FloodAdaptLogging.getLogger(__name__)
 
-    _type: FloodMapType = FloodMapType.WATER_LEVEL
+    type: FloodMapType = FloodMapType.WATER_LEVEL
 
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]

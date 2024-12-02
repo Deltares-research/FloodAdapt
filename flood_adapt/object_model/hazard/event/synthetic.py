@@ -26,6 +26,9 @@ class SyntheticEventModel(EventModel):  # add SurgeModel etc. that fit Synthetic
     @classmethod
     def default(cls) -> "SyntheticEventModel":
         """Set default values for Synthetic event."""
+        discharge = ForcingFactory.get_default_forcing(
+            ForcingType.DISCHARGE, ForcingSource.SYNTHETIC
+        )
         return cls(
             name="DefaultSyntheticEvent",
             time=TimeModel(),
@@ -41,9 +44,7 @@ class SyntheticEventModel(EventModel):  # add SurgeModel etc. that fit Synthetic
                 ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
                     ForcingType.WATERLEVEL, ForcingSource.SYNTHETIC
                 ),
-                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
-                    ForcingType.DISCHARGE, ForcingSource.SYNTHETIC
-                ),
+                ForcingType.DISCHARGE: {discharge.river.name: discharge},
             },
         )
 

@@ -1,4 +1,5 @@
 import gc
+import logging
 import os
 import shutil
 import subprocess
@@ -93,21 +94,25 @@ class SfincsAdapter(IHazardAdapter):
         """Load overland sfincs model based on a root directory.
 
         Args:
-            model_root (str): Root directory of overland sfincs model.
+            model_root (Path): Root directory of overland sfincs model.
         """
         self.site = self.database.site
+
         self._model = SfincsModel(
-            root=str(model_root.resolve()), mode="r"
-        )  # TODO check logger
+            root=str(model_root.resolve()), mode="r", logger=self.logger
+        )
         self._model.read()
 
     def __del__(self):
         """Close the log file associated with the logger and clean up file handles."""
-        if hasattr(self, "_logger") and hasattr(self.logger, "handlers"):
-            # Close the log file associated with the logger
+        # Delete the model as they also create file handles
+        del self._model
+
+        if hasattr(self.logger, "handlers"):
             for handler in self.logger.handlers:
-                handler.close()
-            self.logger.handlers.clear()
+                if isinstance(handler, logging.FileHandler):
+                    handler.close()
+                    self.logger.removeHandler(handler)
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
@@ -133,8 +138,8 @@ class SfincsAdapter(IHazardAdapter):
                 model.read()
                 ...
         """
-        # Explicitly delete self to ensure resources are freed
         del self
+        # FloodAdaptLogging.close_files()
 
         # Return False to propagate/reraise any exceptions that occurred in the with block
         # Return True to suppress any exceptions that occurred in the with block
@@ -183,8 +188,8 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
+        sfincs_log = path / "sfincs.log"
         with cd(path):
-            sfincs_log = "sfincs.log"
             with FloodAdaptLogging.to_file(file_path=sfincs_log):
                 self.logger.info(f"Running SFINCS in {path}...")
                 process = subprocess.run(
@@ -314,6 +319,9 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
     ### GETTERS ###
+    def get_model_root(self) -> Path:
+        return Path(self._model.root)
+
     def get_mask(self):
         """Get mask with inactive cells from model."""
         mask = self._model.grid["msk"]
@@ -437,11 +445,14 @@ class SfincsAdapter(IHazardAdapter):
             to_check = [Path(sim_paths[0]) / file for file in SFINCS_OUTPUT_FILES]
             # Add logfile check as well from old hazard.py?
             return all(output.exists() for output in to_check)
-        else:
-            raise ValueError("Unsupported event type.")
 
-    def write_floodmap_geotiff(self, scenario: IScenario, sim_path: Path):
+        raise ValueError("Unsupported event type.")
+
+    def write_floodmap_geotiff(
+        self, scenario: IScenario, sim_path: Optional[Path] = None
+    ):
         results_path = self._get_result_path(scenario)
+        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
 
         # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
@@ -458,12 +469,15 @@ class SfincsAdapter(IHazardAdapter):
                 floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
             )
 
-    def write_water_level_map(self, scenario: IScenario, sim_path: Path = None):
+    def write_water_level_map(
+        self, scenario: IScenario, sim_path: Optional[Path] = None
+    ):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
         results_path = self._get_result_path(scenario)
-        sim_paths = [sim_path] if sim_path else self._get_simulation_paths(scenario)
+        sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+
         # Why only 1 model?
-        with SfincsAdapter(model_root=sim_paths[0]) as model:
+        with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
 
@@ -489,19 +503,19 @@ class SfincsAdapter(IHazardAdapter):
             floodmap_fn=str(floodmap_fn),
         )
 
-    def plot_wl_obs(self, scenario: IScenario, sim_path: Path = None):
+    def plot_wl_obs(
+        self,
+        scenario: IScenario,
+        sim_path: Optional[Path] = None,
+        event: Optional[IEvent] = None,
+    ):
         """Plot water levels at SFINCS observation points as html.
 
         Only for single event scenarios, or for a specific simulation path containing the written and processed sfincs model.
         """
-        event = scenario.event
-
-        if isinstance(scenario.event, EventSet):
-            raise ValueError(
-                "This function is only available for single event scenarios."
-            )
-
         sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        event = event or scenario.event
+
         # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
             df, gdf = model._get_zs_points()
@@ -770,25 +784,33 @@ class SfincsAdapter(IHazardAdapter):
     def _preprocess_single_event(
         self, scenario: IScenario, output_path: Path, event: Optional[IEvent] = None
     ):
-        self.set_timing(scenario.event.attrs.time)
-
-        # Write template model to output path and set it as the model root so focings can write to it
-        self.write(output_path)
-
+        # Use the event from the scenario if not provided by event sets
         if event is None:
             event = scenario.event
 
-        for forcing in event.get_forcings():
-            self.add_forcing(forcing)
+        # Write template model to output path and set it as the model root so focings can write to it
+        self.set_timing(event.attrs.time)
+        self.write(output_path)
 
-        for measure in scenario.strategy.get_hazard_strategy().measures:
-            self.add_measure(measure)
+        # I dont like this due to it being state based and might break if people use functions in the wrong order
+        # Currently only used to pass projection + event stuff to WaterlevelModel
+        self._current_scenario = scenario
+        try:
+            for forcing in event.get_forcings():
+                self.add_forcing(forcing)
 
-        self.add_projection(scenario.projection)
-        self.add_obs_points()
+            for measure in scenario.strategy.get_hazard_strategy().measures:
+                self.add_measure(measure)
 
-        # Save any changes made to disk as well
-        self.write(path_out=output_path)
+            self.add_projection(scenario.projection)
+
+            self.add_obs_points()
+
+            # Save any changes made to disk as well
+            self.write(path_out=output_path)
+
+        finally:
+            self._current_scenario = None
 
     def _preprocess_risk(self, scenario: IScenario, sim_paths: List[Path]):
         if not isinstance(scenario.event, EventSet):
@@ -846,6 +868,8 @@ class SfincsAdapter(IHazardAdapter):
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
         elif isinstance(forcing, WindTrack):
+            if forcing.path is None:
+                raise ValueError("No path to rainfall track file provided.")
             self._add_forcing_spw(forcing.path)
         else:
             self.logger.warning(
@@ -885,6 +909,8 @@ class SfincsAdapter(IHazardAdapter):
                 precip=ds["precip"], aggregate=False
             )
         elif isinstance(forcing, RainfallTrack):
+            if forcing.path is None:
+                raise ValueError("No path to rainfall track file provided.")
             self._add_forcing_spw(forcing.path)
         else:
             self.logger.warning(
@@ -924,9 +950,7 @@ class SfincsAdapter(IHazardAdapter):
             self._set_waterlevel_forcing(df_ts)
 
         elif isinstance(forcing, WaterlevelModel):
-            # ! figure out how to pass scenario to forcing
-
-            if (df_ts := forcing.get_data(scenario=scenario)) is None:  # noqa: F821
+            if (df_ts := forcing.get_data(scenario=self._current_scenario)) is None:
                 raise ValueError("Failed to get waterlevel data.")
             self._set_waterlevel_forcing(df_ts)
             self._turn_off_bnd_press_correction()
@@ -1155,8 +1179,8 @@ class SfincsAdapter(IHazardAdapter):
         # ONLY offshore models
         """Convert tidal constituents from bca file to waterlevel timeseries that can be read in by hydromt_sfincs."""
         sb = SfincsBoundary()
-        sb.read_flow_boundary_points(Path(self._model.root) / "sfincs.bnd")
-        sb.read_astro_boundary_conditions(Path(self._model.root) / "sfincs.bca")
+        sb.read_flow_boundary_points(self.get_model_root() / "sfincs.bnd")
+        sb.read_astro_boundary_conditions(self.get_model_root() / "sfincs.bca")
 
         times = pd.date_range(
             start=event.attrs.time.start_time,
@@ -1171,10 +1195,8 @@ class SfincsAdapter(IHazardAdapter):
         for bnd_ii in range(len(sb.flow_boundary_points)):
             tide_ii = (
                 predict(sb.flow_boundary_points[bnd_ii].astro, times)
-                + event.attrs.water_level_offset.convert(us.UnitTypesLength("meters"))
-                + physical_projection.sea_level_rise.convert(
-                    us.UnitTypesLength("meters")
-                )
+                + event.attrs.water_level_offset.convert(us.UnitTypesLength.meters)
+                + physical_projection.sea_level_rise.convert(us.UnitTypesLength.meters)
             )
 
             if bnd_ii == 0:
@@ -1193,13 +1215,17 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_spw(self, spw_path: Path):
         """Add spiderweb forcing to the sfincs model."""
+        if spw_path is None:
+            raise ValueError("No path to rainfall track file provided.")
+
         if not spw_path.exists():
             raise FileNotFoundError(f"SPW file not found: {spw_path}")
-        self._sim_path.mkdir(parents=True, exist_ok=True)
+
+        sim_path = self.get_model_root()
 
         # prevent SameFileError
-        if spw_path != self._sim_path / spw_path.name:
-            shutil.copy2(spw_path, self._sim_path)
+        if spw_path != sim_path / spw_path.name:
+            shutil.copy2(spw_path, sim_path / spw_path.name)
 
         self._model.set_config("spwfile", spw_path.name)
 

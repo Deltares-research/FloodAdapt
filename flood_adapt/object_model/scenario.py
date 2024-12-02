@@ -1,16 +1,11 @@
-from typing import Any
+from typing import Any, List
 
 from flood_adapt import __version__
 from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
-from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.events import IEvent
-from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy
@@ -20,8 +15,11 @@ from flood_adapt.object_model.utils import finished_file_exists, write_finished_
 class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
-    hazards: list[IHazardAdapter]
-    direct_impacts: DirectImpacts  # list[IImpactAdapter]
+    def __init__(self, data: dict[str, Any]) -> None:
+        """Create a Direct Impact object."""
+        super().__init__(data)
+        self.site_info = self.database.site
+        self.results_path = self.database.scenarios.output_path / self.attrs.name
 
     @property
     def event(self) -> IEvent:
@@ -41,19 +39,9 @@ class Scenario(IScenario, DatabaseUser):
             self._strategy = self.database.strategies.get(self.attrs.strategy)
         return self._strategy
 
-    def __init__(self, data: dict[str, Any]) -> None:
-        """Create a Direct Impact object."""
-        super().__init__(data)
-
-        self.hazards = [
-            SfincsAdapter(
-                model_root=(db_path(TopLevelDir.static) / "templates" / "overland")
-            ),  # make default
-        ]
-
-        self.site_info = self.database.site
-        self.results_path = self.database.scenarios.output_path / self.attrs.name
-        self.direct_impacts = DirectImpacts(
+    @property
+    def direct_impacts(self) -> DirectImpacts:  # List[IImpactAdapter]
+        return DirectImpacts(
             scenario=self.attrs,
         )
 
@@ -69,22 +57,31 @@ class Scenario(IScenario, DatabaseUser):
                 f"Started evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
             )
 
-            for hazard in self.hazards:
-                if not hazard.has_run:
+            hazard_models: list[IHazardAdapter] = [
+                self.database.static.get_overland_sfincs_model(),
+            ]
+            for hazard in hazard_models:
+                if not hazard.has_run(self):
                     hazard.run(self)
                 else:
                     self.logger.info(
                         f"Hazard for scenario '{self.attrs.name}' has already been run."
                     )
 
-            if not self.direct_impacts.has_run:
-                self.direct_impacts.preprocess_models()
-                self.direct_impacts.run_models()
-                self.direct_impacts.postprocess_models()
-            else:
-                self.logger.info(
-                    f"Direct impacts for scenario '{self.attrs.name}' has already been run."
-                )
+            impact_models: List[DirectImpacts] = [  # List[IImpactAdapter]
+                DirectImpacts(
+                    scenario=self.attrs,
+                ),
+            ]
+            for impact_model in impact_models:
+                if not impact_model.has_run:
+                    impact_model.preprocess_models()
+                    impact_model.run_models()
+                    impact_model.postprocess_models()
+                else:
+                    self.logger.info(
+                        f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+                    )
 
             self.logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"

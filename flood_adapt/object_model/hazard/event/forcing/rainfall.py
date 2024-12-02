@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, Optional
 
 import pandas as pd
 import xarray as xr
@@ -26,7 +26,7 @@ from flood_adapt.object_model.io import unit_system as us
 
 
 class RainfallConstant(IRainfall):
-    _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
+    source: ForcingSource = ForcingSource.CONSTANT
 
     intensity: us.UnitfulIntensity
 
@@ -51,7 +51,7 @@ class RainfallConstant(IRainfall):
 
 
 class RainfallSynthetic(IRainfall):
-    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
+    source: ForcingSource = ForcingSource.SYNTHETIC
     timeseries: SyntheticTimeseriesModel
 
     def get_data(
@@ -83,7 +83,7 @@ class RainfallSynthetic(IRainfall):
 
 
 class RainfallMeteo(IRainfall):
-    _source: ClassVar[ForcingSource] = ForcingSource.METEO
+    source: ForcingSource = ForcingSource.METEO
 
     def get_data(
         self,
@@ -108,7 +108,7 @@ class RainfallMeteo(IRainfall):
 
 
 class RainfallTrack(IRainfall):
-    _source: ClassVar[ForcingSource] = ForcingSource.TRACK
+    source: ForcingSource = ForcingSource.TRACK
 
     path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
@@ -137,7 +137,7 @@ class RainfallTrack(IRainfall):
 
 
 class RainfallCSV(IRainfall):
-    _source: ClassVar[ForcingSource] = ForcingSource.CSV
+    source: ForcingSource = ForcingSource.CSV
 
     path: Path
 

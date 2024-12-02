@@ -2,29 +2,46 @@ import os
 from pathlib import Path
 from typing import Any, List
 
-import tomli
-import tomli_w
-from pydantic import BaseModel, Field
+from pydantic import Field, model_validator
 from typing_extensions import Annotated
 
-from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.synthetic import SyntheticEventModel
+from flood_adapt.object_model.hazard.event.template_event import (
+    EventModel,
+)
 from flood_adapt.object_model.hazard.interface.models import Mode
 from flood_adapt.object_model.interface.database_user import DatabaseUser
-from flood_adapt.object_model.interface.events import (
-    IEvent,
-    IEventModel,
-)
+from flood_adapt.object_model.interface.events import IEvent
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 
 
-class EventSetModel(BaseModel):
+class EventSetModel(IObjectModel):
     """BaseModel describing the expected variables and data types for parameters of Synthetic that extend the parent class Event."""
 
-    name: str
-    description: str = ""
     mode: Mode = Mode.risk
-    sub_events: List[IEventModel]
+
+    sub_events: List[EventModel]
     frequency: List[Annotated[float, Field(strict=True, ge=0, le=1)]]
+
+    @model_validator(mode="before")
+    def load_sub_events(self):
+        """Load the sub events from the dictionary."""
+        from flood_adapt.object_model.hazard.event.event_factory import EventFactory
+
+        sub_events = [
+            EventFactory.get_eventmodel_from_template(
+                sub_event["template"]
+            ).model_validate(sub_event)
+            for sub_event in self["sub_events"]
+        ]
+        self["sub_events"] = sub_events
+        return self
+
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """Dump the model to a dictionary."""
+        dump = super().model_dump(**kwargs)
+        dump.update(forcings=[sub_event.model_dump() for sub_event in self.sub_events])
+        return dump
 
     @classmethod
     def default(cls) -> "EventSetModel":
@@ -36,42 +53,18 @@ class EventSetModel(BaseModel):
         )
 
 
-class EventSet(DatabaseUser):
-    logger = FloodAdaptLogging.getLogger(__name__)
+class EventSet(IObject[EventSetModel], DatabaseUser):
+    _attrs_type = EventSetModel
 
-    attrs: EventSetModel
     events: List[IEvent]
 
-    @classmethod
-    def load_dict(cls, attrs: dict[str, Any] | EventSetModel) -> "EventSet":
+    def __init__(self, data: dict[str, Any]) -> None:
         from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
-        obj = cls()
-        obj.events = []
-        sub_models = []
-        if isinstance(attrs, EventSetModel):
-            attrs = attrs.model_dump()
-
-        for sub_event in attrs["sub_events"]:
-            sub_event = EventFactory.load_dict(sub_event)
-            if isinstance(sub_event, EventSet):
-                raise ValueError("EventSet cannot contain other EventSets")
-            obj.events.append(sub_event)
-            sub_models.append(sub_event.attrs)
-
-        attrs["sub_events"] = sub_models
-        obj.attrs = EventSetModel.model_validate(attrs)
-        return obj
-
-    @classmethod
-    def load_file(cls, path: Path) -> "EventSet":
-        with open(path, "rb") as f:
-            return cls.load_dict(tomli.load(f))
-
-    def save(self, path: Path):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "wb") as f:
-            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
+        super().__init__(data)
+        self.events = [
+            EventFactory.load_dict(sub_event) for sub_event in self.attrs.sub_events
+        ]
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         for sub_event in self.events:

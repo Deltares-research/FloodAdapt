@@ -101,7 +101,6 @@ def setup_eventset_scenario(
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 
-    test_eventset, sub_events = test_eventset
     test_db.events.save(test_eventset)
 
     scn = Scenario.load_dict(

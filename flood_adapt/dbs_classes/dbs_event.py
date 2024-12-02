@@ -7,7 +7,7 @@ from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.template_event import Event
 
 
-class DbsEvent(DbsTemplate):
+class DbsEvent(DbsTemplate[Event]):
     _object_class = Event
 
     def get(self, name: str) -> Event:
@@ -63,7 +63,9 @@ class DbsEvent(DbsTemplate):
         """
         # Check if the provided old_name is valid
         if old_name not in self.list_objects()["name"]:
-            raise ValueError(f"'{old_name}' {self._type} does not exist.")
+            raise ValueError(
+                f"'{old_name}' {self._object_class.display_name} does not exist."
+            )
 
         # First do a get and change the name and description
         copy_object = self.get(old_name)

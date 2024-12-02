@@ -53,6 +53,9 @@ class HurricaneEventModel(EventModel):
     @classmethod
     def default(cls) -> "HurricaneEventModel":
         """Set default values for HurricaneEvent."""
+        discharge = ForcingFactory.get_default_forcing(
+            ForcingType.DISCHARGE, ForcingSource.CONSTANT
+        )
         return HurricaneEventModel(
             name="DefaultHurricaneEvent",
             time=TimeModel(),
@@ -70,9 +73,7 @@ class HurricaneEventModel(EventModel):
                 ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
                     ForcingType.WATERLEVEL, ForcingSource.MODEL
                 ),
-                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
-                    ForcingType.DISCHARGE, ForcingSource.CONSTANT
-                ),
+                ForcingType.DISCHARGE: {discharge.river.name: discharge},
             },
         )
 
@@ -155,7 +156,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
                 f"Including rainfall in spiderweb file of hurricane {self.attrs.name}"
             )
             tc.include_rainfall = (
-                self.attrs.forcings[ForcingType.RAINFALL]._source == ForcingSource.TRACK
+                self.attrs.forcings[ForcingType.RAINFALL].source == ForcingSource.TRACK
             )
 
         # Create spiderweb file from the track

@@ -85,8 +85,8 @@ class ForcingFactory(IForcingFactory):
         """Extract forcing type and source from a TOML file."""
         with open(filepath, mode="rb") as fp:
             toml_data = tomli.load(fp)
-        type = toml_data.get("_type")
-        source = toml_data.get("_source")
+        type = toml_data.get("type")
+        source = toml_data.get("source")
 
         if type is None or source is None:
             raise ValueError(
@@ -119,8 +119,8 @@ class ForcingFactory(IForcingFactory):
     @classmethod
     def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
-        type = attrs.get("_type")
-        source = attrs.get("_source")
+        type = attrs.get("type")
+        source = attrs.get("source")
         if type is None or source is None:
             raise ValueError(
                 f"Forcing type {type} or source {source} not found in attributes."
@@ -130,19 +130,17 @@ class ForcingFactory(IForcingFactory):
         ).model_validate(attrs)
 
     @classmethod
-    def list_forcingtypes(cls) -> List[str]:
+    def list_forcing_types(cls) -> List[str]:
         """List all available forcing types."""
         return [ftype.value for ftype in cls.FORCINGTYPES.keys()]
 
     @classmethod
-    def list_forcings(cls, as_string: bool = True) -> List[str] | List[Type[IForcing]]:
+    def list_forcings(cls) -> List[Type[IForcing]]:
         """List all available forcing classes."""
         forcing_classes = set()
         for source_map in cls.FORCINGTYPES.values():
             for forcing in source_map.values():
                 if forcing is not None:
-                    if as_string:
-                        forcing = forcing.__name__
                     forcing_classes.add(forcing)
         return list(forcing_classes)
 

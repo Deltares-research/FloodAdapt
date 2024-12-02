@@ -57,18 +57,20 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
                     value=20, units=us.UnitTypesIntensity.mm_hr
                 )
             ),
-            "DISCHARGE": DischargeCSV(
-                river=RiverModel(
-                    name="cooper",
-                    description="Cooper River",
-                    x_coordinate=595546.3,
-                    y_coordinate=3675590.6,
-                    mean_discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
+            "DISCHARGE": {
+                "cooper": DischargeCSV(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
                     ),
+                    path=_tmp_timeseries_csv("discharge.csv"),
                 ),
-                path=_tmp_timeseries_csv("discharge.csv"),
-            ),
+            },
         },
     }
     return HistoricalEvent.load_dict(event_attrs)
@@ -85,20 +87,22 @@ def setup_offshore_meteo_event():
             "WATERLEVEL": WaterlevelModel(),
             "WIND": WindMeteo(),
             "RAINFALL": RainfallMeteo(),
-            "DISCHARGE": DischargeConstant(
-                river=RiverModel(
-                    name="cooper",
-                    description="Cooper River",
-                    x_coordinate=595546.3,
-                    y_coordinate=3675590.6,
-                    mean_discharge=us.UnitfulDischarge(
+            "DISCHARGE": {
+                "cooper": DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=us.UnitfulDischarge(
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=us.UnitfulDischarge(
-                    value=5000, units=us.UnitTypesDischarge.cfs
-                ),
-            ),
+            },
         },
     }
     return HistoricalEvent.load_dict(event_attrs)

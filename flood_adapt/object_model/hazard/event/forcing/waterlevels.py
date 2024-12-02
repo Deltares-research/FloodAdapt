@@ -3,7 +3,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -56,7 +56,7 @@ class TideModel(BaseModel):
 
 
 class WaterlevelSynthetic(IWaterlevel):
-    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
+    source: ForcingSource = ForcingSource.SYNTHETIC
 
     surge: SurgeModel
     tide: TideModel
@@ -119,7 +119,7 @@ class WaterlevelSynthetic(IWaterlevel):
 
 
 class WaterlevelCSV(IWaterlevel):
-    _source: ClassVar[ForcingSource] = ForcingSource.CSV
+    source: ForcingSource = ForcingSource.CSV
 
     path: Path
 
@@ -150,7 +150,7 @@ class WaterlevelCSV(IWaterlevel):
 
 
 class WaterlevelModel(IWaterlevel):
-    _source: ClassVar[ForcingSource] = ForcingSource.MODEL
+    source: ForcingSource = ForcingSource.MODEL
 
     def get_data(
         self,
@@ -163,10 +163,7 @@ class WaterlevelModel(IWaterlevel):
         from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 
         if scenario is None:
-            raise ValueError(
-                "Scenario is not set. Provide a scenario to run the offshore model."
-            )
-
+            raise ValueError("Scenario must be provided to run the offshore model.")
         try:
             return OffshoreSfincsHandler().get_resulting_waterlevels(scenario=scenario)
         except Exception as e:
@@ -183,7 +180,7 @@ class WaterlevelModel(IWaterlevel):
 
 
 class WaterlevelGauged(IWaterlevel):
-    _source: ClassVar[ForcingSource] = ForcingSource.GAUGED
+    source: ForcingSource = ForcingSource.GAUGED
 
     def get_data(
         self, t0=None, t1=None, strict=True, **kwargs

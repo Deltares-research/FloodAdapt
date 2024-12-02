@@ -6,7 +6,6 @@ from unittest.mock import patch
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
@@ -25,7 +24,6 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.events import IEventModel
 from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
@@ -46,26 +44,28 @@ def test_sub_event():
                 direction=us.UnitfulDirection(
                     value=60, units=us.UnitTypesDirection.degrees
                 ),
-            ),
+            ).model_dump(),
             "RAINFALL": RainfallConstant(
                 intensity=us.UnitfulIntensity(
                     value=20, units=us.UnitTypesIntensity.mm_hr
                 )
-            ),
-            "DISCHARGE": DischargeConstant(
-                river=RiverModel(
-                    name="cooper",
-                    description="Cooper River",
-                    x_coordinate=595546.3,
-                    y_coordinate=3675590.6,
-                    mean_discharge=us.UnitfulDischarge(
+            ).model_dump(),
+            "DISCHARGE": {
+                "cooper": DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=us.UnitfulDischarge(
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
-                ),
-                discharge=us.UnitfulDischarge(
-                    value=5000, units=us.UnitTypesDischarge.cfs
-                ),
-            ),
+                ).model_dump(),
+            },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
@@ -88,17 +88,17 @@ def test_sub_event():
                         value=0, units=us.UnitTypesTime.hours
                     ),
                 ),
-            ),
+            ).model_dump(),
         },
     }
 
 
 @pytest.fixture()
-def test_eventset(test_sub_event) -> tuple[EventSet, list[IEventModel]]:
-    sub_events: list[IEventModel] = []
+def test_eventset(test_sub_event) -> EventSet:
+    sub_events = []
     for i in [1, 39, 78]:
         test_sub_event["name"] = f"subevent_{i:04d}"
-        sub_events.append(EventFactory.load_dict(test_sub_event).attrs)
+        sub_events.append(test_sub_event)
 
     attrs = {
         "name": "test_eventset_synthetic",
@@ -106,7 +106,15 @@ def test_eventset(test_sub_event) -> tuple[EventSet, list[IEventModel]]:
         "sub_events": sub_events,
         "frequency": [0.5, 0.2, 0.02],
     }
-    return EventSet.load_dict(attrs), sub_events
+    return EventSet.load_dict(attrs)
+
+
+def test_save_reload_eventset(test_eventset: EventSet, tmp_path: Path):
+    path = tmp_path / f"{test_eventset.attrs.name}.toml"
+    test_eventset.save(path)
+    reloaded = EventSet.load_file(path)
+
+    assert reloaded == test_eventset
 
 
 @pytest.fixture()
@@ -123,7 +131,6 @@ def setup_eventset_scenario(
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
 
-    test_eventset, sub_events = test_eventset
     test_db.events.save(test_eventset)
 
     scn = Scenario.load_dict(
@@ -140,15 +147,11 @@ def setup_eventset_scenario(
 
 
 class TestEventSet:
-    def test_save_all_sub_events(
-        self, test_eventset: tuple[EventSet, list[IEventModel]]
-    ):
-        event_set, _ = test_eventset
-
+    def test_save_all_sub_events(self, test_eventset: EventSet):
         tmp_path = Path(gettempdir()) / "test_eventset.toml"
-        event_set.save_additional(output_dir=tmp_path.parent)
+        test_eventset.save_additional(output_dir=tmp_path.parent)
 
-        for sub_event in event_set.attrs.sub_events:
+        for sub_event in test_eventset.attrs.sub_events:
             assert (
                 tmp_path.parent / sub_event.name / f"{sub_event.name}.toml"
             ).exists()

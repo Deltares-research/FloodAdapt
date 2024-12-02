@@ -244,3 +244,23 @@ class DbsStatic(IDbsStatic):
         del fm
 
         return types
+
+    def get_overland_sfincs_model(self) -> SfincsAdapter:
+        """Get the template offshore SFINCS model."""
+        overland_path = (
+            self._database.static_path
+            / "templates"
+            / self._database.site.attrs.sfincs.overland_model
+        )
+        return SfincsAdapter(model_root=overland_path)
+
+    def get_offshore_sfincs_model(self) -> SfincsAdapter:
+        """Get the template overland Sfincs model."""
+        if self._database.site.attrs.sfincs.offshore_model is None:
+            raise ValueError("No offshore model defined in the site configuration.")
+        offshore_path = (
+            self._database.static_path
+            / "templates"
+            / self._database.site.attrs.sfincs.offshore_model
+        )
+        return SfincsAdapter(model_root=offshore_path)

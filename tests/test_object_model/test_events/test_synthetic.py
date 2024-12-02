@@ -46,20 +46,22 @@ def test_projection_event_all_synthetic():
                     value=20, units=us.UnitTypesIntensity.mm_hr
                 )
             ),
-            "DISCHARGE": DischargeConstant(
-                river=RiverModel(
-                    name="cooper",
-                    description="Cooper River",
-                    x_coordinate=595546.3,
-                    y_coordinate=3675590.6,
-                    mean_discharge=us.UnitfulDischarge(
+            "DISCHARGE": {
+                "cooper": DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=us.UnitfulDischarge(
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=us.UnitfulDischarge(
-                    value=5000, units=us.UnitTypesDischarge.cfs
-                ),
-            ),
+            },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(
@@ -110,20 +112,22 @@ def test_event_all_synthetic():
                     value=20, units=us.UnitTypesIntensity.mm_hr
                 )
             ),
-            "DISCHARGE": DischargeConstant(
-                river=RiverModel(
-                    name="cooper",
-                    description="Cooper River",
-                    x_coordinate=595546.3,
-                    y_coordinate=3675590.6,
-                    mean_discharge=us.UnitfulDischarge(
+            "DISCHARGE": {
+                "cooper": DischargeConstant(
+                    river=RiverModel(
+                        name="cooper",
+                        description="Cooper River",
+                        x_coordinate=595546.3,
+                        y_coordinate=3675590.6,
+                        mean_discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    ),
+                    discharge=us.UnitfulDischarge(
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-                discharge=us.UnitfulDischarge(
-                    value=5000, units=us.UnitTypesDischarge.cfs
-                ),
-            ),
+            },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
                     timeseries=SyntheticTimeseriesModel(

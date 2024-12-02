@@ -3,7 +3,7 @@ import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, List, Optional, Type
 
 import pandas as pd
 import tomli
@@ -25,8 +25,8 @@ class IForcing(BaseModel, ABC):
     class Config:
         arbitrary_types_allowed = True
 
-    _type: ClassVar[ForcingType]
-    _source: ClassVar[ForcingSource]
+    type: ForcingType
+    source: ForcingSource
     logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
 
     @classmethod
@@ -82,11 +82,9 @@ class IForcing(BaseModel, ABC):
         return t0, t1
 
     def model_dump(self, **kwargs: Any) -> dict[str, Any]:
-        """Override the default model_dump to include class variables `_type` and `_source`."""
+        """Override the default model_dump to include class variables `type` and `source`."""
         data = super().model_dump(**kwargs)
-        # Add the class variables to the serialized data
-        data["_type"] = self._type.value if self._type else None
-        data["_source"] = self._source.value if self._source else None
+        data.update({"type": self.type, "source": self.source})
         return data
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
@@ -107,29 +105,66 @@ class IForcing(BaseModel, ABC):
 
 
 class IDischarge(IForcing):
-    _type: ClassVar[ForcingType] = ForcingType.DISCHARGE
+    type: ForcingType = ForcingType.DISCHARGE
     river: RiverModel
 
 
 class IRainfall(IForcing):
-    _type: ClassVar[ForcingType] = ForcingType.RAINFALL
+    type: ForcingType = ForcingType.RAINFALL
 
 
 class IWind(IForcing):
-    _type: ClassVar[ForcingType] = ForcingType.WIND
+    type: ForcingType = ForcingType.WIND
 
 
 class IWaterlevel(IForcing):
-    _type: ClassVar[ForcingType] = ForcingType.WATERLEVEL
+    type: ForcingType = ForcingType.WATERLEVEL
 
 
 class IForcingFactory:
     @classmethod
     @abstractmethod
     def load_file(cls, toml_file: Path) -> IForcing:
-        pass
+        """Create a forcing object from a TOML file."""
+        ...
 
     @classmethod
     @abstractmethod
     def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
-        pass
+        """Create a forcing object from a dictionary of attributes."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def read_forcing(
+        cls,
+        filepath: Path,
+    ) -> tuple[Type[IForcing], ForcingType, ForcingSource]:
+        """Extract forcing class, type and source from a TOML file."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def get_forcing_class(
+        cls, type: ForcingType, source: ForcingSource
+    ) -> Type[IForcing]:
+        """Get the forcing class corresponding to the type and source."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def list_forcing_types(cls) -> List[str]:
+        """List all available forcing types."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def list_forcings(cls) -> List[Type[IForcing]]:
+        """List all available forcing classes."""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def get_default_forcing(cls, type: ForcingType, source: ForcingSource) -> IForcing:
+        """Get the default forcing object for a given type and source."""
+        ...

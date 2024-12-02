@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -23,7 +23,7 @@ from flood_adapt.object_model.io import unit_system as us
 
 
 class DischargeConstant(IDischarge):
-    _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
+    source: ForcingSource = ForcingSource.CONSTANT
 
     discharge: us.UnitfulDischarge
 
@@ -58,7 +58,7 @@ class DischargeConstant(IDischarge):
 
 
 class DischargeSynthetic(IDischarge):
-    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
+    source: ForcingSource = ForcingSource.SYNTHETIC
 
     timeseries: SyntheticTimeseriesModel
 
@@ -103,7 +103,7 @@ class DischargeSynthetic(IDischarge):
 
 
 class DischargeCSV(IDischarge):
-    _source: ClassVar[ForcingSource] = ForcingSource.CSV
+    source: ForcingSource = ForcingSource.CSV
 
     path: Path
 

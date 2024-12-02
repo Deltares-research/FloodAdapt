@@ -2,7 +2,7 @@ import logging
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 class FloodAdaptLogging:
@@ -138,6 +138,23 @@ class FloodAdaptLogging:
             yield
         finally:
             cls.remove_file_handler(file_path)
+
+    @classmethod
+    def _close_file_handlers(cls, logger: logging.Logger, exclude: List[Path]) -> None:
+        """Close and remove file handlers from a logger."""
+        for handler in logger.handlers[:]:
+            if (
+                isinstance(handler, logging.FileHandler)
+                and Path(handler.baseFilename) not in exclude
+            ):
+                handler.close()
+                logger.removeHandler(handler)
+
+    @classmethod
+    def close_files(cls, exclude: List[Path] = []) -> None:
+        """Close all file handlers except those in the exclude list."""
+        cls._close_file_handlers(cls.getLogger(), exclude)
+        cls._close_file_handlers(cls.getLogger("hydromt"), exclude)
 
     @classmethod
     def deprecation_warning(cls, version: str, reason: str):

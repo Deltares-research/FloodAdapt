@@ -30,8 +30,7 @@ class TestForcingFactory:
                     toml_file_path.parent.mkdir(parents=True)
                 with open(toml_file_path, "w") as f:
                     f.write(
-                        f"_type = '{expected_type}'\n"
-                        f"_source = '{expected_source}'\n",
+                        f"type = '{expected_type}'\n" f"source = '{expected_source}'\n",
                     )
 
                 forcing_class, forcing_type, forcing_source = (

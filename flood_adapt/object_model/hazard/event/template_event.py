@@ -29,58 +29,78 @@ from flood_adapt.object_model.io import unit_system as us
 
 
 class EventModel(IEventModel):
+    @staticmethod
+    def _parse_forcing_from_dict(
+        forcing_attrs: dict[str, Any],
+        ftype: Optional[ForcingType] = None,
+        fsource: Optional[ForcingSource] = None,
+    ) -> IForcing:
+        if isinstance(forcing_attrs, IForcing):
+            # forcing_attrs is already a forcing object
+            return forcing_attrs
+        elif isinstance(forcing_attrs, dict):
+            # forcing_attrs is a dict with valid forcing attributes
+            if "type" not in forcing_attrs and ftype:
+                forcing_attrs["type"] = ftype
+            if "source" not in forcing_attrs and fsource:
+                forcing_attrs["source"] = fsource
+
+            return ForcingFactory.load_dict(forcing_attrs)
+        else:
+            raise ValueError(
+                f"Invalid forcing attributes: {forcing_attrs}. "
+                "Forcings must be one of:\n"
+                "1. Instance of IForcing\n"
+                "2. dict with the keys `type` (ForcingType), `source` (ForcingSource) specifying the class, and with valid forcing attributes for that class."
+            )
+
     @model_validator(mode="before")
     def create_forcings(self):
         if "forcings" in self:
             forcings = {}
-            for ftype, forcing_attrs in self["forcings"].items():
-                if isinstance(forcing_attrs, IForcing):
-                    # forcing_attrs is already a forcing object
-                    forcings[ftype] = forcing_attrs
-                elif (
-                    isinstance(forcing_attrs, dict)
-                    and "_type" in forcing_attrs
-                    and "_source" in forcing_attrs
-                ):
-                    # forcing_attrs is a dict with forcing attributes
-                    forcings[ftype] = ForcingFactory.load_dict(forcing_attrs)
-                else:
-                    # forcing_attrs is a dict with sub-forcing attributes. Currently only used for discharge forcing
-                    for name, sub_forcing in forcing_attrs.items():
-                        if ftype not in forcings:
-                            forcings[ftype] = {}
+            if ForcingType.DISCHARGE in self["forcings"]:
+                forcings[ForcingType.DISCHARGE] = {}
+                for name, river_forcing in self["forcings"][
+                    ForcingType.DISCHARGE
+                ].items():
+                    forcings[ForcingType.DISCHARGE][name] = (
+                        EventModel._parse_forcing_from_dict(
+                            river_forcing, ForcingType.DISCHARGE
+                        )
+                    )
 
-                        if isinstance(sub_forcing, IForcing):
-                            forcings[ftype][name] = sub_forcing
-                        else:
-                            forcings[ftype][name] = ForcingFactory.load_dict(
-                                sub_forcing
-                            )
+            for ftype, forcing_attrs in self["forcings"].items():
+                if ftype == ForcingType.DISCHARGE:
+                    continue
+                else:
+                    forcings[ftype] = EventModel._parse_forcing_from_dict(
+                        forcing_attrs, ftype
+                    )
             self["forcings"] = forcings
         return self
 
     @model_validator(mode="after")
     def validate_forcings(self):
         def validate_concrete_forcing(concrete_forcing):
-            _type = concrete_forcing._type
-            _source = concrete_forcing._source
+            type = concrete_forcing.type
+            source = concrete_forcing.source
 
             # Check type
-            if _type not in self.__class__.ALLOWED_FORCINGS:
+            if type not in self.__class__.ALLOWED_FORCINGS:
                 allowed_types = ", ".join(
                     t.value for t in self.__class__.ALLOWED_FORCINGS.keys()
                 )
                 raise ValueError(
-                    f"Forcing type {_type.value} is not allowed. Allowed types are: {allowed_types}"
+                    f"Forcing type {type.value} is not allowed. Allowed types are: {allowed_types}"
                 )
 
             # Check source
-            if _source not in self.__class__.ALLOWED_FORCINGS[_type]:
+            if source not in self.__class__.ALLOWED_FORCINGS[type]:
                 allowed_sources = ", ".join(
-                    s.value for s in self.__class__.ALLOWED_FORCINGS[_type]
+                    s.value for s in self.__class__.ALLOWED_FORCINGS[type]
                 )
                 raise ValueError(
-                    f"Forcing source {_source.value} is not allowed for forcing type {_type.value}. "
+                    f"Forcing source {source.value} is not allowed for forcing type {type.value}. "
                     f"Allowed sources are: {allowed_sources}"
                 )
 
@@ -192,12 +212,12 @@ class Event(IEvent[T_EVENT_MODEL]):
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
 
-        if self.attrs.forcings[ForcingType.WATERLEVEL]._source in [
+        if self.attrs.forcings[ForcingType.WATERLEVEL].source in [
             ForcingSource.METEO,
             ForcingSource.MODEL,
         ]:
             self.logger.warning(
-                f"Plotting not supported for waterlevel data from {self.attrs.forcings[ForcingType.WATERLEVEL]._source}"
+                f"Plotting not supported for waterlevel data from {self.attrs.forcings[ForcingType.WATERLEVEL].source}"
             )
             return ""
 
@@ -279,7 +299,7 @@ class Event(IEvent[T_EVENT_MODEL]):
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
             return ""
 
-        if self.attrs.forcings[ForcingType.RAINFALL]._source in [
+        if self.attrs.forcings[ForcingType.RAINFALL].source in [
             ForcingSource.TRACK,
             ForcingSource.METEO,
         ]:
@@ -428,7 +448,7 @@ class Event(IEvent[T_EVENT_MODEL]):
         if self.attrs.forcings[ForcingType.WIND] is None:
             return ""
 
-        if self.attrs.forcings[ForcingType.WIND]._source in [
+        if self.attrs.forcings[ForcingType.WIND].source in [
             ForcingSource.TRACK,
             ForcingSource.METEO,
         ]:

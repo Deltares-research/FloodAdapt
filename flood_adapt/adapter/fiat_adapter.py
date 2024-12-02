@@ -72,7 +72,7 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
 
         self.fiat_model.setup_hazard(
             map_fn=floodmap.path,
-            map_type=floodmap._type,
+            map_type=floodmap.type,
             rp=None,
             crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
             nodata=-999,  # change this in new version

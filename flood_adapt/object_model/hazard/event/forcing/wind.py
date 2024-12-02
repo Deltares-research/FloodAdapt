@@ -2,7 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, Optional
 
 import pandas as pd
 import xarray as xr
@@ -24,7 +24,7 @@ from flood_adapt.object_model.io.csv import read_csv
 
 
 class WindConstant(IWind):
-    _source: ClassVar[ForcingSource] = ForcingSource.CONSTANT
+    source: ForcingSource = ForcingSource.CONSTANT
 
     speed: us.UnitfulVelocity
     direction: us.UnitfulDirection
@@ -56,7 +56,7 @@ class WindConstant(IWind):
 
 
 class WindSynthetic(IWind):
-    _source: ClassVar[ForcingSource] = ForcingSource.SYNTHETIC
+    source: ForcingSource = ForcingSource.SYNTHETIC
 
     magnitude: SyntheticTimeseriesModel
     direction: SyntheticTimeseriesModel
@@ -95,7 +95,7 @@ class WindSynthetic(IWind):
 
 
 class WindTrack(IWind):
-    _source: ClassVar[ForcingSource] = ForcingSource.TRACK
+    source: ForcingSource = ForcingSource.TRACK
 
     path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
@@ -115,7 +115,7 @@ class WindTrack(IWind):
 
 
 class WindCSV(IWind):
-    _source: ClassVar[ForcingSource] = ForcingSource.CSV
+    source: ForcingSource = ForcingSource.CSV
 
     path: Path
 
@@ -149,7 +149,7 @@ class WindCSV(IWind):
 
 
 class WindMeteo(IWind):
-    _source: ClassVar[ForcingSource] = ForcingSource.METEO
+    source: ForcingSource = ForcingSource.METEO
 
     # Required variables: ['wind_u' (m/s), 'wind_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']

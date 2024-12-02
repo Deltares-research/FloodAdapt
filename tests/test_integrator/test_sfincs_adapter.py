@@ -39,7 +39,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import (
+    ForcingSource,
+    TimeModel,
+)
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
@@ -229,7 +232,7 @@ class TestAddForcing:
 
         def test_add_forcing_unsupported(self, sfincs_adapter: SfincsAdapter):
             forcing = mock.Mock(spec=IForcing)
-            forcing._type = "unsupported_type"
+            forcing.type = "unsupported_type"
             sfincs_adapter.add_forcing(forcing)
             sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Skipping unsupported forcing type {forcing.__class__.__name__}"
@@ -276,16 +279,15 @@ class TestAddForcing:
         def test_add_forcing_wind_unsupported(
             self, default_sfincs_adapter: SfincsAdapter
         ):
-            class UnsupportedWind(IWind):
-                def default():
-                    return UnsupportedWind
+            wind = mock.Mock(spec=IWind)
+            wind.source = mock.Mock(
+                spec=ForcingSource, return_value="unsupported_source"
+            )
 
-            forcing = UnsupportedWind()
-
-            default_sfincs_adapter._add_forcing_wind(forcing)
+            default_sfincs_adapter._add_forcing_wind(wind)
 
             default_sfincs_adapter.logger.warning.assert_called_once_with(
-                f"Unsupported wind forcing type: {forcing.__class__.__name__}"
+                f"Unsupported wind forcing type: {wind.__class__.__name__}"
             )
 
     class TestRainfall:
@@ -312,16 +314,15 @@ class TestAddForcing:
         def test_add_forcing_rain_unsupported(
             self, default_sfincs_adapter: SfincsAdapter
         ):
-            class UnsupportedRain(IRainfall):
-                def default():
-                    return UnsupportedRain
+            rainfall = mock.Mock(spec=IRainfall)
+            rainfall.source = mock.Mock(
+                spec=ForcingSource, return_value="unsupported_source"
+            )
 
-            forcing = UnsupportedRain()
-
-            default_sfincs_adapter._add_forcing_rain(forcing)
+            default_sfincs_adapter._add_forcing_rain(rainfall)
 
             default_sfincs_adapter.logger.warning.assert_called_once_with(
-                f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
+                f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
             )
 
     class TestDischarge:
@@ -339,20 +340,19 @@ class TestAddForcing:
         ):
             # Arrange
             sfincs_adapter = default_sfincs_adapter
-
-            class UnsupportedDischarge(IDischarge):
-                def default():
-                    return UnsupportedDischarge
-
             sfincs_adapter.logger.warning = mock.Mock()
-            forcing = UnsupportedDischarge(river=test_river)
+
+            discharge = mock.Mock(spec=IDischarge)
+            discharge.source = mock.Mock(
+                spec=ForcingSource, return_value="unsupported_source"
+            )
 
             # Act
-            sfincs_adapter._add_forcing_discharge(forcing)
+            sfincs_adapter._add_forcing_discharge(discharge)
 
             # Assert
             sfincs_adapter.logger.warning.assert_called_once_with(
-                f"Unsupported discharge forcing type: {forcing.__class__.__name__}"
+                f"Unsupported discharge forcing type: {discharge.__class__.__name__}"
             )
 
         def test_set_discharge_forcing_incorrect_rivers_raises(
@@ -468,7 +468,7 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter
         ):
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()
-            default_sfincs_adapter._scenario = mock.Mock()
+            default_sfincs_adapter._current_scenario = mock.Mock()
 
             forcing = mock.Mock(spec=WaterlevelModel)
             dummy_wl = [1, 2, 3]
@@ -489,15 +489,14 @@ class TestAddForcing:
         ):
             default_sfincs_adapter.logger.warning = mock.Mock()
 
-            class UnsupportedWaterLevel(IWaterlevel):
-                def default():
-                    return UnsupportedWaterLevel
-
-            forcing = UnsupportedWaterLevel()
-            default_sfincs_adapter._add_forcing_waterlevels(forcing)
+            waterlevels = mock.Mock(spec=IDischarge)
+            waterlevels.source = mock.Mock(
+                spec=ForcingSource, return_value="unsupported_source"
+            )
+            default_sfincs_adapter._add_forcing_waterlevels(waterlevels)
 
             default_sfincs_adapter.logger.warning.assert_called_once_with(
-                f"Unsupported waterlevel forcing type: {forcing.__class__.__name__}"
+                f"Unsupported waterlevel forcing type: {waterlevels.__class__.__name__}"
             )
 
 
@@ -540,10 +539,7 @@ class TestAddMeasure:
             sfincs_adapter._add_measure_floodwall.assert_called_once_with(measure)
 
         def test_add_measure_unsupported(self, sfincs_adapter: SfincsAdapter):
-            class UnsupportedMeasure(IMeasure):
-                pass
-
-            measure = mock.Mock(spec=UnsupportedMeasure)
+            measure = mock.Mock(spec=IMeasure)
             measure.attrs = mock.Mock()
             measure.attrs.type = "UnsupportedMeasure"
             sfincs_adapter.add_measure(measure)

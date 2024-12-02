@@ -41,6 +41,9 @@ class HistoricalEventModel(EventModel):
     @classmethod
     def default(cls) -> "HistoricalEventModel":
         """Set default values for Synthetic event."""
+        discharge = ForcingFactory.get_default_forcing(
+            ForcingType.DISCHARGE, ForcingSource.CONSTANT
+        )
         return cls(
             name="DefaultHistoricalEvent",
             time=TimeModel(),
@@ -56,9 +59,7 @@ class HistoricalEventModel(EventModel):
                 ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
                     ForcingType.WATERLEVEL, ForcingSource.MODEL
                 ),
-                ForcingType.DISCHARGE: ForcingFactory.get_default_forcing(
-                    ForcingType.DISCHARGE, ForcingSource.CONSTANT
-                ),
+                ForcingType.DISCHARGE: {discharge.river.name: discharge},
             },
         )
 

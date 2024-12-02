@@ -28,13 +28,8 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     template_path: Path
 
     def __init__(self) -> None:
-        if self.database.site.attrs.sfincs.offshore_model is None:
-            raise ValueError("No offshore model specified in site.toml")
-
         self.template_path = (
-            self.database.static_path
-            / "templates"
-            / self.database.site.attrs.sfincs.offshore_model
+            self.database.static.get_offshore_sfincs_model().get_model_root()
         )
 
     def get_resulting_waterlevels(self, scenario: IScenario) -> pd.DataFrame:
@@ -51,7 +46,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
     @staticmethod
     def requires_offshore_run(scenario: IScenario) -> bool:
         return any(
-            forcing._source in [ForcingSource.MODEL, ForcingSource.TRACK]
+            forcing.source in [ForcingSource.MODEL, ForcingSource.TRACK]
             for forcing in scenario.event.get_forcings()
         )
 
@@ -66,7 +61,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         sim_path.mkdir(parents=True, exist_ok=True)
         self._preprocess_sfincs_offshore(scenario)
-        self._execute_sfincs_offshore(sim_path)
+        self._execute_sfincs_offshore(sim_path, scenario)
 
     def _preprocess_sfincs_offshore(self, scenario: IScenario):
         """Preprocess offshore model to obtain water levels for boundary condition of the nearshore model.
@@ -81,22 +76,20 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
         )
 
         sim_path = self._get_simulation_path(scenario)
-
         with SfincsAdapter(model_root=self.template_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(sim_path):
+            if _offshore_model.sfincs_completed(scenario):
                 self.logger.info(
                     f"Skip preprocessing offshore model as it has already been run for {scenario.attrs.name}."
                 )
                 return
 
-            # Copy template model to the output destination to be able to edit it
-            if Path(sim_path).exists():
+            # SfincsAdapter.write() doesnt write the bca file apparently so we need to copy the template
+            if sim_path.exists():
                 shutil.rmtree(sim_path)
             shutil.copytree(self.template_path, sim_path)
 
-            # Set root & scenario
-            _offshore_model._model.set_root(str(sim_path))
-            _offshore_model._scenario = scenario
+            # Set root & create dir and write template model
+            _offshore_model.write(path_out=sim_path)
 
             event = scenario.event
             physical_projection = scenario.projection.get_physical_projection()
@@ -112,7 +105,6 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
             # Add spw if applicable
             if isinstance(event, HurricaneEvent):
-                _offshore_model._sim_path = sim_path
                 _offshore_model._add_forcing_spw(
                     sim_path / f"{event.attrs.track_name}.spw"
                 )
@@ -144,17 +136,17 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
             # write sfincs model in output destination
             _offshore_model.write(path_out=sim_path)
 
-    def _execute_sfincs_offshore(self, sim_path: Path):
+    def _execute_sfincs_offshore(self, sim_path: Path, scenario: IScenario):
         self.logger.info("Running offshore model...")
 
         with SfincsAdapter(model_root=sim_path) as _offshore_model:
-            if _offshore_model.sfincs_completed(sim_path):
+            if _offshore_model.sfincs_completed(scenario):
                 self.logger.info(
                     "Skip running offshore model as it has already been run."
                 )
                 return
 
-            success = _offshore_model.execute(strict=False)
+            success = _offshore_model.execute(path=sim_path, strict=False)
 
             if not success:
                 raise RuntimeError(

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Type
 
 import tomli
 
@@ -53,7 +53,7 @@ class EventFactory:
     }
 
     @staticmethod
-    def get_event_from_template(template: Template) -> IEvent:
+    def get_event_from_template(template: Template) -> Type[IEvent]:
         """Get the event class corresponding to the template.
 
         Parameters
