@@ -128,9 +128,6 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                         ds = wind_forcing.get_data(
                             t0=event.attrs.time.start_time, t1=event.attrs.time.end_time
                         )
-                        if ds["lon"].min() > 180:
-                            # TODO move this if statement to meteohandler.read() ?
-                            ds["lon"] = ds["lon"] - 360
                         _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination

@@ -40,6 +40,20 @@ def write_mock_nc_file(
 
 
 class TestMeteoHandler:
+    VARIABLES_DOWNLOADED = [
+        "barometric_pressure",
+        "precipitation",
+        "wind_u",
+        "wind_v",
+    ]
+
+    VARIABLES_RETURNED = [
+        "press_msl",
+        "precip",
+        "wind10_u",
+        "wind10_v",
+    ]
+
     @pytest.fixture()
     def setup_meteo_test(self, tmp_path):
         handler = MeteoHandler(dir=tmp_path)
@@ -82,10 +96,8 @@ class TestMeteoHandler:
         # Read the NetCDF file and assert its contents
         for nc_file in nc_files:
             with xr.open_dataset(nc_file) as ds:
-                assert (
-                    "barometric_pressure" in ds
-                ), "`barometric_pressure` not found in dataset"
-                assert "precipitation" in ds, "`precipitation` not found in dataset"
+                for var in self.VARIABLES_DOWNLOADED:
+                    assert var in ds, f"`{var}` not found in dataset"
 
     def test_read_meteo_no_nc_files_raises_filenotfound(
         self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
@@ -118,8 +130,13 @@ class TestMeteoHandler:
         assert (
             len(os.listdir(handler.dir)) == 1
         ), "Expected 1 NetCDF file in the directory"
-        assert "precip" in result, "`precip` not found in result"
-        assert "press" in result, "`press` not found in result"
+
+        for var in self.VARIABLES_RETURNED:
+            assert var in result, f"Expected `{var}` in databaset, but not found"
+
+        assert (
+            result["lon"].min() > -180 and result["lon"].max() < 180
+        ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"
 
     def test_read_meteo_multiple_nc_files(
         self, mock_meteogrid_download, setup_meteo_test: tuple[MeteoHandler, TimeModel]
@@ -137,5 +154,10 @@ class TestMeteoHandler:
         assert (
             len(os.listdir(handler.dir)) > 1
         ), "Expected multiple NetCDF files in the directory"
-        assert "precip" in result, "`precip` not found in result"
-        assert "press" in result, "`press` not found in result"
+
+        for var in self.VARIABLES_RETURNED:
+            assert var in result, f"Expected `{var}` in databaset, but not found"
+
+        assert (
+            result["lon"].min() > -180 and result["lon"].max() < 180
+        ), f"Expected longitude in range (-180, 180), but got ({result['lon'].min()}, {result['lon'].max()})"

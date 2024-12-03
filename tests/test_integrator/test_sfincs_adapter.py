@@ -62,13 +62,13 @@ from tests.fixtures import TEST_DATA_DIR
 @pytest.fixture()
 def default_sfincs_adapter(test_db) -> SfincsAdapter:
     overland_path = test_db.static_path / "templates" / "overland"
-    adapter = SfincsAdapter(model_root=overland_path)
-    adapter.set_timing(TimeModel())
-    adapter._logger = mock.Mock()
-    adapter.logger.handlers = []
-    adapter.logger.warning = mock.Mock()
+    with SfincsAdapter(model_root=overland_path) as adapter:
+        adapter.set_timing(TimeModel())
+        adapter._logger = mock.Mock()
+        adapter.logger.handlers = []
+        adapter.logger.warning = mock.Mock()
 
-    return adapter
+        return adapter
 
 
 @pytest.fixture()
@@ -97,13 +97,14 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                 )
             )
     test_db.site.attrs.river = rivers
-    adapter = SfincsAdapter(model_root=(overland_2_rivers))
-    adapter.set_timing(TimeModel())
-    adapter._logger = mock.Mock()
-    adapter.logger.handlers = []
-    adapter.logger.warning = mock.Mock()
 
-    return adapter, test_db
+    with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
+        adapter.set_timing(TimeModel())
+        adapter._logger = mock.Mock()
+        adapter.logger.handlers = []
+        adapter.logger.warning = mock.Mock()
+
+        return adapter, test_db
 
 
 @pytest.fixture()

@@ -15,15 +15,18 @@ class IAdapter(DatabaseUser):
 
     @abstractmethod
     def __enter__(self) -> "IAdapter":
-        """Use the adapter as a context manager to handle opening/closing of the model and attached resources.
+        """Use the adapter as a context manager to handle opening and closing of the model and attached resources like logfiles.
 
-        This method should return the adapter object itself, so that it can be used in a with statement.
+        Returns
+        -------
+            self: the adapter object
 
-        Usage:
-
-        with Adapter as model:
-            ...s
-            model.run()
+        Usage
+        -----
+        >>> with Adapter(...) as model:
+        >>>     ...
+        >>>     model.get_result(...)
+        >>>     model.run(...)
 
         Entering the with block will call adapter.__enter__() and
         Exiting the with block (via regular execution or an error) will call adapter.__exit__()
@@ -32,18 +35,21 @@ class IAdapter(DatabaseUser):
 
     @abstractmethod
     def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        """Use the adapter as a context manager to handle opening/closing of the model and attached resources.
+        """Close the model and release any resources.
 
-        This method should return the adapter object itself, so that it can be used in a with statement.
-
-        Usage:
-
-        with Adapter as model:
-            ...
-            model.run()
+        Usage
+        -----
+        >>> with Adapter as model:
+        >>>     ...
+        >>>     model.run()
 
         Entering the `with` block will call adapter.__enter__()
         Exiting the `with` block (via regular execution or an error) will call adapter.__exit__()
+
+        Returns
+        -------
+            False to propagate/reraise any exceptions that occurred in the with block
+            True to suppress any exceptions that occurred in the with block
         """
         pass
 

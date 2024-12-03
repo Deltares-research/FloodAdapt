@@ -58,9 +58,19 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
     def __del__(self) -> None:
         for handler in self.logger.handlers:
             handler.close()
+            self.logger.removeHandler(handler)
         self.logger.handlers.clear()
         # Use garbage collector to ensure file handlers are properly cleaned up
         gc.collect()
+
+    def __enter__(self) -> "FiatAdapter":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+        del self.fiat_model
+        del self
+
+        return False
 
     def set_hazard(self, floodmap: FloodMap) -> None:
         var = "zsmax" if floodmap.mode == Mode.risk else "risk_maps"

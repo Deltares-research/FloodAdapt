@@ -1,4 +1,3 @@
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +35,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         """
         # Make the full path to the object
         full_path = self.input_path / name / f"{name}.toml"
-        full_path = self.input_path / name / f"{name}.toml"
 
         # Check if the object exists
         if not Path(full_path).is_file():
@@ -45,8 +43,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
             )
 
         # Load and return the object
-        object_model = self._object_class.load_file(full_path)
-        return object_model
+        return self._object_class.load_file(full_path)
 
     def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the objects that currently exist in the database.
@@ -59,9 +56,12 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         """
         # Check if all objects exist
         object_list = self._get_object_list()
-        if not all(Path(path).is_file() for path in object_list["path"]):
+        if any(not Path(path).is_file() for path in object_list["path"]):
+            broken = [
+                path.name for path in object_list["path"] if not Path(path).is_file()
+            ]
             raise ValueError(
-                f"Error in {self._object_class.display_name} database. Some {self._object_class.display_name} are missing from the database."
+                f"Error in {self._object_class.display_name} database. {self._object_class.display_name}(s) {' '.join(broken)} are missing from the database."
             )
 
         # Load all objects
@@ -109,10 +109,8 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
             )
 
             # Rename the toml file to not raise in the name check
-            os.rename(
-                self.input_path / new_name / f"{old_name}.toml",
-                self.input_path / new_name / f"{new_name}.toml",
-            )
+            file = self.input_path / new_name / f"{old_name}.toml"
+            file.rename(self.input_path / new_name / f"{new_name}.toml")
 
             # Check new name is valid and update toml file
             self.save(copy_object, overwrite=True)
@@ -274,7 +272,13 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
             A dictionary that contains the keys: `name` to 'path' and 'last_modification_date'
             Each key has a list of the corresponding values, where the index of the values corresponds to the same object.
         """
-        directories = [self.input_path / d for d in os.listdir(self.input_path)]
+        # If the toml doesnt exist, we might be in the middle of saving a new object or could be a broken object.
+        # In any case, we should not list it in the database
+        directories = [
+            dir
+            for dir in self.input_path.iterdir()
+            if (dir / f"{dir.name}.toml").is_file()
+        ]
         paths = [Path(dir / f"{dir.name}.toml") for dir in directories]
         names = [dir.name for dir in directories]
         last_modification_date = [

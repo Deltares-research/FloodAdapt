@@ -105,7 +105,19 @@ class MeteoHandler:
         # Concatenate the datasets along the new time coordinate
         ds = xr.concat(datasets, dim="time")
         ds.raster.set_crs(4326)
-        ds = ds.rename({"barometric_pressure": "press"})
-        ds = ds.rename({"precipitation": "precip"})
+
+        # Rename the variables to match what hydromt-sfincs expects
+        ds = ds.rename(
+            {
+                "barometric_pressure": "press_msl",
+                "precipitation": "precip",
+                "wind_u": "wind10_u",
+                "wind_v": "wind10_v",
+            }
+        )
+
+        # Convert the longitude to -180 to 180 to match hydromt-sfincs
+        if ds["lon"].min() > 180:
+            ds["lon"] = ds["lon"] - 360
 
         return ds

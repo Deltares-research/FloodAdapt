@@ -175,99 +175,99 @@ class DirectImpacts(DatabaseUser):
         template_path = self.database.static_path / "templates" / "fiat"
 
         # Read FIAT template with FIAT adapter
-        fa = FiatAdapter(
-            model_root=template_path, database_path=self.database.base_path
-        )
-
-        # If path for results does not yet exist, make it
-        if not self.fiat_path.is_dir():
-            self.fiat_path.mkdir(parents=True)
-        else:
-            shutil.rmtree(self.fiat_path)
-
-        # Get ids of existing objects
-        ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
-
-        # Implement socioeconomic changes if needed
-        # First apply economic growth to existing objects
-        if self.socio_economic_change.attrs.economic_growth != 0:
-            fa.apply_economic_growth(
-                economic_growth=self.socio_economic_change.attrs.economic_growth,
-                ids=ids_existing,
-            )
-
-        # Then we create the new population growth area if provided
-        # In that area only the economic growth is taken into account
-        # Order matters since for the pop growth new, we only want the economic growth!
-        if self.socio_economic_change.attrs.population_growth_new != 0:
-            # Get path of new development area geometry
-            area_path = (
-                self.database.projections.input_path
-                / self.scenario.projection
-                / self.socio_economic_change.attrs.new_development_shapefile
-            )
-            dem = self.database.static_path / "dem" / self.site_info.attrs.dem.filename
-            aggregation_areas = [
-                self.database.static_path / aggr.file
-                for aggr in self.site_info.attrs.fiat.aggregation
-            ]
-            attribute_names = [
-                aggr.field_name for aggr in self.site_info.attrs.fiat.aggregation
-            ]
-            label_names = [
-                f"Aggregation Label: {aggr.name}"
-                for aggr in self.site_info.attrs.fiat.aggregation
-            ]
-
-            fa.apply_population_growth_new(
-                population_growth=self.socio_economic_change.attrs.population_growth_new,
-                ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
-                elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
-                area_path=area_path,
-                ground_elevation=dem,
-                aggregation_areas=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
-            )
-
-        # Last apply population growth to existing objects
-        if self.socio_economic_change.attrs.population_growth_existing != 0:
-            fa.apply_population_growth_existing(
-                population_growth=self.socio_economic_change.attrs.population_growth_existing,
-                ids=ids_existing,
-            )
-
-        # Then apply Impact Strategy by iterating trough the impact measures
-        for measure in self.impact_strategy.measures:
-            if measure.attrs.type == "elevate_properties":
-                fa.elevate_properties(
-                    elevate=measure,
-                    ids=ids_existing,
-                )
-            elif measure.attrs.type == "buyout_properties":
-                fa.buyout_properties(
-                    buyout=measure,
-                    ids=ids_existing,
-                )
-            elif measure.attrs.type == "floodproof_properties":
-                fa.floodproof_properties(
-                    floodproof=measure,
-                    ids=ids_existing,
-                )
+        with FiatAdapter(
+            model_root=str(template_path), database_path=str(Settings().database_path)
+        ) as fa:
+            # If path for results does not yet exist, make it
+            if not self.fiat_path.is_dir():
+                self.fiat_path.mkdir(parents=True)
             else:
-                self.logger.warning(
-                    f"Impact measure type not recognized: {measure.attrs.type}"
+                shutil.rmtree(self.fiat_path)
+
+            # Get ids of existing objects
+            ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
+
+            # Implement socioeconomic changes if needed
+            # First apply economic growth to existing objects
+            if self.socio_economic_change.attrs.economic_growth != 0:
+                fa.apply_economic_growth(
+                    economic_growth=self.socio_economic_change.attrs.economic_growth,
+                    ids=ids_existing,
                 )
 
-        # setup hazard for fiat
-        fa.set_hazard(self.hazard)
+            # Then we create the new population growth area if provided
+            # In that area only the economic growth is taken into account
+            # Order matters since for the pop growth new, we only want the economic growth!
+            if self.socio_economic_change.attrs.population_growth_new != 0:
+                # Get path of new development area geometry
+                area_path = (
+                    self.database.projections.input_path
+                    / self.scenario.projection
+                    / self.socio_economic_change.attrs.new_development_shapefile
+                )
+                dem = (
+                    self.database.static_path
+                    / "dem"
+                    / self.site_info.attrs.dem.filename
+                )
+                aggregation_areas = [
+                    self.database.static_path / aggr.file
+                    for aggr in self.site_info.attrs.fiat.aggregation
+                ]
+                attribute_names = [
+                    aggr.field_name for aggr in self.site_info.attrs.fiat.aggregation
+                ]
+                label_names = [
+                    f"Aggregation Label: {aggr.name}"
+                    for aggr in self.site_info.attrs.fiat.aggregation
+                ]
 
-        # Save the updated FIAT model
-        fa.fiat_model.set_root(self.fiat_path)
-        fa.fiat_model.write()
+                fa.apply_population_growth_new(
+                    population_growth=self.socio_economic_change.attrs.population_growth_new,
+                    ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
+                    elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
+                    area_path=area_path,
+                    ground_elevation=dem,
+                    aggregation_areas=aggregation_areas,
+                    attribute_names=attribute_names,
+                    label_names=label_names,
+                )
 
-        # Delete instance of Adapter (together with all logging references)
-        del fa
+            # Last apply population growth to existing objects
+            if self.socio_economic_change.attrs.population_growth_existing != 0:
+                fa.apply_population_growth_existing(
+                    population_growth=self.socio_economic_change.attrs.population_growth_existing,
+                    ids=ids_existing,
+                )
+
+            # Then apply Impact Strategy by iterating trough the impact measures
+            for measure in self.impact_strategy.measures:
+                if measure.attrs.type == "elevate_properties":
+                    fa.elevate_properties(
+                        elevate=measure,
+                        ids=ids_existing,
+                    )
+                elif measure.attrs.type == "buyout_properties":
+                    fa.buyout_properties(
+                        buyout=measure,
+                        ids=ids_existing,
+                    )
+                elif measure.attrs.type == "floodproof_properties":
+                    fa.floodproof_properties(
+                        floodproof=measure,
+                        ids=ids_existing,
+                    )
+                else:
+                    self.logger.warning(
+                        f"Impact measure type not recognized: {measure.attrs.type}"
+                    )
+
+            # setup hazard for fiat
+            fa.set_hazard(self.hazard)
+
+            # Save the updated FIAT model
+            fa.fiat_model.set_root(self.fiat_path)
+            fa.fiat_model.write()
 
     def run_fiat(self):
         with cd(self.fiat_path):

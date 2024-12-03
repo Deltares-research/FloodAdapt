@@ -116,33 +116,11 @@ class SfincsAdapter(IHazardAdapter):
         # Use garbage collector to ensure file handles are properly cleaned up
         gc.collect()
 
-    def __enter__(self):
-        """Enter the context manager and prepare the model for usage. Exiting the context manager will call __exit__ and free resources.
-
-        Returns
-        -------
-            SfincsAdapter: The SfincsAdapter object.
-
-        Usage:
-            with SfincsAdapter(model_root) as model:
-                model.read()
-                ...
-        """
+    def __enter__(self) -> "SfincsAdapter":
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager, close loggers and free resources. Always gets called when exiting the context manager, even if an exception occurred.
-
-        Usage:
-            with SfincsAdapter(model_root) as model:
-                model.read()
-                ...
-        """
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
         del self
-        # FloodAdaptLogging.close_files()
-
-        # Return False to propagate/reraise any exceptions that occurred in the with block
-        # Return True to suppress any exceptions that occurred in the with block
         return False
 
     def read(self, path: Path):
@@ -862,9 +840,6 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(forcing, WindMeteo):
             ds = forcing.get_data(t0, t1)
 
-            if ds["lon"].min() > 180:
-                ds["lon"] = ds["lon"] - 360
-
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
         elif isinstance(forcing, WindTrack):
@@ -901,10 +876,6 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(forcing, RainfallMeteo):
             ds = forcing.get_data(t0=t0, t1=t1)
-
-            if ds["lon"].min() > 180:
-                ds["lon"] = ds["lon"] - 360
-
             self._model.setup_precip_forcing_from_grid(
                 precip=ds["precip"], aggregate=False
             )
@@ -1167,8 +1138,8 @@ class SfincsAdapter(IHazardAdapter):
         Parameters
         ----------
         ds : xr.DataArray
-            Dataarray which should contain:
-            - press: barometric pressure [Pa]
+            - Required variables: ['press_msl' (Pa)]
+            - Required coordinates: ['time', 'y', 'x']
             - spatial_ref: CRS
         """
         self._model.setup_pressure_forcing_from_grid(press=ds)
