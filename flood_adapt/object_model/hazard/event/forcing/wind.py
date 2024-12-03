@@ -68,18 +68,29 @@ class WindSynthetic(IWind):
         strict: bool = True,
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
-        t0, t1 = self.parse_time(t0, t1)
+        if t1 is None:
+            t0, t1 = self.parse_time(t0, self.magnitude.duration)
+        else:
+            t0, t1 = self.parse_time(t0, t1)
+
         time = pd.date_range(
             start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
         )
-        magnitude = SyntheticTimeseries().load_dict(self.magnitude).calculate_data()
-        direction = SyntheticTimeseries().load_dict(self.direction).calculate_data()
-
+        magnitude = (
+            SyntheticTimeseries()
+            .load_dict(self.magnitude)
+            .to_dataframe(start_time=t0, end_time=t1)
+        )
+        direction = (
+            SyntheticTimeseries()
+            .load_dict(self.direction)
+            .to_dataframe(start_time=t0, end_time=t1)
+        )
         try:
-            return pd.DataFrame(
-                index=time,
-                data={"mag": magnitude, "dir": direction},
-            )
+            df = pd.DataFrame(index=time)
+            df["mag"] = magnitude.reindex(time).to_numpy()
+            df["dir"] = direction.reindex(time).to_numpy()
+            return df
         except Exception as e:
             if strict:
                 raise

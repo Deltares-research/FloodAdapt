@@ -249,6 +249,9 @@ class SfincsAdapter(IHazardAdapter):
         if forcing is None:
             return
 
+        self.logger.info(
+            f"Adding {forcing.type.lower()} from ({forcing.source.lower()}) to the SFINCS model..."
+        )
         if isinstance(forcing, IRainfall):
             self._add_forcing_rain(forcing)
         elif isinstance(forcing, IWind):
@@ -264,6 +267,10 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_measure(self, measure: IMeasure):
         """Get measure data and add it to the sfincs model."""
+        self.logger.info(
+            f"Adding {measure.__class__.__name__.capitalize()} to the SFINCS model..."
+        )
+
         if isinstance(measure, FloodWall):
             self._add_measure_floodwall(measure)
         elif isinstance(measure, GreenInfrastructure):
@@ -277,10 +284,13 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_projection(self, projection: IProjection):
         """Get forcing data currently in the sfincs model and add the projection it."""
+        self.logger.info("Adding Projection to the SFINCS model...")
         phys_projection = projection.get_physical_projection()
 
         if phys_projection.attrs.sea_level_rise:
-            self.logger.info("Adding sea level rise to model.")
+            self.logger.info(
+                f"Adding sea level rise ({phys_projection.attrs.sea_level_rise}) to SFINCS model."
+            )
             self.waterlevels += phys_projection.attrs.sea_level_rise.convert(
                 us.UnitTypesLength.meters
             )
@@ -288,7 +298,9 @@ class SfincsAdapter(IHazardAdapter):
         # ? phys_projection.attrs.subsidence
 
         if phys_projection.attrs.rainfall_multiplier:
-            self.logger.info("Adding rainfall multiplier to model.")
+            self.logger.info(
+                f"Adding rainfall multiplier ({phys_projection.attrs.rainfall_multiplier}) to SFINCS model."
+            )
             if self.rainfall is not None:
                 self.rainfall *= phys_projection.attrs.rainfall_multiplier
             else:
@@ -326,8 +338,8 @@ class SfincsAdapter(IHazardAdapter):
         return self._model.quadtree
 
     @property
-    def waterlevels(self) -> xr.Dataset | xr.DataArray:
-        return self._model.forcing["bzs"]
+    def waterlevels(self) -> xr.Dataset | xr.DataArray | None:
+        return self._model.forcing.get("bzs")
 
     @waterlevels.setter
     def waterlevels(self, waterlevels: xr.Dataset | xr.DataArray):
@@ -336,8 +348,8 @@ class SfincsAdapter(IHazardAdapter):
         self._model.forcing["bzs"] = waterlevels
 
     @property
-    def discharge(self) -> xr.Dataset | xr.DataArray:
-        return self._model.forcing["dis"]
+    def discharge(self) -> xr.Dataset | xr.DataArray | None:
+        return self._model.forcing.get("dis")
 
     @discharge.setter
     def discharge(self, discharge: xr.Dataset | xr.DataArray):
@@ -347,15 +359,13 @@ class SfincsAdapter(IHazardAdapter):
 
     @property
     def rainfall(self) -> xr.Dataset | xr.DataArray | None:
-        if "precip_2d" in self._model.forcing and "precip" in self._model.forcing:
-            raise ValueError("Multiple rainfall forcings found in the model.")
-
-        if "precip_2d" in self._model.forcing:
-            return self._model.forcing["precip_2d"]
-        elif "precip" in self._model.forcing:
-            return self._model.forcing["precip"]
-        else:
+        names = ["precip", "precip_2d"]
+        in_model = [name for name in names if name in self._model.forcing]
+        if len(in_model) == 0:
             return None
+        elif len(in_model) != 1:
+            raise ValueError("Multiple wind forcings found in the model.")
+        return self._model.forcing[in_model[0]]
 
     @rainfall.setter
     def rainfall(self, rainfall: xr.Dataset | xr.DataArray):
@@ -369,15 +379,13 @@ class SfincsAdapter(IHazardAdapter):
 
     @property
     def wind(self) -> xr.Dataset | xr.DataArray | None:
-        if "wind_2d" in self._model.forcing and "wind" in self._model.forcing:
-            raise ValueError("Multiple wind forcings found in the model.")
-
-        if "wind_2d" in self._model.forcing:
-            return self._model.forcing["wind_2d"]
-        elif "wind" in self._model.forcing:
-            return self._model.forcing["wind"]
-        else:
+        wind_names = ["wnd", "wind_2d", "wind"]
+        wind_in_model = [name for name in wind_names if name in self._model.forcing]
+        if len(wind_in_model) == 0:
             return None
+        elif len(wind_in_model) != 1:
+            raise ValueError("Multiple wind forcings found in the model.")
+        return self._model.forcing[wind_in_model[0]]
 
     @wind.setter
     def wind(self, wind: xr.Dataset | xr.DataArray):
@@ -820,7 +828,6 @@ class SfincsAdapter(IHazardAdapter):
             direction of time-invariant wind forcing [deg], by default None
         """
         t0, t1 = self._model.get_model_time()
-        self.logger.info("Adding wind to the overland flood model...")
 
         if isinstance(forcing, WindConstant):
             # HydroMT function: set wind forcing from constant magnitude and direction
@@ -862,8 +869,6 @@ class SfincsAdapter(IHazardAdapter):
         const_intensity : float, optional
             time-invariant precipitation intensity [mm_hr], by default None
         """
-        self.logger.info("Adding rainfall to the overland flood model...")
-
         t0, t1 = self._model.get_model_time()
         if isinstance(forcing, RainfallConstant):
             self._model.setup_precip_forcing(
@@ -899,8 +904,6 @@ class SfincsAdapter(IHazardAdapter):
             Can be a constant, synthetic or from a csv file.
             Also contains the river information.
         """
-        self.logger.info("Adding discharge to the overland flood model...")
-
         if isinstance(forcing, (DischargeConstant, DischargeCSV, DischargeSynthetic)):
             self._set_single_river_forcing(discharge=forcing)
         else:
@@ -910,7 +913,6 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         t0, t1 = self._model.get_model_time()
-        self.logger.info("Adding waterlevels to the overland flood model...")
 
         if isinstance(
             forcing,
