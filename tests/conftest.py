@@ -95,7 +95,7 @@ def session_setup_teardown():
 
     if clean:
         restore_db_from_snapshot()
-    shutil.rmtree(snapshot_dir)
+    shutil.rmtree(snapshot_dir, ignore_errors=True)
 
 
 def make_db_fixture(scope):
