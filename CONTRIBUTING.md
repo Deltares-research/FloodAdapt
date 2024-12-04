@@ -23,8 +23,8 @@ type can be one of the following:
 and scope should be one of:
 - adapters
 - object-model
-- db-controller
-- db-builder
+- dbs-controller
+- dbs-builder
 - api
 - misc
 
