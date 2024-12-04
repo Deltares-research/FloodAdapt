@@ -363,9 +363,18 @@ class SfincsAdapter(IHazardAdapter):
         in_model = [name for name in names if name in self._model.forcing]
         if len(in_model) == 0:
             return None
-        elif len(in_model) != 1:
+        elif len(in_model) == 1:
+            return self._model.forcing[in_model[0]]
+        elif len(in_model) == 2:
+            return xr.Dataset(
+                {
+                    "wind10_u": self._model.forcing["wind10_u"],
+                    "wind10_v": self._model.forcing["wind10_v"],
+                }
+            )
+            return self._model.forcing[in_model[0]]
+        else:
             raise ValueError("Multiple wind forcings found in the model.")
-        return self._model.forcing[in_model[0]]
 
     @rainfall.setter
     def rainfall(self, rainfall: xr.Dataset | xr.DataArray):
@@ -376,26 +385,47 @@ class SfincsAdapter(IHazardAdapter):
             self._model.forcing["precip_2d"] = rainfall
         elif "precip" in self._model.forcing:
             self._model.forcing["precip"] = rainfall
+        else:
+            raise ValueError("Unsupported rainfall forcing in the model.")
 
     @property
     def wind(self) -> xr.Dataset | xr.DataArray | None:
-        wind_names = ["wnd", "wind_2d", "wind"]
+        wind_names = ["wnd", "wind_2d", "wind", "wind10_u", "wind10_v"]
         wind_in_model = [name for name in wind_names if name in self._model.forcing]
         if len(wind_in_model) == 0:
             return None
-        elif len(wind_in_model) != 1:
+        elif len(wind_in_model) == 1:
+            return self._model.forcing[wind_in_model[0]]
+        elif len(wind_in_model) == 2:
+            if not ("wind10_u" in wind_in_model and "wind10_v" in wind_in_model):
+                raise ValueError(
+                    "Multiple wind forcings found in the model. Both should be wind10_u and wind10_v or a singular wind forcing."
+                )
+            return xr.Dataset(
+                {
+                    "wind10_u": self._model.forcing["wind10_u"],
+                    "wind10_v": self._model.forcing["wind10_v"],
+                }
+            )
+        else:
             raise ValueError("Multiple wind forcings found in the model.")
-        return self._model.forcing[wind_in_model[0]]
 
     @wind.setter
     def wind(self, wind: xr.Dataset | xr.DataArray):
-        if not self.wind or self.wind.size == 0:
+        if (not self.wind) or (self.wind.size == 0):
             raise ValueError("No wind forcing found in the model.")
 
         elif "wind_2d" in self._model.forcing:
             self._model.forcing["wind_2d"] = wind
         elif "wind" in self._model.forcing:
             self._model.forcing["wind"] = wind
+        elif "wnd" in self._model.forcing:
+            self._model.forcing["wnd"] = wind
+        elif "wind10_u" in self._model.forcing and "wind10_v" in self._model.forcing:
+            self._model.forcing["wind10_u"] = wind["wind10_u"]
+            self._model.forcing["wind10_v"] = wind["wind10_v"]
+        else:
+            raise ValueError("Unsupported wind forcing in the model.")
 
     ### OUTPUT ###
     def run_completed(self, scenario: IScenario) -> bool:
@@ -881,9 +911,8 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(forcing, RainfallMeteo):
             ds = forcing.get_data(t0=t0, t1=t1)
-            self._model.setup_precip_forcing_from_grid(
-                precip=ds["precip"], aggregate=False
-            )
+
+            self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(forcing, RainfallTrack):
             if forcing.path is None:
                 raise ValueError("No path to rainfall track file provided.")

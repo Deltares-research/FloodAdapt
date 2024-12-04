@@ -1,11 +1,14 @@
 import tempfile
 from datetime import datetime, timedelta
+from functools import partial
 from pathlib import Path
 from unittest import mock
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
@@ -201,25 +204,63 @@ def synthetic_waterlevels():
     )
 
 
+def _mock_meteohandler_read(
+    t0: datetime,
+    t1: datetime,
+    test_db: IDatabase,
+    *args,
+    **kwargs,
+) -> xr.Dataset | xr.DataArray:
+    gen = np.random.default_rng(42)
+    lat = [test_db.site.attrs.lat - 10, test_db.site.attrs.lat + 10]
+    lon = [test_db.site.attrs.lon - 10, test_db.site.attrs.lon + 10]
+    time = pd.date_range(start=t0, end=t1, freq="H", name="time")
+
+    ds = xr.Dataset(
+        data_vars={
+            "wind10_u": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
+            "wind10_v": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
+            "press_msl": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
+            "precip": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
+        },
+        coords={
+            "lat": lat,
+            "lon": lon,
+            "time": time,
+        },
+        attrs={
+            "crs": 4326,
+        },
+    )
+    ds.raster.set_crs(4326)
+
+    # Convert the longitude to -180 to 180 to match hydromt-sfincs
+    if ds["lon"].min() > 180:
+        ds["lon"] = ds["lon"] - 360
+
+    return ds
+
+
 @pytest.fixture()
-def mock_meteogrid_download():
-    """Mock the download method of MeteoGrid to not do an expensive MeteoGrid.download call, and write a mock netcdf file instead."""
-    from tests.test_object_model.test_events.test_meteo import write_mock_nc_file
-
-    def side_effect(
-        time_range: tuple[datetime, datetime], parameters: list[str], path: Path
-    ):
-        write_mock_nc_file(path, time_range)
-
+def mock_meteo_get_data_wind(test_db):
     with mock.patch(
         "flood_adapt.adapter.sfincs_adapter.WindMeteo.get_data",
-        side_effect=side_effect,
-    ) as mock_download:
-        yield mock_download
+        side_effect=partial(_mock_meteohandler_read, test_db=test_db),
+    ):
+        yield
 
 
 @pytest.fixture()
-def mock_waterlevel_from_model():
+def mock_meteo_get_data_rainfall(test_db):
+    with mock.patch(
+        "flood_adapt.adapter.sfincs_adapter.RainfallMeteo.get_data",
+        side_effect=partial(_mock_meteohandler_read, test_db=test_db),
+    ):
+        yield
+
+
+@pytest.fixture()
+def mock_waterlevelmodel_get_data():
     with mock.patch(
         "flood_adapt.adapter.sfincs_adapter.WaterlevelModel.get_data"
     ) as mock_get_data_wl_from_model:
@@ -321,7 +362,7 @@ class TestAddForcing:
             assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_meteo(
-            self, mock_meteogrid_download, default_sfincs_adapter: SfincsAdapter
+            self, mock_meteo_get_data_wind, default_sfincs_adapter: SfincsAdapter
         ):
             assert default_sfincs_adapter.wind is None
 
@@ -337,6 +378,7 @@ class TestAddForcing:
             from cht_cyclones.tropical_cyclone import TropicalCyclone
 
             assert default_sfincs_adapter.wind is None
+
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
             spw_file = tmp_path / "IAN.spw"
@@ -373,7 +415,7 @@ class TestAddForcing:
             assert default_sfincs_adapter.wind is None
 
     class TestRainfall:
-        def testadd_forcing_constant(self, default_sfincs_adapter: SfincsAdapter):
+        def test_add_forcing_constant(self, default_sfincs_adapter: SfincsAdapter):
             # Arrange
             assert default_sfincs_adapter.rainfall is None
 
@@ -388,7 +430,7 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.rainfall is not None
 
-        def testadd_forcing_synthetic(
+        def test_add_forcing_synthetic(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_rainfall
         ):
             # Arrange
@@ -400,8 +442,8 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.rainfall is not None
 
-        def testadd_forcing_from_meteo(
-            self, mock_meteogrid_download, default_sfincs_adapter: SfincsAdapter
+        def test_add_forcing_from_meteo(
+            self, mock_meteo_get_data_rainfall, default_sfincs_adapter: SfincsAdapter
         ):
             # Arrange
             assert default_sfincs_adapter.rainfall is None
@@ -413,7 +455,7 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.rainfall is not None
 
-        def testadd_forcing_unsupported(self, default_sfincs_adapter: SfincsAdapter):
+        def test_add_forcing_unsupported(self, default_sfincs_adapter: SfincsAdapter):
             # Arrange
             assert default_sfincs_adapter.rainfall is None
             rainfall = _unsupported_forcing_source(ForcingType.RAINFALL)
@@ -591,7 +633,7 @@ class TestAddForcing:
             assert default_sfincs_adapter.waterlevels is not None
 
         def test_add_forcing_waterlevels_model(
-            self, mock_waterlevel_from_model, default_sfincs_adapter: SfincsAdapter
+            self, mock_waterlevelmodel_get_data, default_sfincs_adapter: SfincsAdapter
         ):
             # Arrange
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()

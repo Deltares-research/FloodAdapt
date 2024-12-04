@@ -60,7 +60,6 @@ class TideGauge(ITideGauge):
             gauge_data = self._download_tide_gauge_data(time=time)
 
         if gauge_data is None:
-            # TODO warning?
             self.logger.warning(
                 f"Could not retrieve waterlevels for tide gauge {self.attrs.ID}"
             )

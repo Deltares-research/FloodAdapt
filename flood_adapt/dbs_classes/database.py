@@ -62,6 +62,7 @@ class Database(IDatabase):
     _measures: DbsMeasure
     _projections: DbsProjection
     _benefits: DbsBenefit
+
     _static: DbsStatic
 
     def __new__(cls, *args, **kwargs):
