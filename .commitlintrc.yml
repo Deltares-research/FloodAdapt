@@ -11,8 +11,8 @@ rules:
     options:
       - adapters
       - object-model
-      - db-controller
-      - db-builder
+      - dbs-controller
+      - dbs-builder
       - api
       - misc
   type:
