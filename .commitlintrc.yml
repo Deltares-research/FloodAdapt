@@ -1,0 +1,29 @@
+rules:
+  description-empty:
+    level: error
+  subject-empty:
+    level: error
+  body-empty:
+    level: error
+  scope:
+    level: error
+    optional: false
+    options:
+      - adapters
+      - object-model
+      - db-controller
+      - db-builder
+      - api
+      - misc
+  type:
+    level: error
+    optional: false
+    options:
+      - feat
+      - fix
+      - revert
+      - refactor
+      - ci
+      - dep
+      - doc
+      - test
