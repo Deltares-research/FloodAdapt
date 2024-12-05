@@ -14,8 +14,27 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
+    MeasureModel,
+    MeasureType,
+    SelectionType,
 )
 from flood_adapt.object_model.interface.site import Site
+
+__all__ = [
+    "get_measures",
+    "get_measure",
+    "create_measure",
+    "save_measure",
+    "edit_measure",
+    "delete_measure",
+    "copy_measure",
+    "calculate_polygon_area",
+    "calculate_volume",
+    "get_green_infra_table",
+    "MeasureType",
+    "MeasureModel",
+    "SelectionType",
+]
 
 
 def get_measures() -> dict[str, Any]:

@@ -18,8 +18,13 @@ from flood_adapt.object_model.hazard.event.event_factory import (
     TranslationModel,
 )
 from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.forcing.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseriesModel,
+)
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -71,6 +76,9 @@ __all__ = [
     "HurricaneEvent",
     "HurricaneEventModel",
     "TranslationModel",
+    "CSVTimeseries",
+    "SyntheticTimeseriesModel",
+    "DischargeConstant",
 ]
 
 

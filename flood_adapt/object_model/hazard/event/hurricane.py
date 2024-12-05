@@ -45,7 +45,11 @@ class HurricaneEventModel(EventModel):
         ForcingType.RAINFALL: [ForcingSource.TRACK],
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
-        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.CSV],
+        ForcingType.DISCHARGE: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+        ],
     }
 
     hurricane_translation: TranslationModel
