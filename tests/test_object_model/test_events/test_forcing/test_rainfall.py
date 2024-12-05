@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 import pytest
@@ -75,9 +75,11 @@ class TestRainfallSynthetic:
 class TestRainfallMeteo:
     def test_rainfall_from_meteo_get_data(self, test_db):
         # Arrange
+        start = datetime(2021, 1, 1, 0, 0, 0)
+        duration = timedelta(hours=3)
         time = TimeModel(
-            start_time=datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            end_time=datetime.strptime("2021-01-02 00:00:00", "%Y-%m-%d %H:%M:%S"),
+            start_time=start,
+            end_time=start + duration,
         )
 
         # Act

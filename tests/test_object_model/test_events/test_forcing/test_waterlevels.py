@@ -257,9 +257,7 @@ class TestWaterlevelGauged:
         t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        wl_df = WaterlevelGauged(tide_gauge=test_db.site.attrs.tide_gauge).get_data(
-            t0=t0, t1=t1
-        )
+        wl_df = WaterlevelGauged().get_data(t0=t0, t1=t1)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
