@@ -3,25 +3,25 @@ from typing import Any, List, Type
 
 import tomli
 
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallCSV,
     RainfallMeteo,
     RainfallSynthetic,
     RainfallTrack,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindCSV,
     WindMeteo,
@@ -29,12 +29,10 @@ from flood_adapt.object_model.hazard.event.forcing.wind import (
     WindTrack,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
-    IForcing,
-    IForcingFactory,
-)
-from flood_adapt.object_model.hazard.interface.models import (
     ForcingSource,
     ForcingType,
+    IForcing,
+    IForcingFactory,
 )
 
 

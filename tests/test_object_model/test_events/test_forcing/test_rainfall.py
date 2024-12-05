@@ -4,17 +4,17 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.models import Scstype
+from flood_adapt.object_model.hazard.interface.forcing import Scstype
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.events import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 
 

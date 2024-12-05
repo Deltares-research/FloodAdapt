@@ -24,8 +24,8 @@ from flood_adapt.dbs_classes.dbs_strategy import DbsStrategy
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,

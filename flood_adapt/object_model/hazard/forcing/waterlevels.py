@@ -10,17 +10,19 @@ import pandas as pd
 from pydantic import BaseModel
 
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
-from flood_adapt.object_model.hazard.event.timeseries import (
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.forcing import IWaterlevel
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_TIMESTEP,
-    REFERENCE_TIME,
     ForcingSource,
+    IWaterlevel,
+)
+from flood_adapt.object_model.hazard.interface.models import (
+    REFERENCE_TIME,
     TimeModel,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario

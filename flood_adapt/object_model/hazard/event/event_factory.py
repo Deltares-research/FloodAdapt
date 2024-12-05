@@ -19,7 +19,7 @@ from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
 )
-from flood_adapt.object_model.interface.events import (
+from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
     Mode,

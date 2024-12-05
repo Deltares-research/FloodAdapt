@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
+from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 
 

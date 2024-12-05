@@ -21,7 +21,7 @@ from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
-from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,

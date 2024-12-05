@@ -9,9 +9,8 @@ from flood_adapt.object_model.hazard.event.synthetic import SyntheticEventModel
 from flood_adapt.object_model.hazard.event.template_event import (
     EventModel,
 )
-from flood_adapt.object_model.hazard.interface.models import Mode
+from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
 from flood_adapt.object_model.interface.database_user import DatabaseUser
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 
 

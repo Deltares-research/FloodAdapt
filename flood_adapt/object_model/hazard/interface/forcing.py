@@ -2,21 +2,70 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Type
+from typing import Any, ClassVar, List, Optional, Type, Union
 
 import pandas as pd
 import tomli
 from pydantic import BaseModel, field_serializer
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.timeseries import REFERENCE_TIME
-from flood_adapt.object_model.hazard.interface.models import (
-    ForcingSource,
-    ForcingType,
-)
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io import unit_system as us
+
+### CONSTANTS ###
+TIDAL_PERIOD = us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours)
+DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_TIMESTEP = us.UnitfulTime(value=600, units=us.UnitTypesTime.seconds)
+TIMESERIES_VARIABLE = Union[
+    us.UnitfulIntensity,
+    us.UnitfulDischarge,
+    us.UnitfulVelocity,
+    us.UnitfulLength,
+    us.UnitfulHeight,
+    us.UnitfulArea,
+    us.UnitfulDirection,
+]
+
+
+### ENUMS ###
+class ShapeType(str, Enum):
+    gaussian = "gaussian"
+    constant = "constant"
+    triangle = "triangle"
+    scs = "scs"
+
+
+class Scstype(str, Enum):
+    type1 = "type_1"
+    type1a = "type_1a"
+    type2 = "type_2"
+    type3 = "type_3"
+
+
+class ForcingType(str, Enum):
+    """Enum class for the different types of forcing parameters."""
+
+    WIND = "WIND"
+    RAINFALL = "RAINFALL"
+    DISCHARGE = "DISCHARGE"
+    WATERLEVEL = "WATERLEVEL"
+
+
+class ForcingSource(str, Enum):
+    """Enum class for the different sources of forcing parameters."""
+
+    MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
+    TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
+    CSV = "CSV"  # user imported data
+
+    SYNTHETIC = "SYNTHETIC"  # synthetic data
+    CONSTANT = "CONSTANT"  # synthetic data
+
+    GAUGED = "GAUGED"  # data downloaded from a gauge
+    METEO = "METEO"  # external hindcast data
 
 
 class IForcing(BaseModel, ABC):

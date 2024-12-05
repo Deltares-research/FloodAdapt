@@ -4,8 +4,8 @@ from flood_adapt import __version__
 from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.database_user import DatabaseUser
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.interface.strategies import IStrategy

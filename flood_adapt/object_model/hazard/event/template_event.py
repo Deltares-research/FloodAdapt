@@ -11,8 +11,8 @@ from plotly.subplots import make_subplots
 from pydantic import field_serializer, model_validator
 
 from flood_adapt.misc.config import Settings
-from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.interface.events import (
+from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
     IEvent,

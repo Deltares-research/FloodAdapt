@@ -13,11 +13,12 @@ from cht_meteo.meteo import (
 from pyproj import CRS
 
 from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.site import Site
 
 
-class MeteoHandler:
+class MeteoHandler(IMeteoHandler):
     def __init__(self, dir: Optional[Path] = None, site: Optional[Site] = None) -> None:
         self.dir: Path = dir or Settings().database_path / "static" / "meteo"
         self.dir.mkdir(parents=True, exist_ok=True)

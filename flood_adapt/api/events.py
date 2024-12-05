@@ -18,25 +18,28 @@ from flood_adapt.object_model.hazard.event.event_factory import (
     TranslationModel,
 )
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.interface.events import (
+    IEvent,
+    IEventModel,
+    Mode,
+    Template,
+)
 from flood_adapt.object_model.hazard.interface.forcing import (
+    TIDAL_PERIOD,
+    ForcingSource,
+    ForcingType,
     IDischarge,
     IForcing,
     IRainfall,
     IWaterlevel,
     IWind,
+    ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    TIDAL_PERIOD,
-    ForcingSource,
-    ForcingType,
-    Mode,
-    ShapeType,
-    Template,
     TimeModel,
 )
-from flood_adapt.object_model.interface.events import IEvent, IEventModel
 from flood_adapt.object_model.io import unit_system as us
 
 # Ensure all objects are imported and available for use if this module is imported

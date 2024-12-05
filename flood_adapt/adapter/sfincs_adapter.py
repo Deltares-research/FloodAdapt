@@ -25,31 +25,32 @@ from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
     RainfallTrack,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelGauged,
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
     WindSynthetic,
     WindTrack,
 )
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.event.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.interface.events import IEvent, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
     IForcing,
@@ -57,13 +58,12 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWaterlevel,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,

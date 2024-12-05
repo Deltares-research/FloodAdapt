@@ -8,20 +8,18 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
-from flood_adapt.object_model.hazard.event.timeseries import (
+from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
+from flood_adapt.object_model.hazard.forcing.timeseries import (
     DEFAULT_TIMESTEP,
     CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
     IRainfall,
 )
-from flood_adapt.object_model.hazard.interface.models import (
-    ForcingSource,
-    TimeModel,
-)
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 
 

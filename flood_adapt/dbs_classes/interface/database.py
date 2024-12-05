@@ -10,8 +10,8 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 
 from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.events import IEvent
 from flood_adapt.object_model.interface.site import Site
 
 

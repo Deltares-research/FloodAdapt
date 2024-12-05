@@ -7,12 +7,12 @@ import pandas as pd
 import tomli
 import tomli_w
 
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
-    REFERENCE_TIME,
     ShapeType,
 )
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseriesModel,
     ITimeseries,

@@ -1,5 +1,6 @@
 import os
 from abc import abstractmethod
+from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar, List, Optional, Type, TypeVar
 
@@ -7,21 +8,36 @@ from pydantic import (
     Field,
 )
 
+import flood_adapt.object_model.io.unit_system as us
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
     IForcing,
 )
-from flood_adapt.object_model.hazard.interface.models import (
-    Mode,
-    Template,
-    TimeModel,
-)
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
-from flood_adapt.object_model.io import unit_system as us
+
+
+class Mode(str, Enum):
+    """Class describing the accepted input for the variable mode in Event."""
+
+    single_event = "single_event"
+    risk = "risk"
+
+
+class Template(str, Enum):
+    """Class describing the accepted input for the variable template in Event."""
+
+    Synthetic = "Synthetic"
+    Hurricane = "Hurricane"
+    Historical = "Historical"
+
+    Historical_Hurricane = "Historical_hurricane"
+    Historical_nearshore = "Historical_nearshore"
+    Historical_offshore = "Historical_offshore"
 
 
 class IEventModel(IObjectModel):

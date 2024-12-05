@@ -9,7 +9,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pydantic import BaseModel, model_validator
 
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_DATETIME_FORMAT,
     DEFAULT_TIMESTEP,
     TIMESERIES_VARIABLE,

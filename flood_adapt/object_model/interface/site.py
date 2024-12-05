@@ -3,7 +3,7 @@ from typing import Annotated, Optional, Union
 
 from pydantic import AfterValidator, BaseModel, Field
 
-from flood_adapt.object_model.hazard.interface.tide_gauge import TideGaugeModel
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGaugeModel
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import ObjectDir
 from flood_adapt.object_model.io import unit_system as us

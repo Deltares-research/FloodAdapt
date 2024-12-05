@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from flood_adapt.object_model.interface.events import IEvent
+from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import ObjectDir
 from flood_adapt.object_model.interface.projections import IProjection

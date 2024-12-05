@@ -7,18 +7,22 @@ import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallConstant
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.forcing.rainfall import RainfallConstant
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindConstant
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.forcing.wind import WindConstant
+from flood_adapt.object_model.hazard.interface.events import (
     Mode,
-    ShapeType,
     Template,
+)
+from flood_adapt.object_model.hazard.interface.forcing import (
+    ShapeType,
+)
+from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (

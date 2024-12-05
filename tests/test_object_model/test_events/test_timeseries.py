@@ -6,12 +6,13 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.object_model.hazard.event.timeseries import (
+from flood_adapt.object_model.hazard.forcing.timeseries import (
     ShapeType,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, Scstype
+from flood_adapt.object_model.hazard.interface.forcing import Scstype
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.io import unit_system as us
 
 

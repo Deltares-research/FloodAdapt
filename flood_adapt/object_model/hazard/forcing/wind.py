@@ -8,12 +8,14 @@ import pandas as pd
 import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.event.meteo import MeteoHandler
-from flood_adapt.object_model.hazard.event.timeseries import SyntheticTimeseries
-from flood_adapt.object_model.hazard.interface.forcing import IWind
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
+from flood_adapt.object_model.hazard.forcing.timeseries import SyntheticTimeseries
+from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_TIMESTEP,
     ForcingSource,
+    IWind,
+)
+from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (

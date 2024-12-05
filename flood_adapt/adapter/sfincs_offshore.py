@@ -7,9 +7,9 @@ from flood_adapt.adapter.interface.offshore import IOffshoreSfincsHandler
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
-from flood_adapt.object_model.hazard.event.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,

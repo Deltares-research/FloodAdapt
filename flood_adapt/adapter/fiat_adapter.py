@@ -14,7 +14,7 @@ from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
     get_object_ids,
 )
 from flood_adapt.object_model.hazard.floodmap import FloodMap
-from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.interface.site import Site
 
 

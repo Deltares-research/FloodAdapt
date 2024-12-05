@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,

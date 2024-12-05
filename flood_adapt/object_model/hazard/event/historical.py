@@ -1,14 +1,14 @@
 from pathlib import Path
 from typing import Any, ClassVar, List
 
-from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
+from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.interface.events import Mode, Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
-from flood_adapt.object_model.hazard.interface.models import Template, TimeModel
-from flood_adapt.object_model.interface.events import Mode
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,

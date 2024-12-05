@@ -6,17 +6,15 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from flood_adapt.object_model.hazard.event.timeseries import (
+from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
-    IDischarge,
-)
-from flood_adapt.object_model.hazard.interface.models import (
     DEFAULT_TIMESTEP,
     ForcingSource,
+    IDischarge,
 )
 from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io import unit_system as us

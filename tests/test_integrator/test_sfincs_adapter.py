@@ -13,16 +13,16 @@ import xarray as xr
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
     RainfallSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
@@ -30,21 +30,21 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
     WindSynthetic,
     WindTrack,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
+    ForcingType,
     IDischarge,
     IRainfall,
     IWaterlevel,
     IWind,
 )
 from flood_adapt.object_model.hazard.interface.models import (
-    ForcingSource,
-    ForcingType,
     TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
@@ -78,8 +78,12 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         adapter.logger.warning = mock.Mock()
 
         # make sure model is as expected
+        # ? is it correct that the template model has waterlevels?
         assert adapter.waterlevels is not None, "Waterlevels should not be empty"
+
+        # ? is it correct that the template model has discharge?
         assert adapter.discharge is not None, "Discharge should not be empty"
+
         assert not adapter.rainfall, "Rainfall should be empty"
         assert not adapter.wind, "Wind should be empty"
 
@@ -341,8 +345,9 @@ class TestAddForcing:
 
             default_sfincs_adapter.add_forcing(forcing)
 
+            assert default_sfincs_adapter.wind is not None
             assert (
-                default_sfincs_adapter._model.forcing["wnd"].to_numpy()
+                default_sfincs_adapter.wind.to_numpy()
                 == [
                     forcing.speed.convert(us.UnitTypesVelocity.mps),
                     forcing.direction.convert(us.UnitTypesDirection.degrees),
@@ -429,6 +434,10 @@ class TestAddForcing:
 
             # Assert
             assert default_sfincs_adapter.rainfall is not None
+            assert (
+                default_sfincs_adapter.rainfall.to_numpy()
+                == [forcing.intensity.convert(us.UnitTypesIntensity.mm_hr)]
+            ).all() is not None
 
         def test_add_forcing_synthetic(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_rainfall
@@ -477,11 +486,13 @@ class TestAddForcing:
             default_sfincs_adapter.set_timing(TimeModel())
 
             # Act
-            dis_before = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_before = default_sfincs_adapter.discharge.copy()
             default_sfincs_adapter.add_forcing(synthetic_discharge)
-            dis_after = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_after = default_sfincs_adapter.discharge
 
             # Assert
+            assert dis_before is not None
+            assert dis_after is not None
             assert not dis_before.equals(dis_after)
 
         def test_add_forcing_discharge_unsupported(
@@ -492,9 +503,9 @@ class TestAddForcing:
             discharge = _unsupported_forcing_source(ForcingType.DISCHARGE)
 
             # Act
-            dis_before = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_before = default_sfincs_adapter.discharge.copy()
             default_sfincs_adapter.add_forcing(discharge)
-            dis_after = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_after = default_sfincs_adapter.discharge
 
             # Assert
             default_sfincs_adapter.logger.warning.assert_called_once_with(
@@ -548,10 +559,8 @@ class TestAddForcing:
                 sfincs_adapter._set_single_river_forcing(discharge=discharge)
 
             # Assert
-            river_locations = sfincs_adapter._model.forcing["dis"].vector.to_gdf()
-            river_discharges = sfincs_adapter._model.forcing["dis"].to_dataframe()[
-                "dis"
-            ]
+            river_locations = sfincs_adapter.discharge.vector.to_gdf()
+            river_discharges = sfincs_adapter.discharge.to_dataframe()["dis"]
 
             for i, river in enumerate(db.site.attrs.river):
                 assert (
@@ -568,9 +577,9 @@ class TestAddForcing:
             # Arrange
 
             # Act
-            dis_before = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_before = default_sfincs_adapter.discharge.copy()
             default_sfincs_adapter.add_forcing(synthetic_discharge)
-            dis_after = default_sfincs_adapter._model.forcing["dis"].copy()
+            dis_after = default_sfincs_adapter.discharge
 
             # Assert
             assert not dis_before.equals(dis_after)

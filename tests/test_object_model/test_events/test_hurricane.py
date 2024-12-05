@@ -5,21 +5,23 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallTrack,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelModel,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.forcing.wind import (
     WindTrack,
 )
-from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
     Mode,
     Template,
+)
+from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.site import RiverModel

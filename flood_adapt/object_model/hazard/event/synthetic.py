@@ -1,13 +1,15 @@
 from pathlib import Path
 from typing import ClassVar, List
 
-from flood_adapt.object_model.hazard.event.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
-from flood_adapt.object_model.interface.events import (
+from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
     ForcingType,
+    Mode,
+    Template,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 
 
 class SyntheticEventModel(EventModel):  # add SurgeModel etc. that fit Synthetic event

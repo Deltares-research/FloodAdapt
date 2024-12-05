@@ -5,26 +5,28 @@ import pandas as pd
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import (
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
 )
-from flood_adapt.object_model.hazard.event.forcing.rainfall import (
+from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
 )
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
     WaterlevelModel,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import (
+from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
 )
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.interface.models import (
+from flood_adapt.object_model.hazard.interface.events import (
     Mode,
     Template,
+)
+from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.site import RiverModel

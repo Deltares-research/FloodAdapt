@@ -4,9 +4,10 @@ import pandas as pd
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.event.forcing.rainfall import RainfallMeteo
-from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
+from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
+from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
@@ -14,9 +15,9 @@ from flood_adapt.object_model.hazard.event.forcing.waterlevels import (
     WaterlevelModel,
     WaterlevelSynthetic,
 )
-from flood_adapt.object_model.hazard.event.forcing.wind import WindMeteo
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.interface.models import Mode, Template, TimeModel
+from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
+from flood_adapt.object_model.hazard.interface.events import Mode, Template
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
