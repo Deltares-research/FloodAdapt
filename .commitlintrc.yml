@@ -15,6 +15,7 @@ rules:
       - dbs-builder
       - api
       - misc
+      - output
   type:
     level: error
     optional: false
