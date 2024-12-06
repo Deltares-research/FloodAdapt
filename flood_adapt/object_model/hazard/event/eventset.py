@@ -24,8 +24,28 @@ class EventSet:
     def __eq__(self, other):
         if not isinstance(other, EventSet):
             # don't attempt to compare against unrelated types
-            return NotImplemented
-        attrs_1, attrs_2 = self.attrs.copy(), other.attrs.copy()
-        attrs_1.__delattr__("name"), attrs_2.__delattr__("name")
-        attrs_1.__delattr__("description"), attrs_2.__delattr__("description")
-        return attrs_1 == attrs_2
+            return False
+
+        # we're going to do some shenanigans so we can
+        # test for equality without having to copy the very big objects
+        # save attrs so we can erestore them later
+        self_name = self.attrs.name
+        other_name = other.attrs.name
+        self_description = self.attrs.description
+        other_description = other.attrs.description
+
+        # set attrs to empty string so they don't invlucence result
+        self.attrs.name = ""
+        other.attrs.name = ""
+        self.attrs.description = ""
+        other.attrs.description = ""
+
+        ans = self.attrs == other.attrs
+
+        # restore
+        self.attrs.name = self_name
+        other.attrs.name = other_name
+        self.attrs.description = self_description
+        other.attrs.description = other_description
+
+        return ans

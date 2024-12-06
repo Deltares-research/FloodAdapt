@@ -46,4 +46,4 @@ class HistoricalOffshore(Event, IHistoricalOffshore):
             path to the location where file will be saved
         """
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)

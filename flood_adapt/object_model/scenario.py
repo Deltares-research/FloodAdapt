@@ -62,7 +62,7 @@ class Scenario(IScenario):
     def save(self, filepath: Union[str, os.PathLike]):
         """Save Scenario to a toml file."""
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
     def run(self):
         """Run direct impact models for the scenario."""
@@ -105,9 +105,10 @@ class Scenario(IScenario):
     def __eq__(self, other):
         if not isinstance(other, Scenario):
             # don't attempt to compare against unrelated types
-            return NotImplemented
+            return False
 
-        test1 = self.attrs.event == other.attrs.event
-        test2 = self.attrs.projection == other.attrs.projection
-        test3 = self.attrs.strategy == other.attrs.strategy
-        return test1 & test2 & test3
+        return (
+            self.attrs.event == other.attrs.event
+            and self.attrs.projection == other.attrs.projection
+            and self.attrs.strategy == other.attrs.strategy
+        )
