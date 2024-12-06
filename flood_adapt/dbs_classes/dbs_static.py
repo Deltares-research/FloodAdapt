@@ -3,6 +3,7 @@ from typing import Any, Callable, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
@@ -259,3 +260,16 @@ class DbsStatic(IDbsStatic):
         )
         with SfincsAdapter(model_root=offshore_path) as offshore_model:
             return offshore_model
+
+    @cache_method_wrapper
+    def get_cyclone_track_database(self) -> CycloneTrackDatabase:
+        if self._database.site.attrs.cyclone_track_database is None:
+            raise ValueError(
+                "No cyclone track database defined in the site configuration."
+            )
+        database_file = str(
+            self._database.static_path
+            / "cyclone_track_database"
+            / self._database.site.attrs.cyclone_track_database.file
+        )
+        return CycloneTrackDatabase("ibtracs", file_name=database_file)

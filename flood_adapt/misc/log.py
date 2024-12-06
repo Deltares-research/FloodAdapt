@@ -52,9 +52,10 @@ class FloodAdaptLogging:
         """Add a file handler to the logger that directs outputs to a the file."""
         if not file_path:
             raise ValueError("file_path must be provided.")
+        file_path = Path(file_path)
 
         # check if the path is a only a filename
-        elif file_path == str(file_path):
+        if not file_path.parents:
             file_path = Path.cwd() / file_path
         file_path.parent.mkdir(parents=True, exist_ok=True)
 

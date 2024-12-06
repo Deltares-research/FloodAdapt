@@ -125,7 +125,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
-        if Path(self._model.root) != Path(path):
+        if Path(self._model.root).resolve() != Path(path).resolve():
             self._model.set_root(root=str(path), mode="r")
         self._model.read()
 
@@ -433,8 +433,8 @@ class SfincsAdapter(IHazardAdapter):
 
         Returns
         -------
-        bool
-            _description_
+        bool : True if all flood maps exist, False otherwise.
+
         """
         any_floodmap = len(self._get_flood_map_paths(scenario)) > 0
         all_exist = all(
@@ -447,8 +447,8 @@ class SfincsAdapter(IHazardAdapter):
 
         Returns
         -------
-        bool
-            _description_
+        bool: True if the sfincs executable has been run successfully, False otherwise.
+
         """
         sim_paths = self._get_simulation_paths(scenario)
         SFINCS_OUTPUT_FILES = ["sfincs_his.nc", "sfincs_map.nc"]
@@ -456,7 +456,9 @@ class SfincsAdapter(IHazardAdapter):
         if isinstance(scenario.event, EventSet):
             for sim_path in sim_paths:
                 to_check = [Path(sim_path) / file for file in SFINCS_OUTPUT_FILES]
-                return all(output.exists() for output in to_check)
+                if not all(output.exists() for output in to_check):
+                    return False
+            return True
         elif isinstance(scenario.event, IEvent):
             to_check = [Path(sim_paths[0]) / file for file in SFINCS_OUTPUT_FILES]
             # Add logfile check as well from old hazard.py?
@@ -492,7 +494,6 @@ class SfincsAdapter(IHazardAdapter):
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_paths(scenario)[0]
 
-        # Why only 1 model?
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")

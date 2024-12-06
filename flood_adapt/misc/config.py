@@ -1,3 +1,4 @@
+from enum import Enum
 from os import environ, listdir
 from pathlib import Path
 from platform import system
@@ -16,6 +17,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from flood_adapt.object_model.io import unit_system as us
 
 
+class UnitSystemType(str, Enum):
+    IMPERIAL = "imperial"
+    METRIC = "metric"
+
+
 class UnitSystem:
     length: us.UnitTypesLength
     distance: us.UnitTypesLength
@@ -27,13 +33,14 @@ class UnitSystem:
     intensity: us.UnitTypesIntensity
     cumulative: us.UnitTypesLength
 
-    def __init__(self, system: str = "imperial"):
-        if system == "imperial":
-            self.set_imperial()
-        elif system == "metric":
-            self.set_metric()
-        else:
-            raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
+    def __init__(self, system: UnitSystemType = UnitSystemType.IMPERIAL):
+        match system:
+            case UnitSystemType.IMPERIAL:
+                self.set_imperial()
+            case UnitSystemType.METRIC:
+                self.set_metric()
+            case _:
+                raise ValueError("Invalid unit system. Must be 'imperial' or 'metric'.")
 
     def set_imperial(self):
         self.length = us.UnitTypesLength.feet

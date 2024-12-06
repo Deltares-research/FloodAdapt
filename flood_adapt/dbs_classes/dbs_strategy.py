@@ -82,7 +82,6 @@ class DbsStrategy(DbsTemplate[Strategy]):
         # If there is any combination with overlapping buildings raise Error and do not allow for Strategy object creation
         overlapping = [len(k) > 0 for k in common_elements]
 
-        msg = ""
         if any(overlapping):
             msg = "Cannot create strategy! There are overlapping buildings for which measures are proposed"
             counter = 0

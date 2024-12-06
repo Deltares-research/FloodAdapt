@@ -56,13 +56,6 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
         """
         # Check if all objects exist
         object_list = self._get_object_list()
-        if any(not Path(path).is_file() for path in object_list["path"]):
-            broken = [
-                path.name for path in object_list["path"] if not Path(path).is_file()
-            ]
-            raise ValueError(
-                f"Error in {self._object_class.display_name} database. {self._object_class.display_name}(s) {' '.join(broken)} are missing from the database."
-            )
 
         # Load all objects
         objects = [self._object_class.load_file(path) for path in object_list["path"]]

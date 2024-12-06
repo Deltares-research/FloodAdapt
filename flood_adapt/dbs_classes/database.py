@@ -7,7 +7,6 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
@@ -32,6 +31,7 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
 
 
@@ -53,8 +53,6 @@ class Database(IDatabase):
     output_path: Path
 
     _site: Site
-
-    cyclone_track_database: CycloneTrackDatabase  # move to static ?
 
     _events: DbsEvent
     _scenarios: DbsScenario
@@ -356,8 +354,6 @@ class Database(IDatabase):
         ----------
         benefit : IBenefit
         """
-        from flood_adapt.object_model.scenario import Scenario
-
         # If the check has not been run yet, do it now
         if not hasattr(benefit, "scenarios"):
             benefit.check_scenarios()

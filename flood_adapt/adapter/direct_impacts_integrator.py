@@ -1,3 +1,4 @@
+import math
 import shutil
 import subprocess
 import time
@@ -178,67 +179,80 @@ class DirectImpacts(DatabaseUser):
         with FiatAdapter(
             model_root=str(template_path), database_path=str(Settings().database_path)
         ) as fa:
-            # If path for results does not yet exist, make it
-            if not self.fiat_path.is_dir():
-                self.fiat_path.mkdir(parents=True)
-            else:
+            # This should be done by a function in the FiatAdapter
+            if self.fiat_path.is_dir():
                 shutil.rmtree(self.fiat_path)
+            self.fiat_path.mkdir(parents=True)
 
             # Get ids of existing objects
             ids_existing = fa.fiat_model.exposure.exposure_db["Object ID"].to_list()
 
             # Implement socioeconomic changes if needed
             # First apply economic growth to existing objects
-            if self.socio_economic_change.attrs.economic_growth != 0:
-                fa.apply_economic_growth(
-                    economic_growth=self.socio_economic_change.attrs.economic_growth,
-                    ids=ids_existing,
-                )
+            if self.socio_economic_change.attrs.economic_growth is not None:
+                if not math.isclose(
+                    self.socio_economic_change.attrs.economic_growth, 0, abs_tol=1e-6
+                ):
+                    fa.apply_economic_growth(
+                        economic_growth=self.socio_economic_change.attrs.economic_growth,
+                        ids=ids_existing,
+                    )
 
             # Then we create the new population growth area if provided
             # In that area only the economic growth is taken into account
             # Order matters since for the pop growth new, we only want the economic growth!
-            if self.socio_economic_change.attrs.population_growth_new != 0:
-                # Get path of new development area geometry
-                area_path = (
-                    self.database.projections.input_path
-                    / self.scenario.projection
-                    / self.socio_economic_change.attrs.new_development_shapefile
-                )
-                dem = (
-                    self.database.static_path
-                    / "dem"
-                    / self.site_info.attrs.dem.filename
-                )
-                aggregation_areas = [
-                    self.database.static_path / aggr.file
-                    for aggr in self.site_info.attrs.fiat.aggregation
-                ]
-                attribute_names = [
-                    aggr.field_name for aggr in self.site_info.attrs.fiat.aggregation
-                ]
-                label_names = [
-                    f"Aggregation Label: {aggr.name}"
-                    for aggr in self.site_info.attrs.fiat.aggregation
-                ]
+            if self.socio_economic_change.attrs.population_growth_new is not None:
+                if not math.isclose(
+                    self.socio_economic_change.attrs.population_growth_new,
+                    0,
+                    abs_tol=1e-6,
+                ):
+                    # Get path of new development area geometry
+                    area_path = (
+                        self.database.projections.input_path
+                        / self.scenario.projection
+                        / self.socio_economic_change.attrs.new_development_shapefile
+                    )
+                    dem = (
+                        self.database.static_path
+                        / "dem"
+                        / self.site_info.attrs.dem.filename
+                    )
+                    aggregation_areas = [
+                        self.database.static_path / aggr.file
+                        for aggr in self.site_info.attrs.fiat.aggregation
+                    ]
+                    attribute_names = [
+                        aggr.field_name
+                        for aggr in self.site_info.attrs.fiat.aggregation
+                    ]
+                    label_names = [
+                        f"Aggregation Label: {aggr.name}"
+                        for aggr in self.site_info.attrs.fiat.aggregation
+                    ]
 
-                fa.apply_population_growth_new(
-                    population_growth=self.socio_economic_change.attrs.population_growth_new,
-                    ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
-                    elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
-                    area_path=area_path,
-                    ground_elevation=dem,
-                    aggregation_areas=aggregation_areas,
-                    attribute_names=attribute_names,
-                    label_names=label_names,
-                )
+                    fa.apply_population_growth_new(
+                        population_growth=self.socio_economic_change.attrs.population_growth_new,
+                        ground_floor_height=self.socio_economic_change.attrs.new_development_elevation.value,
+                        elevation_type=self.socio_economic_change.attrs.new_development_elevation.type,
+                        area_path=area_path,
+                        ground_elevation=dem,
+                        aggregation_areas=aggregation_areas,
+                        attribute_names=attribute_names,
+                        label_names=label_names,
+                    )
 
             # Last apply population growth to existing objects
-            if self.socio_economic_change.attrs.population_growth_existing != 0:
-                fa.apply_population_growth_existing(
-                    population_growth=self.socio_economic_change.attrs.population_growth_existing,
-                    ids=ids_existing,
-                )
+            if self.socio_economic_change.attrs.population_growth_existing is not None:
+                if not math.isclose(
+                    self.socio_economic_change.attrs.population_growth_existing,
+                    0,
+                    abs_tol=1e-6,
+                ):
+                    fa.apply_population_growth_existing(
+                        population_growth=self.socio_economic_change.attrs.population_growth_existing,
+                        ids=ids_existing,
+                    )
 
             # Then apply Impact Strategy by iterating trough the impact measures
             for measure in self.impact_strategy.measures:

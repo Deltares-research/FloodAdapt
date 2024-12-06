@@ -4,6 +4,7 @@ from typing import Union
 
 import geopandas as gpd
 import pandas as pd
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 
@@ -41,3 +42,6 @@ class IDbsStatic(ABC):
 
     @abstractmethod
     def get_offshore_sfincs_model(self) -> SfincsAdapter: ...
+
+    @abstractmethod
+    def get_cyclone_track_database(self) -> CycloneTrackDatabase: ...

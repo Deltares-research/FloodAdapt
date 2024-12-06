@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import pytest
 
 from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
@@ -11,9 +9,7 @@ from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
     SocioEconomicChange,
 )
-
-# from flood_adapt.object_model.interface.events import RainfallModel, TideModel
-from flood_adapt.object_model.interface.site import SCSModel, Site
+from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.scenario import Scenario
 
 
@@ -58,45 +54,6 @@ def test_initObjectModel_validInput(test_db, test_scenarios):
     )
 
 
-@pytest.mark.skip(reason="Refactor to use the new event model")
-def test_scs_rainfall(test_db: IDatabase, test_scenarios: dict[str, Scenario]):
-    test_scenario = test_scenarios["current_extreme12ft_no_measures.toml"]
-
-    # event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
-
-    # event.attrs.rainfall = RainfallModel(
-    #     source="shape",
-    #     cumulative=us.UnitfulLength(value=10.0, units="inch"),
-    #     shape_type="scs",
-    #     shape_start_time=-24,
-    #     shape_duration=10,
-    # )
-
-    hazard = test_scenario.direct_impacts.hazard
-    hazard.site.attrs.scs = SCSModel(
-        file="scs_rainfall.csv",
-        type="type_3",
-    )
-
-    scsfile = test_db.static_path / "scs" / test_db.site.attrs.scs.file
-    scstype = test_db.site.attrs.scs.type
-
-    # event = test_db.events.get(test_scenario.direct_impacts.hazard.event_name)
-    hazard.event.add_rainfall_ts(scsfile=scsfile, scstype=scstype)
-
-    assert isinstance(hazard.event.rain_ts, pd.DataFrame)
-    assert isinstance(hazard.event.rain_ts.index, pd.DatetimeIndex)
-    cum_rainfall_ts = (
-        np.trapz(
-            hazard.event.rain_ts.to_numpy().squeeze(),
-            hazard.event.rain_ts.index.to_numpy().astype(float),
-        )
-        / 3.6e12
-    )
-    cum_rainfall_toml = hazard.event.attrs.rainfall.cumulative.value
-    assert np.abs(cum_rainfall_ts - cum_rainfall_toml) < 0.01
-
-
 class Test_scenario_run:
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class: IDatabase):
@@ -121,19 +78,3 @@ class Test_scenario_run:
 
         assert not before_run.direct_impacts.hazard.has_run
         assert after_run.direct_impacts.hazard.has_run
-
-    @pytest.mark.skip(reason="Refactor/move test")
-    def test_infographic(self, test_db):
-        test_toml = (
-            test_db.input_path
-            / "scenarios"
-            / "current_extreme12ft_no_measures"
-            / "current_extreme12ft_no_measures.toml"
-        )
-
-        assert test_toml.is_file()
-
-        # use event template to get the associated Event child class
-        test_scenario = Scenario.load_file(test_toml)
-
-        test_scenario.infographic()

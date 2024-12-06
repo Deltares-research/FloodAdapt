@@ -42,24 +42,6 @@ def test_initObjectModel_validInput(test_db, test_scenarios: dict[str, Scenario]
 
 
 class Test_scenario_run:
-    # @pytest.fixture(scope="class")
-    # def test_scenario_run(self, test_db_class: Database):
-    #     _proj = test_dict()
-    #     _strat = test_attrs()
-    #     _event = test_event_all_synthetic()
-    #     _scn = {
-    #         "name": "test_scn",
-    #         "projection": _proj['name'],
-    #         "event": _event['name'],
-    #         "strategy": _strat['name'],
-    #     }
-    #     proj = Projection().load_dict(_proj)
-    #     strat = Strategy().load_dict(_strat)
-    #     event = EventFactory().load_dict(_event)
-    #     scn = Scenario().load_dict(_scn)
-
-    #     yield test_db_class, proj, strat, event, scn, _proj, _strat, _event, _scn
-
     @pytest.fixture(scope="class")
     def test_scenario_before_after_run(self, test_db_class: IDatabase):
         run_name = "all_projections_extreme12ft_strategy_comb"
