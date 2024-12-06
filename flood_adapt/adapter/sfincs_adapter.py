@@ -295,8 +295,6 @@ class SfincsAdapter(IHazardAdapter):
                 us.UnitTypesLength.meters
             )
 
-        # ? phys_projection.attrs.subsidence
-
         if phys_projection.attrs.rainfall_multiplier:
             self.logger.info(
                 f"Adding rainfall multiplier ({phys_projection.attrs.rainfall_multiplier}) to SFINCS model."
