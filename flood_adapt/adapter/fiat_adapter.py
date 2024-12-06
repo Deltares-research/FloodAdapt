@@ -60,8 +60,8 @@ class FiatAdapter:
         gc.collect()
 
     def set_hazard(self, hazard: Hazard) -> None:
-        map_fn = hazard._get_flood_map_path()
         map_type = hazard.site.attrs.fiat.floodmap_type
+        map_fn = hazard._get_flood_map_path(map_type)
         var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
         is_risk = hazard.event_mode == Mode.risk
 

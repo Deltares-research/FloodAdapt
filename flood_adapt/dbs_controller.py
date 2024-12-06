@@ -995,6 +995,13 @@ class Database(IDatabase):
                         dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("simulations"),
                     )
+                    # Make sure names are consistent
+                    for path_new, path_old in zip(
+                        scenario.direct_impacts.hazard.water_depth_map,
+                        scn.direct_impacts.hazard.water_depth_map,
+                    ):
+                        path_new.parent.joinpath(path_old.name).rename(path_new)
+
                     self._logger.info(
                         f"Hazard simulation is used from the '{scn.attrs.name}' scenario"
                     )
