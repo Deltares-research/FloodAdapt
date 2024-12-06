@@ -53,6 +53,8 @@ class Hazard:
     physical_projection: PhysicalProjection
     hazard_strategy: HazardStrategy
     site: ISite
+    water_level_map: list[Path] = []
+    water_depth_map: list[Path] = []
 
     def __init__(self, scenario: ScenarioModel, database, results_dir: Path) -> None:
         self._logger = FloodAdaptLogging.getLogger(__name__)
@@ -67,6 +69,7 @@ class Hazard:
         self.set_hazard_strategy(scenario.strategy)
         self.set_physical_projection(scenario.projection)
         self.site = database.site
+        self._set_flood_map_paths()
 
     @property
     def event_mode(self) -> Mode:
@@ -141,11 +144,11 @@ class Hazard:
         bool
             _description_
         """
-        self._get_flood_map_path()
+        maps = self._get_flood_map_path()
 
         # Iterate to all needed flood map files to check if they exists
         checks = []
-        for map in self.flood_map_path:
+        for map in maps:
             checks.append(map.exists())
 
         return all(checks)
@@ -682,24 +685,27 @@ class Hazard:
             # Write max water-level netcdfs per return period
             self.calculate_rp_floodmaps()
 
-        # Save flood map paths in object
-        self._get_flood_map_path()
-
-    def _get_flood_map_path(self) -> Path:
-        """_summary_."""
+    def _set_flood_map_paths(self):
         results_path = self.results_dir
         mode = self.event_mode
 
         if mode == Mode.single_event:
-            map_fn = [results_path.joinpath("max_water_level_map.nc")]
+            wl_map_fn = [results_path.joinpath("max_water_level_map.nc")]
+            fd_map_fn = [results_path.joinpath(f"FloodMap_{self.name}.tif")]
 
         elif mode == Mode.risk:
-            map_fn = []
+            wl_map_fn = []
             for rp in self.site.attrs.risk.return_periods:
-                map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
+                wl_map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
 
-        self.flood_map_path = map_fn
-        return map_fn
+        self.water_level_map = wl_map_fn
+        self.water_depth_map = fd_map_fn
+
+    def _get_flood_map_path(self, type="water_level") -> list[Path]:
+        if type == "water_level":
+            return self.water_level_map
+        elif type == "water_depth":
+            return self.water_depth_map
 
     def write_water_level_map(self):
         """Read simulation results from SFINCS and saves a netcdf with the maximum water levels."""
