@@ -124,7 +124,7 @@ def create_env(
         "conda activate",
         create_command,
         activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option}",
     ]
     command = " && ".join(command_list)
 

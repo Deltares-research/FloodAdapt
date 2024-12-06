@@ -1,6 +1,8 @@
 import os
 from typing import Union
 
+import tomli
+
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -9,24 +11,32 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
-from flood_adapt.object_model.interface.measures import HazardType, ImpactType
-from flood_adapt.object_model.measure import Measure
+from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 
 
 class MeasureFactory:
     @staticmethod
-    def get_measure_object(filepath: Union[str, os.PathLike]):
-        measure_type = Measure.get_measure_type(filepath)
+    def get_measure_type(filepath: Union[str, os.PathLike]):
+        """Get a measure type from toml file."""
+        with open(filepath, mode="rb") as fp:
+            toml = tomli.load(fp)
+        type = toml.get("type")
+        return MeasureType(type)
 
-        if measure_type in iter(ImpactType):
+    @staticmethod
+    def get_measure_object(filepath: Union[str, os.PathLike]) -> IMeasure:
+        measure_type = MeasureFactory.get_measure_type(filepath)
+
+        if MeasureType.is_impact(measure_type):
             return ImpactMeasureFactory.get_impact_measure(measure_type).load_file(
                 filepath
             )
-
-        elif measure_type in iter(HazardType):
+        elif MeasureType.is_hazard(measure_type):
             return HazardMeasureFactory.get_hazard_measure(measure_type).load_file(
                 filepath
             )
+        else:
+            raise ValueError(f"Measure type {measure_type} not recognized.")
 
 
 class ImpactMeasureFactory:
@@ -37,7 +47,7 @@ class ImpactMeasureFactory:
 
     Returns
     -------
-        Measure: ImpactMeasure subclass
+        Measure: IMeasure subclass
     """
 
     @staticmethod
@@ -48,6 +58,8 @@ class ImpactMeasureFactory:
             return Buyout
         elif impact_measure == "floodproof_properties":
             return FloodProof
+        else:
+            raise ValueError(f"Measure type {impact_measure} not recognized.")
 
 
 class HazardMeasureFactory:
@@ -58,7 +70,7 @@ class HazardMeasureFactory:
 
     Returns
     -------
-        Measure: HazardMeasure subclass
+        Measure: IMeasure subclass
     """
 
     @staticmethod
@@ -75,3 +87,5 @@ class HazardMeasureFactory:
             return GreenInfrastructure
         elif hazard_measure == "pump":
             return Pump
+        else:
+            raise ValueError(f"Measure type {hazard_measure} not recognized.")

@@ -4,15 +4,12 @@ import geopandas as gpd
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.interface.measures import IMeasure
-from flood_adapt.object_model.measure import Measure
 from flood_adapt.object_model.measure_factory import MeasureFactory
-from flood_adapt.object_model.strategy import Strategy
+from flood_adapt.object_model.utils import resolve_filepath
 
 
-class DbsMeasure(DbsTemplate):
-    _type = "measure"
-    _folder_name = "measures"
-    _object_model_class = Measure
+class DbsMeasure(DbsTemplate[IMeasure]):
+    _object_class = IMeasure
 
     def get(self, name: str) -> IMeasure:
         """Return a measure object.
@@ -27,11 +24,11 @@ class DbsMeasure(DbsTemplate):
         IMeasure
             measure object
         """
-        measure_path = self._path / name / f"{name}.toml"
+        measure_path = self.input_path / name / f"{name}.toml"
         measure = MeasureFactory.get_measure_object(measure_path)
         return measure
 
-    def list_objects(self) -> dict[str, Any]:
+    def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the measures that currently exist in the database.
 
         Returns
@@ -48,12 +45,12 @@ class DbsMeasure(DbsTemplate):
         for path, obj in zip(measures["path"], objects):
             # If polygon is used read the polygon file
             if obj.attrs.polygon_file:
-                file_path = path.parent.joinpath(obj.attrs.polygon_file)
-                if not file_path.exists():
-                    raise FileNotFoundError(
-                        f"Polygon file {obj.attrs.polygon_file} for measure {obj.attrs.name} does not exist."
-                    )
-                geometries.append(gpd.read_file(file_path))
+                src_path = resolve_filepath(
+                    object_dir=self._object_class.dir_name,
+                    obj_name=obj.attrs.name,
+                    path=obj.attrs.polygon_file,
+                )
+                geometries.append(gpd.read_file(src_path))
             # If aggregation area is used read the polygon from the aggregation area name
             elif obj.attrs.aggregation_area_name:
                 if (
@@ -94,10 +91,7 @@ class DbsMeasure(DbsTemplate):
             list of strategies that use the measure
         """
         # Get all the strategies
-        strategies = [
-            Strategy.load_file(path)
-            for path in self._database.strategies.list_objects()["path"]
-        ]
+        strategies = self._database.strategies.list_objects()["objects"]
 
         # Check if measure is used in a strategy
         used_in_strategy = [
