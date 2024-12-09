@@ -51,7 +51,7 @@
         font = 20
     [Other.Info]
         text="""Thresholds:<br>
-                Impacted: <= 1.5 m<br>
-                Displaced: > 1.5 m<br>"""
-        image="{image_path}/info.png"
+                Impacted: <= 6 feet<br>
+                Displaced: > 6 feet<br>"""
+        image="https://openclipart.org/image/800px/302413"
         scale=0.1

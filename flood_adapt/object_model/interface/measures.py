@@ -1,30 +1,24 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Generic, Optional, Type, TypeVar
 
-from pydantic import BaseModel, Field, field_validator, model_validator, validator
+from pydantic import Field, field_validator, model_validator
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulHeight,
-    UnitfulLength,
-    UnitfulLengthRefValue,
-    UnitfulVolume,
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
 )
+from flood_adapt.object_model.io import unit_system as us
 
 
-class ImpactType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in ImpactMeasure."""
+class MeasureCategory(str, Enum):
+    """Class describing the accepted input for the variable 'type' in Measure."""
 
-    elevate_properties = "elevate_properties"
-    buyout_properties = "buyout_properties"
-    floodproof_properties = "floodproof_properties"
+    impact = "impact"
+    hazard = "hazard"
 
 
-class HazardType(str, Enum):
-    """Class describing the accepted input for the variable 'type' in HazardMeasure."""
-
+class MeasureType(str, Enum):
+    # Hazard measures
     floodwall = "floodwall"
     thin_dam = "thin_dam"  # For now, same functionality as floodwall TODO: Add thin dam functionality
     levee = "levee"  # For now, same functionality as floodwall TODO: Add levee functionality
@@ -36,6 +30,41 @@ class HazardType(str, Enum):
     greening = "greening"
     total_storage = "total_storage"
 
+    # Impact measures
+    elevate_properties = "elevate_properties"
+    buyout_properties = "buyout_properties"
+    floodproof_properties = "floodproof_properties"
+
+    @classmethod
+    def is_hazard(cls, measure_type: str) -> bool:
+        return measure_type in [
+            cls.floodwall,
+            cls.thin_dam,
+            cls.levee,
+            cls.pump,
+            cls.culvert,
+            cls.water_square,
+            cls.greening,
+            cls.total_storage,
+        ]
+
+    @classmethod
+    def is_impact(cls, measure_type: str) -> bool:
+        return measure_type in [
+            cls.elevate_properties,
+            cls.buyout_properties,
+            cls.floodproof_properties,
+        ]
+
+    @classmethod
+    def get_measure_category(cls, measure_type: str) -> MeasureCategory:
+        if cls.is_hazard(measure_type):
+            return MeasureCategory.hazard
+        elif cls.is_impact(measure_type):
+            return MeasureCategory.impact
+        else:
+            raise ValueError(f"Invalid measure type: {measure_type}")
+
 
 class SelectionType(str, Enum):
     """Class describing the accepted input for the variable 'selection_type' in ImpactMeasure."""
@@ -46,27 +75,27 @@ class SelectionType(str, Enum):
     all = "all"
 
 
-class MeasureModel(BaseModel):
+class MeasureModel(IObjectModel):
     """BaseModel describing the expected variables and data types of attributes common to all measures."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
-    type: Union[HazardType, ImpactType]
+    type: MeasureType
 
 
 class HazardMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
-    type: HazardType
     selection_type: SelectionType
-    polygon_file: Optional[str] = None
+    polygon_file: Optional[str] = Field(
+        None,
+        min_length=1,
+        description="Path to a polygon file, either absolute or relative to the measure path.",
+    )
 
-    @field_validator("polygon_file")
-    @classmethod
-    def validate_polygon_file(cls, v: Optional[str]) -> Optional[str]:
-        if v is None or len(v) == 0:
-            raise ValueError("Polygon file path cannot be empty")
-        return v
+    @field_validator("type")
+    def validate_type(cls, value):
+        if not MeasureType.is_hazard(value):
+            raise ValueError(f"Invalid hazard type: {value}")
+        return value
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "HazardMeasureModel":
@@ -84,46 +113,48 @@ class HazardMeasureModel(MeasureModel):
 class ImpactMeasureModel(MeasureModel):
     """BaseModel describing the expected variables and data types of attributes common to all impact measures."""
 
-    type: ImpactType
+    type: MeasureType
     selection_type: SelectionType
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
-    polygon_file: Optional[str] = None
-    property_type: str
+    polygon_file: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        description="Path to a polygon file, relative to the database path.",
+    )
+    property_type: str  # TODO make enum
 
-    # TODO #94 pydantic validators do not currently work
+    @field_validator("type")
+    def validate_type(cls, value):
+        if not MeasureType.is_impact(value):
+            raise ValueError(f"Invalid impact type: {value}")
+        return value
 
-    @validator("aggregation_area_name")
-    def validate_aggregation_area_name(
-        cls, aggregation_area_name: Optional[str], values: Any
-    ) -> Optional[str]:
+    @model_validator(mode="after")
+    def validate_aggregation_area_name(self):
         if (
-            values.get("selection_type") == SelectionType.aggregation_area
-            and aggregation_area_name is None
+            self.selection_type == SelectionType.aggregation_area
+            and self.aggregation_area_name is None
         ):
             raise ValueError(
                 "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
             )
-        return aggregation_area_name
+        return self
 
-    @validator("polygon_file")
-    def validate_polygon_file(
-        cls, polygon_file: Optional[str], values: Any
-    ) -> Optional[str]:
-        if (
-            values.get("selection_type") == SelectionType.polygon
-            and polygon_file is None
-        ):
+    @model_validator(mode="after")
+    def validate_polygon_file(self):
+        if self.selection_type == SelectionType.polygon and self.polygon_file is None:
             raise ValueError(
                 "If `selection_type` is 'polygon', then `polygon_file` needs to be set."
             )
-        return polygon_file
+
+        return self
 
 
 class ElevateModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
 
-    elevation: UnitfulLengthRefValue
+    elevation: us.UnitfulLengthRefValue
 
 
 class BuyoutModel(ImpactMeasureModel):
@@ -135,27 +166,27 @@ class BuyoutModel(ImpactMeasureModel):
 class FloodProofModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
 
-    elevation: UnitfulLength
+    elevation: us.UnitfulLength
 
 
 class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
 
-    elevation: UnitfulLength
+    elevation: us.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
 
 class PumpModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
 
-    discharge: UnitfulDischarge
+    discharge: us.UnitfulDischarge
 
 
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
 
-    volume: UnitfulVolume
-    height: Optional[UnitfulHeight] = None
+    volume: us.UnitfulVolume
+    height: Optional[us.UnitfulHeight] = None
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = Field(None, ge=0, le=100)
@@ -164,24 +195,24 @@ class GreenInfrastructureModel(HazardMeasureModel):
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
         e_msg = f"Error parsing GreenInfrastructureModel: {self.name}"
 
-        if self.type == HazardType.total_storage:
+        if self.type == MeasureType.total_storage:
             if self.height is not None or self.percent_area is not None:
                 raise ValueError(
                     f"{e_msg}\nHeight and percent_area cannot be set for total storage type measures"
                 )
             return self
-        elif self.type == HazardType.water_square:
+        elif self.type == MeasureType.water_square:
             if self.percent_area is not None:
                 raise ValueError(
                     f"{e_msg}\nPercentage_area cannot be set for water square type measures"
                 )
-            elif not isinstance(self.height, UnitfulHeight):
+            elif not isinstance(self.height, us.UnitfulHeight):
                 raise ValueError(
                     f"{e_msg}\nHeight needs to be set for water square type measures"
                 )
             return self
-        elif self.type == HazardType.greening:
-            if not isinstance(self.height, UnitfulHeight) or not isinstance(
+        elif self.type == MeasureType.greening:
+            if not isinstance(self.height, us.UnitfulHeight) or not isinstance(
                 self.percent_area, float
             ):
                 raise ValueError(
@@ -207,59 +238,13 @@ class GreenInfrastructureModel(HazardMeasureModel):
         return self
 
 
-class IMeasure(ABC):
+T_MEASURE_MODEL = TypeVar("T_MEASURE_MODEL", bound=MeasureModel)
+
+
+class IMeasure(IObject[T_MEASURE_MODEL], Generic[T_MEASURE_MODEL]):
     """A class for a FloodAdapt measure."""
 
-    attrs: MeasureModel
+    _attrs_type: Type[T_MEASURE_MODEL]
 
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Measure attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """Get Measure attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Measure attributes to a toml file."""
-
-
-class IElevate(IMeasure):
-    """A class for a FloodAdapt "elevate" measure."""
-
-    attrs: ElevateModel
-
-
-class IBuyout(IMeasure):
-    """A class for a FloodAdapt "buyout" measure."""
-
-    attrs: BuyoutModel
-
-
-class IFloodProof(IMeasure):
-    """A class for a FloodAdapt "floodproof" measure."""
-
-    attrs: FloodProofModel
-
-
-class IFloodWall(IMeasure):
-    """A class for a FloodAdapt "floodwall" measure."""
-
-    attrs: FloodWallModel
-
-
-class IPump(IMeasure):
-    """A class for a FloodAdapt "pump" measure."""
-
-    attrs: PumpModel
-
-
-class IGreenInfrastructure(IMeasure):
-    """A class for a FloodAdapt "green infrastrcutre" measure."""
-
-    attrs: GreenInfrastructureModel
+    dir_name = ObjectDir.measure
+    display_name = "Measure"

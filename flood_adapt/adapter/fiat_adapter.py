@@ -5,17 +5,20 @@ from typing import List, Optional, Union
 
 from hydromt_fiat.fiat import FiatModel
 
-from flood_adapt.log import FloodAdaptLogging
+from flood_adapt import unit_system as us
+from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.hazard.hazard import Hazard
-from flood_adapt.object_model.interface.events import Mode
-from flood_adapt.object_model.io.unitfulvalue import UnitfulLength
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
+    get_object_ids,
+)
+from flood_adapt.object_model.hazard.floodmap import FloodMap
+from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.interface.site import Site
 
 
-class FiatAdapter:
+class FiatAdapter:  # TODO implement ImpactAdapter interface
     """All the attributes of the template fiat model and the methods to adjust it according to the projection and strategy attributes."""
 
     fiat_model: FiatModel  # hydroMT-FIAT model
@@ -26,7 +29,7 @@ class FiatAdapter:
     def __init__(self, model_root: str, database_path: str) -> None:
         """Load FIAT model based on a root directory."""
         # Load FIAT template
-        self._logger = FloodAdaptLogging.getLogger(__name__, level=logging.INFO)
+        self.logger = FloodAdaptLogging.getLogger(__name__, level=logging.INFO)
         self.fiat_model = FiatModel(root=model_root, mode="r")
         self.fiat_model.read()
 
@@ -53,27 +56,35 @@ class FiatAdapter:
             self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
 
     def __del__(self) -> None:
-        for handler in self._logger.handlers:
+        for handler in self.logger.handlers:
             handler.close()
-        self._logger.handlers.clear()
+            self.logger.removeHandler(handler)
+        self.logger.handlers.clear()
         # Use garbage collector to ensure file handlers are properly cleaned up
         gc.collect()
 
-    def set_hazard(self, hazard: Hazard) -> None:
-        map_fn = hazard._get_flood_map_path()
-        map_type = hazard.site.attrs.fiat.floodmap_type
-        var = "zsmax" if hazard.event_mode == Mode.risk else "risk_maps"
-        is_risk = hazard.event_mode == Mode.risk
+    def __enter__(self) -> "FiatAdapter":
+        return self
 
-        # Add the hazard data to a data catalog with the unit conversion
-        wl_current_units = UnitfulLength(value=1.0, units="meters")
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+        del self.fiat_model
+        del self
+
+        return False
+
+    def set_hazard(self, floodmap: FloodMap) -> None:
+        var = "zsmax" if floodmap.mode == Mode.risk else "risk_maps"
+        is_risk = floodmap.mode == Mode.risk
+
+        # Add the floodmap data to a data catalog with the unit conversion
+        wl_current_units = us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters)
         conversion_factor = wl_current_units.convert(self.fiat_model.exposure.unit)
 
         self.fiat_model.setup_hazard(
-            map_fn=map_fn,
-            map_type=map_type,
+            map_fn=floodmap.path,
+            map_type=floodmap.type,
             rp=None,
-            crs=None,  # change this in new version
+            crs=None,  # change this in new version (maybe to str(floodmap.crs.split(':')[1]))
             nodata=-999,  # change this in new version
             var=var,
             chunks="auto",
@@ -247,7 +258,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = elevate.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(elevate, self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 
@@ -301,7 +312,7 @@ class FiatAdapter:
         ].isin(self.site.attrs.fiat.non_building_names)
 
         # Get rows that are affected
-        objectids = buyout.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(buyout, self.fiat_model)
         rows = (
             self.fiat_model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
@@ -334,7 +345,7 @@ class FiatAdapter:
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = floodproof.get_object_ids(self.fiat_model)
+        objectids = get_object_ids(floodproof, self.fiat_model)
         if ids:
             objectids = [id for id in objectids if id in ids]
 

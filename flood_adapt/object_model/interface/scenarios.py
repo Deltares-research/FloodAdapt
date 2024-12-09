@@ -1,40 +1,39 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from abc import abstractmethod
 
-from pydantic import BaseModel, Field
+from flood_adapt.object_model.hazard.interface.events import IEvent
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.interface.projections import IProjection
+from flood_adapt.object_model.interface.strategies import IStrategy
 
 
-class ScenarioModel(BaseModel):
+class ScenarioModel(IObjectModel):
     """BaseModel describing the expected variables and data types of a scenario."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     event: str
     projection: str
     strategy: str
 
 
-class IScenario(ABC):
-    attrs: ScenarioModel
-    database_input_path: Union[str, os.PathLike]
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Scenario attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """Get Scenario attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Scenario attributes to a toml file."""
-        ...
+class IScenario(IObject[ScenarioModel]):
+    _attrs_type = ScenarioModel
+    dir_name = ObjectDir.scenario
+    display_name = "Scenario"
 
     @abstractmethod
     def run(self) -> None: ...
+
+    @abstractmethod
+    def equal_hazard_components(self, other: "IScenario") -> bool: ...
+
+    @property
+    @abstractmethod
+    def event(self) -> IEvent: ...
+
+    @property
+    @abstractmethod
+    def projection(self) -> IProjection: ...
+
+    @property
+    @abstractmethod
+    def strategy(self) -> IStrategy: ...

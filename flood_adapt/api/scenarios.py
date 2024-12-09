@@ -1,6 +1,6 @@
 from typing import Any, Union
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
@@ -15,7 +15,7 @@ def get_scenario(name: str) -> IScenario:
 
 
 def create_scenario(attrs: dict[str, Any]) -> IScenario:
-    return Scenario.load_dict(attrs, Database().input_path)
+    return Scenario.load_dict(attrs)
 
 
 def save_scenario(scenario: IScenario) -> tuple[bool, str]:

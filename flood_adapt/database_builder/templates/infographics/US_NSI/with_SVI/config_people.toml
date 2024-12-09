@@ -56,5 +56,5 @@
 				'Since some homes do not have an SVI,<br>
 				total number of homes might be different <br>
 				between this and the above graph.'"""
-        image="{image_path}/info.png"
+        image="https://openclipart.org/image/800px/302413"
         scale=0.1

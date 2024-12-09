@@ -2,31 +2,13 @@ import shutil
 from typing import Any
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.scenario import Scenario
 
 
-class DbsScenario(DbsTemplate):
-    _type = "scenario"
-    _folder_name = "scenarios"
-    _object_model_class = Scenario
+class DbsScenario(DbsTemplate[Scenario]):
+    _object_class = Scenario
 
-    def get(self, name: str) -> IScenario:
-        """Return a scenario object.
-
-        Parameters
-        ----------
-        name : str
-            name of the scenario to be returned
-
-        Returns
-        -------
-        IScenario
-            scenario object
-        """
-        return super().get(name).init_object_model()
-
-    def list_objects(self) -> dict[str, Any]:
+    def list_objects(self) -> dict[str, list[Any]]:
         """Return a dictionary with info on the events that currently exist in the database.
 
         Returns
@@ -39,9 +21,7 @@ class DbsScenario(DbsTemplate):
         scenarios["Projection"] = [obj.attrs.projection for obj in objects]
         scenarios["Event"] = [obj.attrs.event for obj in objects]
         scenarios["Strategy"] = [obj.attrs.strategy for obj in objects]
-        scenarios["finished"] = [
-            obj.init_object_model().has_run_check() for obj in objects
-        ]
+        scenarios["finished"] = [obj.has_run_check() for obj in objects]
 
         return scenarios
 
@@ -65,16 +45,15 @@ class DbsScenario(DbsTemplate):
         super().delete(name, toml_only)
 
         # Then delete the results
-        results_path = self._database.output_path / self._folder_name / name
-        if results_path.exists():
-            shutil.rmtree(results_path, ignore_errors=False)
+        if (self.output_path / name).exists():
+            shutil.rmtree(self.output_path / name, ignore_errors=False)
 
-    def edit(self, scenario: IScenario):
+    def edit(self, object_model: Scenario):
         """Edits an already existing scenario in the database.
 
         Parameters
         ----------
-        scenario : IScenario
+        scenario : Scenario
             scenario to be edited in the database
 
         Raises
@@ -84,13 +63,10 @@ class DbsScenario(DbsTemplate):
         """
         # Check if it is possible to edit the scenario. This then also covers checking whether the
         # scenario is already used in a higher level object. If this is the case, it cannot be edited.
-        super().edit(scenario)
+        super().edit(object_model)
 
         # Delete output if edited
-        output_path = (
-            self._database.output_path / self._folder_name / scenario.attrs.name
-        )
-
+        output_path = self.output_path / object_model.attrs.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 

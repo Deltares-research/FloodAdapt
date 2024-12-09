@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from flood_adapt.config import Settings
+from flood_adapt.misc.config import Settings
 from tests.utils import modified_environ
 
 
@@ -87,7 +87,7 @@ class TestSettingsModel:
 
     @pytest.fixture()
     def mock_system(self):
-        with patch("flood_adapt.config.system") as mock_system:
+        with patch("flood_adapt.misc.config.system") as mock_system:
             mock_system.return_value = "Windows"
             yield mock_system
 

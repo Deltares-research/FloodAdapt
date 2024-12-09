@@ -3,7 +3,7 @@ from typing import Any, Union
 import geopandas as gpd
 import pandas as pd
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.benefit import Benefit
 from flood_adapt.object_model.interface.benefits import IBenefit
 
@@ -18,7 +18,7 @@ def get_benefit(name: str) -> IBenefit:
 
 
 def create_benefit(attrs: dict[str, Any]) -> IBenefit:
-    return Benefit.load_dict(attrs, Database().input_path)
+    return Benefit.load_dict(attrs)
 
 
 def save_benefit(benefit: IBenefit) -> None:

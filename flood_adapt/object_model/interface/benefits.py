@@ -1,9 +1,14 @@
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from abc import abstractmethod
+from pathlib import Path
+from typing import Any, Optional
 
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+)
 
 
 class CurrentSituationModel(BaseModel):
@@ -11,11 +16,9 @@ class CurrentSituationModel(BaseModel):
     year: int
 
 
-class BenefitModel(BaseModel):
+class BenefitModel(IObjectModel):
     """BaseModel describing the expected variables and data types of a Benefit analysis object."""
 
-    name: str = Field(..., min_length=1, pattern='^[^<>:"/\\\\|?* ]*$')
-    description: Optional[str] = ""
     strategy: str
     event_set: str
     projection: str
@@ -27,31 +30,45 @@ class BenefitModel(BaseModel):
     annual_maint_cost: Optional[float] = None
 
 
-class IBenefit(ABC):
-    attrs: BenefitModel
-    database_input_path: Union[str, os.PathLike]
-    results_path: Union[str, os.PathLike]
+class IBenefit(IObject[BenefitModel]):
+    _attrs_type = BenefitModel
+    dir_name = ObjectDir.benefit
+    display_name = "Benefit"
+
+    results_path: Path
     scenarios: pd.DataFrame
-    has_run: bool = False
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Benefit attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any], database_input_path: Union[str, os.PathLike]):
-        """Get Benefit attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Benefit attributes to a toml file."""
-        ...
 
     @abstractmethod
     def check_scenarios(self) -> pd.DataFrame:
         """Check which scenarios are needed for this benefit calculation and if they have already been created."""
+        ...
+
+    @abstractmethod
+    def run_cost_benefit(self):
+        """Run the cost benefit analysis."""
+        ...
+
+    @abstractmethod
+    def cba(self):
+        """Return the cost benefit analysis results."""
+        ...
+
+    @abstractmethod
+    def cba_aggregation(self):
+        """Return the cost benefit analysis results."""
+        ...
+
+    @abstractmethod
+    def get_output(self) -> dict[str, Any]:
+        """Return the output of the cost benefit analysis."""
+        ...
+
+    @abstractmethod
+    def has_run_check(self) -> bool:
+        """Check if the benefit analysis has been run."""
+        ...
+
+    @abstractmethod
+    def ready_to_run(self) -> bool:
+        """Check if the benefit analysis is ready to run."""
         ...
