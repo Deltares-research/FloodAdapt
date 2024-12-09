@@ -42,7 +42,7 @@ jobs:
 
       - name: Setup env
         run: |
-                pip install tomli tomli_w
+                pip install tomli tomli-w
                 mamba env create --file=docs/environment_docs.yml
                 mamba run -n floodadapt_docs pip install . --no-deps
                 VERSION=$(mamba run -n floodadapt_docs python -c "from flood_adapt import __version__; print(__version__)")
