@@ -32,6 +32,8 @@ dependencies = [
     "fiat-toolbox",
     "geojson",
     "geopandas",
+    "jellyfish<1.0", # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
+    # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
     "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git@quadtree_io",
     "numpy < 2.0",
@@ -89,7 +91,6 @@ include = [
 [tool.setuptools.package-data]
 flood_adapt = [
     "py.typed",
-    # "system/**", uncomment when other os are supported as well
 ]
 
 [tool.ruff]
