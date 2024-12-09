@@ -18,6 +18,7 @@ IF %ERRORLEVEL% EQU 0 (
 :: Install Rust
 IF EXIST "%USERPROFILE%\.cargo\bin" (
     echo Rust is installed, but cargo and rustc were not found. Please check your PATH.
+    echo "%PATH%"
 ) ELSE (
     echo Rust is not installed, downloading and installing...
     curl -L https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe -o rustup-init.exe
@@ -31,8 +32,8 @@ rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo Rust is already in the PATH.
 ) ELSE (
-    @REM setx PATH "%PATH%;%USERPROFILE%\.cargo\bin"
-    set PATH="%PATH%;%USERPROFILE%\.cargo\bin"
+    setx PATH "%PATH%;%USERPROFILE%\.cargo\bin"
+    set PATH="%PATH%"
     echo Added Rust to PATH...
 )
 
