@@ -30,8 +30,8 @@ cargo --version >nul 2>&1 && rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo Rust and cargo already in the PATH.
 ) ELSE (
-    SET PATH="%USERPROFILE%\.cargo\bin;%PATH%"
-    SETX PATH "%USERPROFILE%\.cargo\bin;%PATH%"
+    setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
+    set PATH="%USERPROFILE%\.cargo\bin;%PATH%"
 
     echo Added Rust to PATH...
     echo "%PATH%"
