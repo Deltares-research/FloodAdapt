@@ -5,21 +5,19 @@
 ::
 :: Currently, this script is required due to hydromt-sfincs requiring it, but not installing it.
 
-:: Check if rust and cargo are available
-cargo --version >nul 2>&1
+:: Check if rust and cargo are available as is
+cargo --version >nul 2>&1 && rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-    rustc --version >nul 2>&1
-    IF %ERRORLEVEL% EQU 0 (
-        echo cargo and rustc are already installed.
-        exit /b
-    )
+    echo cargo and rustc are already installed.
+    exit /b
 )
 
-:: Install Rust
 IF EXIST "%USERPROFILE%\.cargo\bin" (
-    echo Rust is installed, but cargo and rustc were not found. Please check your PATH.
+    :: Add to PATH if install dir does exists
+    echo Rust installation dir exists, but could not find rust in PATH, skipping re-install. Please check your PATH.
     echo "%PATH%"
 ) ELSE (
+    :: Full install if install dir doesnt exist
     echo Rust is not installed, downloading and installing...
     curl -L https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe -o rustup-init.exe
     rustup-init.exe -y
@@ -28,20 +26,17 @@ IF EXIST "%USERPROFILE%\.cargo\bin" (
 )
 
 :: Edit PATH
-rustc --version >nul 2>&1
+cargo --version >nul 2>&1 && rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-    echo Rust is already in the PATH.
+    echo Rust and cargo already in the PATH.
 ) ELSE (
-    @REM :: Add Rust to PATH permanently
-    @REM setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
-    :: Add Rust to PATH for this session
-    set PATH="%USERPROFILE%\.cargo\bin;%PATH%"
-    setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
+    SET PATH="%USERPROFILE%\.cargo\bin;%PATH%"
+    SETX PATH "%USERPROFILE%\.cargo\bin;%PATH%"
 
     echo Added Rust to PATH...
     echo "%PATH%"
-)
 
-:: Verify
-cargo --version
-rustc --version
+    :: Verify
+    cargo --version
+    rustc --version
+)
