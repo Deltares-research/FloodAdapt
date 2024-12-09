@@ -60,9 +60,17 @@ def parse_args():
     parser.add_argument(
         "-d",
         "--optional-deps",
-        default="none",
+        default=None,
         dest="optional_deps",
         help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        default=False,
+        action="store_true",
+        dest="debug",
+        help="Print debug logs during the environment creation process.",
     )
 
     args = parser.parse_args()
@@ -86,14 +94,18 @@ def write_env_yml(env_name: str):
 
 
 def check_and_delete_conda_env(env_name: str, prefix: Optional[str] = None):
-    result = subprocess.run("conda env list", **SUBPROCESS_KWARGS)
+    result = subprocess.run(["conda", "env", "list"], **SUBPROCESS_KWARGS)
 
     if env_name in result.stdout:
         print(f"Environment {env_name} already exists. Removing it now...")
         if prefix:
-            subprocess.run(f"conda env remove -p {prefix} -y", **SUBPROCESS_KWARGS)
+            subprocess.run(
+                ["conda", "env", "remove", "-p", prefix, "-y"], **SUBPROCESS_KWARGS
+            )
         else:
-            subprocess.run(f"conda env remove -n {env_name} -y", **SUBPROCESS_KWARGS)
+            subprocess.run(
+                ["conda", "env", "remove", "-n", env_name, "-y"], **SUBPROCESS_KWARGS
+            )
 
 
 def create_env(
@@ -101,6 +113,7 @@ def create_env(
     prefix: Optional[str] = None,
     editable: bool = False,
     optional_deps: Optional[str] = None,
+    debug: bool = False,
 ):
     if not BACKEND_ROOT.exists():
         raise FileNotFoundError(
@@ -120,11 +133,14 @@ def create_env(
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
 
+    debug_logfile = Path(__file__).parent / f"{env_name}_debug.log"
+    debug_log_option = f"-v -v -v --log {debug_logfile}" if debug else ""
+
     command_list = [
         "conda activate",
         create_command,
         activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        f"pip install {editable_option} {BACKEND_ROOT}{dependency_option} {debug_log_option}",
     ]
     command = " && ".join(command_list)
 
