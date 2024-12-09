@@ -31,8 +31,8 @@ rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo Rust is already in the PATH.
 ) ELSE (
-    setx PATH "%PATH%;%USERPROFILE%\.cargo\bin"
-    set PATH=%PATH%
+    @REM setx PATH "%PATH%;%USERPROFILE%\.cargo\bin"
+    set PATH="%PATH%;%USERPROFILE%\.cargo\bin"
     echo Added Rust to PATH...
 )
 
