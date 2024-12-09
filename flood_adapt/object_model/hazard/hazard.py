@@ -697,6 +697,7 @@ class Hazard:
             wl_map_fn = []
             for rp in self.site.attrs.risk.return_periods:
                 wl_map_fn.append(results_path.joinpath(f"RP_{rp:04d}_maps.nc"))
+            fd_map_fn = []
 
         self.water_level_map = wl_map_fn
         self.water_depth_map = fd_map_fn
