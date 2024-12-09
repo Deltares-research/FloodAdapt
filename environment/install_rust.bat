@@ -8,7 +8,6 @@
 :: Check if rust and cargo are available
 cargo --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-
     rustc --version >nul 2>&1
     IF %ERRORLEVEL% EQU 0 (
         echo cargo and rustc are already installed.
@@ -28,7 +27,7 @@ IF EXIST "%USERPROFILE%\.cargo\bin" (
 )
 
 :: Edit PATH
-echo %PATH% | findstr /i "%USERPROFILE%\.cargo\bin" >nul
+rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo Rust is already in the PATH.
 ) ELSE (
