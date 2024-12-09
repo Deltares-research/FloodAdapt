@@ -32,10 +32,10 @@ rustc --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo Rust is already in the PATH.
 ) ELSE (
-    :: Add Rust to PATH permanently
-    setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
+    @REM :: Add Rust to PATH permanently
+    @REM setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
     :: Add Rust to PATH for this session
-    set PATH="%PATH%"
+    set PATH="%USERPROFILE%\.cargo\bin;%PATH%"
 
     echo Added Rust to PATH...
     echo "%PATH%"
