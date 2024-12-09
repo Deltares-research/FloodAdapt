@@ -36,6 +36,7 @@ IF %ERRORLEVEL% EQU 0 (
     @REM setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
     :: Add Rust to PATH for this session
     set PATH="%USERPROFILE%\.cargo\bin;%PATH%"
+    setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
 
     echo Added Rust to PATH...
     echo "%PATH%"
