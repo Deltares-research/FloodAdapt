@@ -2,7 +2,8 @@
 :: This is a batch script to install Rust & cargo on Windows.
 :: It checks if cargo and rustc are already installed, and if not, downloads and installs Rust.
 :: It also adds Rust to the PATH if it is not already there.
-
+::
+:: Currently, this script is required due to hydromt-sfincs requiring it, but not installing it.
 
 :: Check if rust and cargo are available
 cargo --version >nul 2>&1
