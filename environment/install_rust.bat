@@ -33,7 +33,7 @@ IF %ERRORLEVEL% EQU 0 (
     echo Rust is already in the PATH.
 ) ELSE (
     :: Add Rust to PATH permanently
-    setx PATH "%PATH%;%USERPROFILE%\.cargo\bin"
+    setx PATH "%USERPROFILE%\.cargo\bin;%PATH%"
     :: Add Rust to PATH for this session
     set PATH="%PATH%"
 
