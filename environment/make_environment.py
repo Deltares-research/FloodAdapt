@@ -81,15 +81,14 @@ def create_env(
         subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
     check_and_delete_conda_env(env_name)
-
-    create_command = {"conda", "env", "create", "-f", "_environment.yml"}
-
+    ENV_YML = BACKEND_ROOT / "environment" / "_environment.yml"
+    create_command = ["conda", "env", "create", "-n", env_name, "-f", str(ENV_YML)]
     activate_command = ["conda", "activate", env_name]
-    editable_option = "-e" if editable else ""
+
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
     debug_logfile = Path(__file__).parent / f"{env_name}_debug.log"
     debug_log_option = ["-v", "-v", "-v", "--log", debug_logfile] if debug else ""
-
+    editable_option = "-e" if editable else ""
     pip_install_command = [
         "pip",
         "install",
