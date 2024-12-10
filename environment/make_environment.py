@@ -95,7 +95,7 @@ def create_env(
         "pip",
         "install",
         editable_option,
-        f".{dependency_option}",
+        f"{BACKEND_ROOT}{dependency_option}",
         debug_log_option,
         "--no-cache-dir",
     ]
