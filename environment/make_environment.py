@@ -40,7 +40,7 @@ def parse_args():
         "--optional-deps",
         default=None,
         dest="optional_deps",
-        help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
+        help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. Must be one of: [dev, docs, build, all]. Default is to not install any.",
     )
     parser.add_argument(
         "-v",
