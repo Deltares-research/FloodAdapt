@@ -3,9 +3,8 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_ROOT = PROJECT_ROOT / "FloodAdapt"
-WHEELS_DIR = BACKEND_ROOT / "environment" / "geospatial-wheels"
+WHEELS_DIR = Path(__file__).parent / "geospatial-wheels"
+BACKEND_ROOT = WHEELS_DIR.parents[1]
 
 SUBPROCESS_KWARGS = {
     "shell": True,
@@ -71,10 +70,11 @@ def create_env(
     optional_deps: Optional[str] = None,
     debug: bool = False,
 ):
-    if not BACKEND_ROOT.exists():
+    if not (BACKEND_ROOT / "pyproject.toml").exists():
         raise FileNotFoundError(
-            f"The FloodAdapt repository was not found in the expected location: {BACKEND_ROOT}"
+            f"Expected a pyproject.toml file at: {BACKEND_ROOT / 'pyproject.toml'}"
         )
+
     try:
         subprocess.run("conda info", **SUBPROCESS_KWARGS)
     except subprocess.CalledProcessError:
