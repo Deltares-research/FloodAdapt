@@ -1,3 +1,4 @@
+import math
 import os
 import shutil
 from pathlib import Path
@@ -139,8 +140,6 @@ class HurricaneEvent(Event[HurricaneEventModel]):
             if spw_file != output_dir.joinpath(spw_file.name):
                 shutil.copy2(spw_file, output_dir.joinpath(spw_file.name))
             return output_dir.joinpath(spw_file.name)
-        elif spw_file.exists() and recreate:
-            os.remove(spw_file)
 
         self.logger.info(
             f"Creating spiderweb file for hurricane event {self.attrs.name}..."
@@ -151,9 +150,10 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         tc.read_track(filename=self.track_file, fmt="ddb_cyc")
 
         # Alter the track of the tc if necessary
-        if (
-            self.attrs.hurricane_translation.eastwest_translation.value != 0
-            or self.attrs.hurricane_translation.northsouth_translation.value != 0
+        if not math.isclose(
+            self.attrs.hurricane_translation.eastwest_translation.value, 0
+        ) or not math.isclose(
+            self.attrs.hurricane_translation.northsouth_translation.value, 0
         ):
             tc = self.translate_tc_track(tc=tc)
 
@@ -164,6 +164,9 @@ class HurricaneEvent(Event[HurricaneEventModel]):
             tc.include_rainfall = (
                 self.attrs.forcings[ForcingType.RAINFALL].source == ForcingSource.TRACK
             )
+
+        if spw_file.exists() and recreate:
+            os.remove(spw_file)
 
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)

@@ -22,9 +22,6 @@ class FloodMap(DatabaseUser):
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]
     event_set: EventSet
-    # mode: Mode
-    # physical_projection: PhysicalProjection
-    # hazard_strategy: HazardStrategy
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name

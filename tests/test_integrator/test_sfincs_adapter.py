@@ -772,30 +772,13 @@ class TestAddProjection:
         slr = us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters)
         dummy_projection.attrs.physical_projection.sea_level_rise = slr
 
-        wl_df_before = (
-            adapter._model.forcing["bzs"]
-            .to_dataframe()["bzs"]
-            .groupby("time")
-            .mean()
-            .to_frame()
-        )
-
-        wl_df_expected = wl_df_before.apply(
-            lambda x: x + slr.convert(us.UnitTypesLength.meters)
-        )
+        wl_df_expected = adapter.waterlevels + slr.convert(us.UnitTypesLength.meters)
 
         # Act
         adapter.add_projection(dummy_projection)
-        wl_df_after = (
-            adapter._model.forcing["bzs"]
-            .to_dataframe()["bzs"]
-            .groupby("time")
-            .mean()
-            .to_frame()
-        )
 
         # Assert
-        assert wl_df_expected.equals(wl_df_after)
+        assert wl_df_expected.equals(adapter.waterlevels)
 
     def test_add_rainfall_multiplier(
         self, default_sfincs_adapter: SfincsAdapter, dummy_projection: Projection

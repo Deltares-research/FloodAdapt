@@ -73,7 +73,10 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
     @model_validator(mode="after")
     def validate_scs_timeseries(self):
         if self.shape_type == ShapeType.scs:
-            if not (self.scs_file_name and self.scs_type and self.cumulative):
+            if not all(
+                attr is not None
+                for attr in [self.scs_file_name, self.scs_type, self.cumulative]
+            ):
                 raise ValueError(
                     f"SCS timeseries must have scs_file_name, scs_type and cumulative specified. {self.scs_file_name, self.scs_type, self.cumulative}"
                 )

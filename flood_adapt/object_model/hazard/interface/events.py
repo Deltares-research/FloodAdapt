@@ -35,9 +35,17 @@ class Template(str, Enum):
     Hurricane = "Hurricane"
     Historical = "Historical"
 
-    Historical_Hurricane = "Historical_hurricane"
-    Historical_nearshore = "Historical_nearshore"
-    Historical_offshore = "Historical_offshore"
+    @property
+    def description(self) -> str:
+        match self:
+            case Template.Historical:
+                return "Select a time period for a historic event. This method can use offshore wind and pressure fields for the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. These water levels are used together with rainfall and river discharge input to simulate flooding in the site area."
+            case Template.Hurricane:
+                return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
+            case Template.Synthetic:
+                return "Customize a synthetic event by specifying the waterlevels, wind, rainfall and river discharges without being based on a historical event."
+            case _:
+                raise ValueError(f"Invalid event template: {self}")
 
 
 class IEventModel(IObjectModel):

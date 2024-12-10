@@ -36,7 +36,7 @@ def test_scenarios(test_db, test_tomls) -> dict[str, Scenario]:
     yield test_scenarios
 
 
-def test_initObjectModel_validInput(test_db, test_scenarios):
+def test_init_valid_input(test_db, test_scenarios):
     test_scenario = test_scenarios["all_projections_extreme12ft_strategy_comb.toml"]
 
     assert isinstance(test_scenario.site_info, Site)

@@ -74,7 +74,7 @@ class TestMeteoHandler:
             write_mock_nc_file(path, time_range)
 
         with patch(
-            "flood_adapt.object_model.hazard.event.meteo.MeteoGrid.download",
+            "flood_adapt.object_model.hazard.forcing.meteo_handler.MeteoGrid.download",
             side_effect=side_effect,
         ) as mock_download:
             yield mock_download

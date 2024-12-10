@@ -246,7 +246,7 @@ class TestWaterlevelGauged:
     @pytest.fixture()
     def mock_tide_gauge(self, dummy_1d_timeseries_df: pd.DataFrame):
         with patch(
-            "flood_adapt.object_model.hazard.event.forcing.waterlevels.TideGauge.get_waterlevels_in_time_frame"
+            "flood_adapt.object_model.hazard.forcing.waterlevels.TideGauge.get_waterlevels_in_time_frame"
         ) as mock_download_wl:
             mock_download_wl.return_value = dummy_1d_timeseries_df
             yield mock_download_wl, dummy_1d_timeseries_df

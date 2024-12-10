@@ -1,8 +1,8 @@
-import gc
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
+import geopandas as gpd
 from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
@@ -15,7 +15,15 @@ from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
 )
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.interface.measures import (
+    IMeasure,
+    MeasureType,
+)
+from flood_adapt.object_model.interface.path_builder import (
+    ObjectDir,
+)
 from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.utils import resolve_filepath
 
 
 class FiatAdapter:  # TODO implement ImpactAdapter interface
@@ -55,21 +63,19 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
 
             self.bfe["name"] = self.site.attrs.fiat.bfe.field_name
 
-    def __del__(self) -> None:
-        for handler in self.logger.handlers:
-            handler.close()
-            self.logger.removeHandler(handler)
-        self.logger.handlers.clear()
-        # Use garbage collector to ensure file handlers are properly cleaned up
-        gc.collect()
+    def close_files(self):
+        """Close all open files and clean up file handles."""
+        if hasattr(self.logger, "handlers"):
+            for handler in self.logger.handlers:
+                if isinstance(handler, logging.FileHandler):
+                    handler.close()
+                    self.logger.removeHandler(handler)
 
     def __enter__(self) -> "FiatAdapter":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        del self.fiat_model
-        del self
-
+        self.close_files()
         return False
 
     def set_hazard(self, floodmap: FloodMap) -> None:
@@ -356,3 +362,72 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
             damage_function_types=["Structure", "Content"],
             vulnerability=self.fiat_model.vulnerability,
         )
+
+    def get_buildings(self) -> gpd.GeoDataFrame:
+        if self.fiat_model.exposure is None:
+            raise ValueError(
+                "FIAT model does not have exposure, make sure your model has been initialized."
+            )
+        return self.fiat_model.exposure.select_objects(
+            primary_object_type="ALL",
+            non_building_names=self.site.attrs.fiat.non_building_names,
+            return_gdf=True,
+        )
+
+    def get_property_types(self) -> list:
+        if self.fiat_model.exposure is None:
+            raise ValueError(
+                "FIAT model does not have exposure, make sure your model has been initialized."
+            )
+
+        types = self.fiat_model.exposure.get_primary_object_type()
+        if types is None:
+            raise ValueError("No property types found in the FIAT model.")
+        types.append("all")  # Add "all" type for using as identifier
+
+        names = self.site.attrs.fiat.non_building_names
+        if names:
+            for name in names:
+                if name in types:
+                    types.remove(name)
+
+        return types
+
+    def get_object_ids(
+        self,
+        measure: IMeasure,
+    ) -> list[Any]:
+        """Get ids of objects that are affected by the measure.
+
+        Returns
+        -------
+        list[Any]
+            list of ids
+        """
+        if not MeasureType.is_impact(measure.attrs.type):
+            raise ValueError(
+                f"Measure type {measure.attrs.type} is not an impact measure. "
+                "Can only retrieve object ids for impact measures."
+            )
+
+        # check if polygon file is used, then get the absolute path
+        if measure.attrs.polygon_file:
+            polygon_file = resolve_filepath(
+                object_dir=ObjectDir.measure,
+                obj_name=measure.attrs.name,
+                path=measure.attrs.polygon_file,
+            )
+        else:
+            polygon_file = None
+
+        # use the hydromt-fiat method to the ids
+        ids = self.fiat_model.exposure.get_object_ids(
+            selection_type=measure.attrs.selection_type,
+            property_type=measure.attrs.property_type,
+            non_building_names=self.site.attrs.fiat.non_building_names,
+            aggregation=measure.attrs.aggregation_area_type,
+            aggregation_area_name=measure.attrs.aggregation_area_name,
+            polygon_file=str(polygon_file),
+        )
+
+        return ids

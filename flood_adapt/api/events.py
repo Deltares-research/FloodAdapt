@@ -108,7 +108,7 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
     -------
     Event
         Depending on attrs.template an event object.
-        Can be of type: Synthetic, Historical_nearshore, Historical_offshore, or Historical_hurricane.
+        Can be of type: Synthetic, Historical, Hurricane.
     """
     return EventFactory.load_dict(attrs)
 
@@ -123,10 +123,6 @@ def list_forcings() -> list[Type[IForcing]]:
 
 def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
     return EventFactory.get_allowed_forcings(template)
-
-
-def get_template_description(template: Template) -> str:
-    return EventFactory.get_template_description(template)
 
 
 def save_event(event: IEvent) -> None:

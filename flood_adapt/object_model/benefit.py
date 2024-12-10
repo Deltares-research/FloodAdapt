@@ -58,10 +58,6 @@ class Benefit(IBenefit, DatabaseUser):
         self._results = results
         return results
 
-    def _init(self):
-        """Initialize function called when object is created through the load_file or load_dict methods."""
-        self.check_scenarios()  # @panos this func returns something but we ignore it?
-
     def has_run_check(self) -> bool:
         """Check if the benefit analysis has already been run.
 

@@ -11,7 +11,6 @@ from flood_adapt.object_model.interface.path_builder import (
 from flood_adapt.object_model.interface.site import Site
 
 
-# TODO find a better place for this function. maybe strategy or fiat adapter?
 def get_object_ids(
     measure: IMeasure, fiat_model: Optional[FiatModel] = None
 ) -> list[Any]:
@@ -60,5 +59,4 @@ def get_object_ids(
         polygon_file=polygon_file,
     )
 
-    del fiat_model
     return ids

@@ -27,7 +27,7 @@ def clear_cache():
 @pytest.fixture
 def mock_cht_station_source_get_data(dummy_1d_timeseries_df):
     with patch(
-        "flood_adapt.object_model.hazard.event.tide_gauge.cht_station.source"
+        "flood_adapt.object_model.hazard.forcing.tide_gauge.cht_station.source"
     ) as mock_source:
         mock_source_obj = MagicMock()
         mock_source_obj.get_data.return_value = dummy_1d_timeseries_df.iloc[:, 0]

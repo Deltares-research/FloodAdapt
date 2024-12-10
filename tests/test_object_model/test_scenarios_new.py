@@ -22,7 +22,7 @@ def test_scenarios(test_db):
     yield test_scns
 
 
-def test_initObjectModel_validInput(test_db, test_scenarios: dict[str, Scenario]):
+def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
     test_scenario = test_db.scenarios.get("all_projections_extreme12ft_strategy_comb")
 
     assert isinstance(test_scenario.site_info, Site)

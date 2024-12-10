@@ -1,5 +1,5 @@
-import gc
 import logging
+import math
 import os
 import shutil
 import subprocess
@@ -98,30 +98,13 @@ class SfincsAdapter(IHazardAdapter):
         """
         self.site = self.database.site
 
+        self.sfincs_logger = FloodAdaptLogging.getLogger(
+            "hydromt_sfincs", level=logging.DEBUG
+        )
         self._model = SfincsModel(
-            root=str(model_root.resolve()), mode="r", logger=self.logger
+            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
         )
         self._model.read()
-
-    def __del__(self):
-        """Close the log file associated with the logger and clean up file handles."""
-        # Delete the model as they also create file handles
-        del self._model
-
-        if hasattr(self.logger, "handlers"):
-            for handler in self.logger.handlers:
-                if isinstance(handler, logging.FileHandler):
-                    handler.close()
-                    self.logger.removeHandler(handler)
-        # Use garbage collector to ensure file handles are properly cleaned up
-        gc.collect()
-
-    def __enter__(self) -> "SfincsAdapter":
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        del self
-        return False
 
     def read(self, path: Path):
         """Read the sfincs model from the current model root."""
@@ -141,6 +124,22 @@ class SfincsAdapter(IHazardAdapter):
         with cd(path_out):
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
+
+    def close_files(self):
+        """Close all open files and clean up file handles."""
+        for logger in [self.logger, self.sfincs_logger]:
+            if hasattr(logger, "handlers"):
+                for handler in logger.handlers:
+                    if isinstance(handler, logging.FileHandler):
+                        handler.close()
+                        self.logger.removeHandler(handler)
+
+    def __enter__(self) -> "SfincsAdapter":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+        self.close_files()
+        return False
 
     def has_run(self, scenario: IScenario) -> bool:
         """Check if the model has been run."""
@@ -181,14 +180,12 @@ class SfincsAdapter(IHazardAdapter):
         if process.returncode != 0:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
-                for subdir, _, files in os.walk(path):
+                for subdir, dirs, files in os.walk(path, topdown=False):
                     for file in files:
                         if not file.endswith(".log"):
                             os.remove(os.path.join(subdir, file))
 
-                # Remove all empty directories in the simulation folder (so only folders with log files remain)
-                for subdir, _, files in os.walk(path):
-                    if not files:
+                    if not os.listdir(subdir):
                         os.rmdir(subdir)
 
             if strict:
@@ -461,8 +458,8 @@ class SfincsAdapter(IHazardAdapter):
             to_check = [Path(sim_paths[0]) / file for file in SFINCS_OUTPUT_FILES]
             # Add logfile check as well from old hazard.py?
             return all(output.exists() for output in to_check)
-
-        raise ValueError("Unsupported event type.")
+        else:
+            raise ValueError(f"Unsupported event type: {type(scenario.event)}.")
 
     def write_floodmap_geotiff(
         self, scenario: IScenario, sim_path: Optional[Path] = None
@@ -687,7 +684,7 @@ class SfincsAdapter(IHazardAdapter):
         frequencies = scenario.event.attrs.frequency
 
         # adjust storm frequency for hurricane events
-        if phys_proj.attrs.storm_frequency_increase != 0:
+        if not math.isclose(phys_proj.attrs.storm_frequency_increase, 0):
             storminess_increase = phys_proj.attrs.storm_frequency_increase / 100.0
             for ii, event in enumerate(scenario.event.events):
                 if event.attrs.template == Template.Hurricane:
@@ -1272,7 +1269,7 @@ class SfincsAdapter(IHazardAdapter):
             raise ValueError(f"Unsupported mode: {scenario.event.attrs.mode}")
 
     def _get_flood_map_paths(self, scenario: IScenario) -> list[Path]:
-        """_summary_."""
+        """Return the paths to the flood maps that running this scenario should produce."""
         results_path = self._get_result_path(scenario)
 
         if isinstance(scenario.event, EventSet):

@@ -43,13 +43,7 @@ class EventFactory:
     _EVENT_TEMPLATES = {
         Template.Hurricane: (HurricaneEvent, HurricaneEventModel),
         Template.Historical: (HistoricalEvent, HistoricalEventModel),
-        Template.Historical_nearshore: (HistoricalEvent, HistoricalEventModel),
-        Template.Historical_offshore: (HistoricalEvent, HistoricalEventModel),
         Template.Synthetic: (SyntheticEvent, SyntheticEventModel),
-        # TODO remove below, and add to db update script
-        "Historical_hurricane": (HurricaneEvent, HurricaneEventModel),
-        "Historical_offshore": (HistoricalEvent, HistoricalEventModel),
-        "Historical_nearshore": (HistoricalEvent, HistoricalEventModel),
     }
 
     @staticmethod
@@ -95,9 +89,10 @@ class EventFactory:
             raise FileNotFoundError(f"File not found: {filepath}")
         with open(filepath, mode="rb") as fp:
             toml = tomli.load(fp)
-        if toml.get("template") is None:
+        if (template := toml.get("template")) is None:
             raise ValueError(f"Event template not found in {filepath}")
-        return Template(toml.get("template"))
+
+        return Template(template)
 
     @staticmethod
     def read_mode(filepath: Path) -> Mode:
@@ -169,31 +164,11 @@ class EventFactory:
         )._attrs_type.get_allowed_forcings()
 
     @staticmethod
-    def get_template_description(template):
-        match template:
-            case (
-                Template.Historical
-                | Template.Historical_nearshore
-                | Template.Historical_offshore
-            ):
-                return "Select a time period for a historic event. This method can use offshore wind and pressure fields for the selected time period to simulate nearshore water levels or download gauged waterlevels to perform a realistic simulation. These water levels are used together with rainfall and river discharge input to simulate flooding in the site area."
-            case Template.Hurricane:
-                return "Select a historical hurricane track from the hurricane database, and shift the track if desired."
-            case Template.Synthetic:
-                return "Customize a synthetic event by specifying the waterlevels, wind, rainfall and river discharges without being based on a historical event."
-            case _:
-                raise ValueError(f"Invalid event template: {template}")
-
-    @staticmethod
     def get_default_eventmodel(template: Template) -> IEventModel:
         match template:
             case Template.Synthetic:
                 return SyntheticEventModel.default()
-            case (
-                Template.Historical
-                | Template.Historical_nearshore
-                | Template.Historical_offshore
-            ):
+            case Template.Historical:
                 return HistoricalEventModel.default()
             case Template.Hurricane:
                 return HurricaneEventModel.default()
