@@ -22,6 +22,7 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
+    "env": os.environ.copy(),
 }
 
 try:
@@ -140,13 +141,13 @@ def create_env(
         "conda activate",
         create_command,
         activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT}{dependency_option} {debug_log_option}",
+        f"pip install {editable_option} {BACKEND_ROOT}{dependency_option} {debug_log_option} --no-cache-dir",
     ]
     command = " && ".join(command_list)
 
     print("Running commands:")
     [print(c) for c in command_list]
-
+    print(f"\n\n{os.environ.copy()=}\n\n")
     print(f"\n\nBuilding environment {env_name}... This might take some time.\n\n")
     process = subprocess.Popen(
         command,
@@ -154,6 +155,7 @@ def create_env(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
+        env=os.environ.copy(),  # Required for rust & cargo
     )
 
     while process.poll() is None and process.stdout:
