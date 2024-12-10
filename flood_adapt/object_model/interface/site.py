@@ -121,6 +121,20 @@ class VisualizationLayersModel(BaseModel):
     colors: Optional[list[list[str]]] = Field(default_factory=list)
 
 
+class NoFootprintsModel(BaseModel):
+    """
+    The configuration on the how to show objects with no footprints.
+
+    Attributes
+    ----------
+        shape (Optional[str]): The shape of the object. Default is "triangle".
+        diameter_meters (Optional[float]): The diameter of the object in meters. Default is 10.
+    """
+
+    shape: Optional[str] = "triangle"
+    diameter_meters: Optional[float] = 10
+
+
 class GuiModel(BaseModel):
     """The accepted input for the variable gui in Site."""
 
@@ -196,6 +210,7 @@ class FiatModel(BaseModel):
     save_simulation: Optional[bool] = False
     svi: Optional[SVIModel] = None
     infographics: Optional[bool] = False
+    no_footprints: Optional[NoFootprintsModel] = NoFootprintsModel()
 
 
 class RiverModel(BaseModel):

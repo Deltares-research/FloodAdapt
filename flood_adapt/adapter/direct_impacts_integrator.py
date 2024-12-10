@@ -15,7 +15,8 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
     ExceedanceProbabilityCalculator,
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
-from fiat_toolbox.spatial_output.points_to_footprint import PointsToFootprints
+from fiat_toolbox.spatial_output.footprints import Footprints
+from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.misc.config import Settings
@@ -477,32 +478,44 @@ class DirectImpacts(DatabaseUser):
         # Check if there is a footprint file given
         if not self.site_info.attrs.fiat.building_footprints:
             raise ValueError("No building footprints are provided.")
+
         # Get footprints file
         footprints_path = self.database.static_path.joinpath(
             self.site_info.attrs.fiat.building_footprints
         )
+        # Read building footprints
+        footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
+        footprints = Footprints(footprints_gdf)
+
+        # Read files
+        # TODO Will it save time if we load this footprints once when the database is initialized?
+
+        # Read the existing building points
+        fm = FiatModel(root=self.fiat_path, mode="r")
+        fm.read()
+        buildings = fm.exposure.select_objects(
+            primary_object_type="ALL",
+            non_building_names=self.site_info.attrs.fiat.non_building_names,
+            return_gdf=True,
+        )
+        # Step to ensure that results is not a Geodataframe
+        if "geometry" in fiat_results_df.columns:
+            del fiat_results_df["geometry"]
+
+        fiat_results_df = gpd.GeoDataFrame(
+            fiat_results_df.merge(
+                buildings[["Object ID", "geometry"]], on="Object ID", how="left"
+            )
+        )
+
+        footprints.aggregate(fiat_results_df)
+        footprints.calc_normalized_damages()
+
         # Define where footprint results are saved
         outpath = self.impacts_path.joinpath(
             f"Impacts_building_footprints_{self.name}.gpkg"
         )
-
-        # Read files
-        # TODO Will it save time if we load this footprints once when the database is initialized?
-        footprints = gpd.read_file(footprints_path, engine="pyogrio")
-        # Step to ensure that results is not a Geodataframe
-        if "geometry" in fiat_results_df.columns:
-            del fiat_results_df["geometry"]
-        # Check if there is new development area
-        new_development_area = None
-        file_path = self.fiat_path.joinpath(
-            "output", self.site_info.attrs.fiat.new_development_file_name
-        )
-        if file_path.exists():
-            new_development_area = gpd.read_file(file_path)
-        # Save file
-        PointsToFootprints.write_footprint_file(
-            footprints, fiat_results_df, outpath, extra_footprints=new_development_area
-        )
+        footprints.write(outpath)
 
     def _add_exeedance_probability(self, fiat_results_path):
         """Add exceedance probability to the fiat results dataframe.
