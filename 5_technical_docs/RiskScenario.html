@@ -427,7 +427,7 @@ ul.task-list li input[type="checkbox"] {
 <p>For a risk scenario the hazard calculation involves both simulating the flooding for each event in the event set and the derivation of probabilistic <em>return period maps</em>. FloodAdapt modifies the SFINCS model based on adaptation options and calculates the flooding for each event in the event set in the same way it does for an <a href="../5_technical_docs/EventScenario.html">event scenario</a>. This is indicated in <a href="#fig-workflow_risk_hazard">Figure&nbsp;1</a> by a horizontal line, above which the event scenario and risk scenario are the same, except that the flood model is called multiple times to calculate flooding for each event in the event set. This workflow is described in the <a href="../5_technical_docs/EventScenario.html">event scenario</a> documentation and not repeated here. Below the horizontal line in <a href="#fig-workflow_risk_hazard">Figure&nbsp;1</a>, the workflow for the risk scenario hazard is unique. Once the simulation for each event in the event set has been completed, the entire set of flood maps is passed into a <em><a href="#probCalculator">probabilistic calculator</a></em>. This is a routine that uses the event frequencies and simulated flood maps to create a water level-frequency curve for each grid cell in the flood model. It then derives from this curve the flood depth for the return periods specified for the site at system setup. From this output it creates gridded return period flood maps. A detailed description of the <a href="#probCalculator">probabilistic calculator</a> is given later on this page.</p>
 <div id="fig-workflow_risk_hazard" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_riskScenario_hazards.jpg" class="lightbox" title="FloodAdapt calculation framework for hazardfor a risk scenario" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/Workflow_riskScenario_hazards.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_riskScenario_hazards.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="FloodAdapt calculation framework for hazardfor a risk scenario"><img src="../_static/images/Workflow_riskScenario_hazards.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>FloodAdapt calculation framework for hazardfor a risk scenario</strong></figcaption>
 </figure>
 </div>
@@ -437,7 +437,7 @@ ul.task-list li input[type="checkbox"] {
 <p><a href="#fig-workflow_risk_impacts">Figure&nbsp;2</a> zooms in on the impact and risk calculation portion of the FloodAdapt workflow for a risk scenario. Referring to the figure can support the description of the calculation.</p>
 <div id="fig-workflow_risk_impacts" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_riskScenario_impacts.jpg" class="lightbox" title="FloodAdapt calculation framework for impacts and risk for a risk scenario" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/Workflow_riskScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_riskScenario_impacts.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="FloodAdapt calculation framework for impacts and risk for a risk scenario"><img src="../_static/images/Workflow_riskScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>FloodAdapt calculation framework for impacts and risk for a risk scenario</strong></figcaption>
 </figure>
 </div>
@@ -445,7 +445,7 @@ ul.task-list li input[type="checkbox"] {
 <p>For a risk scenario, FloodAdapt imports into Delft-FIAT the set of return period flood maps (calculated in the <a href="#hazard-calc">hazard framework</a> with the use of the <a href="#probCalculator">probabilistic calcultor</a>). Delft-FIAT has an automatic risk module built in which calculates and outputs the direct economic damages to the assets in the exposure data for each input return period flood map. It uses this output to generate a damage-frequency curve (note that the exceedance frequency is the reciprocal of the return period). The expected annual damages (risk) are then calculated as the area under the damage-frequency curve (see <a href="#fig-riskcalc">Figure&nbsp;3</a>). The set of return periods will be finite, so Delft-FIAT makes approximations for return periods beyond what is calculated. For return periods higher than the highest calculated, it assumes economic damages equal to the highest calculated. For return periods lower than the lowest calculated, it assumes economic damages of zero. In FloodAdapt, users can choose the return periods for which damages will be calculated, to minimize these approxmiations. For example, users can take an upper limit for the return period of 500 or 1000 years and a lower limit of 1 year.</p>
 <div id="fig-riskcalc" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/risk_calc.png" class="lightbox" title="Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve." data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/risk_calc.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/risk_calc.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve."><img src="../_static/images/risk_calc.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Schematic of the risk calculation performed in Delft-FIAT. The damage-frequency curve is created using the damages calculated for the return period flood maps, and the risk is calculated as the area under the damage-frequency curve.</strong></figcaption>
 </figure>
 </div>
@@ -467,7 +467,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The water levels for each grid cell (h) and their associated frequencies of occurrence (f) are arranged in two separate matrices with the number of rows equal to the number of events (j) and the number of columns equal to the number of grid cells (n). The example shown in <a href="#fig-waterLevelTable">Figure&nbsp;4</a> illustrates the results for two fictitious grid cells and 10 fictitious events. To allow the reader to follow the approach more easily, the two highest and lowest values and their associated frequencies are highlighted in orange and blue throughout all steps.</p>
 <div id="fig-waterLevelTable" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/probCalculator_waterLevelTable.png" class="lightbox" title="Left: Water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue." data-gallery="quarto-lightbox-gallery-4"><img src="../_static/images/probCalculator_waterLevelTable.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<p><a href="../_static/images/probCalculator_waterLevelTable.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Left: Water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue."><img src="../_static/images/probCalculator_waterLevelTable.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Left: Water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue.</strong></figcaption>
 </figure>
 </div>
@@ -477,7 +477,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The water levels are sorted column-wise in descending order (see <a href="#fig-sortedWLs">Figure&nbsp;5</a>). The matrix with the frequencies of occurrence are sorted in the same manner so that the frequency of occurrence has the same location in the right matrix as its corresponding water level value in the left matrix. The highest water level does not necessarily correspond to the lowest frequency of occurrence as in the example below.</p>
 <div id="fig-sortedWLs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/probCalculator_sortedWLs.png" class="lightbox" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively." data-gallery="quarto-lightbox-gallery-5"><img src="../_static/images/probCalculator_sortedWLs.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<p><a href="../_static/images/probCalculator_sortedWLs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively."><img src="../_static/images/probCalculator_sortedWLs.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of occurrence. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively.</strong></figcaption>
 </figure>
 </div>
@@ -487,7 +487,7 @@ ul.task-list li input[type="checkbox"] {
 <p>To calculate the frequencies of exceedance, the CFRSS cumulatively sums the frequencies of occurrence column-wise from the highest to lowest water level (see <a href="#fig-WLexcFreq">Figure&nbsp;6</a>). In the example, the frequency of exceedance for grid cell n=2 in the second row is 2.11E-03. This is the sum of the frequencies of occurrence of the first two rows from Table 6.4 (1.11E-03 + 1.00E-03).</p>
 <div id="fig-WLexcFreq" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/probCalculator_WLexcFreq.png" class="lightbox" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively." data-gallery="quarto-lightbox-gallery-6"><img src="../_static/images/probCalculator_WLexcFreq.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<p><a href="../_static/images/probCalculator_WLexcFreq.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively."><img src="../_static/images/probCalculator_WLexcFreq.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated frequencies of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively.</strong></figcaption>
 </figure>
 </div>
@@ -497,7 +497,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The return periods of water levels in each grid cell are then calculated as the inverse of the frequencies of exceedance (RP = 1/fexc); see <a href="#fig-probCalculatorRPs">Figure&nbsp;7</a>.</p>
 <div id="fig-probCalculatorRPs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/probCalculatorRPs.png" class="lightbox" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated return periods of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively." data-gallery="quarto-lightbox-gallery-7"><img src="../_static/images/probCalculatorRPs.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<p><a href="../_static/images/probCalculatorRPs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated return periods of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively."><img src="../_static/images/probCalculatorRPs.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;7: <strong>Left: Sorted water levels per computational grid cell (columns) and event (rows). Right: Associated return periods of exceedance. The two highest and lowest values and their associated frequencies are highlighted in orange and blue, respectively.</strong></figcaption>
 </figure>
 </div>
@@ -507,7 +507,7 @@ ul.task-list li input[type="checkbox"] {
 <p>To calculate the water levels for the return periods of interest specified in the site configuration file, FloodAdapt uses the “lookup-table” from Step 4 (<a href="#fig-probCalculatorRPs">Figure&nbsp;7</a>) to derive the water level associated with each return period. The water levels in the lookup table are log-linearly interpolated between the return periods (see <a href="#fig-probCalculator_WL_RP">Figure&nbsp;8</a> for an illustration).</p>
 <div id="fig-probCalculator_WL_RP" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/probCalculator_WL_RP.png" class="lightbox" title="Water level versus return period in computational grid cell n=2. Water level at the desired output return period are interpolated log-linearly between data points." data-gallery="quarto-lightbox-gallery-8"><img src="../_static/images/probCalculator_WL_RP.png" class="img-fluid figure-img" style="width:60.0%"></a></p>
+<p><a href="../_static/images/probCalculator_WL_RP.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Water level versus return period in computational grid cell n=2. Water level at the desired output return period are interpolated log-linearly between data points."><img src="../_static/images/probCalculator_WL_RP.png" class="img-fluid figure-img" style="width:60.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;8: <strong>Water level versus return period in computational grid cell n=2. Water level at the desired output return period are interpolated log-linearly between data points.</strong></figcaption>
 </figure>
 </div>
@@ -898,7 +898,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","closeEffect":"zoom","selector":".lightbox","loop":true,"descPosition":"bottom"});</script>
 
 
 
