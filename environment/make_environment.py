@@ -81,15 +81,17 @@ def create_env(
         subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
     check_and_delete_conda_env(env_name)
+
     ENV_YML = BACKEND_ROOT / "environment" / "_environment.yml"
-    create_command = ["conda", "env", "create", "-n", env_name, "-f", str(ENV_YML)]
-    activate_command = ["conda", "activate", env_name]
+    DEBUG_LOGFILE = Path(__file__).parent / f"{env_name}_debug.log"
+
+    create_args = ["conda", "env", "create", "-n", env_name, "-f", str(ENV_YML)]
+    activate_args = ["conda", "activate", env_name]
 
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
-    debug_logfile = Path(__file__).parent / f"{env_name}_debug.log"
-    debug_log_option = ["-v", "-v", "-v", "--log", debug_logfile] if debug else ""
+    debug_log_option = ["-v", "-v", "-v", "--log", str(DEBUG_LOGFILE)] if debug else ""
     editable_option = "-e" if editable else ""
-    pip_install_command = [
+    pip_install_args = [
         "pip",
         "install",
         editable_option,
@@ -100,9 +102,9 @@ def create_env(
 
     command_list = [
         " ".join(["conda", "activate"]),
-        " ".join(create_command),
-        " ".join(activate_command),
-        " ".join(pip_install_command),
+        " ".join(create_args),
+        " ".join(activate_args),
+        " ".join(pip_install_args),
     ]
     command = " && ".join(command_list)
 
@@ -133,7 +135,7 @@ def create_env(
         )
 
     print(f"Environment {env_name} created successfully!")
-    print(f"Activate it with:\n\n\t{activate_command}\n")
+    print(f"Activate it with:\n\n\t{' '.join(activate_args)}\n")
 
 
 if __name__ == "__main__":
