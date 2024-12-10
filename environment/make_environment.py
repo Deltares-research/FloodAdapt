@@ -1,16 +1,7 @@
 import argparse
-import os
 import subprocess
-import sys
 from pathlib import Path
 from typing import Optional
-
-try:
-    import yaml  # noQA
-except Exception:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
-    import yaml  # noQA
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_ROOT = PROJECT_ROOT / "FloodAdapt"
@@ -22,13 +13,7 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
-    "env": os.environ.copy(),
 }
-
-try:
-    subprocess.run("conda info", **SUBPROCESS_KWARGS)
-except subprocess.CalledProcessError:
-    subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
 
 def parse_args():
@@ -41,14 +26,6 @@ def parse_args():
         dest="env_name",
         type=str,
         help="The name for the environment to be created. If it already exists, it will be removed and recreated from scratch.",
-    )
-    parser.add_argument(
-        "-p",
-        "--prefix",
-        default=False,
-        dest="prefix",
-        type=str,
-        help="Creates the environment at prefix/name instead of the default conda location.",
     )
     parser.add_argument(
         "-e",
@@ -78,40 +55,18 @@ def parse_args():
     return args
 
 
-def write_env_yml(env_name: str):
-    env = {
-        "name": env_name,
-        "channels": ["conda-forge"],
-        "dependencies": ["python=3.10", "pip", {"pip": []}],
-    }
-
-    for wheel in os.listdir(WHEELS_DIR):
-        wheel_path = os.path.join(WHEELS_DIR, wheel)
-        env["dependencies"][-1]["pip"].append(wheel_path)
-
-    with open("_environment.yml", "w") as f:
-        yaml.dump(env, f)
-    print(f"Temporary environment file created at: {PROJECT_ROOT / '_environment.yml'}")
-
-
-def check_and_delete_conda_env(env_name: str, prefix: Optional[str] = None):
+def check_and_delete_conda_env(env_name: str):
     result = subprocess.run(["conda", "env", "list"], **SUBPROCESS_KWARGS)
 
     if env_name in result.stdout:
         print(f"Environment {env_name} already exists. Removing it now...")
-        if prefix:
-            subprocess.run(
-                ["conda", "env", "remove", "-p", prefix, "-y"], **SUBPROCESS_KWARGS
-            )
-        else:
-            subprocess.run(
-                ["conda", "env", "remove", "-n", env_name, "-y"], **SUBPROCESS_KWARGS
-            )
+        subprocess.run(
+            ["conda", "env", "remove", "-n", env_name, "-y"], **SUBPROCESS_KWARGS
+        )
 
 
 def create_env(
     env_name: str,
-    prefix: Optional[str] = None,
     editable: bool = False,
     optional_deps: Optional[str] = None,
     debug: bool = False,
@@ -120,34 +75,41 @@ def create_env(
         raise FileNotFoundError(
             f"The FloodAdapt repository was not found in the expected location: {BACKEND_ROOT}"
         )
+    try:
+        subprocess.run("conda info", **SUBPROCESS_KWARGS)
+    except subprocess.CalledProcessError:
+        subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
-    write_env_yml(env_name)
-    check_and_delete_conda_env(env_name, prefix=prefix)
+    check_and_delete_conda_env(env_name)
 
-    env_location = os.path.join(prefix, env_name) if prefix else env_name
-    prefix_option = f"--prefix {env_location}" if prefix else ""
-    create_command = f"conda env create -f _environment.yml {prefix_option}"
+    create_command = {"conda", "env", "create", "-f", "_environment.yml"}
 
-    activate_option = env_location if prefix else env_name
-    activate_command = f"conda activate {activate_option}"
-
+    activate_command = ["conda", "activate", env_name]
     editable_option = "-e" if editable else ""
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
-
     debug_logfile = Path(__file__).parent / f"{env_name}_debug.log"
-    debug_log_option = f"-v -v -v --log {debug_logfile}" if debug else ""
+    debug_log_option = ["-v", "-v", "-v", "--log", debug_logfile] if debug else ""
+
+    pip_install_command = [
+        "pip",
+        "install",
+        editable_option,
+        f".{dependency_option}",
+        debug_log_option,
+        "--no-cache-dir",
+    ]
 
     command_list = [
-        "conda activate",
-        create_command,
-        activate_command,
-        f"pip install {editable_option} {BACKEND_ROOT}{dependency_option} {debug_log_option} --no-cache-dir",
+        " ".join(["conda", "activate"]),
+        " ".join(create_command),
+        " ".join(activate_command),
+        " ".join(pip_install_command),
     ]
     command = " && ".join(command_list)
 
     print("Running commands:")
     [print(c) for c in command_list]
-    print(f"\n\n{os.environ.copy()=}\n\n")
+
     print(f"\n\nBuilding environment {env_name}... This might take some time.\n\n")
     process = subprocess.Popen(
         command,
@@ -155,13 +117,10 @@ def create_env(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
-        env=os.environ.copy(),  # Required for rust & cargo
     )
 
     while process.poll() is None and process.stdout:
         print(process.stdout.readline(), end="")
-
-    os.remove("_environment.yml")
 
     if process.returncode != 0:
         if process.stderr:
@@ -183,7 +142,6 @@ if __name__ == "__main__":
 
     create_env(
         env_name=args.env_name,
-        prefix=args.prefix,
         editable=args.editable,
         optional_deps=args.optional_deps,
     )
