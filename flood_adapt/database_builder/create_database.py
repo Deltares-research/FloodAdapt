@@ -26,7 +26,7 @@ from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
+from flood_adapt.object_model.interface.site import ObsPointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
 
@@ -221,7 +221,7 @@ class ConfigModel(BaseModel):
     road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[ObsPointModel]] = None
     probabilistic_set: Optional[str] = None
     infographics: Optional[bool] = True
 
@@ -419,6 +419,27 @@ class Database:
                     )
 
     def _join_building_footprints(self, building_footprints, field_name):
+        """
+        Join building footprints with existing building data and updates the exposure CSV.
+
+        Args:
+            building_footprints (GeoDataFrame): GeoDataFrame containing the building footprints to be joined.
+            field_name (str): The field name to use for the spatial join.
+
+        Returns
+        -------
+            None
+
+        This method performs the following steps:
+        1. Reads the exposure CSV file.
+        2. Performs a spatial join between the buildings and building footprints.
+        3. Ensures that in case of multiple values, the first is kept.
+        4. Creates a folder to store the building footprints.
+        5. Saves the spatial file for future use.
+        6. Merges the joined buildings with the exposure CSV and saves it.
+        7. Updates the site attributes with the relative path to the saved building footprints.
+        8. Logs the location where the building footprints are saved.
+        """
         buildings = self.buildings
         exposure_csv = pd.read_csv(self.exposure_csv_path)
         buildings_joined, building_footprints = spatial_join(
@@ -795,7 +816,7 @@ class Database:
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
                 )
-                roads = roads.to_crs(4326)
+                roads = roads.to_crs(self.fiat_model.exposure.crs)
                 if roads_path.exists():
                     roads_path.unlink()
                 roads.to_file(roads_path)
