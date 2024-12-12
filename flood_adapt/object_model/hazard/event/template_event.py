@@ -291,7 +291,6 @@ class Event(IEvent[T_EVENT_MODEL]):
     def plot_rainfall(
         self,
         units: Optional[us.UnitTypesIntensity] = None,
-        rainfall_multiplier: Optional[float] = None,
         **kwargs,
     ) -> str | None:
         units = units or Settings().unit_system.intensity
@@ -331,9 +330,8 @@ class Event(IEvent[T_EVENT_MODEL]):
             )
             return
 
-        # Optionally add multiplier
-        if rainfall_multiplier:
-            data *= rainfall_multiplier
+        # Add multiplier
+        data *= self.attrs.rainfall_multiplier
 
         # Plot actual thing
         fig = px.line(data_frame=data)

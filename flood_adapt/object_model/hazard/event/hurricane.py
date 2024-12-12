@@ -11,10 +11,9 @@ from shapely.affinity import translate
 
 from flood_adapt import Settings
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
-from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallTrack
 from flood_adapt.object_model.hazard.forcing.wind import WindTrack
-from flood_adapt.object_model.hazard.interface.events import Mode, Template
+from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -53,35 +52,17 @@ class HurricaneEventModel(EventModel):
             ForcingSource.SYNTHETIC,
         ],
     }
-
-    hurricane_translation: TranslationModel
+    template: Template = Template.Hurricane
+    hurricane_translation: TranslationModel = TranslationModel()
     track_name: str
 
     @classmethod
     def default(cls) -> "HurricaneEventModel":
         """Set default values for HurricaneEvent."""
-        discharge = ForcingFactory.get_default_forcing(
-            ForcingType.DISCHARGE, ForcingSource.CONSTANT
-        )
         return HurricaneEventModel(
             name="DefaultHurricaneEvent",
             time=TimeModel(),
-            template=Template.Hurricane,
-            mode=Mode.single_event,
-            hurricane_translation=TranslationModel(),
-            track_name="",
-            forcings={
-                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
-                    ForcingType.RAINFALL, ForcingSource.TRACK
-                ),
-                ForcingType.WIND: ForcingFactory.get_default_forcing(
-                    ForcingType.WIND, ForcingSource.TRACK
-                ),
-                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
-                    ForcingType.WATERLEVEL, ForcingSource.MODEL
-                ),
-                ForcingType.DISCHARGE: {discharge.river.name: discharge},
-            },
+            track_name="DefaultTrack",
         )
 
 

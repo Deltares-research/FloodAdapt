@@ -1089,7 +1089,7 @@ class SfincsAdapter(IHazardAdapter):
         self._model.setup_drainage_structures(
             structures=gdf_pump,
             stype="pump",
-            discharge=pump.attrs.discharge.convert(us.UnitTypesDischarge("m3/s")),
+            discharge=pump.attrs.discharge.convert(us.UnitTypesDischarge.cms),
             merge=True,
         )
 

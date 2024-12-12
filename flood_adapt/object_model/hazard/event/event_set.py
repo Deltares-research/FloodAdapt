@@ -5,7 +5,6 @@ from typing import Any, List
 from pydantic import Field, model_validator
 from typing_extensions import Annotated
 
-from flood_adapt.object_model.hazard.event.synthetic import SyntheticEventModel
 from flood_adapt.object_model.hazard.event.template_event import (
     EventModel,
 )
@@ -41,15 +40,6 @@ class EventSetModel(IObjectModel):
         dump = super().model_dump(**kwargs)
         dump.update(forcings=[sub_event.model_dump() for sub_event in self.sub_events])
         return dump
-
-    @classmethod
-    def default(cls) -> "EventSetModel":
-        """Set default values for Synthetic event."""
-        return EventSetModel(
-            name="DefaultEventSet",
-            sub_events=[SyntheticEventModel.default(), SyntheticEventModel.default()],
-            frequency=[0.5, 0.5],
-        )
 
 
 class EventSet(IObject[EventSetModel], DatabaseUser):

@@ -53,12 +53,13 @@ class IEventModel(IObjectModel):
 
     time: TimeModel
     template: Template
-    mode: Mode
+    mode: Mode = Mode.single_event
+
     water_level_offset: us.UnitfulLength = us.UnitfulLength(
         value=0, units=us.UnitTypesLength.meters
     )
-
     forcings: dict[ForcingType, Any] = Field(default_factory=dict)
+    rainfall_multiplier: float = Field(default=1.0, ge=0)
 
 
 T_IEVENT_MODEL = TypeVar("T_IEVENT_MODEL", bound=IEventModel)

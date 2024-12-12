@@ -1,7 +1,8 @@
+import enum
 import math
 from datetime import timedelta
 from enum import Enum
-from typing import ClassVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -29,14 +30,10 @@ __all__ = [
     "UnitfulTime",
 ]
 
-
-class Unit(str, Enum):
-    """Represent a unit of measurement."""
-
-    pass
+Unit = TypeVar("Unit", bound=enum.Enum)
 
 
-class ValueUnitPair(BaseModel):
+class ValueUnitPair(BaseModel, Generic[Unit]):
     """
     Represents a value with associated units.
 
@@ -51,8 +48,8 @@ class ValueUnitPair(BaseModel):
         units (Unit): The units of the value.
     """
 
-    DEFAULT_UNIT: ClassVar[Unit]
-    CONVERSION_FACTORS: ClassVar[dict[Unit, float]]
+    DEFAULT_UNIT: ClassVar[Any]
+    CONVERSION_FACTORS: ClassVar[dict[Any, float]]
 
     value: float
     units: Unit
@@ -188,7 +185,7 @@ class ValueUnitPair(BaseModel):
             )
 
 
-class UnitTypesLength(Unit):
+class UnitTypesLength(str, Enum):
     meters = "meters"
     centimeters = "centimeters"
     millimeters = "millimeters"
@@ -197,7 +194,7 @@ class UnitTypesLength(Unit):
     miles = "miles"
 
 
-class UnitTypesArea(Unit):
+class UnitTypesArea(str, Enum):
     m2 = "m2"
     dm2 = "dm2"
     cm2 = "cm2"
@@ -205,34 +202,34 @@ class UnitTypesArea(Unit):
     sf = "sf"
 
 
-class UnitTypesVolume(Unit):
+class UnitTypesVolume(str, Enum):
     m3 = "m3"
     cf = "cf"
 
 
-class UnitTypesVelocity(Unit):
+class UnitTypesVelocity(str, Enum):
     mps = "m/s"
     knots = "knots"
     mph = "mph"
 
 
-class UnitTypesDirection(Unit):
+class UnitTypesDirection(str, Enum):
     degrees = "deg N"
 
 
-class UnitTypesTime(Unit):
+class UnitTypesTime(str, Enum):
     seconds = "seconds"
     minutes = "minutes"
     hours = "hours"
     days = "days"
 
 
-class UnitTypesDischarge(Unit):
+class UnitTypesDischarge(str, Enum):
     cfs = "cfs"
     cms = "m3/s"
 
 
-class UnitTypesIntensity(Unit):
+class UnitTypesIntensity(str, Enum):
     inch_hr = "inch/hr"
     mm_hr = "mm/hr"
 
@@ -242,8 +239,8 @@ class VerticalReference(str, Enum):
     datum = "datum"
 
 
-class UnitfulLength(ValueUnitPair):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesLength, float]] = {
+class UnitfulLength(ValueUnitPair[UnitTypesLength]):
+    CONVERSION_FACTORS = {
         UnitTypesLength.meters: 1.0,
         UnitTypesLength.centimeters: 100.0,
         UnitTypesLength.millimeters: 1000.0,
@@ -251,10 +248,7 @@ class UnitfulLength(ValueUnitPair):
         UnitTypesLength.inch: 1.0 / 0.0254,
         UnitTypesLength.miles: 1 / 1609.344,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesLength] = UnitTypesLength.meters
-
-    value: float
-    units: UnitTypesLength
+    DEFAULT_UNIT = UnitTypesLength.meters
 
 
 class UnitfulHeight(UnitfulLength):
@@ -265,21 +259,20 @@ class UnitfulLengthRefValue(UnitfulLength):
     type: VerticalReference
 
 
-class UnitfulArea(ValueUnitPair):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesArea, float]] = {
+class UnitfulArea(ValueUnitPair[UnitTypesArea]):
+    CONVERSION_FACTORS = {
         UnitTypesArea.m2: 1,
         UnitTypesArea.dm2: 100,
         UnitTypesArea.cm2: 10_000,
         UnitTypesArea.mm2: 10_00000,
         UnitTypesArea.sf: 10.764,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesArea] = UnitTypesArea.m2
+    DEFAULT_UNIT = UnitTypesArea.m2
 
     value: float = Field(ge=0.0)
-    units: UnitTypesArea
 
 
-class UnitfulVelocity(ValueUnitPair):
+class UnitfulVelocity(ValueUnitPair[UnitTypesVelocity]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesVelocity, float]] = {
         UnitTypesVelocity.mph: 2.236936,
         UnitTypesVelocity.mps: 1,
@@ -288,20 +281,18 @@ class UnitfulVelocity(ValueUnitPair):
     DEFAULT_UNIT: ClassVar[UnitTypesVelocity] = UnitTypesVelocity.mps
 
     value: float = Field(ge=0.0)
-    units: UnitTypesVelocity
 
 
-class UnitfulDirection(ValueUnitPair):
+class UnitfulDirection(ValueUnitPair[UnitTypesDirection]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDirection, float]] = {
         UnitTypesDirection.degrees: 1.0,
     }
     DEFAULT_UNIT: ClassVar[UnitTypesDirection] = UnitTypesDirection.degrees
 
     value: float = Field(ge=0.0, le=360.0)
-    units: UnitTypesDirection
 
 
-class UnitfulDischarge(ValueUnitPair):
+class UnitfulDischarge(ValueUnitPair[UnitTypesDischarge]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDischarge, float]] = {
         UnitTypesDischarge.cfs: 35.314684921034,
         UnitTypesDischarge.cms: 1,
@@ -309,10 +300,9 @@ class UnitfulDischarge(ValueUnitPair):
     DEFAULT_UNIT: ClassVar[UnitTypesDischarge] = UnitTypesDischarge.cms
 
     value: float = Field(ge=0.0)
-    units: UnitTypesDischarge
 
 
-class UnitfulIntensity(ValueUnitPair):
+class UnitfulIntensity(ValueUnitPair[UnitTypesIntensity]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesIntensity, float]] = {
         UnitTypesIntensity.inch_hr: 1 / 25.39544832,
         UnitTypesIntensity.mm_hr: 1,
@@ -320,10 +310,9 @@ class UnitfulIntensity(ValueUnitPair):
     DEFAULT_UNIT: ClassVar[UnitTypesIntensity] = UnitTypesIntensity.mm_hr
 
     value: float = Field(ge=0.0)
-    units: UnitTypesIntensity
 
 
-class UnitfulVolume(ValueUnitPair):
+class UnitfulVolume(ValueUnitPair[UnitTypesVolume]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesVolume, float]] = {
         UnitTypesVolume.m3: 1.0,
         UnitTypesVolume.cf: 35.3146667,
@@ -331,13 +320,9 @@ class UnitfulVolume(ValueUnitPair):
     DEFAULT_UNIT: ClassVar[UnitTypesVolume] = UnitTypesVolume.m3
 
     value: float = Field(ge=0.0)
-    units: UnitTypesVolume
 
 
-class UnitfulTime(ValueUnitPair):
-    value: float
-    units: UnitTypesTime
-
+class UnitfulTime(ValueUnitPair[UnitTypesTime]):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesTime, float]] = {
         UnitTypesTime.days: 1.0 / 24.0,
         UnitTypesTime.hours: 1.0,

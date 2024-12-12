@@ -2,8 +2,7 @@ from pathlib import Path
 from typing import Any, ClassVar, List
 
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
-from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
-from flood_adapt.object_model.hazard.interface.events import Mode, Template
+from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -24,16 +23,19 @@ class HistoricalEventModel(EventModel):
             ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.METEO,
+            ForcingSource.SYNTHETIC,
         ],
         ForcingType.WIND: [
             ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.METEO,
+            ForcingSource.SYNTHETIC,
         ],
         ForcingType.WATERLEVEL: [
             ForcingSource.CSV,
             ForcingSource.MODEL,
             ForcingSource.GAUGED,
+            ForcingSource.SYNTHETIC,
         ],
         ForcingType.DISCHARGE: [
             ForcingSource.CONSTANT,
@@ -41,30 +43,14 @@ class HistoricalEventModel(EventModel):
             ForcingSource.SYNTHETIC,
         ],
     }
+    template: Template = Template.Historical
 
     @classmethod
     def default(cls) -> "HistoricalEventModel":
         """Set default values for Synthetic event."""
-        discharge = ForcingFactory.get_default_forcing(
-            ForcingType.DISCHARGE, ForcingSource.CONSTANT
-        )
-        return cls(
+        return HistoricalEventModel(
             name="DefaultHistoricalEvent",
             time=TimeModel(),
-            template=Template.Historical,
-            mode=Mode.single_event,
-            forcings={
-                ForcingType.RAINFALL: ForcingFactory.get_default_forcing(
-                    ForcingType.RAINFALL, ForcingSource.METEO
-                ),
-                ForcingType.WIND: ForcingFactory.get_default_forcing(
-                    ForcingType.WIND, ForcingSource.METEO
-                ),
-                ForcingType.WATERLEVEL: ForcingFactory.get_default_forcing(
-                    ForcingType.WATERLEVEL, ForcingSource.MODEL
-                ),
-                ForcingType.DISCHARGE: {discharge.river.name: discharge},
-            },
         )
 
 
