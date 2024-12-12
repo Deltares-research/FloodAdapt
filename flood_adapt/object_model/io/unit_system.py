@@ -295,7 +295,7 @@ class UnitfulDirection(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDirection, float]] = {
         UnitTypesDirection.degrees: 1.0,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesDischarge] = UnitTypesDirection.degrees
+    DEFAULT_UNIT: ClassVar[UnitTypesDirection] = UnitTypesDirection.degrees
 
     value: float = Field(ge=0.0, le=360.0)
     units: UnitTypesDirection
@@ -303,7 +303,7 @@ class UnitfulDirection(ValueUnitPair):
 
 class UnitfulDischarge(ValueUnitPair):
     CONVERSION_FACTORS: ClassVar[dict[UnitTypesDischarge, float]] = {
-        UnitTypesDischarge.cfs: 0.02832,
+        UnitTypesDischarge.cfs: 35.314684921034,
         UnitTypesDischarge.cms: 1,
     }
     DEFAULT_UNIT: ClassVar[UnitTypesDischarge] = UnitTypesDischarge.cms

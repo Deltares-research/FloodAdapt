@@ -127,6 +127,54 @@ class TestUnitfulIntensity:
             us.UnitfulIntensity(-1.0, us.UnitTypesIntensity.inch_hr)
 
 
+class TestUnitfulDischarge:
+    TEST_DISCHARGE_CONVERSIONS = [
+        (
+            1,
+            us.UnitTypesDischarge.cms,
+            35.314684921034,
+            us.UnitTypesDischarge.cfs,
+        ),
+        (
+            50,
+            us.UnitTypesDischarge.cms,
+            1765.7342460517,
+            us.UnitTypesDischarge.cfs,
+        ),
+        (
+            3531.4684921034,
+            us.UnitTypesDischarge.cfs,
+            100,
+            us.UnitTypesDischarge.cms,
+        ),
+        (
+            3290,
+            us.UnitTypesDischarge.cfs,
+            111,
+            us.UnitTypesDischarge.cms,
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "initial_value, initial_unit, expected_value, target_unit",
+        TEST_DISCHARGE_CONVERSIONS,
+    )
+    def test_UnitFullIntensity_convert(
+        self, initial_value, initial_unit, expected_value, target_unit
+    ):
+        _perform_conversion_test(
+            us.UnitfulDischarge,
+            initial_value,
+            initial_unit,
+            expected_value,
+            target_unit,
+        )
+
+    def test_UnitFullIntensity_validator(self):
+        with pytest.raises(ValueError):
+            us.UnitfulDischarge(-1.0, us.UnitTypesDischarge.cms)
+
+
 class TestUnitfulLength:
     TEST_LENGTH_CONVERSIONS = [
         (1000, us.UnitTypesLength.millimeters, 100, us.UnitTypesLength.centimeters),
