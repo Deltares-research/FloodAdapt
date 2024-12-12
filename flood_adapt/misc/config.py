@@ -51,7 +51,7 @@ class UnitSystem:
         self.direction = us.UnitTypesDirection.degrees
         self.discharge = us.UnitTypesDischarge.cfs
         self.intensity = us.UnitTypesIntensity.inch_hr
-        self.cumulative = us.UnitTypesLength.feet
+        self.cumulative = us.UnitTypesLength.inch
 
     def set_metric(self):
         self.length = us.UnitTypesLength.meters
@@ -62,7 +62,7 @@ class UnitSystem:
         self.direction = us.UnitTypesDirection.degrees
         self.discharge = us.UnitTypesDischarge.cms
         self.intensity = us.UnitTypesIntensity.mm_hr
-        self.cumulative = us.UnitTypesLength.meters
+        self.cumulative = us.UnitTypesLength.millimeters
 
 
 class Settings(BaseSettings):

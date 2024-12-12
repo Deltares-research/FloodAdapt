@@ -17,7 +17,11 @@ class SyntheticEventModel(EventModel):
         ForcingType.RAINFALL: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
         ForcingType.WIND: [ForcingSource.CONSTANT, ForcingSource.CSV],
         ForcingType.WATERLEVEL: [ForcingSource.SYNTHETIC, ForcingSource.CSV],
-        ForcingType.DISCHARGE: [ForcingSource.CONSTANT, ForcingSource.SYNTHETIC],
+        ForcingType.DISCHARGE: [
+            ForcingSource.CONSTANT,
+            ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
+        ],
     }
     template: Template = Template.Synthetic
 
