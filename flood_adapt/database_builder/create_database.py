@@ -226,7 +226,7 @@ class ConfigModel(BaseModel):
     infographics: Optional[bool] = True
 
 
-def read_toml(fn: str) -> dict:
+def read_toml(fn: Union[str, Path]) -> dict:
     """
     Read a TOML file and return its contents as a dictionary.
 
@@ -619,13 +619,6 @@ class Database:
                 self.config.building_footprints.field_name,
             )
 
-        # TODO check how this naming of output geoms should become more explicit!
-        self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
-        self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
-        self.site_attrs["fiat"]["save_simulation"] = (
-            "False"  # default is not to save simulations
-        )
-
         # Add base flood elevation information
         if self.config.bfe:
             # TODO can we use hydromt-FIAT?
@@ -680,7 +673,7 @@ class Database:
                 region = region.explode().reset_index()
                 region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
-                    "exposure", "aggregation_areas", "region.geojson"
+                    "exposure", "geoms", "region.geojson"
                 )
                 if not aggregation_path.parent.exists():
                     aggregation_path.parent.mkdir()
@@ -796,7 +789,9 @@ class Database:
                 )
 
         # Make sure that FIAT roads are polygons
+        self.roads = False
         if "roads" in self.fiat_model.exposure.geom_names:
+            self.roads = True
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             roads_ind = self.fiat_model.exposure.geom_names.index("roads")
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
@@ -827,6 +822,13 @@ class Database:
             self.logger.warning(
                 "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
+            # TODO check how this naming of output geoms should become more explicit!
+        if self.roads:
+            self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
+        self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
+        self.site_attrs["fiat"]["save_simulation"] = (
+            "False"  # default is not to save simulations
+        )
 
     def read_sfincs(self):
         """
@@ -1567,10 +1569,18 @@ class Database:
 
             # Copy infographics config
             path_ig_temp = templates_path.joinpath(
-                "infographics", self.metrics_folder_name, svi_folder_name
+                "infographics", self.metrics_folder_name
             )
             path_ig = self.root.joinpath("static", "templates", "infographics")
-            shutil.copytree(path_ig_temp, path_ig)
+            path_ig.mkdir()
+            files_ig = ["styles.css", "config_charts.toml"]
+            if "svi" in self.site_attrs["fiat"]:
+                files_ig.append("config_risk_charts.toml")
+                files_ig.append("config_people.toml")
+            if self.roads:
+                files_ig.append("config_roads.toml")
+            for file in files_ig:
+                shutil.copy(path_ig_temp.joinpath(file), path_ig.joinpath(file))
 
             # Copy images
             path_0 = templates_path.joinpath("infographics", "images")
@@ -1585,9 +1595,17 @@ class Database:
         for file in files:
             file = path.joinpath(file)
             attrs = read_toml(file)
+            # add aggration levels
             attrs["aggregateBy"] = [
                 aggr["name"] for aggr in self.site_attrs["fiat"]["aggregation"]
             ]
+            # take out road metrics if needed
+            if not self.roads:
+                attrs["queries"] = [
+                    query
+                    for query in attrs["queries"]
+                    if "road" not in query["name"].lower()
+                ]
             # replace the SVI threshold if needed
             if self.config.svi:
                 for i, query in enumerate(attrs["queries"]):
