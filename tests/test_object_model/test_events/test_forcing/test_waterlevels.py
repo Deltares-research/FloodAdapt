@@ -59,7 +59,7 @@ class TestWaterlevelSynthetic:
                 us.UnitfulTime(4, "hours"),
             ),
             (
-                ShapeType.constant,
+                ShapeType.block,
                 us.UnitfulTime(12, "hours"),
                 us.UnitfulTime(12, "hours"),
                 us.UnitfulLength(2, "meters"),
@@ -68,7 +68,7 @@ class TestWaterlevelSynthetic:
                 us.UnitfulTime(4, "hours"),
             ),
             (
-                ShapeType.constant,
+                ShapeType.block,
                 us.UnitfulTime(6, "hours"),
                 us.UnitfulTime(6, "hours"),
                 us.UnitfulLength(1, "meters"),
@@ -77,7 +77,7 @@ class TestWaterlevelSynthetic:
                 us.UnitfulTime(2, "hours"),
             ),
             (
-                ShapeType.constant,
+                ShapeType.block,
                 us.UnitfulTime(10, "hours"),
                 us.UnitfulTime(20, "hours"),
                 us.UnitfulLength(3, "meters"),

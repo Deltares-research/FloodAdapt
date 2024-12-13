@@ -11,7 +11,6 @@ from pydantic import Field
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import (
-    DEFAULT_TIMESTEP,
     ForcingSource,
     IWind,
 )
@@ -39,9 +38,7 @@ class WindConstant(IWind):
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
         t0, t1 = self.parse_time(t0, t1)
-        time = pd.date_range(
-            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
-        )
+        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
         data = {
             "data_0": [self.speed.value for _ in range(len(time))],
             "data_1": [self.direction.value for _ in range(len(time))],
@@ -75,9 +72,7 @@ class WindSynthetic(IWind):
         else:
             t0, t1 = self.parse_time(t0, t1)
 
-        time = pd.date_range(
-            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
-        )
+        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
         magnitude = (
             SyntheticTimeseries()
             .load_dict(self.magnitude)

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Protocol
 
@@ -11,11 +11,11 @@ from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_DATETIME_FORMAT,
-    DEFAULT_TIMESTEP,
     TIMESERIES_VARIABLE,
     Scstype,
     ShapeType,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
@@ -119,7 +119,9 @@ class CSVTimeseriesModel(ITimeseriesModel):
 
 class ITimeseriesCalculationStrategy(Protocol):
     @abstractmethod
-    def calculate(self, attrs: SyntheticTimeseriesModel) -> np.ndarray: ...
+    def calculate(
+        self, attrs: SyntheticTimeseriesModel, timestep: timedelta
+    ) -> np.ndarray: ...
 
 
 class ITimeseries(ABC):
@@ -127,7 +129,7 @@ class ITimeseries(ABC):
 
     @abstractmethod
     def calculate_data(
-        self, time_step: us.UnitfulTime = DEFAULT_TIMESTEP
+        self, time_step: timedelta = TimeModel().time_step
     ) -> np.ndarray:
         """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
         ...
@@ -138,7 +140,7 @@ class ITimeseries(ABC):
         end_time: datetime | str,
         ts_start_time: us.UnitfulTime,
         ts_end_time: us.UnitfulTime,
-        time_step: us.UnitfulTime,
+        time_step: timedelta,
     ) -> pd.DataFrame:
         """
         Convert timeseries data to a pandas DataFrame that has time as the index and intensity as the column.
@@ -153,7 +155,7 @@ class ITimeseries(ABC):
                 start_time is the first index of the dataframe
             end_time (Union[datetime, str]): The end datetime of returned timeseries.
                 end_time is the last index of the dataframe (date time)
-            time_step (us.UnitfulTime): The time step between data points.
+            time_step (timedelta): The time step between data points.
 
         Note:
             - If start_time and end_time are strings, they should be in the format DEFAULT_DATETIME_FORMAT (= "%Y-%m-%d %H:%M:%S")
@@ -171,7 +173,7 @@ class ITimeseries(ABC):
         full_df_time_range = pd.date_range(
             start=start_time,
             end=end_time,
-            freq=time_step.to_timedelta(),
+            freq=time_step,
             name="time",
         )
 
@@ -181,7 +183,7 @@ class ITimeseries(ABC):
         ts_time_range = pd.date_range(
             start=(start_time + ts_start_time.to_timedelta()),
             end=(start_time + ts_end_time.to_timedelta()),
-            freq=time_step.to_timedelta(),
+            freq=time_step,
         )
 
         # If the data contains more than the requested time range (from reading a csv file)
@@ -194,7 +196,10 @@ class ITimeseries(ABC):
         )
 
         full_df = df.reindex(
-            index=full_df_time_range, method="nearest", limit=1, fill_value=0
+            index=full_df_time_range,
+            method="nearest",
+            limit=1,
+            fill_value=0,  # idea: (for block ts) allow to fill with any value?
         )
         full_df = full_df.set_index(full_df_time_range)
         full_df.index = pd.to_datetime(full_df.index)
@@ -239,7 +244,7 @@ class ITimeseries(ABC):
         # If the following equation is element-wise True, then allclose returns True.:
         # absolute(a - b) <= (atol + rtol * absolute(b))
         return np.allclose(
-            self.calculate_data(DEFAULT_TIMESTEP),
-            other.calculate_data(DEFAULT_TIMESTEP),
+            self.calculate_data(TimeModel().time_step),
+            other.calculate_data(TimeModel().time_step),
             rtol=1e-2,
         )

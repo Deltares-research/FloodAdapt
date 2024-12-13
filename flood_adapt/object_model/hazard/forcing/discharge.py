@@ -12,10 +12,10 @@ from flood_adapt.object_model.hazard.forcing.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
-    DEFAULT_TIMESTEP,
     ForcingSource,
     IDischarge,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
@@ -33,9 +33,7 @@ class DischargeConstant(IDischarge):
         **kwargs: Any,
     ) -> Optional[pd.DataFrame]:
         t0, t1 = self.parse_time(t0, t1)
-        time = pd.date_range(
-            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
-        )
+        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
         data = {self.river.name: [self.discharge.value for _ in range(len(time))]}
         return pd.DataFrame(data=data, index=time)
 

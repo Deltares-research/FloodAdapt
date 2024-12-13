@@ -10,7 +10,6 @@ from pydantic import Field
 
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.timeseries import (
-    DEFAULT_TIMESTEP,
     CSVTimeseries,
     SyntheticTimeseries,
     SyntheticTimeseriesModel,
@@ -35,9 +34,7 @@ class RainfallConstant(IRainfall):
         strict=True,
     ) -> pd.DataFrame:
         t0, t1 = self.parse_time(t0, t1)
-        time = pd.date_range(
-            start=t0, end=t1, freq=DEFAULT_TIMESTEP.to_timedelta(), name="time"
-        )
+        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
         values = [self.intensity.value for _ in range(len(time))]
         return pd.DataFrame(data=values, index=time)
 

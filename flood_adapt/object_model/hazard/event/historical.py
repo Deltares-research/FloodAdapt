@@ -29,7 +29,6 @@ class HistoricalEventModel(EventModel):
             ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.METEO,
-            ForcingSource.SYNTHETIC,
         ],
         ForcingType.WATERLEVEL: [
             ForcingSource.CSV,

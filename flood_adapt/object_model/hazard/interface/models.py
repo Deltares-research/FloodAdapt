@@ -12,7 +12,7 @@ REFERENCE_TIME = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
 class TimeModel(BaseModel):
     start_time: datetime = REFERENCE_TIME
     end_time: datetime = REFERENCE_TIME + timedelta(days=1)
-    time_step: timedelta = timedelta(minutes=10)
+    time_step: timedelta = timedelta(seconds=10)
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod

@@ -49,7 +49,7 @@ class TestDischargeSynthetic:
     def test_discharge_synthetic_get_data(self, river):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
-            shape_type=ShapeType.constant,
+            shape_type=ShapeType.block,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),

@@ -17,7 +17,6 @@ from flood_adapt.object_model.hazard.forcing.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
-    DEFAULT_TIMESTEP,
     ForcingSource,
     IWaterlevel,
 )
@@ -44,10 +43,10 @@ class TideModel(BaseModel):
     harmonic_phase: us.UnitfulTime
 
     def to_dataframe(
-        self, t0: datetime, t1: datetime, ts=DEFAULT_TIMESTEP
+        self, t0: datetime, t1: datetime, ts=TimeModel().time_step
     ) -> pd.DataFrame:
-        index = pd.date_range(start=t0, end=t1, freq=ts.to_timedelta(), name="time")
-        seconds = np.arange(len(index)) * ts.convert(us.UnitTypesTime.seconds)
+        index = pd.date_range(start=t0, end=t1, freq=ts, name="time")
+        seconds = np.arange(len(index)) * ts.total_seconds()
 
         amp = self.harmonic_amplitude.value
         omega = 2 * math.pi / (self.harmonic_period.convert(us.UnitTypesTime.seconds))
@@ -88,7 +87,7 @@ class WaterlevelSynthetic(IWaterlevel):
         time_surge = pd.date_range(
             start=start_surge,
             end=end_surge,
-            freq=DEFAULT_TIMESTEP.to_timedelta(),
+            freq=TimeModel().time_step,
             name="time",
         )
 

@@ -18,7 +18,6 @@ from flood_adapt.object_model.io import unit_system as us
 ### CONSTANTS ###
 TIDAL_PERIOD = us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours)
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_TIMESTEP = us.UnitfulTime(value=600, units=us.UnitTypesTime.seconds)
 TIMESERIES_VARIABLE = Union[
     us.UnitfulIntensity,
     us.UnitfulDischarge,
@@ -33,7 +32,7 @@ TIMESERIES_VARIABLE = Union[
 ### ENUMS ###
 class ShapeType(str, Enum):
     gaussian = "gaussian"
-    constant = "constant"
+    block = "block"
     triangle = "triangle"
     scs = "scs"
 

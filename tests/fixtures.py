@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.hazard.interface.forcing import DEFAULT_TIMESTEP
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.measures import (
@@ -32,7 +31,6 @@ __all__ = [
     "dummy_buyout_measure",
     "dummy_pump_measure",
     "dummy_strategy",
-    "DEFAULT_TIMESTEP",
 ]
 
 TEST_DATA_DIR = Path(__file__).parent / "data"

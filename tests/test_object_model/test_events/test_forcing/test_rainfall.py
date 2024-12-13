@@ -38,7 +38,7 @@ class TestRainfallSynthetic:
     def test_rainfall_synthetic_get_data(self):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
-            shape_type=ShapeType.constant,
+            shape_type=ShapeType.block,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),

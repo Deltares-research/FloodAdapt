@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -9,10 +9,9 @@ import tomli_w
 
 from flood_adapt.object_model.hazard.interface.forcing import (
     DEFAULT_DATETIME_FORMAT,
-    DEFAULT_TIMESTEP,
     ShapeType,
 )
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     CSVTimeseriesModel,
     ITimeseries,
@@ -27,26 +26,27 @@ from flood_adapt.object_model.io.csv import read_csv
 ### CALCULATION STRATEGIES ###
 class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: timedelta
     ) -> np.ndarray:
         _duration = attrs.duration.convert(us.UnitTypesTime.seconds)
         _start_time = attrs.start_time.convert(us.UnitTypesTime.seconds)
-        _timestep = timestep.convert(us.UnitTypesTime.seconds)
-        tt = np.arange(0, _duration + 1, _timestep)
 
-        # rainfall
-        scs_path = (
-            db_path(top_level_dir=TopLevelDir.static) / "scs" / attrs.scs_file_name
+        scs_df = pd.read_csv(
+            db_path(top_level_dir=TopLevelDir.static) / "scs" / attrs.scs_file_name,
+            index_col=0,
+        )[attrs.scs_type]
+
+        tt = pd.date_range(
+            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
+            freq=timestep,
         )
-        scs_df = pd.read_csv(scs_path, index_col=0)
-        scstype_df = scs_df[attrs.scs_type]
-        tt_rain = _start_time + scstype_df.index.to_numpy() * _duration
-        rain_series = scstype_df.to_numpy()
+        tt = (tt - REFERENCE_TIME).total_seconds()
+
+        tt_rain = _start_time + scs_df.index.to_numpy() * _duration
+        rain_series = scs_df.to_numpy()
         rain_instantaneous = np.diff(rain_series) / np.diff(
-            tt_rain
-            / us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).convert(
-                us.UnitTypesTime.seconds
-            )
+            tt_rain / 3600
         )  # divide by time in hours to get mm/hour
 
         # interpolate instanetaneous rain intensity timeseries to tt
@@ -57,48 +57,43 @@ class ScsTimeseriesCalculator(ITimeseriesCalculationStrategy):
             left=0,
             right=0,
         )
-
         rainfall = (
-            rain_interp
-            * attrs.cumulative.value
-            / np.trapz(
-                rain_interp,
-                tt
-                / us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).convert(
-                    us.UnitTypesTime.seconds
-                ),
-            )
+            rain_interp * attrs.cumulative.value / np.trapz(rain_interp, tt / 3600)
         )
+
         return rainfall
 
 
 class GaussianTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: timedelta
     ) -> np.ndarray:
+        _start = attrs.start_time.convert(us.UnitTypesTime.seconds)
+        _end = attrs.end_time.convert(us.UnitTypesTime.seconds)
+
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
             end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
-            freq=timestep.to_timedelta(),
+            freq=timestep,
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
 
-        mean = ((attrs.start_time + attrs.end_time) / 2).to_timedelta().total_seconds()
-        sigma = ((attrs.end_time - attrs.start_time) / 6).to_timedelta().total_seconds()
+        mean = (_start + _end) / 2
+        sigma = (_end - _start) / 6
 
         # 99.7% of the rain will fall within a duration of 6 sigma
         ts = attrs.peak_value.value * np.exp(-0.5 * ((tt_seconds - mean) / sigma) ** 2)
         return ts
 
 
-class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
+class BlockTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
-        self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
+        self, attrs: SyntheticTimeseriesModel, timestep: timedelta
     ) -> np.ndarray:
         tt = pd.date_range(
-            start=(REFERENCE_TIME),
-            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
-            freq=timestep.to_timedelta(),
+            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
+            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
+            freq=timestep,
         )
         ts = np.zeros((len(tt),)) + attrs.peak_value.value
         return ts
@@ -108,12 +103,12 @@ class TriangleTimeseriesCalculator(ITimeseriesCalculationStrategy):
     def calculate(
         self,
         attrs: SyntheticTimeseriesModel,
-        timestep: us.UnitfulTime,
+        timestep: timedelta,
     ) -> np.ndarray:
         tt = pd.date_range(
             start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
             end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
-            freq=timestep.to_timedelta(),
+            freq=timestep,
         )
         tt_seconds = (tt - REFERENCE_TIME).total_seconds()
 
@@ -147,13 +142,13 @@ class SyntheticTimeseries(ITimeseries):
     CALCULATION_STRATEGIES: dict[ShapeType, ITimeseriesCalculationStrategy] = {
         ShapeType.gaussian: GaussianTimeseriesCalculator(),
         ShapeType.scs: ScsTimeseriesCalculator(),
-        ShapeType.constant: ConstantTimeseriesCalculator(),
+        ShapeType.block: BlockTimeseriesCalculator(),
         ShapeType.triangle: TriangleTimeseriesCalculator(),
     }
     attrs: SyntheticTimeseriesModel
 
     def calculate_data(
-        self, time_step: us.UnitfulTime = DEFAULT_TIMESTEP
+        self, time_step: timedelta = TimeModel().time_step
     ) -> np.ndarray:
         """Calculate the timeseries data using the timestep provided."""
         strategy = SyntheticTimeseries.CALCULATION_STRATEGIES.get(self.attrs.shape_type)
@@ -165,7 +160,7 @@ class SyntheticTimeseries(ITimeseries):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: timedelta = TimeModel().time_step,
     ) -> pd.DataFrame:
         """
         Interpolate the timeseries data using the timestep provided.
@@ -177,7 +172,7 @@ class SyntheticTimeseries(ITimeseries):
         end_time : datetime | str
             End time of the timeseries.
         time_step : us.UnitfulTime, optional
-            Time step of the timeseries, by default DEFAULT_TIMESTEP.
+            Time step of the timeseries, by default TimeModel().time_step.
 
         """
         return super().to_dataframe(
@@ -232,7 +227,7 @@ class CSVTimeseries(ITimeseries):
         self,
         start_time: datetime | str,
         end_time: datetime | str,
-        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: timedelta = TimeModel().time_step,
     ) -> pd.DataFrame:
         if isinstance(start_time, str):
             start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
@@ -243,21 +238,22 @@ class CSVTimeseries(ITimeseries):
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
-            ts_start_time=us.UnitfulTime(0, us.UnitTypesTime.seconds),
+            ts_start_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
             ts_end_time=us.UnitfulTime(
-                (end_time - start_time).total_seconds(), us.UnitTypesTime.seconds
+                value=(end_time - start_time).total_seconds(),
+                units=us.UnitTypesTime.seconds,
             ),
         )
 
     def calculate_data(
         self,
-        time_step: us.UnitfulTime = DEFAULT_TIMESTEP,
+        time_step: timedelta = TimeModel().time_step,
     ) -> np.ndarray:
         """Interpolate the timeseries data using the timestep provided."""
         ts = read_csv(self.attrs.path)
 
         time_range = pd.date_range(
-            start=ts.index.min(), end=ts.index.max(), freq=time_step.to_timedelta()
+            start=ts.index.min(), end=ts.index.max(), freq=time_step
         )
         interpolated_df = ts.reindex(time_range).interpolate(method="linear")
 

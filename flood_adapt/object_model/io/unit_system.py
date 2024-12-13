@@ -331,6 +331,10 @@ class UnitfulTime(ValueUnitPair[UnitTypesTime]):
     }
     DEFAULT_UNIT: ClassVar[UnitTypesTime] = UnitTypesTime.hours
 
+    @staticmethod
+    def from_timedelta(td: timedelta) -> "UnitfulTime":
+        return UnitfulTime(value=td.total_seconds(), units=UnitTypesTime.seconds)
+
     def to_timedelta(self) -> timedelta:
         """Convert given time to datetime.deltatime object, relative to UnitfulTime(0, Any).
 
