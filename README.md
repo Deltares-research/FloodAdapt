@@ -109,6 +109,8 @@ Create a developer environment `example_name`, with an editable installation Flo
 python make_environment.py -n example_name --editable --dev dev
 ```
 
+For more guidelines on contributing to FloodAdapt please see `CONTRIBUTING.md`
+
 ### Optional Dependencies
 Different groups of packages are required for various tasks that are not required to run the application. The optional dependency groups for FloodAdapt are:
 - `dev` - linting, pre-commit hooks & testing
