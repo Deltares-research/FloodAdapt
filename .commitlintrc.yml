@@ -6,7 +6,7 @@ rules:
   body-empty:
     level: error
   scope:
-    level: misc
+    level: error
     optional: false
     options:
       - adapters
@@ -17,7 +17,7 @@ rules:
       - misc
       - output
   type:
-    level: doc
+    level: error
     optional: false
     options:
       - feat
