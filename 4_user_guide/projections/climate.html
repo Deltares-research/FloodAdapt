@@ -428,7 +428,7 @@ ul.task-list li input[type="checkbox"] {
 <p>This section will describe how future projections of <a href="#sea-level-rise">sea level rise</a>, <a href="#increase-precipitation">precipitation</a> and <a href="#increased-storm-frequency">tropical storm frequencies</a> are specified and implemented in FloodAdapt.</p>
 <div id="fig-projectionsClimate" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/projections_climate.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes"><img src="../../_static/images/projections_climate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/projections_climate.png" class="lightbox" title="Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/projections_climate.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Climate projections in FloodAdapt: sea level rise, increased storm frequencies, precipitation changes</strong></figcaption>
 </figure>
 </div>
@@ -438,14 +438,14 @@ ul.task-list li input[type="checkbox"] {
 <p>If you select <strong><em>manually</em></strong>, you can type a number in the “Sea Level Rise” (see <a href="#fig-projectionsSLR_manual">Figure&nbsp;2</a>). You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.</p>
 <div id="fig-projectionsSLR_manual" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/projections_SLR_manual.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Manually entering a sea level rise projection"><img src="../../_static/images/projections_SLR_manual.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/projections_SLR_manual.png" class="lightbox" title="Manually entering a sea level rise projection" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/projections_SLR_manual.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Manually entering a sea level rise projection</strong></figcaption>
 </figure>
 </div>
 <p>If you select <strong><em>from scenario</em></strong>, a dropdown box will appear from which you can select the sea level rise scenario you want to use (see <a href="#fig-projectionsSLR">Figure&nbsp;3</a>). These options are configurable and are specified at system setup. Once you select a scenario, you specify a year and FloodAdapt will automatically calculate the sea level rise for that year, using the selected sea level rise scenario. You can then give your projection a name and (optionally) a description and click “OK” and your projection will show up in the FlodoAdapt Projections tab.</p>
 <div id="fig-projectionsSLR" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/projections_SLR.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Using a sea level rise scenario and a year to enter a sea level rise projection"><img src="../../_static/images/projections_SLR.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/projections_SLR.png" class="lightbox" title="Using a sea level rise scenario and a year to enter a sea level rise projection" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/projections_SLR.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Using a sea level rise scenario and a year to enter a sea level rise projection</strong></figcaption>
 </figure>
 </div>
@@ -478,7 +478,7 @@ How is the sea level rise projection represented in the modeling?
 </section>
 <section id="increased-precipitation" class="level2">
 <h2 class="anchored" data-anchor-id="increased-precipitation">Increased precipitation</h2>
-<p>An increase in precipitation is given as a percentage in the projections window (see <a href="#fig-projectionsPrecip">Figure&nbsp;5</a>). You can give the projection a name and (optionally) a description and click “OK” and the projection will be added in the projections tab.</p>
+<p>An increase in precipitation is given as a percentage in the projections window (see <a href="#fig-projectionsPrecip">Figure&nbsp;4</a>). You can give the projection a name and (optionally) a description and click “OK” and the projection will be added in the projections tab.</p>
 <section id="why-is-this-only-for-probabilistic-event-sets" class="level3">
 <h3 class="anchored" data-anchor-id="why-is-this-only-for-probabilistic-event-sets">Why is this only for probabilistic event sets?</h3>
 <p>In the projection window, you see an indication that increased precipitation is for probabilistic events only. This is because for a single event, a user can explore a ‘what-if’ scenario about increased rainfall by adjusting the rainfall when they define an event (with the precipitation magnifier for a <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html#rainfall-magnifier-with-the-timeseries-and-map-options">historical event</a>, or with complete flexibility in defining rainfall for a <a href="../../4_user_guide/events/synthetic_events.html">synthetic event</a>). For <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event sets</a>, the precpitation change needs to be applied to every event in the set, something that the user cannot do via the events tab.</p>
@@ -497,7 +497,7 @@ What happens if I choose this projection for a single event scenario?
 </div>
 <div id="fig-projectionsPrecip" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/projections_precip.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Entering increased precipitation as a percentage increase"><img src="../../_static/images/projections_precip.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/projections_precip.png" class="lightbox" title="Entering increased precipitation as a percentage increase" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/projections_precip.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Entering increased precipitation as a percentage increase</strong></figcaption>
 </figure>
 </div>
@@ -505,7 +505,7 @@ What happens if I choose this projection for a single event scenario?
 </section>
 <section id="increased-storm-frequency" class="level2">
 <h2 class="anchored" data-anchor-id="increased-storm-frequency">Increased storm frequency</h2>
-<p>An increase in storm frequency is given as a percentage in the projections window (see <a href="#fig-projectionsPrecip">Figure&nbsp;5</a>). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.</p>
+<p>An increase in storm frequency is given as a percentage in the projections window (see <a href="#fig-projectionsStorm">Figure&nbsp;5</a>). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -535,9 +535,9 @@ What happens if I choose this projection for a single event scenario?
 <p>If you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won’t do any harm, but it won’t have any effect on the resulting event-scenario flood and impact results.</p>
 </div>
 </div>
-<div id="fig-projectionsPrecip" class="quarto-figure quarto-figure-left anchored">
+<div id="fig-projectionsStorm" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/projections_stormFreq.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Entering increased storm frequency as a percentage increase"><img src="../../_static/images/projections_stormFreq.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/projections_stormFreq.png" class="lightbox" title="Entering increased storm frequency as a percentage increase" data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/projections_stormFreq.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Entering increased storm frequency as a percentage increase</strong></figcaption>
 </figure>
 </div>
@@ -919,7 +919,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":true,"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":true,"closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom"});</script>
 
 
 

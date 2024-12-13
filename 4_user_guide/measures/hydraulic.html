@@ -424,17 +424,17 @@ ul.task-list li input[type="checkbox"] {
 <p>Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and infrastructure through construction of structures or pumps. More natural measures to prevent flooding are described in the section on <a href="../../4_user_guide/measures/green_infra.html">urban green infrastructure</a>. FloodAdapt can simulate two main types of hydraulic (grey) measures: <a href="#floodwalls-and-levees">floodwalls and levees</a> and <a href="#pumps">pumps</a>. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.</p>
 <div id="fig-measures_buildingLevel" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_hydraulic.png" class="lightbox" title="Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/measures_hydraulic.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_hydraulic.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps"><img src="../../_static/images/measures_hydraulic.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps</strong></figcaption>
 </figure>
 </div>
-<div id="fig-measures_buildingLevel_GUI" class="quarto-figure quarto-figure-left anchored">
+<div id="fig-measures_buildingLevel_GUI_h" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_hydraulic_GUI.png" class="lightbox" title="Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/measures_hydraulic_GUI.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measures_hydraulic_GUI.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall"><img src="../../_static/images/measures_hydraulic_GUI.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall</strong></figcaption>
 </figure>
 </div>
-<p>To specify a hydraulic measure, the user goes to the Measures tab, and in the “Category” drop-down menu selects “Hydraulic” (see <a href="#fig-measures_buildingLevel_GUI">Figure&nbsp;2</a>). The user can then choose for “Measure” one of the measure types: <a href="#floodwalls-and-levees">floodwall or levee</a>, or <a href="#pumps">pumps</a>. For each of these measures, the user will choose an “Area type”. This indicates how the user will specify the location of the measure. There are two options:</p>
+<p>To specify a hydraulic measure, the user goes to the Measures tab, and in the “Category” drop-down menu selects “Hydraulic” (see <a href="#fig-measures_buildingLevel_GUI_h">Figure&nbsp;2</a>). The user can then choose for “Measure” one of the measure types: <a href="#floodwalls-and-levees">floodwall or levee</a>, or <a href="#pumps">pumps</a>. For each of these measures, the user will choose an “Area type”. This indicates how the user will specify the location of the measure. There are two options:</p>
 <ul>
 <li><p>Draw polyline: this option allows a user to click a polyline in the map to represent either the floodwall/levee or the intake/outtake location of a pump</p></li>
 <li><p>Import polyline: this option allows a user to import a polyline that they have made externally, for example in GIS software</p></li>
@@ -452,13 +452,13 @@ ul.task-list li input[type="checkbox"] {
 <p>If you selected “Draw polyline”, you can now begin clicking within the map to draw a polyline where you want to implement your floodwall. When drawing the floodwall or levee, it is useful to turn on the “show grid” and “grid snapper” options so you are clear how your floodwall or levee will be implemented in the hydraulic model. We also recommend turning on the topography layer to ensure that your floodwall or levee ties into high ground, so that water does not flow around the edges of your floodwall or levee. <a href="#fig-measures_floodwall_map">Figure&nbsp;3</a> shows an example of a polyline representing a floodwall without the grid, grid snapper, and topography visible. <a href="#fig-measures_floodwall_snapper_topo">Figure&nbsp;4</a> shows the same measure with these features enabled. You can see in <a href="#fig-measures_floodwall_snapper_topo">Figure&nbsp;4</a> how the wall will be implemented in the hydraulic model, and that the edges of the wall are tied into high ground.</p>
 <div id="fig-measures_floodwall_map" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_floodwall_map.png" class="lightbox" title="Implementing a floodwall in FloodAdapt by drawing a polyline" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/measure_floodwall_map.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_floodwall_map.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Implementing a floodwall in FloodAdapt by drawing a polyline"><img src="../../_static/images/measure_floodwall_map.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Implementing a floodwall in FloodAdapt by drawing a polyline</strong></figcaption>
 </figure>
 </div>
 <div id="fig-measures_floodwall_snapper_topo" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_floodwall_snapper_topo.png" class="lightbox" title="Using the “show grid”, “grid snapper” and topography layers to better specify your floodwall or levee" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/measure_floodwall_snapper_topo.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_floodwall_snapper_topo.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Using the “show grid”, “grid snapper” and topography layers to better specify your floodwall or levee"><img src="../../_static/images/measure_floodwall_snapper_topo.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Using the “show grid”, “grid snapper” and topography layers to better specify your floodwall or levee</strong></figcaption>
 </figure>
 </div>
@@ -478,7 +478,7 @@ Turning on the topography layer
 <p>Once you have drawn your polyline or selected to import a polyline, a specification window opens (see <a href="#fig-measure_floodwall_properties">Figure&nbsp;5</a> for the example of a floodwall). In the specification window, the user enters a name for the measure (no spaces or special characters), an optional description, and the elevation of the floodwall or levee. Once you enter the information and click “OK”, your floodwall or levee will show up in the measures window.</p>
 <div id="fig-measure_floodwall_properties" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_floodwall_properties.png" class="lightbox" title="Specifying information for a floodwall or levee" data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/measure_floodwall_properties.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measure_floodwall_properties.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Specifying information for a floodwall or levee"><img src="../../_static/images/measure_floodwall_properties.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Specifying information for a floodwall or levee</strong></figcaption>
 </figure>
 </div>
@@ -498,7 +498,7 @@ Turning on the topography layer
 </ul>
 <div id="fig-measure_floodwall_edit" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measure_floodwall_edit.png" class="lightbox" title="Editing a floodwall or levee" data-gallery="quarto-lightbox-gallery-6"><img src="../../_static/images/measure_floodwall_edit.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measure_floodwall_edit.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Editing a floodwall or levee"><img src="../../_static/images/measure_floodwall_edit.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Editing a floodwall or levee</strong></figcaption>
 </figure>
 </div>
@@ -915,7 +915,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"descPosition":"bottom","closeEffect":"zoom","openEffect":"zoom","selector":".lightbox"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","closeEffect":"zoom","loop":true,"descPosition":"bottom"});</script>
 
 
 

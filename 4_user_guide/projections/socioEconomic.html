@@ -425,7 +425,7 @@ ul.task-list li input[type="checkbox"] {
 <p>To represent population growth in existing built areas within the community, the user can choose “Population Growth - Existing” (see <a href="#fig-popGrowthExisting">Figure&nbsp;1</a>). The user enters a percentage (such as 10%) which represents the percentage of the current existing population. So if there are 100,000 people now living in a community, a 10% increase would represent an additional 10,000 residents.</p>
 <div id="fig-popGrowthExisting" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/popGrowth_existingBuild.png" class="lightbox" title="Entering a percentage population growth in the existing built area" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/popGrowth_existingBuild.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/popGrowth_existingBuild.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Entering a percentage population growth in the existing built area"><img src="../../_static/images/popGrowth_existingBuild.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Entering a percentage population growth in the existing built area</strong></figcaption>
 </figure>
 </div>
@@ -433,7 +433,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The <em>implementation</em> of population growthing within FloodAdapt is simplified. This is because users may not know where new buildings will be built or which buildings will be replaced by higher-density buildings to support future population growth. FloodAdapt therefore spreads the increase evenly over the entire building stock, by increasing the maximum potential damages of all the existing buildings. <a href="#fig-popGrowthExistingProxy">Figure&nbsp;2</a> shows an example how this is implemented, highlighting one building. This increase is applied to all buildings equally, so that the <em>overall</em> increase in damages is reflective of the future situation with population growth.</p>
 <div id="fig-popGrowthExistingProxy" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/popGrowth_existingBuild_proxyRep.png" class="lightbox" title="Simplification of population growth in the existing built area in FloodAdapt" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/popGrowth_existingBuild_proxyRep.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/popGrowth_existingBuild_proxyRep.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Simplification of population growth in the existing built area in FloodAdapt"><img src="../../_static/images/popGrowth_existingBuild_proxyRep.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Simplification of population growth in the existing built area in FloodAdapt</strong></figcaption>
 </figure>
 </div>
@@ -444,7 +444,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The user specifies the percentage of the current existing population that is projected to live in the new development area. For example, if the current population is 100,000, and the new development area is expected to support 1,000 new residents, the user would enter 1% for the population growth in the new area. The user is then asked to provide a shape file (or other spatial polygon file) specifying the boundaries of the new development area. In addition, the user can specify how high the new development will be built off the ground, either relative to a datum, or relative to base flood elevation (BFE). This allows users to explore the impact of regulations on how high new developments need to be built.</p>
 <div id="fig-popGrowthNew" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/popGrowth_newDevelopment.png" class="lightbox" title="Entering a percentage population growth for a new development area" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/popGrowth_newDevelopment.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/popGrowth_newDevelopment.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Entering a percentage population growth for a new development area"><img src="../../_static/images/popGrowth_newDevelopment.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Entering a percentage population growth for a new development area</strong></figcaption>
 </figure>
 </div>
@@ -452,7 +452,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The <em>implementation</em> of population growth in new areas in FloodAdapt is simplified. The user is not expected to know exactly where each new building will be located, or specifics about each building that are typically needed to calculated damages, such as maximum potential damages, or whether they will be one-story or two-story homes. Instead, FloodAdapt creates a composite building over the entire new development area. This composite building is currently assumed to reflect the make-up of the existing built area. For example, if the current built area is 80% residential, 18% commercial, and 2% government buildings, the new development will have this same composition. The way this is utilized in FloodAdapt is that the composite new-development building is assigned a depth-damage curve that is a weighted average of the depth-damage curves of the existing buildings. The maximum potential damage of the composite building is assumed to be the total maximum potential damages over all the existing buildings multiplied by the percentage population growth. For example, if the total maximum potential damages over all buildings in the area is $1 Billion, the maximum potential damages for a new development area with 1% population growth would be $10 Million. Because the new-development composite building is large, it is likely often partially flooded during flood events. FloodAdapt stores the flood depths over the entire new development area. It takes the average flood depth to calculate damages, but reduces these damages by the fraction of the area that is not flooded. For example, if the average flood depth leads to damages of $1 Million, but only 20% of the area was flooded, FloodAdapt will reduce the damages by 80% to $200,000. <a href="#fig-popGrowthNewProxy">Figure&nbsp;4</a> gives a visual representation of how population growth in new development areas is represented in FloodAdapt.</p>
 <div id="fig-popGrowthNewProxy" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/popGrowth_newDevelopment_implementation.png" class="lightbox" title="Implementation of population growth in new development areas in FloodAdapt" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/popGrowth_newDevelopment_implementation.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/popGrowth_newDevelopment_implementation.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Implementation of population growth in new development areas in FloodAdapt"><img src="../../_static/images/popGrowth_newDevelopment_implementation.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Implementation of population growth in new development areas in FloodAdapt</strong></figcaption>
 </figure>
 </div>
@@ -463,7 +463,7 @@ ul.task-list li input[type="checkbox"] {
 <p>The economic growth projection is implemented in a simplified way in FloodAdapt by increasing the maximum potential damages of the existing buildings by the specified percentage. This is a simplification intended to represent increasing wealth and value in the community, without specifically accounting for changes in economic activity which would lead to this wealth and value increase.</p>
 <div id="fig-economicGrowth" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/economicGrowth.png" class="lightbox" title="Implementation of economic growth in FloodAdapt" data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/economicGrowth.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/economicGrowth.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Implementation of economic growth in FloodAdapt"><img src="../../_static/images/economicGrowth.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Implementation of economic growth in FloodAdapt</strong></figcaption>
 </figure>
 </div>
@@ -844,7 +844,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","openEffect":"zoom","selector":".lightbox","descPosition":"bottom","loop":true});</script>
 
 
 
