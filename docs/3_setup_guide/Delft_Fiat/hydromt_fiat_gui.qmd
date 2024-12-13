@@ -24,7 +24,7 @@ This guide is organized in six sections:
 
 ![The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.](../../_static/images/model_builder_homeScreen.png){width=50% fig-align=left #fig-homeScreen}
 
-## Getting started {#sec-getting-started}
+## Getting started {#sec-getting-started-delft-fiat}
 
 The initial steps to set up a Delft-FIAT model are the same whether you set up a [quickbuild](#sec-quickbuild) or [tailored](#sec-tailored_model) model. To get started building your Delft-FIAT model:
 
@@ -69,7 +69,7 @@ After you selected the working directory the Delft-FIAT model builder generates 
 :::
 
 ## Quick Build {#sec-quickbuild}
-The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
+The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started-delft-fiat). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
 
 To use the quick build option to generate a Delft-FIAT model, simply click the "Create model" button on the "Model Boundary | Quick Build" tab after generating your model boundary. That's it!
 
