@@ -10,8 +10,9 @@ format:
     toc-depth: 2
     number-sections: true
     number-depth: 2
-    output-file: "Test_print_docs"
+    output-file: "FloodAdapt_Documentation_Dec2024"
     output-ext:  "pdf"
+    hyperrefoptions: draft
 editor: source
 ---
 <!-- To run please use the terminal : quarto render _make_pdf.qmd --resource-path _static
@@ -24,7 +25,12 @@ editor: source
 # Function to change paths
 update_image_paths <- function(content) {
   # Replace ../C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/ with C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/
-  updated_content <- gsub("\\.\\./\\..*/_static/images/", "C:/Users/rautenba/repos/FloodAdapt/docs/_static/images/", content)
+  current_dir <- getwd()
+
+  # Replace any number of '../' before '_static/images/' with the full absolute path
+  updated_content <- gsub("((\\.\\./)+)_static/images/",
+                          file.path(current_dir, "_static/images", "/"),
+                          content)
   updated_content <- gsub("##", "###", updated_content)
   updated_content <- gsub("###", "####", updated_content)
   updated_content <- gsub("####", "####", updated_content)
