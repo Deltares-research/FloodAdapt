@@ -6,7 +6,7 @@ rules:
   body-empty:
     level: error
   scope:
-    level: output
+    level: misc
     optional: false
     options:
       - adapters
