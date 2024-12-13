@@ -51,7 +51,10 @@ class DischargeConstant(IDischarge):
         )
         return DischargeConstant(
             river=river,
-            discharge=us.UnitfulDischarge(value=0, units=us.UnitTypesDischarge.cms),
+            discharge=us.UnitfulDischarge(
+                value=river.mean_discharge.convert(us.UnitTypesDischarge.cms),
+                units=us.UnitTypesDischarge.cms,
+            ),
         )
 
 
