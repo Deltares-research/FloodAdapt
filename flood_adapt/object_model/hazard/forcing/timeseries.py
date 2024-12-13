@@ -96,16 +96,11 @@ class ConstantTimeseriesCalculator(ITimeseriesCalculationStrategy):
         self, attrs: SyntheticTimeseriesModel, timestep: us.UnitfulTime
     ) -> np.ndarray:
         tt = pd.date_range(
-            start=(REFERENCE_TIME + attrs.start_time.to_timedelta()),
-            end=(REFERENCE_TIME + attrs.end_time.to_timedelta()),
+            start=(REFERENCE_TIME),
+            end=(REFERENCE_TIME + attrs.duration.to_timedelta()),
             freq=timestep.to_timedelta(),
         )
-        ts = np.where(
-            (tt >= REFERENCE_TIME)
-            & (tt <= (REFERENCE_TIME + attrs.duration.to_timedelta())),
-            attrs.peak_value.value,
-            0,
-        )
+        ts = np.zeros((len(tt),)) + attrs.peak_value.value
         return ts
 
 
