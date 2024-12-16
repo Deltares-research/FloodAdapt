@@ -83,9 +83,9 @@ The output from a simulated scenario is saved on a user's computer, aspiring to 
 
 :::{.callout-note}
 ## Where can I find the output folder?
-@fig-folderStruct shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.
+@fig-folderStruct_1 shows where the output folder is located within the FloodAdapt database. The database root directory could contain multiple site databases, for different locations, or even variations of databases for the same location. The output folder is located directly inside the site database folder.
 
-![**Location of the "output" folder within the FloodAdapt folder structure**](../../_static/images/output_folderStructure.png){width=20% fig-align=left #fig-folderStruct}
+![**Location of the "output" folder within the FloodAdapt folder structure**](../../_static/images/output_folderStructure.png){width=20% fig-align=left #fig-folderStruct_1}
 :::
 
 The output folders for the event scenarios and risk scenarios have mostly the same structure; they only differ in the output flood data. @fig-folderEvent shows the output structure for an Event scenario and @fig-folderRisk shows the output structure for a Risk scenario.
