@@ -1,17 +1,15 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Protocol
+from typing import Optional, Protocol, Type, Union
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from flood_adapt.object_model.hazard.interface.forcing import (
-    DEFAULT_DATETIME_FORMAT,
-    TIMESERIES_VARIABLE,
     Scstype,
     ShapeType,
 )
@@ -19,38 +17,42 @@ from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
-
-def stringify_basemodel(basemodel: BaseModel):
-    result = ""
-    for field in basemodel.__pydantic_fields_set__:
-        if isinstance(getattr(basemodel, field), BaseModel):
-            result += f"{field}: {stringify_basemodel(getattr(basemodel, field))}, "
-        else:
-            result += f"{field}: {getattr(basemodel, field)}, "
-    return f"{basemodel.__class__.__name__}({result[:-2]})"
-
-
-class ITimeseriesModel(BaseModel):
-    def __str__(self):
-        return stringify_basemodel(self)
-
-    def __repr__(self) -> str:
-        return self.__str__()
+TIMESERIES_VARIABLE = Union[
+    us.UnitfulIntensity,
+    us.UnitfulDischarge,
+    us.UnitfulVelocity,
+    us.UnitfulLength,
+    us.UnitfulHeight,
+    us.UnitfulArea,
+    us.UnitfulDirection,
+]
 
 
-class SyntheticTimeseriesModel(ITimeseriesModel):
+class SyntheticTimeseriesModel(BaseModel):
     # Required
     shape_type: ShapeType
     duration: us.UnitfulTime
     peak_time: us.UnitfulTime
 
     # Either one of these must be set
-    peak_value: Optional[TIMESERIES_VARIABLE] = None
-    cumulative: Optional[TIMESERIES_VARIABLE] = None
+    peak_value: Optional[TIMESERIES_VARIABLE] = Field(
+        default=None,
+        description="Peak value of the timeseries.",
+        validate_default=False,
+    )
+    cumulative: Optional[TIMESERIES_VARIABLE] = Field(
+        default=None,
+        description="Cumulative value of the timeseries.",
+        validate_default=False,
+    )
 
     # Optional
     scs_file_name: Optional[str] = None
     scs_type: Optional[Scstype] = None
+    fill_value: float = Field(
+        default=0.0,
+        description="Value used to fill the time range that falls outside of the timeseries in the to_dataframe method.",
+    )
 
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
@@ -83,7 +85,7 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
         return self
 
     @staticmethod
-    def default(ts_var: type[us.ValueUnitPair]) -> "SyntheticTimeseriesModel":
+    def default(ts_var: Type[TIMESERIES_VARIABLE]) -> "SyntheticTimeseriesModel":
         return SyntheticTimeseriesModel(
             shape_type=ShapeType.gaussian,
             duration=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
@@ -100,7 +102,7 @@ class SyntheticTimeseriesModel(ITimeseriesModel):
         return self.peak_time + self.duration / 2
 
 
-class CSVTimeseriesModel(ITimeseriesModel):
+class CSVTimeseriesModel(BaseModel):
     path: Path
 
     @model_validator(mode="after")
@@ -125,7 +127,7 @@ class ITimeseriesCalculationStrategy(Protocol):
 
 
 class ITimeseries(ABC):
-    attrs: ITimeseriesModel
+    attrs: BaseModel
 
     @abstractmethod
     def calculate_data(
@@ -134,13 +136,14 @@ class ITimeseries(ABC):
         """Interpolate timeseries data as a numpy array with the provided time step and time as index and intensity as column."""
         ...
 
-    def to_dataframe(
+    def _to_dataframe(
         self,
-        start_time: datetime | str,
-        end_time: datetime | str,
+        start_time: datetime,
+        end_time: datetime,
         ts_start_time: us.UnitfulTime,
         ts_end_time: us.UnitfulTime,
         time_step: timedelta,
+        fill_value: float = 0.0,
     ) -> pd.DataFrame:
         """
         Convert timeseries data to a pandas DataFrame that has time as the index and intensity as the column.
@@ -157,19 +160,11 @@ class ITimeseries(ABC):
                 end_time is the last index of the dataframe (date time)
             time_step (timedelta): The time step between data points.
 
-        Note:
-            - If start_time and end_time are strings, they should be in the format DEFAULT_DATETIME_FORMAT (= "%Y-%m-%d %H:%M:%S")
-
         Returns
         -------
             pd.DataFrame: A pandas DataFrame with time as the index and values as the columns.
             The data is interpolated to the time_step and values that fall outside of the timeseries data are filled with 0.
         """
-        if not isinstance(start_time, datetime):
-            start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
-        if not isinstance(end_time, datetime):
-            end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
-
         full_df_time_range = pd.date_range(
             start=start_time,
             end=end_time,
@@ -177,7 +172,7 @@ class ITimeseries(ABC):
             name="time",
         )
 
-        data = self.calculate_data(time_step=time_step)
+        data = self.calculate_data(time_step=time_step) + fill_value
 
         n_cols = data.shape[1] if len(data.shape) > 1 else 1
         ts_time_range = pd.date_range(
@@ -199,7 +194,7 @@ class ITimeseries(ABC):
             index=full_df_time_range,
             method="nearest",
             limit=1,
-            fill_value=0,  # idea: (for block ts) allow to fill with any value?
+            fill_value=fill_value,
         )
         full_df = full_df.set_index(full_df_time_range)
         full_df.index = pd.to_datetime(full_df.index)
@@ -237,7 +232,7 @@ class ITimeseries(ABC):
     def __str__(self):
         return f"{self.__class__.__name__}({self.attrs})"
 
-    def __eq__(self, other: "ITimeseries") -> bool:
+    def __eq__(self, other) -> bool:
         if not isinstance(other, ITimeseries):
             raise NotImplementedError(f"Cannot compare Timeseries to {type(other)}")
 

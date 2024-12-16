@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Type, Union
+from typing import Any, ClassVar, List, Optional, Type
 
 import pandas as pd
 import tomli
@@ -14,19 +14,6 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.interface.site import RiverModel
 from flood_adapt.object_model.io import unit_system as us
-
-### CONSTANTS ###
-TIDAL_PERIOD = us.UnitfulTime(value=12.4, units=us.UnitTypesTime.hours)
-DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-TIMESERIES_VARIABLE = Union[
-    us.UnitfulIntensity,
-    us.UnitfulDischarge,
-    us.UnitfulVelocity,
-    us.UnitfulLength,
-    us.UnitfulHeight,
-    us.UnitfulArea,
-    us.UnitfulDirection,
-]
 
 
 ### ENUMS ###

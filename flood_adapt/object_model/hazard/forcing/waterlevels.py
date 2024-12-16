@@ -39,8 +39,10 @@ class TideModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
     harmonic_amplitude: us.UnitfulLength
-    harmonic_period: us.UnitfulTime
     harmonic_phase: us.UnitfulTime
+    harmonic_period: us.UnitfulTime = us.UnitfulTime(
+        value=12.4, units=us.UnitTypesTime.hours
+    )
 
     def to_dataframe(
         self, t0: datetime, t1: datetime, ts=TimeModel().time_step

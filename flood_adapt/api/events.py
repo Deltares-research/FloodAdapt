@@ -32,7 +32,6 @@ from flood_adapt.object_model.hazard.interface.events import (
     Template,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
-    TIDAL_PERIOD,
     ForcingSource,
     ForcingType,
     IDischarge,
@@ -61,7 +60,6 @@ __all__ = [
     "IRainfall",
     "IWaterlevel",
     "IWind",
-    "TIDAL_PERIOD",
     "ForcingSource",
     "ForcingType",
     "Template",

@@ -240,7 +240,7 @@ class VerticalReference(str, Enum):
 
 
 class UnitfulLength(ValueUnitPair[UnitTypesLength]):
-    CONVERSION_FACTORS = {
+    CONVERSION_FACTORS: ClassVar[dict[UnitTypesLength, float]] = {
         UnitTypesLength.meters: 1.0,
         UnitTypesLength.centimeters: 100.0,
         UnitTypesLength.millimeters: 1000.0,
@@ -260,11 +260,11 @@ class UnitfulLengthRefValue(UnitfulLength):
 
 
 class UnitfulArea(ValueUnitPair[UnitTypesArea]):
-    CONVERSION_FACTORS = {
+    CONVERSION_FACTORS: ClassVar[dict[UnitTypesArea, float]] = {
         UnitTypesArea.m2: 1,
         UnitTypesArea.dm2: 100,
         UnitTypesArea.cm2: 10_000,
-        UnitTypesArea.mm2: 10_00000,
+        UnitTypesArea.mm2: 1_000_000,
         UnitTypesArea.sf: 10.764,
     }
     DEFAULT_UNIT = UnitTypesArea.m2

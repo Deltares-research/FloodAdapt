@@ -8,7 +8,6 @@ import tomli
 import tomli_w
 
 from flood_adapt.object_model.hazard.interface.forcing import (
-    DEFAULT_DATETIME_FORMAT,
     ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
@@ -175,12 +174,13 @@ class SyntheticTimeseries(ITimeseries):
             Time step of the timeseries, by default TimeModel().time_step.
 
         """
-        return super().to_dataframe(
+        return super()._to_dataframe(
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
             ts_start_time=self.attrs.start_time,
             ts_end_time=self.attrs.end_time,
+            fill_value=self.attrs.fill_value,
         )
 
     @staticmethod
@@ -225,16 +225,11 @@ class CSVTimeseries(ITimeseries):
 
     def to_dataframe(
         self,
-        start_time: datetime | str,
-        end_time: datetime | str,
+        start_time: datetime,
+        end_time: datetime,
         time_step: timedelta = TimeModel().time_step,
     ) -> pd.DataFrame:
-        if isinstance(start_time, str):
-            start_time = datetime.strptime(start_time, DEFAULT_DATETIME_FORMAT)
-        if isinstance(end_time, str):
-            end_time = datetime.strptime(end_time, DEFAULT_DATETIME_FORMAT)
-
-        return super().to_dataframe(
+        return super()._to_dataframe(
             start_time=start_time,
             end_time=end_time,
             time_step=time_step,
