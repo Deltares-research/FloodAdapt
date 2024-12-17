@@ -12,16 +12,21 @@ name: release
 #  - The workflow will also create a GitHub release with the tag name and the release notes
 
 # Checklist for using this workflow up for a new project:
-#   - In this file:
-#      - Replace guitars with the name of your package
-#      - Replace 3.10 with the version of Python you want to use
 #   - In github settings:
 #       - Create an environment called `release` and setup the permissions (https://github.com/<ORGANIZATION>/<REPO_NAME>/settings/environments)
-#   - On PyPi:
-#       - Create the project and add a trusted publisher (https://pypi.org/manage/project/<PACKAGE_NAME>/settings/publishing/)
-#       - Ensure the publisher is configured to use:
-#           - environment name: `release` (can be changed, but should be the one created in the github settings)
-#           - the filename of this workflow yml (in this case: publish-to-pypi.yml)
+#   - In this file,
+#      - at the `env` section on line 34:
+#        - Update the name of your package (PACKAGE_NAME)
+#        - Update the version of Python you want to use (PYTHON_VERSION)
+#  - In the setup_and_build job:
+#      - Update the the shell commands to install your package
+#  - In the pypi_publish job:
+#      - Update the name of the environment to match the one created in the github settings
+#  - On PyPi:
+#      - Create the project and add a trusted publisher (https://pypi.org/manage/project/<PACKAGE_NAME>/settings/publishing/ or https://pypi.org/manage/account/publishing if the project is not on pypi yet)
+#      - Ensure the publisher is configured to use:
+#          - environment name: `release` (can be changed, but should be the one created in the github settings)
+#          - the filename of this workflow yml (in this case: publish-to-pypi.yml)
 #
 
 on:
