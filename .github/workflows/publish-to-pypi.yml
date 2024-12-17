@@ -8,7 +8,7 @@ name: release
 
 # Result:
 #  - Check if the new version is greater than the latest version on PyPI
-#  - Install dependencies 
+#  - Install dependencies
 #  - Build the package
 #  - Publish it to PyPI
 #  - Create a GitHub release with the tag name and the release notes
