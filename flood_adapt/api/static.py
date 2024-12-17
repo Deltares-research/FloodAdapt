@@ -5,7 +5,7 @@ from typing import Union
 from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 
 # upon start up of FloodAdapt
 

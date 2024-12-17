@@ -57,8 +57,6 @@ def run_pyinstaller() -> None:
 
     command.append("--collect-all=flood_adapt")
     command.append("--recursive-copy-metadata=flood_adapt")
-    command.append("--hiddenimport=scipy.special._special_ufuncs")
-    command.append("--hiddenimport=scipy._lib.array_api_compat.numpy.fft")
     command.append("--collect-all=rasterio")
     command.append("--collect-all=pyogrio")
     command.append("--collect-all=xugrid")

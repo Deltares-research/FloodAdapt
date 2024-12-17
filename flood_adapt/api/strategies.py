@@ -1,6 +1,6 @@
 from typing import Any
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.strategy import Strategy
 
@@ -15,7 +15,7 @@ def get_strategy(name: str) -> IStrategy:
 
 
 def create_strategy(attrs: dict[str, Any]) -> IStrategy:
-    return Strategy.load_dict(attrs, Database().input_path)
+    return Strategy.load_dict(attrs)
 
 
 def save_strategy(strategy: IStrategy) -> None:

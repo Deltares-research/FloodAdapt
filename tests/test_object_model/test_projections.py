@@ -1,12 +1,14 @@
 from pathlib import Path
 
 import pytest
+import tomli
 
-from flood_adapt.object_model.direct_impact.socio_economic_change import (
-    SocioEconomicChange,
-)
-from flood_adapt.object_model.hazard.physical_projection import (
+from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
+    PhysicalProjectionModel,
+    ProjectionModel,
+    SocioEconomicChange,
+    SocioEconomicChangeModel,
 )
 from flood_adapt.object_model.projection import Projection
 
@@ -24,14 +26,14 @@ def test_projections(test_db):
 
 
 @pytest.fixture()
-def test_dict():
+def test_dict(test_data_dir):
     config_values = {
         "name": "new_projection",
         "description": "new_unsaved_projection",
         "physical_projection": {
             "sea_level_rise": {"value": 2, "units": "feet"},
             "subsidence": {"value": 0, "units": "feet"},
-            "rainfall_increase": 20,
+            "rainfall_multiplier": 20,
             "storm_frequency_increase": 20,
         },
         "socio_economic_change": {
@@ -43,10 +45,25 @@ def test_dict():
                 "units": "feet",
                 "type": "floodmap",
             },
-            "new_development_shapefile": "new_areas.geojson",
+            "new_development_shapefile": str(Path(test_data_dir, "new_areas.geojson")),
         },
     }
     yield config_values
+
+
+@pytest.fixture
+def test_projection(test_data_dir):
+    attrs = ProjectionModel(
+        name="test_projection",
+        description="test description",
+        physical_projection=PhysicalProjectionModel(),
+        socio_economic_change=SocioEconomicChangeModel(
+            new_development_shapefile=str(
+                test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
+            )
+        ),
+    )
+    return Projection.load_dict(attrs)
 
 
 def test_projection_load_dict(test_dict):
@@ -61,6 +78,7 @@ def test_projection_save_createsFile(test_db, test_dict):
     file_path = (
         test_db.input_path / "projections" / "new_projection" / "new_projection.toml"
     )
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     test_projection.save(file_path)
     assert file_path.is_file()
 
@@ -70,6 +88,7 @@ def test_projection_loadFile_checkAllAttrs(test_db, test_dict):
     file_path = (
         test_db.input_path / "projections" / "new_projection" / "new_projection.toml"
     )
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     test_projection.save(file_path)
 
     test_projection = Projection.load_file(file_path)
@@ -103,7 +122,7 @@ def test_projection_getPhysicalProjection_readValidAttrs(test_projections):
     assert physical_attrs.attrs.subsidence.value == 0
     assert physical_attrs.attrs.subsidence.units == "feet"
 
-    assert physical_attrs.attrs.rainfall_increase == 20
+    assert physical_attrs.attrs.rainfall_multiplier == 20
     assert physical_attrs.attrs.storm_frequency_increase == 20
 
 
@@ -152,4 +171,61 @@ def test_projection_only_slr(test_projections):
     assert test_projection.get_physical_projection().attrs.sea_level_rise.value == 2
     assert (
         test_projection.get_physical_projection().attrs.sea_level_rise.units == "feet"
+    )
+
+
+def test_save_with_new_development_areas_also_saves_shapefile(
+    test_projection, tmp_path
+):
+    # Arrange
+    toml_path = tmp_path / "test_file.toml"
+    expected_new_path = (
+        toml_path.parent
+        / Path(
+            test_projection.attrs.socio_economic_change.new_development_shapefile
+        ).name
+    )
+
+    # Act
+    test_projection.save(toml_path)
+
+    # Assert
+    assert toml_path.exists()
+    assert expected_new_path.exists()
+
+    with open(toml_path, "rb") as f:
+        data = tomli.load(f)
+    assert (
+        data["socio_economic_change"]["new_development_shapefile"]
+        == expected_new_path.name
+    )
+
+
+def test_save_with_new_development_areas_shapefile_already_exists(
+    test_projection, test_db
+):
+    # Arrange
+    toml_path = (
+        test_db.input_path
+        / "projections"
+        / test_projection.attrs.name
+        / f"{test_projection.attrs.name}.toml"
+    )
+    expected_new_path = (
+        toml_path.parent
+        / Path(
+            test_projection.attrs.socio_economic_change.new_development_shapefile  # "pop_growth_new_20.shp"
+        ).name
+    )
+
+    # Act
+    test_projection.save(toml_path)
+    test_projection.save(toml_path)
+
+    # Assert
+    assert toml_path.exists()
+    assert expected_new_path.exists()
+    assert (
+        test_projection.attrs.socio_economic_change.new_development_shapefile
+        == expected_new_path.name
     )
