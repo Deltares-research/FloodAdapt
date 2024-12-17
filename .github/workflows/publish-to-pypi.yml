@@ -12,9 +12,9 @@ name: release
 #  - The workflow will also create a GitHub release with the tag name and the release notes
 
 # Checklist for using this workflow up for a new project:
-#   - In this file: 
-#      - Replace guitares with the name of your package
-#      - Replace 3.10 with the version of Python you want to use 
+#   - In this file:
+#      - Replace guitars with the name of your package
+#      - Replace 3.10 with the version of Python you want to use
 #   - In github settings:
 #       - Create an environment called `release` and setup the permissions (https://github.com/<ORGANIZATION>/<REPO_NAME>/settings/environments)
 #   - On PyPi:
@@ -22,7 +22,7 @@ name: release
 #       - Ensure the publisher is configured to use:
 #           - environment name: `release` (can be changed, but should be the one created in the github settings)
 #           - the filename of this workflow yml (in this case: publish-to-pypi.yml)
-#  
+#
 
 on:
   push:
@@ -88,7 +88,7 @@ jobs:
     needs: [details, check_pypi]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -98,15 +98,19 @@ jobs:
           channels: conda-forge
 
       - name: Install Build tools
-        run:  pip install --upgrade build pip setuptools 
+        shell: bash -el {0}
+        run: |
+          conda run -n publish pip install --upgrade build pip setuptools
 
       - name: Install dependencies
-        run:          
-          conda install gdal shapely 
+        shell: bash -el {0}
+        run: |
+          conda install -n publish gdal basemap cftime fiona netCDF4 pygeos pyproj rasterio rtree shapely --channel conda-forge
+          conda run -n publish pip install .
 
       - name: Build source and wheel distribution
         run: |
-          python -m build
+          conda run -n publish python -m build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
