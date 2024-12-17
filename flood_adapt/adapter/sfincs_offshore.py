@@ -40,8 +40,10 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
         self.run_offshore(scenario)
 
-        with SfincsAdapter(model_root=path) as _offshore_model:
-            return _offshore_model.get_wl_df_from_offshore_his_results()
+        with SfincsAdapter(model_root=path) as offshore_model:
+            waterlevels = offshore_model.get_wl_df_from_offshore_his_results()
+
+        return waterlevels
 
     @staticmethod
     def requires_offshore_run(scenario: IScenario) -> bool:

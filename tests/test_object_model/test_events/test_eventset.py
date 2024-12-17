@@ -102,7 +102,7 @@ def test_eventset(test_sub_event) -> EventSet:
     sub_events = []
     for i in [1, 39, 78]:
         test_sub_event["name"] = f"subevent_{i:04d}"
-        sub_events.append(test_sub_event)
+        sub_events.append(test_sub_event.copy())
 
     attrs = {
         "name": "test_eventset_synthetic",

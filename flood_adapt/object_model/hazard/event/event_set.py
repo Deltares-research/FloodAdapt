@@ -32,6 +32,11 @@ class EventSetModel(IObjectModel):
             ).model_validate(sub_event)
             for sub_event in self["sub_events"]
         ]
+
+        names = [sub_event.name for sub_event in sub_events]
+        if len(names) != len(set(names)):
+            raise ValueError("Sub event names must be unique.")
+
         self["sub_events"] = sub_events
         return self
 

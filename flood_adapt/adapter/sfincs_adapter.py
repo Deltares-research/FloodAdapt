@@ -466,21 +466,21 @@ class SfincsAdapter(IHazardAdapter):
     ):
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_paths(scenario)[0]
+        demfile = self.database.static_path / "dem" / self.site.attrs.dem.filename
 
         # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
-            # dem file for high resolution flood depth map
-            demfile = db_path(TopLevelDir.static) / "dem" / self.site.attrs.dem.filename
-
-            # read max. water level
             zsmax = model._get_zsmax()
+            dem = model._model.data_catalog.get_rasterdataset(demfile)
 
-            # writing the geotiff to the scenario results folder
-            model.write_geotiff(
-                zsmax,
-                demfile=demfile,
-                floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
-            )
+        # writing the geotiff to the scenario results folder
+        SfincsAdapter.write_geotiff(
+            zsmax=zsmax,
+            dem=dem,
+            dem_units=us.UnitTypesLength("meters"),
+            floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
+            floodmap_units=us.UnitTypesLength("meters"),
+        )
 
     def write_water_level_map(
         self, scenario: IScenario, sim_path: Optional[Path] = None
@@ -493,19 +493,23 @@ class SfincsAdapter(IHazardAdapter):
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
 
-    def write_geotiff(self, zsmax, demfile: Path, floodmap_fn: Path):
+    @staticmethod
+    def write_geotiff(
+        zsmax,
+        dem,
+        dem_units: us.UnitTypesLength,
+        floodmap_fn: Path,
+        floodmap_units: us.UnitTypesLength,
+    ):
         # read DEM and convert units to metric units used by SFINCS
-
-        demfile_units = self.site.attrs.dem.units
-        dem_conversion = us.UnitfulLength(value=1.0, units=demfile_units).convert(
-            us.UnitTypesLength("meters")
+        dem_conversion = us.UnitfulLength(value=1.0, units=dem_units).convert(
+            us.UnitTypesLength(us.UnitTypesLength.meters)
         )
-        dem = dem_conversion * self._model.data_catalog.get_rasterdataset(demfile)
+        dem = dem_conversion * dem
 
         # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.floodmap_units
         floodmap_conversion = us.UnitfulLength(
-            value=1.0, units=us.UnitTypesLength("meters")
+            value=1.0, units=us.UnitTypesLength(us.UnitTypesLength.meters)
         ).convert(floodmap_units)
 
         utils.downscale_floodmap(
@@ -780,15 +784,20 @@ class SfincsAdapter(IHazardAdapter):
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = db_path(TopLevelDir.static) / "dem" / self.site.attrs.dem.filename
+            demfile = self.database.static_path / "dem" / self.site.attrs.dem.filename
 
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
-                dummymodel.write_geotiff(
-                    zs_rp_single.to_array().squeeze().transpose(),
-                    demfile=demfile,
-                    floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
-                )
+                dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
+                zsmax = (zs_rp_single.to_array().squeeze().transpose(),)
+
+            SfincsAdapter.write_geotiff(
+                zsmax=zsmax,
+                dem=dem,
+                dem_units=us.UnitTypesLength.meters,
+                floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
+                floodmap_units=us.UnitTypesLength.meters,
+            )
 
     ######################################
     ### PRIVATE - use at your own risk ###
@@ -1298,7 +1307,7 @@ class SfincsAdapter(IHazardAdapter):
         """
         self._model.read_results()
         da = self._model.results["point_zs"]
-        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.values)
+        df = pd.DataFrame(index=pd.DatetimeIndex(da.time), data=da.to_numpy())
 
         names = []
         descriptions = []
