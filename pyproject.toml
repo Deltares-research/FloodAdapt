@@ -36,9 +36,10 @@ dependencies = [
     "fiona",
     "geojson",
     "geopandas",
-    "hydromt-fiat@ git+https://github.com/deltares/hydromt_fiat.git",
-    # "hydromt-sfincs", # uncomment when hydromt-sfincs quadtree stuff is released.
-    # is overwritten by git submodule in extern and installed as editable by pixi
+    "jellyfish<1.0", # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
+    # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
+    "hydromt-fiat==0.4.2",
+    "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git@quadtree_io",
     "numpy < 2.0",
     "numpy-financial",
     "pandas",

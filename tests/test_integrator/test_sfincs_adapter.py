@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.integrator.sfincs_adapter import SfincsAdapter
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.object_model.scenario import Scenario
 
 

@@ -24,8 +24,9 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
+from flood_adapt.config import Settings
 from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import Obs_pointModel, SlrModel
+from flood_adapt.object_model.interface.site import ObsPointModel, SlrModel
 from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
 from flood_adapt.object_model.site import Site
 
@@ -220,12 +221,12 @@ class ConfigModel(BaseModel):
     road_width: Optional[float] = 5
     cyclones: Optional[bool] = True
     cyclone_basin: Optional[Basins] = None
-    obs_point: Optional[list[Obs_pointModel]] = None
+    obs_point: Optional[list[ObsPointModel]] = None
     probabilistic_set: Optional[str] = None
     infographics: Optional[bool] = True
 
 
-def read_toml(fn: str) -> dict:
+def read_toml(fn: Union[str, Path]) -> dict:
     """
     Read a TOML file and return its contents as a dictionary.
 
@@ -389,7 +390,11 @@ class Database:
         physical and socio-economic conditions, and saves them to the database.
         """
         # Load database
-        read_database(self.root.parent, self.config.name)
+        Settings(
+            database_root=self.root.parent,
+            database_name=self.config.name,
+        )
+        read_database(Settings().database_root, Settings().database_name)
         # Create no measures strategy
         strategy = create_strategy({"name": "no_measures", "measures": []})
         save_strategy(strategy)
@@ -414,6 +419,27 @@ class Database:
                     )
 
     def _join_building_footprints(self, building_footprints, field_name):
+        """
+        Join building footprints with existing building data and updates the exposure CSV.
+
+        Args:
+            building_footprints (GeoDataFrame): GeoDataFrame containing the building footprints to be joined.
+            field_name (str): The field name to use for the spatial join.
+
+        Returns
+        -------
+            None
+
+        This method performs the following steps:
+        1. Reads the exposure CSV file.
+        2. Performs a spatial join between the buildings and building footprints.
+        3. Ensures that in case of multiple values, the first is kept.
+        4. Creates a folder to store the building footprints.
+        5. Saves the spatial file for future use.
+        6. Merges the joined buildings with the exposure CSV and saves it.
+        7. Updates the site attributes with the relative path to the saved building footprints.
+        8. Logs the location where the building footprints are saved.
+        """
         buildings = self.buildings
         exposure_csv = pd.read_csv(self.exposure_csv_path)
         buildings_joined, building_footprints = spatial_join(
@@ -501,11 +527,13 @@ class Database:
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
-                if "BF_FID" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("BF_FID")
+                if "BF_FID" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
-                    footprints_path = fiat_path.joinpath(footprints.file)
+                    footprints_path = fiat_path.joinpath(footprints["file"])
                     check_file = footprints_path.exists()
+                else:
+                    check_file = False
             else:
                 check_file = False
             if check_file and not check_col:
@@ -591,13 +619,6 @@ class Database:
                 self.config.building_footprints.field_name,
             )
 
-        # TODO check how this naming of output geoms should become more explicit!
-        self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
-        self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
-        self.site_attrs["fiat"]["save_simulation"] = (
-            "False"  # default is not to save simulations
-        )
-
         # Add base flood elevation information
         if self.config.bfe:
             # TODO can we use hydromt-FIAT?
@@ -652,7 +673,7 @@ class Database:
                 region = region.explode().reset_index()
                 region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
-                    "exposure", "aggregation_areas", "region.geojson"
+                    "exposure", "geoms", "region.geojson"
                 )
                 if not aggregation_path.parent.exists():
                     aggregation_path.parent.mkdir()
@@ -748,17 +769,17 @@ class Database:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
                 add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("SVI")
+                if "SVI" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("SVI")
                     svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi.file)
+                    svi_path = fiat_path.joinpath(svi["file"])
                     self.site_attrs["fiat"]["svi"] = {}
                     self.site_attrs["fiat"]["svi"]["geom"] = str(
                         Path(svi_path.relative_to(self.static_path)).as_posix()
                     )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
                     self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['field_name']}"
                     )
                 else:
                     self.logger.warning("No SVI map found!")
@@ -768,7 +789,9 @@ class Database:
                 )
 
         # Make sure that FIAT roads are polygons
+        self.roads = False
         if "roads" in self.fiat_model.exposure.geom_names:
+            self.roads = True
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             roads_ind = self.fiat_model.exposure.geom_names.index("roads")
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
@@ -788,7 +811,7 @@ class Database:
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
                 )
-                roads = roads.to_crs(4326)
+                roads = roads.to_crs(self.fiat_model.exposure.crs)
                 if roads_path.exists():
                     roads_path.unlink()
                 roads.to_file(roads_path)
@@ -799,6 +822,13 @@ class Database:
             self.logger.warning(
                 "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
+            # TODO check how this naming of output geoms should become more explicit!
+        if self.roads:
+            self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
+        self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
+        self.site_attrs["fiat"]["save_simulation"] = (
+            "False"  # default is not to save simulations
+        )
 
     def read_sfincs(self):
         """
@@ -1000,27 +1030,28 @@ class Database:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
-        roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
-        roads["geometry"] = roads.geometry.centroid  # get centroids
+        if "roads" in self.fiat_model.exposure.geom_names:
+            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+            roads["geometry"] = roads.geometry.centroid  # get centroids
 
-        x_points = xr.DataArray(roads["geometry"].x, dims="points")
-        y_points = xr.DataArray(roads["geometry"].y, dims="points")
-        roads["elev"] = (
-            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-            * conversion_factor
-        )
+            x_points = xr.DataArray(roads["geometry"].x, dims="points")
+            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            roads["elev"] = (
+                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+                * conversion_factor
+            )
 
-        exposure.loc[
-            exposure["Primary Object Type"] == "road", "Ground Floor Height"
-        ] = 0
-        exposure = exposure.merge(
-            roads[["Object ID", "elev"]], on="Object ID", how="left"
-        )
-        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
-        )
-        del exposure["elev"]
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Floor Height"
+            ] = 0
+            exposure = exposure.merge(
+                roads[["Object ID", "elev"]], on="Object ID", how="left"
+            )
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Elevation"
+            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+            del exposure["elev"]
 
         buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
@@ -1538,10 +1569,18 @@ class Database:
 
             # Copy infographics config
             path_ig_temp = templates_path.joinpath(
-                "infographics", self.metrics_folder_name, svi_folder_name
+                "infographics", self.metrics_folder_name
             )
             path_ig = self.root.joinpath("static", "templates", "infographics")
-            shutil.copytree(path_ig_temp, path_ig)
+            path_ig.mkdir()
+            files_ig = ["styles.css", "config_charts.toml"]
+            if "svi" in self.site_attrs["fiat"]:
+                files_ig.append("config_risk_charts.toml")
+                files_ig.append("config_people.toml")
+            if self.roads:
+                files_ig.append("config_roads.toml")
+            for file in files_ig:
+                shutil.copy(path_ig_temp.joinpath(file), path_ig.joinpath(file))
 
             # Copy images
             path_0 = templates_path.joinpath("infographics", "images")
@@ -1556,9 +1595,17 @@ class Database:
         for file in files:
             file = path.joinpath(file)
             attrs = read_toml(file)
+            # add aggration levels
             attrs["aggregateBy"] = [
                 aggr["name"] for aggr in self.site_attrs["fiat"]["aggregation"]
             ]
+            # take out road metrics if needed
+            if not self.roads:
+                attrs["queries"] = [
+                    query
+                    for query in attrs["queries"]
+                    if "road" not in query["name"].lower()
+                ]
             # replace the SVI threshold if needed
             if self.config.svi:
                 for i, query in enumerate(attrs["queries"]):

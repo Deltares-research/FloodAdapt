@@ -9,9 +9,9 @@ Hydraulic (grey) measures aim to prevent floodwaters from reaching residents and
 
 ![**Hydraulic (grey) measures in FloodAdapt: floodwalls and levees, and pumps**](../../_static/images/measures_hydraulic.png){width=40% fig-align=left #fig-measures_buildingLevel}
 
-![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../../_static/images/measures_hydraulic_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI}
+![**Selection of Hydraulic measures in the Measures tab, shown here for the example of a floodwall**](../../_static/images/measures_hydraulic_GUI.png){width=70% fig-align=left #fig-measures_buildingLevel_GUI_h}
 
-To specify a hydraulic measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Hydraulic" (see @fig-measures_buildingLevel_GUI). The user can then choose for "Measure" one of the measure types: [floodwall or levee](#floodwalls-and-levees), or [pumps](#pumps). For each of these measures, the user will choose an "Area type". This indicates how the user will specify the location of the measure. There are two options:
+To specify a hydraulic measure, the user goes to the Measures tab, and in the "Category" drop-down menu selects "Hydraulic" (see @fig-measures_buildingLevel_GUI_h). The user can then choose for "Measure" one of the measure types: [floodwall or levee](#floodwalls-and-levees), or [pumps](#pumps). For each of these measures, the user will choose an "Area type". This indicates how the user will specify the location of the measure. There are two options:
 
 * Draw polyline: this option allows a user to click a polyline in the map to represent either the floodwall/levee or the intake/outtake location of a pump
 
