@@ -107,7 +107,7 @@ jobs:
       - name: Install dependencies
         shell: bash -el {0}
         run: |
-          conda install -n publish gdal --channel conda-forge
+          conda install -n publish gdal basemap cftime fiona netCDF4 pygeos pyproj rasterio rtree shapely --channel conda-forge
           conda run -n publish pip install .
 
       - name: Build source and wheel distribution
