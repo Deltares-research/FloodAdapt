@@ -10,35 +10,122 @@ from flood_adapt.dbs_controller import Database
 
 
 def get_outputs() -> dict[str, Any]:
-    # sorting and filtering either with PyQt table or in the API
+    """Get all completed scenarios from the database.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary containing all scenarios.
+        Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
+        Each value is a list of the corresponding attribute for each output.
+    """
     return Database().get_outputs()
 
 
 def get_topobathy_path() -> str:
+    """
+    Return the path of the topobathy tiles in order to create flood maps with water level maps.
+
+    Returns
+    -------
+    str
+        The path to the topobathy file.
+
+    """
     return Database().get_topobathy_path()
 
 
 def get_index_path() -> str:
+    """
+    Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.
+
+    Returns
+    -------
+    str
+        The path to the index file.
+    """
     return Database().get_index_path()
 
 
 def get_depth_conversion() -> float:
+    """
+    Return the flood depth conversion that is need in the gui to plot the flood map.
+
+    Returns
+    -------
+    float
+        The flood depth conversion.
+    """
     return Database().get_depth_conversion()
 
 
-def get_max_water_level(name: str, rp: int = None) -> np.array:
+def get_max_water_level(name: str, rp: int = None) -> np.ndarray:
+    """
+    Return the maximum water level for the given scenario.
+
+    Parameters
+    ----------
+    name : str
+        The name of the scenario.
+    rp : int, optional
+        The return period of the water level, by default None
+
+    Returns
+    -------
+    np.ndarray
+        2D gridded map with the maximum waterlevels for each cell.
+    """
     return Database().get_max_water_level(name, rp)
 
 
 def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
+    """
+    Return a geodataframe of the impacts at the footprint level.
+
+    Parameters
+    ----------
+    name : str
+        The name of the scenario.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The impact footprints for the scenario.
+    """
     return Database().get_fiat_footprints(name)
 
 
-def get_aggregation(name: str) -> dict[gpd.GeoDataFrame]:
+def get_aggregation(name: str) -> dict[str, gpd.GeoDataFrame]:
+    """
+    Return a dictionary with the aggregated impacts as geodataframes.
+
+    Parameters
+    ----------
+    name : str
+        The name of the scenario.
+
+    Returns
+    -------
+    dict[str, gpd.GeoDataFrame]
+        The aggregated impacts for the scenario.
+    """
     return Database().get_aggregation(name)
 
 
 def get_roads(name: str) -> gpd.GeoDataFrame:
+    """
+    Return a geodataframe of the impacts at roads.
+
+    Parameters
+    ----------
+    name : str
+        The name of the scenario.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The impacted roads for the scenario.
+    """
     return Database().get_roads(name)
 
 

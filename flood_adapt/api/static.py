@@ -29,16 +29,14 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
     # TODO should this return a list of geojson? if yes what form?
-    """Get the aggregations areas that are used for the site and fiat.
+    """Get a list of the aggregation areas that are provided in the site configuration.
 
-    Parameters
-    ----------
-    database : IDatabase
+    These are expected to much the ones in the FIAT model.
 
     Returns
     -------
-    list[GeoDataFrame]
-        list of GeoDataFrames with the aggregation areas
+    dict[str, GeoDataFrame]
+        list of geodataframes with the polygons defining the aggregation areas
     """
     return Database().static.get_aggregation_areas()
 
@@ -61,6 +59,13 @@ def get_obs_points() -> GeoDataFrame:
 
 
 def get_model_boundary() -> GeoDataFrame:
+    """Get the model boundary that is used in SFINCS.
+
+    Returns
+    -------
+    GeoDataFrame
+        GeoDataFrame with the model boundary
+    """
     return Database().static.get_model_boundary()
 
 
@@ -136,17 +141,26 @@ def get_buildings() -> GeoDataFrame:
 
 
 def get_property_types() -> list:
+    """Get the property types that are used in the exposure.
+
+    Returns
+    -------
+    list
+        list of property types
+    """
     return Database().static.get_property_types()
 
 
 def get_hazard_measure_types():
+    """Get list of all implemented hazard measure types."""
     raise NotImplementedError
 
 
 def get_impact_measure_types():
+    """Get list of all implemented impact measure types."""
     raise NotImplementedError
 
 
 def get_event_templates():
-    # get a list ideally automatically from the child classes of the parent class Event
+    """Get list of all implemented event templates."""
     raise NotImplementedError
