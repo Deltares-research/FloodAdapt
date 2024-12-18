@@ -79,7 +79,7 @@ def test_benefit(test_db, get_rng):
 
     for name, row in benefit.scenarios.iterrows():
         # Create output folder
-        output_path = test_db.output_path / "Scenarios" / row["scenario created"]
+        output_path = test_db.output_path / "scenarios" / row["scenario created"]
         if not output_path.exists():
             output_path.mkdir(parents=True)
         # Create dummy metrics file

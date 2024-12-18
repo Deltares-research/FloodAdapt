@@ -24,7 +24,7 @@ This guide is organized in six sections:
 
 ![The model-builder start screen. The tabs at the top walk you through the key components of a Delft-FIAT model for FloodAdapt.](../../_static/images/model_builder_homeScreen.png){width=50% fig-align=left #fig-homeScreen}
 
-## Getting started {#sec-getting-started}
+## Getting started {#sec-getting-started-delft-fiat}
 
 The initial steps to set up a Delft-FIAT model are the same whether you set up a [quickbuild](#sec-quickbuild) or [tailored](#sec-tailored_model) model. To get started building your Delft-FIAT model:
 
@@ -49,10 +49,10 @@ When you are finished, click "Generate Boundary", and your model area will be cr
 ##### Which model boundary option should I choose?
 When setting up FloodAdapt in a project area, you will also have to set up a SFINCS model for the flood estimation. You may want to have your damage model active everywhere where there will be flood information. If that is the case, choose the "SFINCS model domain".
 
-Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). If this is the case, you can better pick one of the other options.
+Sometimes the flood model extent is actually much larger than your area of interest (this is because water from outside your area of interest may still make its way to your area of interest). In this case, you can choose based on the following considerations:
 
-* To look at damages for an adminstative area like a city or a county, you can best upload the city or county boundary shapefile using the "Upload file" option
-* To quickly get started and you don't have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.
+* To look at damages for an adminstative area like a city or a county, the best option would be to upload the city or county boundary shapefile using the "Upload file" option
+* To quickly get started if you don't have a city or county shapefile on hand, you can draw a polygon or box in the map around the area you are interested in.
 :::
 
 <!-- I am commenting out the below because I actually think it makes it more confusing instead of clearer.
@@ -69,7 +69,7 @@ After you selected the working directory the Delft-FIAT model builder generates 
 :::
 
 ## Quick Build {#sec-quickbuild}
-The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
+The Quick Build option allows users to set up a Delft-FIAT model anywhere with ease; it doesn't require any user input except for defining the [model boundary](#sec-getting-started-delft-fiat). The quick build option sets up the exposure data for buildings and roads, and assigns the corresponding vulnerability curve to each asset. The model-builder also downloads [equity data (income and population)](#sec-equity) for the equity-weighting functionality in FloodAdapt.
 
 To use the quick build option to generate a Delft-FIAT model, simply click the "Create model" button on the "Model Boundary | Quick Build" tab after generating your model boundary. That's it!
 
@@ -110,7 +110,7 @@ When creating a tailored Delft-FIAT model, there are three mandatory steps. Thes
 2. [Add vulnerability curves](#sec_vulnerability)
 3. [Create your Delft-FIAT model](#sec-createModel)
 
-In addition to these mandatory steps, there are many options to refine data sources and default options. When creating a tailored Delft-FIAT model, you always start by building a [base exposure dataset](#sec-basemodel) using open data, which can then be refined. The Delft-FIAT model tabs (see Figure x) — Exposure, Vulnerability, Equity, and Additional Attributes — enable specific refinements, which are highlighted in the list below and detailed in the following sections.
+In addition to these mandatory steps, there are many options to refine data sources and default options. When creating a tailored Delft-FIAT model, you always start by building a [base exposure dataset](#sec-basemodel) using open data, which can then be refined. The Delft-FIAT model tabs (see @fig-homeScreen) — Exposure, Vulnerability, Equity, and Additional Attributes — enable specific refinements, which are highlighted in the list below and detailed in the following sections.
 
 * [Step 1: Set up a base exposure dataset](#sec-basemodel)
 * [Exposure updates](#sec_update_exposure)
@@ -159,13 +159,6 @@ When choosing to start with open street map, the model-builder asks the user to 
 If this video is not visible for you, try this [link](https://youtu.be/VdtFwzO1530?rel=0)
 :::
 
-::: {.callout-tip}
-##### Watch a video tutorial for setting up a base exposure dataset for a Delft-FIAT model outside of the U.S.
-
-Coming soon...
-:::
-
-
 ### Updating exposure data {#sec_update_exposure}
 The Delft-FIAT model builder allows you to update the following exposure data, covered in the following sections. Click on any of the options to jump to that section:
 
@@ -193,8 +186,7 @@ In the "Finished Floor Height" tab there is a "Settings" button. This allows you
 
 ::: {.callout-tip}
 ##### Watch a video tutorial for updating the finished floor height of buildings in your Delft-FIAT model
-
-Coming soon...
+{{< video https://youtu.be/5B6pHrmjrAc?rel=0 >}}
 :::
 
 #### Updating ground elevation {#sec-ground_elevation}
@@ -218,13 +210,6 @@ To update the ground elevation values in your Delft-FIAT model:
         * Select the elevation unit for your DEM (meters or feet).
 3. Click "Add to model".
 
-::: {.callout-tip}
-##### Watch a video tutorial for updating ground elevation in your Delft-FIAT model
-
-Coming soon...
-:::
-
-
 #### Updating maximum potential damages {#sec-maximum_potential_damages}
 When local data is available on maximum potential values, either for content or structure, these can be incorporated in the Delft-FIAT model using the Delft-FIAT model-builder. The maximum potential damages you want to use must be point or polygon data. Point data would be for asset-level information, and polygon data would be for cases where you want to assign the same values to a larger area. It is necessary to distinguish between structure and content maximum potential damages, as these are treated separately in the damage calculation.
 
@@ -244,12 +229,6 @@ To update the maximum potential damages:
 In the "Max Potential Damages" tab there is a "Settings" button. This allows you to change default choices related to the spatial join of the exposure data points and the uploaded finished floor height data. Default settings use the *nearest* method for points and the *intersection* method for polygons when doing the spatial join. The default maximum distance for the *nearest* method is 10 meters.
 :::
 
-::: {.callout-tip}
-##### Watch a video tutorial for updating the maximum potential damages in your Delft-FIAT model
-
-Coming soon...
-:::
-
 ### Vulnerability curves {#sec_vulnerability}
 Delft-FIAT uses vulnerability curves (also known as depth-damage curves) to relate inundation depths to a fraction of total damage. Each building type can have a different depth-damage curve. Delft-FIAT accepts any user-selected or defined depth-damage curve. To make it easy for users to quickly set up a Delft-FIAT model, there is a default damage curve assignment in the Delft-FIAT model-builder. @fig-DDF_defaults shows the selection of default depth-damage curves (for structure damage) for buildings in the United States. [This selection can be changed](#sec_update_vulnerability) by the user. To assign the default damage curves, you only need to do the following two steps:
 
@@ -257,12 +236,6 @@ Delft-FIAT uses vulnerability curves (also known as depth-damage curves) to rela
 * Click "Add to model"
 
 ![Default selection of structure depth-damage curves for Delft-FIAT models built in locations in the United States. More discussion about this default selection will be **coming soon** as will an overview of the default curves for content](../../_static/images/DDF_defaults_structure.png){width=50% fig-align=left #fig-DDF_defaults}
-
-::: {.callout-tip}
-##### Watch a video tutorial for adding depth damage curves to your Delft-FIAT model
-
-Coming soon...
-:::
 
 #### Updating vulnerability curves {#sec_update_vulnerability}
 If you are building your model in the U.S., you can change the damage curve assignment. Updating damage curves is currently only possible in the U.S. The functionality is facilitated by the alignment between [HAZUS damage curves](https://msc.fema.gov/portal/resources/hazus) and the secondary object types in the [National Structure Inventory](https://www.hec.usace.army.mil/confluence/nsi) (see secondary object types in @fig-secOccType). Users can only choose new damage curve assignments from existing damage curves within the HAZUS damage curve database. User-defined damage curves are currently not possible from within the Delft-FIAT model builder. Future releases of the Delft-FIAT model builder may offer more flexibility.
@@ -292,22 +265,16 @@ How to change the damage curve assignment (U.S. only):
 
 ::: {.callout-tip}
 ##### Watch a video tutorial for changing depth-damage curves for a U.S. Delft-FIAT model
-
-Coming soon...
+{{< video https://youtu.be/ofCbYD4yZks?rel=0 >}}
 :::
 
 ### Equity {#sec-equity}
-FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepare the income and population data needed to calculate equity weights, per capita income and population are obtain from the U.S. Census Bureau at the block group scale. Adding this data to your Delft-FIAT model is easy, and described in the steps below:
+FloodAdapt allows you to evaluate equity-weighted damages and benefits. To prepare the income and population data needed to calculate equity weights, per capita income and population are obtained from the U.S. Census Bureau at the block group scale. Adding this data to your Delft-FIAT model is easy, and described in the steps below:
 
 * Open the **Equity** tab on the top panel.
 * In the bottom panel, specify the year you for which census data will be downloaded.
 * Check the checkbox to download Equity data.
 * Click "Add to model"
-
-
-<!-- This line was just sitting at the end of the equity section. Is this not for the classification tab?
-Add additional attributes to your model. In this example, a land use layer is added to the model, and assets are assigned to the land use category that encompasses each asset.
--->
 
 ### Additional Attributes {#sec-addl-attributes}
 <!--#### Social Vulnerability Index (SVI) {#sec-svi}
@@ -353,8 +320,7 @@ Add additional attributes to your model. In this example, a land use layer is ad
 -->
 ::: {.callout-tip}
 ##### Watch a video tutorial for adding additional attributes to your Delft-FIAT model
-
-Coming soon...
+{{< video https://youtu.be/Z_eqiBgwFlA?rel=0 >}}
 :::
 
 ### Create model  {#sec-createModel}
@@ -373,29 +339,35 @@ Once you have created your model, you can visualize different model attributes o
 
 There is also a button "Exposure output". This opens the full model data, which is also stored as a CSV in the model output folder. This allows you to quickly view the complete dataset without having to look for the file on your computer.
 
-::: {.callout-tip}
-##### Watch a video tutorial for visualizing your Delft-FIAT model
+## Delft-FIAT model folder structure
+Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. Below you can see what the folder structure looks like for a comprehensive model, saved in a working directory named "Delft-FIAT".
+When you create a basic model (without using QuickBuild or any advanced options), the resulting folder structure will contain fewer folders and files. The additional folders and files that appear when using QuickBuild or adding additional attributes to your model are highlighted in the figure below, indicating that the folders (incl. files within) are generated only under those specific conditions.
 
-Coming soon...
-:::
-
-## Delft-FIAT model folder
-Once you have created your model, the model folder you specified when you chose your working directory in the [getting started](#getting-started) step will be populated with the Delft-FIAT model files. This folder structure will be described...**coming soon**...
-
-<!--
-Figure x shows what the folder structure looks like, for a working directory named "FIAT".
-
-├───📁 FIAT/
-    |
-    ├───📁 hazard/
-    │   └───📄 This will be empty
+```
+├───📁 Delft-FIAT/
     |
     ├───📁 exposure/
+    │      ├───📁 additional_attributes/ (advanced model)
+    │   │    ├─── 📄 base_zone.gpkg
+    │   │    ├─── 📄 land_use.gpkg
+        │     ├───📁 aggregation_areas/ (quickbuild/advanced model)
+    │   │    ├─── 📄 block_groups.gpkg
+        │     ├───📁 equity/ (quickbuild/advanced model)
+    │   │    ├─── 📄 equity_data.gpkg
     │   ├───📄 buildings.gpkg
-    │   └───📄 exposure.csv
+    │   ├───📄 exposure.csv
+    │   ├───📄 region.gpkg
+    │   ├───📄 roads.gpkg
     |
     ├───📁 vulnerability/
-    │   └───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_curves.csv
+    │   ├───📄 vulnerability_identifiers.csv
     |
-    └───📄 settings.toml
--->
+    ├───📁 hazard/
+    │
+    ├───📁 output/
+    |
+    ├───📄 hydromt.log
+    ├───📄 settings.toml
+    └───📄 spatial_joins.toml (quickbuild/advanced model)
+```

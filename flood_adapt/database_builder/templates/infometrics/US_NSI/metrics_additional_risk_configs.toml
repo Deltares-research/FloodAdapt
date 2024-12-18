@@ -1,0 +1,4 @@
+[flood_exceedance]
+column = "Inundation Depth"
+threshold = 0.2
+period = 30

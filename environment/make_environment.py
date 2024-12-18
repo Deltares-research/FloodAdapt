@@ -1,17 +1,10 @@
 import argparse
-import os
 import subprocess
-import sys
 from pathlib import Path
+from typing import Optional
 
-try:
-    import yaml  # noQA
-except Exception:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
-    import yaml  # noQA
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
+WHEELS_DIR = Path(__file__).parent / "geospatial-wheels"
+BACKEND_ROOT = WHEELS_DIR.parents[1]
 
 SUBPROCESS_KWARGS = {
     "shell": True,
@@ -35,14 +28,6 @@ def parse_args():
         help="The name for the environment to be created. If it already exists, it will be removed and recreated from scratch.",
     )
     parser.add_argument(
-        "-p",
-        "--prefix",
-        default=False,
-        dest="prefix",
-        type=str,
-        help="Creates the environment at prefix/name instead of the default conda location.",
-    )
-    parser.add_argument(
         "-e",
         "--editable",
         default=False,
@@ -53,116 +38,74 @@ def parse_args():
     parser.add_argument(
         "-d",
         "--optional-deps",
-        default="none",
+        default=None,
         dest="optional_deps",
-        help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. (linting, testing, etc.) Default is to not install any.",
+        help="Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. Must be one of: [dev, docs, build, all]. Default is to not install any.",
     )
     parser.add_argument(
-        "--project-root",
-        default=None,
-        type=str,
-        dest="project_root",
-        help="The root directory of the project. Default is 2 levels above this script. Usually named 'FloodAdapt'.",
+        "-v",
+        "--verbose",
+        default=False,
+        action="store_true",
+        dest="debug",
+        help="Print debug logs during the environment creation process.",
     )
 
     args = parser.parse_args()
     return args
 
 
-def write_env_yml(env_name: str):
-    env = {
-        "name": env_name,
-        "channels": ["conda-forge"],
-        "dependencies": ["python=3.10", "pip", {"pip": []}],
-    }
-
-    for wheel in os.listdir(WHEELS_DIR):
-        wheel_path = os.path.join(WHEELS_DIR, wheel)
-        env["dependencies"][-1]["pip"].append(wheel_path)
-
-    with open("_environment.yml", "w") as f:
-        yaml.dump(env, f)
-    print(f"Temporary environment file created at: {PROJECT_ROOT / '_environment.yml'}")
-
-
-def check_and_delete_conda_env(env_name, prefix=None):
-    result = subprocess.run("conda env list", **SUBPROCESS_KWARGS)
+def check_and_delete_conda_env(env_name: str):
+    result = subprocess.run(["conda", "env", "list"], **SUBPROCESS_KWARGS)
 
     if env_name in result.stdout:
         print(f"Environment {env_name} already exists. Removing it now...")
-        if prefix:
-            subprocess.run(f"conda env remove -p {prefix} -y", **SUBPROCESS_KWARGS)
-        else:
-            subprocess.run(f"conda env remove -n {env_name} -y", **SUBPROCESS_KWARGS)
-
-
-def install_OGR_dependencies(env_name: str, prefix_option: str):
-    if sys.platform.startswith("win"):
-        write_env_yml(env_name)
-        create_command = f"conda env create -f _environment.yml {prefix_option}"
-        process = subprocess.Popen(
-            create_command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        )
-
-        while process.poll() is None:
-            print(process.stdout.readline())
-
-    elif sys.platform == "linux":
-        subprocess.run("sudo add-apt-repository ppa:ubuntugis/ppa", **SUBPROCESS_KWARGS)
-        subprocess.run("sudo apt-get update", **SUBPROCESS_KWARGS)
-        subprocess.run("sudo apt-get install gdal-bin", **SUBPROCESS_KWARGS)
-        subprocess.run("sudo apt-get install libgdal-dev", **SUBPROCESS_KWARGS)
         subprocess.run(
-            "export CPLUS_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS
+            ["conda", "env", "remove", "-n", env_name, "-y"], **SUBPROCESS_KWARGS
         )
-        subprocess.run("export C_INCLUDE_PATH=/usr/include/gdal", **SUBPROCESS_KWARGS)
-        subprocess.run("ogrinfo --version", **SUBPROCESS_KWARGS)
-
-        subprocess.run(
-            "pip install GDAL==$(ogrinfo --version | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')",
-            **SUBPROCESS_KWARGS,
-        )
-        # TODO more deps
-    else:
-        raise NotImplementedError(f"Platform {sys.platform} not supported.")
 
 
 def create_env(
     env_name: str,
-    prefix: str = None,
     editable: bool = False,
-    optional_deps: str = None,
+    optional_deps: Optional[str] = None,
+    debug: bool = False,
 ):
-    if not PROJECT_ROOT.exists():
+    if not (BACKEND_ROOT / "pyproject.toml").exists():
         raise FileNotFoundError(
-            f"The FloodAdapt repository was not found in the expected location: {PROJECT_ROOT}"
+            f"Expected a pyproject.toml file at: {BACKEND_ROOT / 'pyproject.toml'}"
         )
 
-    check_and_delete_conda_env(env_name, prefix=prefix)
-    print(prefix)
-    print(env_name)
-    if prefix:
-        env_location = os.path.join(prefix, env_name)
-        prefix_option = f"--prefix {env_location}"
-        activate_command = f"conda activate -p {env_location}"
-        conda_run_opt = f"-p {env_location}"
-    else:
-        env_location = env_name
-        prefix_option = ""
-        activate_command = f"conda activate {env_name}"
-        conda_run_opt = f"-n {env_name}"
+    try:
+        subprocess.run("conda info", **SUBPROCESS_KWARGS)
+    except subprocess.CalledProcessError:
+        subprocess.run("conda init", **SUBPROCESS_KWARGS)
 
-    install_OGR_dependencies(env_name, prefix_option)
+    check_and_delete_conda_env(env_name)
 
-    editable_option = "-e" if editable else ""
+    ENV_YML = BACKEND_ROOT / "environment" / "_environment.yml"
+    DEBUG_LOGFILE = Path(__file__).parent / f"{env_name}_debug.log"
+
+    create_args = ["conda", "env", "create", "-n", env_name, "-f", str(ENV_YML)]
+    activate_args = ["conda", "activate", env_name]
+
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
+    debug_log_option = ["-v", "-v", "-v", "--log", str(DEBUG_LOGFILE)] if debug else ""
+    editable_option = "-e" if editable else ""
+    pip_install_args = [
+        "pip",
+        "install",
+        editable_option,
+        f"{BACKEND_ROOT}{dependency_option}",
+        debug_log_option,
+        "--no-cache-dir",
+    ]
 
     command_list = [
-        f"conda run {conda_run_opt} pip install {editable_option} {PROJECT_ROOT.as_posix()}{dependency_option} --no-cache-dir",
+        " ".join(["conda", "activate"]),
+        " ".join(create_args),
+        " ".join(activate_args),
+        " ".join(pip_install_args),
     ]
     command = " && ".join(command_list)
 
@@ -178,19 +121,22 @@ def create_env(
         universal_newlines=True,
     )
 
-    while process.poll() is None:
-        print(process.stdout.readline())
+    while process.poll() is None and process.stdout:
+        print(process.stdout.readline(), end="")
 
     if process.returncode != 0:
-        print(process.stderr.read())
-        raise RuntimeError(
-            f"Environment creation failed with return code {process.returncode}"
+        if process.stderr:
+            print(process.stderr.read())
+
+        raise subprocess.CalledProcessError(
+            process.returncode,
+            command,
+            process.stdout.read() if process.stdout else None,
+            process.stderr.read() if process.stderr else None,
         )
 
-    os.remove("_environment.yml")
     print(f"Environment {env_name} created successfully!")
-
-    print(f"Activate it with:\n\n\t{activate_command}\n")
+    print(f"Activate it with:\n\n\t{' '.join(activate_args)}\n")
 
 
 if __name__ == "__main__":
@@ -210,7 +156,6 @@ if __name__ == "__main__":
 
     create_env(
         env_name=args.env_name,
-        prefix=args.prefix,
         editable=args.editable,
         optional_deps=args.optional_deps,
     )

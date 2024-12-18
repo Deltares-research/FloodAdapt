@@ -1,12 +1,20 @@
 ---
-title:	Setting up a Delft-FIAT model
+title:	Delft-FIAT
 filters:
   - lightbox
 lightbox: auto
-jupyter: python3
 ---
 
-[Delft-FIAT](https://deltares.github.io/Delft-FIAT/stable/) is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the 'baseline' Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. @fig-DF_concept shows the flood impact modeling concept on which Delft-FIAT is based. It relates a **hazard** (the flood waters), **exposure** (buildings or roads that might be flooded), and **vulnerability** (the propensity of assets to be damaged when flooded).
+[Delft-FIAT](https://deltares.github.io/Delft-FIAT/stable/) is the open-source flood impact model implemented in FloodAdapt. When setting up FloodAdapt in a new location, it is required to first set up a Delft-FIAT model in the project area. This is considered the 'baseline' Delft-FIAT model, which FloodAdapt users can then modify through the FloodAdapt user interface - for example, by elevating buildings. To facilitate the setup of a Delft-FIAT model, the [Delft-FIAT model-builder](hydromt_fiat_gui.qmd) was created.
+
+::: {.callout-tip}
+#### The Delft-FIAT model-builder
+This page gives an overview of the Delft-FIAT model.
+
+Please check out the sub-page on the [**Delft-FIAT model-builder**](hydromt_fiat_gui.qmd) for guidance on the steps to prepare a Delft-FIAT model.
+:::
+
+@fig-DF_concept shows the flood impact modeling concept on which Delft-FIAT is based. It relates a **hazard** (the flood waters), **exposure** (buildings or roads that might be flooded), and **vulnerability** (the propensity of assets to be damaged when flooded).
 
 ![Damage modeling concept](../../_static/images/DelftFIAT_concept.png){width=75% fig-align=left #fig-DF_concept}
 
@@ -37,28 +45,4 @@ The **secondary occupancy type** can be optional, but will sometimes be required
 
 **Vulnerability data** in Delft-FIAT are captured in depth-damage curves. These translate inundation depths at an asset to a fraction of total damage (@fig-damagefunction). The depth-damage curve is related to the building type (e.g. 'residential 1-story building') and the inundation depth during a flood event. Different types of assets incur different degrees of damage at varying inundation levels.
 
-```{python}
-#| echo: false
-#| label: fig-damagefunction
-#| fig-cap: "Example of depth-damage functions."
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from pathlib import Path
-file_path = Path.cwd()
-file_path = Path(file_path.parents[1], "_static", "files", "vulnerability_curves.csv")
-file_path = file_path.resolve()
-data = df = pd.read_csv(file_path, comment='#')
-df = pd.DataFrame({
-    ('water depth'): data.iloc[:, 0],
-    ('STRUCT1'): data.iloc[:, 1],
-    ('STRUCT2'): data.iloc[:, 2],
-})
-labels=["example building type 1","example building type 1"]
-plt.plot(df['water depth'], df['STRUCT1'])
-plt.plot(df['water depth'], df['STRUCT2'])
-plt.xlabel('Water depth (m)')
-plt.ylabel('Fraction of maximum potential damage')
-plt.legend(labels)
-plt.gca().get_legend().set_title('')
-```
+![**Example of depth-damage functions**](../../_static/images/damage_curves.png){width=50% fig-align=left #fig-damagefunction}

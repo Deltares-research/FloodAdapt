@@ -1,9 +1,9 @@
+import csv
 import glob
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import hydromt.raster  # noqa: F401
 import numpy as np
 import pandas as pd
 import tomli
@@ -99,21 +99,51 @@ class Event:
 
     @staticmethod
     def read_csv(csvpath: Union[str, Path]) -> pd.DataFrame:
-        """Read a timeseries file and return a pd.Dataframe.
+        """Read a timeseries file and return a pd.DataFrame.
 
         Parameters
         ----------
         csvpath : Union[str, os.PathLike]
-            path to csv file
+            Path to the CSV file.
 
         Returns
         -------
         pd.DataFrame
-            Dataframe with time as index and waterlevel as first column.
+            Dataframe with time as index and waterlevel as the first column.
         """
-        df = pd.read_csv(csvpath, index_col=0, header=None)
+        num_columns = None
+        has_header = None
+
+        with open(csvpath, "r") as f:
+            try:
+                # read the first 1024 bytes to determine if there is a header
+                has_header = csv.Sniffer().has_header(f.read(1024))
+            except csv.Error:
+                # The file is empty
+                has_header = False
+
+            f.seek(0)
+            reader = csv.reader(f, delimiter=",")
+            num_columns = len(next(reader)) - 1  # subtract 1 for the index column
+
+        if has_header is None:
+            raise ValueError(
+                f"Could not determine if the CSV file has a header: {csvpath}."
+            )
+        if num_columns is None:
+            raise ValueError(
+                f"Could not determine the number of columns in the CSV file: {csvpath}."
+            )
+
+        df = pd.read_csv(
+            csvpath,
+            index_col=0,
+            names=[i + 1 for i in range(num_columns)],
+            header=0 if has_header else None,
+            parse_dates=True,
+            infer_datetime_format=True,
+        )
         df.index.names = ["time"]
-        df.index = pd.to_datetime(df.index)
         return df
 
     def download_meteo(self, site: ISite, path: Path):
@@ -137,6 +167,25 @@ class Event:
             y_range=[lat - 10, lat + 10],
             crs=CRS.from_epsg(4326),
         )
+
+        # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
+        # TODO implement a good solution to this in cht_meteo
+        def _shift_grid_to_positive_lon(grid: MeteoGrid):
+            """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
+            if np.prod(grid.x_range) < 0:
+                if np.abs(grid.x_range[0]) > np.abs(grid.x_range[1]):
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[1] - 1,
+                        grid.x_range[1] - grid.x_range[1] - 1,
+                    ]
+                else:
+                    grid.x_range = [
+                        grid.x_range[0] - grid.x_range[0] + 1,
+                        grid.x_range[1] - grid.x_range[0] + 1,
+                    ]
+            return grid.x_range
+
+        gfs_conus.x_range = _shift_grid_to_positive_lon(gfs_conus)
 
         # Download and collect data
         t0 = datetime.strptime(self.attrs.time.start_time, "%Y%m%d %H%M%S")
@@ -166,6 +215,9 @@ class Event:
         # Concatenate the datasets along the new time coordinate
         ds = xr.concat(datasets, dim="time")
         ds.raster.set_crs(4326)
+        # somehow hydromt_sfincs does not like longitudes > 180
+        if np.min(ds.lon) > 180:
+            ds["lon"] = ds.lon - 360
 
         return ds
 

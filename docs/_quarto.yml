@@ -70,12 +70,11 @@ website:
         file: 4_user_guide/index.qmd # This contains text before sections start
         contents:
           - "4_user_guide/getting_started.qmd" #Moving content from the old 'installation' section into here
-          - "4_user_guide/user_interface.qmd" #These two don't have subsections so just have one qmd file
           - "4_user_guide/site_tab.qmd"
           - section: "Events"
             file: "4_user_guide/events/index.qmd"
             contents:
-              - section: "Historic Events"
+              - section: "Historical Events"
                 file: "4_user_guide/events/historic_events/index.qmd"
                 contents:
                   - "4_user_guide/events/historic_events/historic_events_hurricane.qmd"
@@ -97,38 +96,44 @@ website:
           - "4_user_guide/strategy/index.qmd"
           - "4_user_guide/scenarios/index.qmd"
           - "4_user_guide/output/index.qmd"
-          - section: "Compare tabs"
-            file: "4_user_guide/compare/index.qmd"
-            contents:
-            - "4_user_guide/compare/Compare_map.qmd"
-            - "4_user_guide/compare/Compare_table.qmd"
+          - "4_user_guide/compare/index.qmd"
           - "4_user_guide/benefits.qmd"
       - section: "Setup Guide"
         file: 3_setup_guide/index.qmd
         contents:
-          - "3_setup_guide/database.qmd"
-          - "3_setup_guide/gui.qmd"
-          - "3_setup_guide/risk_analysis.qmd"
-          - section: "Setup Delft FIAT"
+          - section: "SFINCS Setup"
+            file: "3_setup_guide/SFINCS/index.qmd"
+            contents:
+            - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
+          - section: "Delft FIAT Setup"
             file: "3_setup_guide/Delft_Fiat/index.qmd"
             contents:
             - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
-      - section: "Updating FloodAdapt"
-        file: "5_update_model/index.qmd"
+          - "3_setup_guide/risk_analysis.qmd"
+          - "3_setup_guide/database.qmd"
+      - section: "Technical docs"
+        file: "5_technical_docs/index.qmd"
         contents:
-          - "5_update_model/aggregation_areas.qmd"
-          - "5_update_model/objects.qmd"
-          - "5_update_model/damage_functions.qmd"
-          - "5_update_model/dem.qmd"
-          - "5_update_model/settings.qmd"
-      - section: "Example Use Cases"
-        file: "6_demo/index.qmd"
-        contents:
-          - text: "King Tides with Sea Level Rise"
-            file: "6_demo/king_tides.qmd"
-          - text: "Beyond a Floodwall"
-            file: "6_demo/army_corps.qmd"
-          - "6_demo/measures_impact.qmd"
+          - "5_technical_docs/EventScenario.qmd"
+          - "5_technical_docs/RiskScenario.qmd"
+          - "5_technical_docs/EquityCalc.qmd"
+          - "5_technical_docs/BenefitCalc.qmd"
+      #- section: "Updating FloodAdapt"
+      #  file: "5_update_model/index.qmd"
+      #  contents:
+      #    - "5_update_model/aggregation_areas.qmd"
+      #    - "5_update_model/objects.qmd"
+      #    - "5_update_model/damage_functions.qmd"
+      #    - "5_update_model/dem.qmd"
+      #    - "5_update_model/settings.qmd"
+      #- section: "Example Use Cases"
+      #  file: "6_demo/index.qmd"
+      #  contents:
+      #    - text: "King Tides with Sea Level Rise"
+      #      file: "6_demo/king_tides.qmd"
+      #    - text: "Beyond a Floodwall"
+      #      file: "6_demo/army_corps.qmd"
+      #    - "6_demo/measures_impact.qmd"
       #- section: "Appendix"
        # contents:
        #   - section: "Preparing event set for risk analysis"

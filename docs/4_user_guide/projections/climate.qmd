@@ -44,11 +44,11 @@ If you choose a projection of increased precipitation for a single event, it wil
 ![**Entering increased precipitation as a percentage increase**](../../_static/images/projections_precip.png){width=70% fig-align=left #fig-projectionsPrecip}
 
 ## Increased storm frequency
-An increase in storm frequency is given as a percentage in the projections window (see @fig-projectionsPrecip). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.
+An increase in storm frequency is given as a percentage in the projections window (see @fig-projectionsStorm). This percentage is treated as an increase in the occurrence frequency of each tropical storm event in a probabilistic event set. This influences the return period flood maps and risk estimates, because when storms occur more frequently, the chance of storm flooding, and hence risk, increases.
 
 ::: callout-tip
 ## Example - increased storm frequency
-For example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.22, or once in about 45 years.
+For example, if you select a storm frequency increase of 10%, and a tropical storm in the event set had an occurrence frequency of once in 50 years (0.02), the increased frequency of this storm would be 0.022, or once in about 45 years.
 :::
 
 ### Why is this only for probabilistic event sets?
@@ -59,4 +59,4 @@ The change in storm frequency will only affect the frequency of the storm. This 
 If you choose a projection of increased storm frequency for a single event, it will have no effect. The frequency is only used when calculating return period flood maps and risk, and for a single event scenario will play no role. It won't do any harm, but it won't have any effect on the resulting event-scenario flood and impact results.
 :::
 
-![**Entering increased storm frequency as a percentage increase**](../../_static/images/projections_stormFreq.png){width=70% fig-align=left #fig-projectionsPrecip}
+![**Entering increased storm frequency as a percentage increase**](../../_static/images/projections_stormFreq.png){width=70% fig-align=left #fig-projectionsStorm}
