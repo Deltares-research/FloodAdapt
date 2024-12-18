@@ -38,14 +38,14 @@ class DbsStatic:
         self._database = database
 
     @cache_method_wrapper
-    def get_aggregation_areas(self) -> dict:
+    def get_aggregation_areas(self) -> dict[str, GeoDataFrame]:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
         These are expected to much the ones in the FIAT model.
 
         Returns
         -------
-        list[GeoDataFrame]
+        dict[str, GeoDataFrame]
             list of geodataframes with the polygons defining the aggregation areas
         """
         aggregation_areas = {}

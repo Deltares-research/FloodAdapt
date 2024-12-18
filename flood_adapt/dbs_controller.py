@@ -884,7 +884,7 @@ class Database(IDatabase):
         gdf = gdf.to_crs(4326)
         return gdf
 
-    def get_aggregation(self, scenario_name: str) -> dict[GeoDataFrame]:
+    def get_aggregation(self, scenario_name: str) -> dict[str, gpd.GeoDataFrame]:
         """Return a dictionary with the aggregated impacts as geodataframes.
 
         Parameters
@@ -907,7 +907,7 @@ class Database(IDatabase):
             gdfs[label] = gdfs[label].to_crs(4326)
         return gdfs
 
-    def get_aggregation_benefits(self, benefit_name: str) -> dict[GeoDataFrame]:
+    def get_aggregation_benefits(self, benefit_name: str) -> dict[str, GeoDataFrame]:
         """Get a dictionary with the aggregated benefits as geodataframes.
 
         Parameters
