@@ -91,6 +91,17 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
 
 
 @pytest.fixture()
+def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
+    dummy_scn = mock.Mock()
+    dummy_event = mock.Mock()
+    dummy_event.attrs.rainfall_multiplier = 2
+    dummy_scn.event = dummy_event
+    default_sfincs_adapter._current_scenario = dummy_scn
+
+    yield default_sfincs_adapter
+
+
+@pytest.fixture()
 def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapter]:
     overland_2_rivers = test_db.static_path / "templates" / "overland_2_rivers"
     with open(overland_2_rivers / "sfincs.dis", "r") as f:
@@ -209,8 +220,7 @@ def synthetic_waterlevels():
 
 
 def _mock_meteohandler_read(
-    t0: datetime,
-    t1: datetime,
+    time: TimeModel,
     test_db: IDatabase,
     *args,
     **kwargs,
@@ -218,19 +228,24 @@ def _mock_meteohandler_read(
     gen = np.random.default_rng(42)
     lat = [test_db.site.attrs.lat - 10, test_db.site.attrs.lat + 10]
     lon = [test_db.site.attrs.lon - 10, test_db.site.attrs.lon + 10]
-    time = pd.date_range(start=t0, end=t1, freq="H", name="time")
+    _time = pd.date_range(
+        start=time.start_time,
+        end=time.end_time,
+        freq=timedelta(hours=1),
+        name="time",
+    )
 
     ds = xr.Dataset(
         data_vars={
-            "wind10_u": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
-            "wind10_v": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
-            "press_msl": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
-            "precip": (("time", "lat", "lon"), gen.random((len(time), 2, 2))),
+            "wind10_u": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
+            "wind10_v": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
+            "press_msl": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
+            "precip": (("time", "lat", "lon"), gen.random((len(_time), 2, 2))),
         },
         coords={
             "lat": lat,
             "lon": lon,
-            "time": time,
+            "time": _time,
         },
         attrs={
             "crs": 4326,
@@ -246,18 +261,9 @@ def _mock_meteohandler_read(
 
 
 @pytest.fixture()
-def mock_meteo_get_data_wind(test_db):
+def mock_meteohandler_read(test_db):
     with mock.patch(
-        "flood_adapt.adapter.sfincs_adapter.WindMeteo.get_data",
-        side_effect=partial(_mock_meteohandler_read, test_db=test_db),
-    ):
-        yield
-
-
-@pytest.fixture()
-def mock_meteo_get_data_rainfall(test_db):
-    with mock.patch(
-        "flood_adapt.adapter.sfincs_adapter.RainfallMeteo.get_data",
+        "flood_adapt.adapter.sfincs_adapter.MeteoHandler.read",
         side_effect=partial(_mock_meteohandler_read, test_db=test_db),
     ):
         yield
@@ -367,7 +373,7 @@ class TestAddForcing:
             assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_meteo(
-            self, mock_meteo_get_data_wind, default_sfincs_adapter: SfincsAdapter
+            self, mock_meteohandler_read, default_sfincs_adapter: SfincsAdapter
         ):
             assert default_sfincs_adapter.wind is None
 
@@ -452,7 +458,9 @@ class TestAddForcing:
             assert default_sfincs_adapter.rainfall is not None
 
         def test_add_forcing_from_meteo(
-            self, mock_meteo_get_data_rainfall, default_sfincs_adapter: SfincsAdapter
+            self,
+            mock_meteohandler_read,
+            sfincs_adapter_with_dummy_scn: SfincsAdapter,
         ):
             # Arrange
             assert default_sfincs_adapter.rainfall is None

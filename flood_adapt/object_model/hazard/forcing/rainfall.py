@@ -79,6 +79,8 @@ class RainfallSynthetic(IRainfall):
 
 class RainfallMeteo(IRainfall):
     source: ForcingSource = ForcingSource.METEO
+    precip_units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+    wind_units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
 
     def get_data(
         self,

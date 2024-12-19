@@ -9,6 +9,7 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.wind import WindMeteo
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
@@ -127,9 +128,7 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
 
                     # Add pressure forcing for the offshore model (this doesnt happen normally in _add_forcing_wind() for overland models)
                     if isinstance(wind_forcing, WindMeteo):
-                        ds = wind_forcing.get_data(
-                            t0=event.attrs.time.start_time, t1=event.attrs.time.end_time
-                        )
+                        ds = MeteoHandler().read(event.attrs.time)
                         _offshore_model._add_pressure_forcing_from_grid(ds=ds)
 
             # write sfincs model in output destination
