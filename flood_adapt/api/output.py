@@ -136,8 +136,6 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     ----------
     name : str
         The name of the scenario.
-    database : IDatabase
-        The database object.
 
     Returns
     -------
@@ -174,8 +172,6 @@ def get_infographic(name: str) -> str:
     ----------
     name : str
         The name of the scenario.
-    database : IDatabase
-        The database object.
 
     Returns
     -------
@@ -216,8 +212,6 @@ def get_infometrics(name: str) -> pd.DataFrame:
     ----------
     name : str
         The name of the scenario.
-    database : IDatabase
-        The database object.
 
     Returns
     -------
