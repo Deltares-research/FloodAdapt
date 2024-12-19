@@ -1,7 +1,7 @@
-Startup API module
+Static API module
 ==================
 
-.. automodule:: startup
+.. automodule:: static
    :members:
    :undoc-members:
    :show-inheritance:

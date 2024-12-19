@@ -28,7 +28,6 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
-    # TODO should this return a list of geojson? if yes what form?
     """Get a list of the aggregation areas that are provided in the site configuration.
 
     These are expected to much the ones in the FIAT model.
@@ -45,10 +44,6 @@ def get_obs_points() -> GeoDataFrame:
     """Get the observation points specified in the site.toml.
 
     These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------
@@ -72,10 +67,6 @@ def get_model_boundary() -> GeoDataFrame:
 def get_model_grid() -> QuadtreeGrid:
     """Get the model grid that is used in SFINCS.
 
-    Parameters
-    ----------
-    database : IDatabase
-
     Returns
     -------
     QuadtreeGrid
@@ -87,10 +78,6 @@ def get_model_grid() -> QuadtreeGrid:
 @staticmethod
 def get_svi_map() -> Union[GeoDataFrame, None]:
     """Get the SVI map that are used in Fiat.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------
@@ -109,8 +96,6 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
     Parameters
     ----------
-    database : IDatabase
-        database object
     path : Union[str, Path]
         path to the static map
 
@@ -127,10 +112,6 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
 def get_buildings() -> GeoDataFrame:
     """Get the buildings exposure that are used in Fiat.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------

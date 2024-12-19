@@ -1,4 +1,3 @@
-
 project:
   type: website
   output-dir: "_site"
@@ -10,8 +9,8 @@ project:
     - "examples/clear_notebooks.py"
 
 filters:
-   - include-code-files
-   - interlinks
+  - include-code-files
+  - interlinks
   #  - section-bibliographies
 
 interlinks:
@@ -25,11 +24,45 @@ metadata-files:
   - api/_sidebar.yml
 
 number-sections: false
+quartodoc:
+  dir: api_ref
+  # dynamic: true
+  sections:
+    - title: flood_adapt
+      desc: ""
+      contents:
+        - name: api.benefits
+        - name: api.database_builder
+        - name: api.events
+        - name: api.measures
+        - name: api.output
+        - name: api.projections
+        - name: api.scenarios
+        - name: api.static
+        - name: api.strategies
+        - name: adapter.fiat_adapter
+        - name: adapter.sfincs_adapter
+        - name: dbs_classes.dbs_benefit.DbsBenefit
+        - name: dbs_classes.dbs_event.DbsEvent
+        - name: dbs_classes.dbs_measure.DbsMeasure
+        - name: dbs_classes.dbs_projection.DbsProjection
+        - name: dbs_classes.dbs_scenario.DbsScenario
+        - name: dbs_classes.dbs_static.DbsStatic
+        - name: dbs_classes.dbs_strategy.DbsStrategy
+        - name: dbs_classes.dbs_template.DbsTemplate
+        - name: dbs_controller.Database
+        - name: object_model.benefit.Benefit
+        - name: object_model.direct_impacts.DirectImpacts
+        - name: object_model.scenario.Scenario
+        - name: object_model.site.Site
+        - name: object_model.strategy.Strategy
+        - name: FloodAdaptLogging
+  package: flood_adapt
 
 website:
-  #title: "Flood Adapt"
+  title: "Flood Adapt Documentation"
   page-navigation: true
-  favicon: _static/logo.png  # Add _static folder and flood adapt logo to folder
+  favicon: _static/logo.png
   search:
     location: navbar
     limit: 5
@@ -46,13 +79,13 @@ website:
           />
         </a>
 
-  navbar:  # Create navigation bar on
+  navbar: # Create navigation bar on
     logo: _static/logo.png
     title: FloodAdapt
     pinned: true
     right:
       - icon: github
-        url:  https://github.com/Deltares-research/FloodAdapt
+        url: https://github.com/Deltares-research/FloodAdapt
 
   sidebar:
     border: true
@@ -62,14 +95,12 @@ website:
     search: true
 
     contents:
-      #- text: "Home"
-      #  file: index.qmd
       - text: "Introduction"
         file: 1_introduction/index.qmd
       - section: "User Guide"
         file: 4_user_guide/index.qmd # This contains text before sections start
         contents:
-          - "4_user_guide/getting_started.qmd" #Moving content from the old 'installation' section into here
+          - "4_user_guide/getting_started.qmd"
           - "4_user_guide/site_tab.qmd"
           - section: "Events"
             file: "4_user_guide/events/index.qmd"
@@ -104,11 +135,11 @@ website:
           - section: "SFINCS Setup"
             file: "3_setup_guide/SFINCS/index.qmd"
             contents:
-            - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
+              - "3_setup_guide/SFINCS/hydromt_sfincs_gui.qmd"
           - section: "Delft FIAT Setup"
             file: "3_setup_guide/Delft_Fiat/index.qmd"
             contents:
-            - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
+              - "3_setup_guide/Delft_Fiat/hydromt_fiat_gui.qmd"
           - "3_setup_guide/risk_analysis.qmd"
           - "3_setup_guide/database.qmd"
       - section: "Technical docs"
@@ -118,53 +149,8 @@ website:
           - "5_technical_docs/RiskScenario.qmd"
           - "5_technical_docs/EquityCalc.qmd"
           - "5_technical_docs/BenefitCalc.qmd"
-      #- section: "Updating FloodAdapt"
-      #  file: "5_update_model/index.qmd"
-      #  contents:
-      #    - "5_update_model/aggregation_areas.qmd"
-      #    - "5_update_model/objects.qmd"
-      #    - "5_update_model/damage_functions.qmd"
-      #    - "5_update_model/dem.qmd"
-      #    - "5_update_model/settings.qmd"
-      #- section: "Example Use Cases"
-      #  file: "6_demo/index.qmd"
-      #  contents:
-      #    - text: "King Tides with Sea Level Rise"
-      #      file: "6_demo/king_tides.qmd"
-      #    - text: "Beyond a Floodwall"
-      #      file: "6_demo/army_corps.qmd"
-      #    - "6_demo/measures_impact.qmd"
-      #- section: "Appendix"
-       # contents:
-       #   - section: "Preparing event set for risk analysis"
-       #     file: "7_appendix/appendix_a/index.qmd"
-       #     contents:
-       #       - "7_appendix/appendix_a/probabilistic.qmd"
-       #       - "7_appendix/appendix_a/overview_procedure.qmd"
-       #       - "7_appendix/appendix_a/flood_drivers.qmd"
-       #       - "7_appendix/appendix_a/selection_quantification.qmd"
-       #       - "7_appendix/appendix_a/additional_consideration.qmd"
-       #       - "7_appendix/appendix_a/references.qmd"
-       #   - section: "Risk calculation"
-       #     file: "7_appendix/appendix_b/index.qmd"
-       #     contents:
-       #       - "7_appendix/appendix_b/probabilistic_hazard.qmd"
-       #       - "7_appendix/appendix_b/risk_calculation.qmd"
-       #   - "7_appendix/appendix_c/index.qmd"
-       #   - section: "Damage model input files"
-       #     file: "7_appendix/appendix_d/index.qmd"
-       #     contents:
-       #       - "7_appendix/appendix_d/damage_functions.qmd"
-       #       - "7_appendix/appendix_d/exposure_data.qmd"
-       #       - "7_appendix/appendix_d/config.qmd"
-       #   - "7_appendix/appendix_e/index.qmd"
-       #   - section: "Event input files - examples"
-       #     file: "7_appendix/appendix_f/index.qmd"
-       #     contents:
-       #       - "7_appendix/appendix_f/hurricanes.qmd"
-       #       - "7_appendix/appendix_f/wind_tides.qmd"
-       #       - "7_appendix/appendix_f/water_level.qmd"
-       #       - "7_appendix/appendix_f/synthetics.qmd"
+      - text: "API reference"
+        href: "api_ref/"
 
 format:
   html:

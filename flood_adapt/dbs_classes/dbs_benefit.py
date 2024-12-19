@@ -15,7 +15,7 @@ class DbsBenefit(DbsTemplate):
 
         Parameters
         ----------
-        measure : IBenefit
+        benefit : IBenefit
             object of scenario type
         overwrite : bool, optional
             whether to overwrite existing benefit with same name, by default False

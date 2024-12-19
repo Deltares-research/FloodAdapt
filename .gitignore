@@ -170,3 +170,6 @@ system/
 
 # Pixi
 .pixi
+
+# auto generated docs
+docs/api_ref

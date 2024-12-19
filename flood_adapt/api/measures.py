@@ -63,8 +63,6 @@ def create_measure(attrs: dict[str, Any], type: str = None) -> IMeasure:
         Dictionary of attributes for the measure.
     type : str
         Type of measure to create.
-    database : IDatabase, optional
-        Database to use for creating the measure, by default None
 
     Returns
     -------
@@ -93,8 +91,9 @@ def save_measure(measure: IMeasure) -> None:
 
     Parameters
     ----------
-    event : IEvent
-        The event object to save.
+    measure : IMeasure
+        The measure object to save.
+
 
     Raises
     ------
@@ -109,8 +108,9 @@ def edit_measure(measure: IMeasure) -> None:
 
     Parameters
     ----------
-    event : IEvent
-        The event object to edit.
+    measure : IMeasure
+        The measure object to edit.
+
 
     Raises
     ------
@@ -157,8 +157,10 @@ def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: ISite) -> float:
 
     Parameters
     ----------
-        gdf (gpd.GeoDataFrame): A GeoDataFrame containing the polygon geometry.
-        site (ISite): An instance of ISite representing the site information.
+    gdf : gpd.GeoDataFrame
+        A GeoDataFrame containing the polygon geometry.
+    site : ISite
+        An instance of ISite representing the site information.
 
     Returns
     -------
@@ -175,9 +177,13 @@ def calculate_volume(
 
     Parameters
     ----------
-        area (float): The area of the green infrastructure in square units.
-        height (float, optional): The height of the green infrastructure in units. Defaults to 0.0.
-        percent_area (float, optional): The percentage of the area to be considered. Defaults to 100.0.
+    area : float
+        The area of the green infrastructure in square units.
+    height : float
+        The height of the green infrastructure in units. Defaults to 0.0.
+    percent_area : float
+        The percentage of the area to be considered. Defaults to 100.0.
+
 
     Returns
     -------
