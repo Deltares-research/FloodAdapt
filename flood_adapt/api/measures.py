@@ -94,6 +94,7 @@ def save_measure(measure: IMeasure) -> None:
     measure : IMeasure
         The measure object to save.
 
+
     Raises
     ------
     ValueError
@@ -109,6 +110,7 @@ def edit_measure(measure: IMeasure) -> None:
     ----------
     measure : IMeasure
         The measure object to edit.
+
 
     Raises
     ------
@@ -181,6 +183,7 @@ def calculate_volume(
         The height of the green infrastructure in units. Defaults to 0.0.
     percent_area : float
         The percentage of the area to be considered. Defaults to 100.0.
+
 
     Returns
     -------
