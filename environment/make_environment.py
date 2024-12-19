@@ -12,7 +12,6 @@ SUBPROCESS_KWARGS = {
     "stdout": subprocess.PIPE,
     "stderr": subprocess.PIPE,
     "universal_newlines": True,
-    "start_new_session": True,
 }
 
 
@@ -141,18 +140,6 @@ def create_env(
 
 if __name__ == "__main__":
     args = parse_args()
-    subprocess.run("conda init", **SUBPROCESS_KWARGS)
-
-    if args.project_root:
-        PROJECT_ROOT = Path(args.project_root).resolve()
-        print(f"Using project root: {PROJECT_ROOT}")
-        WHEELS_DIR = PROJECT_ROOT / "environment" / "geospatial-wheels"
-
-        assert PROJECT_ROOT.exists(), f"Project root does not exist: {PROJECT_ROOT}. Please verify your project root."
-        assert (
-            PROJECT_ROOT / "flood_adapt"
-        ).exists(), f"Project root {PROJECT_ROOT} does not contain the flood_adapt package. Please verify your project root."
-        assert WHEELS_DIR.exists(), f"Wheels directory does not exist: {WHEELS_DIR}. Please verify your project root."
 
     create_env(
         env_name=args.env_name,
