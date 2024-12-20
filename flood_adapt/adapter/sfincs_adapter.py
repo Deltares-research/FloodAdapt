@@ -4,7 +4,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-from datetime import timedelta
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -27,7 +26,6 @@ from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
-from flood_adapt.object_model.hazard.forcing.data_extraction import get_rainfall_df
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -44,7 +42,6 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
 from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
-    SyntheticTimeseries,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelCSV,
@@ -296,9 +293,14 @@ class SfincsAdapter(IHazardAdapter):
             self.logger.info(
                 f"Adding sea level rise ({phys_projection.attrs.sea_level_rise}) to SFINCS model."
             )
-            self.waterlevels += phys_projection.attrs.sea_level_rise.convert(
-                us.UnitTypesLength.meters
-            )
+            if self.waterlevels is not None:
+                self.waterlevels += phys_projection.attrs.sea_level_rise.convert(
+                    us.UnitTypesLength.meters
+                )
+            else:
+                self.logger.warning(
+                    "Failed to add sea level rise, no water level forcing found in the model."
+                )
 
         if phys_projection.attrs.rainfall_multiplier:
             self.logger.info(
@@ -308,7 +310,7 @@ class SfincsAdapter(IHazardAdapter):
                 self.rainfall *= phys_projection.attrs.rainfall_multiplier
             else:
                 self.logger.warning(
-                    "Failed to add rainfall multiplier, no rainfall forcing found in the model."
+                    "Failed to add projected rainfall multiplier, no rainfall forcing found in the model."
                 )
 
     ### GETTERS ###
@@ -375,7 +377,6 @@ class SfincsAdapter(IHazardAdapter):
                     "wind10_v": self._model.forcing["wind10_v"],
                 }
             )
-            return self._model.forcing[in_model[0]]
         else:
             raise ValueError("Multiple wind forcings found in the model.")
 
@@ -481,14 +482,14 @@ class SfincsAdapter(IHazardAdapter):
             zsmax = model._get_zsmax()
             dem = model._model.data_catalog.get_rasterdataset(demfile)
 
-        # writing the geotiff to the scenario results folder
-        SfincsAdapter.write_geotiff(
-            zsmax=zsmax,
-            dem=dem,
-            dem_units=us.UnitTypesLength("meters"),
-            floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
-            floodmap_units=us.UnitTypesLength("meters"),
-        )
+            # writing the geotiff to the scenario results folder
+            model.write_geotiff(
+                zsmax=zsmax,
+                dem=dem,
+                dem_units=us.UnitTypesLength(us.UnitTypesLength.meters),
+                floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
+                floodmap_units=us.UnitTypesLength(us.UnitTypesLength.meters),
+            )
 
     def write_water_level_map(
         self, scenario: IScenario, sim_path: Optional[Path] = None
@@ -513,16 +514,14 @@ class SfincsAdapter(IHazardAdapter):
         dem_conversion = us.UnitfulLength(value=1.0, units=dem_units).convert(
             us.UnitTypesLength(us.UnitTypesLength.meters)
         )
-        dem = dem_conversion * dem
-
         # determine conversion factor for output floodmap
         floodmap_conversion = us.UnitfulLength(
-            value=1.0, units=us.UnitTypesLength(us.UnitTypesLength.meters)
-        ).convert(floodmap_units)
+            value=1.0, units=us.UnitTypesLength(floodmap_units)
+        ).convert(us.UnitTypesLength.meters)
 
         utils.downscale_floodmap(
             zsmax=floodmap_conversion * zsmax,
-            dep=floodmap_conversion * dem,
+            dep=dem_conversion * dem,
             hmin=0.01,
             floodmap_fn=str(floodmap_fn),
         )
@@ -797,15 +796,15 @@ class SfincsAdapter(IHazardAdapter):
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
-                zsmax = (zs_rp_single.to_array().squeeze().transpose(),)
+                zsmax = zs_rp_single.to_array().squeeze().transpose()
 
-            SfincsAdapter.write_geotiff(
-                zsmax=zsmax,
-                dem=dem,
-                dem_units=us.UnitTypesLength.meters,
-                floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
-                floodmap_units=us.UnitTypesLength.meters,
-            )
+                dummymodel.write_geotiff(
+                    zsmax=zsmax,
+                    dem=dem,
+                    dem_units=us.UnitTypesLength.meters,
+                    floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
+                    floodmap_units=us.UnitTypesLength.meters,
+                )
 
     ######################################
     ### PRIVATE - use at your own risk ###
@@ -828,7 +827,13 @@ class SfincsAdapter(IHazardAdapter):
             # Event
             for forcing in event.get_forcings():
                 self.add_forcing(forcing)
-            self.rainfall *= event.attrs.rainfall_multiplier
+
+            if self.rainfall is not None:
+                self.rainfall *= event.attrs.rainfall_multiplier
+            else:
+                self.logger.warning(
+                    "Failed to add event rainfall multiplier, no rainfall forcing found in the model."
+                )
 
             # Measures
             for measure in scenario.strategy.get_hazard_strategy().measures:
@@ -862,7 +867,7 @@ class SfincsAdapter(IHazardAdapter):
     ### FORCING ###
     def _add_forcing_wind(
         self,
-        forcing: IWind,
+        wind: IWind,
     ):
         """Add spatially constant wind forcing to sfincs model. Use timeseries or a constant magnitude and direction.
 
@@ -877,34 +882,16 @@ class SfincsAdapter(IHazardAdapter):
         """
         t0, t1 = self._model.get_model_time()
 
-        if isinstance(forcing, WindConstant):
+        if isinstance(wind, WindConstant):
             # HydroMT function: set wind forcing from constant magnitude and direction
             self._model.setup_wind_forcing(
                 timeseries=None,
-                magnitude=forcing.speed.convert(us.UnitTypesVelocity.mps),
-                direction=forcing.direction.value,
+                magnitude=wind.speed.convert(us.UnitTypesVelocity.mps),
+                direction=wind.direction.value,
             )
-        elif isinstance(forcing, WindSynthetic):
-            time = pd.date_range(
-                start=t0, end=t1, freq=TimeModel().time_step, name="time"
-            )
-            magnitude = (
-                SyntheticTimeseries()
-                .load_dict(forcing.magnitude)
-                .to_dataframe(start_time=t0, end_time=t1)
-            )
-            direction = (
-                SyntheticTimeseries()
-                .load_dict(forcing.direction)
-                .to_dataframe(start_time=t0, end_time=t1)
-            )
-            df = pd.DataFrame(
-                index=time,
-                data={
-                    "mag": magnitude.reindex(time).to_numpy(),
-                    "dir": direction.reindex(time).to_numpy(),
-                },
-            )
+        elif isinstance(wind, WindSynthetic):
+            df = wind.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
+
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             df.to_csv(tmp_path)
 
@@ -912,22 +899,22 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_wind_forcing(
                 timeseries=tmp_path, magnitude=None, direction=None
             )
-        elif isinstance(forcing, WindMeteo):
+        elif isinstance(wind, WindMeteo):
             ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
 
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
-        elif isinstance(forcing, WindTrack):
-            if forcing.path is None:
+        elif isinstance(wind, WindTrack):
+            if wind.path is None:
                 raise ValueError("No path to rainfall track file provided.")
-            self._add_forcing_spw(forcing.path)
+            self._add_forcing_spw(wind.path)
         else:
             self.logger.warning(
-                f"Unsupported wind forcing type: {forcing.__class__.__name__}"
+                f"Unsupported wind forcing type: {wind.__class__.__name__}"
             )
             return
 
-    def _add_forcing_rain(self, forcing: IRainfall):
+    def _add_forcing_rain(self, rainfall: IRainfall):
         """Add spatially constant rain forcing to sfincs model. Use timeseries or a constant magnitude.
 
         Parameters
@@ -938,22 +925,21 @@ class SfincsAdapter(IHazardAdapter):
             time-invariant precipitation intensity [mm_hr], by default None
         """
         t0, t1 = self._model.get_model_time()
-        if isinstance(forcing, RainfallConstant):
+        if isinstance(rainfall, RainfallConstant):
             self._model.setup_precip_forcing(
                 timeseries=None,
-                magnitude=forcing.intensity.convert(us.UnitTypesIntensity.mm_hr),
+                magnitude=rainfall.intensity.convert(us.UnitTypesIntensity.mm_hr),
             )
-        elif isinstance(forcing, RainfallCSV):
-            df = get_rainfall_df(forcing, TimeModel(start_time=t0, end_time=t1))
-            conversion = us.UnitfulIntensity(value=1.0, units=forcing.unit).convert(
+        elif isinstance(rainfall, RainfallCSV):
+            df = rainfall.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
-        elif isinstance(forcing, RainfallSynthetic):
-            df = get_rainfall_df(forcing, TimeModel(start_time=t0, end_time=t1))
-
+        elif isinstance(rainfall, RainfallSynthetic):
+            df = rainfall.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
             conversion = us.UnitfulIntensity(
-                value=1.0, units=forcing.timeseries.peak_value.units
+                value=1.0, units=rainfall.timeseries.peak_value.units
             ).convert(us.UnitTypesIntensity.mm_hr)
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
 
@@ -961,17 +947,17 @@ class SfincsAdapter(IHazardAdapter):
             df.to_csv(tmp_path)
 
             self._model.setup_precip_forcing(timeseries=tmp_path)
-        elif isinstance(forcing, RainfallMeteo):
+        elif isinstance(rainfall, RainfallMeteo):
             ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
 
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
-        elif isinstance(forcing, RainfallTrack):
-            if forcing.path is None:
+        elif isinstance(rainfall, RainfallTrack):
+            if rainfall.path is None:
                 raise ValueError("No path to rainfall track file provided.")
-            self._add_forcing_spw(forcing.path)
+            self._add_forcing_spw(rainfall.path)
         else:
             self.logger.warning(
-                f"Unsupported rainfall forcing type: {forcing.__class__.__name__}"
+                f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
             )
             return
 
@@ -995,31 +981,9 @@ class SfincsAdapter(IHazardAdapter):
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         t0, t1 = self._model.get_model_time()
         if isinstance(forcing, WaterlevelSynthetic):
-            surge = SyntheticTimeseries().load_dict(data=forcing.surge.timeseries)
-            surge_df = surge.to_dataframe(
-                start_time=t0,
-                end_time=t1,
+            df_ts = forcing.to_dataframe(
+                time_frame=TimeModel(start_time=t0, end_time=t1)
             )
-            # Calculate Surge time series
-            start_surge = t0 + surge.attrs.start_time.to_timedelta()
-            end_surge = start_surge + surge.attrs.duration.to_timedelta()
-
-            surge_ts = surge.calculate_data()
-            time_surge = pd.date_range(
-                start=start_surge,
-                end=end_surge,
-                freq=TimeModel().time_step,
-                name="time",
-            )
-
-            surge_df = pd.DataFrame(surge_ts, index=time_surge)
-            tide_df = forcing.tide.to_dataframe(t0, t1)
-
-            # Reindex the shorter DataFrame to match the longer one
-            surge_df = surge_df.reindex(tide_df.index).fillna(0)
-
-            # Combine
-            df_ts = tide_df.add(surge_df, axis="index")
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelGauged):
             if self.site.attrs.tide_gauge is None:
@@ -1226,20 +1190,11 @@ class SfincsAdapter(IHazardAdapter):
 
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
         if isinstance(discharge, DischargeCSV):
-            df = CSVTimeseries.load_file(path=discharge.path).to_dataframe(
-                start_time=t0, end_time=t1
-            )
+            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
         elif isinstance(discharge, DischargeConstant):
-            df = pd.DataFrame(
-                data=[discharge.discharge.convert(us.UnitTypesDischarge.cms)],
-                index=pd.date_range(start=t0, end=t1, freq=timedelta(minutes=10)),
-            )
+            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
         elif isinstance(discharge, DischargeSynthetic):
-            df = (
-                SyntheticTimeseries()
-                .load_dict(data=discharge.timeseries)
-                .to_dataframe(start_time=t0, end_time=t1)
-            )
+            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
         else:
             raise ValueError(
                 f"Unsupported discharge forcing type: {discharge.__class__}"

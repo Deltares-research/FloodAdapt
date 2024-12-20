@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.forcing.data_extraction import get_rainfall_df
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallSynthetic,
@@ -16,14 +15,14 @@ from flood_adapt.object_model.io import unit_system as us
 
 
 class TestRainfallConstant:
-    def test_rainfall_constant_get_data(self):
+    def test_rainfall_constant_to_dataframe(self):
         # Arrange
         val = 10
         intensity = us.UnitfulIntensity(value=val, units=us.UnitTypesIntensity.mm_hr)
 
         # Act
         rainfall_forcing = RainfallConstant(intensity=intensity)
-        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -33,7 +32,7 @@ class TestRainfallConstant:
 
 
 class TestRainfallSynthetic:
-    def test_rainfall_synthetic_get_data(self):
+    def test_rainfall_synthetic_to_dataframe(self):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.block,
@@ -44,7 +43,7 @@ class TestRainfallSynthetic:
 
         # Act
         rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
-        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -52,7 +51,7 @@ class TestRainfallSynthetic:
         assert rf_df.max().max() == pytest.approx(2, rel=1e-2), f"{rf_df.max()} != 2"
         assert rf_df.min().min() == pytest.approx(2, rel=1e-2), f"{rf_df.min()} != 2"
 
-    def test_rainfall_synthetic_scs_get_data(self):
+    def test_rainfall_synthetic_scs_to_dataframe(self):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.scs,
@@ -65,7 +64,7 @@ class TestRainfallSynthetic:
 
         # Act
         rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
-        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)

@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.hazard.forcing.data_extraction import get_discharge_df
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -29,7 +28,7 @@ def river() -> RiverModel:
 
 
 class TestDischargeConstant:
-    def test_discharge_constant_get_data(self, river):
+    def test_discharge_constant_to_dataframe(self, river):
         # Arrange
         _discharge = 100
         discharge = us.UnitfulDischarge(
@@ -38,7 +37,7 @@ class TestDischargeConstant:
 
         # Act
         discharge_forcing = DischargeConstant(river=river, discharge=discharge)
-        discharge_df = get_discharge_df(discharge_forcing, time_frame=TimeModel())
+        discharge_df = discharge_forcing.to_dataframe(time_frame=TimeModel())
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -49,7 +48,7 @@ class TestDischargeConstant:
 
 
 class TestDischargeSynthetic:
-    def test_discharge_synthetic_get_data(self, river):
+    def test_discharge_synthetic_to_dataframe(self, river):
         # Arrange
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.block,
@@ -60,7 +59,7 @@ class TestDischargeSynthetic:
 
         # Act
         discharge_forcing = DischargeSynthetic(river=river, timeseries=timeseries)
-        discharge_df = get_discharge_df(discharge_forcing, time_frame=TimeModel())
+        discharge_df = discharge_forcing.to_dataframe(time_frame=TimeModel())
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -74,7 +73,7 @@ class TestDischargeSynthetic:
 
 
 class TestDischargeCSV:
-    def test_discharge_from_csv_get_data(
+    def test_discharge_from_csv_to_dataframe(
         self, tmp_path, dummy_1d_timeseries_df: pd.DataFrame, river
     ):
         # Arrange
@@ -85,8 +84,8 @@ class TestDischargeCSV:
 
         # Act
         discharge_forcing = DischargeCSV(river=river, path=path)
-        discharge_df = get_discharge_df(
-            discharge_forcing, time_frame=TimeModel(start_time=t0, end_time=t1)
+        discharge_df = discharge_forcing.to_dataframe(
+            time_frame=TimeModel(start_time=t0, end_time=t1)
         )
 
         # Assert

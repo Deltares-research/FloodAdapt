@@ -9,6 +9,8 @@ import pandas as pd
 from pydantic import BaseModel
 
 from flood_adapt.object_model.hazard.forcing.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
@@ -56,46 +58,34 @@ class WaterlevelSynthetic(IWaterlevel):
     surge: SurgeModel
     tide: TideModel
 
-    # def get_data(
-    #     self,
-    #     t0: Optional[datetime] = None,
-    #     t1: Optional[datetime] = None,
-    #     strict: bool = True,
-    #     **kwargs: Any,
-    # ) -> Optional[pd.DataFrame]:
-    #     surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
-    #     if t1 is None:
-    #         t0, t1 = self.parse_time(t0, surge.attrs.duration)
-    #     else:
-    #         t0, t1 = self.parse_time(t0, t1)
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
+        surge_df = surge.to_dataframe(
+            start_time=time_frame.start_time, end_time=time_frame.end_time
+        )
+        # Calculate Surge time series
+        start_surge = time_frame.start_time + surge.attrs.start_time.to_timedelta()
+        end_surge = start_surge + surge.attrs.duration.to_timedelta()
 
-    #     surge_df = surge.to_dataframe(
-    #         start_time=t0,
-    #         end_time=t1,
-    #     )
-    #     # Calculate Surge time series
-    #     start_surge = REFERENCE_TIME + surge.attrs.start_time.to_timedelta()
-    #     end_surge = start_surge + surge.attrs.duration.to_timedelta()
+        surge_ts = surge.calculate_data()
+        time_surge = pd.date_range(
+            start=start_surge,
+            end=end_surge,
+            freq=TimeModel().time_step,
+            name="time",
+        )
 
-    #     surge_ts = surge.calculate_data()
-    #     time_surge = pd.date_range(
-    #         start=start_surge,
-    #         end=end_surge,
-    #         freq=TimeModel().time_step,
-    #         name="time",
-    #     )
+        surge_df = pd.DataFrame(surge_ts, index=time_surge)
+        tide_df = self.tide.to_dataframe(time_frame.start_time, time_frame.end_time)
 
-    #     surge_df = pd.DataFrame(surge_ts, index=time_surge)
-    #     tide_df = self.tide.to_dataframe(t0, t1)
+        # Reindex the shorter DataFrame to match the longer one
+        surge_df = surge_df.reindex(tide_df.index).fillna(0)
 
-    #     # Reindex the shorter DataFrame to match the longer one
-    #     surge_df = surge_df.reindex(tide_df.index).fillna(0)
+        # Combine
+        wl_df = tide_df.add(surge_df, axis="index")
+        wl_df.columns = ["waterlevel"]
 
-    #     # Combine
-    #     wl_df = tide_df.add(surge_df, axis="index")
-    #     wl_df.columns = ["data_0"]
-
-    #     return wl_df
+        return wl_df
 
     @classmethod
     def default(cls) -> "WaterlevelSynthetic":
@@ -118,17 +108,10 @@ class WaterlevelCSV(IWaterlevel):
 
     path: Path
 
-    # def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
-    #     t0, t1 = self.parse_time(t0, t1)
-    #     try:
-    #         return CSVTimeseries.load_file(path=self.path).to_dataframe(
-    #             start_time=t0, end_time=t1
-    #         )
-    #     except Exception as e:
-    #         if strict:
-    #             raise
-    #         else:
-    #             self.logger.error(f"Error reading CSV file: {self.path}. {e}")
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        return CSVTimeseries.load_file(path=self.path).to_dataframe(
+            start_time=time_frame.start_time, end_time=time_frame.end_time
+        )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -147,28 +130,6 @@ class WaterlevelCSV(IWaterlevel):
 class WaterlevelModel(IWaterlevel):
     source: ForcingSource = ForcingSource.MODEL
 
-    # def get_data(
-    #     self,
-    #     t0=None,
-    #     t1=None,
-    #     strict=True,
-    #     scenario: Optional[IScenario] = None,
-    #     **kwargs,
-    # ) -> pd.DataFrame:
-    #     from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
-
-    #     if scenario is None:
-    #         raise ValueError("Scenario must be provided to run the offshore model.")
-    #     try:
-    #         return OffshoreSfincsHandler().get_resulting_waterlevels(scenario=scenario)
-    #     except Exception as e:
-    #         if strict:
-    #             raise
-    #         else:
-    #             self.logger.error(
-    #                 f"Error reading model results: {kwargs.get('scenario', None)}. {e}"
-    #             )
-
     @classmethod
     def default(cls) -> "WaterlevelModel":
         return WaterlevelModel()
@@ -176,27 +137,6 @@ class WaterlevelModel(IWaterlevel):
 
 class WaterlevelGauged(IWaterlevel):
     source: ForcingSource = ForcingSource.GAUGED
-
-    # def get_data(
-    #     self, t0=None, t1=None, strict=True, **kwargs
-    # ) -> Optional[pd.DataFrame]:
-    #     t0, t1 = self.parse_time(t0, t1)
-    #     time = TimeModel(start_time=t0, end_time=t1)
-
-    #     site = Site.load_file(
-    #         Settings().database_path / "static" / "site" / "site.toml"
-    #     )
-    #     if site.attrs.tide_gauge is None:
-    #         raise ValueError("No tide gauge defined for this site.")
-
-    #     try:
-    #         return TideGauge(site.attrs.tide_gauge).get_waterlevels_in_time_frame(time)
-    #     except Exception as e:
-    #         if strict:
-    #             raise e
-    #         else:
-    #             self.logger.error(f"Error reading gauge data: {e}")
-    #             return None
 
     @classmethod
     def default(cls) -> "WaterlevelGauged":

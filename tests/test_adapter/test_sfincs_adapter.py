@@ -13,6 +13,7 @@ import xarray as xr
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.forcing.data_extraction import get_waterlevel_df
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
@@ -272,13 +273,14 @@ def mock_meteohandler_read(test_db):
 @pytest.fixture()
 def mock_offshorehandler_get_resulting_waterlevels():
     with mock.patch(
-        "flood_adapt.adapter.sfincs_adapter.OffshoreSfincsHandler.get_resulting_waterlevels"
+        "flood_adapt.adapter.sfincs_offshore.OffshoreSfincsHandler.get_resulting_waterlevels"
     ) as mock_get_data_wl_from_model:
-        mock_get_data_wl_from_model.return_value = pd.DataFrame(
+        df = pd.DataFrame(
             data={"waterlevel": [1, 2, 3]},
             index=pd.date_range("2023-01-01", periods=3, freq="H"),
         )
-        yield
+        mock_get_data_wl_from_model.return_value = df
+        yield df
 
 
 def _unsupported_forcing_source(type: ForcingType):
@@ -626,7 +628,10 @@ class TestAddForcing:
         ):
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
-            synthetic_waterlevels.get_data().to_csv(tmp_path)
+            get_waterlevel_df(synthetic_waterlevels, time_frame=TimeModel()).to_csv(
+                tmp_path
+            )
+
             forcing = WaterlevelCSV(path=tmp_path)
 
             # Act
@@ -672,7 +677,11 @@ class TestAddForcing:
 
             # Assert
             current_wl = default_sfincs_adapter.waterlevels.to_numpy()[:, 0]
-            assert all(current_wl == forcing.get_data().to_numpy()[:, 0])
+            expected_wl = mock_offshorehandler_get_resulting_waterlevels.to_numpy()[
+                :, 0
+            ]
+
+            assert all(current_wl == expected_wl)
             default_sfincs_adapter._turn_off_bnd_press_correction.assert_called_once()
 
         def test_add_forcing_waterlevels_unsupported(

@@ -51,7 +51,7 @@ def test_sub_event():
             ).model_dump(),
             "RAINFALL": RainfallConstant(
                 intensity=us.UnitfulIntensity(
-                    value=20, units=us.UnitTypesIntensity.mm_hr
+                    value=2, units=us.UnitTypesIntensity.mm_hr
                 )
             ).model_dump(),
             "DISCHARGE": {
@@ -84,9 +84,6 @@ def test_sub_event():
                 tide=TideModel(
                     harmonic_amplitude=us.UnitfulLength(
                         value=1, units=us.UnitTypesLength.meters
-                    ),
-                    harmonic_period=us.UnitfulTime(
-                        value=12.4, units=us.UnitTypesTime.hours
                     ),
                     harmonic_phase=us.UnitfulTime(
                         value=0, units=us.UnitTypesTime.hours

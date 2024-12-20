@@ -3,14 +3,20 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 from pydantic import Field
 
 from flood_adapt.object_model.hazard.forcing.timeseries import (
-    SyntheticTimeseriesModel,
+    CSVTimeseries,
+    SyntheticTimeseries,
 )
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IRainfall,
+)
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.timeseries import (
+    SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io import unit_system as us
 
@@ -20,16 +26,15 @@ class RainfallConstant(IRainfall):
 
     intensity: us.UnitfulIntensity
 
-    # def get_data(
-    #     self,
-    #     t0: datetime = None,
-    #     t1: datetime = None,
-    #     strict=True,
-    # ) -> pd.DataFrame:
-    #     t0, t1 = self.parse_time(t0, t1)
-    #     time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
-    #     values = [self.intensity.value for _ in range(len(time))]
-    #     return pd.DataFrame(data=values, index=time)
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        time = pd.date_range(
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=TimeModel().time_step,
+            name="time",
+        )
+        values = [self.intensity.value for _ in range(len(time))]
+        return pd.DataFrame(data=values, index=time)
 
     @classmethod
     def default(cls) -> "RainfallConstant":
@@ -42,26 +47,11 @@ class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
     timeseries: SyntheticTimeseriesModel
 
-    # def get_data(
-    #     self,
-    #     t0: Optional[datetime] = None,
-    #     t1: Optional[datetime] = None,
-    #     strict: bool = True,
-    #     **kwargs: Any,
-    # ) -> Optional[pd.DataFrame]:
-    #     rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
-    #     if t1 is not None:
-    #         t0, t1 = self.parse_time(t0, t1)
-    #     else:
-    #         t0, t1 = self.parse_time(t0, rainfall.attrs.duration)
-
-    #     try:
-    #         return rainfall.to_dataframe(start_time=t0, end_time=t1)
-    #     except Exception as e:
-    #         if strict:
-    #             raise
-    #         else:
-    #             self.logger.error(f"Error loading synthetic rainfall timeseries: {e}")
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
+        return rainfall.to_dataframe(
+            start_time=time_frame.start_time, end_time=time_frame.end_time
+        )
 
     @classmethod
     def default(cls) -> "RainfallSynthetic":
@@ -75,23 +65,6 @@ class RainfallMeteo(IRainfall):
     precip_units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
     wind_units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
 
-    # def get_data(
-    #     self,
-    #     t0: Optional[datetime] = None,
-    #     t1: Optional[datetime] = None,
-    #     strict: bool = True,
-    #     **kwargs: Any,
-    # ) -> xr.Dataset:
-    #     t0, t1 = self.parse_time(t0, t1)
-    #     time_frame = TimeModel(start_time=t0, end_time=t1)
-    #     try:
-    #         return MeteoHandler().read(time_frame)
-    #     except Exception as e:
-    #         if strict:
-    #             raise
-    #         else:
-    #             self.logger.error(f"Error reading meteo data: {self.path}. {e}")
-
     @classmethod
     def default(cls) -> "RainfallMeteo":
         return RainfallMeteo()
@@ -102,15 +75,6 @@ class RainfallTrack(IRainfall):
 
     path: Optional[Path] = Field(default=None)
     # path to spw file, set this when creating it
-
-    # def get_data(
-    #     self,
-    #     t0: Optional[datetime] = None,
-    #     t1: Optional[datetime] = None,
-    #     strict: bool = True,
-    #     **kwargs: Any,
-    # ) -> Optional[pd.DataFrame]:
-    #     pass
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -132,17 +96,10 @@ class RainfallCSV(IRainfall):
     path: Path
     unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
-    # def get_data(self, t0=None, t1=None, strict=True, **kwargs) -> pd.DataFrame:
-    #     t0, t1 = self.parse_time(t0, t1)
-    #     try:
-    #         return CSVTimeseries.load_file(path=self.path).to_dataframe(
-    #             start_time=t0, end_time=t1
-    #         )
-    #     except Exception as e:
-    #         if strict:
-    #             raise
-    #         else:
-    #             self.logger.error(f"Error reading CSV file: {self.path}. {e}")
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        return CSVTimeseries.load_file(path=self.path).to_dataframe(
+            start_time=time_frame.start_time, end_time=time_frame.end_time
+        )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
