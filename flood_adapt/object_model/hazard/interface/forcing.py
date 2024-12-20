@@ -1,19 +1,15 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Type
+from typing import Any, ClassVar, List, Type
 
-import pandas as pd
 import tomli
 from pydantic import BaseModel, field_serializer
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME
 from flood_adapt.object_model.interface.site import RiverModel
-from flood_adapt.object_model.io import unit_system as us
 
 
 ### ENUMS ###
@@ -74,47 +70,47 @@ class IForcing(BaseModel, ABC):
     def load_dict(cls, attrs):
         return cls.model_validate(attrs)
 
-    def get_data(
-        self,
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Optional[pd.DataFrame]:
-        """If applicable, return the forcing/timeseries data as a (pd.DataFrame | xr.DataSet | arrayLike) data structure.
+    # def get_data(
+    #     self,
+    #     t0: Optional[datetime] = None,
+    #     t1: Optional[datetime] = None,
+    #     strict: bool = True,
+    #     **kwargs: Any,
+    # ) -> Optional[pd.DataFrame]:
+    #     """If applicable, return the forcing/timeseries data as a (pd.DataFrame | xr.DataSet | arrayLike) data structure.
 
-        Args:
-            t0 (datetime, optional): Start time of the data.
-            t1 (datetime, optional): End time of the data.
-            strict (bool, optional): If True, raise an error if the data cannot be returned. Defaults to True.
+    #     Args:
+    #         t0 (datetime, optional): Start time of the data.
+    #         t1 (datetime, optional): End time of the data.
+    #         strict (bool, optional): If True, raise an error if the data cannot be returned. Defaults to True.
 
-        The default implementation is to return None, if it makes sense to return a dataframe-like datastructure, return it, otherwise return None.
-        """
-        return None
+    #     The default implementation is to return None, if it makes sense to return a dataframe-like datastructure, return it, otherwise return None.
+    #     """
+    #     return None
 
-    def parse_time(
-        self,
-        t0: Optional[datetime | us.UnitfulTime],
-        t1: Optional[datetime | us.UnitfulTime],
-    ) -> tuple[datetime, datetime]:
-        """
-        Parse the time inputs to ensure they are datetime objects.
+    # def parse_time(
+    #     self,
+    #     t0: Optional[datetime | us.UnitfulTime],
+    #     t1: Optional[datetime | us.UnitfulTime],
+    # ) -> tuple[datetime, datetime]:
+    #     """
+    #     Parse the time inputs to ensure they are datetime objects.
 
-        If the inputs are us.UnitfulTime objects (Synthetic), convert them to datetime objects using the reference time as the base time.
-        """
-        if t0 is None:
-            t0 = REFERENCE_TIME
-        elif isinstance(t0, us.UnitfulTime):
-            t0 = REFERENCE_TIME + t0.to_timedelta()
+    #     If the inputs are us.UnitfulTime objects (Synthetic), convert them to datetime objects using the reference time as the base time.
+    #     """
+    #     if t0 is None:
+    #         t0 = REFERENCE_TIME
+    #     elif isinstance(t0, us.UnitfulTime):
+    #         t0 = REFERENCE_TIME + t0.to_timedelta()
 
-        if t1 is None:
-            t1 = (
-                t0
-                + us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).to_timedelta()
-            )
-        elif isinstance(t1, us.UnitfulTime):
-            t1 = t0 + t1.to_timedelta()
-        return t0, t1
+    #     if t1 is None:
+    #         t1 = (
+    #             t0
+    #             + us.UnitfulTime(value=1, units=us.UnitTypesTime.hours).to_timedelta()
+    #         )
+    #     elif isinstance(t1, us.UnitfulTime):
+    #         t1 = t0 + t1.to_timedelta()
+    #     return t0, t1
 
     def model_dump(self, **kwargs: Any) -> dict[str, Any]:
         """Override the default model_dump to include class variables `type` and `source`."""

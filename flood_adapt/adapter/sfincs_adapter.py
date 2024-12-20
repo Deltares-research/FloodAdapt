@@ -27,6 +27,7 @@ from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.forcing.data_extraction import get_rainfall_df
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -35,6 +36,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
 from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
+    RainfallCSV,
     RainfallMeteo,
     RainfallSynthetic,
     RainfallTrack,
@@ -941,26 +943,26 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=None,
                 magnitude=forcing.intensity.convert(us.UnitTypesIntensity.mm_hr),
             )
+        elif isinstance(forcing, RainfallCSV):
+            df = get_rainfall_df(forcing, TimeModel(start_time=t0, end_time=t1))
+            conversion = us.UnitfulIntensity(value=1.0, units=forcing.unit).convert(
+                us.UnitTypesIntensity.mm_hr
+            )
+            df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
         elif isinstance(forcing, RainfallSynthetic):
-            tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
-            rainfall = SyntheticTimeseries().load_dict(data=forcing.timeseries)
-            df = rainfall.to_dataframe(start_time=t0, end_time=t1)
+            df = get_rainfall_df(forcing, TimeModel(start_time=t0, end_time=t1))
 
             conversion = us.UnitfulIntensity(
                 value=1.0, units=forcing.timeseries.peak_value.units
             ).convert(us.UnitTypesIntensity.mm_hr)
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
 
+            tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
             df.to_csv(tmp_path)
+
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(forcing, RainfallMeteo):
             ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
-            conversion_rain = us.UnitfulIntensity(
-                value=1.0, units=forcing.precip_units
-            ).convert(us.UnitTypesIntensity.mm_hr)
-            ds *= (
-                self._current_scenario.event.attrs.rainfall_multiplier * conversion_rain
-            )
 
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(forcing, RainfallTrack):

@@ -1,17 +1,15 @@
-from unittest.mock import patch
-
 import pandas as pd
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.forcing.data_extraction import get_waterlevel_df
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
     WaterlevelCSV,
-    WaterlevelGauged,
     WaterlevelModel,
     WaterlevelSynthetic,
 )
@@ -144,7 +142,8 @@ class TestWaterlevelSynthetic:
         expected_min = -abs(tide_amplitude.value)
 
         # Act
-        wl_df = WaterlevelSynthetic(surge=surge_model, tide=tide_model).get_data()
+        waterlevel_forcing = WaterlevelSynthetic(surge=surge_model, tide=tide_model)
+        wl_df = get_waterlevel_df(waterlevel_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
@@ -166,8 +165,12 @@ class TestWaterlevelCSV:
         dummy_1d_timeseries_df.to_csv(path)
         t0 = dummy_1d_timeseries_df.index[0]
         t1 = dummy_1d_timeseries_df.index[-1]
+
         # Act
-        wl_df = WaterlevelCSV(path=path).get_data(t0=t0, t1=t1)
+        waterlevel_forcing = WaterlevelCSV(path=path)
+        wl_df = get_waterlevel_df(
+            waterlevel_forcing, time_frame=TimeModel(start_time=t0, end_time=t1)
+        )
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
@@ -218,48 +221,3 @@ class TestWaterlevelModel:
         test_db.scenarios.save(scn)
 
         return test_db, scn, event
-
-    def test_process_sfincs_offshore(
-        self, setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent]
-    ):
-        # Arrange
-        _, scenario, _ = setup_offshore_scenario
-
-        # Act
-        wl_df = WaterlevelModel().get_data(scenario=scenario)
-
-        # Assert
-        assert isinstance(wl_df, pd.DataFrame)
-
-    def test_waterlevel_from_model_get_data(self, setup_offshore_scenario):
-        # Arrange
-        _, scenario, _ = setup_offshore_scenario
-
-        # Act
-        wl_df = WaterlevelModel().get_data(scenario=scenario)
-
-        # Assert
-        assert isinstance(wl_df, pd.DataFrame)
-
-
-class TestWaterlevelGauged:
-    @pytest.fixture()
-    def mock_tide_gauge(self, dummy_1d_timeseries_df: pd.DataFrame):
-        with patch(
-            "flood_adapt.object_model.hazard.forcing.waterlevels.TideGauge.get_waterlevels_in_time_frame"
-        ) as mock_download_wl:
-            mock_download_wl.return_value = dummy_1d_timeseries_df
-            yield mock_download_wl, dummy_1d_timeseries_df
-
-    def test_waterlevel_from_gauge_get_data(self, test_db: IDatabase, mock_tide_gauge):
-        # Arrange
-        _, dummy_1d_timeseries_df = mock_tide_gauge
-        t0 = dummy_1d_timeseries_df.index[0]
-        t1 = dummy_1d_timeseries_df.index[-1]
-
-        # Act
-        wl_df = WaterlevelGauged().get_data(t0=t0, t1=t1)
-
-        # Assert
-        assert isinstance(wl_df, pd.DataFrame)
-        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df, check_names=False)

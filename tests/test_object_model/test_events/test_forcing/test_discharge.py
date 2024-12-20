@@ -3,11 +3,13 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from flood_adapt.object_model.hazard.forcing.data_extraction import get_discharge_df
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
     DischargeSynthetic,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
@@ -35,7 +37,8 @@ class TestDischargeConstant:
         )
 
         # Act
-        discharge_df = DischargeConstant(river=river, discharge=discharge).get_data()
+        discharge_forcing = DischargeConstant(river=river, discharge=discharge)
+        discharge_df = get_discharge_df(discharge_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -56,7 +59,8 @@ class TestDischargeSynthetic:
         )
 
         # Act
-        discharge_df = DischargeSynthetic(river=river, timeseries=timeseries).get_data()
+        discharge_forcing = DischargeSynthetic(river=river, timeseries=timeseries)
+        discharge_df = get_discharge_df(discharge_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
@@ -80,7 +84,10 @@ class TestDischargeCSV:
         t1 = dummy_1d_timeseries_df.index[-1]
 
         # Act
-        discharge_df = DischargeCSV(river=river, path=path).get_data(t0=t0, t1=t1)
+        discharge_forcing = DischargeCSV(river=river, path=path)
+        discharge_df = get_discharge_df(
+            discharge_forcing, time_frame=TimeModel(start_time=t0, end_time=t1)
+        )
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)

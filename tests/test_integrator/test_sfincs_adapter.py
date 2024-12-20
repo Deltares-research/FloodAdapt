@@ -270,9 +270,9 @@ def mock_meteohandler_read(test_db):
 
 
 @pytest.fixture()
-def mock_waterlevelmodel_get_data():
+def mock_offshorehandler_get_resulting_waterlevels():
     with mock.patch(
-        "flood_adapt.adapter.sfincs_adapter.WaterlevelModel.get_data"
+        "flood_adapt.adapter.sfincs_adapter.OffshoreSfincsHandler.get_resulting_waterlevels"
     ) as mock_get_data_wl_from_model:
         mock_get_data_wl_from_model.return_value = pd.DataFrame(
             data={"waterlevel": [1, 2, 3]},
@@ -426,9 +426,12 @@ class TestAddForcing:
             assert default_sfincs_adapter.wind is None
 
     class TestRainfall:
-        def test_add_forcing_constant(self, default_sfincs_adapter: SfincsAdapter):
+        def test_add_forcing_constant(
+            self, sfincs_adapter_with_dummy_scn: SfincsAdapter
+        ):
             # Arrange
-            assert default_sfincs_adapter.rainfall is None
+            adapter = sfincs_adapter_with_dummy_scn
+            assert adapter.rainfall is None
 
             forcing = RainfallConstant(
                 intensity=us.UnitfulIntensity(
@@ -436,26 +439,27 @@ class TestAddForcing:
                 )
             )
             # Act
-            default_sfincs_adapter.add_forcing(forcing)
+            adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.rainfall is not None
+            assert adapter.rainfall is not None
             assert (
-                default_sfincs_adapter.rainfall.to_numpy()
+                adapter.rainfall.to_numpy()
                 == [forcing.intensity.convert(us.UnitTypesIntensity.mm_hr)]
             ).all() is not None
 
         def test_add_forcing_synthetic(
-            self, default_sfincs_adapter: SfincsAdapter, synthetic_rainfall
+            self, sfincs_adapter_with_dummy_scn: SfincsAdapter, synthetic_rainfall
         ):
             # Arrange
-            assert default_sfincs_adapter.rainfall is None
+            adapter = sfincs_adapter_with_dummy_scn
+            assert adapter.rainfall is None
 
             # Act
-            default_sfincs_adapter.add_forcing(synthetic_rainfall)
+            adapter.add_forcing(synthetic_rainfall)
 
             # Assert
-            assert default_sfincs_adapter.rainfall is not None
+            assert adapter.rainfall is not None
 
         def test_add_forcing_from_meteo(
             self,
@@ -463,28 +467,32 @@ class TestAddForcing:
             sfincs_adapter_with_dummy_scn: SfincsAdapter,
         ):
             # Arrange
-            assert default_sfincs_adapter.rainfall is None
+            adapter = sfincs_adapter_with_dummy_scn
+            assert adapter.rainfall is None
             forcing = RainfallMeteo()
 
             # Act
-            default_sfincs_adapter.add_forcing(forcing)
+            adapter.add_forcing(forcing)
 
             # Assert
-            assert default_sfincs_adapter.rainfall is not None
+            assert adapter.rainfall is not None
 
-        def test_add_forcing_unsupported(self, default_sfincs_adapter: SfincsAdapter):
+        def test_add_forcing_unsupported(
+            self, sfincs_adapter_with_dummy_scn: SfincsAdapter
+        ):
             # Arrange
-            assert default_sfincs_adapter.rainfall is None
+            adapter = sfincs_adapter_with_dummy_scn
+            assert adapter.rainfall is None
             rainfall = _unsupported_forcing_source(ForcingType.RAINFALL)
 
             # Act
-            default_sfincs_adapter.add_forcing(rainfall)
+            adapter.add_forcing(rainfall)
 
             # Assert
-            default_sfincs_adapter.logger.warning.assert_called_once_with(
+            adapter.logger.warning.assert_called_once_with(
                 f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
             )
-            assert default_sfincs_adapter.rainfall is None
+            assert adapter.rainfall is None
 
     class TestDischarge:
         def test_add_forcing_discharge_synthetic(
@@ -650,7 +658,9 @@ class TestAddForcing:
             assert default_sfincs_adapter.waterlevels is not None
 
         def test_add_forcing_waterlevels_model(
-            self, mock_waterlevelmodel_get_data, default_sfincs_adapter: SfincsAdapter
+            self,
+            mock_offshorehandler_get_resulting_waterlevels,
+            default_sfincs_adapter: SfincsAdapter,
         ):
             # Arrange
             default_sfincs_adapter._turn_off_bnd_press_correction = mock.Mock()

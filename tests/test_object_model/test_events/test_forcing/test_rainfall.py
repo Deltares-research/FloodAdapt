@@ -1,12 +1,9 @@
-from datetime import datetime, timedelta
-
 import pandas as pd
 import pytest
-import xarray as xr
 
+from flood_adapt.object_model.hazard.forcing.data_extraction import get_rainfall_df
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
-    RainfallMeteo,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.interface.forcing import Scstype
@@ -25,7 +22,8 @@ class TestRainfallConstant:
         intensity = us.UnitfulIntensity(value=val, units=us.UnitTypesIntensity.mm_hr)
 
         # Act
-        rf_df = RainfallConstant(intensity=intensity).get_data()
+        rainfall_forcing = RainfallConstant(intensity=intensity)
+        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -45,7 +43,8 @@ class TestRainfallSynthetic:
         )
 
         # Act
-        rf_df = RainfallSynthetic(timeseries=timeseries).get_data()
+        rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
+        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
@@ -65,26 +64,9 @@ class TestRainfallSynthetic:
         )
 
         # Act
-        rf_df = RainfallSynthetic(timeseries=timeseries).get_data()
+        rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
+        rf_df = get_rainfall_df(rainfall_forcing, time_frame=TimeModel())
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
         assert not rf_df.empty
-
-
-class TestRainfallMeteo:
-    def test_rainfall_from_meteo_get_data(self, test_db):
-        # Arrange
-        start = datetime(2021, 1, 1, 0, 0, 0)
-        duration = timedelta(hours=3)
-        time = TimeModel(
-            start_time=start,
-            end_time=start + duration,
-        )
-
-        # Act
-        wl_df = RainfallMeteo().get_data(t0=time.start_time, t1=time.end_time)
-
-        # Assert
-        assert isinstance(wl_df, xr.Dataset)
-        # TODO more asserts

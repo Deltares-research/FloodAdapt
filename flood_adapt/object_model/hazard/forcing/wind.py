@@ -1,27 +1,18 @@
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
-import pandas as pd
-import xarray as xr
 from pydantic import Field
 
-from flood_adapt.object_model.hazard.forcing.meteo_handler import MeteoHandler
-from flood_adapt.object_model.hazard.forcing.timeseries import SyntheticTimeseries
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
-)
-from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
 )
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.io.csv import read_csv
 
 
 class WindConstant(IWind):
@@ -30,21 +21,21 @@ class WindConstant(IWind):
     speed: us.UnitfulVelocity
     direction: us.UnitfulDirection
 
-    def get_data(
-        self,
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Optional[pd.DataFrame]:
-        t0, t1 = self.parse_time(t0, t1)
-        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
-        data = {
-            "data_0": [self.speed.value for _ in range(len(time))],
-            "data_1": [self.direction.value for _ in range(len(time))],
-        }
+    # def get_data(
+    #     self,
+    #     t0: Optional[datetime] = None,
+    #     t1: Optional[datetime] = None,
+    #     strict: bool = True,
+    #     **kwargs: Any,
+    # ) -> Optional[pd.DataFrame]:
+    #     t0, t1 = self.parse_time(t0, t1)
+    #     time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
+    #     data = {
+    #         "data_0": [self.speed.value for _ in range(len(time))],
+    #         "data_1": [self.direction.value for _ in range(len(time))],
+    #     }
 
-        return pd.DataFrame(data=data, index=time)
+    #     return pd.DataFrame(data=data, index=time)
 
     @classmethod
     def default(cls) -> "WindConstant":
@@ -60,39 +51,39 @@ class WindSynthetic(IWind):
     magnitude: SyntheticTimeseriesModel
     direction: SyntheticTimeseriesModel
 
-    def get_data(
-        self,
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Optional[pd.DataFrame]:
-        if t1 is None:
-            t0, t1 = self.parse_time(t0, self.magnitude.duration)
-        else:
-            t0, t1 = self.parse_time(t0, t1)
+    # def get_data(
+    #     self,
+    #     t0: Optional[datetime] = None,
+    #     t1: Optional[datetime] = None,
+    #     strict: bool = True,
+    #     **kwargs: Any,
+    # ) -> Optional[pd.DataFrame]:
+    #     if t1 is None:
+    #         t0, t1 = self.parse_time(t0, self.magnitude.duration)
+    #     else:
+    #         t0, t1 = self.parse_time(t0, t1)
 
-        time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
-        magnitude = (
-            SyntheticTimeseries()
-            .load_dict(self.magnitude)
-            .to_dataframe(start_time=t0, end_time=t1)
-        )
-        direction = (
-            SyntheticTimeseries()
-            .load_dict(self.direction)
-            .to_dataframe(start_time=t0, end_time=t1)
-        )
-        try:
-            df = pd.DataFrame(index=time)
-            df["mag"] = magnitude.reindex(time).to_numpy()
-            df["dir"] = direction.reindex(time).to_numpy()
-            return df
-        except Exception as e:
-            if strict:
-                raise
-            else:
-                self.logger.error(f"Error loading synthetic wind timeseries: {e}")
+    #     time = pd.date_range(start=t0, end=t1, freq=TimeModel().time_step, name="time")
+    #     magnitude = (
+    #         SyntheticTimeseries()
+    #         .load_dict(self.magnitude)
+    #         .to_dataframe(start_time=t0, end_time=t1)
+    #     )
+    #     direction = (
+    #         SyntheticTimeseries()
+    #         .load_dict(self.direction)
+    #         .to_dataframe(start_time=t0, end_time=t1)
+    #     )
+    #     try:
+    #         df = pd.DataFrame(index=time)
+    #         df["mag"] = magnitude.reindex(time).to_numpy()
+    #         df["dir"] = direction.reindex(time).to_numpy()
+    #         return df
+    #     except Exception as e:
+    #         if strict:
+    #             raise
+    #         else:
+    #             self.logger.error(f"Error loading synthetic wind timeseries: {e}")
 
     @classmethod
     def default(cls) -> "WindSynthetic":
@@ -127,20 +118,20 @@ class WindCSV(IWind):
 
     path: Path
 
-    def get_data(
-        self,
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Optional[pd.DataFrame]:
-        try:
-            return read_csv(self.path)
-        except Exception as e:
-            if strict:
-                raise
-            else:
-                self.logger.error(f"Error reading CSV file: {self.path}. {e}")
+    # def get_data(
+    #     self,
+    #     t0: Optional[datetime] = None,
+    #     t1: Optional[datetime] = None,
+    #     strict: bool = True,
+    #     **kwargs: Any,
+    # ) -> Optional[pd.DataFrame]:
+    #     try:
+    #         return read_csv(self.path)
+    #     except Exception as e:
+    #         if strict:
+    #             raise
+    #         else:
+    #             self.logger.error(f"Error reading CSV file: {self.path}. {e}")
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
@@ -161,23 +152,23 @@ class WindMeteo(IWind):
 
     # Required variables: ['wind10_u' (m/s), 'wind10_v' (m/s)]
     # Required coordinates: ['time', 'mag', 'dir']
-    def get_data(
-        self,
-        t0: Optional[datetime] = None,
-        t1: Optional[datetime] = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> xr.Dataset:
-        t0, t1 = self.parse_time(t0, t1)
-        time = TimeModel(start_time=t0, end_time=t1)
+    # def get_data(
+    #     self,
+    #     t0: Optional[datetime] = None,
+    #     t1: Optional[datetime] = None,
+    #     strict: bool = True,
+    #     **kwargs: Any,
+    # ) -> xr.Dataset:
+    #     t0, t1 = self.parse_time(t0, t1)
+    #     time = TimeModel(start_time=t0, end_time=t1)
 
-        try:
-            return MeteoHandler().read(time)
-        except Exception as e:
-            if strict:
-                raise
-            else:
-                self.logger.error(f"Error reading meteo data: {e}")
+    #     try:
+    #         return MeteoHandler().read(time)
+    #     except Exception as e:
+    #         if strict:
+    #             raise
+    #         else:
+    #             self.logger.error(f"Error reading meteo data: {e}")
 
     @classmethod
     def default(cls) -> "WindMeteo":

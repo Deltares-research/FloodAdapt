@@ -11,6 +11,12 @@ from plotly.subplots import make_subplots
 from pydantic import field_serializer, model_validator
 
 from flood_adapt.misc.config import Settings
+from flood_adapt.object_model.hazard.forcing.data_extraction import (
+    get_discharge_df,
+    get_rainfall_df,
+    get_waterlevel_df,
+    get_wind_df,
+)
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
@@ -19,6 +25,7 @@ from flood_adapt.object_model.hazard.interface.events import (
     IEventModel,
     IForcing,
 )
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -228,8 +235,9 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         data = None
         try:
-            data = self.attrs.forcings[ForcingType.WATERLEVEL].get_data(
-                t0=xlim1, t1=xlim2
+            data = get_waterlevel_df(
+                waterlevel=self.attrs.forcings[ForcingType.WATERLEVEL],
+                time_frame=self.attrs.time,
             )
         except Exception as e:
             self.logger.error(f"Error getting water level data: {e}")
@@ -317,8 +325,8 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         data = None
         try:
-            data = self.attrs.forcings[ForcingType.RAINFALL].get_data(
-                t0=xlim1, t1=xlim2
+            data = get_rainfall_df(
+                self.attrs.forcings[ForcingType.RAINFALL], self.attrs.time
             )
         except Exception as e:
             self.logger.error(f"Error getting rainfall data: {e}")
@@ -379,9 +387,12 @@ class Event(IEvent[T_EVENT_MODEL]):
         data = pd.DataFrame()
         errors = []
 
-        for name, river in rivers.items():
+        for name, discharge in rivers.items():
             try:
-                river_data = river.get_data(t0=xlim1, t1=xlim2)
+                river_data = get_discharge_df(
+                    discharge, TimeModel(start_time=xlim1, end_time=xlim2)
+                )
+
                 # add river_data as a column to the dataframe. keep the same index
                 if data.empty:
                     data = river_data
@@ -464,7 +475,10 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         data = None
         try:
-            data = self.attrs.forcings[ForcingType.WIND].get_data(xlim1, xlim2)
+            data = get_wind_df(
+                wind=self.attrs.forcings[ForcingType.WIND],
+                time_frame=self.attrs.time,
+            )
         except Exception as e:
             self.logger.error(f"Error getting wind data: {e}")
 
