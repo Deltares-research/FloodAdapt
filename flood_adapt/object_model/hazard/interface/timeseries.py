@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Optional, Protocol, Type, Union
 
@@ -138,11 +138,9 @@ class ITimeseries(ABC):
 
     def _to_dataframe(
         self,
-        start_time: datetime,
-        end_time: datetime,
+        time_frame: TimeModel,
         ts_start_time: us.UnitfulTime,
         ts_end_time: us.UnitfulTime,
-        time_step: timedelta,
         fill_value: float = 0.0,
     ) -> pd.DataFrame:
         """
@@ -166,19 +164,19 @@ class ITimeseries(ABC):
             The data is interpolated to the time_step and values that fall outside of the timeseries data are filled with 0.
         """
         full_df_time_range = pd.date_range(
-            start=start_time,
-            end=end_time,
-            freq=time_step,
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=time_frame.time_step,
             name="time",
         )
 
-        data = self.calculate_data(time_step=time_step) + fill_value
+        data = self.calculate_data(time_step=time_frame.time_step) + fill_value
 
         n_cols = data.shape[1] if len(data.shape) > 1 else 1
         ts_time_range = pd.date_range(
-            start=(start_time + ts_start_time.to_timedelta()),
-            end=(start_time + ts_end_time.to_timedelta()),
-            freq=time_step,
+            start=(time_frame.start_time + ts_start_time.to_timedelta()),
+            end=(time_frame.start_time + ts_end_time.to_timedelta()),
+            freq=time_frame.time_step,
         )
 
         # If the data contains more than the requested time range (from reading a csv file)

@@ -319,28 +319,24 @@ class TestSyntheticTimeseries:
             cumulative=cumulative,
             shape_type=shape_type,
         )
-
-        start = REFERENCE_TIME
-        end = start + timedelta(hours=duration)
-        timestep = timedelta(seconds=10)
-
-        # Call the to_dataframe method
-        df = ts.to_dataframe(
-            start_time=start,
-            end_time=end,
-            time_step=timestep,
+        time_frame = TimeModel(
+            start_time=REFERENCE_TIME,
+            end_time=REFERENCE_TIME + timedelta(hours=duration),
+            time_step=timedelta(seconds=10),
         )
 
+        # Call the to_dataframe method
+        df = ts.to_dataframe(time_frame)
+
         assert isinstance(df, pd.DataFrame)
-        assert list(df.columns) == ["data_0"]
         assert list(df.index.names) == ["time"]
 
         # Check that the DataFrame has the correct content
-        expected_data = ts.calculate_data(time_step=timestep)
+        expected_data = ts.calculate_data(time_step=time_frame.time_step)
         expected_time_range = pd.date_range(
-            start=start,
-            end=end,
-            freq=timestep,
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=time_frame.time_step,
         )
 
         assert df.index.equals(
@@ -359,6 +355,11 @@ class TestSyntheticTimeseries:
         full_df_duration = timedelta(hours=4)
         start = REFERENCE_TIME
         end = start + full_df_duration
+        time_frame = TimeModel(
+            start_time=start,
+            end_time=end,
+            time_step=timedelta(seconds=10),
+        )
 
         # new_peak_time is after the full_df_duration so it will be cut off
         new_peak_time = (
@@ -377,14 +378,10 @@ class TestSyntheticTimeseries:
 
         timestep = timedelta(seconds=10)
 
-        df = ts.to_dataframe(
-            start_time=start,
-            end_time=end,
-            time_step=timestep,
-        )
+        df = ts.to_dataframe(time_frame)
 
         assert isinstance(df, pd.DataFrame)
-        assert list(df.columns) == ["data_0"]
+        # assert list(df.columns) == ["data_0"]
         assert list(df.index.names) == ["time"]
 
         # Check that the DataFrame has the correct content

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -8,7 +9,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeCSV,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
     SyntheticTimeseriesModel,
@@ -50,26 +51,34 @@ class TestDischargeConstant:
 class TestDischargeSynthetic:
     def test_discharge_synthetic_to_dataframe(self, river):
         # Arrange
+        start = REFERENCE_TIME
+        duration = timedelta(hours=4)
+        time_frame = TimeModel(start_time=start, end_time=start + duration)
+
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.block,
-            duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
-            peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
+            duration=us.UnitfulTime(
+                value=duration.total_seconds(), units=us.UnitTypesTime.seconds
+            ),
+            peak_time=us.UnitfulTime(
+                value=duration.total_seconds() / 2, units=us.UnitTypesTime.seconds
+            ),
             peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
         )
 
         # Act
         discharge_forcing = DischargeSynthetic(river=river, timeseries=timeseries)
-        discharge_df = discharge_forcing.to_dataframe(time_frame=TimeModel())
+        discharge_df = discharge_forcing.to_dataframe(time_frame=time_frame)
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
         assert not discharge_df.empty
         assert discharge_df.max().max() == pytest.approx(
-            2, rel=1e-2
-        ), f"{discharge_df.max()} != 2"
+            2.0, rel=1e-2
+        ), f"{discharge_df.max()} != 2.0"
         assert discharge_df.min().min() == pytest.approx(
-            2, rel=1e-2
-        ), f"{discharge_df.min()} != 2"
+            2.0, rel=1e-2
+        ), f"{discharge_df.min()} != 2.0"
 
 
 class TestDischargeCSV:

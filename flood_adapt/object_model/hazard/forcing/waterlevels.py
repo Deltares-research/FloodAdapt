@@ -1,7 +1,6 @@
 import math
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -38,11 +37,14 @@ class TideModel(BaseModel):
         value=12.4, units=us.UnitTypesTime.hours
     )
 
-    def to_dataframe(
-        self, t0: datetime, t1: datetime, ts=TimeModel().time_step
-    ) -> pd.DataFrame:
-        index = pd.date_range(start=t0, end=t1, freq=ts, name="time")
-        seconds = np.arange(len(index)) * ts.total_seconds()
+    def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        index = pd.date_range(
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=time_frame.time_step,
+            name="time",
+        )
+        seconds = np.arange(len(index)) * time_frame.time_step.total_seconds()
 
         amp = self.harmonic_amplitude.value
         omega = 2 * math.pi / (self.harmonic_period.convert(us.UnitTypesTime.seconds))
@@ -61,7 +63,7 @@ class WaterlevelSynthetic(IWaterlevel):
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
         surge_df = surge.to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame=time_frame,
         )
         # Calculate Surge time series
         start_surge = time_frame.start_time + surge.attrs.start_time.to_timedelta()
@@ -76,7 +78,7 @@ class WaterlevelSynthetic(IWaterlevel):
         )
 
         surge_df = pd.DataFrame(surge_ts, index=time_surge)
-        tide_df = self.tide.to_dataframe(time_frame.start_time, time_frame.end_time)
+        tide_df = self.tide.to_dataframe(time_frame)
 
         # Reindex the shorter DataFrame to match the longer one
         surge_df = surge_df.reindex(tide_df.index).fillna(0)
@@ -110,7 +112,7 @@ class WaterlevelCSV(IWaterlevel):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame=time_frame
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

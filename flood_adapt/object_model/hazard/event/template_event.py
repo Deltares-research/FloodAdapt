@@ -223,7 +223,7 @@ class Event(IEvent[T_EVENT_MODEL]):
             ForcingSource.METEO,
             ForcingSource.MODEL,
         ]:
-            self.logger.warning(
+            self.logger.debug(
                 f"Plotting not supported for waterlevel data from {self.attrs.forcings[ForcingType.WATERLEVEL].source}"
             )
             return ""

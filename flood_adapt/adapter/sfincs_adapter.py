@@ -980,21 +980,20 @@ class SfincsAdapter(IHazardAdapter):
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
         t0, t1 = self._model.get_model_time()
+        time_frame = TimeModel(start_time=t0, end_time=t1)
         if isinstance(forcing, WaterlevelSynthetic):
-            df_ts = forcing.to_dataframe(
-                time_frame=TimeModel(start_time=t0, end_time=t1)
-            )
+            df_ts = forcing.to_dataframe(time_frame=time_frame)
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelGauged):
             if self.site.attrs.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
             df_ts = TideGauge(self.site.attrs.tide_gauge).get_waterlevels_in_time_frame(
-                TimeModel(start_time=t0, end_time=t1)
+                time=time_frame
             )
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
             df_ts = CSVTimeseries.load_file(path=forcing.path).to_dataframe(
-                start_time=t0, end_time=t1
+                time_frame=time_frame
             )
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
@@ -1174,6 +1173,7 @@ class SfincsAdapter(IHazardAdapter):
 
         self.logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
         t0, t1 = self._model.get_model_time()
+        time_frame = TimeModel(start_time=t0, end_time=t1)
         model_rivers = self.discharge.vector.to_gdf()
 
         # Check that the river is defined in the model and that the coordinates match
@@ -1190,11 +1190,11 @@ class SfincsAdapter(IHazardAdapter):
 
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
         if isinstance(discharge, DischargeCSV):
-            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
+            df = discharge.to_dataframe(time_frame)
         elif isinstance(discharge, DischargeConstant):
-            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
+            df = discharge.to_dataframe(time_frame)
         elif isinstance(discharge, DischargeSynthetic):
-            df = discharge.to_dataframe(TimeModel(start_time=t0, end_time=t1))
+            df = discharge.to_dataframe(time_frame)
         else:
             raise ValueError(
                 f"Unsupported discharge forcing type: {discharge.__class__}"

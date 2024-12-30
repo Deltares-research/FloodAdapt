@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pandas as pd
 import pytest
 
@@ -34,22 +36,38 @@ class TestRainfallConstant:
 class TestRainfallSynthetic:
     def test_rainfall_synthetic_to_dataframe(self):
         # Arrange
+        start = pd.Timestamp("2020-01-01")
+        duration = timedelta(hours=4)
+
+        time_frame = TimeModel(
+            start_time=start,
+            end_time=start + duration,
+        )
+
         timeseries = SyntheticTimeseriesModel(
             shape_type=ShapeType.block,
-            duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
-            peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
+            duration=us.UnitfulTime(
+                value=duration.total_seconds(), units=us.UnitTypesTime.seconds
+            ),
+            peak_time=us.UnitfulTime(
+                value=duration.total_seconds() / 2, units=us.UnitTypesTime.seconds
+            ),
             peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
         )
 
         # Act
         rainfall_forcing = RainfallSynthetic(timeseries=timeseries)
-        rf_df = rainfall_forcing.to_dataframe(time_frame=TimeModel())
+        rf_df = rainfall_forcing.to_dataframe(time_frame=time_frame)
 
         # Assert
         assert isinstance(rf_df, pd.DataFrame)
         assert not rf_df.empty
-        assert rf_df.max().max() == pytest.approx(2, rel=1e-2), f"{rf_df.max()} != 2"
-        assert rf_df.min().min() == pytest.approx(2, rel=1e-2), f"{rf_df.min()} != 2"
+        assert rf_df.max().max() == pytest.approx(
+            2.0, rel=1e-2
+        ), f"{rf_df.max()} != 2.0"
+        assert rf_df.min().min() == pytest.approx(
+            2.0, rel=1e-2
+        ), f"{rf_df.min()} != 2.0"
 
     def test_rainfall_synthetic_scs_to_dataframe(self):
         # Arrange

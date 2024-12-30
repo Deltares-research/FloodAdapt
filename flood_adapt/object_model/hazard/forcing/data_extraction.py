@@ -64,12 +64,10 @@ def get_discharge_df(
             index=time,
         )
     elif isinstance(discharge, DischargeCSV):
-        return CSVTimeseries.load_file(path=discharge.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        return CSVTimeseries.load_file(path=discharge.path).to_dataframe(time_frame)
     elif isinstance(discharge, DischargeSynthetic):
         df = SyntheticTimeseries.load_dict(data=discharge.timeseries).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame
         )
         df.columns = [discharge.river.name]
         return df
@@ -83,12 +81,10 @@ def get_rainfall_df(rainfall: IRainfall, time_frame: TimeModel) -> pd.DataFrame:
         time = _create_time_range(time_frame)
         return pd.DataFrame(data=[rainfall.intensity.value] * len(time), index=time)
     elif isinstance(rainfall, RainfallCSV):
-        return CSVTimeseries.load_file(path=rainfall.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        return CSVTimeseries.load_file(path=rainfall.path).to_dataframe(time_frame)
     elif isinstance(rainfall, RainfallSynthetic):
         return SyntheticTimeseries.load_dict(data=rainfall.timeseries).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame
         )
     elif isinstance(rainfall, (RainfallTrack, RainfallMeteo)):
         raise ValueError(f"Cannot create a dataframe with rainfall type: {rainfall}")
@@ -109,35 +105,9 @@ def get_waterlevel_df(waterlevel: IWaterlevel, time_frame: TimeModel) -> pd.Data
         )
 
     elif isinstance(waterlevel, WaterlevelCSV):
-        return CSVTimeseries.load_file(path=waterlevel.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        return CSVTimeseries.load_file(path=waterlevel.path).to_dataframe(time_frame)
     elif isinstance(waterlevel, WaterlevelSynthetic):
-        surge = SyntheticTimeseries().load_dict(data=waterlevel.surge.timeseries)
-
-        # Calculate Surge time series
-        start_surge = time_frame.start_time + surge.attrs.start_time.to_timedelta()
-        end_surge = start_surge + surge.attrs.duration.to_timedelta()
-
-        surge_ts = surge.calculate_data()
-        time_surge = pd.date_range(
-            start=start_surge,
-            end=end_surge,
-            freq=time_frame.time_step,
-            name="time",
-        )
-
-        surge_df = pd.DataFrame(surge_ts, index=time_surge)
-        tide_df = waterlevel.tide.to_dataframe(
-            time_frame.start_time, time_frame.end_time
-        )
-
-        # Reindex the shorter DataFrame to match the longer one
-        surge_df = surge_df.reindex(tide_df.index).fillna(0)
-
-        # Combine
-        return tide_df.add(surge_df, axis="index")
-
+        return waterlevel.to_dataframe(time_frame=time_frame)
     elif isinstance(waterlevel, WaterlevelModel):
         raise ValueError(
             f"Cannot create a dataframe with waterlevel type: {waterlevel}"
@@ -148,53 +118,11 @@ def get_waterlevel_df(waterlevel: IWaterlevel, time_frame: TimeModel) -> pd.Data
 
 def get_wind_df(wind: IWind, time_frame: TimeModel) -> pd.DataFrame:
     if isinstance(wind, WindConstant):
-        time = pd.date_range(
-            start=time_frame.start_time,
-            end=time_frame.end_time,
-            freq=time_frame.time_step,
-            name="time",
-        )
-        return pd.DataFrame(
-            data={
-                "magnitude": [wind.speed.value for _ in range(len(time))],
-                "direction": [wind.direction.value for _ in range(len(time))],
-            },
-            index=time,
-        )
+        return wind.to_dataframe(time_frame)
     elif isinstance(wind, WindCSV):
-        return CSVTimeseries.load_file(path=wind.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        return wind.to_dataframe(time_frame)
     elif isinstance(wind, WindSynthetic):
-        magnitude = (
-            SyntheticTimeseries()
-            .load_dict(wind.magnitude)
-            .to_dataframe(
-                start_time=time_frame.start_time, end_time=time_frame.end_time
-            )
-        )
-        direction = (
-            SyntheticTimeseries()
-            .load_dict(wind.direction)
-            .to_dataframe(
-                start_time=time_frame.start_time, end_time=time_frame.end_time
-            )
-        )
-        time = pd.date_range(
-            start=time_frame.start_time,
-            end=time_frame.end_time,
-            freq=time_frame.time_step,
-            name="time",
-        )
-
-        return pd.DataFrame(
-            data={
-                "mag": magnitude.reindex(time).to_numpy(),
-                "dir": direction.reindex(time).to_numpy(),
-            },
-            index=time,
-        )
-
+        return wind.to_dataframe(time_frame)
     elif isinstance(wind, (WindMeteo, WindTrack)):
         raise ValueError(f"Cannot create a dataframe with wind type: {wind}")
     else:

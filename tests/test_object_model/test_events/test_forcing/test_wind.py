@@ -27,8 +27,8 @@ class TestWindConstant:
         # Assert
         assert isinstance(wind_df, pd.DataFrame)
         assert not wind_df.empty
-        assert wind_df["data_0"].max() == _speed
-        assert wind_df["data_1"].min() == _dir
+        assert wind_df["mag"].max() == _speed
+        assert wind_df["dir"].min() == _dir
 
 
 class TestWindMeteo:

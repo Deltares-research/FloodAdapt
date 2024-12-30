@@ -30,7 +30,7 @@ class RainfallConstant(IRainfall):
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
-            freq=TimeModel().time_step,
+            freq=time_frame.time_step,
             name="time",
         )
         values = [self.intensity.value for _ in range(len(time))]
@@ -49,9 +49,7 @@ class RainfallSynthetic(IRainfall):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
-        return rainfall.to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        return rainfall.to_dataframe(time_frame=time_frame)
 
     @classmethod
     def default(cls) -> "RainfallSynthetic":
@@ -98,7 +96,7 @@ class RainfallCSV(IRainfall):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame=time_frame
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

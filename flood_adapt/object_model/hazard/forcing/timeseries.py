@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -157,9 +157,7 @@ class SyntheticTimeseries(ITimeseries):
 
     def to_dataframe(
         self,
-        start_time: datetime | str,
-        end_time: datetime | str,
-        time_step: timedelta = TimeModel().time_step,
+        time_frame: TimeModel,
     ) -> pd.DataFrame:
         """
         Interpolate the timeseries data using the timestep provided.
@@ -175,9 +173,7 @@ class SyntheticTimeseries(ITimeseries):
 
         """
         return super()._to_dataframe(
-            start_time=start_time,
-            end_time=end_time,
-            time_step=time_step,
+            time_frame=time_frame,
             ts_start_time=self.attrs.start_time,
             ts_end_time=self.attrs.end_time,
             fill_value=self.attrs.fill_value,
@@ -225,17 +221,13 @@ class CSVTimeseries(ITimeseries):
 
     def to_dataframe(
         self,
-        start_time: datetime,
-        end_time: datetime,
-        time_step: timedelta = TimeModel().time_step,
+        time_frame: TimeModel,
     ) -> pd.DataFrame:
         return super()._to_dataframe(
-            start_time=start_time,
-            end_time=end_time,
-            time_step=time_step,
+            time_frame=time_frame,
             ts_start_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
             ts_end_time=us.UnitfulTime(
-                value=(end_time - start_time).total_seconds(),
+                value=(time_frame.end_time - time_frame.start_time).total_seconds(),
                 units=us.UnitTypesTime.seconds,
             ),
         )

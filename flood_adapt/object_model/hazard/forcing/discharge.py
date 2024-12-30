@@ -59,9 +59,7 @@ class DischargeSynthetic(IDischarge):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         discharge = SyntheticTimeseries().load_dict(data=self.timeseries)
-        df = discharge.to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
-        )
+        df = discharge.to_dataframe(time_frame=time_frame)
         df.columns = [self.river.name]
         return df
 
@@ -88,7 +86,7 @@ class DischargeCSV(IDischarge):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            start_time=time_frame.start_time, end_time=time_frame.end_time
+            time_frame=time_frame
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

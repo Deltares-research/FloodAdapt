@@ -148,11 +148,11 @@ class TestWaterlevelSynthetic:
         assert isinstance(wl_df, pd.DataFrame)
         assert not wl_df.empty
         assert (
-            wl_df["data_0"].max() <= expected_max
-        ), f"Expected max {surge_peak_value} + {tide_amplitude} ~ {expected_max}, got {wl_df['data_0'].max()}"
+            wl_df["waterlevel"].max() <= expected_max
+        ), f"Expected max {surge_peak_value} + {tide_amplitude} ~ {expected_max}, got {wl_df['waterlevel'].max()}"
         assert (
-            wl_df["data_0"].min() >= expected_min
-        ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['data_0'].min()}"
+            wl_df["waterlevel"].min() >= expected_min
+        ), f"Expected min {-abs(tide_amplitude.value)} ~ {expected_min}, got {wl_df['waterlevel'].min()}"
 
 
 class TestWaterlevelCSV:
@@ -173,6 +173,8 @@ class TestWaterlevelCSV:
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
+        assert dummy_1d_timeseries_df.index.equals(wl_df.index)
+        assert dummy_1d_timeseries_df.columns.equals(wl_df.columns)
         pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
 
 

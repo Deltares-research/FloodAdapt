@@ -33,8 +33,8 @@ class WindConstant(IWind):
             name="time",
         )
         data = {
-            "speed": [self.speed.value for _ in range(len(time))],
-            "direction": [self.direction.value for _ in range(len(time))],
+            "mag": [self.speed.value for _ in range(len(time))],
+            "dir": [self.direction.value for _ in range(len(time))],
         }
         return pd.DataFrame(data=data, index=time)
 
@@ -63,21 +63,21 @@ class WindSynthetic(IWind):
             SyntheticTimeseries()
             .load_dict(self.magnitude)
             .to_dataframe(
-                start_time=time_frame.start_time, end_time=time_frame.end_time
+                time_frame=time_frame,
             )
         )
         direction = (
             SyntheticTimeseries()
             .load_dict(self.direction)
             .to_dataframe(
-                start_time=time_frame.start_time, end_time=time_frame.end_time
+                time_frame=time_frame,
             )
         )
         return pd.DataFrame(
             index=time,
             data={
-                "mag": magnitude.reindex(time).to_numpy(),
-                "dir": direction.reindex(time).to_numpy(),
+                "mag": magnitude.reindex(time).to_numpy().flatten(),
+                "dir": direction.reindex(time).to_numpy().flatten(),
             },
         )
 
@@ -115,6 +115,7 @@ class WindCSV(IWind):
     path: Path
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        # TODO: slice data to time_frame like in WaterlevelCSV
         return read_csv(self.path)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
