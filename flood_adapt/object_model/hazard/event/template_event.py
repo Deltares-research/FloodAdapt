@@ -32,7 +32,6 @@ from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
 from flood_adapt.object_model.interface.site import Site
-from flood_adapt.object_model.io import unit_system as us
 
 
 class EventModel(IEventModel):
@@ -184,37 +183,29 @@ class Event(IEvent[T_EVENT_MODEL]):
     def plot_forcing(
         self,
         forcing_type: ForcingType,
-        units: Optional[
-            us.UnitTypesLength
-            | us.UnitTypesIntensity
-            | us.UnitTypesDischarge
-            | us.UnitTypesVelocity
-        ] = None,
-        **kwargs,
-    ) -> str | None:
+    ) -> str:
         """Plot the forcing data for the event."""
         if self._site is None:
             self._site = Site.load_file(
                 db_path(top_level_dir=TopLevelDir.static, object_dir=ObjectDir.site)
                 / "site.toml"
             )
-
         match forcing_type:
             case ForcingType.RAINFALL:
-                return self.plot_rainfall(units=units, **kwargs)
+                return self._plot_rainfall()
             case ForcingType.WIND:
-                return self.plot_wind(velocity_units=units, **kwargs)
+                return self._plot_wind()
             case ForcingType.WATERLEVEL:
-                return self.plot_waterlevel(units=units, **kwargs)
+                return self._plot_waterlevel()
             case ForcingType.DISCHARGE:
-                return self.plot_discharge(units=units, **kwargs)
+                return self._plot_discharge()
             case _:
                 raise NotImplementedError(
                     "Plotting only available for rainfall, wind, waterlevel, and discharge forcings."
                 )
 
-    def plot_waterlevel(
-        self, units: Optional[us.UnitTypesLength] = None, **kwargs
+    def _plot_waterlevel(
+        self,
     ) -> str:
         if self.attrs.forcings[ForcingType.WATERLEVEL] is None:
             return ""
@@ -230,7 +221,7 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         self.logger.debug("Plotting water level data")
 
-        units = units or Settings().unit_system.length
+        units = Settings().unit_system.length
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         data = None
@@ -296,13 +287,9 @@ class Event(IEvent[T_EVENT_MODEL]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_rainfall(
+    def _plot_rainfall(
         self,
-        units: Optional[us.UnitTypesIntensity] = None,
-        **kwargs,
-    ) -> str | None:
-        units = units or Settings().unit_system.intensity
-
+    ) -> str:
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
             return ""
 
@@ -317,11 +304,11 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         self.logger.debug("Plotting rainfall data")
 
-        # set timing
+        units = Settings().unit_system.intensity
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         if self.attrs.forcings[ForcingType.RAINFALL] is None:
-            return
+            return ""
 
         data = None
         try:
@@ -330,13 +317,13 @@ class Event(IEvent[T_EVENT_MODEL]):
             )
         except Exception as e:
             self.logger.error(f"Error getting rainfall data: {e}")
-            return
+            return ""
 
         if data is None or data.empty:
             self.logger.error(
                 f"Could not retrieve rainfall data: {self.attrs.forcings[ForcingType.RAINFALL]} {data}"
             )
-            return
+            return ""
 
         # Add multiplier
         data *= self.attrs.rainfall_multiplier
@@ -369,10 +356,8 @@ class Event(IEvent[T_EVENT_MODEL]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_discharge(
-        self, units: Optional[us.UnitTypesDischarge] = None, **kwargs
-    ) -> str:
-        units = units or Settings().unit_system.discharge
+    def _plot_discharge(self) -> str:
+        units = Settings().unit_system.discharge
 
         # set timing relative to T0 if event is synthetic
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
@@ -448,11 +433,8 @@ class Event(IEvent[T_EVENT_MODEL]):
         fig.write_html(output_loc)
         return str(output_loc)
 
-    def plot_wind(
+    def _plot_wind(
         self,
-        velocity_units: Optional[us.UnitTypesVelocity] = None,
-        direction_units: Optional[us.UnitTypesDirection] = None,
-        **kwargs,
     ) -> str:
         if self.attrs.forcings[ForcingType.WIND] is None:
             return ""
@@ -468,9 +450,8 @@ class Event(IEvent[T_EVENT_MODEL]):
 
         self.logger.debug("Plotting wind data")
 
-        velocity_units = velocity_units or Settings().unit_system.velocity
-        direction_units = direction_units or Settings().unit_system.direction
-
+        velocity_units = Settings().unit_system.velocity
+        direction_units = Settings().unit_system.direction
         xlim1, xlim2 = self.attrs.time.start_time, self.attrs.time.end_time
 
         data = None

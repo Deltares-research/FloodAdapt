@@ -26,10 +26,13 @@ class TideGaugeModel(BaseModel):
     name: Optional[int | str] = None
     description: Optional[str] = ""
     source: TideGaugeSource
-    ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
+    ID: Optional[int] = None  # Attribute used to download from correct gauge
     file: Optional[Path] = None  # for locally stored data
     lat: Optional[float] = None
     lon: Optional[float] = None
+    units: us.UnitTypesLength = (
+        us.UnitTypesLength.meters
+    )  # units of the water levels in the downloaded file
 
     @model_validator(mode="after")
     def validate_selection_type(self) -> "TideGaugeModel":

@@ -174,8 +174,8 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return read_csv(csvpath)
 
 
-def plot_forcing(event: IEvent, forcingtype: ForcingType, **kwargs) -> str | None:
-    return event.plot_forcing(forcingtype, **kwargs)
+def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str | None:
+    return event.plot_forcing(forcing_type)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):

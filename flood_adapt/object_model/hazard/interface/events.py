@@ -2,7 +2,7 @@ import os
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional, Type, TypeVar
+from typing import Any, ClassVar, List, Type, TypeVar
 
 from pydantic import (
     Field,
@@ -86,37 +86,4 @@ class IEvent(IObject[T_IEVENT_MODEL]):
     def plot_forcing(
         self,
         forcing_type: ForcingType,
-        units: Optional[
-            us.UnitTypesLength
-            | us.UnitTypesIntensity
-            | us.UnitTypesDischarge
-            | us.UnitTypesVelocity
-        ] = None,
-        **kwargs,
-    ) -> str | None: ...
-
-    @abstractmethod
-    def plot_waterlevel(
-        self, units: Optional[us.UnitTypesLength] = None, **kwargs
-    ) -> str: ...
-
-    @abstractmethod
-    def plot_rainfall(
-        self,
-        units: Optional[us.UnitTypesIntensity] = None,
-        rainfall_multiplier: Optional[float] = None,
-        **kwargs,
-    ) -> str | None: ...
-
-    @abstractmethod
-    def plot_discharge(
-        self, units: Optional[us.UnitTypesDischarge] = None, **kwargs
-    ) -> str: ...
-
-    @abstractmethod
-    def plot_wind(
-        self,
-        velocity_units: Optional[us.UnitTypesVelocity] = None,
-        direction_units: Optional[us.UnitTypesDirection] = None,
-        **kwargs,
     ) -> str: ...

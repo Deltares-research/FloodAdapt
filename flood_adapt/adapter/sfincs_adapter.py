@@ -252,7 +252,7 @@ class SfincsAdapter(IHazardAdapter):
             return
 
         self.logger.info(
-            f"Adding {forcing.type.lower()} from ({forcing.source.lower()}) to the SFINCS model..."
+            f"Adding {forcing.type.capitalize()} (source: {forcing.source.lower()}) to the SFINCS model..."
         )
         if isinstance(forcing, IRainfall):
             self._add_forcing_rain(forcing)
@@ -291,7 +291,7 @@ class SfincsAdapter(IHazardAdapter):
 
         if phys_projection.attrs.sea_level_rise:
             self.logger.info(
-                f"Adding sea level rise ({phys_projection.attrs.sea_level_rise}) to SFINCS model."
+                f"Adding projected sea level rise ({phys_projection.attrs.sea_level_rise}) to SFINCS model."
             )
             if self.waterlevels is not None:
                 self.waterlevels += phys_projection.attrs.sea_level_rise.convert(
@@ -304,7 +304,7 @@ class SfincsAdapter(IHazardAdapter):
 
         if phys_projection.attrs.rainfall_multiplier:
             self.logger.info(
-                f"Adding rainfall multiplier ({phys_projection.attrs.rainfall_multiplier}) to SFINCS model."
+                f"Adding projected rainfall multiplier ({phys_projection.attrs.rainfall_multiplier}) to SFINCS model."
             )
             if self.rainfall is not None:
                 self.rainfall *= phys_projection.attrs.rainfall_multiplier
@@ -891,7 +891,7 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(wind, WindSynthetic):
             df = wind.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
-
+            # TODO conversion
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             df.to_csv(tmp_path)
 
@@ -901,12 +901,14 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(wind, WindMeteo):
             ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
+            # TODO conversion
 
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
         elif isinstance(wind, WindTrack):
             if wind.path is None:
                 raise ValueError("No path to rainfall track file provided.")
+            # TODO conversion
             self._add_forcing_spw(wind.path)
         else:
             self.logger.warning(
@@ -925,19 +927,20 @@ class SfincsAdapter(IHazardAdapter):
             time-invariant precipitation intensity [mm_hr], by default None
         """
         t0, t1 = self._model.get_model_time()
+        time_frame = TimeModel(start_time=t0, end_time=t1)
         if isinstance(rainfall, RainfallConstant):
             self._model.setup_precip_forcing(
                 timeseries=None,
                 magnitude=rainfall.intensity.convert(us.UnitTypesIntensity.mm_hr),
             )
         elif isinstance(rainfall, RainfallCSV):
-            df = rainfall.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
+            df = rainfall.to_dataframe(time_frame=time_frame)
             conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
         elif isinstance(rainfall, RainfallSynthetic):
-            df = rainfall.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
+            df = rainfall.to_dataframe(time_frame=time_frame)
             conversion = us.UnitfulIntensity(
                 value=1.0, units=rainfall.timeseries.peak_value.units
             ).convert(us.UnitTypesIntensity.mm_hr)
@@ -948,12 +951,13 @@ class SfincsAdapter(IHazardAdapter):
 
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
-            ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
-
+            ds = MeteoHandler().read(time_frame)
+            # TODO conversion
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
             if rainfall.path is None:
                 raise ValueError("No path to rainfall track file provided.")
+            # TODO conversion
             self._add_forcing_spw(rainfall.path)
         else:
             self.logger.warning(
@@ -983,6 +987,10 @@ class SfincsAdapter(IHazardAdapter):
         time_frame = TimeModel(start_time=t0, end_time=t1)
         if isinstance(forcing, WaterlevelSynthetic):
             df_ts = forcing.to_dataframe(time_frame=time_frame)
+            conversion = us.UnitfulLength(
+                value=1.0, units=forcing.surge.timeseries.peak_value.units
+            ).convert(us.UnitTypesLength.meters)
+            df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelGauged):
             if self.site.attrs.tide_gauge is None:
@@ -990,6 +998,10 @@ class SfincsAdapter(IHazardAdapter):
             df_ts = TideGauge(self.site.attrs.tide_gauge).get_waterlevels_in_time_frame(
                 time=time_frame
             )
+            conversion = us.UnitfulLength(
+                value=1.0, units=self.site.attrs.tide_gauge.units
+            ).convert(us.UnitTypesLength.meters)
+            df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
             df_ts = CSVTimeseries.load_file(path=forcing.path).to_dataframe(
@@ -997,6 +1009,11 @@ class SfincsAdapter(IHazardAdapter):
             )
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
+
+            conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
+                us.UnitTypesLength.meters
+            )
+            df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
 
         elif isinstance(forcing, WaterlevelModel):
@@ -1011,6 +1028,7 @@ class SfincsAdapter(IHazardAdapter):
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
 
+            # Already in meters since it was produced by SFINCS so no conversion needed
             self._set_waterlevel_forcing(df_ts)
             self._turn_off_bnd_press_correction()
         else:
@@ -1189,16 +1207,14 @@ class SfincsAdapter(IHazardAdapter):
             )
 
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
-        if isinstance(discharge, DischargeCSV):
-            df = discharge.to_dataframe(time_frame)
-        elif isinstance(discharge, DischargeConstant):
-            df = discharge.to_dataframe(time_frame)
-        elif isinstance(discharge, DischargeSynthetic):
+        if isinstance(discharge, (DischargeCSV, DischargeConstant, DischargeSynthetic)):
             df = discharge.to_dataframe(time_frame)
         else:
             raise ValueError(
                 f"Unsupported discharge forcing type: {discharge.__class__}"
             )
+        # TODO conversion
+
         df = df.rename(columns={df.columns[0]: river_inds[0]})
 
         # HydroMT function: set discharge forcing from time series and river coordinates

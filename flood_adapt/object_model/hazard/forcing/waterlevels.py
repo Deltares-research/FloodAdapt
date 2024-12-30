@@ -109,6 +109,7 @@ class WaterlevelCSV(IWaterlevel):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
+    units: us.UnitTypesLength = us.UnitTypesLength.meters
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return CSVTimeseries.load_file(path=self.path).to_dataframe(
