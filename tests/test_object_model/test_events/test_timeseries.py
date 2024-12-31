@@ -186,6 +186,8 @@ class TestSyntheticTimeseries:
         (6, 12, 4, 0.5),
         (1, 0, 1, 1),
         (2, 6, 2, 2),
+        (2, 24, 14, 2),
+        (8, 24, 20, 1),
         (10, 20, 1, 10),
     ]
     SHAPE_TYPES = list(ShapeType)
@@ -197,7 +199,6 @@ class TestSyntheticTimeseries:
         peak_value: float = 1,
         peak_time: float = 0,
         cumulative: float = 1,
-        timestep: float = 1,
     ):
         ts = SyntheticTimeseries()
         if shape_type == ShapeType.scs:
@@ -222,8 +223,19 @@ class TestSyntheticTimeseries:
             )
         return ts
 
-    def test_calculate_data_normal(self):
-        ts = self.get_test_timeseries()
+    @pytest.mark.parametrize(
+        "shape_type", [ShapeType.block, ShapeType.gaussian, ShapeType.triangle]
+    )
+    @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
+    def test_calculate_data_correct_peak_value(
+        self, shape_type, duration, peak_time, peak_value, cumulative
+    ):
+        ts = self.get_test_timeseries(
+            shape_type=shape_type,
+            duration=duration,
+            peak_time=peak_time,
+            peak_value=peak_value,
+        )
 
         timestep = TimeModel().time_step
         data = ts.calculate_data(timestep)

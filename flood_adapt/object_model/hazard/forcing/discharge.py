@@ -83,6 +83,7 @@ class DischargeCSV(IDischarge):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
+    unit: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return CSVTimeseries.load_file(path=self.path).to_dataframe(

@@ -9,7 +9,6 @@ from flood_adapt.object_model.hazard.event.template_event import (
     EventModel,
 )
 from flood_adapt.object_model.hazard.interface.events import IEvent, Mode
-from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 
@@ -85,6 +84,3 @@ class EventSet(IObject[EventSetModel], DatabaseUser):
         # So, just run the first subevent and then copy the results to the other subevents ?
         for sub_event in self.events:
             sub_event.preprocess(output_dir / sub_event.attrs.name)
-
-    def plot_forcing(self, forcing_type: ForcingType) -> str:
-        return ""

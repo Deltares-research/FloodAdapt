@@ -891,7 +891,10 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(wind, WindSynthetic):
             df = wind.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
-            # TODO conversion
+            df["mag"] *= us.UnitfulVelocity(
+                value=1.0, units=Settings().unit_system.velocity
+            ).convert(us.UnitTypesVelocity.mps)
+
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
             df.to_csv(tmp_path)
 
@@ -901,14 +904,14 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(wind, WindMeteo):
             ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
-            # TODO conversion
+            # data already in metric units so no conversion needed
 
             # HydroMT function: set wind forcing from grid
             self._model.setup_wind_forcing_from_grid(wind=ds)
         elif isinstance(wind, WindTrack):
             if wind.path is None:
                 raise ValueError("No path to rainfall track file provided.")
-            # TODO conversion
+            # data already in metric units so no conversion needed
             self._add_forcing_spw(wind.path)
         else:
             self.logger.warning(
@@ -952,12 +955,12 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
             ds = MeteoHandler().read(time_frame)
-            # TODO conversion
+            # data already in metric units so no conversion needed
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
             if rainfall.path is None:
                 raise ValueError("No path to rainfall track file provided.")
-            # TODO conversion
+            # data already in metric units so no conversion needed
             self._add_forcing_spw(rainfall.path)
         else:
             self.logger.warning(
@@ -1207,13 +1210,27 @@ class SfincsAdapter(IHazardAdapter):
             )
 
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
-        if isinstance(discharge, (DischargeCSV, DischargeConstant, DischargeSynthetic)):
+        if isinstance(discharge, DischargeCSV):
             df = discharge.to_dataframe(time_frame)
+            conversion = us.UnitfulDischarge(value=1.0, units=discharge.unit).convert(
+                us.UnitTypesDischarge.cms
+            )
+        elif isinstance(discharge, DischargeConstant):
+            df = discharge.to_dataframe(time_frame)
+            conversion = us.UnitfulDischarge(
+                value=1.0, units=discharge.discharge.units
+            ).convert(us.UnitTypesDischarge.cms)
+        if isinstance(discharge, DischargeSynthetic):
+            df = discharge.to_dataframe(time_frame)
+            conversion = us.UnitfulDischarge(
+                value=1.0, units=discharge.timeseries.peak_value.units
+            ).convert(us.UnitTypesDischarge.cms)
         else:
             raise ValueError(
                 f"Unsupported discharge forcing type: {discharge.__class__}"
             )
-        # TODO conversion
+
+        df *= conversion
 
         df = df.rename(columns={df.columns[0]: river_inds[0]})
 

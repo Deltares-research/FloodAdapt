@@ -20,6 +20,9 @@ from flood_adapt.object_model.hazard.event.event_factory import (
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.forcing.plotting import (
+    plot_forcing as _plot_forcing,
+)
 from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
@@ -174,8 +177,8 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return read_csv(csvpath)
 
 
-def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str | None:
-    return event.plot_forcing(forcing_type)
+def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str:
+    return _plot_forcing(event, Database().site, forcing_type)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):

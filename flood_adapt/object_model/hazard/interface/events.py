@@ -81,9 +81,3 @@ class IEvent(IObject[T_IEVENT_MODEL]):
 
     @abstractmethod
     def preprocess(self, output_dir: Path): ...
-
-    @abstractmethod
-    def plot_forcing(
-        self,
-        forcing_type: ForcingType,
-    ) -> str: ...
