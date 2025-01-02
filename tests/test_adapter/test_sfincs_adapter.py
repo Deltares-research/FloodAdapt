@@ -17,7 +17,6 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.plotting import get_waterlevel_df
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
@@ -41,6 +40,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
     IDischarge,
+    IForcing,
     IRainfall,
     IWaterlevel,
     IWind,
@@ -628,9 +628,9 @@ class TestAddForcing:
         ):
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
-            get_waterlevel_df(synthetic_waterlevels, time_frame=TimeModel()).to_csv(
-                tmp_path
-            )
+            t0, t1 = default_sfincs_adapter._model.get_model_time()
+            time_frame = TimeModel(start_time=t0, end_time=t1)
+            synthetic_waterlevels.to_dataframe(time_frame).to_csv(tmp_path)
 
             forcing = WaterlevelCSV(path=tmp_path)
 
@@ -887,3 +887,45 @@ class TestAddObsPoint:
         for i in range(len(site_obs)):
             pytest.approx(sfincs_obs.loc[i, 0], site_obs.loc[i].geometry.x, abs=1)
             pytest.approx(sfincs_obs.loc[i, 1], site_obs.loc[i].geometry.y, abs=1)
+
+
+@pytest.mark.parametrize(
+    "forcing_fixture_name",
+    [
+        "synthetic_discharge",
+        "synthetic_rainfall",
+        "synthetic_wind",
+        "synthetic_waterlevels",
+    ],
+)
+def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_name):
+    # Arrange
+    forcing: IForcing = request.getfixturevalue(forcing_fixture_name)
+    SFINCS_PATH = test_db.static_path / "templates" / "overland"
+    COPY_PATH = Path(tempfile.gettempdir()) / "overland_copy" / forcing.type.lower()
+
+    # Ensure template is clean
+    adapter = SfincsAdapter(SFINCS_PATH)
+    adapter.ensure_no_existing_forcings()
+
+    # Mock scenario to get a rainfall multiplier
+    mock_scn = mock.Mock()
+    mock_event = mock.Mock()
+    mock_event.attrs.rainfall_multiplier = 1.5
+    mock_scn.event = mock_event
+    adapter._current_scenario = mock_scn
+
+    # Add forcing to the template
+    adapter.add_forcing(forcing)
+    adapter.write(COPY_PATH)
+
+    # Act
+    adapter = SfincsAdapter(COPY_PATH)
+    with pytest.raises(ValueError) as e:
+        adapter.ensure_no_existing_forcings()
+
+    # Assert
+    assert (
+        f"{forcing.type.capitalize()} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at:"
+        in str(e.value)
+    )
