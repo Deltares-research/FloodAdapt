@@ -12,6 +12,6 @@ class PhysicalProjection:
     def __eq__(self, other):
         if not isinstance(other, PhysicalProjection):
             # don't attempt to compare against unrelated types
-            return NotImplemented
+            return False
 
         return self.attrs == other.attrs

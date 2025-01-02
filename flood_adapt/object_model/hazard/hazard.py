@@ -853,13 +853,14 @@ class Hazard:
     def __eq__(self, other):
         if not isinstance(other, Hazard):
             # don't attempt to compare against unrelated types
-            return NotImplemented
+            return False
         self._set_event_objects()
         other._set_event_objects()
-        test1 = self.event_list == other.event_list
-        test2 = self.physical_projection == other.physical_projection
-        test3 = self.hazard_strategy == other.hazard_strategy
-        return test1 & test2 & test3
+        return (
+            self.event_list == other.event_list
+            and self.physical_projection == other.physical_projection
+            and self.hazard_strategy == other.hazard_strategy
+        )
 
     def calculate_rp_floodmaps(self):
         """Calculate flood risk maps from a set of (currently) SFINCS water level outputs using linear interpolation.

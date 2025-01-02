@@ -44,4 +44,4 @@ class Projection(IProjection):
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
         with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
