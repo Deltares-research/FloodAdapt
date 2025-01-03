@@ -535,6 +535,9 @@ class SfincsAdapter:
             hmin=0.01,
             floodmap_fn=str(floodmap_fn),
         )
+        # open floodmap from floodmap_fn
+        # reporoject to sfincs projection
+        # overwrite original file
 
     def downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
