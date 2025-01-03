@@ -539,7 +539,7 @@ class SfincsAdapter:
         # open floodmap from floodmap_fn
         floodmap = rxr.open_rasterio(floodmap_fn, masked=True).squeeze()
         crs = self.sf_model.crs
-        floodmap.rio.reproject(crs, inplace=True)
+        floodmap = floodmap.rio.reproject(crs)
         floodmap.rio.to_raster(str(floodmap_fn))
 
     def downscale_hmax(self, zsmax, demfile: Path):
