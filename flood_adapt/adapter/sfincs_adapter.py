@@ -8,6 +8,7 @@ import geopandas as gpd
 import hydromt_sfincs.utils as utils
 import numpy as np
 import pandas as pd
+import rioxarray as rxr
 import xarray as xr
 from cht_tide.read_bca import SfincsBoundary
 from cht_tide.tide_predict import predict
@@ -536,8 +537,10 @@ class SfincsAdapter:
             floodmap_fn=str(floodmap_fn),
         )
         # open floodmap from floodmap_fn
-        # reporoject to sfincs projection
-        # overwrite original file
+        floodmap = rxr.open_rasterio(floodmap_fn, masked=True).squeeze()
+        crs = self.sf_model.crs
+        floodmap.rio.reproject(crs, inplace=True)
+        floodmap.rio.to_raster(str(floodmap_fn))
 
     def downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
