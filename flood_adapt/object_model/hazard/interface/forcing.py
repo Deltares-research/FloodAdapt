@@ -41,7 +41,8 @@ class ForcingSource(str, Enum):
 
     MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
     TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
-    CSV = "CSV"  # user imported data
+    CSV = "CSV"  # user provided csv file
+    NETCDF = "NETCDF"  # user provided netcdf file
 
     SYNTHETIC = "SYNTHETIC"  # synthetic data
     CONSTANT = "CONSTANT"  # synthetic data
