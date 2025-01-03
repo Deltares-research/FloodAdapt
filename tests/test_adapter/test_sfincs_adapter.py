@@ -34,6 +34,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
+    WindNetCDF,
     WindSynthetic,
     WindTrack,
 )
@@ -63,6 +64,9 @@ from flood_adapt.object_model.interface.site import ObsPointModel, RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
+from tests.test_object_model.test_events.test_forcing.test_netcdf import (
+    get_test_dataset,
+)
 
 
 @pytest.fixture()
@@ -73,7 +77,11 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         duration = timedelta(hours=3)
 
         adapter.set_timing(
-            TimeModel(start_time=start_time, end_time=start_time + duration)
+            TimeModel(
+                start_time=start_time,
+                end_time=start_time + duration,
+                time_step=timedelta(hours=1),
+            )
         )
         adapter.logger = mock.Mock()
         adapter.logger.handlers = []
@@ -91,6 +99,7 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
     dummy_event.attrs.rainfall_multiplier = 2
     dummy_scn.event = dummy_event
     default_sfincs_adapter._current_scenario = dummy_scn
+    default_sfincs_adapter.ensure_no_existing_forcings()
 
     yield default_sfincs_adapter
 
@@ -123,6 +132,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
         adapter._logger = mock.Mock()
         adapter.logger.handlers = []
         adapter.logger.warning = mock.Mock()
+        adapter.ensure_no_existing_forcings()
 
         return adapter, test_db
 
@@ -372,6 +382,25 @@ class TestAddForcing:
 
             default_sfincs_adapter.add_forcing(forcing)
 
+            assert default_sfincs_adapter.wind is not None
+
+        def test_add_forcing_wind_from_netcdf(
+            self, test_db: IDatabase, default_sfincs_adapter: SfincsAdapter
+        ):
+            # Arrange
+            path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
+            ds = get_test_dataset(
+                time=default_sfincs_adapter.get_model_time(),
+                lat=int(test_db.site.attrs.lat),
+                lon=int(test_db.site.attrs.lon),
+            )
+            ds.to_netcdf(path)
+            forcing = WindNetCDF(path=path)
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
             assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_track(
