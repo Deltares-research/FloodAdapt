@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Optional
 
 import numpy as np
@@ -11,26 +10,27 @@ from flood_adapt.object_model.hazard.interface.models import TimeModel
 
 
 def get_test_dataset(
+    lat: int = -80,
+    lon: int = 32,
+    time: TimeModel = TimeModel(),
     excluded_coord: Optional[str] = None,
     data_vars=["wind10_u", "wind10_v", "press_msl", "precip"],
 ) -> xr.Dataset:
     gen = np.random.default_rng(42)
-    time = TimeModel()
 
-    gen = np.random.default_rng(42)
-    lat = [90, 110]
-    lon = [0, 20]
+    _lat = np.arange(lat - 10, lat + 10, 1)
+    _lon = np.arange(lon - 10, lon + 10, 1)
     _time = pd.date_range(
         start=time.start_time,
         end=time.end_time,
-        freq=timedelta(hours=1),
+        freq=time.time_step,
         name="time",
     )
 
     coords = {
         "time": _time,
-        "lat": lat,
-        "lon": lon,
+        "lat": _lat,
+        "lon": _lon,
     }
     if excluded_coord:
         coords.pop(excluded_coord)

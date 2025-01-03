@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import xarray as xr
 from pydantic import Field
 
+from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
 from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -111,3 +113,29 @@ class RainfallCSV(IRainfall):
     @classmethod
     def default(cls) -> "RainfallCSV":
         return RainfallCSV(path="path/to/rainfall.csv")
+
+
+class RainfallNetCDF(IRainfall):
+    source: ForcingSource = ForcingSource.NETCDF
+    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+
+    path: Path
+
+    def read(self) -> xr.Dataset:
+        ds = xr.open_dataset(self.path)
+        required_vars = {"precip"}
+        required_coords = {"time", "lat", "lon"}
+        return validate_netcdf_forcing(ds, required_vars, required_coords)
+
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.path:
+            output_dir = Path(output_dir)
+            if self.path == output_dir / self.path.name:
+                return
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
+
+    @classmethod
+    def default(cls) -> "RainfallNetCDF":
+        return RainfallNetCDF(Path("path/to/forcing.nc"))
