@@ -146,6 +146,26 @@ class SfincsAdapter(IHazardAdapter):
         self.close_files()
         return False
 
+    def ensure_no_existing_forcings(self):
+        """Check for existing forcings in the model and raise an error if any are found."""
+        all_forcings = {
+            "waterlevel": self.waterlevels,
+            "rainfall": self.rainfall,
+            "wind": self.wind,
+            "discharge": self.discharge,
+        }
+        contains_forcings = ", ".join(
+            [
+                f"{name.capitalize()}"
+                for name, forcing in all_forcings.items()
+                if forcing is not None
+            ]
+        )
+        if contains_forcings:
+            raise ValueError(
+                f"{contains_forcings} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at: {self.get_model_root()}. For more information on SFINCS and its input files, see the SFINCS documentation at: `https://sfincs.readthedocs.io/en/latest/input.html`"
+            )
+
     def has_run(self, scenario: IScenario) -> bool:
         """Check if the model has been run."""
         return self.sfincs_completed(scenario) and self.run_completed(scenario)
@@ -202,6 +222,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def run(self, scenario: IScenario):
         """Run the whole workflow (Preprocess, process and postprocess) for a given scenario."""
+        self.ensure_no_existing_forcings()
         self.preprocess(scenario)
         self.process(scenario)
         self.postprocess(scenario)
@@ -1195,7 +1216,7 @@ class SfincsAdapter(IHazardAdapter):
         self.logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
         t0, t1 = self._model.get_model_time()
         time_frame = TimeModel(start_time=t0, end_time=t1)
-        model_rivers = self.discharge.vector.to_gdf()
+        model_rivers = self._read_river_locations()
 
         # Check that the river is defined in the model and that the coordinates match
         river_loc = shapely.Point(
@@ -1247,8 +1268,7 @@ class SfincsAdapter(IHazardAdapter):
 
     def _set_waterlevel_forcing(self, df_ts: pd.DataFrame):
         # Determine bnd points from reference overland model
-        gdf_locs = self.waterlevels.vector.to_gdf()
-        gdf_locs.crs = self._model.crs
+        gdf_locs = self._read_waterlevel_boundary_locations()
 
         if len(df_ts.columns) == 1:
             # Go from 1 timeseries to timeseries for all boundary points
@@ -1307,8 +1327,7 @@ class SfincsAdapter(IHazardAdapter):
                 wl_df[bnd_ii + 1] = tide_ii
 
         # Determine bnd points from reference overland model
-        gdf_locs = self.waterlevels.vector.to_gdf()
-        gdf_locs.crs = self._model.crs
+        gdf_locs = self._read_waterlevel_boundary_locations()
 
         # HydroMT function: set waterlevel forcing from time series
         self._model.set_forcing_1d(
@@ -1442,3 +1461,19 @@ class SfincsAdapter(IHazardAdapter):
             hmin=0.01,
         )
         return hmax
+
+    def _read_river_locations(self) -> gpd.GeoDataFrame:
+        with open(self.get_model_root() / "sfincs.src") as f:
+            lines = f.readlines()
+        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
+        points = [shapely.Point(coord) for coord in coords]
+
+        return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
+
+    def _read_waterlevel_boundary_locations(self) -> gpd.GeoDataFrame:
+        with open(self.get_model_root() / "sfincs.bnd") as f:
+            lines = f.readlines()
+        coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
+        points = [shapely.Point(coord) for coord in coords]
+
+        return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
