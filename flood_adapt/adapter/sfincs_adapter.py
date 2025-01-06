@@ -995,7 +995,6 @@ class SfincsAdapter(IHazardAdapter):
             if rainfall.path is None:
                 raise ValueError("No path to rainfall track file provided.")
             # data already in metric units so no conversion needed
-            # TODO rainfall multiplier
             self._add_forcing_spw(rainfall.path)
         elif isinstance(rainfall, RainfallNetCDF):
             ds = rainfall.read()
