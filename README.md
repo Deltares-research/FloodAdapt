@@ -118,8 +118,13 @@ Different groups of packages are required for various tasks that are not require
 - `docs` - generating documentation & example notebooks
 - `all` - all of the above
 
-An optional dependency group can be installed in addition to installing the core using `pip install .[group_name]`, where '.' can be replaced by a directory path that contains a pyproj.toml file.
+An optional dependency group can be installed in addition to installing the core using `pip install .[group_name]`, where '.' can be replaced by a directory path that contains a pyproject.toml file.
 
+### Generating the documentation
+
+We use `quartodoc` to generate our API documentation automatically. If you have the `docs` optional dependency group installed.
+you can do this by running `quartodoc build` from the `docs` directory, and it will create the documentation for you.
+After this is done, if you wish, you can build and view the documentation locally by running `quarto preview` from the `docs` directory
 ### Setup Visual Studio Code (optional)
 
 1. Initialize pre-commit to run locally before you commit by running the following command:
