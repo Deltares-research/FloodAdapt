@@ -21,6 +21,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
+    RainfallNetCDF,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
@@ -94,12 +95,12 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
 
 @pytest.fixture()
 def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
+    # Mock scenario to get a rainfall multiplier
     dummy_scn = mock.Mock()
     dummy_event = mock.Mock()
     dummy_event.attrs.rainfall_multiplier = 2
     dummy_scn.event = dummy_event
     default_sfincs_adapter._current_scenario = dummy_scn
-    default_sfincs_adapter.ensure_no_existing_forcings()
 
     yield default_sfincs_adapter
 
@@ -389,8 +390,14 @@ class TestAddForcing:
         ):
             # Arrange
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
+
+            # TODO remove 2 lines below
+            # investigate why hydromt-sfincs raises if the timestep is < 1 hour
+            time = TimeModel(time_step=timedelta(hours=1))
+            default_sfincs_adapter.set_timing(time)
+
             ds = get_test_dataset(
-                time=default_sfincs_adapter.get_model_time(),
+                time=time,
                 lat=int(test_db.site.attrs.lat),
                 lon=int(test_db.site.attrs.lon),
             )
@@ -490,6 +497,32 @@ class TestAddForcing:
             adapter = sfincs_adapter_with_dummy_scn
             assert adapter.rainfall is None
             forcing = RainfallMeteo()
+
+            # Act
+            adapter.add_forcing(forcing)
+
+            # Assert
+            assert adapter.rainfall is not None
+
+        def test_add_forcing_rainfall_from_netcdf(
+            self, test_db: IDatabase, sfincs_adapter_with_dummy_scn: SfincsAdapter
+        ):
+            # Arrange
+            adapter = sfincs_adapter_with_dummy_scn
+            path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
+
+            # TODO remove 2 lines below
+            # investigate why hydromt-sfincs raises if the timestep is < 1 hour
+            time = TimeModel(time_step=timedelta(hours=1))
+            adapter.set_timing(time)
+
+            ds = get_test_dataset(
+                time=time,
+                lat=int(test_db.site.attrs.lat),
+                lon=int(test_db.site.attrs.lon),
+            )
+            ds.to_netcdf(path)
+            forcing = RainfallNetCDF(path=path)
 
             # Act
             adapter.add_forcing(forcing)

@@ -950,7 +950,7 @@ class SfincsAdapter(IHazardAdapter):
                 us.UnitTypesVelocity.mps
             )
             ds *= conversion
-            self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
+            self._model.setup_wind_forcing_from_grid(wind=ds)
         else:
             self.logger.warning(
                 f"Unsupported wind forcing type: {wind.__class__.__name__}"
