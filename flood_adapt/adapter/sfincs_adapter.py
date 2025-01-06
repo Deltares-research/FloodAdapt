@@ -941,7 +941,7 @@ class SfincsAdapter(IHazardAdapter):
             self._add_forcing_spw(wind.path)
         elif isinstance(wind, WindNetCDF):
             ds = wind.read()
-            # TODO timeframe
+            # time slicing to time_frame not needed, hydromt-sfincs handles it
             conversion = us.UnitfulVelocity(value=1.0, units=wind.unit).convert(
                 us.UnitTypesVelocity.mps
             )
@@ -999,7 +999,7 @@ class SfincsAdapter(IHazardAdapter):
             self._add_forcing_spw(rainfall.path)
         elif isinstance(rainfall, RainfallNetCDF):
             ds = rainfall.read()
-            # TODO timeframe
+            # time slicing to time_frame not needed, hydromt-sfincs handles it
             conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
                 us.UnitTypesIntensity.mm_hr
             )
