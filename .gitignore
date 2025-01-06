@@ -171,3 +171,6 @@ system/
 # Pixi
 .pixi
 *.egg-info
+
+# auto generated docs
+docs/api_ref

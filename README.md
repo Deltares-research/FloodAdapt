@@ -117,6 +117,11 @@ pixi add [PACKAGE]
 pixi run -e [ENV_NAME] [TASK]
 ```
 
+### Generating the documentation
+
+We use `quartodoc` to generate our API documentation automatically. If you have the `docs` optional dependency group installed.
+you can do this by running `quartodoc build` from the `docs` directory, and it will create the documentation for you.
+After this is done, if you wish, you can build and view the documentation locally by running `quarto preview` from the `docs` directory
 ### Setup Visual Studio Code (optional)
 
 1. Initialize pre-commit to run locally before you commit by running the following command:
