@@ -1635,6 +1635,61 @@ class Database:
         site = Site.load_dict(self.site_attrs)
         site.save(filepath=site_config_path)
 
+    def clip_hazard_extend(self):
+        """
+        Clip the exposure data to the bounding box of the hazard data.
+
+        This method clips the exposure data to the bounding box of the hazard data. It creates a GeoDataFrame
+        from the hazard polygons, and then uses the `gpd.clip` function to clip the exposure geometries to the
+        bounding box of the hazard polygons. If the exposure data contains roads, it is split into two separate
+        GeoDataFrames: one for buildings and one for roads. The clipped exposure data is then saved back to the
+        `exposure_db` attribute of the `FiatModel` object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+        gdf = self.fiat_model.exposure.get_full_gdf(
+            self.fiat_model.exposure.exposure_db
+        )
+
+        da_bounding_box = self.sfincs.region.rio.bounds()
+        bbox_coords = [
+            (da_bounding_box[0], da_bounding_box[1]),
+            (da_bounding_box[2], da_bounding_box[1]),
+            (da_bounding_box[2], da_bounding_box[3]),
+            (da_bounding_box[0], da_bounding_box[3]),
+        ]
+
+        # Create the gdf from hazard polygons
+        polygon = Polygon(bbox_coords)
+        gdf_polygon = gpd.GeoDataFrame(geometry=[polygon])
+        crs = gdf.crs
+        gdf_polygon.crs = crs
+
+        # Clip the exposure geometries
+        gdf = gpd.clip(gdf, gdf_polygon)
+        if gdf["Primary Object Type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+            gdf_buildings = gdf[~gdf.isin(gdf_roads)]
+            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
+            idx_roads = self.exposure.geom_names.index("roads")
+            self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["Object ID", "geometry"]
+            ]
+            self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["Object ID", "geometry"]
+            ]
+        else:
+            self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+
+        del gdf["geometry"]
+        self.fiat_model.exposure.exposure_db = gdf
+
     def _get_default_units(self):
         """
         Retrieve the default units based on the configured GUI unit system.
@@ -1723,6 +1778,7 @@ def main(config: str | dict):
         dbs.add_gui_params()
         dbs.add_slr()
         # TODO add scs rainfall curves
+        dbs.clip_hazard_extend()
         dbs.add_general_attrs()
         dbs.add_infometrics()
         dbs.save_site_config()
