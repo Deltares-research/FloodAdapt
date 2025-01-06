@@ -27,7 +27,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
     return Database(database_path, site_name)
 
 
-def get_aggregation_areas() -> list[GeoDataFrame]:
+def get_aggregation_areas() -> list[gpd.GeoDataFrame]:
     """Get a list of the aggregation areas that are provided in the site configuration.
 
     These are expected to much the ones in the FIAT model.
@@ -53,7 +53,7 @@ def get_obs_points() -> gpd.GeoDataFrame:
     return Database().static.get_obs_points()
 
 
-def get_model_boundary() -> GeoDataFrame:
+def get_model_boundary() -> gpd.GeoDataFrame:
     """Get the model boundary that is used in SFINCS.
 
     Returns
