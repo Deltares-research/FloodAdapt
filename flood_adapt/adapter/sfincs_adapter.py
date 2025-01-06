@@ -537,7 +537,7 @@ class SfincsAdapter:
             floodmap_fn=str(floodmap_fn),
         )
         # reproject floodmap to sfincs projection
-        floodmap = rxr.open_rasterio(floodmap_fn, masked=True)
+        floodmap = rxr.open_rasterio(floodmap_fn, masked=True).squeeze()
         crs = self.sf_model.crs
         floodmap = floodmap.rio.reproject(crs)
         floodmap.rio.to_raster(Path(floodmap_fn))
