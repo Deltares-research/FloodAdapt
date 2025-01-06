@@ -391,8 +391,6 @@ class TestAddForcing:
             # Arrange
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            # TODO remove 2 lines below
-            # investigate why hydromt-sfincs raises if the timestep is < 1 hour
             time = TimeModel(time_step=timedelta(hours=1))
             default_sfincs_adapter.set_timing(time)
 
@@ -511,8 +509,6 @@ class TestAddForcing:
             adapter = sfincs_adapter_with_dummy_scn
             path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
 
-            # TODO remove 2 lines below
-            # investigate why hydromt-sfincs raises if the timestep is < 1 hour
             time = TimeModel(time_step=timedelta(hours=1))
             adapter.set_timing(time)
 

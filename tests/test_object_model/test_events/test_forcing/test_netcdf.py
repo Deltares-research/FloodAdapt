@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional
 
 import numpy as np
@@ -12,7 +13,7 @@ from flood_adapt.object_model.hazard.interface.models import TimeModel
 def get_test_dataset(
     lat: int = -80,
     lon: int = 32,
-    time: TimeModel = TimeModel(),
+    time: TimeModel = TimeModel(time_step=timedelta(hours=1)),
     excluded_coord: Optional[str] = None,
     data_vars=["wind10_u", "wind10_v", "press_msl", "precip"],
 ) -> xr.Dataset:
@@ -121,3 +122,27 @@ def test_all_datavar_missing_coords_raises_validation_error(excluded_coord):
     # Assert
     assert "Missing required coordinates for netcdf forcing:" in str(e.value)
     assert excluded_coord in str(e.value)
+
+
+def test_netcdf_timestep_less_than_1_hour_raises():
+    # Arrange
+    vars = ["wind10_u", "wind10_v", "press_msl", "precip"]
+    required_vars = set(vars)
+
+    coords = {"time", "lat", "lon"}
+    required_coords = coords
+
+    ds = get_test_dataset(
+        time=TimeModel(time_step=timedelta(minutes=30)),
+        excluded_coord=None,
+        data_vars=vars,
+    )
+
+    # Act
+    with pytest.raises(ValueError) as e:
+        validate_netcdf_forcing(
+            ds, required_vars=required_vars, required_coords=required_coords
+        )
+
+    # Assert
+    assert "SFINCS NetCDF forcing time step cannot be less than 1 hour" in str(e.value)
