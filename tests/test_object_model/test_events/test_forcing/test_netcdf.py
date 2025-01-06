@@ -1,5 +1,5 @@
+from copy import copy
 from datetime import timedelta
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -10,12 +10,22 @@ from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forci
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 
 
+@pytest.fixture
+def required_vars():
+    return ("wind10_u", "wind10_v", "press_msl", "precip")
+
+
+@pytest.fixture
+def required_coords():
+    return ("time", "lat", "lon")
+
+
 def get_test_dataset(
     lat: int = -80,
     lon: int = 32,
     time: TimeModel = TimeModel(time_step=timedelta(hours=1)),
-    excluded_coord: Optional[str] = None,
-    data_vars=["wind10_u", "wind10_v", "press_msl", "precip"],
+    coords: tuple[str, ...] = ("time", "lat", "lon"),
+    data_vars: tuple[str, ...] = ("wind10_u", "wind10_v", "press_msl", "precip"),
 ) -> xr.Dataset:
     gen = np.random.default_rng(42)
 
@@ -28,24 +38,22 @@ def get_test_dataset(
         name="time",
     )
 
-    coords = {
+    _coords = {
         "time": _time,
         "lat": _lat,
         "lon": _lon,
     }
-    if excluded_coord:
-        coords.pop(excluded_coord)
-    dims = list(coords.keys())
+    coords_dict = {name: _coords.get(name, np.arange(10)) for name in coords}
 
     def _generate_data(dimensions):
-        shape = tuple(len(coords[dim]) for dim in dimensions if dim in coords)
+        shape = tuple(len(coords_dict[dim]) for dim in dimensions if dim in coords_dict)
         return gen.random(shape)
 
-    _data_vars = {name: (dims, _generate_data(dims)) for name in data_vars}
+    _data_vars = {name: (coords, _generate_data(coords)) for name in data_vars}
 
     ds = xr.Dataset(
         data_vars=_data_vars,
-        coords=coords,
+        coords=coords_dict,
         attrs={
             "crs": 4326,
         },
@@ -55,18 +63,9 @@ def get_test_dataset(
     return ds
 
 
-def test_all_datavars_all_coords():
+def test_all_datavars_all_coords(required_vars, required_coords):
     # Arrange
-    vars = ["wind10_u", "wind10_v", "press_msl", "precip"]
-    required_vars = set(vars)
-
-    coords = {"time", "lat", "lon"}
-    required_coords = coords
-
-    ds = get_test_dataset(
-        excluded_coord=None,
-        data_vars=vars,
-    )
+    ds = get_test_dataset()
 
     # Act
     result = validate_netcdf_forcing(
@@ -77,65 +76,42 @@ def test_all_datavars_all_coords():
     assert result.equals(ds)
 
 
-def test_missing_datavar_all_coords_raises_validation_error():
+def test_missing_datavar_all_coords_raises_validation_error(
+    required_coords, required_vars
+):
     # Arrange
-    vars = ["wind10_u", "wind10_v", "press_msl", "precip"]
-    required_vars = set(vars)
-    required_vars.add("missing_var")
-
-    coords = {"time", "lat", "lon"}
-    required_coords = coords
-
-    ds = get_test_dataset(
-        excluded_coord=None,
-        data_vars=vars,
-    )
+    vars = tuple(copy(required_vars) + ("missing_var",))
+    ds = get_test_dataset(data_vars=required_vars)
 
     # Act
     with pytest.raises(ValueError) as e:
-        validate_netcdf_forcing(
-            ds, required_vars=required_vars, required_coords=required_coords
-        )
+        validate_netcdf_forcing(ds, required_vars=vars, required_coords=required_coords)
 
     # Assert
     assert "missing_var" in str(e.value)
     assert "Missing required variables for netcdf forcing:" in str(e.value)
 
 
-@pytest.mark.parametrize("excluded_coord", ["time", "lat", "lon"])
-def test_all_datavar_missing_coords_raises_validation_error(excluded_coord):
-    vars = ["wind10_u", "wind10_v", "press_msl", "precip"]
-    required_vars = set(vars)
-
-    coords = {"time", "lat", "lon"}
-    required_coords = coords.copy()
-    coords.remove(excluded_coord)
-
-    ds = get_test_dataset(excluded_coord=excluded_coord, data_vars=vars)
+def test_all_datavar_missing_coords_raises_validation_error(
+    required_vars, required_coords
+):
+    # Arrange
+    coords = tuple(copy(required_coords) + ("missing_coord",))
+    ds = get_test_dataset(coords=required_coords, data_vars=required_vars)
 
     # Act
     with pytest.raises(ValueError) as e:
-        validate_netcdf_forcing(
-            ds, required_vars=required_vars, required_coords=required_coords
-        )
+        validate_netcdf_forcing(ds, required_vars=required_vars, required_coords=coords)
 
     # Assert
     assert "Missing required coordinates for netcdf forcing:" in str(e.value)
-    assert excluded_coord in str(e.value)
+    assert "missing_coord" in str(e.value)
 
 
-def test_netcdf_timestep_less_than_1_hour_raises():
+def test_netcdf_timestep_less_than_1_hour_raises(required_vars, required_coords):
     # Arrange
-    vars = ["wind10_u", "wind10_v", "press_msl", "precip"]
-    required_vars = set(vars)
-
-    coords = {"time", "lat", "lon"}
-    required_coords = coords
-
     ds = get_test_dataset(
         time=TimeModel(time_step=timedelta(minutes=30)),
-        excluded_coord=None,
-        data_vars=vars,
     )
 
     # Act
@@ -146,3 +122,21 @@ def test_netcdf_timestep_less_than_1_hour_raises():
 
     # Assert
     assert "SFINCS NetCDF forcing time step cannot be less than 1 hour" in str(e.value)
+
+
+def test_netcdf_incorrect_coord_order_raises(required_vars, required_coords):
+    # Arrange
+    ds = get_test_dataset(
+        coords=required_coords[::-1],  # reverse order
+        data_vars=required_vars,
+    )
+
+    # Act
+    with pytest.raises(ValueError) as e:
+        validate_netcdf_forcing(
+            ds, required_vars=required_vars, required_coords=required_coords
+        )
+
+    # Assert
+    assert "Order of dimensions for variable" in str(e.value)
+    assert f"must be {tuple(required_coords)}" in str(e.value)
