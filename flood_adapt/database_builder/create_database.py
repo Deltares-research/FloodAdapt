@@ -495,7 +495,13 @@ class Database:
         shutil.copytree(path, fiat_path)
 
         # Then read the model with hydromt-FIAT
-        self.fiat_model = FiatModel(root=fiat_path, mode="r+")
+        self.fiat_model = FiatModel(root=fiat_path, mode="w+")
+        self.fiat_model.read()
+
+        # Clip exposure to hazard extent
+        self._clip_hazard_extend()
+
+        # Re-read Fiat Model
         self.fiat_model.read()
 
         # Read in geometries of buildings
@@ -514,6 +520,11 @@ class Database:
         self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # TODO for now fixed
         self.site_attrs["fiat"]["non_building_names"] = ["road"]  # TODO for now fixed
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
+        fiat_units = self.fiat_model.config["vulnerability"]["unit"]
+        if fiat_units == "ft":
+            fiat_units = "feet"
+        self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
+        self.site_attrs["sfincs"]["save_simulation"] = "False"
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         # TODO restructure footprint options with less if statements
@@ -806,12 +817,12 @@ class Database:
                 )
 
             # TODO should this should be performed through hydromt-FIAT?
-            if not isinstance(roads.geometry[0], Polygon):
-                roads = roads.to_crs(roads.estimate_utm_crs())
+            if not isinstance(roads.geometry.iloc[0], Polygon):
+                roads = roads.to_crs(self.fiat_model.exposure.crs)
+                # roads = roads.to_crs(roads.estimate_utm_crs())
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
                 )
-                roads = roads.to_crs(self.fiat_model.exposure.crs)
                 if roads_path.exists():
                     roads_path.unlink()
                 roads.to_file(roads_path)
@@ -861,11 +872,6 @@ class Database:
         if self.config.sfincs_offshore:
             self.site_attrs["sfincs"]["offshore_model"] = "offshore"
         self.site_attrs["sfincs"]["overland_model"] = "overland"
-        fiat_units = self.fiat_model.config["vulnerability"]["unit"]
-        if fiat_units == "ft":
-            fiat_units = "feet"
-        self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
-        self.site_attrs["sfincs"]["save_simulation"] = "False"
 
     def read_offshore_sfincs(self):
         """
@@ -1635,7 +1641,7 @@ class Database:
         site = Site.load_dict(self.site_attrs)
         site.save(filepath=site_config_path)
 
-    def clip_hazard_extend(self):
+    def _clip_hazard_extend(self):
         """
         Clip the exposure data to the bounding box of the hazard data.
 
@@ -1656,28 +1662,29 @@ class Database:
         gdf = self.fiat_model.exposure.get_full_gdf(
             self.fiat_model.exposure.exposure_db
         )
-
-        da_bounding_box = self.sfincs.region.rio.bounds()
-        bbox_coords = [
-            (da_bounding_box[0], da_bounding_box[1]),
-            (da_bounding_box[2], da_bounding_box[1]),
-            (da_bounding_box[2], da_bounding_box[3]),
-            (da_bounding_box[0], da_bounding_box[3]),
-        ]
-
-        # Create the gdf from hazard polygons
-        polygon = Polygon(bbox_coords)
-        gdf_polygon = gpd.GeoDataFrame(geometry=[polygon])
         crs = gdf.crs
-        gdf_polygon.crs = crs
+        sfincs_extend = self.sfincs.region
+        sfincs_extend = sfincs_extend.to_crs(crs)
+        sfincs_geom = sfincs_extend.unary_union
+
+        # Clip the fiat region
+        clipped_region = self.fiat_model.region.clip(sfincs_extend)
+        self.fiat_model.geoms["region"] = clipped_region
+
+        # Clip the building footprints
+        self.fiat_model.building_footprint = self.fiat_model.building_footprint[
+            self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
+        ]
+        # self.fiat_model.building_footprint = self.fiat_model.building_footprint.clip(sfincs_extend)
 
         # Clip the exposure geometries
-        gdf = gpd.clip(gdf, gdf_polygon)
+        # gdf = gdf.clip(sfincs_extend)
+        gdf = gdf[gdf["geometry"].within(sfincs_geom)]
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
             gdf_buildings = gdf[~gdf.isin(gdf_roads)]
             idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-            idx_roads = self.exposure.geom_names.index("roads")
+            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
                 ["Object ID", "geometry"]
             ]
@@ -1689,6 +1696,9 @@ class Database:
 
         del gdf["geometry"]
         self.fiat_model.exposure.exposure_db = gdf
+
+        # Write fiat model
+        self.fiat_model.write()
 
     def _get_default_units(self):
         """
@@ -1765,8 +1775,8 @@ def main(config: str | dict):
     ):
         # Workflow to create the database using the object methods
         dbs.make_folder_structure()
-        dbs.read_fiat()
         dbs.read_sfincs()
+        dbs.read_fiat()
         dbs.read_offshore_sfincs()
         dbs.add_dem()
         dbs.update_fiat_elevation()
@@ -1778,7 +1788,6 @@ def main(config: str | dict):
         dbs.add_gui_params()
         dbs.add_slr()
         # TODO add scs rainfall curves
-        dbs.clip_hazard_extend()
         dbs.add_general_attrs()
         dbs.add_infometrics()
         dbs.save_site_config()
