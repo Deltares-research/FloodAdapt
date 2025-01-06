@@ -12,8 +12,8 @@ class DbsBenefit(DbsTemplate[Benefit]):
 
         Parameters
         ----------
-        measure : Benefit
-            object of scenario type
+        object_model : Benefit
+            object of Benefit type
         overwrite : bool, optional
             whether to overwrite existing benefit with same name, by default False
 

@@ -39,7 +39,7 @@ class DbsStatic(IDbsStatic):
         self._database = database
 
     @cache_method_wrapper
-    def get_aggregation_areas(self) -> dict:
+    def get_aggregation_areas(self) -> dict[str, gpd.GeoDataFrame]:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
         These are expected to much the ones in the FIAT model.

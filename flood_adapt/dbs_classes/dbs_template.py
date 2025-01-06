@@ -161,7 +161,7 @@ class DbsTemplate(AbstractDatabaseElement[T_OBJECT]):
 
         Parameters
         ----------
-        object : ObjectModel
+        object_model : ObjectModel
             object to be edited in the database
 
         Raises
