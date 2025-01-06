@@ -536,11 +536,11 @@ class SfincsAdapter:
             hmin=0.01,
             floodmap_fn=str(floodmap_fn),
         )
-        # open floodmap from floodmap_fn
-        floodmap = rxr.open_rasterio(floodmap_fn, masked=True).squeeze()
+        # reproject floodmap to sfincs projection
+        floodmap = rxr.open_rasterio(floodmap_fn, masked=True)
         crs = self.sf_model.crs
         floodmap = floodmap.rio.reproject(crs)
-        floodmap.rio.to_raster(str(floodmap_fn))
+        floodmap.rio.to_raster(Path(floodmap_fn))
 
     def downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
