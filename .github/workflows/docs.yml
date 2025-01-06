@@ -60,6 +60,8 @@ jobs:
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
           source /usr/share/miniconda/etc/profile.d/conda.sh
+          pip install quartodoc
+          quartodoc build --config docs/_quarto.yml
           mamba run -n floodadapt_docs quarto render docs/ --execute
 
       - name: Upload to GitHub Pages
