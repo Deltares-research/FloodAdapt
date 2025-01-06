@@ -119,16 +119,20 @@ class SfincsAdapter(IHazardAdapter):
 
     def write(self, path_out: Union[str, os.PathLike], overwrite: bool = True):
         """Write the sfincs model configuration to a directory."""
+        root = self.get_model_root()
         if not isinstance(path_out, Path):
-            path_out = Path(path_out)
+            path_out = Path(path_out).resolve()
 
         if not path_out.exists():
             path_out.mkdir(parents=True)
 
         write_mode = "w+" if overwrite else "w"
         with cd(path_out):
+            shutil.copytree(root, path_out, dirs_exist_ok=True)
+
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
+            self._model.set_root(root=str(root), mode=write_mode)
 
     def close_files(self):
         """Close all open files and clean up file handles."""
@@ -1241,7 +1245,7 @@ class SfincsAdapter(IHazardAdapter):
             conversion = us.UnitfulDischarge(
                 value=1.0, units=discharge.discharge.units
             ).convert(us.UnitTypesDischarge.cms)
-        if isinstance(discharge, DischargeSynthetic):
+        elif isinstance(discharge, DischargeSynthetic):
             df = discharge.to_dataframe(time_frame)
             conversion = us.UnitfulDischarge(
                 value=1.0, units=discharge.timeseries.peak_value.units
@@ -1463,7 +1467,9 @@ class SfincsAdapter(IHazardAdapter):
         return hmax
 
     def _read_river_locations(self) -> gpd.GeoDataFrame:
-        with open(self.get_model_root() / "sfincs.src") as f:
+        path = self.get_model_root() / "sfincs.src"
+
+        with open(path) as f:
             lines = f.readlines()
         coords = [(float(line.split()[0]), float(line.split()[1])) for line in lines]
         points = [shapely.Point(coord) for coord in coords]

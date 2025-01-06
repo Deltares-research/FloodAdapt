@@ -1,4 +1,5 @@
 import tempfile
+from copy import copy
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
@@ -78,15 +79,7 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         adapter.logger.handlers = []
         adapter.logger.warning = mock.Mock()
 
-        # make sure model is as expected
-        # ? is it correct that the template model has waterlevels?
-        assert adapter.waterlevels is not None, "Waterlevels should not be empty"
-
-        # ? is it correct that the template model has discharge?
-        assert adapter.discharge is not None, "Discharge should not be empty"
-
-        assert not adapter.rainfall, "Rainfall should be empty"
-        assert not adapter.wind, "Wind should be empty"
+        adapter.ensure_no_existing_forcings()
 
         return adapter
 
@@ -105,10 +98,6 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
 @pytest.fixture()
 def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapter]:
     overland_2_rivers = test_db.static_path / "templates" / "overland_2_rivers"
-    with open(overland_2_rivers / "sfincs.dis", "r") as f:
-        l = f.readline()
-        timestep, discharges = l.split("\t")
-        discharges = [float(d) for d in discharges.split()]
 
     rivers = []
     with open(overland_2_rivers / "sfincs.src", "r") as f:
@@ -121,7 +110,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                 RiverModel(
                     name=f"river_{x}_{y}",
                     mean_discharge=us.UnitfulDischarge(
-                        value=discharges[i], units=us.UnitTypesDischarge.cms
+                        value=5000 + i * 100, units=us.UnitTypesDischarge.cms
                     ),
                     x_coordinate=x,
                     y_coordinate=y,
@@ -504,14 +493,10 @@ class TestAddForcing:
             default_sfincs_adapter.set_timing(TimeModel())
 
             # Act
-            dis_before = default_sfincs_adapter.discharge.copy()
             default_sfincs_adapter.add_forcing(synthetic_discharge)
-            dis_after = default_sfincs_adapter.discharge
 
             # Assert
-            assert dis_before is not None
-            assert dis_after is not None
-            assert not dis_before.equals(dis_after)
+            assert default_sfincs_adapter.discharge is not None
 
         def test_add_forcing_discharge_unsupported(
             self, default_sfincs_adapter: SfincsAdapter, test_river
@@ -521,7 +506,7 @@ class TestAddForcing:
             discharge = _unsupported_forcing_source(ForcingType.DISCHARGE)
 
             # Act
-            dis_before = default_sfincs_adapter.discharge.copy()
+            dis_before = copy(default_sfincs_adapter.discharge)
             default_sfincs_adapter.add_forcing(discharge)
             dis_after = default_sfincs_adapter.discharge
 
@@ -529,7 +514,8 @@ class TestAddForcing:
             default_sfincs_adapter.logger.warning.assert_called_once_with(
                 f"Unsupported discharge forcing type: {discharge.__class__.__name__}"
             )
-            assert dis_before.equals(dis_after)
+            assert dis_before is None
+            assert dis_after is None
 
         def test_set_discharge_forcing_incorrect_rivers_raises(
             self,
@@ -582,10 +568,10 @@ class TestAddForcing:
 
             for i, river in enumerate(db.site.attrs.river):
                 assert (
-                    river_locations.geometry[i + 1].x == river.x_coordinate
+                    river_locations.geometry[i].x == river.x_coordinate
                 )  # 1-based indexing for some reason
                 assert (
-                    river_locations.geometry[i + 1].y == river.y_coordinate
+                    river_locations.geometry[i].y == river.y_coordinate
                 )  # 1-based indexing for some reason
                 assert river_discharges[i] == i * 1000
 
@@ -595,12 +581,13 @@ class TestAddForcing:
             # Arrange
 
             # Act
-            dis_before = default_sfincs_adapter.discharge.copy()
+            dis_before = copy(default_sfincs_adapter.discharge)
             default_sfincs_adapter.add_forcing(synthetic_discharge)
             dis_after = default_sfincs_adapter.discharge
 
             # Assert
-            assert not dis_before.equals(dis_after)
+            assert dis_before is None
+            assert dis_after is not None
 
         def test_set_discharge_forcing_mismatched_coordinates(
             self, test_db, synthetic_discharge, default_sfincs_adapter: SfincsAdapter
