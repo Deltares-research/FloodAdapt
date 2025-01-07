@@ -560,7 +560,7 @@ class Database:
             # check if geometries are already footprints
             build_ind = self.fiat_model.exposure.geom_names.index("buildings")
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
-            if isinstance(build_geoms.geometry[0], Polygon):
+            if isinstance(build_geoms.geometry.iloc[0], Polygon):
                 path0 = Path(self.fiat_model.root).joinpath(
                     self.fiat_model.config["exposure"]["geom"]["file1"]
                 )
