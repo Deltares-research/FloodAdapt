@@ -522,6 +522,7 @@ class SfincsAdapter:
             UnitTypesLength("meters")
         )
         dem = dem_conversion * self.sf_model.data_catalog.get_rasterdataset(demfile)
+        dem = dem.rio.reproject(self.sf_model.crs)
 
         # determine conversion factor for output floodmap
         floodmap_units = self.site.attrs.sfincs.floodmap_units
