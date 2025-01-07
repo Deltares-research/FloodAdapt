@@ -501,9 +501,6 @@ class Database:
         # Clip exposure to hazard extent
         self._clip_hazard_extend()
 
-        # Re-read Fiat Model
-        self.fiat_model.read()
-
         # Read in geometries of buildings
         ind = self.fiat_model.exposure.geom_names.index("buildings")
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
@@ -1675,24 +1672,27 @@ class Database:
         self.fiat_model.building_footprint = self.fiat_model.building_footprint[
             self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
         ]
-        # self.fiat_model.building_footprint = self.fiat_model.building_footprint.clip(sfincs_extend)
 
         # Clip the exposure geometries
-        gdf = gdf[gdf["geometry"].within(sfincs_geom)]
+        bf_fid = self.fiat_model.building_footprint["BF_FID"]
+        fieldname = "BF_FID"
 
         # Filter buildings and roads
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
             gdf_buildings = gdf[~gdf.isin(gdf_roads)]
+            gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
             idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
             idx_roads = self.fiat_model.exposure.geom_names.index("roads")
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
                 ["Object ID", "geometry"]
-            ].dropna()
+            ]
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
                 ["Object ID", "geometry"]
-            ].dropna()
+            ]
         else:
+            gdf = gdf[gdf[fieldname].isin(bf_fid)]
             self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
         # Save exposure dataframe
