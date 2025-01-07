@@ -145,6 +145,10 @@ class IObject(ABC, Generic[T_OBJECTMODEL]):
         if not isinstance(other, type(self)):
             # don't attempt to compare against unrelated types
             return False
-        attrs_1 = self.attrs.model_dump(exclude={"name", "description"})
-        attrs_2 = other.attrs.model_dump(exclude={"name", "description"})
-        return attrs_1 == attrs_2
+        _self = self.attrs.model_dump(
+            exclude={"name", "description"}, exclude_none=True
+        )
+        _other = other.attrs.model_dump(
+            exclude={"name", "description"}, exclude_none=True
+        )
+        return _self == _other
