@@ -818,11 +818,11 @@ class Database:
 
             # TODO should this should be performed through hydromt-FIAT?
             if not isinstance(roads.geometry.iloc[0], Polygon):
-                roads = roads.to_crs(self.fiat_model.exposure.crs)
-                # roads = roads.to_crs(roads.estimate_utm_crs())
+                roads = roads.to_crs(roads.estimate_utm_crs())
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
                 )
+                roads = roads.to_crs(self.fiat_model.exposure.crs)
                 if roads_path.exists():
                     roads_path.unlink()
                 roads.to_file(roads_path)
@@ -1678,8 +1678,9 @@ class Database:
         # self.fiat_model.building_footprint = self.fiat_model.building_footprint.clip(sfincs_extend)
 
         # Clip the exposure geometries
-        # gdf = gdf.clip(sfincs_extend)
         gdf = gdf[gdf["geometry"].within(sfincs_geom)]
+
+        # Filter buildings and roads
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
             gdf_buildings = gdf[~gdf.isin(gdf_roads)]
@@ -1687,13 +1688,14 @@ class Database:
             idx_roads = self.fiat_model.exposure.geom_names.index("roads")
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
                 ["Object ID", "geometry"]
-            ]
+            ].dropna()
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
                 ["Object ID", "geometry"]
-            ]
+            ].dropna()
         else:
             self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
+        # Save exposure dataframe
         del gdf["geometry"]
         self.fiat_model.exposure.exposure_db = gdf
 
