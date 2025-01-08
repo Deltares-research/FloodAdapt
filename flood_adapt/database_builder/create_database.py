@@ -499,17 +499,17 @@ class Database:
         self.fiat_model.read()
 
         # Clip exposure to hazard extent
-        self._clip_hazard_extend()
+        # self._clip_hazard_extend()
 
         # Read in geometries of buildings
-        ind = self.fiat_model.exposure.geom_names.index("buildings")
-        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+        # ind = self.fiat_model.exposure.geom_names.index("buildings")
+        # self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
 
         # Get center of area of interest
-        center = self.buildings.dissolve().centroid.to_crs(4326)[0]
-        self.site_attrs["lat"] = center.y
-        self.site_attrs["lon"] = center.x
+        # center = self.buildings.dissolve().centroid.to_crs(4326)[0]
+        # self.site_attrs["lat"] = center.y
+        # self.site_attrs["lon"] = center.x
 
         # Read FIAT attributes for site config
         self.site_attrs["fiat"] = {}
@@ -626,6 +626,18 @@ class Database:
                 self.config.building_footprints.file,
                 self.config.building_footprints.field_name,
             )
+
+        # clip hazard here?
+        # Read in geometries of buildings
+        ind = self.fiat_model.exposure.geom_names.index("buildings")
+        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+
+        # Get center of area of interest
+        center = self.buildings.dissolve().centroid.to_crs(4326)[0]
+        self.site_attrs["lat"] = center.y
+        self.site_attrs["lon"] = center.x
+
+        self._clip_hazard_extend()
 
         # Add base flood elevation information
         if self.config.bfe:
@@ -1668,52 +1680,31 @@ class Database:
         clipped_region = self.fiat_model.region.clip(sfincs_extend)
         self.fiat_model.geoms["region"] = clipped_region
 
-        # Clip the exposure geometries
-        if self.fiat_model.building_footprint is not None:
-            # Clip the building footprints
-            self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-                self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
-            ]
-            bf_fid = self.fiat_model.building_footprint["BF_FID"]
-            fieldname = "BF_FID"
+        # Clip the building footprints
+        self.fiat_model.building_footprint = self.fiat_model.building_footprint[
+            self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
+        ]
+        bf_fid = self.fiat_model.building_footprint["BF_FID"]
+        fieldname = "BF_FID"
 
-            # Filter buildings and roads
-            if gdf["Primary Object Type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-                gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
-                gdf_buildings = gdf[~gdf.isin(gdf_roads)]
-                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-                idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-                idx_roads = self.fiat_model.exposure.geom_names.index("roads")
-                self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                    ["Object ID", "geometry"]
-                ]
-                self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                    ["Object ID", "geometry"]
-                ]
-            else:
-                gdf = gdf[gdf[fieldname].isin(bf_fid)]
-                self.fiat_model.exposure.exposure_geoms[0] = gdf[
-                    ["Object ID", "geometry"]
-                ]
+        # Clip the exposure geometries
+        # Filter buildings and roads
+        if gdf["Primary Object Type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
+            gdf_buildings = gdf[~gdf.isin(gdf_roads)]
+            gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
+            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
+            self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["Object ID", "geometry"]
+            ]
+            self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["Object ID", "geometry"]
+            ]
         else:
-            gdf = gdf[gdf["geometry"].within(sfincs_geom)]
-            if gdf["Primary Object Type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-                gdf_buildings = gdf[~gdf.isin(gdf_roads)]
-                idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-                idx_roads = self.exposure.geom_names.index("roads")
-                idx_roads = self.fiat_model.exposure.geom_names.index("roads")
-                self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                    ["Object ID", "geometry"].dropna()
-                ]
-                self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                    ["Object ID", "geometry"].dropna()
-                ]
-            else:
-                self.fiat_model.exposure.exposure_geoms[0] = gdf[
-                    ["Object ID", "geometry"]
-                ]
+            gdf = gdf[gdf[fieldname].isin(bf_fid)]
+            self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
         # Save exposure dataframe
         del gdf["geometry"]
