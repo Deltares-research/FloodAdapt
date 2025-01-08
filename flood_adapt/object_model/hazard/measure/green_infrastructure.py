@@ -56,7 +56,11 @@ class GreenInfrastructure(IMeasure[GreenInfrastructureModel]):
         float
             Volume [m3]
         """
-        volume = area.convert("m2") * height.convert("meters") * percent_area / 100.0
+        volume = (
+            area.convert(us.UnitTypesArea.m2)
+            * height.convert(us.UnitTypesLength.meters)
+            * (percent_area / 100.0)
+        )
         return volume
 
     @staticmethod
@@ -72,7 +76,7 @@ class GreenInfrastructure(IMeasure[GreenInfrastructureModel]):
 
         Returns
         -------
-        float
+        floatd
             Area [m2]
         """
         # Determine local CRS

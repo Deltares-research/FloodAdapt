@@ -39,7 +39,7 @@ class DbsStatic(IDbsStatic):
         self._database = database
 
     @cache_method_wrapper
-    def get_aggregation_areas(self) -> dict:
+    def get_aggregation_areas(self) -> dict[str, gpd.GeoDataFrame]:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
         These are expected to much the ones in the FIAT model.
@@ -101,13 +101,13 @@ class DbsStatic(IDbsStatic):
         # create gpd.GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"name": names, "description": descriptions})
         # TODO: make crs flexible and add this as a parameter to site.toml?
-        gdf = gpd.gpd.GeoDataFrame(
+        gdf = gpd.GeoDataFrame(
             df, geometry=gpd.points_from_xy(lon, lat), crs="EPSG:4326"
         )
         return gdf
 
     @cache_method_wrapper
-    def get_static_map(self, path: Union[str, Path]) -> gpd.gpd.GeoDataFrame:
+    def get_static_map(self, path: Union[str, Path]) -> gpd.GeoDataFrame:
         """Get a map from the static folder.
 
         Parameters
@@ -117,7 +117,7 @@ class DbsStatic(IDbsStatic):
 
         Returns
         -------
-        gpd.gpd.GeoDataFrame
+        gpd.GeoDataFrame
             gpd.GeoDataFrame with the map in crs 4326
 
         Raises

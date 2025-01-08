@@ -44,9 +44,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IWind,
     ShapeType,
 )
-from flood_adapt.object_model.hazard.interface.models import (
-    TimeModel,
-)
+from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 
 # Ensure all objects are imported and available for use if this module is imported
@@ -84,15 +82,51 @@ __all__ = [
 
 
 def get_events() -> dict[str, Any]:
-    # use PyQt table / sorting and filtering either with PyQt table or in the API
+    """Get all events from the database.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary containing all events.
+        Includes keys: 'name', 'description', 'path', 'last_modification_date', 'objects'
+        Each value is a list of the corresponding attribute for each benefit.
+    """
     return Database().events.list_objects()
 
 
 def get_event(name: str) -> IEvent | EventSet:
+    """Get a benefit from the database by name.
+
+    Parameters
+    ----------
+    name : str
+        The name of the benefit to retrieve.
+
+    Returns
+    -------
+    IBenefit
+        The benefit object with the given name.
+
+    Raises
+    ------
+    ValueError
+        If the benefit with the given name does not exist.
+    """
     return Database().events.get(name)
 
 
-def get_event_mode(name: str) -> str:
+def get_event_mode(name: str) -> Mode:
+    """Get the mode of an event from the database by name.
+
+    Parameters
+    ----------
+    name : str
+
+    Returns
+    -------
+    Mode
+        The mode of the event with the given name, either `risk` or `single_event`.
+    """
     filename = Database().events.input_path / f"{name}" / f"{name}.toml"
     return EventFactory.read_mode(filename)
 
@@ -127,22 +161,82 @@ def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
 
 
 def save_event(event: IEvent) -> None:
+    """Save an event object to the database.
+
+    Parameters
+    ----------
+    event : IEvent
+        The event object to save.
+
+    Raises
+    ------
+    ValueError
+        If the event object is not valid.
+    """
     Database().events.save(event)
 
 
 def save_timeseries_csv(name: str, event: IEvent, df: pd.DataFrame) -> None:
+    """Save timeseries data to a csv file.
+
+    Parameters
+    ----------
+    name : str
+        Name of the event
+    event : IEvent
+        Event object
+    df : pd.DataFrame
+        Dataframe of timeseries data
+    """
     Database().write_to_csv(name, event, df)
 
 
 def edit_event(event: IEvent) -> None:
+    """Edit an event object in the database.
+
+    Parameters
+    ----------
+    event : IEvent
+        The event object to edit.
+
+    Raises
+    ------
+    ValueError
+        If the event object does not exist.
+        If the event is used in a scenario.
+    """
     Database().events.edit(event)
 
 
 def delete_event(name: str) -> None:
+    """Delete an event from the database.
+
+    Parameters
+    ----------
+    name : str
+        The name of the event to delete.
+
+    Raises
+    ------
+    ValueError
+        If the event does not exist.
+        If the event is used in a scenario.
+    """
     Database().events.delete(name)
 
 
 def copy_event(old_name: str, new_name: str, new_description: str) -> None:
+    """Copy an event in the database.
+
+    Parameters
+    ----------
+    old_name : str
+        The name of the event to copy.
+    new_name : str
+        The name of the new event.
+    new_description : str
+        The description of the new event
+    """
     Database().events.copy(old_name, new_name, new_description)
 
 
@@ -166,6 +260,21 @@ def check_higher_level_usage(name: str) -> list[str]:
 def download_wl_data(
     tide_gauge: TideGauge, time: TimeModel, units: us.UnitTypesLength, out_path: str
 ) -> pd.DataFrame:
+    """Download water level data from a station or tide gauge.
+
+    Parameters
+    ----------
+    station_id : str
+        Station ID
+    start_time : str
+        Start time of data
+    end_time : str
+        End time of data
+    units : UnitTypesLength
+        Units of data
+    source : str
+        Source of data. Should be one of `ndbc` or `noaa_coops`
+    """
     return tide_gauge.get_waterlevels_in_time_frame(
         time=time,
         units=units,
@@ -174,14 +283,44 @@ def download_wl_data(
 
 
 def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
+    """Read a csv file into a pandas DataFrame.
+
+    Parameters
+    ----------
+    csvpath : Union[str, os.PathLike]
+        Path to the csv file
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing the data from the csv file
+    """
     return read_csv(csvpath)
 
 
 def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str:
+    """Plot forcing data for an event.
+
+    Parameters
+    ----------
+    event : IEvent
+        The event object
+    forcing_type : ForcingType
+        The type of forcing data to plot
+    """
     return _plot_forcing(event, Database().site, forcing_type)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):
+    """Save cyclone track data to the event folder.
+
+    Parameters
+    ----------
+    event : IEvent
+        The event object
+    track : TropicalCyclone
+        The cyclone track data
+    """
     Database().write_cyc(event, track)
 
 

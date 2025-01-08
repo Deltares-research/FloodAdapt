@@ -1,7 +1,5 @@
 [build-system]
-requires = [
-    "setuptools>=61",
-]
+requires      = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,11 +26,11 @@ dependencies = [
     "cht-meteo",
     "cht-observations@ git+https://github.com/deltares/cht_observations.git",
     "cht-tide",
-    "dask<2024.7.0", # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
+    "dask<2024.7.0",                                                          # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
     "fiat-toolbox",
     "geojson",
     "geopandas",
-    "jellyfish<1.0", # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
+    "jellyfish<1.0",                                                          # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
     "hydromt-fiat==0.4.2",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git@quadtree_io",
@@ -46,9 +44,7 @@ dependencies = [
     "tomli",
     "tomli-w",
 ]
-dynamic = [
-    "version",
-]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
@@ -58,20 +54,9 @@ dev = [
     "ruff       == 0.5.5",
     "typos      == 1.23.6",
 ]
-build = [
-    "build",
-    "twine",
-]
-docs = [
-    "jupyter",
-    "jupyter-cache",
-    "matplotlib",
-    "quartodoc",
-    "regex",
-]
-all = [
-    "flood-adapt[build,dev,docs]",
-]
+build = ["build", "twine"]
+docs = ["jupyter", "jupyter-cache", "matplotlib", "quartodoc", "regex"]
+all = ["flood-adapt[build,dev,docs]"]
 
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
@@ -83,15 +68,10 @@ zip-safe = false
 attr = "flood_adapt.__version__"
 
 [tool.setuptools.packages.find]
-include = [
-    "flood_adapt",
-    "flood_adapt.*",
-]
+include = ["flood_adapt", "flood_adapt.*"]
 
 [tool.setuptools.package-data]
-flood_adapt = [
-    "py.typed",
-]
+flood_adapt = ["py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir

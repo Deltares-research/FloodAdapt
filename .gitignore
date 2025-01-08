@@ -175,3 +175,6 @@ system/
 
 # FloodAdapt
 *.spw
+
+# auto generated docs
+docs/api_ref

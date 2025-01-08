@@ -1599,6 +1599,13 @@ class Database:
                     for query in attrs["queries"]
                     if "road" not in query["name"].lower()
                 ]
+            # Replace Damage Unit
+            for i, query in enumerate(attrs["queries"]):
+                if "$" in query["long_name"]:
+                    query["long_name"] = query["long_name"].replace(
+                        "$", self.fiat_model.config["exposure"]["damage_unit"]
+                    )
+
             # replace the SVI threshold if needed
             if self.config.svi:
                 for i, query in enumerate(attrs["queries"]):
