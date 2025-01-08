@@ -149,10 +149,11 @@ class WindNetCDF(IWind):
     path: Path
 
     def read(self) -> xr.Dataset:
-        ds = xr.open_dataset(self.path)
-        required_vars = {"wind10_v", "wind10_u", "press_msl"}
-        required_coords = {"time", "lat", "lon"}
-        return validate_netcdf_forcing(ds, required_vars, required_coords)
+        required_vars = ("wind10_v", "wind10_u", "press_msl")
+        required_coords = ("time", "lat", "lon")
+        with xr.open_dataset(self.path) as ds:
+            validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
+        return validated_ds
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
