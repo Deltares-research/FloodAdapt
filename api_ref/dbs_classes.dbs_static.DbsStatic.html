@@ -434,10 +434,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_aggregation_areas" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_aggregation_areas" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_aggregation_areas">get_aggregation_areas</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_buildings" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_buildings" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_buildings">get_buildings</a></li>
+  <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model">get_fiat_model</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table">get_green_infra_table</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary">get_model_boundary</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid">get_model_grid</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points">get_obs_points</a></li>
+  <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model">get_offshore_sfincs_model</a></li>
+  <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model">get_overland_sfincs_model</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types">get_property_types</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names">get_slr_scn_names</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map" id="toc-flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map">get_static_map</a></li>
@@ -473,30 +476,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Get the building footprints from the FIAT model.</td>
 </tr>
 <tr class="odd">
+<td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model">get_fiat_model</a></td>
+<td>Get the path to the FIAT model.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table">get_green_infra_table</a></td>
 <td>Return a table with different types of green infrastructure measures and their infiltration depths.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary">get_model_boundary</a></td>
 <td>Get the model boundary from the SFINCS model.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid">get_model_grid</a></td>
 <td>Get the model grid from the SFINCS model.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points">get_obs_points</a></td>
 <td>Get the observation points from the flood hazard model.</td>
 </tr>
+<tr class="even">
+<td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model">get_offshore_sfincs_model</a></td>
+<td>Get the template overland Sfincs model.</td>
+</tr>
 <tr class="odd">
+<td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model">get_overland_sfincs_model</a></td>
+<td>Get the template offshore SFINCS model.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types">get_property_types</a></td>
 <td><em>summary</em>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names">get_slr_scn_names</a></td>
 <td>Get the names of the sea level rise scenarios from the file provided.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map">get_static_map</a></td>
 <td>Get a map from the static folder.</td>
 </tr>
@@ -512,8 +527,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <table class="table">
 <colgroup>
 <col style="width: 7%">
-<col style="width: 25%">
-<col style="width: 67%">
+<col style="width: 23%">
+<col style="width: 69%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -525,8 +540,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td>dict[str, GeoDataFrame]</td>
-<td>list of geodataframes with the polygons defining the aggregation areas</td>
+<td>list[gpd.GeoDataFrame]</td>
+<td>list of gpd.GeoDataFrames with the polygons defining the aggregation areas</td>
 </tr>
 </tbody>
 </table>
@@ -541,9 +556,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
 <table class="table">
 <colgroup>
-<col style="width: 11%">
-<col style="width: 20%">
-<col style="width: 68%">
+<col style="width: 10%">
+<col style="width: 24%">
+<col style="width: 64%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -555,16 +570,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td>GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>building footprints with all the FIAT columns</td>
 </tr>
 </tbody>
 </table>
 </section>
 </section>
+<section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_fiat_model">get_fiat_model</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_fiat_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Get the path to the FIAT model.</p>
+</section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_green_infra_table">get_green_infra_table</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_green_infra_table(measure_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_green_infra_table(measure_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a table with different types of green infrastructure measures and their infiltration depths.</p>
 <p>This is read by a csv file in the database.</p>
 <section id="returns-2" class="level4 doc-section doc-section-returns">
@@ -589,12 +609,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_boundary">get_model_boundary</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_model_boundary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_model_boundary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the model boundary from the SFINCS model.</p>
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_model_grid">get_model_grid</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_model_grid()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_model_grid()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the model grid from the SFINCS model.</p>
 <section id="returns-3" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
@@ -618,12 +638,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_obs_points">get_obs_points</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_obs_points()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_obs_points()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the observation points from the flood hazard model.</p>
+</section>
+<section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model">get_offshore_sfincs_model</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_offshore_sfincs_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Get the template overland Sfincs model.</p>
+</section>
+<section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model">get_overland_sfincs_model</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_overland_sfincs_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Get the template offshore SFINCS model.</p>
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_property_types">get_property_types</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_property_types()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_property_types()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><em>summary</em>.</p>
 <section id="returns-4" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
@@ -647,7 +677,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_slr_scn_names">get_slr_scn_names</h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_slr_scn_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_slr_scn_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the names of the sea level rise scenarios from the file provided.</p>
 <section id="returns-5" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
@@ -671,7 +701,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_static.DbsStatic.get_static_map">get_static_map</h3>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_static_map(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_static.DbsStatic.get_static_map(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a map from the static folder.</p>
 <section id="parameters" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
@@ -703,6 +733,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="returns-6" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
 <table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 26%">
+<col style="width: 62%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -714,7 +749,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td></td>
 <td>gpd.GeoDataFrame</td>
-<td>GeoDataFrame with the map in crs 4326</td>
+<td>gpd.GeoDataFrame with the map in crs 4326</td>
 </tr>
 </tbody>
 </table>

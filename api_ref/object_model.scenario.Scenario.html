@@ -432,12 +432,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
+  <li><a href="#flood_adapt.object_model.scenario.Scenario.equal_hazard_components" id="toc-flood_adapt.object_model.scenario.Scenario.equal_hazard_components" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.equal_hazard_components">equal_hazard_components</a></li>
   <li><a href="#flood_adapt.object_model.scenario.Scenario.has_run_check" id="toc-flood_adapt.object_model.scenario.Scenario.has_run_check" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.has_run_check">has_run_check</a></li>
-  <li><a href="#flood_adapt.object_model.scenario.Scenario.init_object_model" id="toc-flood_adapt.object_model.scenario.Scenario.init_object_model" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.init_object_model">init_object_model</a></li>
-  <li><a href="#flood_adapt.object_model.scenario.Scenario.load_dict" id="toc-flood_adapt.object_model.scenario.Scenario.load_dict" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.load_dict">load_dict</a></li>
-  <li><a href="#flood_adapt.object_model.scenario.Scenario.load_file" id="toc-flood_adapt.object_model.scenario.Scenario.load_file" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.load_file">load_file</a></li>
   <li><a href="#flood_adapt.object_model.scenario.Scenario.run" id="toc-flood_adapt.object_model.scenario.Scenario.run" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.run">run</a></li>
-  <li><a href="#flood_adapt.object_model.scenario.Scenario.save" id="toc-flood_adapt.object_model.scenario.Scenario.save" class="nav-link" data-scroll-target="#flood_adapt.object_model.scenario.Scenario.save">save</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -450,7 +447,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="flood_adapt.object_model.scenario.Scenario" class="level1">
 <h1>object_model.scenario.Scenario</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario(<span class="va">self</span>, data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>class holding all information related to a scenario.</p>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
@@ -463,60 +460,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
+<td><a href="#flood_adapt.object_model.scenario.Scenario.equal_hazard_components">equal_hazard_components</a></td>
+<td>Check if two scenarios have the same hazard components.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.object_model.scenario.Scenario.has_run_check">has_run_check</a></td>
 <td>Check if the scenario has been run.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.scenario.Scenario.init_object_model">init_object_model</a></td>
-<td>Create a Direct Impact object.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.object_model.scenario.Scenario.load_dict">load_dict</a></td>
-<td>Create Scenario from object, e.g.&nbsp;when initialized from GUI.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.scenario.Scenario.load_file">load_file</a></td>
-<td>Create Scenario from toml file.</td>
 </tr>
 <tr class="odd">
 <td><a href="#flood_adapt.object_model.scenario.Scenario.run">run</a></td>
 <td>Run direct impact models for the scenario.</td>
 </tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.scenario.Scenario.save">save</a></td>
-<td>Save Scenario to a toml file.</td>
-</tr>
 </tbody>
 </table>
+<section id="flood_adapt.object_model.scenario.Scenario.equal_hazard_components" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.equal_hazard_components">equal_hazard_components</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.equal_hazard_components(other)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if two scenarios have the same hazard components.</p>
+</section>
 <section id="flood_adapt.object_model.scenario.Scenario.has_run_check" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.has_run_check">has_run_check</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Check if the scenario has been run.</p>
-</section>
-<section id="flood_adapt.object_model.scenario.Scenario.init_object_model" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.init_object_model">init_object_model</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.init_object_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create a Direct Impact object.</p>
-</section>
-<section id="flood_adapt.object_model.scenario.Scenario.load_dict" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.load_dict">load_dict</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.load_dict(data, database_input_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create Scenario from object, e.g.&nbsp;when initialized from GUI.</p>
-</section>
-<section id="flood_adapt.object_model.scenario.Scenario.load_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.load_file">load_file</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.load_file(filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create Scenario from toml file.</p>
 </section>
 <section id="flood_adapt.object_model.scenario.Scenario.run" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.run">run</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Run direct impact models for the scenario.</p>
-</section>
-<section id="flood_adapt.object_model.scenario.Scenario.save" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.scenario.Scenario.save">save</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>object_model.scenario.Scenario.save(filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Save Scenario to a toml file.</p>
 
 
 </section>

@@ -493,12 +493,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Buyout properties by setting the “Max Potential Damage: {}” column to zero in the FIAT exposure file.</td>
 </tr>
 <tr class="odd">
+<td><a href="#flood_adapt.adapter.fiat_adapter.FiatAdapter.close_files">close_files</a></td>
+<td>Close all open files and clean up file handles.</td>
+</tr>
+<tr class="even">
 <td><a href="#flood_adapt.adapter.fiat_adapter.FiatAdapter.elevate_properties">elevate_properties</a></td>
 <td>Elevate properties by adjusting the “Ground Floor Height” column in the FIAT exposure file.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#flood_adapt.adapter.fiat_adapter.FiatAdapter.floodproof_properties">floodproof_properties</a></td>
 <td>Floodproof properties by creating new depth-damage functions and adding them in “Damage Function: {}” column in the FIAT exposure file.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.fiat_adapter.FiatAdapter.get_object_ids">get_object_ids</a></td>
+<td>Get ids of objects that are affected by the measure.</td>
 </tr>
 </tbody>
 </table>
@@ -680,9 +688,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
+<section id="flood_adapt.adapter.fiat_adapter.FiatAdapter.close_files" class="level5">
+<h5 class="anchored" data-anchor-id="flood_adapt.adapter.fiat_adapter.FiatAdapter.close_files">close_files</h5>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.close_files()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Close all open files and clean up file handles.</p>
+</section>
 <section id="flood_adapt.adapter.fiat_adapter.FiatAdapter.elevate_properties" class="level5">
 <h5 class="anchored" data-anchor-id="flood_adapt.adapter.fiat_adapter.FiatAdapter.elevate_properties">elevate_properties</h5>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.elevate_properties(elevate, ids<span class="op">=</span>[])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.elevate_properties(elevate, ids<span class="op">=</span>[])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Elevate properties by adjusting the “Ground Floor Height” column in the FIAT exposure file.</p>
 <section id="parameters-4" class="level6 doc-section doc-section-parameters">
 <h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h6>
@@ -720,7 +733,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.adapter.fiat_adapter.FiatAdapter.floodproof_properties" class="level5">
 <h5 class="anchored" data-anchor-id="flood_adapt.adapter.fiat_adapter.FiatAdapter.floodproof_properties">floodproof_properties</h5>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.floodproof_properties(floodproof, ids<span class="op">=</span>[])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.floodproof_properties(floodproof, ids<span class="op">=</span>[])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Floodproof properties by creating new depth-damage functions and adding them in “Damage Function: {}” column in the FIAT exposure file.</p>
 <section id="parameters-5" class="level6 doc-section doc-section-parameters">
 <h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h6>
@@ -751,6 +764,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Optional[list[str]]</td>
 <td>List of FIAT “Object ID” values to apply the population growth on, by default None</td>
 <td><code>[]</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.adapter.fiat_adapter.FiatAdapter.get_object_ids" class="level5">
+<h5 class="anchored" data-anchor-id="flood_adapt.adapter.fiat_adapter.FiatAdapter.get_object_ids">get_object_ids</h5>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>adapter.fiat_adapter.FiatAdapter.get_object_ids(measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Get ids of objects that are affected by the measure.</p>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>list[Any]</td>
+<td>list of ids</td>
 </tr>
 </tbody>
 </table>

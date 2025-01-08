@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation – floodadaptlogging</title>
+<title>Flood Adapt Documentation – misc.log.floodadaptlogging</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -428,14 +428,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.FloodAdaptLogging" id="toc-flood_adapt.FloodAdaptLogging" class="nav-link active" data-scroll-target="#flood_adapt.FloodAdaptLogging">FloodAdaptLogging</a>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging" id="toc-flood_adapt.misc.log.FloodAdaptLogging" class="nav-link active" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging">misc.log.FloodAdaptLogging</a>
   <ul class="collapse">
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.FloodAdaptLogging.add_file_handler" id="toc-flood_adapt.FloodAdaptLogging.add_file_handler" class="nav-link" data-scroll-target="#flood_adapt.FloodAdaptLogging.add_file_handler">add_file_handler</a></li>
-  <li><a href="#flood_adapt.FloodAdaptLogging.getLogger" id="toc-flood_adapt.FloodAdaptLogging.getLogger" class="nav-link" data-scroll-target="#flood_adapt.FloodAdaptLogging.getLogger">getLogger</a></li>
-  <li><a href="#flood_adapt.FloodAdaptLogging.remove_file_handler" id="toc-flood_adapt.FloodAdaptLogging.remove_file_handler" class="nav-link" data-scroll-target="#flood_adapt.FloodAdaptLogging.remove_file_handler">remove_file_handler</a></li>
-  <li><a href="#flood_adapt.FloodAdaptLogging.to_file" id="toc-flood_adapt.FloodAdaptLogging.to_file" class="nav-link" data-scroll-target="#flood_adapt.FloodAdaptLogging.to_file">to_file</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.add_file_handler" id="toc-flood_adapt.misc.log.FloodAdaptLogging.add_file_handler" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.add_file_handler">add_file_handler</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.close_files" id="toc-flood_adapt.misc.log.FloodAdaptLogging.close_files" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.close_files">close_files</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.configure_warnings" id="toc-flood_adapt.misc.log.FloodAdaptLogging.configure_warnings" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.configure_warnings">configure_warnings</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning" id="toc-flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning">deprecation_warning</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.getLogger" id="toc-flood_adapt.misc.log.FloodAdaptLogging.getLogger" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.getLogger">getLogger</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler" id="toc-flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler">remove_file_handler</a></li>
+  <li><a href="#flood_adapt.misc.log.FloodAdaptLogging.to_file" id="toc-flood_adapt.misc.log.FloodAdaptLogging.to_file" class="nav-link" data-scroll-target="#flood_adapt.misc.log.FloodAdaptLogging.to_file">to_file</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -446,16 +449,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.FloodAdaptLogging" class="level1">
-<h1>FloodAdaptLogging</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>FloodAdaptLogging(</span>
+<section id="flood_adapt.misc.log.FloodAdaptLogging" class="level1">
+<h1>misc.log.FloodAdaptLogging</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    file_path<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    loglevel_console<span class="op">=</span>logging.WARNING,</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    loglevel_root<span class="op">=</span>logging.INFO,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    loglevel_files<span class="op">=</span>logging.DEBUG,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    formatter<span class="op">=</span>_DEFAULT_FORMATTER,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    ignore_warnings<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="table">
@@ -467,39 +471,99 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.FloodAdaptLogging.add_file_handler">add_file_handler</a></td>
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.add_file_handler">add_file_handler</a></td>
 <td>Add a file handler to the logger that directs outputs to a the file.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.FloodAdaptLogging.getLogger">getLogger</a></td>
-<td>Get a logger with the specified name. If no name is provided, return the root logger.</td>
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.close_files">close_files</a></td>
+<td>Close all file handlers except those in the exclude list.</td>
 </tr>
 <tr class="odd">
-<td><a href="#flood_adapt.FloodAdaptLogging.remove_file_handler">remove_file_handler</a></td>
-<td>Remove a file handler from the logger, which stops sending logs to that file and closes it.</td>
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.configure_warnings">configure_warnings</a></td>
+<td>Configure the behavior of Python warnings.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.FloodAdaptLogging.to_file">to_file</a></td>
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning">deprecation_warning</a></td>
+<td>Log a deprecation warning with reason and the version that will remove it.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.getLogger">getLogger</a></td>
+<td>Get a logger with the specified name. If no name is provided, return the root logger.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler">remove_file_handler</a></td>
+<td>Remove a file handler from the logger, which stops sending logs to that file and closes it.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.misc.log.FloodAdaptLogging.to_file">to_file</a></td>
 <td>Open a file at filepath to write logs to. Does not affect other loggers.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.FloodAdaptLogging.add_file_handler" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdaptLogging.add_file_handler">add_file_handler</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>FloodAdaptLogging.add_file_handler(</span>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.add_file_handler" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.add_file_handler">add_file_handler</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.add_file_handler(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    file_path,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    loglevel<span class="op">=</span>logging.DEBUG,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    formatter<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Add a file handler to the logger that directs outputs to a the file.</p>
 </section>
-<section id="flood_adapt.FloodAdaptLogging.getLogger" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdaptLogging.getLogger">getLogger</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>FloodAdaptLogging.getLogger(name<span class="op">=</span><span class="va">None</span>, level<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get a logger with the specified name. If no name is provided, return the root logger.</p>
-<p>If the logger does not exist, it is created with the specified level. If no level is provided, the logger inherits the level of the root logger.</p>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.close_files" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.close_files">close_files</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.close_files(exclude<span class="op">=</span>[])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Close all file handlers except those in the exclude list.</p>
+</section>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.configure_warnings" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.configure_warnings">configure_warnings</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.configure_warnings(action<span class="op">=</span><span class="st">'default'</span>, category<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Configure the behavior of Python warnings.</p>
 <section id="parameters" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 7%">
+<col style="width: 81%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>action</td>
+<td>str</td>
+<td>The action to take on warnings. Common actions include ‘ignore’, ‘default’, ‘error’, ‘always’, etc. The default is ‘default’, which shows warnings once per triggering location.</td>
+<td><code>'default'</code></td>
+</tr>
+<tr class="even">
+<td>category</td>
+<td>type[Warning]</td>
+<td>The category of warnings to configure. If not provided, all warnings are configured. categories include DeprecationWarning, UserWarning, RuntimeWarning, etc.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.deprecation_warning">deprecation_warning</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.deprecation_warning(version, reason)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Log a deprecation warning with reason and the version that will remove it.</p>
+</section>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.getLogger" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.getLogger">getLogger</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.getLogger(name<span class="op">=</span><span class="va">None</span>, level<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Get a logger with the specified name. If no name is provided, return the root logger.</p>
+<p>If the logger does not exist, it is created with the specified level. If no level is provided, the logger inherits the level of the root logger.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
 <table class="table">
 <colgroup>
 <col style="width: 6%">
@@ -551,18 +615,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="flood_adapt.FloodAdaptLogging.remove_file_handler" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdaptLogging.remove_file_handler">remove_file_handler</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>FloodAdaptLogging.remove_file_handler(file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.remove_file_handler">remove_file_handler</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.remove_file_handler(file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Remove a file handler from the logger, which stops sending logs to that file and closes it.</p>
 </section>
-<section id="flood_adapt.FloodAdaptLogging.to_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.FloodAdaptLogging.to_file">to_file</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>FloodAdaptLogging.to_file(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    file_path<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    loglevel<span class="op">=</span>logging.DEBUG,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    formatter<span class="op">=</span>_DEFAULT_FORMATTER,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.misc.log.FloodAdaptLogging.to_file" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.to_file">to_file</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.to_file(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    file_path,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    loglevel<span class="op">=</span>logging.DEBUG,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    formatter<span class="op">=</span>_DEFAULT_FORMATTER,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Open a file at filepath to write logs to. Does not affect other loggers.</p>
 <p>When the context manager exits (via regular execution or an exception), the file is closed and the handler is removed.</p>
 

@@ -435,7 +435,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.check_higher_level_usage" id="toc-flood_adapt.dbs_classes.dbs_scenario.DbsScenario.check_higher_level_usage" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.check_higher_level_usage">check_higher_level_usage</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.delete" id="toc-flood_adapt.dbs_classes.dbs_scenario.DbsScenario.delete" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.delete">delete</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.edit" id="toc-flood_adapt.dbs_classes.dbs_scenario.DbsScenario.edit" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.edit">edit</a></li>
-  <li><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get" id="toc-flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get">get</a></li>
   <li><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects" id="toc-flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects">list_objects</a></li>
   </ul></li>
   </ul></li>
@@ -473,10 +472,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Edits an already existing scenario in the database.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get">get</a></td>
-<td>Return a scenario object.</td>
-</tr>
-<tr class="odd">
 <td><a href="#flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects">list_objects</a></td>
 <td>Return a dictionary with info on the events that currently exist in the database.</td>
 </tr>
@@ -591,14 +586,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.edit" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.edit">edit</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_scenario.DbsScenario.edit(scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_scenario.DbsScenario.edit(object_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Edits an already existing scenario in the database.</p>
 <section id="parameters-2" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
 <table class="table">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 15%">
+<col style="width: 14%">
+<col style="width: 14%">
 <col style="width: 54%">
 <col style="width: 16%">
 </colgroup>
@@ -613,7 +608,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>scenario</td>
-<td>IScenario</td>
+<td>Scenario</td>
 <td>scenario to be edited in the database</td>
 <td><em>required</em></td>
 </tr>
@@ -640,57 +635,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.get">get</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_scenario.DbsScenario.get(name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a scenario object.</p>
-<section id="parameters-3" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>name</td>
-<td>str</td>
-<td>name of the scenario to be returned</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>IScenario</td>
-<td>scenario object</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
 <section id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.dbs_scenario.DbsScenario.list_objects">list_objects</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_scenario.DbsScenario.list_objects()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.dbs_scenario.DbsScenario.list_objects()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a dictionary with info on the events that currently exist in the database.</p>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
 <table class="table">
 <colgroup>
 <col style="width: 8%">

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation – object_model.direct_impacts.directimpacts</title>
+<title>Flood Adapt Documentation – misc.config.unitsystem</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -428,18 +428,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts" class="nav-link active" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts">object_model.direct_impacts.DirectImpacts</a>
-  <ul class="collapse">
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
-  <ul class="collapse">
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check">fiat_has_run_check</a></li>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check">has_run_check</a></li>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat">preprocess_fiat</a></li>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard">set_hazard</a></li>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy">set_impact_strategy</a></li>
-  <li><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change" id="toc-flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change" class="nav-link" data-scroll-target="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change">set_socio_economic_change</a></li>
-  </ul></li>
-  </ul></li>
+  <li><a href="#flood_adapt.misc.config.UnitSystem" id="toc-flood_adapt.misc.config.UnitSystem" class="nav-link active" data-scroll-target="#flood_adapt.misc.config.UnitSystem">misc.config.UnitSystem</a></li>
   </ul>
 </nav>
     </div>
@@ -448,207 +437,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts" class="level1">
-<h1>object_model.direct_impacts.DirectImpacts</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    scenario,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    database,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    results_path,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>All information related to the direct impacts of the scenario.</p>
-<p>Includes methods to run the impact model or check if it has already been run.</p>
-<section id="methods" class="level2">
-<h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check">fiat_has_run_check</a></td>
-<td>Check if fiat has run as expected.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check">has_run_check</a></td>
-<td>Check if the direct impact has been run.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat">preprocess_fiat</a></td>
-<td>Update FIAT model based on scenario information and then runs the FIAT model.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard">set_hazard</a></td>
-<td>Set the Hazard object of the scenario.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy">set_impact_strategy</a></td>
-<td>Set the ImpactStrategy object of the scenario.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change">set_socio_economic_change</a></td>
-<td>Set the SocioEconomicChange object of the scenario.</td>
-</tr>
-</tbody>
-</table>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.fiat_has_run_check">fiat_has_run_check</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.fiat_has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Check if fiat has run as expected.</p>
-<section id="returns" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
-<colgroup>
-<col style="width: 11%">
-<col style="width: 12%">
-<col style="width: 75%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>boolean</td>
-<td>True if fiat has run, False if something went wrong</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.has_run_check">has_run_check</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Check if the direct impact has been run.</p>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>bool</td>
-<td><em>description</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.preprocess_fiat">preprocess_fiat</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.preprocess_fiat()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Update FIAT model based on scenario information and then runs the FIAT model.</p>
-</section>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_hazard">set_hazard</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.set_hazard(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    scenario,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    database,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    results_dir,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Set the Hazard object of the scenario.</p>
-<section id="parameters" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario</td>
-<td>str</td>
-<td>Name of the scenario</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_impact_strategy">set_impact_strategy</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.set_impact_strategy(strategy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Set the ImpactStrategy object of the scenario.</p>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 13%">
-<col style="width: 10%">
-<col style="width: 58%">
-<col style="width: 16%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>strategy</td>
-<td>str</td>
-<td>Name of the strategy used in the scenario</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.direct_impacts.DirectImpacts.set_socio_economic_change">set_socio_economic_change</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>object_model.direct_impacts.DirectImpacts.set_socio_economic_change(projection)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Set the SocioEconomicChange object of the scenario.</p>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 15%">
-<col style="width: 10%">
-<col style="width: 58%">
-<col style="width: 15%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>projection</td>
-<td>str</td>
-<td>Name of the projection used in the scenario</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
+<section id="flood_adapt.misc.config.UnitSystem" class="level1">
+<h1>misc.config.UnitSystem</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>misc.config.UnitSystem(<span class="va">self</span>, system<span class="op">=</span>UnitSystemType.IMPERIAL)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
-</section>
-</section>
-</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

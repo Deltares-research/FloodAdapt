@@ -433,9 +433,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.object_model.strategy.Strategy.get_measures" id="toc-flood_adapt.object_model.strategy.Strategy.get_measures" class="nav-link" data-scroll-target="#flood_adapt.object_model.strategy.Strategy.get_measures">get_measures</a></li>
-  <li><a href="#flood_adapt.object_model.strategy.Strategy.load_dict" id="toc-flood_adapt.object_model.strategy.Strategy.load_dict" class="nav-link" data-scroll-target="#flood_adapt.object_model.strategy.Strategy.load_dict">load_dict</a></li>
-  <li><a href="#flood_adapt.object_model.strategy.Strategy.load_file" id="toc-flood_adapt.object_model.strategy.Strategy.load_file" class="nav-link" data-scroll-target="#flood_adapt.object_model.strategy.Strategy.load_file">load_file</a></li>
-  <li><a href="#flood_adapt.object_model.strategy.Strategy.save" id="toc-flood_adapt.object_model.strategy.Strategy.save" class="nav-link" data-scroll-target="#flood_adapt.object_model.strategy.Strategy.save">save</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -448,7 +445,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="flood_adapt.object_model.strategy.Strategy" class="level1">
 <h1>object_model.strategy.Strategy</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy(<span class="va">self</span>, data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Strategy class that holds all the information for a specific strategy.</p>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
@@ -464,182 +461,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><a href="#flood_adapt.object_model.strategy.Strategy.get_measures">get_measures</a></td>
 <td>Get the measures paths and types.</td>
 </tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.strategy.Strategy.load_dict">load_dict</a></td>
-<td><em>summary</em>.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.object_model.strategy.Strategy.load_file">load_file</a></td>
-<td>Create Strategy object from toml file.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.object_model.strategy.Strategy.save">save</a></td>
-<td>Save Strategy to a toml file.</td>
-</tr>
 </tbody>
 </table>
 <section id="flood_adapt.object_model.strategy.Strategy.get_measures" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.object_model.strategy.Strategy.get_measures">get_measures</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy.get_measures()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get the measures paths and types.</p>
-</section>
-<section id="flood_adapt.object_model.strategy.Strategy.load_dict" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.strategy.Strategy.load_dict">load_dict</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy.load_dict(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    data,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    database_input_path,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    validate<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><em>summary</em>.</p>
-<section id="parameters" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 11%">
-<col style="width: 14%">
-<col style="width: 68%">
-<col style="width: 6%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>data</td>
-<td>dict[str, Any]</td>
-<td>dictionary with the data</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>database_input_path</td>
-<td>Union[str, os.PathLike]</td>
-<td>path like object pointing to the location of the input files</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td>validate</td>
-<td>bool</td>
-<td>if this is true the affected buildings from the impact-measures will be checked to ensure they do not overlap, by default True</td>
-<td><code>True</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>IStrategy</td>
-<td><em>description</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.strategy.Strategy.load_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.strategy.Strategy.load_file">load_file</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy.load_file(filepath, validate<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create Strategy object from toml file.</p>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 5%">
-<col style="width: 15%">
-<col style="width: 72%">
-<col style="width: 6%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>filepath</td>
-<td>Union[str, os.PathLike]</td>
-<td>path to the Strategy’s toml file</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>validate</td>
-<td>bool</td>
-<td>if this is true the affected buildings from the impact-measures will be checked to ensure they do not overlap, by default False</td>
-<td><code>False</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>IStrategy</td>
-<td>Strategy object</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.object_model.strategy.Strategy.save" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.strategy.Strategy.save">save</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>object_model.strategy.Strategy.save(filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Save Strategy to a toml file.</p>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 11%">
-<col style="width: 32%">
-<col style="width: 41%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>filepath</td>
-<td>Union[str, os.PathLike]</td>
-<td>path of the toml file to be saved</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
 
 
-</section>
 </section>
 </section>
 </section>

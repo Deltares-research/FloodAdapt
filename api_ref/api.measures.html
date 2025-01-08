@@ -571,16 +571,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.api.measures.calculate_volume" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.api.measures.calculate_volume">calculate_volume</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>api.measures.calculate_volume(area, height<span class="op">=</span><span class="fl">0.0</span>, percent_area<span class="op">=</span><span class="fl">100.0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>api.measures.calculate_volume(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    area,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    height<span class="op">=</span>us.UnitfulHeight(value<span class="op">=</span><span class="fl">0.0</span>, units<span class="op">=</span>Settings().unit_system.length),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    percent_area<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the volume of green infrastructure based on the given area, height, and percent area.</p>
 <section id="parameters-1" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
 <table class="table">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 7%">
-<col style="width: 66%">
-<col style="width: 11%">
+<col style="width: 8%">
+<col style="width: 5%">
+<col style="width: 42%">
+<col style="width: 43%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -601,7 +605,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>height</td>
 <td>float</td>
 <td>The height of the green infrastructure in units. Defaults to 0.0.</td>
-<td><code>0.0</code></td>
+<td><code>us.UnitfulHeight(value=0.0, units=Settings().unit_system.length)</code></td>
 </tr>
 <tr class="odd">
 <td>percent_area</td>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation – dbs_controller.database</title>
+<title>Flood Adapt Documentation – misc.config.settings</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -428,28 +428,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.dbs_controller.Database" id="toc-flood_adapt.dbs_controller.Database" class="nav-link active" data-scroll-target="#flood_adapt.dbs_controller.Database">dbs_controller.Database</a>
+  <li><a href="#flood_adapt.misc.config.Settings" id="toc-flood_adapt.misc.config.Settings" class="nav-link active" data-scroll-target="#flood_adapt.misc.config.Settings">misc.config.Settings</a>
   <ul class="collapse">
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#properties" id="toc-properties" class="nav-link" data-scroll-target="#properties">Properties</a></li>
+  <li><a href="#raises" id="toc-raises" class="nav-link" data-scroll-target="#raises">Raises</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.dbs_controller.Database.check_benefit_scenarios" id="toc-flood_adapt.dbs_controller.Database.check_benefit_scenarios" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.check_benefit_scenarios">check_benefit_scenarios</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.cleanup" id="toc-flood_adapt.dbs_controller.Database.cleanup" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.cleanup">cleanup</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.create_benefit_scenarios" id="toc-flood_adapt.dbs_controller.Database.create_benefit_scenarios" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.create_benefit_scenarios">create_benefit_scenarios</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_aggregation" id="toc-flood_adapt.dbs_controller.Database.get_aggregation" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_aggregation">get_aggregation</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_aggregation_benefits" id="toc-flood_adapt.dbs_controller.Database.get_aggregation_benefits" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_aggregation_benefits">get_aggregation_benefits</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_depth_conversion" id="toc-flood_adapt.dbs_controller.Database.get_depth_conversion" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_depth_conversion">get_depth_conversion</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_fiat_footprints" id="toc-flood_adapt.dbs_controller.Database.get_fiat_footprints" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_fiat_footprints">get_fiat_footprints</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_index_path" id="toc-flood_adapt.dbs_controller.Database.get_index_path" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_index_path">get_index_path</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_max_water_level" id="toc-flood_adapt.dbs_controller.Database.get_max_water_level" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_max_water_level">get_max_water_level</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_object_list" id="toc-flood_adapt.dbs_controller.Database.get_object_list" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_object_list">get_object_list</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_outputs" id="toc-flood_adapt.dbs_controller.Database.get_outputs" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_outputs">get_outputs</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_roads" id="toc-flood_adapt.dbs_controller.Database.get_roads" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_roads">get_roads</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.get_topobathy_path" id="toc-flood_adapt.dbs_controller.Database.get_topobathy_path" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.get_topobathy_path">get_topobathy_path</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.has_run_hazard" id="toc-flood_adapt.dbs_controller.Database.has_run_hazard" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.has_run_hazard">has_run_hazard</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.interp_slr" id="toc-flood_adapt.dbs_controller.Database.interp_slr" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.interp_slr">interp_slr</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.run_benefit" id="toc-flood_adapt.dbs_controller.Database.run_benefit" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.run_benefit">run_benefit</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.run_scenario" id="toc-flood_adapt.dbs_controller.Database.run_scenario" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.run_scenario">run_scenario</a></li>
-  <li><a href="#flood_adapt.dbs_controller.Database.shutdown" id="toc-flood_adapt.dbs_controller.Database.shutdown" class="nav-link" data-scroll-target="#flood_adapt.dbs_controller.Database.shutdown">shutdown</a></li>
+  <li><a href="#flood_adapt.misc.config.Settings.read" id="toc-flood_adapt.misc.config.Settings.read" class="nav-link" data-scroll-target="#flood_adapt.misc.config.Settings.read">read</a></li>
+  <li><a href="#flood_adapt.misc.config.Settings.write" id="toc-flood_adapt.misc.config.Settings.write" class="nav-link" data-scroll-target="#flood_adapt.misc.config.Settings.write">write</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -460,11 +448,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.dbs_controller.Database" class="level1">
-<h1>dbs_controller.Database</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database(<span class="va">self</span>, database_path<span class="op">=</span><span class="va">None</span>, database_name<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Implementation of IDatabase class that holds the site information and has methods to get static data info, and all the input information.</p>
-<p>Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input.</p>
+<section id="flood_adapt.misc.config.Settings" class="level1">
+<h1>misc.config.Settings</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>misc.config.Settings()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The configuration settings for the FloodAdapt database and integrator.</p>
+<p>Precedence is as follows: user arguments &gt; environment variables &gt; defaults in this class. When loading is done, the settings are validated and the environment variables are updated with the loaded values.</p>
+<p>If any required settings are missing or invalid, a ValidationError is raised.</p>
+<section id="usage" class="level2 doc-section doc-section-usage">
+<h2 class="doc-section doc-section-usage anchored" data-anchor-id="usage">Usage</h2>
+<p>from flood_adapt.misc.config import Settings</p>
+<p>One of the following:</p>
+<ol type="1">
+<li><p>Load settings from environment variables, if no environment variables are set, use defaults defined in the class: <code>settings = Settings()</code></p></li>
+<li><p>Load settings from a .toml file, overwriting any environment variables set: <code>settings = Settings.read(toml_path: Path)</code></p></li>
+<li><p>Load settings from keyword arguments, overwriting any environment variables: <code>settings = Settings(database_root="path/to/database", database_name="database_name", system_folder="path/to/system_folder")</code></p></li>
+</ol>
+</section>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 10%">
+<col style="width: 70%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>database_name</td>
+<td>str</td>
+<td>The name of the database.</td>
+</tr>
+<tr class="even">
+<td>database_root</td>
+<td>Path</td>
+<td>The root directory of the database.</td>
+</tr>
+<tr class="odd">
+<td>system_folder</td>
+<td>Path</td>
+<td>The root directory of the system folder containing the kernels.</td>
+</tr>
+<tr class="even">
+<td>delete_crashed_runs</td>
+<td>bool</td>
+<td>Whether to delete crashed/corrupted runs immediately after they are detected.</td>
+</tr>
+<tr class="odd">
+<td>unit_system</td>
+<td>UnitSystem</td>
+<td>The unit system to use for the calculations. Must be ‘imperial’ or ‘metric’.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="properties" class="level2 doc-section doc-section-properties">
+<h2 class="doc-section doc-section-properties anchored" data-anchor-id="properties">Properties</h2>
+<p>database_path : Path The full path to the database. sfincs_path : Path The path to the SFINCS binary. fiat_path : Path The path to the FIAT binary.</p>
+</section>
+<section id="raises" class="level2 doc-section doc-section-raises">
+<h2 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h2>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 23%">
+<col style="width: 64%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>ValidationError</td>
+<td>If required settings are missing or invalid.</td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="table">
@@ -476,86 +547,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.check_benefit_scenarios">check_benefit_scenarios</a></td>
-<td>Return a dataframe with the scenarios needed for this benefit assessment run.</td>
+<td><a href="#flood_adapt.misc.config.Settings.read">read</a></td>
+<td>Parse the configuration file and return the parsed settings.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.cleanup">cleanup</a></td>
-<td>Remove corrupted scenario output.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.create_benefit_scenarios">create_benefit_scenarios</a></td>
-<td>Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.get_aggregation">get_aggregation</a></td>
-<td>Return a dictionary with the aggregated impacts as geodataframes.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.get_aggregation_benefits">get_aggregation_benefits</a></td>
-<td>Get a dictionary with the aggregated benefits as geodataframes.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.get_depth_conversion">get_depth_conversion</a></td>
-<td>Return the flood depth conversion that is need in the gui to plot the flood map.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.get_fiat_footprints">get_fiat_footprints</a></td>
-<td>Return a geodataframe of the impacts at the footprint level.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.get_index_path">get_index_path</a></td>
-<td>Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.get_max_water_level">get_max_water_level</a></td>
-<td>Return an array with the maximum water levels during an event.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.get_object_list">get_object_list</a></td>
-<td>Get a dictionary with all the toml paths and last modification dates that exist in the database that correspond to object_type.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.get_outputs">get_outputs</a></td>
-<td>Return a dictionary with info on the outputs that currently exist in the database.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.get_roads">get_roads</a></td>
-<td>Return a geodataframe of the impacts at roads.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.get_topobathy_path">get_topobathy_path</a></td>
-<td>Return the path of the topobathy tiles in order to create flood maps with water level maps.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.has_run_hazard">has_run_hazard</a></td>
-<td>Check if there is already a simulation that has the exact same hazard component.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.interp_slr">interp_slr</a></td>
-<td>Interpolate SLR value and reference it to the SLR reference year from the site toml.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.run_benefit">run_benefit</a></td>
-<td>Run a (cost-)benefit analysis.</td>
-</tr>
-<tr class="odd">
-<td><a href="#flood_adapt.dbs_controller.Database.run_scenario">run_scenario</a></td>
-<td>Run a scenario hazard and impacts.</td>
-</tr>
-<tr class="even">
-<td><a href="#flood_adapt.dbs_controller.Database.shutdown">shutdown</a></td>
-<td>Explicitly shut down the database controller singleton and clear all data stored in its memory.</td>
+<td><a href="#flood_adapt.misc.config.Settings.write">write</a></td>
+<td>Write the configuration settings to a .toml file.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.dbs_controller.Database.check_benefit_scenarios" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.check_benefit_scenarios">check_benefit_scenarios</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.check_benefit_scenarios(benefit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a dataframe with the scenarios needed for this benefit assessment run.</p>
+<section id="flood_adapt.misc.config.Settings.read" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.config.Settings.read">read</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>misc.config.Settings.read(toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Parse the configuration file and return the parsed settings.</p>
 <section id="parameters" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
 <table class="table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 52%">
+<col style="width: 17%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -566,67 +579,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>benefit</td>
-<td>IBenefit</td>
-<td></td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.cleanup" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.cleanup">cleanup</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.cleanup()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Remove corrupted scenario output.</p>
-<p>This method removes any scenario output that: - is corrupted due to unfinished runs - does not have a corresponding input</p>
-</section>
-<section id="flood_adapt.dbs_controller.Database.create_benefit_scenarios" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.create_benefit_scenarios">create_benefit_scenarios</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.create_benefit_scenarios(benefit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create any scenarios that are needed for the (cost-)benefit assessment and are not there already.</p>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>benefit</td>
-<td>IBenefit</td>
-<td></td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_aggregation" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_aggregation">get_aggregation</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_aggregation(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a dictionary with the aggregated impacts as geodataframes.</p>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>str</td>
-<td>name of the scenario</td>
+<td>config_path</td>
+<td>Path</td>
+<td>The path to the configuration file.</td>
 <td><em>required</em></td>
 </tr>
 </tbody>
@@ -635,11 +590,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="returns" class="level4 doc-section doc-section-returns">
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
 <table class="table">
-<colgroup>
-<col style="width: 9%">
-<col style="width: 25%">
-<col style="width: 65%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -650,545 +600,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td>dict[GeoDataFrame]</td>
-<td>dictionary with aggregated damages per aggregation type</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_aggregation_benefits" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_aggregation_benefits">get_aggregation_benefits</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_aggregation_benefits(benefit_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get a dictionary with the aggregated benefits as geodataframes.</p>
-<section id="parameters-3" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>benefit_name</td>
-<td>str</td>
-<td>name of the benefit analysis</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<colgroup>
-<col style="width: 9%">
-<col style="width: 25%">
-<col style="width: 65%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>dict[GeoDataFrame]</td>
-<td>dictionary with aggregated benefits per aggregation type</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_depth_conversion" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_depth_conversion">get_depth_conversion</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_depth_conversion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the flood depth conversion that is need in the gui to plot the flood map.</p>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>float</td>
-<td>conversion factor</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_fiat_footprints" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_fiat_footprints">get_fiat_footprints</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_fiat_footprints(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a geodataframe of the impacts at the footprint level.</p>
-<section id="parameters-4" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>str</td>
-<td>name of scenario</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-3" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>GeoDataFrame</td>
-<td>impacts at footprint level</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_index_path" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_index_path">get_index_path</h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_index_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the path of the index tiles which are used to connect each water level cell with the topobathy tiles.</p>
-<section id="returns-4" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>str</td>
-<td>path to index tiles</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_max_water_level" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_max_water_level">get_max_water_level</h3>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_max_water_level(scenario_name, return_period<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return an array with the maximum water levels during an event.</p>
-<section id="parameters-5" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 19%">
-<col style="width: 10%">
-<col style="width: 53%">
-<col style="width: 15%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>str</td>
-<td>name of scenario</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>return_period</td>
-<td>int</td>
-<td>return period in years, by default None</td>
-<td><code>None</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-5" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>np.array</td>
-<td>2D map of maximum water levels</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_object_list" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_object_list">get_object_list</h3>
-<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_object_list(object_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Get a dictionary with all the toml paths and last modification dates that exist in the database that correspond to object_type.</p>
-<section id="parameters-6" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 12%">
-<col style="width: 7%">
-<col style="width: 68%">
-<col style="width: 11%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>object_type</td>
-<td>str</td>
-<td>Can be ‘projections’, ‘events’, ‘measures’, ‘strategies’ or ‘scenarios’</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-6" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
-<table class="table">
-<colgroup>
-<col style="width: 10%">
-<col style="width: 23%">
-<col style="width: 66%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>dict[str, Any]</td>
-<td>Includes ‘path’ and ‘last_modification_date’ info</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_outputs" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_outputs">get_outputs</h3>
-<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_outputs()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a dictionary with info on the outputs that currently exist in the database.</p>
-<section id="returns-7" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
-<table class="table">
-<colgroup>
-<col style="width: 8%">
-<col style="width: 18%">
-<col style="width: 73%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>dict[str, Any]</td>
-<td>Includes ‘name’, ‘path’, ‘last_modification_date’ and “finished” info</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_roads" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_roads">get_roads</h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_roads(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return a geodataframe of the impacts at roads.</p>
-<section id="parameters-7" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>str</td>
-<td>name of scenario</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-8" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>GeoDataFrame</td>
-<td>Impacts at roads</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.get_topobathy_path" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.get_topobathy_path">get_topobathy_path</h3>
-<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.get_topobathy_path()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the path of the topobathy tiles in order to create flood maps with water level maps.</p>
-<section id="returns-9" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>str</td>
-<td>path to topobathy tiles</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.has_run_hazard" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.has_run_hazard">has_run_hazard</h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.has_run_hazard(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Check if there is already a simulation that has the exact same hazard component.</p>
-<p>If yes that is copied to avoid running the hazard model twice.</p>
-<section id="parameters-8" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 15%">
-<col style="width: 8%">
-<col style="width: 64%">
-<col style="width: 12%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>str</td>
-<td>name of the scenario to check if needs to be rerun for hazard</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.interp_slr" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.interp_slr">interp_slr</h3>
-<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.interp_slr(slr_scenario, year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Interpolate SLR value and reference it to the SLR reference year from the site toml.</p>
-<section id="parameters-9" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 14%">
-<col style="width: 8%">
-<col style="width: 64%">
-<col style="width: 12%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>slr_scenario</td>
-<td>str</td>
-<td>SLR scenario name from the coulmn names in static.csv</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>year</td>
-<td>float</td>
-<td>year to evaluate</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-10" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-10">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>float</td>
-<td><em>description</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="raises" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
-<colgroup>
-<col style="width: 8%">
-<col style="width: 12%">
-<col style="width: 78%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>ValueError</td>
-<td>if the reference year is outside of the time range in the slr.csv file</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>ValueError</td>
-<td>if the year to evaluate is outside of the time range in the slr.csv file</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.run_benefit" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.run_benefit">run_benefit</h3>
-<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.run_benefit(benefit_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Run a (cost-)benefit analysis.</p>
-<section id="parameters-10" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 16%">
-<col style="width: 31%">
-<col style="width: 38%">
-<col style="width: 13%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>benefit_name</td>
-<td>Union[str, list[str]]</td>
-<td>name(s) of the benefits to run.</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_controller.Database.run_scenario" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.run_scenario">run_scenario</h3>
-<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.run_scenario(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Run a scenario hazard and impacts.</p>
-<section id="parameters-11" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
-<table class="table">
-<colgroup>
-<col style="width: 17%">
-<col style="width: 30%">
-<col style="width: 38%">
-<col style="width: 13%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>scenario_name</td>
-<td>Union[str, list[str]]</td>
-<td>name(s) of the scenarios to run.</td>
-<td><em>required</em></td>
+<td>Settings</td>
+<td>The parsed configuration settings.</td>
 </tr>
 </tbody>
 </table>
@@ -1197,9 +610,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
 <table class="table">
 <colgroup>
-<col style="width: 10%">
-<col style="width: 18%">
-<col style="width: 71%">
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 80%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1211,19 +624,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td>RuntimeError</td>
-<td>If an error occurs while running one of the scenarios</td>
+<td>ValidationError</td>
+<td>If required configuration values are missing or if there is an error parsing the configuration file.</td>
 </tr>
 </tbody>
 </table>
 </section>
 </section>
-<section id="flood_adapt.dbs_controller.Database.shutdown" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_controller.Database.shutdown">shutdown</h3>
-<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dbs_controller.Database.shutdown()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Explicitly shut down the database controller singleton and clear all data stored in its memory.</p>
+<section id="flood_adapt.misc.config.Settings.write" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.misc.config.Settings.write">write</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>misc.config.Settings.write(toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Write the configuration settings to a .toml file.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 52%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>config_path</td>
+<td>Path</td>
+<td>The path to the configuration file.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 </section>
 </section>

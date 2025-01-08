@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation – object_model.site.site</title>
+<title>Flood Adapt Documentation – adapter.direct_impacts_integrator.directimpacts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -428,13 +428,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#flood_adapt.object_model.site.Site" id="toc-flood_adapt.object_model.site.Site" class="nav-link active" data-scroll-target="#flood_adapt.object_model.site.Site">object_model.site.Site</a>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts" class="nav-link active" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts">adapter.direct_impacts_integrator.DirectImpacts</a>
   <ul class="collapse">
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#flood_adapt.object_model.site.Site.load_dict" id="toc-flood_adapt.object_model.site.Site.load_dict" class="nav-link" data-scroll-target="#flood_adapt.object_model.site.Site.load_dict">load_dict</a></li>
-  <li><a href="#flood_adapt.object_model.site.Site.load_file" id="toc-flood_adapt.object_model.site.Site.load_file" class="nav-link" data-scroll-target="#flood_adapt.object_model.site.Site.load_file">load_file</a></li>
-  <li><a href="#flood_adapt.object_model.site.Site.save" id="toc-flood_adapt.object_model.site.Site.save" class="nav-link" data-scroll-target="#flood_adapt.object_model.site.Site.save">save</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check">fiat_has_run_check</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check">has_run_check</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat">preprocess_fiat</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run">run</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy">set_impact_strategy</a></li>
+  <li><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change" id="toc-flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change" class="nav-link" data-scroll-target="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change">set_socio_economic_change</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -445,10 +448,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="flood_adapt.object_model.site.Site" class="level1">
-<h1>object_model.site.Site</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.site.Site()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Class for general variables of the object_model.</p>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts" class="level1">
+<h1>adapter.direct_impacts_integrator.DirectImpacts</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts(<span class="va">self</span>, scenario)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>All information related to the direct impacts of the scenario.</p>
+<p>Includes methods to run the impact model or check if it has already been run.</p>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="table">
@@ -460,35 +464,161 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.site.Site.load_dict">load_dict</a></td>
-<td>Create Synthetic from object, e.g.&nbsp;when initialized from GUI.</td>
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check">fiat_has_run_check</a></td>
+<td>Check if fiat has run as expected.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.object_model.site.Site.load_file">load_file</a></td>
-<td>Create Site from toml file.</td>
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check">has_run_check</a></td>
+<td>Check if the direct impact has been run.</td>
 </tr>
 <tr class="odd">
-<td><a href="#flood_adapt.object_model.site.Site.save">save</a></td>
-<td>Write toml file from model object.</td>
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat">preprocess_fiat</a></td>
+<td>Update FIAT model based on scenario information and then runs the FIAT model.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run">run</a></td>
+<td>Run the direct impact model.</td>
+</tr>
+<tr class="odd">
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy">set_impact_strategy</a></td>
+<td>Set the ImpactStrategy object of the scenario.</td>
+</tr>
+<tr class="even">
+<td><a href="#flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change">set_socio_economic_change</a></td>
+<td>Set the SocioEconomicChange object of the scenario.</td>
 </tr>
 </tbody>
 </table>
-<section id="flood_adapt.object_model.site.Site.load_dict" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.site.Site.load_dict">load_dict</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>object_model.site.Site.load_dict(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create Synthetic from object, e.g.&nbsp;when initialized from GUI.</p>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check">fiat_has_run_check</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.fiat_has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if fiat has run as expected.</p>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>boolean</td>
+<td>True if fiat has run, False if something went wrong</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="flood_adapt.object_model.site.Site.load_file" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.site.Site.load_file">load_file</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>object_model.site.Site.load_file(filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Create Site from toml file.</p>
 </section>
-<section id="flood_adapt.object_model.site.Site.save" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.object_model.site.Site.save">save</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>object_model.site.Site.save(filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Write toml file from model object.</p>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.has_run_check">has_run_check</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.has_run_check()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if the direct impact has been run.</p>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>bool</td>
+<td><em>description</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat">preprocess_fiat</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.preprocess_fiat()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Update FIAT model based on scenario information and then runs the FIAT model.</p>
+</section>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.run">run</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run the direct impact model.</p>
+</section>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy">set_impact_strategy</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.set_impact_strategy(strategy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Set the ImpactStrategy object of the scenario.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 58%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>strategy</td>
+<td>str</td>
+<td>Name of the strategy used in the scenario</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change">set_socio_economic_change</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter.direct_impacts_integrator.DirectImpacts.set_socio_economic_change(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    projection,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Set the SocioEconomicChange object of the scenario.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 10%">
+<col style="width: 58%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>projection</td>
+<td>str</td>
+<td>Name of the projection used in the scenario</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 </section>
 </section>

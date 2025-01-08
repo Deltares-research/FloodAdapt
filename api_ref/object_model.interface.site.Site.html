@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation - Events</title>
+<title>Flood Adapt Documentation – object_model.interface.site.site</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,32 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
-<link href="../../4_user_guide/events/historic_events/index.html" rel="next">
-<link href="../../4_user_guide/site_tab.html" rel="prev">
-<link href="../../_static/logo.png" rel="icon" type="image/png">
-<script src="../../site_libs/quarto-html/quarto.js"></script>
-<script src="../../site_libs/quarto-html/popper.min.js"></script>
-<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
-<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,7 +97,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="../../_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed">
@@ -78,10 +107,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../../index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">FloodAdapt</span>
     </a>
   </div>
@@ -108,7 +137,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../4_user_guide/index.html">User Guide</a></li><li class="breadcrumb-item"><a href="../../4_user_guide/events/index.html">Events</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -130,43 +159,43 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../1_introduction/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../1_introduction/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../4_user_guide/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">User Guide</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/getting_started.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/getting_started.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Getting Started</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/site_tab.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/site_tab.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Site tab</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/events/index.html" class="sidebar-item-text sidebar-link active">
+            <a href="../4_user_guide/events/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Events</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../4_user_guide/events/historic_events/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Historical Events</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -175,19 +204,19 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/events/historic_events/historic_events_hurricane.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Historical Hurricanes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_gauged.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/events/historic_events/historic_events_gauged.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Historical event with gauged water levels</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/events/historic_events/historic_events_ungauged.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Historical event - without gauged water levels</span></a>
   </div>
 </li>
@@ -195,13 +224,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/synthetic_events.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/events/synthetic_events.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Synthetic events</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/events/probabilistic_events.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/events/probabilistic_events.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Probabilistic event set</span></a>
   </div>
 </li>
@@ -209,7 +238,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/projections/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../4_user_guide/projections/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Projections</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -218,13 +247,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/projections/climate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Climate projections</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/projections/socioEconomic.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/projections/socioEconomic.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Socio-economic projections</span></a>
   </div>
 </li>
@@ -232,7 +261,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../4_user_guide/measures/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../4_user_guide/measures/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Measures</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -241,19 +270,19 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/measures/hydraulic.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Hydraulic (grey) measures</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/green_infra.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/measures/green_infra.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Urban green infrastructure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/measures/buildings.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/measures/buildings.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Building-level measures</span></a>
   </div>
 </li>
@@ -261,31 +290,31 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/strategy/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/strategy/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Strategies</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/scenarios/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/scenarios/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Scenarios</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/output/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/output/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Output</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/compare/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/compare/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Compare tabs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../4_user_guide/benefits.html" class="sidebar-item-text sidebar-link">
+  <a href="../4_user_guide/benefits.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Benefits</span></a>
   </div>
 </li>
@@ -293,7 +322,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../3_setup_guide/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../3_setup_guide/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Setup Guide</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -302,7 +331,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../3_setup_guide/SFINCS/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../3_setup_guide/SFINCS/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SFINCS Setup</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -311,7 +340,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../3_setup_guide/SFINCS/hydromt_sfincs_gui.html" class="sidebar-item-text sidebar-link">
+  <a href="../3_setup_guide/SFINCS/hydromt_sfincs_gui.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SFINCS model-builder</span></a>
   </div>
 </li>
@@ -319,7 +348,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../3_setup_guide/Delft_Fiat/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../3_setup_guide/Delft_Fiat/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Delft FIAT Setup</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -328,7 +357,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html" class="sidebar-item-text sidebar-link">
+  <a href="../3_setup_guide/Delft_Fiat/hydromt_fiat_gui.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Delft-FIAT model-builder</span></a>
   </div>
 </li>
@@ -336,13 +365,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../3_setup_guide/risk_analysis.html" class="sidebar-item-text sidebar-link">
+  <a href="../3_setup_guide/risk_analysis.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Event Set</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
+  <a href="../3_setup_guide/database.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Database-Builder</span></a>
   </div>
 </li>
@@ -350,7 +379,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../5_technical_docs/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../5_technical_docs/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Technical docs</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -359,25 +388,25 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../5_technical_docs/EventScenario.html" class="sidebar-item-text sidebar-link">
+  <a href="../5_technical_docs/EventScenario.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Event scenario</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../5_technical_docs/RiskScenario.html" class="sidebar-item-text sidebar-link">
+  <a href="../5_technical_docs/RiskScenario.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Risk Scenario</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../5_technical_docs/EquityCalc.html" class="sidebar-item-text sidebar-link">
+  <a href="../5_technical_docs/EquityCalc.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Equity Calculation</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../5_technical_docs/BenefitCalc.html" class="sidebar-item-text sidebar-link">
+  <a href="../5_technical_docs/BenefitCalc.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Benefit Calculation</span></a>
   </div>
 </li>
@@ -385,7 +414,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api_ref/" class="sidebar-item-text sidebar-link">
+  <a href="../api_ref/" class="sidebar-item-text sidebar-link">
  <span class="menu-text">API reference</span></a>
   </div>
 </li>
@@ -399,95 +428,18 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#how-are-events-modeled-in-floodadapt" id="toc-how-are-events-modeled-in-floodadapt" class="nav-link active" data-scroll-target="#how-are-events-modeled-in-floodadapt">How are events modeled in FloodAdapt?</a></li>
+  <li><a href="#flood_adapt.object_model.interface.site.Site" id="toc-flood_adapt.object_model.interface.site.Site" class="nav-link active" data-scroll-target="#flood_adapt.object_model.interface.site.Site">object_model.interface.site.Site</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Events</h1>
-</div>
 
 
-
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-</header>
-
-<p>FloodAdapt allows users to specify and simulate the flooding and impacts for many different types of (compound) events. These can be either <a href="../../4_user_guide/events/historic_events/index.html"><strong>historically-based</strong></a> or <a href="../../4_user_guide/events/synthetic_events.html"><strong>synthetic</strong></a> events. The historically-based events use historical water levels or hurricane tracks, but allow users to modify event specifics to create what-if event scenarios, for example by adding or intensifying rainfall or shifting a hurricane track.</p>
-<p>There are three historically-based event types, which are described in the coming sections:</p>
-<ul>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_hurricane.html">Historical hurricane</a></li>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_gauged.html">Historical event with gauged water levels</a></li>
-<li><a href="../../4_user_guide/events/historic_events/historic_events_ungauged.html">Historical event without gauged water levels</a></li>
-</ul>
-<p>To create an event, the user goes to the Events tab in FloodAdapt (see <a href="#fig-eventTabEmpty">Figure&nbsp;1</a>). Prior to creating any events, there may be one event already shown in the event list window. This will be a <a href="../../4_user_guide/events/probabilistic_events.html">probabilistic event set</a> that is prepared as part of system setup, and is used to calculate risk. Underneath the event set window, the event “Type” is indicated. For event sets this will say “Probabilistic Event Set.” For events that you create in the Events tab, these will say “Single Event”. Next to the event list window there are buttons to add, edit, delete, and copy an event. Prior to creating any events, only the “Add event” button will be active.</p>
-<div id="fig-eventTabEmpty" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><a href="../../_static/images/events_tab_empty.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="The event tab in FloodAdapt prior to creating any events"><img src="../../_static/images/events_tab_empty.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>The event tab in FloodAdapt prior to creating any events</strong></figcaption>
-</figure>
-</div>
-<p>When a user clicks <strong>Add event</strong> in the event window, they will be prompted to choose from one of the three historical event types or the synthetic event type. Each selection opens a window where the user can specify event information.</p>
-<div id="fig-eventSelector" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><a href="../../_static/images/eventTypeSelector.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="The four event types a user can select"><img src="../../_static/images/eventTypeSelector.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;2: <strong>The four event types a user can select</strong></figcaption>
-</figure>
-</div>
-<p>Each event type will have unique input that is required, but they also share some common input. The user must provide an event name, and - optionally - a description. Additionally, all historic events require a start and stop time of the event.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Event names and descriptions
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Event names must be unique and cannot have any spaces or special characters (underscores are allowed). Event descriptions are optional and have no syntax restrictions. For example, an event name could be <strong>KingTideNov2021</strong>, and the long name could be <strong>King Tide - November 2021</strong>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Event start and stop times
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The format for the start and stop time is ‘YYYY-MM-DD hh:mm:ss’, where YYYY = four-digit year, MM = two digit month, DD = two-digit day, hh = two-digit hour, mm = two-digit minutes, and ss = two-digit seconds. The user can type in a date, or select a date from a drop-down calendar.</p>
-</div>
-</div>
-<div id="fig-historicEvent_name_date" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><a href="../../_static/images/event_name_date_entry.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Screenshot of the event window where the user enters the name, description, and dates of the historic event"><img src="../../_static/images/event_name_date_entry.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;3: <strong>Screenshot of the event window where the user enters the name, description, and dates of the historic event</strong></figcaption>
-</figure>
-</div>
-<section id="how-are-events-modeled-in-floodadapt" class="level2">
-<h2 class="anchored" data-anchor-id="how-are-events-modeled-in-floodadapt">How are events modeled in FloodAdapt?</h2>
-<p>FloodAdapt supports two levels of hydrodynamic models:</p>
-<ol type="1">
-<li><p>An offshore model that calculates nearshore water levels based on astronomic tides, wind fields and pressure fields. These nearshore water levels are used to force the overland model.</p></li>
-<li><p>An overland model that calculates the inundation over land due to nearshore water levels, local wind, rainfall, and river discharge.</p></li>
-</ol>
-<p>When a user selects a <a href="historic_events_hurricane.qmd">historical hurricane</a>, FloodAdapt will pull in wind and pressure information about the track, and use this information to generate wind and pressure fields using the <a href="https://journals.ametsoc.org/view/journals/mwre/138/12/2010mwr3317.1.xml">Holland 2010 method</a>. It also uses the track information to estimate the rainfall field using the <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022169419309904">IPET method</a>. The wind, pressure, and rainfall fields are used by the offshore model to calculate nearshore water levels. These are then used, together with the same wind, pressure and rainfall fields, to run the overland flood model.</p>
-<p>When a user selects a <a href="historic_events_gauged.qmd">Historical event with gauged water levels</a>, only the overland model will be run, using the gauged water levels as input to the overland model.</p>
-<p>When a user selects a <a href="historic_events_ungauged.qmd">Historical event without gauged water levels</a>, the offshore model will first be run using the wind and pressure data from the <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast">NOAA Global Forecast System</a> (GFS). The calculated nearshore water levels will then be input to the overland model to calculate the overland flooding.</p>
-<p>When a user selects a <a href="../../4_user_guide/events/synthetic_events.html">Synthetic event</a>, only the overland model will be run, using the tide, surge, rainfall, wind, and river discharge information specified by the user.</p>
+<section id="flood_adapt.object_model.interface.site.Site" class="level1">
+<h1>object_model.interface.site.Site</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.interface.site.Site(<span class="va">self</span>, data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
@@ -841,22 +793,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
-<nav class="page-navigation">
-  <div class="nav-page nav-page-previous">
-      <a href="../../4_user_guide/site_tab.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Site tab</span>
-      </a>          
-  </div>
-  <div class="nav-page nav-page-next">
-      <a href="../../4_user_guide/events/historic_events/index.html" class="pagination-link">
-        <span class="nav-page-text">Historical Events</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
-  </div>
-</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
+    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -865,7 +805,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});</script>
 
 
 
