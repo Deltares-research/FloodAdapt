@@ -3,12 +3,14 @@ from pydantic import BaseModel
 from pydantic_core import ValidationError
 
 import flood_adapt.object_model.io.unit_system as us
+from flood_adapt.object_model.config.site import (
+    Site,
+)
 from flood_adapt.object_model.interface.site import (
     AsciiStr,
     DemModel,
     RiverModel,
     SfincsModel,
-    Site,
     SiteModel,
     TideGaugeModel,
 )

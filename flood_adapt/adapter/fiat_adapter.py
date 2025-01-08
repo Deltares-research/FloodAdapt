@@ -7,6 +7,7 @@ from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.config.site import Site
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -22,7 +23,6 @@ from flood_adapt.object_model.interface.measures import (
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.utils import resolve_filepath
 
 

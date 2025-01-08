@@ -5,7 +5,7 @@ from pathlib import Path
 from flood_adapt.api.static import read_database
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.config.site import Site
 
 
 def test_database_controller(test_db):

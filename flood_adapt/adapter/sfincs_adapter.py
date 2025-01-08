@@ -24,6 +24,7 @@ from numpy import matlib
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.config.site import Site
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.forcing.discharge import (
@@ -80,7 +81,6 @@ from flood_adapt.object_model.interface.projections import (
     PhysicalProjectionModel,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
