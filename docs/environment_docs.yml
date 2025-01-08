@@ -19,7 +19,7 @@ dependencies:
 - sphinx_rtd_theme
 - sphinx-markdown-builder
 - setuptools>=61.0.0
-- tomli
-- tomli_w
 - pip:
+  - tomli
+  - tomli_w
   - quartodoc
