@@ -464,6 +464,9 @@ class Database:
         # Save to exposure csv
         exposure_csv = exposure_csv.merge(buildings_joined, on="Object ID", how="left")
         exposure_csv.to_csv(self.exposure_csv_path, index=False)
+        # Set model building footprints
+        self.fiat_model.building_footprint = building_footprints
+        self.fiat_model.exposure.exposure_db = exposure_csv
         # Save site attributes
         rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
         self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
@@ -498,18 +501,15 @@ class Database:
         self.fiat_model = FiatModel(root=fiat_path, mode="w+")
         self.fiat_model.read()
 
-        # Clip exposure to hazard extent
-        # self._clip_hazard_extend()
-
         # Read in geometries of buildings
-        # ind = self.fiat_model.exposure.geom_names.index("buildings")
-        # self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+        ind = self.fiat_model.exposure.geom_names.index("buildings")
+        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
 
         # Get center of area of interest
-        # center = self.buildings.dissolve().centroid.to_crs(4326)[0]
-        # self.site_attrs["lat"] = center.y
-        # self.site_attrs["lon"] = center.x
+        center = self.buildings.dissolve().centroid.to_crs(4326)[0]
+        self.site_attrs["lat"] = center.y
+        self.site_attrs["lon"] = center.x
 
         # Read FIAT attributes for site config
         self.site_attrs["fiat"] = {}
@@ -627,17 +627,9 @@ class Database:
                 self.config.building_footprints.field_name,
             )
 
-        # clip hazard here?
-        # Read in geometries of buildings
-        ind = self.fiat_model.exposure.geom_names.index("buildings")
-        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
-
-        # Get center of area of interest
-        center = self.buildings.dissolve().centroid.to_crs(4326)[0]
-        self.site_attrs["lat"] = center.y
-        self.site_attrs["lon"] = center.x
-
+        # Clip hazard and reset buildings
         self._clip_hazard_extend()
+        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
 
         # Add base flood elevation information
         if self.config.bfe:
