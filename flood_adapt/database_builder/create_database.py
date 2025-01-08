@@ -24,11 +24,9 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.config import Settings
-from flood_adapt.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import ObsPointModel, SlrModel
-from flood_adapt.object_model.io.unitfulvalue import UnitfulDischarge, UnitfulLength
-from flood_adapt.object_model.site import Site
+from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
+from flood_adapt.object_model.io import unit_system as us
 
 config_path = None
 
@@ -128,7 +126,7 @@ class TideGaugeModel(BaseModel):
 
     source: str
     file: Optional[str] = None
-    max_distance: Optional[UnitfulLength] = None
+    max_distance: Optional[us.UnitfulLength] = None
     # TODO add option to add MSL and Datum?
     ref: Optional[str] = None
 
@@ -151,10 +149,12 @@ class SlrModelDef(SlrModel):
 
     Attributes
     ----------
-        vertical_offset (Optional[UnitfulLength]): The vertical offset of the SLR model, measured in meters.
+        vertical_offset (Optional[us.UnitfulLength]): The vertical offset of the SLR model, measured in meters.
     """
 
-    vertical_offset: Optional[UnitfulLength] = UnitfulLength(value=0, units="meters")
+    vertical_offset: Optional[us.UnitfulLength] = us.UnitfulLength(
+        value=0, units="meters"
+    )
 
 
 class ConfigModel(BaseModel):
@@ -195,7 +195,7 @@ class ConfigModel(BaseModel):
         Indicates if cyclones are enabled.
     cyclone_basin : Optional[Basins], default None
         The cyclone basin.
-    obs_point : Optional[list[Obs_pointModel]], default None
+    obs_point : Optional[list[ObsPointModel]], default None
         The list of observation point models.
     probabilistic_set : Optional[str], default None
         The probabilistic set path.
@@ -344,7 +344,7 @@ class Database:
             rmtree(root)
         root.mkdir(parents=True)
 
-        self.logger = FloodAdaptLogging().getLogger(__name__)
+        self.logger = FloodAdaptLogging.getLogger(__name__)
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
@@ -390,11 +390,7 @@ class Database:
         physical and socio-economic conditions, and saves them to the database.
         """
         # Load database
-        Settings(
-            database_root=self.root.parent,
-            database_name=self.config.name,
-        )
-        read_database(Settings().database_root, Settings().database_name)
+        read_database(self.root.parent, self.config.name)
         # Create no measures strategy
         strategy = create_strategy({"name": "no_measures", "measures": []})
         save_strategy(strategy)
@@ -527,13 +523,11 @@ class Database:
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
-                if "BF_FID" in [attr["name"] for attr in add_attrs]:
-                    ind = [attr["name"] for attr in add_attrs].index("BF_FID")
+                if "BF_FID" in [attr.name for attr in add_attrs]:
+                    ind = [attr.name for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
-                    footprints_path = fiat_path.joinpath(footprints["file"])
+                    footprints_path = fiat_path.joinpath(footprints.file)
                     check_file = footprints_path.exists()
-                else:
-                    check_file = False
             else:
                 check_file = False
             if check_file and not check_col:
@@ -589,7 +583,7 @@ class Database:
                         "Building footprint data will be downloaded from Open Street Maps."
                     )
                     region_path = Path(self.fiat_model.root).joinpath(
-                        "geoms", "region.geojson"
+                        "exposure", "region.gpkg"
                     )
                     if not region_path.exists():
                         self.logger.error("No region file found in the FIAT model.")
@@ -667,7 +661,7 @@ class Database:
         # TODO make aggregation areas not mandatory
         if not self.fiat_model.spatial_joins["aggregation_areas"]:
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
+            region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
@@ -769,17 +763,17 @@ class Database:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
                 add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr["name"] for attr in add_attrs]:
-                    ind = [attr["name"] for attr in add_attrs].index("SVI")
+                if "SVI" in [attr.name for attr in add_attrs]:
+                    ind = [attr.name for attr in add_attrs].index("SVI")
                     svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi["file"])
+                    svi_path = fiat_path.joinpath(svi.file)
                     self.site_attrs["fiat"]["svi"] = {}
                     self.site_attrs["fiat"]["svi"]["geom"] = str(
                         Path(svi_path.relative_to(self.static_path)).as_posix()
                     )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
                     self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['field_name']}"
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
                     )
                 else:
                     self.logger.warning("No SVI map found!")
@@ -932,7 +926,7 @@ class Database:
             river["description"] = f"river_{i}"
             river["x_coordinate"] = row.geometry.x
             river["y_coordinate"] = row.geometry.y
-            mean_dis = UnitfulDischarge(
+            mean_dis = us.UnitfulDischarge(
                 value=self.sfincs.forcing["dis"]
                 .sel(index=i)
                 .to_numpy()
@@ -1014,7 +1008,7 @@ class Database:
         self.logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
-        SFINCS_units = UnitfulLength(
+        SFINCS_units = us.UnitfulLength(
             value=1.0, units="meters"
         )  # SFINCS is always in meters
         FIAT_units = self.site_attrs["sfincs"]["floodmap_units"]
@@ -1030,28 +1024,27 @@ class Database:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        if "roads" in self.fiat_model.exposure.geom_names:
-            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
-            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
-            roads["geometry"] = roads.geometry.centroid  # get centroids
+        roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+        roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+        roads["geometry"] = roads.geometry.centroid  # get centroids
 
-            x_points = xr.DataArray(roads["geometry"].x, dims="points")
-            y_points = xr.DataArray(roads["geometry"].y, dims="points")
-            roads["elev"] = (
-                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-                * conversion_factor
-            )
+        x_points = xr.DataArray(roads["geometry"].x, dims="points")
+        y_points = xr.DataArray(roads["geometry"].y, dims="points")
+        roads["elev"] = (
+            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+            * conversion_factor
+        )
 
-            exposure.loc[
-                exposure["Primary Object Type"] == "road", "Ground Floor Height"
-            ] = 0
-            exposure = exposure.merge(
-                roads[["Object ID", "elev"]], on="Object ID", how="left"
-            )
-            exposure.loc[
-                exposure["Primary Object Type"] == "road", "Ground Elevation"
-            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
-            del exposure["elev"]
+        exposure.loc[
+            exposure["Primary Object Type"] == "road", "Ground Floor Height"
+        ] = 0
+        exposure = exposure.merge(
+            roads[["Object ID", "elev"]], on="Object ID", how="left"
+        )
+        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
+            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+        )
+        del exposure["elev"]
 
         buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
@@ -1241,7 +1234,7 @@ class Database:
             0,
         )
         units = self.site_attrs["sfincs"]["floodmap_units"]
-        distance = UnitfulLength(value=distance, units="meters")
+        distance = us.UnitfulLength(value=distance, units="meters")
         self.logger.info(
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.convert(units)} {units} from the SFINCS domain"
         )
@@ -1249,7 +1242,7 @@ class Database:
         # TODO make sure units are explicit for max_distance
         if self.config.tide_gauge.max_distance is not None:
             units_new = self.config.tide_gauge.max_distance.units
-            distance_new = UnitfulLength(
+            distance_new = us.UnitfulLength(
                 value=distance.convert(units_new), units=units_new
             )
             if distance_new.value > self.config.tide_gauge.max_distance.value:
@@ -1633,7 +1626,7 @@ class Database:
         site_config_path.parent.mkdir()
 
         site = Site.load_dict(self.site_attrs)
-        site.save(filepath=site_config_path)
+        site.save(toml_path=site_config_path)
 
     def _get_default_units(self):
         """

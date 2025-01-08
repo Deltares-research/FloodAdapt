@@ -122,5 +122,5 @@
                 Minor: <= 1 feet<br>
                 Major: > 1 and <= 6 feet<br>
                 Destroyed: > 6 feet<br>"""
-        image="{image_path}/info.png"
+        image="https://openclipart.org/image/800px/302413"
         scale=0.1

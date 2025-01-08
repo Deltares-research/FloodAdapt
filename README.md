@@ -76,7 +76,7 @@ FloodAdapt uses a database to store, handle and organize input files, output fil
 To initialize floodadapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
 from pathlib import Path
-from flood_adapt.config import Settings
+from flood_adapt.misc.config import Settings
 
 # Usually ends in `Database` and can contain multiple sites
 root = Path("path/to/your/database/root")
