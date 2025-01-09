@@ -677,16 +677,19 @@ class Database:
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
-                region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
+                region["aggr_id"] = [
+                    "region_" + str(i) for i in np.arange(len(region)) + 1
+                ]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
                     "geoms", "region.geojson"
                 )
+                region.to_file(aggregation_path)
                 aggr = {}
                 aggr["name"] = "region"
                 aggr["file"] = str(
                     aggregation_path.relative_to(self.static_path).as_posix()
                 )
-                aggr["field_name"] = "id"
+                aggr["field_name"] = "aggr_id"
                 self.site_attrs["fiat"]["aggregation"].append(aggr)
 
                 # Add column in FIAT
