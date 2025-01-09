@@ -531,10 +531,10 @@ class Database:
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
-                if "BF_FID" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("BF_FID")
+                if "BF_FID" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
-                    footprints_path = fiat_path.joinpath(footprints.file)
+                    footprints_path = fiat_path.joinpath(footprints["file"])
                     check_file = footprints_path.exists()
             else:
                 check_file = False
@@ -591,7 +591,7 @@ class Database:
                         "Building footprint data will be downloaded from Open Street Maps."
                     )
                     region_path = Path(self.fiat_model.root).joinpath(
-                        "exposure", "region.gpkg"
+                        "geoms", "region.geojson"
                     )
                     if not region_path.exists():
                         self.logger.error("No region file found in the FIAT model.")
@@ -673,7 +673,7 @@ class Database:
         # TODO make aggregation areas not mandatory
         if not self.fiat_model.spatial_joins["aggregation_areas"]:
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
+            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
@@ -775,17 +775,17 @@ class Database:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
                 add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("SVI")
+                if "SVI" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("SVI")
                     svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi.file)
+                    svi_path = fiat_path.joinpath(svi["file"])
                     self.site_attrs["fiat"]["svi"] = {}
                     self.site_attrs["fiat"]["svi"]["geom"] = str(
                         Path(svi_path.relative_to(self.static_path)).as_posix()
                     )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
                     self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
                     )
                 else:
                     self.logger.warning("No SVI map found!")
@@ -1659,6 +1659,7 @@ class Database:
         crs = gdf.crs
         sfincs_extend = self.sfincs.region
         sfincs_extend = sfincs_extend.to_crs(crs)
+        sfincs_geom = sfincs_extend.union_all()
 
         # Clip the fiat region
         clipped_region = self.fiat_model.region.clip(sfincs_extend)
@@ -1666,7 +1667,7 @@ class Database:
 
         # Clip the building footprints
         self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-            self.fiat_model.building_footprint["geometry"].within(clipped_region)
+            self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
         ]
         bf_fid = self.fiat_model.building_footprint["BF_FID"]
         fieldname = "BF_FID"
@@ -1675,7 +1676,7 @@ class Database:
         # Filter buildings and roads
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-            gdf_roads = gdf_roads[gdf_roads["geometry"].within(clipped_region)]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
             gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
             # Check if all buildings have BF
             if gdf_buildings[fieldname].isna().any():
@@ -1684,7 +1685,7 @@ class Database:
                     ~gdf_buildings[fieldname].isna()
                 ]
                 gdf_building_points_clipped = gdf_building_points[
-                    gdf_building_points["geometry"].within(clipped_region)
+                    gdf_building_points["geometry"].within(sfincs_geom)
                 ]
                 gdf_building_footprints_clipped = gdf_building_footprints[
                     gdf_building_footprints[fieldname].isin(bf_fid)
