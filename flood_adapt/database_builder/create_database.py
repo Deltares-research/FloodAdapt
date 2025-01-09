@@ -335,7 +335,7 @@ class DatabaseBuilder:
         self.config_path = config_path
 
         if config.database_path is None:
-            dbs_path = Path(config_path).parent / "Database" / "database_name"
+            dbs_path = Path(config_path).parent / "Database"
             if not dbs_path.exists():
                 dbs_path.mkdir(parents=True)
         elif not Path(config.database_path).is_absolute():
