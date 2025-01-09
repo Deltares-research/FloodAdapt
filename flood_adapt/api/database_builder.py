@@ -8,7 +8,7 @@ def create_database(config: Path) -> None:
 
     Parameters
     ----------
-    config : str | dict
-        The path to the configuration file or the configuration dictionary.
+    config : Path
+        The path to the configuration file
     """
     DatabaseBuilder(config_path=config).build()

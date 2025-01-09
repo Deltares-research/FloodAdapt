@@ -148,11 +148,11 @@ class SlrModelDef(SlrModel):
 
     Attributes
     ----------
-        vertical_offset (Optional[us.UnitfulLength]): The vertical offset of the SLR model, measured in meters.
+        vertical_offset (us.UnitfulLength): The vertical offset of the SLR model, measured in meters.
     """
 
-    vertical_offset: Optional[us.UnitfulLength] = us.UnitfulLength(
-        value=0, units="meters"
+    vertical_offset: us.UnitfulLength = us.UnitfulLength(
+        value=0, units=us.UnitTypesLength.meters
     )
 
 
@@ -323,14 +323,14 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
 
 class DatabaseBuilder:
     """
-    Represents a FloodAdapt database.
+    The `DatabaseBuilder` class is responsible for creating a FloodAdapt database.
 
     Args:
-        config_path (Path): The path to the configuration file for the database.
+        config_path (Path): The path to the configuration file for the database. Contents should adhere to the `ConfigModel` schema.
         overwrite (bool, optional): Whether to overwrite an existing database folder. Defaults to True.
     """
 
-    def __init__(self, config_path: Path, overwrite=False):
+    def __init__(self, config_path: Path, overwrite: bool = False):
         config = read_config(config_path)
         self.config_path = config_path
 
@@ -463,7 +463,9 @@ class DatabaseBuilder:
                         f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
                     )
 
-    def _join_building_footprints(self, building_footprints, field_name):
+    def _join_building_footprints(
+        self, building_footprints: gpd.GeoDataFrame, field_name: str
+    ):
         """
         Join building footprints with existing building data and updates the exposure CSV.
 
