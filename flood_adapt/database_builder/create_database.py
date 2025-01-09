@@ -1679,10 +1679,10 @@ class Database:
             gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
             gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
             # Check if all buildings have BF
-            if gdf_buildings[fieldname].isnull().any():
-                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isnull()]
+            if gdf_buildings[fieldname].isna().any():
+                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isna()]
                 gdf_building_footprints = gdf_buildings[
-                    ~gdf_buildings[fieldname].isnull()
+                    ~gdf_buildings[fieldname].isna()
                 ]
                 gdf_building_points_clipped = gdf_building_points[
                     gdf_building_points["geometry"].within(sfincs_geom)
