@@ -321,12 +321,12 @@ def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
     return str(path)
 
 
-class Database:
+class DatabaseBuilder:
     """
     Represents a FloodAdapt database.
 
     Args:
-        config (ConfigModel): The configuration model for the database.
+        config_path (Path): The path to the configuration file for the database.
         overwrite (bool, optional): Whether to overwrite an existing database folder. Defaults to True.
     """
 
@@ -367,6 +367,36 @@ class Database:
         }
         self.static_path = self.root.joinpath("static")
         self.site_path = self.static_path.joinpath("site")
+
+    def build(self):
+        # Open logger file
+        with FloodAdaptLogging.to_file(
+            file_path=self.root.joinpath("floodadapt_builder.log")
+        ):
+            # Workflow to create the database using the object methods
+            self.make_folder_structure()
+
+            # Set environment variables after folder structure is created
+            Settings(database_root=self.root.parent, database_name=self.root.name)
+
+            self.read_sfincs()
+            self.read_fiat()
+            self.read_offshore_sfincs()
+            self.add_dem()
+            self.update_fiat_elevation()
+            self.add_rivers()
+            self.add_obs_points()
+            self.add_cyclone_dbs()
+            self.add_static_files()
+            self.add_tide_gauge()
+            self.add_gui_params()
+            self.add_slr()
+            # TODO add scs rainfall curves
+            self.add_general_attrs()
+            self.add_infometrics()
+            self.save_site_config()
+            self.create_standard_objects()
+            self.logger.info("FloodAdapt database creation finished!")
 
     def _check_path(self, str_path: str):
         return path_check(str_path, self.config_path)
@@ -1774,60 +1804,16 @@ class Database:
         return bin_colors
 
 
-def main(config_path: Path):
-    """
-    Build the FloodAdapt model.
-
-    Args:
-        config_path (str): Path to the configuration file.
-
-    Returns
-    -------
-        None
-    """
-    if not isinstance(config_path, Path):
-        raise TypeError("config_path must be a Path object.")
-
-    # Create a Database object
-    dbs = Database(config_path=config_path)
-
-    # Open logger file
-    with FloodAdaptLogging.to_file(
-        file_path=dbs.root.joinpath("floodadapt_builder.log")
-    ):
-        # Workflow to create the database using the object methods
-        dbs.make_folder_structure()
-
-        # Set environment variables after folder structure is created
-        Settings(database_root=dbs.root.parent, database_name=dbs.root.name)
-
-        dbs.read_sfincs()
-        dbs.read_fiat()
-        dbs.read_offshore_sfincs()
-        dbs.add_dem()
-        dbs.update_fiat_elevation()
-        dbs.add_rivers()
-        dbs.add_obs_points()
-        dbs.add_cyclone_dbs()
-        dbs.add_static_files()
-        dbs.add_tide_gauge()
-        dbs.add_gui_params()
-        dbs.add_slr()
-        # TODO add scs rainfall curves
-        dbs.add_general_attrs()
-        dbs.add_infometrics()
-        dbs.save_site_config()
-        dbs.create_standard_objects()
-        dbs.logger.info("FloodAdapt database creation finished!")
-
-
 if __name__ == "__main__":
     while True:
-        path = input(
-            "Please provide the path to the database creation configuration toml: \n"
+        config_path = Path(
+            input(
+                "Please provide the path to the database creation configuration toml: \n"
+            )
         )
         try:
-            main(path)
+            dbs = DatabaseBuilder(config_path=config_path)
+            dbs.build()
         except Exception as e:
             print(e)
         quit = input("Do you want to quit? (y/n)")
