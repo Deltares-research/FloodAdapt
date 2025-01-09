@@ -679,11 +679,8 @@ class Database:
                 region = region.explode().reset_index()
                 region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
-                    "exposure", "geoms", "region.geojson"
+                    "geoms", "region.geojson"
                 )
-                if not aggregation_path.parent.exists():
-                    aggregation_path.parent.mkdir()
-                region[["id", "geometry"]].to_file(aggregation_path, index=False)
                 aggr = {}
                 aggr["name"] = "region"
                 aggr["file"] = str(
@@ -1659,7 +1656,6 @@ class Database:
         crs = gdf.crs
         sfincs_extend = self.sfincs.region
         sfincs_extend = sfincs_extend.to_crs(crs)
-        sfincs_geom = sfincs_extend.union_all()
 
         # Clip the fiat region
         clipped_region = self.fiat_model.region.clip(sfincs_extend)
@@ -1667,7 +1663,9 @@ class Database:
 
         # Clip the building footprints
         self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-            self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
+            self.fiat_model.building_footprint["geometry"].within(
+                clipped_region["geometry"].union_all()
+            )
         ]
         bf_fid = self.fiat_model.building_footprint["BF_FID"]
         fieldname = "BF_FID"
@@ -1676,7 +1674,9 @@ class Database:
         # Filter buildings and roads
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-            gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
+            gdf_roads = gdf_roads[
+                gdf_roads["geometry"].within(clipped_region["geometry"].union_all())
+            ]
             gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
             # Check if all buildings have BF
             if gdf_buildings[fieldname].isna().any():
@@ -1685,7 +1685,9 @@ class Database:
                     ~gdf_buildings[fieldname].isna()
                 ]
                 gdf_building_points_clipped = gdf_building_points[
-                    gdf_building_points["geometry"].within(sfincs_geom)
+                    gdf_building_points["geometry"].within(
+                        clipped_region["geometry"].union_all()
+                    )
                 ]
                 gdf_building_footprints_clipped = gdf_building_footprints[
                     gdf_building_footprints[fieldname].isin(bf_fid)
