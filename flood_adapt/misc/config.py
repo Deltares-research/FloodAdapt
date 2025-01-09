@@ -132,19 +132,16 @@ class Settings(BaseSettings):
         / "Database",  # If you clone FloodAdapt, default is to look for the Database next to the FloodAdapt folder
         env="DATABASE_ROOT",
         description="The root directory of the database that contains site(s). Usually the directory name is 'Database'. Default is to look for the Database in the same dir as the FloodAdapt cloned repo.",
-        validate_default=False,
     )
     database_name: str = Field(
         default="",
         env="DATABASE_NAME",
         description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
-        validate_default=False,
     )
     system_folder: Path = Field(
         default=Path(__file__).parents[1] / "system",
         env="SYSTEM_FOLDER",
         description="The path of the system folder containing the kernels that run the calculations. Default is to look for the system folder in `FloodAdapt/flood_adapt/system`",
-        validate_default=False,
     )
     delete_crashed_runs: bool = Field(
         default=True,
