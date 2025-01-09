@@ -1,25 +1,84 @@
 # Event tab
 import os
-from typing import Any, Union
+from pathlib import Path
+from typing import Any, List, Type, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 
-from flood_adapt.dbs_controller import Database
-from flood_adapt.object_model.hazard.event.event import Event
-from flood_adapt.object_model.hazard.event.event_factory import EventFactory
-from flood_adapt.object_model.hazard.event.historical_nearshore import (
-    HistoricalNearshore,
+from flood_adapt.dbs_classes.database import Database
+from flood_adapt.object_model.hazard.event.event_factory import (
+    EventFactory,
+    HistoricalEvent,
+    HistoricalEventModel,
+    HurricaneEvent,
+    HurricaneEventModel,
+    SyntheticEvent,
+    SyntheticEventModel,
+    TranslationModel,
 )
-from flood_adapt.object_model.interface.events import (
+from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
+from flood_adapt.object_model.hazard.forcing.plotting import (
+    plot_forcing as _plot_forcing,
+)
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
+from flood_adapt.object_model.hazard.forcing.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseriesModel,
+)
+from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
-    IHistoricalHurricane,
-    IHistoricalNearshore,
-    IHistoricalOffshore,
-    ISynthetic,
+    IEventModel,
     Mode,
+    Template,
 )
-from flood_adapt.object_model.io.unitfulvalue import UnitTypesLength
+from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingSource,
+    ForcingType,
+    IDischarge,
+    IForcing,
+    IRainfall,
+    IWaterlevel,
+    IWind,
+    ShapeType,
+)
+from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.io import unit_system as us
+
+# Ensure all objects are imported and available for use if this module is imported
+__all__ = [
+    "ShapeType",
+    "Template",
+    "TimeModel",
+    "ForcingType",
+    "Mode",
+    "EventFactory",
+    "IEvent",
+    "IForcing",
+    "IDischarge",
+    "IRainfall",
+    "IWaterlevel",
+    "IWind",
+    "ForcingSource",
+    "ForcingType",
+    "Template",
+    "TimeModel",
+    "IRainfall",
+    "IWaterlevel",
+    "IWind",
+    "SyntheticEvent",
+    "SyntheticEventModel",
+    "HistoricalEventModel",
+    "HistoricalEvent",
+    "HurricaneEvent",
+    "HurricaneEventModel",
+    "TranslationModel",
+    "CSVTimeseries",
+    "SyntheticTimeseriesModel",
+    "DischargeConstant",
+]
 
 
 def get_events() -> dict[str, Any]:
@@ -35,7 +94,7 @@ def get_events() -> dict[str, Any]:
     return Database().events.list_objects()
 
 
-def get_event(name: str) -> IEvent:
+def get_event(name: str) -> IEvent | EventSet:
     """Get a benefit from the database by name.
 
     Parameters
@@ -68,75 +127,40 @@ def get_event_mode(name: str) -> Mode:
     Mode
         The mode of the event with the given name, either `risk` or `single_event`.
     """
-    filename = Database().events.get_database_path() / f"{name}" / f"{name}.toml"
-    return Event.get_mode(filename)
+    filename = Database().events.input_path / f"{name}" / f"{name}.toml"
+    return EventFactory.read_mode(filename)
 
 
-def create_synthetic_event(attrs: dict[str, Any]) -> ISynthetic:
-    """Create a synthetic event object from a dictionary of attributes.
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes. Should adhere to the SyntheticEventModel schema.
-
-    Returns
-    -------
-    Synthetic
-        Synthetic event object
-    """
-    return EventFactory.get_event("Synthetic").load_dict(attrs)
-
-
-def create_historical_nearshore_event(attrs: dict[str, Any]) -> IHistoricalNearshore:
-    """Create a historical nearshore event object from a dictionary of attributes.
+def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
+    """Create a event object from a dictionary of attributes.
 
     Parameters
     ----------
-    attrs : dict[str, Any]
+    attrs : IEventModel [str, Any]
         Dictionary of attributes
 
     Returns
     -------
-    HistoricalNearshore
-        Historical nearshore event object
+    Event
+        Depending on attrs.template an event object.
+        Can be of type: Synthetic, Historical, Hurricane.
     """
-    return EventFactory.get_event("Historical_nearshore").load_dict(attrs)
+    return EventFactory.load_dict(attrs)
 
 
-def create_historical_offshore_event(attrs: dict[str, Any]) -> IHistoricalOffshore:
-    """Create a historical offshore event object from a dictionary of attributes.
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    HistoricalNearshore
-        Historical offshore event object
-    """
-    return EventFactory.get_event("Historical_offshore").load_dict(attrs)
+def list_forcing_types() -> list[str]:
+    return ForcingFactory.list_forcing_types()
 
 
-def create_historical_hurricane_event(attrs: dict[str, Any]) -> IHistoricalHurricane:
-    """Create a historical hurricane event object from a dictionary of attributes.
-
-    Parameters
-    ----------
-    attrs : dict[str, Any]
-        Dictionary of attributes
-
-    Returns
-    -------
-    HistoricalHurricane
-        Historical hurricane event object
-    """
-    return EventFactory.get_event("Historical_hurricane").load_dict(attrs)
+def list_forcings() -> list[Type[IForcing]]:
+    return ForcingFactory.list_forcings()
 
 
-def save_event_toml(event: IEvent) -> None:
+def get_allowed_forcings(template: Template) -> dict[str, List[str]]:
+    return EventFactory.get_allowed_forcings(template)
+
+
+def save_event(event: IEvent) -> None:
     """Save an event object to the database.
 
     Parameters
@@ -216,8 +240,25 @@ def copy_event(old_name: str, new_name: str, new_description: str) -> None:
     Database().events.copy(old_name, new_name, new_description)
 
 
+def check_higher_level_usage(name: str) -> list[str]:
+    """Check if an event is used in a scenario.
+
+    Parameters
+    ----------
+    name : str
+        name of the event to be checked
+
+    Returns
+    -------
+    list[str]
+        list of scenario names where the event is used
+
+    """
+    return Database().events.check_higher_level_usage(name)
+
+
 def download_wl_data(
-    station_id, start_time, end_time, units: UnitTypesLength, source: str, file=None
+    tide_gauge: TideGauge, time: TimeModel, units: us.UnitTypesLength, out_path: str
 ) -> pd.DataFrame:
     """Download water level data from a station or tide gauge.
 
@@ -234,8 +275,10 @@ def download_wl_data(
     source : str
         Source of data. Should be one of `ndbc` or `noaa_coops`
     """
-    return HistoricalNearshore.download_wl_data(
-        station_id, start_time, end_time, units, source, file
+    return tide_gauge.get_waterlevels_in_time_frame(
+        time=time,
+        units=units,
+        out_path=Path(out_path),
     )
 
 
@@ -252,82 +295,20 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     pd.DataFrame
         DataFrame containing the data from the csv file
     """
-    return Event.read_csv(csvpath)
+    return read_csv(csvpath)
 
 
-def plot_wl(event: IEvent, input_wl_df: pd.DataFrame = None) -> str:
-    """Plot water level data for an event.
-
-    Parameters
-    ----------
-    event : IEvent
-        The event object
-    input_wl_df : pd.DataFrame
-        DataFrame containing water level data
-
-    Returns
-    -------
-    str
-        Path to the created html plot
-    """
-    return Database().plot_wl(event, input_wl_df)
-
-
-def plot_river(
-    event: IEvent,
-    input_river_df: list[pd.DataFrame],
-) -> str:
-    """Plot river discharge data for an event.
+def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str:
+    """Plot forcing data for an event.
 
     Parameters
     ----------
     event : IEvent
         The event object
-    input_river_df : pd.DataFrame
-        DataFrame containing discharge data
-
-    Returns
-    -------
-    str
-        Path to the created html plot
+    forcing_type : ForcingType
+        The type of forcing data to plot
     """
-    return Database().plot_river(event, input_river_df)
-
-
-def plot_rainfall(event: IEvent, input_rainfall_df: pd.DataFrame = None) -> str:
-    """Plot rainfall data for an event.
-
-    Parameters
-    ----------
-    event : IEvent
-        The event object
-    input_rainfall_df : pd.DataFrame
-        DataFrame containing rainfall data
-
-    Returns
-    -------
-    str
-        Path to the created html plot
-    """
-    return Database().plot_rainfall(event, input_rainfall_df)
-
-
-def plot_wind(event: IEvent, input_wind_df: pd.DataFrame = None) -> str:
-    """Plot wind data for an event.
-
-    Parameters
-    ----------
-    event : IEvent
-        The event object
-    input_wind_df : pd.DataFrame
-        DataFrame containing wind data
-
-    Returns
-    -------
-    str
-        Path to the created html plot
-    """
-    return Database().plot_wind(event, input_wind_df)
+    return _plot_forcing(event, Database().site, forcing_type)
 
 
 def save_cyclone_track(event: IEvent, track: TropicalCyclone):
@@ -341,3 +322,7 @@ def save_cyclone_track(event: IEvent, track: TropicalCyclone):
         The cyclone track data
     """
     Database().write_cyc(event, track)
+
+
+def get_cyclone_track_by_index(index: int) -> TropicalCyclone:
+    return Database().static.get_cyclone_track_database().get_track(index)

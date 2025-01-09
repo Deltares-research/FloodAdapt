@@ -71,14 +71,13 @@ def test_loadFile_nonExistingFile_FileNotFoundError(test_db):
 
 # Create Benefit object using using a dictionary
 def test_loadDict_fromTestDict_createBenefit(test_db):
-    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
-
+    benefit = Benefit.load_dict(_TEST_DICT)
     assert isinstance(benefit, IBenefit)
 
 
 # Save a toml from a test benefit dictionary
 def test_save_fromTestDict_saveToml(test_db):
-    benefit = Benefit.load_dict(_TEST_DICT, test_db.input_path)
+    benefit = Benefit.load_dict(_TEST_DICT)
     output_path = test_db.input_path.joinpath(
         "benefits", "test_benefit", "test_benefit.toml"
     )
@@ -166,7 +165,7 @@ class TestBenefitScenariosNotCreated:
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
     def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
-            benefit_obj.get_output()
+            benefit_obj.results
         assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
@@ -215,7 +214,7 @@ class TestBenefitScenariosCreated:
     # When the benefit analysis not run yet, the get_output method should return a RunTimeError
     def test_getOutput_notRun_raiseRunTimeError(self, benefit_obj):
         with pytest.raises(RuntimeError) as exception_info:
-            benefit_obj.get_output()
+            benefit_obj.results
         assert "Cannot read output since benefit analysis" in str(exception_info.value)
 
 
@@ -427,8 +426,8 @@ class TestBenefitScenariosRun:
         benefit_obj = prepare_outputs[0]
         benefit_obj = prepare_outputs[0]
         benefit_obj.cba()
-        results = benefit_obj.get_output()
-        assert hasattr(benefit_obj, "results")
+        results = benefit_obj.results
+        assert hasattr(benefit_obj, "_results")
         assert "html" in results
 
     # When the needed scenarios are run, the run_cost_benefit method should run the benefit analysis and save the results

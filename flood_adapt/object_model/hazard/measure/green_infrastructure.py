@@ -1,71 +1,47 @@
 import os
 from pathlib import Path
-from typing import Any, Union
 
 import geopandas as gpd
 import pyproj
-import tomli
-import tomli_w
 
-from flood_adapt.object_model.hazard.measure.hazard_measure import (
-    HazardMeasure,
-)
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
-    IGreenInfrastructure,
+    IMeasure,
 )
-from flood_adapt.object_model.interface.site import ISite
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulArea,
-    UnitfulHeight,
-)
+from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
+class GreenInfrastructure(IMeasure[GreenInfrastructureModel]):
     """Subclass of HazardMeasure describing the measure of urban green infrastructure with a specific storage volume that is calculated based on are, storage height and percentage of area coverage."""
 
-    attrs: GreenInfrastructureModel
-    database_input_path: Union[str, os.PathLike, None]
+    _attrs_type = GreenInfrastructureModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]) -> IGreenInfrastructure:
-        """Create GreenInfrastructure from toml file."""
-        obj = GreenInfrastructure()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = GreenInfrastructureModel.model_validate(toml)
-        # if measure is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
-        return obj
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.attrs.polygon_file:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            src_path = resolve_filepath(
+                self.dir_name, self.attrs.name, self.attrs.polygon_file
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
 
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
-    ) -> IGreenInfrastructure:
-        """Create Green Infrastructure from object, e.g. when initialized from GUI."""
-        obj = GreenInfrastructure()
-        obj.attrs = GreenInfrastructureModel.model_validate(data)
-        obj.database_input_path = database_input_path
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Green Infra to a toml file."""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.polygon_file = path.name
 
     @staticmethod
     def calculate_volume(
-        area: UnitfulArea,
-        height: UnitfulHeight,
+        area: us.UnitfulArea,
+        height: us.UnitfulHeight,
         percent_area: float = 100.0,
     ) -> float:
         """Determine volume from area of the polygon and infiltration height.
 
         Parameters
         ----------
-        area : UnitfulArea
+        area : us.UnitfulArea
             Area of polygon with units (calculated using calculate_polygon_area)
-        height : UnitfulHeight
+        height : us.UnitfulHeight
             Water height with units
         percent_area : float, optional
             Percentage area covered by green infrastructure [%], by default 100.0
@@ -80,23 +56,27 @@ class GreenInfrastructure(HazardMeasure, IGreenInfrastructure):
         float
             Volume [m3]
         """
-        volume = area.convert("m2") * height.convert("meters") * percent_area / 100.0
+        volume = (
+            area.convert(us.UnitTypesArea.m2)
+            * height.convert(us.UnitTypesLength.meters)
+            * (percent_area / 100.0)
+        )
         return volume
 
     @staticmethod
-    def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: ISite) -> float:
+    def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
         """Calculate area of a GeoDataFrame Polygon.
 
         Parameters
         ----------
         gdf : gpd.GeoDataFrame
             Polygon object
-        site : ISite
+        site : Site
             site config (used for CRS)
 
         Returns
         -------
-        float
+        floatd
             Area [m2]
         """
         # Determine local CRS
