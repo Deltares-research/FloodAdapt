@@ -20,6 +20,7 @@ from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
+from flood_adapt import Settings
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
@@ -27,8 +28,6 @@ from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
 from flood_adapt.object_model.io import unit_system as us
-
-config_path = None
 
 
 class SpatialJoinModel(BaseModel):
@@ -226,7 +225,7 @@ class ConfigModel(BaseModel):
     infographics: Optional[bool] = True
 
 
-def read_toml(fn: Union[str, Path]) -> dict:
+def read_toml(fn: Path) -> dict:
     """
     Read a TOML file and return its contents as a dictionary.
 
@@ -242,7 +241,7 @@ def read_toml(fn: Union[str, Path]) -> dict:
     return toml
 
 
-def read_config(config: str) -> ConfigModel:
+def read_config(config: Path) -> ConfigModel:
     """
     Read a configuration file and returns the validated attributes.
 
@@ -298,7 +297,7 @@ def spatial_join(
     return objects_joined, layer
 
 
-def path_check(path: str) -> str:
+def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
     """
     Check if the given path is absolute and return the absolute path.
 
@@ -313,7 +312,7 @@ def path_check(path: str) -> str:
     ------
         ValueError: If the path is not absolute and no config_path is provided.
     """
-    path = Path(path)
+    path = Path(str_path)
     if not path.is_absolute():
         if config_path is not None:
             path = Path(config_path).parent.joinpath(path).resolve()
@@ -331,10 +330,24 @@ class Database:
         overwrite (bool, optional): Whether to overwrite an existing database folder. Defaults to True.
     """
 
-    def __init__(self, config: ConfigModel, overwrite=False):
+    def __init__(self, config_path: Path, overwrite=False):
+        config = read_config(config_path)
+        self.config_path = config_path
+
+        if config.database_path is None:
+            dbs_path = Path(config_path).parent / "Database" / "database_name"
+            if not dbs_path.exists():
+                dbs_path.mkdir(parents=True)
+        elif not Path(config.database_path).is_absolute():
+            dbs_path = (config_path.parent / Path(config.database_path)).resolve()
+        else:
+            dbs_path = Path(config.database_path).resolve()
+
+        config.database_path = str(dbs_path)
+        print(f"Creating FloodAdapt database at {config.database_path}")
+
         self.config = config
-        config.database_path = path_check(config.database_path)
-        root = Path(config.database_path).joinpath(config.name)
+        root = Path(self.config.database_path).joinpath(self.config.name)
 
         if root.exists() and not overwrite:
             raise ValueError(
@@ -348,9 +361,15 @@ class Database:
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
-        self.site_attrs = {"name": config.name, "description": config.description}
+        self.site_attrs = {
+            "name": self.config.name,
+            "description": self.config.description,
+        }
         self.static_path = self.root.joinpath("static")
         self.site_path = self.static_path.joinpath("site")
+
+    def _check_path(self, str_path: str):
+        return path_check(str_path, self.config_path)
 
     def make_folder_structure(self):
         """
@@ -486,7 +505,7 @@ class Database:
         9. Handles the inclusion of SVI (Social Vulnerability Index).
         10. Ensures that FIAT roads are represented as polygons.
         """
-        self.config.fiat = path_check(self.config.fiat)
+        self.config.fiat = self._check_path(self.config.fiat)
         path = self.config.fiat
         self.logger.info(f"Reading FIAT model from {Path(path).as_posix()}.")
         # First copy FIAT model to database
@@ -608,7 +627,7 @@ class Database:
                 )
                 raise ValueError
         else:
-            self.config.building_footprints.file = path_check(
+            self.config.building_footprints.file = self._check_path(
                 self.config.building_footprints.file
             )
             self.logger.info(
@@ -628,7 +647,7 @@ class Database:
         # Add base flood elevation information
         if self.config.bfe:
             # TODO can we use hydromt-FIAT?
-            self.config.bfe.file = path_check(self.config.bfe.file)
+            self.config.bfe.file = self._check_path(self.config.bfe.file)
             self.logger.info(
                 f"Using map from {Path(self.config.bfe.file).as_posix()} as base flood elevation."
             )
@@ -733,7 +752,7 @@ class Database:
 
         # Read SVI
         if self.config.svi:
-            self.config.svi.file = path_check(self.config.svi.file)
+            self.config.svi.file = self._check_path(self.config.svi.file)
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             buildings_joined, svi = spatial_join(
                 self.buildings,
@@ -845,7 +864,7 @@ class Database:
         2. Reads the model using hydromt-SFINCS.
         3. Sets the necessary attributes for the site configuration.
         """
-        self.config.sfincs = path_check(self.config.sfincs)
+        self.config.sfincs = self._check_path(self.config.sfincs)
         path = self.config.sfincs
 
         # First copy sfincs model to database
@@ -882,7 +901,7 @@ class Database:
                 "No offshore SFINCS model was provided. Some event types will not be available in FloodAdapt"
             )
             return
-        self.config.sfincs_offshore = path_check(self.config.sfincs_offshore)
+        self.config.sfincs_offshore = self._check_path(self.config.sfincs_offshore)
         path = self.config.sfincs_offshore
         # TODO check if extents of offshore cover overland
         # First copy sfincs model to database
@@ -1188,7 +1207,9 @@ class Database:
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
-                self.config.tide_gauge.file = path_check(self.config.tide_gauge.file)
+                self.config.tide_gauge.file = self._check_path(
+                    self.config.tide_gauge.file
+                )
                 self.site_attrs["tide_gauge"] = {}
                 self.site_attrs["tide_gauge"]["source"] = "file"
                 file_path = Path(self.static_path).joinpath(
@@ -1312,7 +1333,9 @@ class Database:
         ]
         # If slr scenarios are given put them in the correct locations
         if self.config.slr.scenarios:
-            self.config.slr.scenarios.file = path_check(self.config.slr.scenarios.file)
+            self.config.slr.scenarios.file = self._check_path(
+                self.config.slr.scenarios.file
+            )
             self.site_attrs["slr"]["scenarios"] = self.config.slr.scenarios
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
@@ -1468,7 +1491,9 @@ class Database:
 
         # Copy prob set if given
         if self.config.probabilistic_set:
-            self.config.probabilistic_set = path_check(self.config.probabilistic_set)
+            self.config.probabilistic_set = self._check_path(
+                self.config.probabilistic_set
+            )
             self.logger.info(
                 f"{self.site_attrs['name']} probabilistic event set imported from {self.config.probabilistic_set}"
             )
@@ -1749,7 +1774,7 @@ class Database:
         return bin_colors
 
 
-def main(config: str | dict):
+def main(config_path: Path):
     """
     Build the FloodAdapt model.
 
@@ -1760,40 +1785,22 @@ def main(config: str | dict):
     -------
         None
     """
-    # First check if input is dictionary or path
-    if isinstance(config, str):
-        global config_path
-        config_path = config
-        config = read_config(config_path)
-        print(
-            f"Reading FloodAdapt building configuration from {Path(config_path).as_posix()}"
-        )
-        # If database path is not given use the location of the config file
-        if not config.database_path:
-            dbs_path = Path(config_path).parent.joinpath("Database")
-            if not dbs_path.exists():
-                dbs_path.mkdir()
-            config.database_path = str(dbs_path.as_posix())
-            print(
-                f"'database_path' attribute is not provided in the config file. The database will be save at '{config.database_path}'"
-            )
-    elif isinstance(config, dict):
-        config = ConfigModel.model_validate(config)
-        print("Reading FloodAdapt building configuration from input dictionary.")
-        # If database path is not given raise error
-        if not config.database_path:
-            raise ValueError(
-                "'database_path' attribute needs to be provided in the config file, for the database to be saved."
-            )
+    if not isinstance(config_path, Path):
+        raise TypeError("config_path must be a Path object.")
 
     # Create a Database object
-    dbs = Database(config)
+    dbs = Database(config_path=config_path)
+
     # Open logger file
     with FloodAdaptLogging.to_file(
         file_path=dbs.root.joinpath("floodadapt_builder.log")
     ):
         # Workflow to create the database using the object methods
         dbs.make_folder_structure()
+
+        # Set environment variables after folder structure is created
+        Settings(database_root=dbs.root.parent, database_name=dbs.root.name)
+
         dbs.read_sfincs()
         dbs.read_fiat()
         dbs.read_offshore_sfincs()
