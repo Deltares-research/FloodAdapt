@@ -1667,7 +1667,7 @@ class Database:
 
         # Clip the building footprints
         self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-            self.fiat_model.building_footprint["geometry"].within(sfincs_geom)
+            self.fiat_model.building_footprint["geometry"].within(clipped_region)
         ]
         bf_fid = self.fiat_model.building_footprint["BF_FID"]
         fieldname = "BF_FID"
@@ -1676,7 +1676,7 @@ class Database:
         # Filter buildings and roads
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-            gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(clipped_region)]
             gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
             # Check if all buildings have BF
             if gdf_buildings[fieldname].isna().any():
@@ -1685,7 +1685,7 @@ class Database:
                     ~gdf_buildings[fieldname].isna()
                 ]
                 gdf_building_points_clipped = gdf_building_points[
-                    gdf_building_points["geometry"].within(sfincs_geom)
+                    gdf_building_points["geometry"].within(clipped_region)
                 ]
                 gdf_building_footprints_clipped = gdf_building_footprints[
                     gdf_building_footprints[fieldname].isin(bf_fid)
