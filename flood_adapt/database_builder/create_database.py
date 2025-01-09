@@ -1666,7 +1666,7 @@ class Database:
         crs = gdf.crs
         sfincs_extend = self.sfincs.region
         sfincs_extend = sfincs_extend.to_crs(crs)
-        sfincs_geom = sfincs_extend.unary_union
+        sfincs_geom = sfincs_extend.union_all()
 
         # Clip the fiat region
         clipped_region = self.fiat_model.region.clip(sfincs_extend)
