@@ -1684,8 +1684,24 @@ class Database:
         if gdf["Primary Object Type"].str.contains("road").any():
             gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
             gdf_roads = gdf_roads[gdf_roads["geometry"].within(sfincs_geom)]
-            gdf_buildings = gdf[~gdf.isin(gdf_roads)]
-            gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+            gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
+            # Check if all buildings have BF
+            if gdf_buildings[fieldname].isnull().any():
+                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isnull()]
+                gdf_building_footprints = gdf_buildings[
+                    ~gdf_buildings[fieldname].isnull()
+                ]
+                gdf_building_points_clipped = gdf_building_points[
+                    gdf_building_points["geometry"].within(sfincs_geom)
+                ]
+                gdf_building_footprints_clipped = gdf_building_footprints[
+                    gdf_building_footprints[fieldname].isin(bf_fid)
+                ]
+                gdf_buildings = pd.concat(
+                    [gdf_building_points_clipped, gdf_building_footprints_clipped]
+                )
+            else:
+                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
             idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
             idx_roads = self.fiat_model.exposure.geom_names.index("roads")
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
