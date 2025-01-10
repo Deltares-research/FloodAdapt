@@ -20,6 +20,7 @@ from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
+from flood_adapt import Settings
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
@@ -27,8 +28,6 @@ from flood_adapt.api.strategies import create_strategy, save_strategy
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
 from flood_adapt.object_model.io import unit_system as us
-
-config_path = None
 
 
 class SpatialJoinModel(BaseModel):
@@ -149,11 +148,11 @@ class SlrModelDef(SlrModel):
 
     Attributes
     ----------
-        vertical_offset (Optional[us.UnitfulLength]): The vertical offset of the SLR model, measured in meters.
+        vertical_offset (us.UnitfulLength): The vertical offset of the SLR model, measured in meters.
     """
 
-    vertical_offset: Optional[us.UnitfulLength] = us.UnitfulLength(
-        value=0, units="meters"
+    vertical_offset: us.UnitfulLength = us.UnitfulLength(
+        value=0, units=us.UnitTypesLength.meters
     )
 
 
@@ -226,7 +225,7 @@ class ConfigModel(BaseModel):
     infographics: Optional[bool] = True
 
 
-def read_toml(fn: Union[str, Path]) -> dict:
+def read_toml(fn: Path) -> dict:
     """
     Read a TOML file and return its contents as a dictionary.
 
@@ -242,7 +241,7 @@ def read_toml(fn: Union[str, Path]) -> dict:
     return toml
 
 
-def read_config(config: str) -> ConfigModel:
+def read_config(config: Path) -> ConfigModel:
     """
     Read a configuration file and returns the validated attributes.
 
@@ -298,7 +297,7 @@ def spatial_join(
     return objects_joined, layer
 
 
-def path_check(path: str) -> str:
+def path_check(str_path: str, config_path: Optional[Path] = None) -> str:
     """
     Check if the given path is absolute and return the absolute path.
 
@@ -313,7 +312,7 @@ def path_check(path: str) -> str:
     ------
         ValueError: If the path is not absolute and no config_path is provided.
     """
-    path = Path(path)
+    path = Path(str_path)
     if not path.is_absolute():
         if config_path is not None:
             path = Path(config_path).parent.joinpath(path).resolve()
@@ -322,19 +321,33 @@ def path_check(path: str) -> str:
     return str(path)
 
 
-class Database:
+class DatabaseBuilder:
     """
-    Represents a FloodAdapt database.
+    The `DatabaseBuilder` class is responsible for creating a FloodAdapt database.
 
     Args:
-        config (ConfigModel): The configuration model for the database.
+        config_path (Path): The path to the configuration file for the database. Contents should adhere to the `ConfigModel` schema.
         overwrite (bool, optional): Whether to overwrite an existing database folder. Defaults to True.
     """
 
-    def __init__(self, config: ConfigModel, overwrite=False):
+    def __init__(self, config_path: Path, overwrite: bool = False):
+        config = read_config(config_path)
+        self.config_path = config_path
+
+        if config.database_path is None:
+            dbs_path = Path(config_path).parent / "Database"
+            if not dbs_path.exists():
+                dbs_path.mkdir(parents=True)
+        elif not Path(config.database_path).is_absolute():
+            dbs_path = (config_path.parent / Path(config.database_path)).resolve()
+        else:
+            dbs_path = Path(config.database_path).resolve()
+
+        config.database_path = str(dbs_path)
+        print(f"Creating FloodAdapt database at {config.database_path}")
+
         self.config = config
-        config.database_path = path_check(config.database_path)
-        root = Path(config.database_path).joinpath(config.name)
+        root = Path(self.config.database_path).joinpath(self.config.name)
 
         if root.exists() and not overwrite:
             raise ValueError(
@@ -348,9 +361,45 @@ class Database:
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
-        self.site_attrs = {"name": config.name, "description": config.description}
+        self.site_attrs = {
+            "name": self.config.name,
+            "description": self.config.description,
+        }
         self.static_path = self.root.joinpath("static")
         self.site_path = self.static_path.joinpath("site")
+
+    def build(self):
+        # Open logger file
+        with FloodAdaptLogging.to_file(
+            file_path=self.root.joinpath("floodadapt_builder.log")
+        ):
+            # Workflow to create the database using the object methods
+            self.make_folder_structure()
+
+            # Set environment variables after folder structure is created
+            Settings(database_root=self.root.parent, database_name=self.root.name)
+
+            self.read_sfincs()
+            self.read_fiat()
+            self.read_offshore_sfincs()
+            self.add_dem()
+            self.update_fiat_elevation()
+            self.add_rivers()
+            self.add_obs_points()
+            self.add_cyclone_dbs()
+            self.add_static_files()
+            self.add_tide_gauge()
+            self.add_gui_params()
+            self.add_slr()
+            # TODO add scs rainfall curves
+            self.add_general_attrs()
+            self.add_infometrics()
+            self.save_site_config()
+            self.create_standard_objects()
+            self.logger.info("FloodAdapt database creation finished!")
+
+    def _check_path(self, str_path: str):
+        return path_check(str_path, self.config_path)
 
     def make_folder_structure(self):
         """
@@ -414,7 +463,9 @@ class Database:
                         f"Provided probabilistic event set '{event_set}' is not configured correctly! This event should have a risk mode."
                     )
 
-    def _join_building_footprints(self, building_footprints, field_name):
+    def _join_building_footprints(
+        self, building_footprints: gpd.GeoDataFrame, field_name: str
+    ):
         """
         Join building footprints with existing building data and updates the exposure CSV.
 
@@ -460,6 +511,9 @@ class Database:
         # Save to exposure csv
         exposure_csv = exposure_csv.merge(buildings_joined, on="Object ID", how="left")
         exposure_csv.to_csv(self.exposure_csv_path, index=False)
+        # Set model building footprints
+        self.fiat_model.building_footprint = building_footprints
+        self.fiat_model.exposure.exposure_db = exposure_csv
         # Save site attributes
         rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
         self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
@@ -483,7 +537,7 @@ class Database:
         9. Handles the inclusion of SVI (Social Vulnerability Index).
         10. Ensures that FIAT roads are represented as polygons.
         """
-        self.config.fiat = path_check(self.config.fiat)
+        self.config.fiat = self._check_path(self.config.fiat)
         path = self.config.fiat
         self.logger.info(f"Reading FIAT model from {Path(path).as_posix()}.")
         # First copy FIAT model to database
@@ -491,7 +545,7 @@ class Database:
         shutil.copytree(path, fiat_path)
 
         # Then read the model with hydromt-FIAT
-        self.fiat_model = FiatModel(root=fiat_path, mode="r+")
+        self.fiat_model = FiatModel(root=fiat_path, mode="w+")
         self.fiat_model.read()
 
         # Read in geometries of buildings
@@ -510,6 +564,11 @@ class Database:
         self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # TODO for now fixed
         self.site_attrs["fiat"]["non_building_names"] = ["road"]  # TODO for now fixed
         self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
+        fiat_units = self.fiat_model.config["vulnerability"]["unit"]
+        if fiat_units == "ft":
+            fiat_units = "feet"
+        self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
+        self.site_attrs["sfincs"]["save_simulation"] = "False"
 
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         # TODO restructure footprint options with less if statements
@@ -523,10 +582,10 @@ class Database:
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
-                if "BF_FID" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("BF_FID")
+                if "BF_FID" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("BF_FID")
                     footprints = add_attrs[ind]
-                    footprints_path = fiat_path.joinpath(footprints.file)
+                    footprints_path = fiat_path.joinpath(footprints["file"])
                     check_file = footprints_path.exists()
             else:
                 check_file = False
@@ -546,7 +605,7 @@ class Database:
             # check if geometries are already footprints
             build_ind = self.fiat_model.exposure.geom_names.index("buildings")
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
-            if isinstance(build_geoms.geometry[0], Polygon):
+            if isinstance(build_geoms.geometry.iloc[0], Polygon):
                 path0 = Path(self.fiat_model.root).joinpath(
                     self.fiat_model.config["exposure"]["geom"]["file1"]
                 )
@@ -583,7 +642,7 @@ class Database:
                         "Building footprint data will be downloaded from Open Street Maps."
                     )
                     region_path = Path(self.fiat_model.root).joinpath(
-                        "exposure", "region.gpkg"
+                        "geoms", "region.geojson"
                     )
                     if not region_path.exists():
                         self.logger.error("No region file found in the FIAT model.")
@@ -600,7 +659,7 @@ class Database:
                 )
                 raise ValueError
         else:
-            self.config.building_footprints.file = path_check(
+            self.config.building_footprints.file = self._check_path(
                 self.config.building_footprints.file
             )
             self.logger.info(
@@ -613,10 +672,14 @@ class Database:
                 self.config.building_footprints.field_name,
             )
 
+        # Clip hazard and reset buildings
+        self._clip_hazard_extend()
+        self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
+
         # Add base flood elevation information
         if self.config.bfe:
             # TODO can we use hydromt-FIAT?
-            self.config.bfe.file = path_check(self.config.bfe.file)
+            self.config.bfe.file = self._check_path(self.config.bfe.file)
             self.logger.info(
                 f"Using map from {Path(self.config.bfe.file).as_posix()} as base flood elevation."
             )
@@ -661,23 +724,23 @@ class Database:
         # TODO make aggregation areas not mandatory
         if not self.fiat_model.spatial_joins["aggregation_areas"]:
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            region_path = Path(self.fiat_model.root).joinpath("exposure", "region.gpkg")
+            region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if region_path.exists():
                 region = gpd.read_file(region_path)
                 region = region.explode().reset_index()
-                region["id"] = ["region_" + str(i) for i in np.arange(len(region)) + 1]
+                region["aggr_id"] = [
+                    "region_" + str(i) for i in np.arange(len(region)) + 1
+                ]
                 aggregation_path = Path(self.fiat_model.root).joinpath(
-                    "exposure", "geoms", "region.geojson"
+                    "geoms", "region.geojson"
                 )
-                if not aggregation_path.parent.exists():
-                    aggregation_path.parent.mkdir()
-                region[["id", "geometry"]].to_file(aggregation_path, index=False)
+                region.to_file(aggregation_path)
                 aggr = {}
                 aggr["name"] = "region"
                 aggr["file"] = str(
                     aggregation_path.relative_to(self.static_path).as_posix()
                 )
-                aggr["field_name"] = "id"
+                aggr["field_name"] = "aggr_id"
                 self.site_attrs["fiat"]["aggregation"].append(aggr)
 
                 # Add column in FIAT
@@ -721,7 +784,7 @@ class Database:
 
         # Read SVI
         if self.config.svi:
-            self.config.svi.file = path_check(self.config.svi.file)
+            self.config.svi.file = self._check_path(self.config.svi.file)
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             buildings_joined, svi = spatial_join(
                 self.buildings,
@@ -763,17 +826,17 @@ class Database:
             if "SVI" in self.fiat_model.exposure.exposure_db.columns:
                 self.logger.info("'SVI' column present in the FIAT exposure csv.")
                 add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr.name for attr in add_attrs]:
-                    ind = [attr.name for attr in add_attrs].index("SVI")
+                if "SVI" in [attr["name"] for attr in add_attrs]:
+                    ind = [attr["name"] for attr in add_attrs].index("SVI")
                     svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi.file)
+                    svi_path = fiat_path.joinpath(svi["file"])
                     self.site_attrs["fiat"]["svi"] = {}
                     self.site_attrs["fiat"]["svi"]["geom"] = str(
                         Path(svi_path.relative_to(self.static_path)).as_posix()
                     )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi.field_name
+                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
                     self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi.field_name}' column from {svi.file}"
+                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
                     )
                 else:
                     self.logger.warning("No SVI map found!")
@@ -800,7 +863,7 @@ class Database:
                 )
 
             # TODO should this should be performed through hydromt-FIAT?
-            if not isinstance(roads.geometry[0], Polygon):
+            if not isinstance(roads.geometry.iloc[0], Polygon):
                 roads = roads.to_crs(roads.estimate_utm_crs())
                 roads.geometry = roads.geometry.buffer(
                     self.config.road_width / 2, cap_style=2
@@ -833,7 +896,7 @@ class Database:
         2. Reads the model using hydromt-SFINCS.
         3. Sets the necessary attributes for the site configuration.
         """
-        self.config.sfincs = path_check(self.config.sfincs)
+        self.config.sfincs = self._check_path(self.config.sfincs)
         path = self.config.sfincs
 
         # First copy sfincs model to database
@@ -855,11 +918,6 @@ class Database:
         if self.config.sfincs_offshore:
             self.site_attrs["sfincs"]["offshore_model"] = "offshore"
         self.site_attrs["sfincs"]["overland_model"] = "overland"
-        fiat_units = self.fiat_model.config["vulnerability"]["unit"]
-        if fiat_units == "ft":
-            fiat_units = "feet"
-        self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
-        self.site_attrs["sfincs"]["save_simulation"] = "False"
 
     def read_offshore_sfincs(self):
         """
@@ -875,7 +933,7 @@ class Database:
                 "No offshore SFINCS model was provided. Some event types will not be available in FloodAdapt"
             )
             return
-        self.config.sfincs_offshore = path_check(self.config.sfincs_offshore)
+        self.config.sfincs_offshore = self._check_path(self.config.sfincs_offshore)
         path = self.config.sfincs_offshore
         # TODO check if extents of offshore cover overland
         # First copy sfincs model to database
@@ -1181,7 +1239,9 @@ class Database:
                 else:
                     self.logger.warning(zero_wl_msg)
             if self.config.tide_gauge.source == "file":
-                self.config.tide_gauge.file = path_check(self.config.tide_gauge.file)
+                self.config.tide_gauge.file = self._check_path(
+                    self.config.tide_gauge.file
+                )
                 self.site_attrs["tide_gauge"] = {}
                 self.site_attrs["tide_gauge"]["source"] = "file"
                 file_path = Path(self.static_path).joinpath(
@@ -1305,7 +1365,9 @@ class Database:
         ]
         # If slr scenarios are given put them in the correct locations
         if self.config.slr.scenarios:
-            self.config.slr.scenarios.file = path_check(self.config.slr.scenarios.file)
+            self.config.slr.scenarios.file = self._check_path(
+                self.config.slr.scenarios.file
+            )
             self.site_attrs["slr"]["scenarios"] = self.config.slr.scenarios
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
@@ -1461,7 +1523,9 @@ class Database:
 
         # Copy prob set if given
         if self.config.probabilistic_set:
-            self.config.probabilistic_set = path_check(self.config.probabilistic_set)
+            self.config.probabilistic_set = self._check_path(
+                self.config.probabilistic_set
+            )
             self.logger.info(
                 f"{self.site_attrs['name']} probabilistic event set imported from {self.config.probabilistic_set}"
             )
@@ -1628,6 +1692,90 @@ class Database:
         site = Site.load_dict(self.site_attrs)
         site.save(toml_path=site_config_path)
 
+    def _clip_hazard_extend(self):
+        """
+        Clip the exposure data to the bounding box of the hazard data.
+
+        This method clips the exposure data to the bounding box of the hazard data. It creates a GeoDataFrame
+        from the hazard polygons, and then uses the `gpd.clip` function to clip the exposure geometries to the
+        bounding box of the hazard polygons. If the exposure data contains roads, it is split into two separate
+        GeoDataFrames: one for buildings and one for roads. The clipped exposure data is then saved back to the
+        `exposure_db` attribute of the `FiatModel` object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+        gdf = self.fiat_model.exposure.get_full_gdf(
+            self.fiat_model.exposure.exposure_db
+        )
+        crs = gdf.crs
+        sfincs_extend = self.sfincs.region
+        sfincs_extend = sfincs_extend.to_crs(crs)
+
+        # Clip the fiat region
+        clipped_region = self.fiat_model.region.clip(sfincs_extend)
+        self.fiat_model.geoms["region"] = clipped_region
+
+        # Clip the building footprints
+        self.fiat_model.building_footprint = self.fiat_model.building_footprint[
+            self.fiat_model.building_footprint["geometry"].within(
+                clipped_region["geometry"].union_all()
+            )
+        ]
+        bf_fid = self.fiat_model.building_footprint["BF_FID"]
+        fieldname = "BF_FID"
+
+        # Clip the exposure geometries
+        # Filter buildings and roads
+        if gdf["Primary Object Type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+            gdf_roads = gdf_roads[
+                gdf_roads["geometry"].within(clipped_region["geometry"].union_all())
+            ]
+            gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
+            # Check if all buildings have BF
+            if gdf_buildings[fieldname].isna().any():
+                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isna()]
+                gdf_building_footprints = gdf_buildings[
+                    ~gdf_buildings[fieldname].isna()
+                ]
+                gdf_building_points_clipped = gdf_building_points[
+                    gdf_building_points["geometry"].within(
+                        clipped_region["geometry"].union_all()
+                    )
+                ]
+                gdf_building_footprints_clipped = gdf_building_footprints[
+                    gdf_building_footprints[fieldname].isin(bf_fid)
+                ]
+                gdf_buildings = pd.concat(
+                    [gdf_building_points_clipped, gdf_building_footprints_clipped]
+                )
+            else:
+                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
+            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
+            self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["Object ID", "geometry"]
+            ]
+            self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["Object ID", "geometry"]
+            ]
+        else:
+            gdf = gdf[gdf[fieldname].isin(bf_fid)]
+            self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+
+        # Save exposure dataframe
+        del gdf["geometry"]
+        self.fiat_model.exposure.exposure_db = gdf
+
+        # Write fiat model
+        self.fiat_model.write()
+
     def _get_default_units(self):
         """
         Retrieve the default units based on the configured GUI unit system.
@@ -1658,78 +1806,16 @@ class Database:
         return bin_colors
 
 
-def main(config: str | dict):
-    """
-    Build the FloodAdapt model.
-
-    Args:
-        config_path (str): Path to the configuration file.
-
-    Returns
-    -------
-        None
-    """
-    # First check if input is dictionary or path
-    if isinstance(config, str):
-        global config_path
-        config_path = config
-        config = read_config(config_path)
-        print(
-            f"Reading FloodAdapt building configuration from {Path(config_path).as_posix()}"
-        )
-        # If database path is not given use the location of the config file
-        if not config.database_path:
-            dbs_path = Path(config_path).parent.joinpath("Database")
-            if not dbs_path.exists():
-                dbs_path.mkdir()
-            config.database_path = str(dbs_path.as_posix())
-            print(
-                f"'database_path' attribute is not provided in the config file. The database will be save at '{config.database_path}'"
-            )
-    elif isinstance(config, dict):
-        config = ConfigModel.model_validate(config)
-        print("Reading FloodAdapt building configuration from input dictionary.")
-        # If database path is not given raise error
-        if not config.database_path:
-            raise ValueError(
-                "'database_path' attribute needs to be provided in the config file, for the database to be saved."
-            )
-
-    # Create a Database object
-    dbs = Database(config)
-    # Open logger file
-    with FloodAdaptLogging.to_file(
-        file_path=dbs.root.joinpath("floodadapt_builder.log")
-    ):
-        # Workflow to create the database using the object methods
-        dbs.make_folder_structure()
-        dbs.read_fiat()
-        dbs.read_sfincs()
-        dbs.read_offshore_sfincs()
-        dbs.add_dem()
-        dbs.update_fiat_elevation()
-        dbs.add_rivers()
-        dbs.add_obs_points()
-        dbs.add_cyclone_dbs()
-        dbs.add_static_files()
-        dbs.add_tide_gauge()
-        dbs.add_gui_params()
-        dbs.add_slr()
-        # TODO add scs rainfall curves
-        dbs.add_general_attrs()
-        dbs.add_infometrics()
-        dbs.save_site_config()
-        dbs.create_standard_objects()
-        dbs.logger.info("FloodAdapt database creation finished!")
-
-
 if __name__ == "__main__":
     while True:
-        path = input(
-            "Please provide the path to the database creation configuration toml: \n"
+        config_path = Path(
+            input(
+                "Please provide the path to the database creation configuration toml: \n"
+            )
         )
         try:
-            main(path)
+            dbs = DatabaseBuilder(config_path=config_path)
+            dbs.build()
         except Exception as e:
             print(e)
         quit = input("Do you want to quit? (y/n)")
