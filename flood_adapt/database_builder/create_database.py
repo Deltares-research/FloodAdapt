@@ -1087,16 +1087,16 @@ class DatabaseBuilder:
             roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
             roads["geometry"] = roads.geometry.centroid  # get centroids
 
-        x_points = xr.DataArray(roads["geometry"].x, dims="points")
-        y_points = xr.DataArray(roads["geometry"].y, dims="points")
-        roads["elev"] = (
-            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-            * conversion_factor
-        )
+            x_points = xr.DataArray(roads["geometry"].x, dims="points")
+            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            roads["elev"] = (
+                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+                * conversion_factor
+            )
 
-        exposure.loc[
-            exposure["Primary Object Type"] == "road", "Ground Floor Height"
-        ] = 0
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Floor Height"
+            ] = 0
         exposure = exposure.merge(
             roads[["Object ID", "elev"]], on="Object ID", how="left"
         )
