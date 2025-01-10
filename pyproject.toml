@@ -75,5 +75,5 @@ flood_adapt = ["py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
-addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-report xml --cov-fail-under 80"
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 80"
 testpaths = ["tests"]
