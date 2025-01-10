@@ -221,14 +221,14 @@
     "href": "api_ref/api.database_builder.html",
     "title": "api.database_builder",
     "section": "",
-    "text": "api.database_builder\n\n\n\n\n\nName\nDescription\n\n\n\n\ncreate_database\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\napi.database_builder.create_database(config)\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nconfig\nstr | dict\nThe path to the configuration file or the configuration dictionary.\nrequired"
+    "text": "api.database_builder\n\n\n\n\n\nName\nDescription\n\n\n\n\ncreate_database\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\napi.database_builder.create_database(config)\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nconfig\nPath\nThe path to the configuration file\nrequired"
   },
   {
     "objectID": "api_ref/api.database_builder.html#functions",
     "href": "api_ref/api.database_builder.html#functions",
     "title": "api.database_builder",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\ncreate_database\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\napi.database_builder.create_database(config)\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nconfig\nstr | dict\nThe path to the configuration file or the configuration dictionary.\nrequired"
+    "text": "Name\nDescription\n\n\n\n\ncreate_database\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\napi.database_builder.create_database(config)\nCreate a new database from a configuration file or dictionary.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nconfig\nPath\nThe path to the configuration file\nrequired"
   },
   {
     "objectID": "api_ref/adapter.sfincs_adapter.html",
