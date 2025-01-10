@@ -1097,13 +1097,13 @@ class DatabaseBuilder:
             exposure.loc[
                 exposure["Primary Object Type"] == "road", "Ground Floor Height"
             ] = 0
-        exposure = exposure.merge(
-            roads[["Object ID", "elev"]], on="Object ID", how="left"
-        )
-        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
-        )
-        del exposure["elev"]
+            exposure = exposure.merge(
+                roads[["Object ID", "elev"]], on="Object ID", how="left"
+            )
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Elevation"
+            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+            del exposure["elev"]
 
         buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
