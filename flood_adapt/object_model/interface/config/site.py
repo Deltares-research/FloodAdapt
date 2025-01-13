@@ -1,23 +1,16 @@
 import os
 from abc import ABC, abstractmethod
-from enum import Enum
 from os.path import join
 from pathlib import Path
 from typing import Any, Dict, Literal, Union
 
 import tomli
 import tomli_w
-from floodadapt.flood_adapt.object_model.interface.config.fiat import FiatModel
-from floodadapt.flood_adapt.object_model.interface.config.gui import GuiModel
-from floodadapt.flood_adapt.object_model.interface.config.sfincs import SfincsModel
 from pydantic import BaseModel
 
-
-class Cstype(str, Enum):
-    """The accepted input for the variable cstype in Site."""
-
-    projected = "projected"
-    spherical = "spherical"
+from flood_adapt.object_model.interface.config.fiat import FiatModel
+from flood_adapt.object_model.interface.config.gui import GuiModel
+from flood_adapt.object_model.interface.config.sfincs import SfincsModel
 
 
 class SiteModel(BaseModel):

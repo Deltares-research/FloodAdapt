@@ -2,13 +2,13 @@ from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 
 
 def get_object_ids(

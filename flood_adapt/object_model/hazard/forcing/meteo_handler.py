@@ -15,7 +15,7 @@ from pyproj import CRS
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.interface.config.site import Site
 
 
 class MeteoHandler(IMeteoHandler):

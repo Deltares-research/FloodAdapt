@@ -2,9 +2,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from floodadapt.flood_adapt.object_model.interface.config.sfincs import FloodmapType
 from pydantic import BaseModel
 from tomli import load as load_toml
+
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 
 
 class BenefitsModel(BaseModel):

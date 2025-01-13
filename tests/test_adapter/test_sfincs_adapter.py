@@ -58,8 +58,8 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
 from flood_adapt.object_model.interface.measures import MeasureType
-from flood_adapt.object_model.interface.site import ObsPointModel, RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR

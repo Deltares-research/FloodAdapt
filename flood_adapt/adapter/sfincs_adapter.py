@@ -24,7 +24,6 @@ from numpy import matlib
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.config.site import Site
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
 from flood_adapt.object_model.hazard.forcing.discharge import (
@@ -70,6 +69,7 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,

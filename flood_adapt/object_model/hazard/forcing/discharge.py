@@ -14,7 +14,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     IDischarge,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
 

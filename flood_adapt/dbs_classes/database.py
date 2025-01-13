@@ -25,11 +25,11 @@ from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
@@ -70,8 +70,8 @@ class Database(IDatabase):
 
     def __init__(
         self,
-        database_path: Union[str, os.PathLike] = None,
-        database_name: str = None,
+        database_path: Union[str, os.PathLike, None] = None,
+        database_name: Optional[str] = None,
     ) -> None:
         """
         Initialize the DatabaseController object.

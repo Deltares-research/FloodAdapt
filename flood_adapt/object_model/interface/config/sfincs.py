@@ -2,14 +2,14 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
-from floodadapt.flood_adapt.object_model.hazard.interface.tide_gauge import (
-    TideGaugeModel,
-)
-from floodadapt.flood_adapt.object_model.interface.config.site import Cstype
 from pydantic import AfterValidator, BaseModel, Field
 from tomli import load as load_toml
 from typing_extensions import Annotated
 
+from flood_adapt.object_model.hazard.interface.tide_gauge import (
+    TideGaugeModel,
+)
+from flood_adapt.object_model.interface.config import Cstype
 from flood_adapt.object_model.io import unit_system as us
 
 

@@ -14,11 +14,6 @@ import rioxarray as rxr
 import tomli
 import tomli_w
 import xarray as xr
-from floodadapt.flood_adapt.object_model.io.unit_system import (
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitTypesLength,
-)
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
 from hydromt_fiat.fiat import FiatModel
 from hydromt_sfincs import SfincsModel
@@ -30,7 +25,16 @@ from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
+from flood_adapt.object_model.interface.config.sfincs import (
+    ObsPointModel,
+    SlrModel,
+)
+from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.object_model.io.unit_system import (
+    UnitfulDischarge,
+    UnitfulLength,
+    UnitTypesLength,
+)
 
 config_path = None
 

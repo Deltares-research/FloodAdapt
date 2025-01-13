@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Optional
 
-from floodadapt.flood_adapt.object_model.interface.config.fiat import DamageType
 from pydantic import BaseModel, Field
 from tomli import load as load_toml
 
+from flood_adapt.object_model.interface.config.fiat import DamageType
 from flood_adapt.object_model.io import unit_system as us
 
 
