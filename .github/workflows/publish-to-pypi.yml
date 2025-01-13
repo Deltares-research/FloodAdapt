@@ -38,8 +38,8 @@ on:
       # https://peps.python.org/pep-0440/
 
 env:
-  PACKAGE_NAME: flood-adapt
-  PYTHON_VERSION: 3.10
+  PACKAGE_NAME: "flood-adapt"
+  PYTHON_VERSION: "3.10"
 
 jobs:
 
