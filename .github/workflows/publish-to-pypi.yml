@@ -38,8 +38,8 @@ on:
       # https://peps.python.org/pep-0440/
 
 env:
-  PACKAGE_NAME: "flood-adapt"
-  PYTHON_VERSION: "3.10"
+  PACKAGE_NAME: flood-adapt
+  PYTHON_VERSION: 3.10
 
 jobs:
 
@@ -72,7 +72,7 @@ jobs:
     steps:
       - name: Fetch information from PyPI
         run: |
-          response=$(curl -s https://pypi.org/pypi/${{ env.PACKAGE_NAME }}/json || echo "{}")
+          response=$(curl -s https://pypi.org/pypi/${PACKAGE_NAME}/json || echo "{}")
           latest_previous_version=$(echo $response | jq --raw-output "select(.releases != null) | .releases | keys_unsorted[]" | sort -V | tail -n 1)
           if [ -z "$latest_previous_version" ]; then
             echo "Package not found on PyPI."
@@ -106,7 +106,7 @@ jobs:
       - name: Create environment
         shell: bash -el {0}
         run: |
-          conda create -n publish python=${{ env.PYTHON_VERSION }}
+          conda create -n publish python=${PYTHON_VERSION}
 
       - name: Install Build tools
         shell: bash -el {0}
