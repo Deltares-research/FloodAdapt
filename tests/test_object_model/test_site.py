@@ -204,7 +204,7 @@ def test_dict():
 @pytest.fixture
 def test_tomls(test_db):
     toml_files = [
-        test_db.static_path / "site" / "site.toml",
+        test_db.static_path / "config" / "site.toml",
         test_db.static_path / "site" / "site_without_river.toml",
     ]
     yield toml_files

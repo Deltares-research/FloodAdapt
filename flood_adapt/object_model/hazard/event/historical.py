@@ -58,7 +58,7 @@ class HistoricalEvent(Event[HistoricalEventModel]):
 
     def __init__(self, data: dict[str, Any]) -> None:
         super().__init__(data)
-        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
 
     def preprocess(self, output_dir: Path):
         pass

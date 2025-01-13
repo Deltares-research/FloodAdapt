@@ -43,7 +43,7 @@ class FiatAdapter:  # TODO implement ImpactAdapter interface
 
         # Get site information
         self.site = Site.load_file(
-            Path(database_path) / "static" / "site" / "site.toml"
+            Path(database_path) / "static" / "config" / "site.toml"
         )
         if self.site.attrs.fiat.bfe:
             self.bfe = {}

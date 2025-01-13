@@ -23,7 +23,7 @@ class MeteoHandler(IMeteoHandler):
         self.dir: Path = dir or Settings().database_path / "static" / "meteo"
         self.dir.mkdir(parents=True, exist_ok=True)
         self.site: Site = site or Site.load_file(
-            Settings().database_path / "static" / "site" / "site.toml"
+            Settings().database_path / "static" / "config" / "site.toml"
         )
 
     def download(self, time: TimeModel):

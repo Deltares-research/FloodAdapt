@@ -72,7 +72,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
     def __init__(self, data: dict[str, Any]) -> None:
         super().__init__(data)
 
-        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
         self.track_file = (
             db_path(
                 TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name

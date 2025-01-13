@@ -116,7 +116,7 @@ class Database(IDatabase):
         self.static_path = db_path(TopLevelDir.static)
         self.output_path = db_path(TopLevelDir.output)
 
-        self._site = Site.load_file(self.static_path / "site" / "site.toml")
+        self._site = Site.load_file(self.static_path / "config" / "site.toml")
 
         # Initialize the different database objects
         self._static = DbsStatic(self)
