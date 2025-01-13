@@ -95,10 +95,13 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          activate-environment: publish
-          python-version: ${{ env.PYTHON_VERSION }}
           channels: conda-forge
-
+          
+      - name: Create environment
+        shell: bash -el {0}
+        run: |
+          conda create -n publish python=${{ env.PYTHON_VERSION }}
+          
       - name: Install Build tools
         shell: bash -el {0}
         run: |
