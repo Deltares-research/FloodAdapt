@@ -1,0 +1,70 @@
+from pathlib import Path
+from typing import Optional
+
+from floodadapt.flood_adapt.object_model.interface.config.fiat import DamageType
+from pydantic import BaseModel, Field
+from tomli import load as load_toml
+
+from flood_adapt.object_model.io import unit_system as us
+
+
+class MapboxLayersModel(BaseModel):
+    """The configuration of the mapbox layers in the gui."""
+
+    buildings_min_zoom_level: int = 13
+    flood_map_depth_min: float
+    flood_map_zbmax: float
+    flood_map_bins: list[float]
+    flood_map_colors: list[str]
+    aggregation_dmg_bins: list[float]
+    aggregation_dmg_colors: list[str]
+    footprints_dmg_type: DamageType = DamageType.absolute
+    footprints_dmg_bins: list[float]
+    footprints_dmg_colors: list[str]
+    svi_bins: Optional[list[float]] = Field(default_factory=list)
+    svi_colors: Optional[list[str]] = Field(default_factory=list)
+    benefits_bins: list[float]
+    benefits_colors: list[str]
+    benefits_threshold: Optional[float] = None
+    damage_decimals: Optional[int] = 0
+
+
+class VisualizationLayersModel(BaseModel):
+    """The configuration of the layers you might want to visualize in the gui."""
+
+    default_bin_number: int
+    default_colors: list[str]
+    layer_names: list[str]
+    layer_long_names: list[str]
+    layer_paths: list[str]
+    field_names: list[str]
+    bins: Optional[list[list[float]]] = Field(default_factory=list)
+    colors: Optional[list[list[str]]] = Field(default_factory=list)
+
+
+class GuiUnitModel(BaseModel):
+    tide_harmonic_amplitude: us.UnitfulLength
+    default_length_units: us.UnitTypesLength
+    default_distance_units: us.UnitTypesLength
+    default_area_units: us.UnitTypesArea
+    default_volume_units: us.UnitTypesVolume
+    default_velocity_units: us.UnitTypesVelocity
+    default_direction_units: us.UnitTypesDirection
+    default_discharge_units: us.UnitTypesDischarge
+    default_intensity_units: us.UnitTypesIntensity
+    default_cumulative_units: us.UnitTypesLength
+
+
+class GuiModel(BaseModel):
+    """The accepted input for the variable gui in Site."""
+
+    units: GuiUnitModel
+    mapbox_layers: MapboxLayersModel
+    visualization_layers: VisualizationLayersModel
+
+    @staticmethod
+    def read_toml(path: Path) -> "GuiModel":
+        with open(path, mode="rb") as fp:
+            toml_contents = load_toml(fp)
+
+        return GuiModel(**toml_contents)
