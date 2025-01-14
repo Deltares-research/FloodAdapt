@@ -1,6 +1,6 @@
 from typing import Any
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.strategy import Strategy
 
@@ -60,7 +60,7 @@ def create_strategy(attrs: dict[str, Any]) -> IStrategy:
         If the strategy with the given name does not exist.
         If attrs does not adhere to the StrategyModel schema.
     """
-    return Strategy.load_dict(attrs, Database().input_path)
+    return Strategy.load_dict(attrs)
 
 
 def save_strategy(strategy: IStrategy) -> None:

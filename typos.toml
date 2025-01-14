@@ -1,0 +1,11 @@
+
+[files]
+extend-exclude = [
+    "*.js",
+    "*.css",
+    "*.svg",
+]
+ignore-hidden = true
+
+[default.extend-words]
+strat = "strat"

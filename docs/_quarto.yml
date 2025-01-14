@@ -50,13 +50,16 @@ quartodoc:
         - name: dbs_classes.dbs_static.DbsStatic
         - name: dbs_classes.dbs_strategy.DbsStrategy
         - name: dbs_classes.dbs_template.DbsTemplate
-        - name: dbs_controller.Database
+        - name: dbs_classes.database.Database
         - name: object_model.benefit.Benefit
-        - name: object_model.direct_impacts.DirectImpacts
+        - name: adapter.direct_impacts_integrator.DirectImpacts
         - name: object_model.scenario.Scenario
-        - name: object_model.site.Site
+        - name: object_model.interface.site.Site
         - name: object_model.strategy.Strategy
-        - name: FloodAdaptLogging
+        - name: misc.log.FloodAdaptLogging
+        - name: misc.config.Settings
+        - name: misc.config.UnitSystem
+
   package: flood_adapt
 
 website:

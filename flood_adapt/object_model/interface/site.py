@@ -1,23 +1,12 @@
-import os
-from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Annotated, Optional, Union
 
-from pydantic import BaseModel, Field, model_validator
-from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
+from pydantic import AfterValidator, BaseModel, Field
 
-from flood_adapt.object_model.io.unitfulvalue import (
-    UnitfulDischarge,
-    UnitfulLength,
-    UnitTypesArea,
-    UnitTypesDirection,
-    UnitTypesDischarge,
-    UnitTypesIntensity,
-    UnitTypesLength,
-    UnitTypesVelocity,
-    UnitTypesVolume,
-)
+from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGaugeModel
+from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
+from flood_adapt.object_model.interface.path_builder import ObjectDir
+from flood_adapt.object_model.io import unit_system as us
 
 
 def ensure_ascii(s: str):
@@ -42,13 +31,6 @@ class FloodmapType(str, Enum):
     water_depth = "water_depth"
 
 
-class TideGaugeSource(str, Enum):
-    """The accepted input for the variable source in tide_gauge."""
-
-    file = "file"
-    noaa_coops = "noaa_coops"
-
-
 class SfincsModel(BaseModel):
     """The accepted input for the variable sfincs in Site."""
 
@@ -57,7 +39,7 @@ class SfincsModel(BaseModel):
     version: str = ""
     offshore_model: Optional[str] = None
     overland_model: str
-    floodmap_units: UnitTypesLength
+    floodmap_units: us.UnitTypesLength
     save_simulation: Optional[bool] = False
 
 
@@ -65,7 +47,7 @@ class VerticalReferenceModel(BaseModel):
     """The accepted input for the variable vertical_reference in Site."""
 
     name: str
-    height: UnitfulLength
+    height: us.UnitfulLength
 
 
 class WaterLevelReferenceModel(BaseModel):
@@ -94,7 +76,7 @@ class SlrScenariosModel(BaseModel):
 class SlrModel(BaseModel):
     """The accepted input for the variable slr in Site."""
 
-    vertical_offset: UnitfulLength
+    vertical_offset: us.UnitfulLength
     scenarios: Optional[SlrScenariosModel] = None
 
 
@@ -156,16 +138,16 @@ class NoFootprintsModel(BaseModel):
 class GuiModel(BaseModel):
     """The accepted input for the variable gui in Site."""
 
-    tide_harmonic_amplitude: UnitfulLength
-    default_length_units: UnitTypesLength
-    default_distance_units: UnitTypesLength
-    default_area_units: UnitTypesArea
-    default_volume_units: UnitTypesVolume
-    default_velocity_units: UnitTypesVelocity
-    default_direction_units: UnitTypesDirection
-    default_discharge_units: UnitTypesDischarge
-    default_intensity_units: UnitTypesIntensity
-    default_cumulative_units: UnitTypesLength
+    tide_harmonic_amplitude: us.UnitfulLength
+    default_length_units: us.UnitTypesLength
+    default_distance_units: us.UnitTypesLength
+    default_area_units: us.UnitTypesArea
+    default_volume_units: us.UnitTypesVolume
+    default_velocity_units: us.UnitTypesVelocity
+    default_direction_units: us.UnitTypesDirection
+    default_discharge_units: us.UnitTypesDischarge
+    default_intensity_units: us.UnitTypesIntensity
+    default_cumulative_units: us.UnitTypesLength
     mapbox_layers: MapboxLayersModel
     visualization_layers: VisualizationLayersModel
 
@@ -179,14 +161,14 @@ class RiskModel(BaseModel):
 class FloodFrequencyModel(BaseModel):
     """The accepted input for the variable flood_frequency in Site."""
 
-    flooding_threshold: UnitfulLength
+    flooding_threshold: us.UnitfulLength
 
 
 class DemModel(BaseModel):
     """The accepted input for the variable dem in Site."""
 
     filename: str
-    units: UnitTypesLength
+    units: us.UnitTypesLength
 
 
 class EquityModel(BaseModel):
@@ -235,38 +217,10 @@ class RiverModel(BaseModel):
     """Model that describes the accepted input for the variable river in Site."""
 
     name: str
-    description: str
-    mean_discharge: UnitfulDischarge
+    description: Optional[str] = None
+    mean_discharge: us.UnitfulDischarge
     x_coordinate: float
     y_coordinate: float
-
-
-class TideGaugeModel(BaseModel):
-    """The accepted input for the variable tide_gauge in Site.
-
-    The obs_station is used for the download of tide gauge data, to be added to the hazard model as water level boundary condition.
-    """
-
-    name: Optional[Union[int, str]] = None
-    description: Optional[str] = None
-    source: TideGaugeSource
-    ID: Optional[int] = None  # This is the only attribute that is currently used in FA!
-    file: Optional[str] = None  # for locally stored data
-    lat: Optional[float] = None
-    lon: Optional[float] = None
-
-    @model_validator(mode="after")
-    def validate_selection_type(self) -> "TideGaugeModel":
-        if self.source == "file" and self.file is None:
-            raise ValueError(
-                "If `source` is 'file' a file path relative to the static folder should be provided with the attribute 'file'."
-            )
-        elif self.source == "noaa_coops" and self.ID is None:
-            raise ValueError(
-                "If `source` is 'noaa_coops' the id of the station should be provided with the attribute 'ID'."
-            )
-
-        return self
 
 
 class ObsPointModel(BaseModel):
@@ -311,13 +265,12 @@ class StandardObjectModel(BaseModel):
     strategies: Optional[list[str]] = Field(default_factory=list)
 
 
-class SiteModel(BaseModel):
+class SiteModel(IObjectModel):
     """The expected variables and data types of attributes of the Site class."""
 
-    name: str
-    description: Optional[str] = ""
     lat: float
     lon: float
+    crs: str = "EPSG:4326"
     sfincs: SfincsModel
     water_level: WaterLevelReferenceModel
     cyclone_track_database: Optional[CycloneTrackDatabaseModel] = None
@@ -325,7 +278,7 @@ class SiteModel(BaseModel):
     gui: GuiModel
     risk: RiskModel
     flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
-        flooding_threshold=UnitfulLength(value=0.0, units=UnitTypesLength.meters)
+        flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )
     dem: DemModel
     fiat: FiatModel
@@ -340,46 +293,7 @@ class SiteModel(BaseModel):
     )  # optional for the US to use standard objects
 
 
-class ISite(ABC):
-    _attrs: SiteModel
-
-    @property
-    @abstractmethod
-    def attrs(self) -> SiteModel:
-        """Get the site attributes as a dictionary.
-
-        Returns
-        -------
-        SiteModel
-            Pydantic model with the site attributes
-        """
-        ...
-
-    @attrs.setter
-    @abstractmethod
-    def attrs(self, value: SiteModel):
-        """Set the site attributes from a dictionary.
-
-        Parameters
-        ----------
-        value : SiteModel
-            Pydantic model with the site attributes
-        """
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_file(filepath: Union[str, os.PathLike]):
-        """Get Site attributes from toml file."""
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def load_dict(data: dict[str, Any]):
-        """Get Site attributes from an object, e.g. when initialized from GUI."""
-        ...
-
-    @abstractmethod
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Site attributes to a toml file."""
-        ...
+class Site(IObject[SiteModel]):
+    _attrs_type = SiteModel
+    dir_name = ObjectDir.site
+    display_name = "Site"

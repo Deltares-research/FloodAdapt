@@ -116,6 +116,6 @@
 
     [Other.Info]
         text="""Thresholds:<br>
-                Impacted: >= 0.05 m<br>"""
-        image="{image_path}/info.png"
+                Impacted: >= 0.25 feet<br>"""
+        image="https://openclipart.org/image/800px/302413"
         scale=0.1
