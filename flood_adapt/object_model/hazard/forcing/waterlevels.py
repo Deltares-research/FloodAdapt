@@ -25,7 +25,7 @@ from flood_adapt.object_model.io import unit_system as us
 class SurgeModel(BaseModel):
     """BaseModel describing the expected variables and data types for harmonic tide parameters of synthetic model."""
 
-    timeseries: SyntheticTimeseriesModel
+    timeseries: SyntheticTimeseriesModel[us.UnitfulLength]
 
 
 class TideModel(BaseModel):
@@ -89,21 +89,6 @@ class WaterlevelSynthetic(IWaterlevel):
 
         return wl_df
 
-    @classmethod
-    def default(cls) -> "WaterlevelSynthetic":
-        return WaterlevelSynthetic(
-            surge=SurgeModel(
-                timeseries=SyntheticTimeseriesModel.default(us.UnitfulLength)
-            ),
-            tide=TideModel(
-                harmonic_amplitude=us.UnitfulLength(
-                    value=0, units=us.UnitTypesLength.meters
-                ),
-                harmonic_period=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
-                harmonic_phase=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
-            ),
-        )
-
 
 class WaterlevelCSV(IWaterlevel):
     source: ForcingSource = ForcingSource.CSV
@@ -125,22 +110,10 @@ class WaterlevelCSV(IWaterlevel):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @classmethod
-    def default(cls) -> "WaterlevelCSV":
-        return WaterlevelCSV(path="path/to/waterlevel.csv")
-
 
 class WaterlevelModel(IWaterlevel):
     source: ForcingSource = ForcingSource.MODEL
 
-    @classmethod
-    def default(cls) -> "WaterlevelModel":
-        return WaterlevelModel()
-
 
 class WaterlevelGauged(IWaterlevel):
     source: ForcingSource = ForcingSource.GAUGED
-
-    @classmethod
-    def default(cls) -> "WaterlevelGauged":
-        return WaterlevelGauged()

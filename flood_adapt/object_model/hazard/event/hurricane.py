@@ -17,7 +17,6 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
@@ -55,21 +54,12 @@ class HurricaneEventModel(EventModel):
     hurricane_translation: TranslationModel = TranslationModel()
     track_name: str
 
-    @classmethod
-    def default(cls) -> "HurricaneEventModel":
-        """Set default values for HurricaneEvent."""
-        return HurricaneEventModel(
-            name="DefaultHurricaneEvent",
-            time=TimeModel(),
-            track_name="DefaultTrack",
-        )
-
 
 class HurricaneEvent(Event[HurricaneEventModel]):
     _attrs_type = HurricaneEventModel
     track_file: Path
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | HurricaneEventModel) -> None:
         super().__init__(data)
 
         self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")

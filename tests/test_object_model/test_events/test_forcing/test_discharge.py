@@ -55,7 +55,7 @@ class TestDischargeSynthetic:
         duration = timedelta(hours=4)
         time_frame = TimeModel(start_time=start, end_time=start + duration)
 
-        timeseries = SyntheticTimeseriesModel(
+        timeseries = SyntheticTimeseriesModel[us.UnitfulDischarge](
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -63,7 +63,7 @@ class TestDischargeSynthetic:
             peak_time=us.UnitfulTime(
                 value=duration.total_seconds() / 2, units=us.UnitTypesTime.seconds
             ),
-            peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
+            peak_value=us.UnitfulDischarge(value=2, units=us.UnitTypesDischarge.cms),
         )
 
         # Act

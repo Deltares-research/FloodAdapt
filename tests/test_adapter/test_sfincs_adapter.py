@@ -132,7 +132,7 @@ def synthetic_discharge():
     if river := Database().site.attrs.river:
         return DischargeSynthetic(
             river=river[0],
-            timeseries=SyntheticTimeseriesModel(
+            timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
                 peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -161,7 +161,7 @@ def river_in_db() -> RiverModel:
 @pytest.fixture()
 def synthetic_rainfall():
     return RainfallSynthetic(
-        timeseries=SyntheticTimeseriesModel(
+        timeseries=SyntheticTimeseriesModel[us.UnitfulIntensity](
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=3, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -173,17 +173,19 @@ def synthetic_rainfall():
 @pytest.fixture()
 def synthetic_wind():
     return WindSynthetic(
-        magnitude=SyntheticTimeseriesModel(
+        magnitude=SyntheticTimeseriesModel[us.UnitfulVelocity](
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
             peak_value=us.UnitfulVelocity(value=1, units=us.UnitTypesVelocity.mps),
         ),
-        direction=SyntheticTimeseriesModel(
+        direction=SyntheticTimeseriesModel[us.UnitfulDirection](
             shape_type=ShapeType.triangle,
             duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
-            peak_value=us.UnitfulVelocity(value=1, units=us.UnitTypesVelocity.mps),
+            peak_value=us.UnitfulDirection(
+                value=1, units=us.UnitTypesDirection.degrees
+            ),
         ),
     )
 
@@ -192,7 +194,7 @@ def synthetic_wind():
 def synthetic_waterlevels():
     return WaterlevelSynthetic(
         surge=SurgeModel(
-            timeseries=SyntheticTimeseriesModel(
+            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
                 shape_type=ShapeType.triangle,
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                 peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -285,19 +287,11 @@ def _unsupported_forcing_source(type: ForcingType):
                 source: ForcingSource = mock_source
                 river: RiverModel = mock.Mock(spec=RiverModel)
 
-                @classmethod
-                def default(cls) -> "UnsupportedDischarge":
-                    return UnsupportedDischarge()
-
             unsupported = UnsupportedDischarge()
         case ForcingType.RAINFALL:
 
             class UnsupportedRainfall(IRainfall):
                 source: ForcingSource = mock_source
-
-                @classmethod
-                def default(cls) -> "UnsupportedRainfall":
-                    return UnsupportedRainfall()
 
             unsupported = UnsupportedRainfall()
 
@@ -306,19 +300,11 @@ def _unsupported_forcing_source(type: ForcingType):
             class UnsupportedWaterlevel(IWaterlevel):
                 source: ForcingSource = mock_source
 
-                @classmethod
-                def default(cls) -> "UnsupportedWaterlevel":
-                    return UnsupportedWaterlevel()
-
             unsupported = UnsupportedWaterlevel()
         case ForcingType.WIND:
 
             class UnsupportedWind(IWind):
                 source: ForcingSource = mock_source
-
-                @classmethod
-                def default(cls) -> "UnsupportedWind":
-                    return UnsupportedWind()
 
             unsupported = UnsupportedWind()
         case _:

@@ -1,6 +1,7 @@
 import os
 import tempfile
 from datetime import timedelta
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -56,7 +57,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(shape_type)
 
         # Act
-        timeseries_model = SyntheticTimeseriesModel.model_validate(model)
+        timeseries_model = SyntheticTimeseries(model).attrs
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.block
@@ -75,7 +76,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(ShapeType.scs)
 
         # Act
-        timeseries_model = SyntheticTimeseriesModel.model_validate(model)
+        timeseries_model = SyntheticTimeseries(model).attrs
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.scs
@@ -111,7 +112,7 @@ class TestTimeseriesModel:
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel.model_validate(model)
+            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
 
         # Assert
         errors = e.value.errors()
@@ -135,11 +136,11 @@ class TestTimeseriesModel:
         # Arrange
         model = self.get_test_model(shape_type)
         model["peak_value"] = {"value": 1, "units": us.UnitTypesIntensity.mm_hr}
-        model["cumulative"] = {"value": 1, "units": us.UnitTypesLength.millimeters}
+        model["cumulative"] = {"value": 1, "units": us.UnitTypesIntensity.mm_hr}
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel.model_validate(model)
+            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
 
         # Assert
         errors = e.value.errors()
@@ -168,7 +169,7 @@ class TestTimeseriesModel:
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel.model_validate(model)
+            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
 
         # Assert
         errors = e.value.errors()
@@ -202,7 +203,7 @@ class TestSyntheticTimeseries:
     ):
         ts = SyntheticTimeseries()
         if shape_type == ShapeType.scs:
-            ts.attrs = SyntheticTimeseriesModel(
+            ts.attrs = SyntheticTimeseriesModel[us.UnitfulLength](
                 shape_type=ShapeType.scs,
                 peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
@@ -213,7 +214,7 @@ class TestSyntheticTimeseries:
                 scs_type=Scstype.type3,
             )
         else:
-            ts.attrs = SyntheticTimeseriesModel(
+            ts.attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
                 shape_type=shape_type,
                 peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
@@ -265,43 +266,35 @@ class TestSyntheticTimeseries:
         ), f"{ts.attrs.duration.to_timedelta()}/{timestep} should eq {ts.attrs.duration.to_timedelta() / timestep}, but it is: {len(data) - 1}."
 
     def test_load_file(self):
-        fd, path = tempfile.mkstemp(suffix=".toml")
-        try:
-            with os.fdopen(fd, "w") as tmp:
-                # Write to the file
-                tmp.write(
-                    """
-                shape_type = "block"
-                peak_time = { value = 0, units = "hours" }
-                duration = { value = 1, units = "hours" }
-                peak_value = { value = 1, units = "mm/hr" }
+        path = Path(tempfile.gettempdir()) / "test.toml"
+        with open(path, "w") as f:
+            f.write(
                 """
-                )
-
-            try:
-                model = SyntheticTimeseries.load_file(path)
-            except Exception as e:
-                pytest.fail(str(e))
-
-            assert model.attrs.shape_type == ShapeType.block
-            assert model.attrs.peak_time == us.UnitfulTime(
-                value=0, units=us.UnitTypesTime.hours
-            )
-            assert model.attrs.duration == us.UnitfulTime(
-                value=1, units=us.UnitTypesTime.hours
-            )
-            assert model.attrs.peak_value == us.UnitfulIntensity(
-                1, us.UnitTypesIntensity.mm_hr
+            shape_type = "block"
+            peak_time = { value = 0, units = "hours" }
+            duration = { value = 1, units = "hours" }
+            peak_value = { value = 1, units = "mm/hr" }
+            """
             )
 
-        finally:
-            os.remove(path)
+        result = SyntheticTimeseries.load_file(path)
+
+        assert result.attrs.shape_type == ShapeType.block
+        assert result.attrs.peak_time == us.UnitfulTime(
+            value=0, units=us.UnitTypesTime.hours
+        )
+        assert result.attrs.duration == us.UnitfulTime(
+            value=1, units=us.UnitTypesTime.hours
+        )
+        assert result.attrs.peak_value == us.UnitfulIntensity(
+            value=1, units=us.UnitTypesIntensity.mm_hr
+        )
 
     def test_save(self):
         try:
             ts = SyntheticTimeseries()
             temp_path = "test.toml"
-            ts.attrs = SyntheticTimeseriesModel(
+            ts.attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
                 shape_type=ShapeType.block,
                 peak_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),

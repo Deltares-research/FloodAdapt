@@ -72,7 +72,7 @@ def test_sub_event():
             },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
-                    timeseries=SyntheticTimeseriesModel(
+                    timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
                         shape_type=ShapeType.triangle,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
