@@ -320,7 +320,7 @@ class DirectImpacts(DatabaseUser):
         metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
-        if self.site_info.attrs.fiat.infographics:
+        if self.site_info.attrs.fiat.config.infographics:
             self._create_infographics(self.hazard.mode, metrics_path)
 
         if self.hazard.mode == Mode.risk:
@@ -562,7 +562,7 @@ class DirectImpacts(DatabaseUser):
         # Get options for metric configurations
         metric_types = ["mandatory", "additional"]  # these are checked always
 
-        if self.site_info.attrs.fiat.infographics:  # if infographics are created
+        if self.site_info.attrs.fiat.config.infographics:  # if infographics are created
             metric_types += ["infographic"]
 
         metric_config_paths = [
