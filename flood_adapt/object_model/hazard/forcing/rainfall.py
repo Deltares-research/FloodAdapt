@@ -42,7 +42,7 @@ class RainfallSynthetic(IRainfall):
     timeseries: SyntheticTimeseriesModel
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
+        rainfall = SyntheticTimeseries(data=self.timeseries)
         return rainfall.to_dataframe(time_frame=time_frame)
 
 

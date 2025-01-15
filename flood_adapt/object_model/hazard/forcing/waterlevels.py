@@ -61,7 +61,7 @@ class WaterlevelSynthetic(IWaterlevel):
     tide: TideModel
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        surge = SyntheticTimeseries().load_dict(data=self.surge.timeseries)
+        surge = SyntheticTimeseries(data=self.surge.timeseries)
         surge_df = surge.to_dataframe(
             time_frame=time_frame,
         )

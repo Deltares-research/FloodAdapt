@@ -1,8 +1,8 @@
 {
     // Python settings
-    "python.analysis.typeEvaluation.strictDictionaryInference": true,
-    "python.analysis.typeEvaluation.strictListInference": true,
-    "python.analysis.typeEvaluation.strictSetInference": true,
+    "python.analysis.typeEvaluation.strictDictionaryInference": false,
+    "python.analysis.typeEvaluation.strictListInference": false,
+    "python.analysis.typeEvaluation.strictSetInference": false,
     "python.missingPackage.severity": "Error",
 
     "debug.console.closeOnEnd": true,

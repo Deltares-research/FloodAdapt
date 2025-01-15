@@ -52,19 +52,11 @@ class WindSynthetic(IWind):
             freq=TimeModel().time_step,
             name="time",
         )
-        magnitude = (
-            SyntheticTimeseries()
-            .load_dict(self.magnitude)
-            .to_dataframe(
-                time_frame=time_frame,
-            )
+        magnitude = SyntheticTimeseries(self.magnitude).to_dataframe(
+            time_frame=time_frame,
         )
-        direction = (
-            SyntheticTimeseries()
-            .load_dict(self.direction)
-            .to_dataframe(
-                time_frame=time_frame,
-            )
+        direction = SyntheticTimeseries(self.direction).to_dataframe(
+            time_frame=time_frame,
         )
         return pd.DataFrame(
             index=time,

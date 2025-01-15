@@ -39,7 +39,7 @@ class DischargeSynthetic(IDischarge):
     timeseries: SyntheticTimeseriesModel[us.UnitfulDischarge]
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        discharge = SyntheticTimeseries().load_dict(data=self.timeseries)
+        discharge = SyntheticTimeseries(data=self.timeseries)
         df = discharge.to_dataframe(time_frame=time_frame)
         df.columns = [self.river.name]
         return df

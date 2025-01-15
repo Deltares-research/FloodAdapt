@@ -57,7 +57,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(shape_type)
 
         # Act
-        timeseries_model = SyntheticTimeseries(model).attrs
+        timeseries_model = SyntheticTimeseriesModel[us.UnitfulIntensity](**model)
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.block
@@ -76,7 +76,7 @@ class TestTimeseriesModel:
         model = self.get_test_model(ShapeType.scs)
 
         # Act
-        timeseries_model = SyntheticTimeseries(model).attrs
+        timeseries_model = SyntheticTimeseriesModel[us.UnitfulLength](**model)
 
         # Assert
         assert timeseries_model.shape_type == ShapeType.scs
@@ -112,7 +112,7 @@ class TestTimeseriesModel:
 
         # Act
         with pytest.raises(ValidationError) as e:
-            SyntheticTimeseriesModel[us.UnitfulIntensity].model_validate(model)
+            SyntheticTimeseriesModel[us.UnitfulLength].model_validate(model)
 
         # Assert
         errors = e.value.errors()
@@ -201,9 +201,8 @@ class TestSyntheticTimeseries:
         peak_time: float = 0,
         cumulative: float = 1,
     ):
-        ts = SyntheticTimeseries()
         if shape_type == ShapeType.scs:
-            ts.attrs = SyntheticTimeseriesModel[us.UnitfulLength](
+            attrs = SyntheticTimeseriesModel[us.UnitfulLength](
                 shape_type=ShapeType.scs,
                 peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
@@ -214,7 +213,7 @@ class TestSyntheticTimeseries:
                 scs_type=Scstype.type3,
             )
         else:
-            ts.attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
+            attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
                 shape_type=shape_type,
                 peak_time=us.UnitfulTime(value=peak_time, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=duration, units=us.UnitTypesTime.hours),
@@ -222,6 +221,7 @@ class TestSyntheticTimeseries:
                     value=peak_value, units=us.UnitTypesIntensity.mm_hr
                 ),
             )
+        ts = SyntheticTimeseries(data=attrs)
         return ts
 
     @pytest.mark.parametrize(
@@ -292,9 +292,8 @@ class TestSyntheticTimeseries:
 
     def test_save(self):
         try:
-            ts = SyntheticTimeseries()
             temp_path = "test.toml"
-            ts.attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
+            attrs = SyntheticTimeseriesModel[us.UnitfulIntensity](
                 shape_type=ShapeType.block,
                 peak_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.hours),
                 duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
@@ -302,6 +301,8 @@ class TestSyntheticTimeseries:
                     value=1, units=us.UnitTypesIntensity.mm_hr
                 ),
             )
+            ts = SyntheticTimeseries(data=attrs)
+
             try:
                 ts.save(temp_path)
             except Exception as e:

@@ -72,6 +72,11 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
         in_default_units = self.value / self.CONVERSION_FACTORS[self.units]
         return in_default_units * self.CONVERSION_FACTORS[new_units]
 
+    def model_dump(self, **kwargs):
+        return super().model_dump(
+            exclude={"DEFAULT_UNIT", "CONVERSION_FACTORS"}, **kwargs
+        )
+
     def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
 
