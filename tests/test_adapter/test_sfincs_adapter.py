@@ -890,6 +890,7 @@ class TestAddObsPoint:
 def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_name):
     # Arrange
     forcing: IForcing = request.getfixturevalue(forcing_fixture_name)
+    assert forcing is not None
     SFINCS_PATH = test_db.static_path / "templates" / "overland"
     COPY_PATH = Path(tempfile.gettempdir()) / "overland_copy" / forcing.type.lower()
 

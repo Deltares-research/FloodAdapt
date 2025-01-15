@@ -178,6 +178,6 @@ class TestEventSet:
         scn.run()
         output_path = Path(test_db.scenarios.output_path) / scn.attrs.name / "Flooding"
 
-        for rp in test_db.site.attrs.risk.return_periods:
+        for rp in test_db.site.attrs.fiat.risk.return_periods:
             assert (output_path / f"RP_{rp:04d}_maps.nc").exists()
             assert (output_path / f"RP_{rp:04d}_maps.tif").exists()

@@ -1695,7 +1695,7 @@ class DatabaseBuilder:
         This method creates a TOML file at the specified location and saves the site configuration
         using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
         """
-        site_config_path = self.root.joinpath("static", "site", "site.toml")
+        site_config_path = self.root.joinpath("static", "config", "site.toml")
         site_config_path.parent.mkdir()
 
         site = Site.load_dict(self.site_attrs)

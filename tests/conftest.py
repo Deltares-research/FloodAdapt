@@ -61,16 +61,8 @@ def restore_db_from_snapshot():
             snapshot_file = snapshot_dir / relative_path
 
             if not snapshot_file.exists():
-                try:
-                    os.remove(database_file)
-                except PermissionError:
-                    try:
-                        os.remove(database_file)
-                    except PermissionError:
-                        try:
-                            os.remove(database_file)
-                        except PermissionError:
-                            os.remove(database_file)
+                os.remove(database_file)
+
     # Remove empty directories from the database
     for root, dirs, _ in os.walk(Settings().database_path, topdown=False):
         for directory in dirs:

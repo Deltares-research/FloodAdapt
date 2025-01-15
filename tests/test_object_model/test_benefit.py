@@ -127,11 +127,11 @@ class TestBenefitScenariosNotCreated:
         )
         assert (
             scenarios.loc["current_with_strategy", "strategy"]
-            == benefit_obj.attrs.fiat.strategy
+            == benefit_obj.attrs.strategy
         )
         assert (
             scenarios.loc["future_with_strategy", "strategy"]
-            == benefit_obj.attrs.fiat.strategy
+            == benefit_obj.attrs.strategy
         )
         assert (
             scenarios.loc["current_no_measures", "projection"]
@@ -139,7 +139,7 @@ class TestBenefitScenariosNotCreated:
         )
         assert (
             scenarios.loc["future_no_measures", "projection"]
-            == benefit_obj.attrs.fiat.config.projection
+            == benefit_obj.attrs.projection
         )
         assert (
             scenarios.loc["current_with_strategy", "projection"]
@@ -147,7 +147,7 @@ class TestBenefitScenariosNotCreated:
         )
         assert (
             scenarios.loc["future_with_strategy", "projection"]
-            == benefit_obj.attrs.fiat.projection
+            == benefit_obj.attrs.projection
         )
 
     # When the needed scenarios are not run yet, the ready_to_run method should return false

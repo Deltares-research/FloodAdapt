@@ -281,13 +281,13 @@ def test_save_addedRiversToModel_savedCorrectly(test_db, test_sites):
 
     test_site_multiple_rivers = Site.load_file(new_toml)
 
-    assert isinstance(test_site_multiple_rivers.attrs.river, list)
+    assert isinstance(test_site_multiple_rivers.attrs.sfincs.river, list)
     assert (
-        len(test_site_multiple_rivers.attrs.river)
+        len(test_site_multiple_rivers.attrs.sfincs.river)
         == number_additional_rivers + number_rivers_before
     )
 
-    for i, river in enumerate(test_site_multiple_rivers.attrs.river):
+    for i, river in enumerate(test_site_multiple_rivers.attrs.sfincs.river):
         assert isinstance(river, RiverModel)
 
         assert isinstance(test_site_multiple_rivers.attrs.sfincs.river[i].name, str)
