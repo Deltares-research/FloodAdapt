@@ -9,7 +9,6 @@ from typing_extensions import Annotated
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
 )
-from flood_adapt.object_model.interface.config import Cstype
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -19,6 +18,13 @@ def ensure_ascii(s: str):
 
 
 AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
+
+
+class Cstype(str, Enum):
+    """The accepted input for the variable cstype in Site."""
+
+    projected = "projected"
+    spherical = "spherical"
 
 
 class SCSModel(BaseModel):
