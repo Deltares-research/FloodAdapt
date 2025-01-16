@@ -1,47 +1,24 @@
 import os
 from pathlib import Path
-from typing import Any, Union
 
-import tomli
-import tomli_w
-
-from flood_adapt.object_model.hazard.measure.hazard_measure import (
-    HazardMeasure,
-)
 from flood_adapt.object_model.interface.measures import (
-    IPump,
+    IMeasure,
     PumpModel,
 )
+from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Pump(HazardMeasure, IPump):
+class Pump(IMeasure[PumpModel]):
     """Subclass of HazardMeasure describing the measure of building a floodwall with a specific height."""
 
-    attrs: PumpModel
-    database_input_path: Union[str, os.PathLike, None]
+    _attrs_type = PumpModel
 
-    @staticmethod
-    def load_file(filepath: Union[str, os.PathLike]) -> IPump:
-        """Create Floodwall from toml file."""
-        obj = Pump()
-        with open(filepath, mode="rb") as fp:
-            toml = tomli.load(fp)
-        obj.attrs = PumpModel.model_validate(toml)
-        # if measure is created by path use that to get to the database path
-        obj.database_input_path = Path(filepath).parents[2]
-        return obj
-
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any], database_input_path: Union[str, os.PathLike, None]
-    ) -> IPump:
-        """Create Floodwall from object, e.g. when initialized from GUI."""
-        obj = Pump()
-        obj.attrs = PumpModel.model_validate(data)
-        obj.database_input_path = database_input_path
-        return obj
-
-    def save(self, filepath: Union[str, os.PathLike]):
-        """Save Floodwall to a toml file."""
-        with open(filepath, "wb") as f:
-            tomli_w.dump(self.attrs.dict(exclude_none=True), f)
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.attrs.polygon_file:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            src_path = resolve_filepath(
+                self.dir_name, self.attrs.name, self.attrs.polygon_file
+            )
+            path = save_file_to_database(src_path, Path(output_dir))
+            # Update the shapefile path in the object so it is saved in the toml file as well
+            self.attrs.polygon_file = path.name

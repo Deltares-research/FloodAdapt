@@ -15,7 +15,12 @@ dependencies:
 - pandas
 - pip
 - regex
+- sphinx
+- sphinx_rtd_theme
+- sphinx-markdown-builder
 - setuptools>=61.0.0
-- tomli
 - pip:
+  - tomli
+  - tomli_w
   - quartodoc
+  - pydantic_settings

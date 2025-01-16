@@ -5,7 +5,7 @@ from typing import Union
 from geopandas import GeoDataFrame
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 
 # upon start up of FloodAdapt
 
@@ -28,17 +28,14 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
 
 
 def get_aggregation_areas() -> list[GeoDataFrame]:
-    # TODO should this return a list of geojson? if yes what form?
-    """Get the aggregations areas that are used for the site and fiat.
+    """Get a list of the aggregation areas that are provided in the site configuration.
 
-    Parameters
-    ----------
-    database : IDatabase
+    These are expected to much the ones in the FIAT model.
 
     Returns
     -------
-    list[GeoDataFrame]
-        list of GeoDataFrames with the aggregation areas
+    dict[str, GeoDataFrame]
+        list of geodataframes with the polygons defining the aggregation areas
     """
     return Database().static.get_aggregation_areas()
 
@@ -47,10 +44,6 @@ def get_obs_points() -> GeoDataFrame:
     """Get the observation points specified in the site.toml.
 
     These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------
@@ -61,15 +54,18 @@ def get_obs_points() -> GeoDataFrame:
 
 
 def get_model_boundary() -> GeoDataFrame:
+    """Get the model boundary that is used in SFINCS.
+
+    Returns
+    -------
+    GeoDataFrame
+        GeoDataFrame with the model boundary
+    """
     return Database().static.get_model_boundary()
 
 
 def get_model_grid() -> QuadtreeGrid:
     """Get the model grid that is used in SFINCS.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------
@@ -82,10 +78,6 @@ def get_model_grid() -> QuadtreeGrid:
 @staticmethod
 def get_svi_map() -> Union[GeoDataFrame, None]:
     """Get the SVI map that are used in Fiat.
-
-    Parameters
-    ----------
-    database : IDatabase
 
     Returns
     -------
@@ -104,8 +96,6 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
     Parameters
     ----------
-    database : IDatabase
-        database object
     path : Union[str, Path]
         path to the static map
 
@@ -123,10 +113,6 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 def get_buildings() -> GeoDataFrame:
     """Get the buildings exposure that are used in Fiat.
 
-    Parameters
-    ----------
-    database : IDatabase
-
     Returns
     -------
     GeoDataFrame
@@ -136,17 +122,26 @@ def get_buildings() -> GeoDataFrame:
 
 
 def get_property_types() -> list:
+    """Get the property types that are used in the exposure.
+
+    Returns
+    -------
+    list
+        list of property types
+    """
     return Database().static.get_property_types()
 
 
 def get_hazard_measure_types():
+    """Get list of all implemented hazard measure types."""
     raise NotImplementedError
 
 
 def get_impact_measure_types():
+    """Get list of all implemented impact measure types."""
     raise NotImplementedError
 
 
 def get_event_templates():
-    # get a list ideally automatically from the child classes of the parent class Event
+    """Get list of all implemented event templates."""
     raise NotImplementedError

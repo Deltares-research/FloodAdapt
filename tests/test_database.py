@@ -3,9 +3,9 @@ from os import listdir
 from pathlib import Path
 
 from flood_adapt.api.static import read_database
-from flood_adapt.config import Settings
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.site import Site
+from flood_adapt.object_model.interface.config.site import Site
 
 
 def test_database_controller(test_db):
@@ -50,7 +50,6 @@ def test_projection_interp_slr(test_db):
 
 def test_projection_plot_slr(test_db):
     html_file_loc = test_db.plot_slr_scenarios()
-    print(html_file_loc)
     assert Path(html_file_loc).is_file()
 
 
@@ -112,6 +111,7 @@ def test_shutdown_AfterShutdown_VarsAreNone():
 
     # Assert
     assert dbs.__class__._instance is None
+    assert dbs._instance is None
     assert dbs._init_done is False
     assert dbs.database_path is None
     assert dbs.database_name is None
@@ -120,8 +120,7 @@ def test_shutdown_AfterShutdown_VarsAreNone():
     assert dbs.static_path is None
     assert dbs.output_path is None
     assert dbs._site is None
-    assert dbs.static_sfincs_model is None
-    assert dbs._logger is None
+    assert dbs.logger is None
     assert dbs._static is None
     assert dbs._events is None
     assert dbs._scenarios is None
@@ -141,6 +140,7 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
 
     # Assert
     assert dbs.__class__._instance is not None
+    assert dbs._instance is not None
     assert dbs._init_done
     assert dbs.database_path is not None
     assert dbs.database_name is not None
@@ -149,8 +149,7 @@ def test_shutdown_AfterShutdown_CanReadNewDatabase():
     assert dbs.static_path is not None
     assert dbs.output_path is not None
     assert dbs._site is not None
-    assert dbs.static_sfincs_model is not None
-    assert dbs._logger is not None
+    assert dbs.logger is not None
     assert dbs._static is not None
     assert dbs._events is not None
     assert dbs._scenarios is not None

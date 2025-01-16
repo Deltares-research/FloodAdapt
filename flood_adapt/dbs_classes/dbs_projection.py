@@ -2,10 +2,8 @@ from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.projection import Projection
 
 
-class DbsProjection(DbsTemplate):
-    _type = "projection"
-    _folder_name = "projections"
-    _object_model_class = Projection
+class DbsProjection(DbsTemplate[Projection]):
+    _object_class = Projection
 
     def _check_standard_objects(self, name: str) -> bool:
         """Check if a projection is a standard projection.
@@ -21,9 +19,13 @@ class DbsProjection(DbsTemplate):
             Raise error if projection is a standard projection.
         """
         # Check if projection is a standard projection
-        if self._database.site.attrs.standard_objects.projections:
-            if name in self._database.site.attrs.standard_objects.projections:
-                return True
+        if self._database.site.attrs.sfincs.standard_objects:
+            if self._database.site.attrs.sfincs.standard_objects.projections:
+                if (
+                    name
+                    in self._database.site.attrs.sfincs.standard_objects.projections
+                ):
+                    return True
 
         return False
 
@@ -41,10 +43,7 @@ class DbsProjection(DbsTemplate):
             list of scenarios that use the projection
         """
         # Get all the scenarios
-        scenarios = [
-            self._database.scenarios.get(name)
-            for name in self._database.scenarios.list_objects()["name"]
-        ]
+        scenarios = self._database.scenarios.list_objects()["objects"]
 
         # Check if projection is used in a scenario
         used_in_scenario = [

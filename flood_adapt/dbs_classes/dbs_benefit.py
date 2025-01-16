@@ -2,21 +2,18 @@ import shutil
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
 from flood_adapt.object_model.benefit import Benefit
-from flood_adapt.object_model.interface.benefits import IBenefit
 
 
-class DbsBenefit(DbsTemplate):
-    _type = "benefit"
-    _folder_name = "benefits"
-    _object_model_class = Benefit
+class DbsBenefit(DbsTemplate[Benefit]):
+    _object_class = Benefit
 
-    def save(self, benefit: IBenefit, overwrite: bool = False):
+    def save(self, object_model: Benefit, overwrite: bool = False):
         """Save a benefit object in the database.
 
         Parameters
         ----------
-        measure : IBenefit
-            object of scenario type
+        object_model : Benefit
+            object of Benefit type
         overwrite : bool, optional
             whether to overwrite existing benefit with same name, by default False
 
@@ -26,13 +23,13 @@ class DbsBenefit(DbsTemplate):
             Raise error if name is already in use. Names of benefits assessments should be unique.
         """
         # Check if all scenarios are created
-        if not all(benefit.scenarios["scenario created"] != "No"):
+        if not all(object_model.scenarios["scenario created"] != "No"):
             raise ValueError(
-                f"'{benefit.attrs.name}' name cannot be created before all necessary scenarios are created."
+                f"'{object_model.attrs.name}' name cannot be created before all necessary scenarios are created."
             )
 
         # Save the benefit
-        super().save(benefit, overwrite=overwrite)
+        super().save(object_model, overwrite=overwrite)
 
     def delete(self, name: str, toml_only: bool = False):
         """Delete an already existing benefit in the database.
@@ -54,19 +51,16 @@ class DbsBenefit(DbsTemplate):
         super().delete(name, toml_only=toml_only)
 
         # Delete output if edited
-        output_path = (
-            self._database.benefits.get_database_path(get_input_path=False) / name
-        )
-
+        output_path = self.output_path / name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
 
-    def edit(self, benefit: IBenefit):
+    def edit(self, object_model: Benefit):
         """Edits an already existing benefit in the database.
 
         Parameters
         ----------
-        benefit : IBenefit
+        benefit : Benefit
             benefit to be edited in the database
 
         Raises
@@ -75,13 +69,9 @@ class DbsBenefit(DbsTemplate):
             Raise error if name is already in use.
         """
         # Check if it is possible to edit the benefit.
-        super().edit(benefit)
+        super().edit(object_model)
 
         # Delete output if edited
-        output_path = (
-            self._database.benefits.get_database_path(get_input_path=False)
-            / benefit.attrs.name
-        )
-
+        output_path = self.output_path / object_model.attrs.name
         if output_path.exists():
             shutil.rmtree(output_path, ignore_errors=True)
