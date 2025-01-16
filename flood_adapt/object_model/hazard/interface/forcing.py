@@ -145,3 +145,9 @@ class IForcingFactory:
     def list_forcing_classes(cls) -> List[Type[IForcing]]:
         """List all available forcing classes."""
         ...
+
+    @classmethod
+    @abstractmethod
+    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
+        """List all available combinations of forcing types and sources."""
+        ...

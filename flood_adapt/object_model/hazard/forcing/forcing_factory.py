@@ -161,3 +161,12 @@ class ForcingFactory(IForcingFactory):
                 if forcing is not None:
                     forcing_classes.add(forcing)
         return list(forcing_classes)
+
+    @classmethod
+    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
+        """List all available forcing classes using a tuple of ForcingType and ForcingSource."""
+        combinations = set()
+        for type, source_map in cls.FORCINGTYPES.items():
+            for source in source_map.keys():
+                combinations.add((type, source))
+        return list(combinations)
