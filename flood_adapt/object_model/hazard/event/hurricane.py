@@ -148,7 +148,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
     def translate_tc_track(self, tc: TropicalCyclone):
         self.logger.info("Translating the track of the tropical cyclone...")
         # First convert geodataframe to the local coordinate system
-        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.csname)
+        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.config.csname)
         tc.track = tc.track.to_crs(crs)
 
         # Translate the track in the local coordinate system
