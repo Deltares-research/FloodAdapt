@@ -9,7 +9,6 @@ from typing_extensions import Annotated
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     TideGaugeModel,
 )
-from flood_adapt.object_model.interface.config import Cstype
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -21,6 +20,13 @@ def ensure_ascii(s: str):
 AsciiStr = Annotated[str, AfterValidator(ensure_ascii)]
 
 
+class Cstype(str, Enum):
+    """The accepted input for the variable cstype in Site."""
+
+    projected = "projected"
+    spherical = "spherical"
+
+
 class SCSModel(BaseModel):
     """Class describing the accepted input for the variable scs.
 
@@ -30,14 +36,6 @@ class SCSModel(BaseModel):
 
     file: str
     type: str
-
-
-class StandardObjectModel(BaseModel):
-    """The accepted input for the variable standard_object in Site."""
-
-    events: Optional[list[str]] = Field(default_factory=list)
-    projections: Optional[list[str]] = Field(default_factory=list)
-    strategies: Optional[list[str]] = Field(default_factory=list)
 
 
 class RiverModel(BaseModel):
@@ -142,9 +140,7 @@ class SfincsModel(BaseModel):
     slr: SlrModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
     dem: DemModel
-    standard_objects: Optional[StandardObjectModel] = (
-        StandardObjectModel()
-    )  # optional for the US to use standard objects
+
     flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )

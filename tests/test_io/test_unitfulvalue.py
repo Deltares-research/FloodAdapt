@@ -27,7 +27,7 @@ def _perform_conversion_test(
         test_class, us.ValueUnitPair
     ), f"Only child classes of us.ValueUnitPairs can be tested by this function, not: {type(test_class).__name__}."
 
-    instance = test_class(initial_value, initial_unit)
+    instance = test_class(value=initial_value, units=initial_unit)
     converted = instance.convert(target_unit)
 
     assert (
@@ -87,7 +87,7 @@ class TestUnitfulTime:
         ],
     )
     def test_UnitfulTime_to_timedelta(self, input_value, input_unit, expected_value):
-        time = us.UnitfulTime(input_value, input_unit)
+        time = us.UnitfulTime(value=input_value, units=input_unit)
         assert time.to_timedelta().total_seconds() == expected_value
 
 
@@ -124,7 +124,7 @@ class TestUnitfulIntensity:
 
     def test_UnitFullIntensity_validator(self):
         with pytest.raises(ValueError):
-            us.UnitfulIntensity(-1.0, us.UnitTypesIntensity.inch_hr)
+            us.UnitfulIntensity(value=-1.0, units=us.UnitTypesIntensity.inch_hr)
 
 
 class TestUnitfulDischarge:
@@ -172,7 +172,7 @@ class TestUnitfulDischarge:
 
     def test_UnitFullIntensity_validator(self):
         with pytest.raises(ValueError):
-            us.UnitfulDischarge(-1.0, us.UnitTypesDischarge.cms)
+            us.UnitfulDischarge(value=-1.0, units=us.UnitTypesDischarge.cms)
 
 
 class TestUnitfulLength:
@@ -460,7 +460,7 @@ class TestValueUnitPair:
         self, value: float, units: us.UnitTypesLength
     ):
         """Equal for all us.ValueUnitPairs, so we only need to test one of them."""
-        vup = us.UnitfulLength(value, units)
+        vup = us.UnitfulLength(value=value, units=units)
         assert vup.value == float(value), f"Failed value: {vup}"
         assert vup.units == units, f"Failed units: {vup}"
         assert str(vup) == f"{float(value)} {units.value}", f"Failed string: {vup}"
@@ -500,8 +500,8 @@ class TestValueUnitPair:
 
         If you add a new us.ValueUnitPair, you should only add a test for the convert function.
         """
-        length_a = us.UnitfulLength(value_a, unit_a)
-        length_b = us.UnitfulLength(value_b, unit_b)
+        length_a = us.UnitfulLength(value=value_a, units=unit_a)
+        length_b = us.UnitfulLength(value=value_b, units=unit_b)
 
         assert (
             length_a == length_b
@@ -535,8 +535,8 @@ class TestValueUnitPair:
 
         If you add a new us.ValueUnitPair, you should only add a test for the convert function.
         """
-        length_a = us.UnitfulLength(value_a, unit_a)
-        length_b = us.UnitfulLength(value_b, unit_b)
+        length_a = us.UnitfulLength(value=value_a, units=unit_a)
+        length_b = us.UnitfulLength(value=value_b, units=unit_b)
         assert (
             (length_a < length_b) is expected_result
         ), f"Failed less than: {length_a} and {length_b}. {length_a} {length_b.convert(length_a.units)}"
@@ -559,8 +559,8 @@ class TestValueUnitPair:
 
         If you add a new us.ValueUnitPair, you should only add a test for the convert function.
         """
-        length_a = us.UnitfulLength(value_a, unit_a)
-        length_b = us.UnitfulLength(value_b, unit_b)
+        length_a = us.UnitfulLength(value=value_a, units=unit_a)
+        length_b = us.UnitfulLength(value=value_b, units=unit_b)
         assert (
             (length_a > length_b) == expected_result
         ), f"Failed greater than: {length_a} and {length_b}. Result {(length_a > length_b)}"
@@ -569,25 +569,40 @@ class TestValueUnitPair:
         ("inch"),
         (2),
         (3.0),
-        us.UnitfulTime(1, us.UnitTypesTime.days),
-        us.UnitfulIntensity(1, us.UnitTypesIntensity.mm_hr),
+        us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
+        us.UnitfulIntensity(value=1, units=us.UnitTypesIntensity.mm_hr),
     ]
     TEST_COMPARE_OPERATIONS = [
-        (lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) - x, "subtraction"),
-        (lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) + x, "addition"),
-        (lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) == x, "equals"),
-        (lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) != x, "not equals"),
         (
-            lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) > x,
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) - x,
+            "subtraction",
+        ),
+        (
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) + x,
+            "addition",
+        ),
+        (
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) == x,
+            "equals",
+        ),
+        (
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) != x,
+            "not equals",
+        ),
+        (
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) > x,
             "greater than",
         ),
         (
-            lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) >= x,
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) >= x,
             "less than or equal",
         ),
-        (lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) < x, "less than"),
         (
-            lambda x: us.UnitfulLength(1.0, us.UnitTypesLength.meters) <= x,
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) < x,
+            "less than",
+        ),
+        (
+            lambda x: us.UnitfulLength(value=1.0, units=us.UnitTypesLength.meters) <= x,
             "greater than or equal",
         ),
     ]
@@ -603,14 +618,14 @@ class TestValueUnitPair:
 
     @pytest.mark.parametrize("scalar", [2, 0.5])
     def test_UnitFullValue_multiplication_scalar(self, scalar):
-        vup = us.UnitfulLength(1, us.UnitTypesLength.meters)
+        vup = us.UnitfulLength(value=1, units=us.UnitTypesLength.meters)
         result = vup * scalar
-        assert result.value == 1 / scalar
+        assert result.value == 1 * scalar
         assert result.units == us.UnitTypesLength.meters
 
     @pytest.mark.parametrize("scalar", [2, 0.5])
     def test_UnitFullValue_truedivision_scalar(self, scalar):
-        vup = us.UnitfulLength(1, us.UnitTypesLength.meters)
+        vup = us.UnitfulLength(value=1, units=us.UnitTypesLength.meters)
         result = vup / scalar
         assert result.value == 1 / scalar
         assert result.units == us.UnitTypesLength.meters
@@ -624,8 +639,8 @@ class TestValueUnitPair:
         ],
     )
     def test_UnitFullValue_truedivision_vup(self, value, unit, expected_value):
-        vup1 = us.UnitfulLength(1, us.UnitTypesLength.meters)
-        vup2 = us.UnitfulLength(value, unit)
+        vup1 = us.UnitfulLength(value=1, units=us.UnitTypesLength.meters)
+        vup2 = us.UnitfulLength(value=value, units=unit)
         result = vup1 / vup2
         assert isinstance(result, float)
         assert math.isclose(

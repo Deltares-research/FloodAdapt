@@ -80,12 +80,6 @@ class IForcing(BaseModel, ABC):
         """Save additional data of the forcing."""
         return
 
-    @classmethod
-    @abstractmethod
-    def default(cls) -> "IForcing":
-        """Return the default for this forcing."""
-        ...
-
     @field_serializer("path", check_fields=False)
     @classmethod
     def serialize_path(cls, value: Path) -> str:
@@ -142,18 +136,18 @@ class IForcingFactory:
 
     @classmethod
     @abstractmethod
-    def list_forcing_types(cls) -> List[str]:
+    def list_forcing_types(cls) -> List[ForcingType]:
         """List all available forcing types."""
         ...
 
     @classmethod
     @abstractmethod
-    def list_forcings(cls) -> List[Type[IForcing]]:
+    def list_forcing_classes(cls) -> List[Type[IForcing]]:
         """List all available forcing classes."""
         ...
 
     @classmethod
     @abstractmethod
-    def get_default_forcing(cls, type: ForcingType, source: ForcingSource) -> IForcing:
-        """Get the default forcing object for a given type and source."""
+    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
+        """List all available combinations of forcing types and sources."""
         ...

@@ -14,6 +14,7 @@ def get_rng():
 def test_benefit(test_db, get_rng):
     # Inputs for benefit calculation
     # Name given already exists to do test for error capture
+    config = test_db.site.attrs.fiat.config.benefit
     benefit_dict = {
         "name": "benefit_raise_properties_2050",
         "description": "",
@@ -22,10 +23,10 @@ def test_benefit(test_db, get_rng):
         "projection": "all_projections",
         "future_year": "two thousand eighty",
         "current_situation": {
-            "projection": test_db.site.attrs.benefits.current_projection,
-            "year": test_db.site.attrs.benefits.current_year,
+            "projection": config.current_projection,
+            "year": config.current_year,
         },
-        "baseline_strategy": test_db.site.attrs.benefits.baseline_strategy,
+        "baseline_strategy": config.baseline_strategy,
         "discount_rate": 0.07,
     }
 
