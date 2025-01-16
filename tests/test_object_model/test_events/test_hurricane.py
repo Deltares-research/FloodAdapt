@@ -38,11 +38,11 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
         "template": Template.Hurricane,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelModel(),
-            "WIND": WindTrack(),
-            "RAINFALL": RainfallTrack(),
-            "DISCHARGE": {
-                "cooper": DischargeConstant(
+            "WATERLEVEL": [WaterlevelModel()],
+            "WIND": [WindTrack()],
+            "RAINFALL": [RainfallTrack()],
+            "DISCHARGE": [
+                DischargeConstant(
                     river=RiverModel(
                         name="cooper",
                         description="Cooper River",
@@ -56,7 +56,7 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-            },
+            ],
         },
         "track_name": "IAN",
         "hurricane_translation": {

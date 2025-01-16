@@ -2,7 +2,7 @@ import os
 from abc import abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, List, Type, TypeVar
+from typing import ClassVar, List, Type, TypeVar
 
 from pydantic import (
     Field,
@@ -58,7 +58,7 @@ class IEventModel(IObjectModel):
     water_level_offset: us.UnitfulLength = us.UnitfulLength(
         value=0, units=us.UnitTypesLength.meters
     )
-    forcings: dict[ForcingType, Any] = Field(default_factory=dict)
+    forcings: dict[ForcingType, list[IForcing]] = Field(default_factory=dict)
     rainfall_multiplier: float = Field(default=1.0, ge=0)
 
 
