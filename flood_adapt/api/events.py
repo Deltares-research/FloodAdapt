@@ -46,7 +46,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
 # Ensure all objects are imported and available for use if this module is imported
