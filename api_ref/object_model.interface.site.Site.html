@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Flood Adapt Documentation - Getting Started</title>
+<title>Flood Adapt Documentation – object_model.interface.site.site</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -29,8 +63,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../4_user_guide/site_tab.html" rel="next">
-<link href="../4_user_guide/index.html" rel="prev">
 <link href="../_static/logo.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -43,9 +75,6 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
-<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
-<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -108,7 +137,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../4_user_guide/index.html">User Guide</a></li><li class="breadcrumb-item"><a href="../4_user_guide/getting_started.html">Getting Started</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -138,14 +167,14 @@ ul.task-list li input[type="checkbox"] {
       <div class="sidebar-item-container"> 
             <a href="../4_user_guide/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">User Guide</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../4_user_guide/getting_started.html" class="sidebar-item-text sidebar-link active">
+  <a href="../4_user_guide/getting_started.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Getting Started</span></a>
   </div>
 </li>
@@ -399,107 +428,18 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#system-requirements" id="toc-system-requirements" class="nav-link active" data-scroll-target="#system-requirements">System requirements</a></li>
-  <li><a href="#installation-steps" id="toc-installation-steps" class="nav-link" data-scroll-target="#installation-steps">Installation steps</a></li>
-  <li><a href="#opening-floodadapt" id="toc-opening-floodadapt" class="nav-link" data-scroll-target="#opening-floodadapt">Opening FloodAdapt</a></li>
-  <li><a href="#floodadapt-database" id="toc-floodadapt-database" class="nav-link" data-scroll-target="#floodadapt-database">FloodAdapt database</a></li>
+  <li><a href="#flood_adapt.object_model.interface.site.Site" id="toc-flood_adapt.object_model.interface.site.Site" class="nav-link active" data-scroll-target="#flood_adapt.object_model.interface.site.Site">object_model.interface.site.Site</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Getting Started</h1>
-</div>
 
 
-
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-</header>
-
-<p>This section covers <a href="#system-requirements">system requirements</a> for running FloodAdapt, initial <a href="#installation-steps">installation steps</a>, <a href="#opening-floodadapt">opening FloodAdapt</a>, and the <a href="#floodadapt-database">FloodAdapt database folder structure</a>.</p>
-<section id="system-requirements" class="level2">
-<h2 class="anchored" data-anchor-id="system-requirements">System requirements</h2>
-<p>In order to run FloodAdapt, the following are required:</p>
-<ul>
-<li>Your computer must be running a Windows operating system.</li>
-<li>The first time the FloodAdapt application is opened must be by a user with administrative rights</li>
-<li>The computer must have access to the internet</li>
-<li>At least 2 GB of storage for the FloodAdapt system files and the underlying database</li>
-<li>Approximately 150 MB of storage for each user-generated scenario</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Which windows systems have been tested?
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>FloodAdapt has been tested on Windows 10 and 11. It is expected to work on older systems, but has not been tested.</p>
-</div>
-</div>
-</section>
-<section id="installation-steps" class="level2">
-<h2 class="anchored" data-anchor-id="installation-steps">Installation steps</h2>
-<p>To download and install FloodAdapt on your computer:</p>
-<ul>
-<li>Download the FloodAdapt installer from the <a href="https://www.deltares-usa.us/floodadapt-application">Deltares USA website</a>.</li>
-<li>Double-click the “FloodAdaptInstaller” file and the setup wizard will open (see <a href="#fig-setupWizard">Figure&nbsp;1</a>). Follow the steps of the installation wizard.</li>
-</ul>
-<div id="fig-setupWizard" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/installation_setupWizard.png" class="lightbox" title="FloodAdapt installation setup wizard" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/installation_setupWizard.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;1: <strong>FloodAdapt installation setup wizard</strong></figcaption>
-</figure>
-</div>
-</section>
-<section id="opening-floodadapt" class="level2">
-<h2 class="anchored" data-anchor-id="opening-floodadapt">Opening FloodAdapt</h2>
-<p>When you open the FloodAdapt application you will be prompted to select a database root folder. This is the location where you store one or more FloodAdapt databases. Once you select a root folder, the databases within the root folder will appear. Select the database you want to work with and click “Start” to open the FloodAdapt application. Each time you open FloodAdapt you have the opportunity to change the database root and/or select a different database.</p>
-<div id="fig-installation_databaseSelector" class="quarto-figure quarto-figure-left anchored">
-<figure class="figure">
-<p><a href="../_static/images/installation_databaseSelector.png" class="lightbox" title="Database selector when opening FloodAdapt" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/installation_databaseSelector.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;2: <strong>Database selector when opening FloodAdapt</strong></figcaption>
-</figure>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Why do I have to select a database?
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The FloodAdapt application is a calculation “shell” that requires a FloodAdapt database to work. Details on setting up a FloodAdapt database in a new location are provided in the <a href="../3_setup_guide/index.html">Setup Guide</a>.</p>
-</div>
-</div>
-
-<!--The first time the FloodAdapt executable is opened, it will ask for permission for the app to make changes to the computer. The user must select yes, so that the FloodAdapt graphical user interface (GUI) can communicate with the map layers which are stored online. This can only be done by someone who has administrator rights over the computer. After this, FloodAdapt can be opened without administrator rights and will still function properly.
--->
-</section>
-<section id="floodadapt-database" class="level2">
-<h2 class="anchored" data-anchor-id="floodadapt-database">FloodAdapt database</h2>
-<p>The FloodAdapt database uses a normal folder structure so that it is easily accessible by users, without requiring database knowledge. <a href="#fig-installation_database_structure">Figure&nbsp;3</a> shows the overall folder structure. The “Database Root Folder” is folder where you can store one ore more FloodAdapt site databases. Within each site database, there are three folders: Input, Output, and Static. The input and output folders are populated when you use the FloodAdapt application. The input folder contains information about scenario components: events, projections, measures, strategies and scenarios. The output folder contains the flooding and impact output from simulated scenarios, and is described in more detail in the <a href="../4_user_guide/output/index.html">Output</a> section. The Static folder contains information that is prepared when setting up FloodAdapt for a particular site location (see the <a href="../3_setup_guide/index.html">Setup Guide</a>).</p>
-<div id="fig-installation_database_structure" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><a href="../_static/images/installation_database_structure.png" class="lightbox" title="FloodAdapt database folder structure" data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/installation_database_structure.png" class="img-fluid figure-img"></a></p>
-<figcaption class="figure-caption">Figure&nbsp;3: <strong>FloodAdapt database folder structure</strong></figcaption>
-</figure>
-</div>
+<section id="flood_adapt.object_model.interface.site.Site" class="level1">
+<h1>object_model.interface.site.Site</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>object_model.interface.site.Site(<span class="va">self</span>, data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
@@ -853,18 +793,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
-<nav class="page-navigation">
-  <div class="nav-page nav-page-previous">
-      <a href="../4_user_guide/index.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">User Guide</span>
-      </a>          
-  </div>
-  <div class="nav-page nav-page-next">
-      <a href="../4_user_guide/site_tab.html" class="pagination-link">
-        <span class="nav-page-text">Site tab</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
-  </div>
-</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
@@ -877,7 +805,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","descPosition":"bottom"});</script>
 
 
 
