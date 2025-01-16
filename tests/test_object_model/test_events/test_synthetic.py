@@ -22,7 +22,7 @@ from flood_adapt.object_model.hazard.interface.models import (
 from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
 
@@ -66,7 +66,7 @@ def test_projection_event_all_synthetic():
             },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
-                    timeseries=SyntheticTimeseriesModel(
+                    timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
                         shape_type=ShapeType.triangle,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
@@ -132,7 +132,7 @@ def test_event_all_synthetic():
             },
             "WATERLEVEL": WaterlevelSynthetic(
                 surge=SurgeModel(
-                    timeseries=SyntheticTimeseriesModel(
+                    timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
                         shape_type=ShapeType.triangle,
                         duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
                         peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),

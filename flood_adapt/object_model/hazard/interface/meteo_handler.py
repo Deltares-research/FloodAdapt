@@ -5,7 +5,7 @@ from typing import Optional
 import xarray as xr
 
 from flood_adapt.object_model.hazard.interface.models import TimeModel
-from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.interface.config.site import Site
 
 
 class IMeteoHandler(ABC):

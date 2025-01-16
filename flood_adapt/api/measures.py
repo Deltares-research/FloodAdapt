@@ -4,7 +4,6 @@ import geopandas as gpd
 import pandas as pd
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
 from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
@@ -13,13 +12,13 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureModel,
     MeasureType,
     SelectionType,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 
 __all__ = [
@@ -192,7 +191,7 @@ def calculate_polygon_area(gdf: gpd.GeoDataFrame, site: Site) -> float:
 def calculate_volume(
     area: us.UnitfulArea,
     height: us.UnitfulHeight = us.UnitfulHeight(
-        value=0.0, units=Settings().unit_system.length
+        value=0.0, units=us.UnitTypesLength.meters
     ),
     percent_area: float = 100.0,
 ) -> float:

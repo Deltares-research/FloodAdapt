@@ -1,8 +1,8 @@
 from pathlib import Path
+from tempfile import gettempdir
 
 import geopandas as gpd
 import pytest
-import tomli
 
 from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
@@ -97,33 +97,29 @@ def test_elevate_aggr_area_read_fail(test_db):
     Elevate.load_dict(test_dict)
 
 
-def test_elevate_aggr_area_save(test_db):
-    test_toml = (
-        test_db.input_path
-        / "measures"
-        / "raise_property_aggregation_area"
-        / "raise_property_aggregation_area.toml"
+def test_elevate_aggr_area_save():
+    elevate = Elevate.load_dict(
+        data={
+            "name": "raise_property_aggregation_area",
+            "description": "raise_property_aggregation_area",
+            "type": "elevate_properties",
+            "elevation": {"value": 1, "units": "feet", "type": "floodmap"},
+            "selection_type": "aggregation_area",
+            "aggregation_area_type": "aggr_lvl_2",
+            "aggregation_area_name": "name5",
+            "property_type": "RES",
+        }
     )
 
-    test_toml_new = (
-        test_db.input_path
-        / "measures"
-        / "raise_property_aggregation_area"
-        / "raise_property_aggregation_area_new.toml"
-    )
-    assert test_toml.is_file()
+    test_path = Path(gettempdir()) / "to_load.toml"
+    test_path.parent.mkdir(exist_ok=True)
 
-    elevate = Elevate.load_file(test_toml)
+    elevate.attrs.name = "new_name"
+    elevate.save(test_path)
 
-    elevate.save(test_toml_new)
+    loaded_elevate = Elevate.load_file(test_path)
 
-    with open(test_toml, mode="rb") as fp:
-        test_toml_dict = tomli.load(fp)
-    with open(test_toml_new, mode="rb") as fp:
-        test_toml_dict_new = tomli.load(fp)
-
-    assert test_toml_dict == test_toml_dict_new
-    test_toml_new.unlink()
+    assert loaded_elevate == elevate
 
 
 def test_elevate_polygon_read(test_db):

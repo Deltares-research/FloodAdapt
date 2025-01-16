@@ -1,13 +1,13 @@
 import enum
 import math
+from abc import ABC
 from datetime import timedelta
 from enum import Enum
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
 __all__ = [
-    "Unit",
     "ValueUnitPair",
     "VerticalReference",
     "UnitTypesLength",
@@ -30,10 +30,10 @@ __all__ = [
     "UnitfulTime",
 ]
 
-Unit = TypeVar("Unit", bound=enum.Enum)
+TUnit = TypeVar("TUnit", bound=enum.Enum)
 
 
-class ValueUnitPair(BaseModel, Generic[Unit]):
+class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
     """
     Represents a value with associated units.
 
@@ -48,37 +48,34 @@ class ValueUnitPair(BaseModel, Generic[Unit]):
         units (Unit): The units of the value.
     """
 
-    DEFAULT_UNIT: ClassVar[Any]
-    CONVERSION_FACTORS: ClassVar[dict[Any, float]]
+    DEFAULT_UNIT: TUnit
+    CONVERSION_FACTORS: dict[TUnit, float]
 
     value: float
-    units: Unit
+    units: TUnit
 
-    def __init__(self, *args, **kwargs):
-        if type(self) is ValueUnitPair:
-            raise TypeError(
-                "ValueUnitPair is an abstract class and cannot be instantiated directly."
-            )
-        if args and len(args) == 2:
-            value, units = args
-            super().__init__(value=value, units=units, **kwargs)
-        else:
-            super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-    def convert(self, new_units: Unit) -> float:
+    def convert(self, new_units: TUnit) -> float:
         """Return the value converted to the new units.
 
         Args:
-            new_units (Unit): The new units.
+            new_units (str): The new units.
 
         Returns
         -------
             float: The converted value.
         """
-        if new_units not in type(self).CONVERSION_FACTORS:
+        if new_units not in self.CONVERSION_FACTORS:
             raise ValueError(f"Invalid units: {new_units}")
-        in_default_units = self.value / type(self).CONVERSION_FACTORS[self.units]
-        return in_default_units * type(self).CONVERSION_FACTORS[new_units]
+        in_default_units = self.value / self.CONVERSION_FACTORS[self.units]
+        return in_default_units * self.CONVERSION_FACTORS[new_units]
+
+    def model_dump(self, **kwargs):
+        return super().model_dump(
+            exclude={"DEFAULT_UNIT", "CONVERSION_FACTORS"}, **kwargs
+        )
 
     def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
@@ -158,7 +155,7 @@ class ValueUnitPair(BaseModel, Generic[Unit]):
 
     def __mul__(self, other):
         if isinstance(other, int) or isinstance(other, float):
-            return type(self)(self.value / other, self.units)
+            return type(self)(value=self.value * other, units=self.units)
         else:
             raise TypeError(
                 f"Cannot multiply self: {type(self).__name__} with other: {type(other).__name__}. Only int and float are allowed."
@@ -166,7 +163,7 @@ class ValueUnitPair(BaseModel, Generic[Unit]):
 
     def __div__(self, other):
         if isinstance(other, int) or isinstance(other, float):
-            return type(self)(self.value / other, self.units)
+            return type(self)(value=self.value / other, units=self.units)
         elif isinstance(other, type(self)):
             return self.value / other.convert(self.units)
         else:
@@ -240,7 +237,7 @@ class VerticalReference(str, Enum):
 
 
 class UnitfulLength(ValueUnitPair[UnitTypesLength]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesLength, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesLength, float] = {
         UnitTypesLength.meters: 1.0,
         UnitTypesLength.centimeters: 100.0,
         UnitTypesLength.millimeters: 1000.0,
@@ -248,7 +245,7 @@ class UnitfulLength(ValueUnitPair[UnitTypesLength]):
         UnitTypesLength.inch: 1.0 / 0.0254,
         UnitTypesLength.miles: 1 / 1609.344,
     }
-    DEFAULT_UNIT = UnitTypesLength.meters
+    DEFAULT_UNIT: UnitTypesLength = UnitTypesLength.meters
 
 
 class UnitfulHeight(UnitfulLength):
@@ -260,76 +257,76 @@ class UnitfulLengthRefValue(UnitfulLength):
 
 
 class UnitfulArea(ValueUnitPair[UnitTypesArea]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesArea, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesArea, float] = {
         UnitTypesArea.m2: 1,
         UnitTypesArea.dm2: 100,
         UnitTypesArea.cm2: 10_000,
         UnitTypesArea.mm2: 1_000_000,
         UnitTypesArea.sf: 10.764,
     }
-    DEFAULT_UNIT = UnitTypesArea.m2
+    DEFAULT_UNIT: UnitTypesArea = UnitTypesArea.m2
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulVelocity(ValueUnitPair[UnitTypesVelocity]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesVelocity, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesVelocity, float] = {
         UnitTypesVelocity.mph: 2.236936,
         UnitTypesVelocity.mps: 1,
         UnitTypesVelocity.knots: 1.943844,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesVelocity] = UnitTypesVelocity.mps
+    DEFAULT_UNIT: UnitTypesVelocity = UnitTypesVelocity.mps
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulDirection(ValueUnitPair[UnitTypesDirection]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesDirection, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesDirection, float] = {
         UnitTypesDirection.degrees: 1.0,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesDirection] = UnitTypesDirection.degrees
+    DEFAULT_UNIT: UnitTypesDirection = UnitTypesDirection.degrees
 
     value: float = Field(ge=0.0, le=360.0)
 
 
 class UnitfulDischarge(ValueUnitPair[UnitTypesDischarge]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesDischarge, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesDischarge, float] = {
         UnitTypesDischarge.cfs: 35.314684921034,
         UnitTypesDischarge.cms: 1,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesDischarge] = UnitTypesDischarge.cms
+    DEFAULT_UNIT: UnitTypesDischarge = UnitTypesDischarge.cms
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulIntensity(ValueUnitPair[UnitTypesIntensity]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesIntensity, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesIntensity, float] = {
         UnitTypesIntensity.inch_hr: 1 / 25.39544832,
         UnitTypesIntensity.mm_hr: 1,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesIntensity] = UnitTypesIntensity.mm_hr
+    DEFAULT_UNIT: UnitTypesIntensity = UnitTypesIntensity.mm_hr
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulVolume(ValueUnitPair[UnitTypesVolume]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesVolume, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesVolume, float] = {
         UnitTypesVolume.m3: 1.0,
         UnitTypesVolume.cf: 35.3146667,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesVolume] = UnitTypesVolume.m3
+    DEFAULT_UNIT: UnitTypesVolume = UnitTypesVolume.m3
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulTime(ValueUnitPair[UnitTypesTime]):
-    CONVERSION_FACTORS: ClassVar[dict[UnitTypesTime, float]] = {
+    CONVERSION_FACTORS: dict[UnitTypesTime, float] = {
         UnitTypesTime.days: 1.0 / 24.0,
         UnitTypesTime.hours: 1.0,
         UnitTypesTime.minutes: 60.0,
         UnitTypesTime.seconds: 60.0 * 60.0,
     }
-    DEFAULT_UNIT: ClassVar[UnitTypesTime] = UnitTypesTime.hours
+    DEFAULT_UNIT: UnitTypesTime = UnitTypesTime.hours
 
     @staticmethod
     def from_timedelta(td: timedelta) -> "UnitfulTime":

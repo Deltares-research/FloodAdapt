@@ -217,19 +217,19 @@ class DirectImpacts(DatabaseUser):
                     dem = (
                         self.database.static_path
                         / "dem"
-                        / self.site_info.attrs.dem.filename
+                        / self.site_info.attrs.sfincs.dem.filename
                     )
                     aggregation_areas = [
                         self.database.static_path / aggr.file
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
                     attribute_names = [
                         aggr.field_name
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
                     label_names = [
                         f"Aggregation Label: {aggr.name}"
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
 
                     fa.apply_population_growth_new(
@@ -320,7 +320,7 @@ class DirectImpacts(DatabaseUser):
         metrics_path = self._create_infometrics(fiat_results_df)
 
         # Create the infographic files
-        if self.site_info.attrs.fiat.infographics:
+        if self.site_info.attrs.fiat.config.infographics:
             self._create_infographics(self.hazard.mode, metrics_path)
 
         if self.hazard.mode == Mode.risk:
@@ -334,13 +334,13 @@ class DirectImpacts(DatabaseUser):
         self._create_footprints(fiat_results_df)
 
         # Create a roads spatial file
-        if self.site_info.attrs.fiat.roads_file_name:
+        if self.site_info.attrs.fiat.config.roads_file_name:
             self._create_roads(fiat_results_df)
 
         self.logger.info("Post-processing complete!")
 
         # If site config is set to not keep FIAT simulation, then delete folder
-        if not self.site_info.attrs.fiat.save_simulation:
+        if not self.site_info.attrs.fiat.config.save_simulation:
             try:
                 shutil.rmtree(self.fiat_path)
             except OSError as e_info:
@@ -350,7 +350,9 @@ class DirectImpacts(DatabaseUser):
         self.logger.info("Saving road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
-            self.fiat_path.joinpath("output", self.site_info.attrs.fiat.roads_file_name)
+            self.fiat_path.joinpath(
+                "output", self.site_info.attrs.fiat.config.roads_file_name
+            )
         )
         # Get columns to use
         aggr_cols = [
@@ -376,11 +378,11 @@ class DirectImpacts(DatabaseUser):
             aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
-                for i, aggr in enumerate(self.site_info.attrs.fiat.aggregation)
+                for i, aggr in enumerate(self.site_info.attrs.fiat.config.aggregation)
                 if aggr.name == aggr_label
             ][0]
 
-            if not self.site_info.attrs.fiat.aggregation[ind].equity:
+            if not self.site_info.attrs.fiat.config.aggregation[ind].equity:
                 continue
             fiat_data = pd.read_csv(file)
 
@@ -388,15 +390,19 @@ class DirectImpacts(DatabaseUser):
             equity = Equity(
                 census_table=str(
                     self.database.static_path.joinpath(
-                        self.site_info.attrs.fiat.aggregation[ind].equity.census_data
+                        self.site_info.attrs.fiat.config.aggregation[
+                            ind
+                        ].equity.census_data
                     )
                 ),
                 damages_table=fiat_data,
-                aggregation_label=self.site_info.attrs.fiat.aggregation[ind].field_name,
-                percapitaincome_label=self.site_info.attrs.fiat.aggregation[
+                aggregation_label=self.site_info.attrs.fiat.config.aggregation[
+                    ind
+                ].field_name,
+                percapitaincome_label=self.site_info.attrs.fiat.config.aggregation[
                     ind
                 ].equity.percapitaincome_label,
-                totalpopulation_label=self.site_info.attrs.fiat.aggregation[
+                totalpopulation_label=self.site_info.attrs.fiat.config.aggregation[
                     ind
                 ].equity.totalpopulation_label,
                 damage_column_pattern="TotalDamageRP{rp}",
@@ -409,10 +415,12 @@ class DirectImpacts(DatabaseUser):
             metrics_new = fiat_data.merge(
                 df_equity,
                 left_on=fiat_data.columns[0],
-                right_on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                right_on=self.site_info.attrs.fiat.config.aggregation[ind].field_name,
                 how="left",
             )
-            del metrics_new[self.site_info.attrs.fiat.aggregation[ind].field_name]
+            del metrics_new[
+                self.site_info.attrs.fiat.config.aggregation[ind].field_name
+            ]
             metrics_new = metrics_new.set_index(metrics_new.columns[0])
             metrics_new.loc["Description", ["EW", "EWEAD", "EWCEAD"]] = [
                 "Equity weight",
@@ -449,11 +457,11 @@ class DirectImpacts(DatabaseUser):
             aggr_label = file.stem.split(f"_{self.name}_")[-1]
             ind = [
                 i
-                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
+                for i, n in enumerate(self.site_info.attrs.fiat.config.aggregation)
                 if n.name == aggr_label
             ][0]
             aggr_areas_path = self.database.static_path.joinpath(
-                self.site_info.attrs.fiat.aggregation[ind].file
+                self.site_info.attrs.fiat.config.aggregation[ind].file
             )
 
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
@@ -466,7 +474,7 @@ class DirectImpacts(DatabaseUser):
                 metrics,
                 aggr_areas,
                 outpath,
-                id_name=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                id_name=self.site_info.attrs.fiat.config.aggregation[ind].field_name,
                 file_format="geopackage",
             )
 
@@ -476,12 +484,12 @@ class DirectImpacts(DatabaseUser):
         # Get footprints file paths from site.toml
         # TODO ensure that if this does not happen we get same file name output from FIAT?
         # Check if there is a footprint file given
-        if not self.site_info.attrs.fiat.building_footprints:
+        if not self.site_info.attrs.fiat.config.building_footprints:
             raise ValueError("No building footprints are provided.")
 
         # Get footprints file
         footprints_path = self.database.static_path.joinpath(
-            self.site_info.attrs.fiat.building_footprints
+            self.site_info.attrs.fiat.config.building_footprints
         )
         # Read building footprints
         footprints_gdf = gpd.read_file(footprints_path, engine="pyogrio")
@@ -495,7 +503,7 @@ class DirectImpacts(DatabaseUser):
         fm.read()
         buildings = fm.exposure.select_objects(
             primary_object_type="ALL",
-            non_building_names=self.site_info.attrs.fiat.non_building_names,
+            non_building_names=self.site_info.attrs.fiat.config.non_building_names,
             return_gdf=True,
         )
         # Step to ensure that results is not a Geodataframe
@@ -562,7 +570,7 @@ class DirectImpacts(DatabaseUser):
         # Get options for metric configurations
         metric_types = ["mandatory", "additional"]  # these are checked always
 
-        if self.site_info.attrs.fiat.infographics:  # if infographics are created
+        if self.site_info.attrs.fiat.config.infographics:  # if infographics are created
             metric_types += ["infographic"]
 
         metric_config_paths = [

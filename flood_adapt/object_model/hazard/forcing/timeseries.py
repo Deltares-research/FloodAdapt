@@ -1,6 +1,7 @@
+import os
 from datetime import timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Type
 
 import numpy as np
 import pandas as pd
@@ -146,6 +147,16 @@ class SyntheticTimeseries(ITimeseries):
     }
     attrs: SyntheticTimeseriesModel
 
+    def __init__(self, data: dict[str, Any] | SyntheticTimeseriesModel):
+        super().__init__()
+        if isinstance(data, dict):
+            unit_enum = _extract_unit_class(data)
+            self.attrs = SyntheticTimeseriesModel[unit_enum].model_validate(data)
+        elif isinstance(data, SyntheticTimeseriesModel):
+            self.attrs = data
+        else:
+            raise TypeError(f"Unsupported data type: {type(data)}")
+
     def calculate_data(
         self, time_step: timedelta = TimeModel().time_step
     ) -> np.ndarray:
@@ -179,14 +190,19 @@ class SyntheticTimeseries(ITimeseries):
             fill_value=self.attrs.fill_value,
         )
 
-    @staticmethod
-    def load_file(filepath: Path):
-        """Create timeseries from toml file."""
-        obj = SyntheticTimeseries()
-        with open(filepath, mode="rb") as fp:
+    @classmethod
+    def load_file(cls, file_path: Path | str | os.PathLike) -> "SyntheticTimeseries":
+        """Load object from file."""
+        with open(file_path, mode="rb") as fp:
             toml = tomli.load(fp)
-        obj.attrs = SyntheticTimeseriesModel.model_validate(toml)
-        return obj
+        return cls.load_dict(toml)
+
+    @classmethod
+    def load_dict(
+        cls, data: dict[str, Any] | SyntheticTimeseriesModel
+    ) -> "SyntheticTimeseries":
+        """Load object from dictionary."""
+        return cls(data)
 
     def save(self, filepath: Path):
         """
@@ -199,15 +215,6 @@ class SyntheticTimeseries(ITimeseries):
         """
         with open(filepath, "wb") as f:
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
-
-    @staticmethod
-    def load_dict(
-        data: dict[str, Any] | SyntheticTimeseriesModel,
-    ) -> "SyntheticTimeseries":
-        """Create timeseries from object, e.g. when initialized from GUI."""
-        obj = SyntheticTimeseries()
-        obj.attrs = SyntheticTimeseriesModel.model_validate(data)
-        return obj
 
 
 class CSVTimeseries(ITimeseries):
@@ -245,3 +252,33 @@ class CSVTimeseries(ITimeseries):
         interpolated_df = ts.reindex(time_range).interpolate(method="linear")
 
         return interpolated_df.to_numpy()
+
+
+def _extract_unit_class(data: dict[str, Any]) -> Type[us.ValueUnitPair]:
+    if "peak_value" in data:
+        param = "peak_value"
+    elif "cumulative" in data:
+        param = "cumulative"
+    else:
+        raise ValueError("peak_value or cumulative must be specified.")
+
+    UNITS: dict[Type, Type] = {
+        us.UnitTypesLength: us.UnitfulLength,
+        us.UnitTypesTime: us.UnitfulTime,
+        us.UnitTypesDischarge: us.UnitfulDischarge,
+        us.UnitTypesDirection: us.UnitfulDirection,
+        us.UnitTypesVelocity: us.UnitfulVelocity,
+        us.UnitTypesIntensity: us.UnitfulIntensity,
+        us.UnitTypesArea: us.UnitfulArea,
+        us.UnitTypesVolume: us.UnitfulVolume,
+    }
+
+    str_unit = data[param]["units"]
+    for unit_types_class in UNITS:
+        try:
+            _ = unit_types_class(str_unit)
+            return UNITS[unit_types_class]
+        except Exception:
+            continue
+
+    raise ValueError(f"Unsupported unit: {str_unit}")

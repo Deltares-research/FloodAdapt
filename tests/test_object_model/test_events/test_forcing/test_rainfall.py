@@ -44,7 +44,7 @@ class TestRainfallSynthetic:
             end_time=start + duration,
         )
 
-        timeseries = SyntheticTimeseriesModel(
+        timeseries = SyntheticTimeseriesModel[us.UnitfulLength](
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -71,7 +71,7 @@ class TestRainfallSynthetic:
 
     def test_rainfall_synthetic_scs_to_dataframe(self):
         # Arrange
-        timeseries = SyntheticTimeseriesModel(
+        timeseries = SyntheticTimeseriesModel[us.UnitfulLength](
             shape_type=ShapeType.scs,
             duration=us.UnitfulTime(value=4, units=us.UnitTypesTime.hours),
             peak_time=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),

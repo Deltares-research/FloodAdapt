@@ -41,7 +41,7 @@ class FloodMap(DatabaseUser):
         elif self.mode == Mode.risk:
             check_files = [RP_map.exists() for RP_map in self.path]
             check_rps = len(self.path) == len(
-                self.database.site.attrs.risk.return_periods
+                self.database.site.attrs.fiat.risk.return_periods
             )
             return all(check_files) & check_rps
 
