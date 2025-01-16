@@ -85,57 +85,45 @@ def create_env(
     ENV_YML = BACKEND_ROOT / "environment" / "_environment.yml"
     DEBUG_LOGFILE = Path(__file__).parent / f"{env_name}_debug.log"
 
-    create_args = ["conda", "env", "create", "-n", env_name, "-f", str(ENV_YML)]
-    activate_args = ["conda", "activate", env_name]
+    create_command = f"conda env create -n {env_name} --file {str(ENV_YML)}"
 
     dependency_option = f"[{optional_deps}]" if optional_deps is not None else ""
     debug_log_option = ["-v", "-v", "-v", "--log", str(DEBUG_LOGFILE)] if debug else ""
     editable_option = "-e" if editable else ""
-    pip_install_args = [
-        "pip",
-        "install",
-        editable_option,
-        f"{BACKEND_ROOT}{dependency_option}",
-        debug_log_option,
-        "--no-cache-dir",
-    ]
+    pip_install_command = (f"conda run -n {env_name} pip install {editable_option} {BACKEND_ROOT}{dependency_option} {' '.join(debug_log_option)} --no-cache-dir").replace("  ", " ")
 
     command_list = [
-        " ".join(["conda", "activate"]),
-        " ".join(create_args),
-        " ".join(activate_args),
-        " ".join(pip_install_args),
+        create_command,
+        pip_install_command,
     ]
-    command = " && ".join(command_list)
-
-    print("Running commands:")
-    [print(c) for c in command_list]
 
     print(f"\n\nBuilding environment {env_name}... This might take some time.\n\n")
-    process = subprocess.Popen(
-        command,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-    )
-
-    while process.poll() is None and process.stdout:
-        print(process.stdout.readline(), end="")
-
-    if process.returncode != 0:
-        if process.stderr:
-            print(process.stderr.read())
-
-        raise subprocess.CalledProcessError(
-            process.returncode,
+    for command in command_list:
+        print(f"Running command: {command}")
+        process = subprocess.Popen(
             command,
-            process.stdout.read() if process.stdout else None,
-            process.stderr.read() if process.stderr else None,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
         )
 
+        while process.poll() is None and process.stdout:
+            print(process.stdout.readline(), end="")
+
+        if process.returncode != 0:
+            if process.stderr:
+                print(process.stderr.read())
+
+            raise subprocess.CalledProcessError(
+                process.returncode,
+                command,
+                process.stdout.read() if process.stdout else None,
+                process.stderr.read() if process.stderr else None,
+            )
+
     print(f"Environment {env_name} created successfully!")
-    print(f"Activate it with:\n\n\t{' '.join(activate_args)}\n")
+    print(f"Activate it with:\n\n\tconda activate {env_name}")
 
 
 if __name__ == "__main__":
