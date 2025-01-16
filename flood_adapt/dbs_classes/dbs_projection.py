@@ -19,9 +19,12 @@ class DbsProjection(DbsTemplate[Projection]):
             Raise error if projection is a standard projection.
         """
         # Check if projection is a standard projection
-        if self._database.site.attrs.standard_objects:
-            if self._database.site.attrs.standard_objects.projections:
-                if name in self._database.site.attrs.standard_objects.projections:
+        if self._database.site.attrs.sfincs.standard_objects:
+            if self._database.site.attrs.sfincs.standard_objects.projections:
+                if (
+                    name
+                    in self._database.site.attrs.sfincs.standard_objects.projections
+                ):
                     return True
 
         return False

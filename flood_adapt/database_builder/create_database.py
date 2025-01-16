@@ -20,14 +20,23 @@ from hydromt_sfincs import SfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
-from flood_adapt import Settings
+from flood_adapt import FloodAdaptLogging, Settings
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import ObsPointModel, Site, SlrModel
-from flood_adapt.object_model.io import unit_system as us
+from flood_adapt.object_model.interface.config.sfincs import (
+    ObsPointModel,
+    SlrModel,
+)
+from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.object_model.io.unit_system import (
+    UnitfulDischarge,
+    UnitfulLength,
+    UnitTypesLength,
+)
+
+config_path = None
 
 
 class SpatialJoinModel(BaseModel):
@@ -125,7 +134,7 @@ class TideGaugeModel(BaseModel):
 
     source: str
     file: Optional[str] = None
-    max_distance: Optional[us.UnitfulLength] = None
+    max_distance: Optional[UnitfulLength] = None
     # TODO add option to add MSL and Datum?
     ref: Optional[str] = None
 
@@ -151,8 +160,8 @@ class SlrModelDef(SlrModel):
         vertical_offset (us.UnitfulLength): The vertical offset of the SLR model, measured in meters.
     """
 
-    vertical_offset: us.UnitfulLength = us.UnitfulLength(
-        value=0, units=us.UnitTypesLength.meters
+    vertical_offset: UnitfulLength = UnitfulLength(
+        value=0, units=UnitTypesLength.meters
     )
 
 
@@ -984,7 +993,7 @@ class DatabaseBuilder:
             river["description"] = f"river_{i}"
             river["x_coordinate"] = row.geometry.x
             river["y_coordinate"] = row.geometry.y
-            mean_dis = us.UnitfulDischarge(
+            mean_dis = UnitfulDischarge(
                 value=self.sfincs.forcing["dis"]
                 .sel(index=i)
                 .to_numpy()
@@ -1066,7 +1075,7 @@ class DatabaseBuilder:
         self.logger.info(
             "Updating FIAT objects ground elevations from SFINCS ground elevation map."
         )
-        SFINCS_units = us.UnitfulLength(
+        SFINCS_units = UnitfulLength(
             value=1.0, units="meters"
         )  # SFINCS is always in meters
         FIAT_units = self.site_attrs["sfincs"]["floodmap_units"]
@@ -1082,27 +1091,28 @@ class DatabaseBuilder:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
-        roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
-        roads["geometry"] = roads.geometry.centroid  # get centroids
+        if "roads" in self.fiat_model.exposure.geom_names:
+            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+            roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
+            roads["geometry"] = roads.geometry.centroid  # get centroids
 
-        x_points = xr.DataArray(roads["geometry"].x, dims="points")
-        y_points = xr.DataArray(roads["geometry"].y, dims="points")
-        roads["elev"] = (
-            dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
-            * conversion_factor
-        )
+            x_points = xr.DataArray(roads["geometry"].x, dims="points")
+            y_points = xr.DataArray(roads["geometry"].y, dims="points")
+            roads["elev"] = (
+                dem.sel(x=x_points, y=y_points, band=1, method="nearest").to_numpy()
+                * conversion_factor
+            )
 
-        exposure.loc[
-            exposure["Primary Object Type"] == "road", "Ground Floor Height"
-        ] = 0
-        exposure = exposure.merge(
-            roads[["Object ID", "elev"]], on="Object ID", how="left"
-        )
-        exposure.loc[exposure["Primary Object Type"] == "road", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
-        )
-        del exposure["elev"]
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Floor Height"
+            ] = 0
+            exposure = exposure.merge(
+                roads[["Object ID", "elev"]], on="Object ID", how="left"
+            )
+            exposure.loc[
+                exposure["Primary Object Type"] == "road", "Ground Elevation"
+            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+            del exposure["elev"]
 
         buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
@@ -1294,7 +1304,7 @@ class DatabaseBuilder:
             0,
         )
         units = self.site_attrs["sfincs"]["floodmap_units"]
-        distance = us.UnitfulLength(value=distance, units="meters")
+        distance = UnitfulLength(value=distance, units="meters")
         self.logger.info(
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.convert(units)} {units} from the SFINCS domain"
         )
@@ -1302,7 +1312,7 @@ class DatabaseBuilder:
         # TODO make sure units are explicit for max_distance
         if self.config.tide_gauge.max_distance is not None:
             units_new = self.config.tide_gauge.max_distance.units
-            distance_new = us.UnitfulLength(
+            distance_new = UnitfulLength(
                 value=distance.convert(units_new), units=units_new
             )
             if distance_new.value > self.config.tide_gauge.max_distance.value:
@@ -1686,7 +1696,7 @@ class DatabaseBuilder:
         This method creates a TOML file at the specified location and saves the site configuration
         using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
         """
-        site_config_path = self.root.joinpath("static", "site", "site.toml")
+        site_config_path = self.root.joinpath("static", "config", "site.toml")
         site_config_path.parent.mkdir()
 
         site = Site.load_dict(self.site_attrs)

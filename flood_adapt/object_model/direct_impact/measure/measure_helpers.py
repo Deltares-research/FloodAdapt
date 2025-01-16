@@ -2,13 +2,13 @@ from typing import Any, Optional
 
 from hydromt_fiat.fiat import FiatModel
 
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 
 
 def get_object_ids(
@@ -29,7 +29,7 @@ def get_object_ids(
 
     # get the site information
     site = Site.load_file(
-        db_path(TopLevelDir.static, object_dir=ObjectDir.site) / "site.toml"
+        db_path(TopLevelDir.static, object_dir=ObjectDir.config) / "site.toml"
     )
 
     # use hydromt-fiat to load the fiat model if it is not provided
@@ -53,7 +53,7 @@ def get_object_ids(
     ids = fiat_model.exposure.get_object_ids(
         selection_type=measure.attrs.selection_type,
         property_type=measure.attrs.property_type,
-        non_building_names=site.attrs.fiat.non_building_names,
+        non_building_names=site.attrs.fiat.config.non_building_names,
         aggregation=measure.attrs.aggregation_area_type,
         aggregation_area_name=measure.attrs.aggregation_area_name,
         polygon_file=polygon_file,

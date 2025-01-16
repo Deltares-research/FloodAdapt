@@ -9,7 +9,6 @@ from cht_cyclones.tropical_cyclone import TropicalCyclone
 from pydantic import BaseModel
 from shapely.affinity import translate
 
-from flood_adapt import Settings
 from flood_adapt.object_model.hazard.event.template_event import Event, EventModel
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallTrack
 from flood_adapt.object_model.hazard.forcing.wind import WindTrack
@@ -19,11 +18,11 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
@@ -32,10 +31,10 @@ class TranslationModel(BaseModel):
     """BaseModel describing the expected variables and data types for translation parameters of hurricane model."""
 
     eastwest_translation: us.UnitfulLength = us.UnitfulLength(
-        value=0.0, units=Settings().unit_system.distance
+        value=0.0, units=us.UnitTypesLength.meters
     )
     northsouth_translation: us.UnitfulLength = us.UnitfulLength(
-        value=0.0, units=Settings().unit_system.distance
+        value=0.0, units=us.UnitTypesLength.meters
     )
 
 
@@ -73,7 +72,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
     def __init__(self, data: dict[str, Any]) -> None:
         super().__init__(data)
 
-        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
         self.track_file = (
             db_path(
                 TopLevelDir.input, object_dir=self.dir_name, obj_name=self.attrs.name

@@ -25,6 +25,7 @@ class ObjectDir(str, Enum):
     measure = "measures"
     projection = "projections"
     scenario = "scenarios"
+    config = "config"
 
     # buyout = "measures"
     # elevate = "measures"
