@@ -24,7 +24,7 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 from tests.fixtures import TEST_DATA_DIR
