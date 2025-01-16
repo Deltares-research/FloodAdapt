@@ -4,11 +4,11 @@ from pathlib import Path
 import geopandas as gpd
 import pyproj
 
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
     GreenInfrastructureModel,
     IMeasure,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 

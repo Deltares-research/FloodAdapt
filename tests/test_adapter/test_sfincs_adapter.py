@@ -58,8 +58,8 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
 from flood_adapt.object_model.interface.measures import MeasureType
-from flood_adapt.object_model.interface.site import ObsPointModel, RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
@@ -116,7 +116,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
                     y_coordinate=y,
                 )
             )
-    test_db.site.attrs.river = rivers
+    test_db.site.attrs.sfincs.river = rivers
 
     with SfincsAdapter(model_root=(overland_2_rivers)) as adapter:
         adapter.set_timing(TimeModel())
@@ -129,7 +129,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
 
 @pytest.fixture()
 def synthetic_discharge():
-    if river := Database().site.attrs.river:
+    if river := Database().site.attrs.sfincs.river:
         return DischargeSynthetic(
             river=river[0],
             timeseries=SyntheticTimeseriesModel[us.UnitfulDischarge](
@@ -155,7 +155,7 @@ def test_river() -> RiverModel:
 
 @pytest.fixture()
 def river_in_db() -> RiverModel:
-    return Database().site.attrs.river[0]
+    return Database().site.attrs.sfincs.river[0]
 
 
 @pytest.fixture()
@@ -534,10 +534,10 @@ class TestAddForcing:
             # Arrange
             num_rivers = 2
             sfincs_adapter, db = sfincs_adapter_2_rivers
-            assert db.site.attrs.river is not None
-            assert len(db.site.attrs.river) == num_rivers
+            assert db.site.attrs.sfincs.river is not None
+            assert len(db.site.attrs.sfincs.river) == num_rivers
 
-            for i, river in enumerate(db.site.attrs.river):
+            for i, river in enumerate(db.site.attrs.sfincs.river):
                 discharge = DischargeConstant(
                     river=river,
                     discharge=us.UnitfulDischarge(
@@ -552,7 +552,7 @@ class TestAddForcing:
             river_locations = sfincs_adapter.discharge.vector.to_gdf()
             river_discharges = sfincs_adapter.discharge.to_dataframe()["dis"]
 
-            for i, river in enumerate(db.site.attrs.river):
+            for i, river in enumerate(db.site.attrs.sfincs.river):
                 assert (
                     river_locations.geometry[i].x == river.x_coordinate
                 )  # 1-based indexing for some reason
@@ -808,8 +808,8 @@ class TestAddProjection:
 
 class TestAddObsPoint:
     def test_add_obs_points(self, test_db: IDatabase):
-        if test_db.site.attrs.obs_point is None:
-            test_db.site.attrs.obs_point = [
+        if test_db.site.attrs.sfincs.obs_point is None:
+            test_db.site.attrs.sfincs.obs_point = [
                 ObsPointModel(
                     name="obs1",
                     description="Ashley River - James Island Expy",
@@ -821,7 +821,9 @@ class TestAddObsPoint:
         # Arrange
         scenario_name = "current_extreme12ft_no_measures"
         path_in = (
-            test_db.static_path / "templates" / test_db.site.attrs.sfincs.overland_model
+            test_db.static_path
+            / "templates"
+            / test_db.site.attrs.sfincs.config.overland_model
         )
 
         # Act
@@ -844,7 +846,7 @@ class TestAddObsPoint:
         lat = []
         lon = []
 
-        site_points = test_db.site.attrs.obs_point
+        site_points = test_db.site.attrs.sfincs.obs_point
         for pt in site_points:
             names.append(pt.name)
             lat.append(pt.lat)
@@ -874,6 +876,7 @@ class TestAddObsPoint:
 def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_name):
     # Arrange
     forcing: IForcing = request.getfixturevalue(forcing_fixture_name)
+    assert forcing is not None
     SFINCS_PATH = test_db.static_path / "templates" / "overland"
     COPY_PATH = Path(tempfile.gettempdir()) / "overland_copy" / forcing.type.lower()
 

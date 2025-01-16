@@ -9,7 +9,7 @@ import tomli
 from pydantic import BaseModel, field_serializer
 
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 
 
 ### ENUMS ###
