@@ -12,13 +12,13 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureModel,
     MeasureType,
     SelectionType,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.io import unit_system as us
 
 __all__ = [

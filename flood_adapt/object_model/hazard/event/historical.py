@@ -8,11 +8,11 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 
 
 class HistoricalEventModel(EventModel):
@@ -58,7 +58,7 @@ class HistoricalEvent(Event[HistoricalEventModel]):
 
     def __init__(self, data: dict[str, Any]) -> None:
         super().__init__(data)
-        self.site = Site.load_file(db_path(TopLevelDir.static) / "site" / "site.toml")
+        self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
 
     def preprocess(self, output_dir: Path):
         pass

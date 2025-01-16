@@ -35,10 +35,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
     IDischarge,
 )
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 
 UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
 logger = FloodAdaptLogging.getLogger(__name__)

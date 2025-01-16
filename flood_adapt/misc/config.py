@@ -249,7 +249,7 @@ class Settings(BaseSettings):
 
         Parameters
         ----------
-        config_path : Path
+        toml_path : Path
             The path to the configuration file.
 
         Returns
@@ -273,7 +273,7 @@ class Settings(BaseSettings):
 
         Parameters
         ----------
-        config_path : Path
+        toml_path : Path
             The path to the configuration file.
 
         Returns
