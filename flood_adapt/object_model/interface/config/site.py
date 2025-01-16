@@ -6,11 +6,19 @@ from typing import Any, Dict, Literal, Union
 
 import tomli
 import tomli_w
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from flood_adapt.object_model.interface.config.fiat import FiatModel
 from flood_adapt.object_model.interface.config.gui import GuiModel
 from flood_adapt.object_model.interface.config.sfincs import SfincsModel
+
+
+class StandardObjectModel(BaseModel):
+    """The accepted input for the variable standard_object in Site."""
+
+    events: list[str] = Field(default_factory=list)
+    projections: list[str] = Field(default_factory=list)
+    strategies: list[str] = Field(default_factory=list)
 
 
 class SiteModel(BaseModel):
@@ -20,6 +28,7 @@ class SiteModel(BaseModel):
     description: str = ""
     lat: float
     lon: float
+    standard_objects: StandardObjectModel = StandardObjectModel()
 
     gui: GuiModel
     sfincs: SfincsModel

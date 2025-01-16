@@ -90,8 +90,8 @@ class DbsStatic(IDbsStatic):
         descriptions = []
         lat = []
         lon = []
-        if self._database.site.attrs.obs_point is not None:
-            obs_points = self._database.site.attrs.obs_point
+        if self._database.site.attrs.sfincs.obs_point is not None:
+            obs_points = self._database.site.attrs.sfincs.obs_point
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)

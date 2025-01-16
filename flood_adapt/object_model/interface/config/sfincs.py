@@ -32,14 +32,6 @@ class SCSModel(BaseModel):
     type: str
 
 
-class StandardObjectModel(BaseModel):
-    """The accepted input for the variable standard_object in Site."""
-
-    events: Optional[list[str]] = Field(default_factory=list)
-    projections: Optional[list[str]] = Field(default_factory=list)
-    strategies: Optional[list[str]] = Field(default_factory=list)
-
-
 class RiverModel(BaseModel):
     """Model that describes the accepted input for the variable river in Site."""
 
@@ -142,9 +134,7 @@ class SfincsModel(BaseModel):
     slr: SlrModel
     scs: Optional[SCSModel] = None  # optional for the US to use SCS rainfall curves
     dem: DemModel
-    standard_objects: Optional[StandardObjectModel] = (
-        StandardObjectModel()
-    )  # optional for the US to use standard objects
+
     flood_frequency: FloodFrequencyModel = FloodFrequencyModel(
         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
     )
