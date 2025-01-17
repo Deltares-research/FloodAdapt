@@ -18,15 +18,16 @@ name: release
 #  1. In github settings:
 #     - Create an environment called `release`
 #     - Setup the permissions (https://github.com/<ORGANIZATION>/<REPO_NAME>/settings/environments)
-#     - Add the following variables:
-#        - PACKAGE_NAME: the name of your package on pypi
-#        - PYTHON_VERSION: the version of Python you want to use
 
 #  2. On PyPi:
 #      - Create the project and add a trusted publisher (https://pypi.org/manage/project/<PACKAGE_NAME>/settings/publishing/ or https://pypi.org/manage/account/publishing if the project is not on pypi yet)
 #      - Ensure the publisher is configured to use:
 #          - the filename of this workflow yml (in this case: publish-to-pypi.yml)
 
+# 3. In this file:
+#     - Add the following variables to the `env` section:
+#        - PACKAGE_NAME: the name of your package on pypi
+#        - PYTHON_VERSION: the version of Python you want to use
 #     - In the `setup_and_build` job:
 #        - Update the the shell commands to install your package
 
@@ -35,6 +36,11 @@ on:
     tags:
       - v[0-9]+\.[0-9]+\.[0-9]+
       # https://peps.python.org/pep-0440/
+
+
+env:
+  PACKAGE_NAME: "flood-adapt"
+  PYTHON_VERSION: "3.10"
 
 jobs:
   details:
@@ -95,9 +101,12 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          activate-environment: publish
-          python-version: ${{ env.PYTHON_VERSION }}
           channels: conda-forge
+
+      - name: Create environment
+        shell: bash -el {0}
+        run: |
+          conda create -n publish python=${{ env.PYTHON_VERSION }}
 
       - name: Install Build tools
         shell: bash -el {0}
@@ -107,6 +116,7 @@ jobs:
       - name: Install dependencies
         shell: bash -el {0}
         run: |
+          conda install -n publish gdal basemap cftime fiona netCDF4 pygeos pyproj rasterio rtree shapely --channel conda-forge
           conda run -n publish pip install .
 
       - name: Build source and wheel distribution

@@ -12,7 +12,7 @@ from flood_adapt.dbs_classes.interface.element import AbstractDatabaseElement
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
-from flood_adapt.object_model.interface.site import Site
+from flood_adapt.object_model.interface.config.site import Site
 
 
 class IDatabase(ABC):

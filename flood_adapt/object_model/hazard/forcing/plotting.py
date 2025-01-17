@@ -35,10 +35,10 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingType,
     IDischarge,
 )
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     db_path,
 )
-from flood_adapt.object_model.interface.site import Site
 
 UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
 logger = FloodAdaptLogging.getLogger(__name__)
@@ -74,7 +74,7 @@ def plot_discharge(
 ) -> str:
     rivers: dict[str, IDischarge] = event.attrs.forcings[ForcingType.DISCHARGE]
 
-    if site.attrs.river is None:
+    if site.attrs.sfincs.river is None:
         raise ValueError("No rivers defined for this site.")
     elif rivers is None:
         return ""
@@ -115,7 +115,7 @@ def plot_discharge(
         return ""
 
     river_names, river_descriptions = [], []
-    for river in site.attrs.river:
+    for river in site.attrs.sfincs.river:
         river_names.append(river.name)
         river_descriptions.append(river.description or river.name)
 
@@ -162,7 +162,7 @@ def plot_waterlevel(
     waterlevel = event.attrs.forcings[ForcingType.WATERLEVEL]
     if waterlevel is None:
         return ""
-    elif site.attrs.water_level is None:
+    elif site.attrs.sfincs.water_level is None:
         raise ValueError("No water levels defined for this site.")
 
     if waterlevel.source in UNPLOTTABLE_SOURCES:
@@ -197,18 +197,18 @@ def plot_waterlevel(
     # Plot actual thing
     units = Settings().unit_system.length
 
-    fig = px.line(data + site.attrs.water_level.msl.height.convert(units))
+    fig = px.line(data + site.attrs.sfincs.water_level.msl.height.convert(units))
 
     # plot reference water levels
     fig.add_hline(
-        y=site.attrs.water_level.msl.height.convert(units),
+        y=site.attrs.sfincs.water_level.msl.height.convert(units),
         line_dash="dash",
         line_color="#000000",
         annotation_text="MSL",
         annotation_position="bottom right",
     )
-    if site.attrs.water_level.other:
-        for wl_ref in site.attrs.water_level.other:
+    if site.attrs.sfincs.water_level.other:
+        for wl_ref in site.attrs.sfincs.water_level.other:
             fig.add_hline(
                 y=wl_ref.height.convert(units),
                 line_dash="dash",

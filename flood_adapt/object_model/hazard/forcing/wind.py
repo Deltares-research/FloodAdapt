@@ -38,19 +38,12 @@ class WindConstant(IWind):
         }
         return pd.DataFrame(data=data, index=time)
 
-    @classmethod
-    def default(cls) -> "WindConstant":
-        return WindConstant(
-            speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps),
-            direction=us.UnitfulDirection(value=0, units=us.UnitTypesDirection.degrees),
-        )
-
 
 class WindSynthetic(IWind):
     source: ForcingSource = ForcingSource.SYNTHETIC
 
-    magnitude: SyntheticTimeseriesModel
-    direction: SyntheticTimeseriesModel
+    magnitude: SyntheticTimeseriesModel[us.UnitfulVelocity]
+    direction: SyntheticTimeseriesModel[us.UnitfulDirection]
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         time = pd.date_range(
@@ -59,19 +52,11 @@ class WindSynthetic(IWind):
             freq=TimeModel().time_step,
             name="time",
         )
-        magnitude = (
-            SyntheticTimeseries()
-            .load_dict(self.magnitude)
-            .to_dataframe(
-                time_frame=time_frame,
-            )
+        magnitude = SyntheticTimeseries(self.magnitude).to_dataframe(
+            time_frame=time_frame,
         )
-        direction = (
-            SyntheticTimeseries()
-            .load_dict(self.direction)
-            .to_dataframe(
-                time_frame=time_frame,
-            )
+        direction = SyntheticTimeseries(self.direction).to_dataframe(
+            time_frame=time_frame,
         )
         return pd.DataFrame(
             index=time,
@@ -79,13 +64,6 @@ class WindSynthetic(IWind):
                 "mag": magnitude.reindex(time).to_numpy().flatten(),
                 "dir": direction.reindex(time).to_numpy().flatten(),
             },
-        )
-
-    @classmethod
-    def default(cls) -> "WindSynthetic":
-        return WindSynthetic(
-            magnitude=SyntheticTimeseriesModel.default(us.UnitfulVelocity),
-            direction=SyntheticTimeseriesModel.default(us.UnitfulDirection),
         )
 
 
@@ -103,10 +81,6 @@ class WindTrack(IWind):
             output_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
-
-    @classmethod
-    def default(cls) -> "WindTrack":
-        return WindTrack()
 
 
 class WindCSV(IWind):
@@ -127,14 +101,6 @@ class WindCSV(IWind):
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
 
-    @classmethod
-    def default(cls) -> "WindCSV":
-        return WindCSV(path="path/to/wind.csv")
-
 
 class WindMeteo(IWind):
     source: ForcingSource = ForcingSource.METEO
-
-    @classmethod
-    def default(cls) -> "WindMeteo":
-        return WindMeteo()

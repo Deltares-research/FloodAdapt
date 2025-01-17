@@ -169,19 +169,19 @@ class Impacts(DatabaseUser):
                     dem = (
                         self.database.static_path
                         / "dem"
-                        / self.site_info.attrs.dem.filename
+                        / self.site_info.attrs.sfincs.dem.filename
                     )
                     aggregation_areas = [
                         self.database.static_path / aggr.file
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
                     attribute_names = [
                         aggr.field_name
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
                     label_names = [
                         f"Aggregation Label: {aggr.name}"
-                        for aggr in self.site_info.attrs.fiat.aggregation
+                        for aggr in self.site_info.attrs.fiat.config.aggregation
                     ]
 
                     fa.apply_population_growth_new(

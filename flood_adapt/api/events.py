@@ -28,6 +28,7 @@ from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseriesModel,
 )
+from flood_adapt.object_model.hazard.forcing.waterlevels import SurgeModel, TideModel
 from flood_adapt.object_model.hazard.interface.events import (
     IEvent,
     IEventModel,
@@ -45,6 +46,7 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import TimeModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 
 # Ensure all objects are imported and available for use if this module is imported
@@ -78,6 +80,9 @@ __all__ = [
     "CSVTimeseries",
     "SyntheticTimeseriesModel",
     "DischargeConstant",
+    "RiverModel",
+    "SurgeModel",
+    "TideModel",
 ]
 
 
@@ -146,10 +151,6 @@ def create_event(attrs: dict[str, Any] | IEventModel) -> IEvent | EventSet:
         Can be of type: Synthetic, Historical, Hurricane.
     """
     return EventFactory.load_dict(attrs)
-
-
-def list_forcing_types() -> list[str]:
-    return ForcingFactory.list_forcing_types()
 
 
 def list_forcings() -> list[Type[IForcing]]:

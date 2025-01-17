@@ -16,8 +16,8 @@ class TestWindConstant:
         # Arrange
         _speed = 10
         _dir = 90
-        speed = us.UnitfulVelocity(_speed, us.UnitTypesVelocity.mps)
-        direction = us.UnitfulDirection(_dir, us.UnitTypesDirection.degrees)
+        speed = us.UnitfulVelocity(value=_speed, units=us.UnitTypesVelocity.mps)
+        direction = us.UnitfulDirection(value=_dir, units=us.UnitTypesDirection.degrees)
 
         # Act
         wind_df = WindConstant(speed=speed, direction=direction).to_dataframe(

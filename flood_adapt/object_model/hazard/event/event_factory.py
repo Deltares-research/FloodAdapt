@@ -162,15 +162,3 @@ class EventFactory:
         return EventFactory.get_event_from_template(
             template
         )._attrs_type.get_allowed_forcings()
-
-    @staticmethod
-    def get_default_eventmodel(template: Template) -> IEventModel:
-        match template:
-            case Template.Synthetic:
-                return SyntheticEventModel.default()
-            case Template.Historical:
-                return HistoricalEventModel.default()
-            case Template.Hurricane:
-                return HurricaneEventModel.default()
-            case _:
-                raise ValueError(f"Invalid event template: {template}")

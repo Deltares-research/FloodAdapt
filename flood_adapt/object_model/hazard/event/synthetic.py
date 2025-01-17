@@ -7,7 +7,6 @@ from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
     Template,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
 
 
 class SyntheticEventModel(EventModel):
@@ -24,14 +23,6 @@ class SyntheticEventModel(EventModel):
         ],
     }
     template: Template = Template.Synthetic
-
-    @classmethod
-    def default(cls) -> "SyntheticEventModel":
-        """Set default values for Synthetic event."""
-        return cls(
-            name="DefaultSyntheticEvent",
-            time=TimeModel(),
-        )
 
 
 class SyntheticEvent(Event[SyntheticEventModel]):

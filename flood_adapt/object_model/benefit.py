@@ -31,7 +31,7 @@ class Benefit(IBenefit, DatabaseUser):
         self.check_scenarios()
         self.results_path = self.database.benefits.output_path.joinpath(self.attrs.name)
         self.site_info = self.database.site
-        self.unit = self.site_info.attrs.fiat.damage_unit
+        self.unit = self.site_info.attrs.fiat.config.damage_unit
 
     @property
     def has_run(self):
@@ -275,12 +275,14 @@ class Benefit(IBenefit, DatabaseUser):
         scenarios = self.scenarios.copy(deep=True)
 
         # Read in the names of the aggregation area types
-        aggregations = [aggr.name for aggr in self.site_info.attrs.fiat.aggregation]
+        aggregations = [
+            aggr.name for aggr in self.site_info.attrs.fiat.config.aggregation
+        ]
 
         # Check if equity information is available to define variables to use
         vars = []
         for i, aggr_name in enumerate(aggregations):
-            if self.site_info.attrs.fiat.aggregation[i].equity is not None:
+            if self.site_info.attrs.fiat.config.aggregation[i].equity is not None:
                 vars.append(["EAD", "EWEAD"])
             else:
                 vars.append(["EAD"])
@@ -355,12 +357,12 @@ class Benefit(IBenefit, DatabaseUser):
             # Load aggregation areas
             ind = [
                 i
-                for i, n in enumerate(self.site_info.attrs.fiat.aggregation)
+                for i, n in enumerate(self.site_info.attrs.fiat.config.aggregation)
                 if n.name == aggr_name
             ][0]
             aggr_areas_path = (
                 db_path(TopLevelDir.static)
-                / self.site_info.attrs.fiat.aggregation[ind].file
+                / self.site_info.attrs.fiat.config.aggregation[ind].file
             )
             aggr_areas = gpd.read_file(aggr_areas_path, engine="pyogrio")
             # Define output path
@@ -368,7 +370,7 @@ class Benefit(IBenefit, DatabaseUser):
             # Save file
             aggr_areas = aggr_areas.join(
                 benefits[aggr_name],
-                on=self.site_info.attrs.fiat.aggregation[ind].field_name,
+                on=self.site_info.attrs.fiat.config.aggregation[ind].field_name,
             )
             aggr_areas.to_file(outpath, driver="GPKG")
 

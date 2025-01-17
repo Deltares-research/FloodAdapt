@@ -422,9 +422,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self._site.attrs.fiat.non_building_names
-        )
+        buildings_rows = ~self.fiat_model.exposure.exposure_db[
+            "Primary Object Type"
+        ].isin(self.site.attrs.fiat.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
@@ -466,9 +466,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self._site.attrs.fiat.non_building_names
-        )
+        buildings_rows = ~self.fiat_model.exposure.exposure_db[
+            "Primary Object Type"
+        ].isin(self.site.attrs.fiat.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
@@ -614,9 +614,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self._site.attrs.fiat.non_building_names
-        )
+        buildings_rows = ~self.fiat_model.exposure.exposure_db[
+            "Primary Object Type"
+        ].isin(self.site.attrs.fiat.config.non_building_names)
 
         # Get rows that are affected
         objectids = get_object_ids(buyout, self._model)
@@ -671,7 +671,7 @@ class FiatAdapter(IImpactAdapter):
             )
         return self._model.exposure.select_objects(
             primary_object_type="ALL",
-            non_building_names=self._site.attrs.fiat.non_building_names,
+            non_building_names=self.site.attrs.fiat.config.non_building_names,
             return_gdf=True,
         )
 
@@ -686,7 +686,7 @@ class FiatAdapter(IImpactAdapter):
             raise ValueError("No property types found in the FIAT model.")
         types.append("all")  # Add "all" type for using as identifier
 
-        names = self._site.attrs.fiat.non_building_names
+        names = self.site.attrs.fiat.config.non_building_names
         if names:
             for name in names:
                 if name in types:
@@ -725,7 +725,7 @@ class FiatAdapter(IImpactAdapter):
         ids = self._model.exposure.get_object_ids(
             selection_type=measure.attrs.selection_type,
             property_type=measure.attrs.property_type,
-            non_building_names=self._site.attrs.fiat.non_building_names,
+            non_building_names=self.site.attrs.fiat.config.non_building_names,
             aggregation=measure.attrs.aggregation_area_type,
             aggregation_area_name=measure.attrs.aggregation_area_name,
             polygon_file=str(polygon_file),

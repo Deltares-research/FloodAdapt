@@ -23,7 +23,7 @@ from flood_adapt.object_model.hazard.interface.events import (
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
-from flood_adapt.object_model.interface.site import RiverModel
+from flood_adapt.object_model.interface.config.sfincs import RiverModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 
@@ -74,6 +74,9 @@ def setup_offshore_scenario(test_db: IDatabase):
 
 
 class TestOffshoreSfincsHandler:
+    @pytest.mark.skip(
+        "Is broken due to bug inhydromt_sfincs. unskip when merged: https://github.com/Deltares/hydromt_sfincs/pull/226 "
+    )
     def test_process_sfincs_offshore(
         self, setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent]
     ):

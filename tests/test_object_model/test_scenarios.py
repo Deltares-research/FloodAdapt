@@ -5,11 +5,11 @@ from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
     SocioEconomicChange,
 )
-from flood_adapt.object_model.interface.site import Site
 from flood_adapt.object_model.scenario import Scenario
 
 
