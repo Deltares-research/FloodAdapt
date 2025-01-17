@@ -9,6 +9,7 @@ from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.dbs_classes.interface.static import IDbsStatic
+from flood_adapt.misc.config import Settings
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -246,8 +247,11 @@ class DbsStatic(IDbsStatic):
             raise ValueError("No FIAT model defined in the site configuration.")
         template_path = self._database.static_path / "templates" / "fiat"
         with FiatAdapter(
-            model_root=str(template_path),
-            database_path=str(self._database.base_path),
+            model_root=template_path,
+            config=self._database.site.attrs.fiat,
+            exe_path=Settings().fiat_path,
+            delete_crashed_runs=Settings().delete_crashed_runs,
+            config_base_path=self._database.static_path,
         ) as fm:
             return fm
 

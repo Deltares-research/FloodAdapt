@@ -1,7 +1,7 @@
-from typing import Any, List
+from typing import Any
 
 from flood_adapt import __version__
-from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
+from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
@@ -40,9 +40,9 @@ class Scenario(IScenario, DatabaseUser):
         return self._strategy
 
     @property
-    def direct_impacts(self) -> DirectImpacts:  # List[IImpactAdapter]
-        return DirectImpacts(
-            scenario=self.attrs,
+    def impacts(self) -> Impacts:
+        return Impacts(
+            scenario=self,
         )
 
     def run(self):
@@ -68,20 +68,13 @@ class Scenario(IScenario, DatabaseUser):
                         f"Hazard for scenario '{self.attrs.name}' has already been run."
                     )
 
-            impact_models: List[DirectImpacts] = [  # List[IImpactAdapter]
-                DirectImpacts(
-                    scenario=self.attrs,
-                ),
-            ]
-            for impact_model in impact_models:
-                if not impact_model.has_run:
-                    impact_model.preprocess_models()
-                    impact_model.run_models()
-                    impact_model.postprocess_models()
-                else:
-                    self.logger.info(
-                        f"Direct impacts for scenario '{self.attrs.name}' has already been run."
-                    )
+            impacts: Impacts = Impacts(scenario=self)
+            if not impacts.has_run:
+                impacts.run()
+            else:
+                self.logger.info(
+                    f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+                )
 
             self.logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"

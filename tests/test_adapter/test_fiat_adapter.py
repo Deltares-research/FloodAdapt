@@ -37,11 +37,6 @@ class TestFiatAdapter:
         exposure_template = pd.read_csv(
             test_db.static_path / "templates" / "fiat" / "exposure" / "exposure.csv"
         )
-        exposure_scenario = pd.read_csv(
-            test_db.scenarios.output_path.joinpath(
-                scenario_name, "Impacts", f"Impacts_detailed_{scenario_name}.csv"
-            )
-        )
         path = test_db.scenarios.output_path.joinpath(
             scenario_name, "Impacts", "fiat_model", "exposure", "exposure.csv"
         )
@@ -72,8 +67,10 @@ class TestFiatAdapter:
         exp1 = exposure_scenario.loc[inds1, "Max Potential Damage: Structure"]
         inds0 = exposure_template["Primary Object Type"] != "road"
         exp0 = exposure_template.loc[inds0, "Max Potential Damage: Structure"]
-        eg = test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
-        pg = test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_existing
+        eg = test_scenario.impacts.socio_economic_change.attrs.economic_growth
+        pg = (
+            test_scenario.impacts.socio_economic_change.attrs.population_growth_existing
+        )
         assert all(
             val1 == val0 * (eg / 100 + 1) * (pg / 100 + 1) if (val1 != 0) else True
             for val0, val1 in zip(exp0, exp1)
@@ -90,12 +87,11 @@ class TestFiatAdapter:
                 ].sum()
             )
             == (
-                test_scenario.direct_impacts.socio_economic_change.attrs.economic_growth
-                / 100
+                test_scenario.impacts.socio_economic_change.attrs.economic_growth / 100
                 + 1
             )
             * (
-                test_scenario.direct_impacts.socio_economic_change.attrs.population_growth_new
+                test_scenario.impacts.socio_economic_change.attrs.population_growth_new
                 / 100
             )
             * exposure_template.loc[:, "Max Potential Damage: Structure"].sum()
@@ -103,16 +99,16 @@ class TestFiatAdapter:
 
         # check if buildings are elevated correctly
         # First get the elevate measure attributes
-        aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_label = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.aggregation_area_type
-        aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_name = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.aggregation_area_name
-        build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        build_type = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.property_type
-        elevate_val = test_scenario.direct_impacts.impact_strategy.measures[
+        elevate_val = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.elevation.value
         # Read the base flood map information
@@ -157,13 +153,13 @@ class TestFiatAdapter:
                 assert row["Ground Floor Height 2"] == row["Ground Floor Height 1"]
 
         # check if buildings are bought-out
-        aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_label = test_scenario.impacts.impact_strategy.measures[
             1
         ].attrs.aggregation_area_type
-        aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_name = test_scenario.impacts.impact_strategy.measures[
             1
         ].attrs.aggregation_area_name
-        build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        build_type = test_scenario.impacts.impact_strategy.measures[
             1
         ].attrs.property_type
         inds = (
@@ -173,13 +169,13 @@ class TestFiatAdapter:
         assert all(exposure_scenario.loc[inds, "Max Potential Damage: Structure"] == 0)
 
         # check if buildings are flood-proofed
-        aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_label = test_scenario.impacts.impact_strategy.measures[
             2
         ].attrs.aggregation_area_type
-        aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_name = test_scenario.impacts.impact_strategy.measures[
             2
         ].attrs.aggregation_area_name
-        build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        build_type = test_scenario.impacts.impact_strategy.measures[
             2
         ].attrs.property_type
         inds1 = (
@@ -206,13 +202,13 @@ class TestFiatAdapter:
         )
 
         # check if buildings are elevated
-        aggr_label = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_label = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.aggregation_area_type
-        aggr_name = test_scenario.direct_impacts.impact_strategy.measures[
+        aggr_name = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.aggregation_area_name
-        build_type = test_scenario.direct_impacts.impact_strategy.measures[
+        build_type = test_scenario.impacts.impact_strategy.measures[
             0
         ].attrs.property_type
         inds1 = (
@@ -232,9 +228,7 @@ class TestFiatAdapter:
 
         assert all(
             height + elev
-            >= test_scenario.direct_impacts.impact_strategy.measures[
-                0
-            ].attrs.elevation.value
+            >= test_scenario.impacts.impact_strategy.measures[0].attrs.elevation.value
             for height, elev in zip(
                 exposure_scenario.loc[inds2, "Ground Floor Height"],
                 exposure_scenario.loc[inds2, "Ground Elevation"],
@@ -243,4 +237,4 @@ class TestFiatAdapter:
 
     def test_return_periods(self, run_scenario_no_measures):
         test_db, scenario_name, test_scenario = run_scenario_no_measures
-        assert test_scenario.direct_impacts.has_run
+        assert test_scenario.impacts.has_run
