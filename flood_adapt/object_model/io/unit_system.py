@@ -3,9 +3,9 @@ import math
 from abc import ABC
 from datetime import timedelta
 from enum import Enum
-from typing import Generic, TypeVar
+from typing import Generic, Type, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 __all__ = [
     "ValueUnitPair",
@@ -48,15 +48,8 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
         units (Unit): The units of the value.
     """
 
-    DEFAULT_UNIT: TUnit = Field(
-        ..., frozen=True, exclude=True, description="The default unit."
-    )
-    CONVERSION_FACTORS: dict[TUnit, float] = Field(
-        ...,
-        frozen=True,
-        exclude=True,
-        description="A dictionary of conversion factors from the default unit to any unit.",
-    )
+    DEFAULT_UNIT: TUnit
+    CONVERSION_FACTORS: dict[TUnit, float]
 
     value: float
     units: TUnit
@@ -78,6 +71,38 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             raise ValueError(f"Invalid units: {new_units}")
         in_default_units = self.value / self.CONVERSION_FACTORS[self.units]
         return in_default_units * self.CONVERSION_FACTORS[new_units]
+
+    def model_dump(self, *args, **kwargs) -> dict:
+        exclude: set = kwargs.get("exclude", set())
+        exclude.update({"CONVERSION_FACTORS", "DEFAULT_UNIT"})
+        kwargs.update(exclude=exclude)
+        return super().model_dump(**kwargs)
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_unit_class(cls, data: dict) -> dict:
+        UNITS: dict[Type, Type] = {
+            UnitTypesLength: UnitfulLength,
+            UnitTypesTime: UnitfulTime,
+            UnitTypesDischarge: UnitfulDischarge,
+            UnitTypesDirection: UnitfulDirection,
+            UnitTypesVelocity: UnitfulVelocity,
+            UnitTypesIntensity: UnitfulIntensity,
+            UnitTypesArea: UnitfulArea,
+            UnitTypesVolume: UnitfulVolume,
+        }
+        unit_enum = None
+        str_unit = data["units"]
+
+        for unit_types_enum in UNITS:
+            try:
+                unit_enum = unit_types_enum(str_unit)
+                data["units"] = unit_enum
+                return data
+            except Exception:
+                continue
+
+        raise ValueError(f"Unsupported unit: {str_unit}")
 
     def __str__(self) -> str:
         return f"{self.value} {self.units.value}"
@@ -239,21 +264,15 @@ class VerticalReference(str, Enum):
 
 
 class UnitfulLength(ValueUnitPair[UnitTypesLength]):
-    CONVERSION_FACTORS: dict[UnitTypesLength, float] = Field(
-        default={
-            UnitTypesLength.meters: 1.0,
-            UnitTypesLength.centimeters: 100.0,
-            UnitTypesLength.millimeters: 1000.0,
-            UnitTypesLength.feet: 3.28084,
-            UnitTypesLength.inch: 1.0 / 0.0254,
-            UnitTypesLength.miles: 1 / 1609.344,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesLength = Field(
-        default=UnitTypesLength.meters, exclude=True, frozen=True
-    )
+    CONVERSION_FACTORS: dict[UnitTypesLength, float] = {
+        UnitTypesLength.meters: 1.0,
+        UnitTypesLength.centimeters: 100.0,
+        UnitTypesLength.millimeters: 1000.0,
+        UnitTypesLength.feet: 3.28084,
+        UnitTypesLength.inch: 1.0 / 0.0254,
+        UnitTypesLength.miles: 1 / 1609.344,
+    }
+    DEFAULT_UNIT: UnitTypesLength = UnitTypesLength.meters
 
 
 class UnitfulHeight(UnitfulLength):
@@ -265,118 +284,73 @@ class UnitfulLengthRefValue(UnitfulLength):
 
 
 class UnitfulArea(ValueUnitPair[UnitTypesArea]):
-    CONVERSION_FACTORS: dict[UnitTypesArea, float] = Field(
-        default={
-            UnitTypesArea.m2: 1,
-            UnitTypesArea.dm2: 100,
-            UnitTypesArea.cm2: 10_000,
-            UnitTypesArea.mm2: 1_000_000,
-            UnitTypesArea.sf: 10.764,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesArea = Field(
-        default=UnitTypesArea.m2, exclude=True, frozen=True
-    )
-
+    CONVERSION_FACTORS: dict[UnitTypesArea, float] = {
+        UnitTypesArea.m2: 1,
+        UnitTypesArea.dm2: 100,
+        UnitTypesArea.cm2: 10_000,
+        UnitTypesArea.mm2: 1_000_000,
+        UnitTypesArea.sf: 10.764,
+    }
+    DEFAULT_UNIT: UnitTypesArea = UnitTypesArea.m2
     value: float = Field(ge=0.0)
 
 
 class UnitfulVelocity(ValueUnitPair[UnitTypesVelocity]):
-    CONVERSION_FACTORS: dict[UnitTypesVelocity, float] = Field(
-        default={
-            UnitTypesVelocity.mph: 2.236936,
-            UnitTypesVelocity.mps: 1,
-            UnitTypesVelocity.knots: 1.943844,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesVelocity = Field(
-        default=UnitTypesVelocity.mps, exclude=True, frozen=True
-    )
-
+    CONVERSION_FACTORS: dict[UnitTypesVelocity, float] = {
+        UnitTypesVelocity.mph: 2.236936,
+        UnitTypesVelocity.mps: 1,
+        UnitTypesVelocity.knots: 1.943844,
+    }
+    DEFAULT_UNIT: UnitTypesVelocity = UnitTypesVelocity.mps
     value: float = Field(ge=0.0)
 
 
 class UnitfulDirection(ValueUnitPair[UnitTypesDirection]):
-    CONVERSION_FACTORS: dict[UnitTypesDirection, float] = Field(
-        default={
-            UnitTypesDirection.degrees: 1.0,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesDirection = Field(
-        default=UnitTypesDirection.degrees, exclude=True, frozen=True
-    )
+    CONVERSION_FACTORS: dict[UnitTypesDirection, float] = {
+        UnitTypesDirection.degrees: 1.0,
+    }
+    DEFAULT_UNIT: UnitTypesDirection = UnitTypesDirection.degrees
 
     value: float = Field(ge=0.0, le=360.0)
 
 
 class UnitfulDischarge(ValueUnitPair[UnitTypesDischarge]):
-    CONVERSION_FACTORS: dict[UnitTypesDischarge, float] = Field(
-        default={
-            UnitTypesDischarge.cfs: 35.314684921034,
-            UnitTypesDischarge.cms: 1,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesDischarge = Field(
-        default=UnitTypesDischarge.cms, exclude=True, frozen=True
-    )
+    CONVERSION_FACTORS: dict[UnitTypesDischarge, float] = {
+        UnitTypesDischarge.cfs: 35.314684921034,
+        UnitTypesDischarge.cms: 1,
+    }
+    DEFAULT_UNIT: UnitTypesDischarge = UnitTypesDischarge.cms
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulIntensity(ValueUnitPair[UnitTypesIntensity]):
-    CONVERSION_FACTORS: dict[UnitTypesIntensity, float] = Field(
-        default={
-            UnitTypesIntensity.inch_hr: 1 / 25.39544832,
-            UnitTypesIntensity.mm_hr: 1,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesIntensity = Field(
-        default=UnitTypesIntensity.mm_hr, exclude=True, frozen=True
-    )
-
+    CONVERSION_FACTORS: dict[UnitTypesIntensity, float] = {
+        UnitTypesIntensity.inch_hr: 1 / 25.39544832,
+        UnitTypesIntensity.mm_hr: 1,
+    }
+    DEFAULT_UNIT: UnitTypesIntensity = UnitTypesIntensity.mm_hr
     value: float = Field(ge=0.0)
 
 
 class UnitfulVolume(ValueUnitPair[UnitTypesVolume]):
-    CONVERSION_FACTORS: dict[UnitTypesVolume, float] = Field(
-        default={
-            UnitTypesVolume.m3: 1.0,
-            UnitTypesVolume.cf: 35.3146667,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesVolume = Field(
-        default=UnitTypesVolume.m3, exclude=True, frozen=True
-    )
+    CONVERSION_FACTORS: dict[UnitTypesVolume, float] = {
+        UnitTypesVolume.m3: 1.0,
+        UnitTypesVolume.cf: 35.3146667,
+    }
+    DEFAULT_UNIT: UnitTypesVolume = UnitTypesVolume.m3
 
     value: float = Field(ge=0.0)
 
 
 class UnitfulTime(ValueUnitPair[UnitTypesTime]):
-    CONVERSION_FACTORS: dict[UnitTypesTime, float] = Field(
-        default={
-            UnitTypesTime.days: 1.0 / 24.0,
-            UnitTypesTime.hours: 1.0,
-            UnitTypesTime.minutes: 60.0,
-            UnitTypesTime.seconds: 60.0 * 60.0,
-        },
-        exclude=True,
-        frozen=True,
-    )
-    DEFAULT_UNIT: UnitTypesTime = Field(
-        default=UnitTypesTime.hours, exclude=True, frozen=True
-    )
+    CONVERSION_FACTORS: dict[UnitTypesTime, float] = {
+        UnitTypesTime.days: 1.0 / 24.0,
+        UnitTypesTime.hours: 1.0,
+        UnitTypesTime.minutes: 60.0,
+        UnitTypesTime.seconds: 60.0 * 60.0,
+    }
+    DEFAULT_UNIT: UnitTypesTime = UnitTypesTime.hours
 
     @staticmethod
     def from_timedelta(td: timedelta) -> "UnitfulTime":

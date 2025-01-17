@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Type
+from typing import Any, List, Optional, Type
 
 import tomli
 
@@ -28,6 +28,7 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindSynthetic,
     WindTrack,
 )
+from flood_adapt.object_model.hazard.interface.events import Template
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
@@ -163,10 +164,15 @@ class ForcingFactory(IForcingFactory):
         return list(forcing_classes)
 
     @classmethod
-    def list_forcing_types_and_sources(cls) -> List[tuple[ForcingType, ForcingSource]]:
+    def list_forcing_types_and_sources(
+        cls, template: Optional[Template] = None
+    ) -> List[tuple[ForcingType, ForcingSource]]:
         """List all available forcing classes using a tuple of ForcingType and ForcingSource."""
+        ONLY_BACKEND_FORCINGS = {(ForcingType.WIND, ForcingSource.SYNTHETIC)}
         combinations = set()
         for type, source_map in cls.FORCINGTYPES.items():
             for source in source_map.keys():
+                if (type, source) in ONLY_BACKEND_FORCINGS:
+                    continue
                 combinations.add((type, source))
         return list(combinations)

@@ -150,8 +150,8 @@ class SyntheticTimeseries(ITimeseries):
     def __init__(self, data: dict[str, Any] | SyntheticTimeseriesModel):
         super().__init__()
         if isinstance(data, dict):
-            unit_enum = _extract_unit_class(data)
-            self.attrs = SyntheticTimeseriesModel[unit_enum].model_validate(data)
+            # unit_enum = _extract_unit_class(data)
+            self.attrs = SyntheticTimeseriesModel.model_validate(data)
         elif isinstance(data, SyntheticTimeseriesModel):
             self.attrs = data
         else:

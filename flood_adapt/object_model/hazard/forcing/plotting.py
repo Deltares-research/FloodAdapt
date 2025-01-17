@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import gettempdir
+from typing import List
 
 import pandas as pd
 import plotly.express as px
@@ -72,13 +73,11 @@ def plot_discharge(
     event: Event,
     site: Site,
 ) -> str:
-    rivers: dict[str, IDischarge] = event.attrs.forcings[ForcingType.DISCHARGE]
-
+    rivers: List[IDischarge] = event.attrs.forcings.get(ForcingType.DISCHARGE)
     if site.attrs.sfincs.river is None:
         raise ValueError("No rivers defined for this site.")
-    elif rivers is None:
+    elif not rivers:
         return ""
-
     logger.debug("Plotting discharge data")
 
     units = Settings().unit_system.discharge
@@ -86,7 +85,7 @@ def plot_discharge(
     data = pd.DataFrame()
     errors = []
 
-    for name, discharge in rivers.items():
+    for discharge in rivers:
         try:
             if discharge.source in UNPLOTTABLE_SOURCES:
                 logger.debug(
@@ -106,7 +105,7 @@ def plot_discharge(
             else:
                 data = data.join(river_data, how="outer")
         except Exception as e:
-            errors.append((name, e))
+            errors.append((discharge.river.name, e))
 
     if errors:
         logger.error(
@@ -159,12 +158,13 @@ def plot_waterlevel(
     event: Event,
     site: Site,
 ) -> str:
-    waterlevel = event.attrs.forcings[ForcingType.WATERLEVEL]
-    if waterlevel is None:
+    forcing_list = event.attrs.forcings.get(ForcingType.WATERLEVEL)
+    if not forcing_list:
         return ""
     elif site.attrs.sfincs.water_level is None:
         raise ValueError("No water levels defined for this site.")
 
+    waterlevel = forcing_list[0]
     if waterlevel.source in UNPLOTTABLE_SOURCES:
         logger.debug(
             f"Plotting not supported for waterlevel data from {waterlevel.source}"
@@ -176,11 +176,11 @@ def plot_waterlevel(
     data = None
     try:
         if isinstance(waterlevel, WaterlevelGauged):
-            if site.attrs.tide_gauge is None:
+            if site.attrs.sfincs.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            data = TideGauge(site.attrs.tide_gauge).get_waterlevels_in_time_frame(
-                event.attrs.time
-            )
+            data = TideGauge(
+                site.attrs.sfincs.tide_gauge
+            ).get_waterlevels_in_time_frame(event.attrs.time)
         elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
             data = waterlevel.to_dataframe(event.attrs.time)
         else:
@@ -247,15 +247,16 @@ def plot_waterlevel(
 def plot_rainfall(
     event: Event,
 ) -> str:
-    rainfall = event.attrs.forcings[ForcingType.RAINFALL]
-    if rainfall is None:
+    forcing_list = event.attrs.forcings.get(ForcingType.RAINFALL)
+    if not forcing_list:
         return ""
-    elif rainfall.source in UNPLOTTABLE_SOURCES:
+    elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
         logger.warning(
             f"Plotting not supported for rainfall datafrom sources {', '.join(UNPLOTTABLE_SOURCES)}"
         )
         return ""
 
+    rainfall = forcing_list[0]
     logger.debug("Plotting rainfall data")
 
     data = None
@@ -310,15 +311,16 @@ def plot_wind(
     event: Event,
 ) -> str:
     logger.debug("Plotting wind data")
-    wind = event.attrs.forcings[ForcingType.WIND]
-    if wind is None:
+    forcing_list = event.attrs.forcings.get(ForcingType.WIND)
+    if not forcing_list:
         return ""
-    elif wind.source in UNPLOTTABLE_SOURCES:
+    elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
         logger.warning(
             f"Plotting not supported for wind data from sources {', '.join(UNPLOTTABLE_SOURCES)}"
         )
         return ""
 
+    wind = forcing_list[0]
     data = None
     try:
         if isinstance(wind, (WindConstant, WindCSV, WindSynthetic)):

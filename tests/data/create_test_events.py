@@ -32,8 +32,6 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
-from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import TopLevelDir, db_path
 
 
 def create_events():
@@ -257,11 +255,9 @@ if __name__ == "__main__":
 
     Settings(
         database_name="charleston_test",
-        database_root=Path(__file__).parents[2] / "Database",
+        database_root=Path(__file__).parents[3] / "Database",
     )
     db = read_database(Settings().database_root, Settings().database_name)
-
-    site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
 
     for event in create_events():
         db.events.save(event, overwrite=True)
