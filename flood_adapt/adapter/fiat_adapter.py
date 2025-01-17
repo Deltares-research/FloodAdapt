@@ -16,7 +16,7 @@ from fiat_toolbox.metrics_writer.fiat_write_return_period_threshold import (
 )
 from fiat_toolbox.spatial_output.aggregation_areas import AggregationAreas
 from fiat_toolbox.spatial_output.footprints import Footprints
-from hydromt_fiat.fiat import FiatModel as HydroMtFiatModel
+from hydromt_fiat.fiat import FiatModel
 
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
@@ -29,6 +29,7 @@ from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
 )
 from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
 from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureType,
@@ -37,7 +38,6 @@ from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
 from flood_adapt.object_model.interface.scenarios import IScenario
-from flood_adapt.object_model.interface.site import FiatModel
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
@@ -51,14 +51,14 @@ class FiatAdapter(IImpactAdapter):
     - postprocessing methods for saving impact results
     """
 
-    _model: HydroMtFiatModel  # hydroMT-FIAT model
-    config: Optional[FiatModel] = None  # Site model
+    _model: FiatModel  # hydroMT-FIAT model
+    config: Optional[FiatConfigModel] = None  # Site model
     exe_path: Optional[os.PathLike] = None
 
     def __init__(
         self,
         model_root: Path,
-        config: Optional[FiatModel] = None,
+        config: Optional[FiatConfigModel] = None,
         exe_path: Optional[os.PathLike] = None,
         delete_crashed_runs: bool = True,
         config_base_path: Optional[os.PathLike] = None,
@@ -72,7 +72,7 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
-        self._model = HydroMtFiatModel(root=str(model_root.resolve()), mode="r")
+        self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
 
     @property

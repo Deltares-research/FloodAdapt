@@ -248,7 +248,7 @@ class DbsStatic(IDbsStatic):
         template_path = self._database.static_path / "templates" / "fiat"
         with FiatAdapter(
             model_root=template_path,
-            config=self._database.site.attrs.fiat,
+            config=self._database.site.attrs.fiat.config,
             exe_path=Settings().fiat_path,
             delete_crashed_runs=Settings().delete_crashed_runs,
             config_base_path=self._database.static_path,
