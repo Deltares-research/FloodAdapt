@@ -1,7 +1,7 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
+from flood_adapt.object_model.impact.measure.measure_helpers import (
     get_object_ids,
 )
 from flood_adapt.object_model.interface.measures import MeasureType

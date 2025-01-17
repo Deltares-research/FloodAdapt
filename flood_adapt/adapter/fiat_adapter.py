@@ -21,14 +21,14 @@ from hydromt_fiat.fiat import FiatModel
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
-    get_object_ids,
-)
 from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
 from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.impact.measure.buyout import Buyout
+from flood_adapt.object_model.impact.measure.elevate import Elevate
+from flood_adapt.object_model.impact.measure.floodproof import FloodProof
+from flood_adapt.object_model.impact.measure.measure_helpers import (
+    get_object_ids,
+)
 from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
@@ -369,8 +369,21 @@ class FiatAdapter(IImpactAdapter):
         if not self.config.save_simulation:
             self.delete_model()
 
-    def add_measure(self, measure):
-        return super().add_measure(measure)
+    def add_measure(self, measure: IMeasure):
+        self.logger.info(
+            f"Adding {measure.__class__.__name__.capitalize()} to the Delft-FIAT model..."
+        )
+
+        if isinstance(measure, Elevate):
+            self.elevate_properties(measure)
+        elif isinstance(measure, FloodProof):
+            self.floodproof_properties(measure)
+        elif isinstance(measure, Buyout):
+            self.buyout_properties(measure)
+        else:
+            self.logger.warning(
+                f"Skipping unsupported measure type {measure.__class__.__name__}"
+            )
 
     def add_projection(self, projection):
         return super().add_projection(projection)
@@ -549,25 +562,9 @@ class FiatAdapter(IImpactAdapter):
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def elevate_properties(
-        self,
-        elevate: Elevate,
-        ids: Optional[list[str]] = [],
-    ):
-        """Elevate properties by adjusting the "Ground Floor Height" column in the FIAT exposure file.
-
-        Parameters
-        ----------
-        elevate : Elevate
-            this is an "elevate" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to elevate,
-            by default None
-        """
+    def elevate_properties(self, elevate: Elevate):
         # If ids are given use that as an additional filter
-        objectids = get_object_ids(elevate, self._model)
-        if ids:
-            objectids = [id for id in objectids if id in ids]
+        objectids = self.get_object_ids(elevate)
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
@@ -596,16 +593,7 @@ class FiatAdapter(IImpactAdapter):
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: Buyout, ids: Optional[list[str]] = []):
-        """Buyout properties by setting the "Max Potential Damage: {}" column to zero in the FIAT exposure file.
-
-        Parameters
-        ----------
-        buyout : Buyout
-            this is an "buyout" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on, by default None
-        """
+    def buyout_properties(self, buyout: Buyout):
         # Get columns that include max damage
         damage_cols = [
             c
@@ -619,15 +607,11 @@ class FiatAdapter(IImpactAdapter):
         ].isin(self.site.attrs.fiat.config.non_building_names)
 
         # Get rows that are affected
-        objectids = get_object_ids(buyout, self._model)
+        objectids = self.get_object_ids(buyout)
         rows = (
             self._model.exposure.exposure_db["Object ID"].isin(objectids)
             & buildings_rows
         )
-
-        # If ids are given use that as an additional filter
-        if ids:
-            rows = self._model.exposure.exposure_db["Object ID"].isin(ids) & rows
 
         # Update columns using economic growth value
         updated_max_pot_damage = self._model.exposure.exposure_db.copy()
@@ -638,9 +622,7 @@ class FiatAdapter(IImpactAdapter):
             updated_max_potential_damages=updated_max_pot_damage
         )
 
-    def floodproof_properties(
-        self, floodproof: FloodProof, ids: Optional[list[str]] = []
-    ):
+    def floodproof_properties(self, floodproof: FloodProof):
         """Floodproof properties by creating new depth-damage functions and adding them in "Damage Function: {}" column in the FIAT exposure file.
 
         Parameters
@@ -653,8 +635,6 @@ class FiatAdapter(IImpactAdapter):
         """
         # If ids are given use that as an additional filter
         objectids = get_object_ids(floodproof, self._model)
-        if ids:
-            objectids = [id for id in objectids if id in ids]
 
         # Use hydromt function
         self._model.exposure.truncate_damage_function(
@@ -694,17 +674,8 @@ class FiatAdapter(IImpactAdapter):
 
         return types
 
-    def get_object_ids(
-        self,
-        measure: IMeasure,
-    ) -> list[Any]:
-        """Get ids of objects that are affected by the measure.
-
-        Returns
-        -------
-        list[Any]
-            list of ids
-        """
+    def get_object_ids(self, measure: IMeasure) -> list[Any]:
+        """Get ids of objects that are affected by the measure."""
         if not MeasureType.is_impact(measure.attrs.type):
             raise ValueError(
                 f"Measure type {measure.attrs.type} is not an impact measure. "

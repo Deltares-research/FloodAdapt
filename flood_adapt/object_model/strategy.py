@@ -1,7 +1,7 @@
 from typing import Any
 
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureType,

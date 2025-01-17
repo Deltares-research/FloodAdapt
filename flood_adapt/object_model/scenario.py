@@ -16,7 +16,7 @@ class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
     def __init__(self, data: dict[str, Any]) -> None:
-        """Create a Direct Impact object."""
+        """Create a Scenario object."""
         super().__init__(data)
         self.site_info = self.database.site
         self.results_path = self.database.scenarios.output_path / self.attrs.name
@@ -46,7 +46,7 @@ class Scenario(IScenario, DatabaseUser):
         )
 
     def run(self):
-        """Run direct impact models for the scenario."""
+        """Run hazard and impact models for the scenario."""
         self.results_path.mkdir(parents=True, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
@@ -73,7 +73,7 @@ class Scenario(IScenario, DatabaseUser):
                 impacts.run()
             else:
                 self.logger.info(
-                    f"Direct impacts for scenario '{self.attrs.name}' has already been run."
+                    f"Impacts for scenario '{self.attrs.name}' has already been run."
                 )
 
             self.logger.info(

@@ -7,8 +7,8 @@ from flood_adapt.adapter.fiat_adapter import FiatAdapter
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
@@ -21,7 +21,7 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 
 # TODO move code that is related to fiat to the Fiat Adapter
 class Impacts(DatabaseUser):
-    """All information related to the direct impacts of the scenario.
+    """All information related to the impacts of the scenario.
 
     Includes methods to run the impact model or check if it has already been run.
     """
@@ -63,15 +63,15 @@ class Impacts(DatabaseUser):
         return self.has_run_check()
 
     def run(self):
-        """Run the direct impact model(s)."""
+        """Run the impact model(s)."""
         if self.has_run:
-            self.logger.info("Direct impacts have already been run.")
+            self.logger.info("Impacts have already been run.")
             return
         for model in self.models:
             model.run(self.scenario)
 
     def has_run_check(self) -> bool:
-        """Check if the direct impact has been run.
+        """Check if the impact has been run.
 
         Returns
         -------
