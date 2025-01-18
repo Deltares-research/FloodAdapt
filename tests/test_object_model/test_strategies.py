@@ -206,7 +206,9 @@ def setup_strategy_with_overlapping_measures(test_db, test_data_dir, test_buyout
     return test_db, Strategy(strategy_model)
 
 
-@patch("flood_adapt.dbs_classes.dbs_strategy.get_object_ids")
+@patch(
+    "flood_adapt.object_model.impact.measure.impact_measure.ImpactMeasure.get_object_ids"
+)
 def test_check_overlapping_measures(
     mock_get_object_ids, setup_strategy_with_overlapping_measures
 ):

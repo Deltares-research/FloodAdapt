@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 import geopandas as gpd
 import pandas as pd
@@ -26,9 +26,6 @@ from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.impact.measure.buyout import Buyout
 from flood_adapt.object_model.impact.measure.elevate import Elevate
 from flood_adapt.object_model.impact.measure.floodproof import FloodProof
-from flood_adapt.object_model.impact.measure.measure_helpers import (
-    get_object_ids,
-)
 from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
@@ -41,6 +38,9 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
+# TODO deal with all the relative paths for the files used
+# TODO add docstrings
+# TODO add log messages
 class FiatAdapter(IImpactAdapter):
     """
     ImpactAdapter for Delft-FIAT.
@@ -151,12 +151,12 @@ class FiatAdapter(IImpactAdapter):
             return False
 
     def preprocess(self, scenario: IScenario):
+        # Projection
+        self.add_projection(scenario.projection)
+
         # Measures
         for measure in scenario.strategy.get_impact_strategy().measures:
             self.add_measure(measure)
-
-        # Projection
-        self.add_projection(scenario.projection)
 
         # Hazard
         floodmap = FloodMap(scenario.attrs.name)
@@ -370,10 +370,7 @@ class FiatAdapter(IImpactAdapter):
             self.delete_model()
 
     def add_measure(self, measure: IMeasure):
-        self.logger.info(
-            f"Adding {measure.__class__.__name__.capitalize()} to the Delft-FIAT model..."
-        )
-
+        self.logger.info(f"Applying impact measure {measure.attrs.name}")
         if isinstance(measure, Elevate):
             self.elevate_properties(measure)
         elif isinstance(measure, FloodProof):
@@ -386,7 +383,50 @@ class FiatAdapter(IImpactAdapter):
             )
 
     def add_projection(self, projection):
-        return super().add_projection(projection)
+        socio_economic_change = projection.get_socio_economic_change()
+
+        ids_all_buildings = self.get_all_building_ids()
+
+        # Implement socioeconomic changes if needed
+        # First apply economic growth to existing objects
+        if socio_economic_change.attrs.economic_growth != 0:
+            self.apply_economic_growth(
+                economic_growth=socio_economic_change.attrs.economic_growth,
+                ids=ids_all_buildings,  #
+            )
+
+        # Then the new population growth area is added if provided
+        # In the new areas, the economic growth is taken into account!
+        # Order matters since for the pop growth new, we only want the economic growth!
+        if socio_economic_change.attrs.population_growth_new != 0:
+            # Get path of new development area geometry
+            area_path = resolve_filepath(
+                object_dir=ObjectDir.projection,
+                obj_name=projection.attrs.name,
+                path=socio_economic_change.attrs.new_development_shapefile,
+            )
+
+            # Get DEM location for assigning elevation to new areas
+            dem = (
+                self.database.static_path
+                / "dem"
+                / self.database.site.attrs.sfincs.dem.filename
+            )
+            # Call adapter method to add the new areas
+            self.apply_population_growth_new(
+                population_growth=socio_economic_change.attrs.population_growth_new,
+                ground_floor_height=socio_economic_change.attrs.new_development_elevation.value,
+                elevation_type=socio_economic_change.attrs.new_development_elevation.type,
+                area_path=area_path,
+                ground_elevation=dem,
+            )
+
+        # Then apply population growth to existing objects
+        if socio_economic_change.attrs.population_growth_existing != 0:
+            self.apply_population_growth_existing(
+                population_growth=socio_economic_change.attrs.population_growth_existing,
+                ids=ids_all_buildings,
+            )
 
     def add_hazard(
         self,
@@ -412,21 +452,11 @@ class FiatAdapter(IImpactAdapter):
             unit_conversion_factor=conversion_factor,
         )
 
+    # PROJECTIONS
+
     def apply_economic_growth(
-        self, economic_growth: float, ids: Optional[list[str]] = []
-    ):
-        """Implement economic growth in the exposure of FIAT.
-
-        This is only done for buildings. This is done by multiplying maximum potential damages of objects with the percentage increase.
-
-        Parameters
-        ----------
-        economic_growth : float
-            Percentage value of economic growth.
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the economic growth on,
-            by default None
-        """
+        self, economic_growth: float, ids: Optional[list] = None
+    ) -> None:
         # Get columns that include max damage
         damage_cols = [
             c
@@ -435,9 +465,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.config.non_building_names)
+        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # If ids are given use that as an additional filter
         if ids:
@@ -457,20 +487,8 @@ class FiatAdapter(IImpactAdapter):
         )
 
     def apply_population_growth_existing(
-        self, population_growth: float, ids: Optional[list[str]] = []
-    ):
-        """Implement population growth in the exposure of FIAT.
-
-        This is only done for buildings. This is done by multiplying maximum potential damages of objects with the percentage increase.
-
-        Parameters
-        ----------
-        population_growth : float
-            Percentage value of population growth.
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
-        """
+        self, population_growth: float, ids: Optional[list[str]] = None
+    ) -> None:
         # Get columns that include max damage
         damage_cols = [
             c
@@ -479,9 +497,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.config.non_building_names)
+        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # If ids are given use that as an additional filter
         if ids:
@@ -507,60 +525,46 @@ class FiatAdapter(IImpactAdapter):
         elevation_type: str,
         area_path: str,
         ground_elevation: Union[None, str, Path] = None,
-        aggregation_areas: Union[List[str], List[Path], str, Path] = None,
-        attribute_names: Union[List[str], str] = None,
-        label_names: Union[List[str], str] = None,
-    ):
-        """Implement population growth in new development area.
-
-        Parameters
-        ----------
-        population_growth : float
-            percentage of the existing population (value of assets) to use for the new area
-        ground_floor_height : float
-            height of the ground floor to be used for the objects in the new area
-        elevation_type : str
-            "floodmap" or "datum"
-        area_path : str
-            path to geometry file with new development areas
-        """
+    ) -> None:
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
-            if not self.bfe:
+            if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
-            # Use hydromt function
-            self._model.exposure.setup_new_composite_areas(
-                percent_growth=population_growth,
-                geom_file=Path(area_path),
-                ground_floor_height=ground_floor_height,
-                damage_types=["Structure", "Content"],
-                vulnerability=self._model.vulnerability,
-                elevation_reference="geom",
-                path_ref=self.bfe["geom"],
-                attr_ref=self.bfe["name"],
-                ground_elevation=ground_elevation,
-                aggregation_area_fn=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
-            )
+            kwargs = {
+                "elevation_reference": "geom",
+                "path_ref": self.database.static_path.joinpath(self.config.bfe.geom),
+                "attr_ref": self.config.bfe.field_name,
+            }
         elif elevation_type == "datum":
-            # Use hydromt function
-            self._model.exposure.setup_new_composite_areas(
-                percent_growth=population_growth,
-                geom_file=Path(area_path),
-                ground_floor_height=ground_floor_height,
-                damage_types=["Structure", "Content"],
-                vulnerability=self._model.vulnerability,
-                elevation_reference="datum",
-                ground_elevation=ground_elevation,
-                aggregation_area_fn=aggregation_areas,
-                attribute_names=attribute_names,
-                label_names=label_names,
-            )
+            kwargs = {"elevation_reference": "datum"}
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
+        # Get aggregation areas info
+        aggregation_areas = [
+            self.database.static_path.joinpath(aggr.file)
+            for aggr in self.config.aggregation
+        ]
+        attribute_names = [aggr.field_name for aggr in self.config.aggregation]
+        label_names = [
+            f"Aggregation Label: {aggr.name}" for aggr in self.config.aggregation
+        ]
+        # Use hydromt function
+        self._model.exposure.setup_new_composite_areas(
+            percent_growth=population_growth,
+            geom_file=Path(area_path),
+            ground_floor_height=ground_floor_height,
+            damage_types=["Structure", "Content"],
+            vulnerability=self._model.vulnerability,
+            ground_elevation=ground_elevation,
+            aggregation_area_fn=aggregation_areas,
+            attribute_names=attribute_names,
+            label_names=label_names,
+            **kwargs,
+        )
+
+    # MEASURES
 
     def elevate_properties(self, elevate: Elevate):
         # If ids are given use that as an additional filter
@@ -568,19 +572,23 @@ class FiatAdapter(IImpactAdapter):
 
         # Get reference type to align with hydromt
         if elevate.attrs.elevation.type == "floodmap":
-            if not self.bfe:
+            if not self.config.bfe:
                 raise ValueError(
                     "Base flood elevation (bfe) map is required to use 'floodmap' as reference."
                 )
-            elev_ref = self.bfe["mode"]
-            path_ref = self.bfe[elev_ref]
+            if self.config.bfe.table:
+                path_ref = self.config_base_path.joinpath(self.config.bfe.table)
+                height_reference = "table"
+            else:
+                path_ref = self.config_base_path.joinpath(self.config.bfe.geom)
+                height_reference = "geom"
             # Use hydromt function
             self._model.exposure.raise_ground_floor_height(
                 raise_by=elevate.attrs.elevation.value,
                 objectids=objectids,
-                height_reference=elev_ref,
+                height_reference=height_reference,
                 path_ref=path_ref,
-                attr_ref=self.bfe["name"],
+                attr_ref=self.config.bfe.field_name,
             )
 
         elif elevate.attrs.elevation.type == "datum":
@@ -602,9 +610,9 @@ class FiatAdapter(IImpactAdapter):
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self.fiat_model.exposure.exposure_db[
-            "Primary Object Type"
-        ].isin(self.site.attrs.fiat.config.non_building_names)
+        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
+            self.config.non_building_names
+        )
 
         # Get rows that are affected
         objectids = self.get_object_ids(buyout)
@@ -613,7 +621,7 @@ class FiatAdapter(IImpactAdapter):
             & buildings_rows
         )
 
-        # Update columns using economic growth value
+        # Update columns
         updated_max_pot_damage = self._model.exposure.exposure_db.copy()
         updated_max_pot_damage.loc[rows, damage_cols] *= 0
 
@@ -634,7 +642,7 @@ class FiatAdapter(IImpactAdapter):
             by default None
         """
         # If ids are given use that as an additional filter
-        objectids = get_object_ids(floodproof, self._model)
+        objectids = self.get_object_ids(floodproof)
 
         # Use hydromt function
         self._model.exposure.truncate_damage_function(
@@ -644,6 +652,8 @@ class FiatAdapter(IImpactAdapter):
             vulnerability=self._model.vulnerability,
         )
 
+    # STATIC METHODS
+
     def get_buildings(self) -> gpd.GeoDataFrame:
         if self._model.exposure is None:
             raise ValueError(
@@ -651,7 +661,7 @@ class FiatAdapter(IImpactAdapter):
             )
         return self._model.exposure.select_objects(
             primary_object_type="ALL",
-            non_building_names=self.site.attrs.fiat.config.non_building_names,
+            non_building_names=self.config.non_building_names,
             return_gdf=True,
         )
 
@@ -666,13 +676,20 @@ class FiatAdapter(IImpactAdapter):
             raise ValueError("No property types found in the FIAT model.")
         types.append("all")  # Add "all" type for using as identifier
 
-        names = self.site.attrs.fiat.config.non_building_names
+        names = self.config.non_building_names
         if names:
             for name in names:
                 if name in types:
                     types.remove(name)
 
         return types
+
+    def get_all_building_ids(self):
+        # Get ids of existing buildings
+        ids = self._model.exposure.get_object_ids(
+            "all", non_building_names=self.config.non_building_names
+        )
+        return ids
 
     def get_object_ids(self, measure: IMeasure) -> list[Any]:
         """Get ids of objects that are affected by the measure."""
@@ -696,13 +713,15 @@ class FiatAdapter(IImpactAdapter):
         ids = self._model.exposure.get_object_ids(
             selection_type=measure.attrs.selection_type,
             property_type=measure.attrs.property_type,
-            non_building_names=self.site.attrs.fiat.config.non_building_names,
+            non_building_names=self.config.non_building_names,
             aggregation=measure.attrs.aggregation_area_type,
             aggregation_area_name=measure.attrs.aggregation_area_name,
             polygon_file=str(polygon_file),
         )
 
         return ids
+
+    # POST-PROCESSING METHODS
 
     def add_exceedance_probability(
         self, column: str, threshold: float, period: int
