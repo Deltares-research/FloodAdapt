@@ -112,4 +112,3 @@ class RainfallNetCDF(IRainfall):
             output_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
-
