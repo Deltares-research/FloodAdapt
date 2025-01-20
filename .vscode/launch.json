@@ -12,5 +12,17 @@
             "console": "integratedTerminal",
             "justMyCode": false,
         },
+        {
+            "name": "Debug Unit Test",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": true,
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTEST_ADDOPTS": "--no-cov"
+            }
+        },
     ]
 }
