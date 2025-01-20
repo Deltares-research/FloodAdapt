@@ -47,7 +47,7 @@ class FiatAdapter(IImpactAdapter):
 
     It includes:
     - preprocessing methods for adding measures, projections and hazards
-    - executing methods for running a Delft-FIAT simulations
+    - executing method for running a Delft-FIAT simulation
     - postprocessing methods for saving impact results
     """
 
@@ -94,9 +94,9 @@ class FiatAdapter(IImpactAdapter):
             path_out.mkdir(parents=True)
 
         write_mode = "w+" if overwrite else "w"
-
-        self._model.set_root(root=str(path_out), mode=write_mode)
-        self._model.write()
+        with cd(path_out):
+            self._model.set_root(root=str(path_out), mode=write_mode)
+            self._model.write()
 
     def close_files(self):
         """Close all open files and clean up file handles."""
