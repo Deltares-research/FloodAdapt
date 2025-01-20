@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, Protocol, Type, Union
+from typing import Generic, Optional, Protocol, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -17,33 +17,23 @@ from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.io.csv import read_csv
 
-TIMESERIES_VARIABLE = Union[
-    us.UnitfulIntensity,
-    us.UnitfulDischarge,
-    us.UnitfulVelocity,
-    us.UnitfulLength,
-    us.UnitfulHeight,
-    us.UnitfulArea,
-    us.UnitfulDirection,
-]
+TValueUnitPair = TypeVar("TValueUnitPair", bound=us.ValueUnitPair)
 
 
-class SyntheticTimeseriesModel(BaseModel):
+class SyntheticTimeseriesModel(BaseModel, Generic[TValueUnitPair]):
     # Required
     shape_type: ShapeType
     duration: us.UnitfulTime
     peak_time: us.UnitfulTime
 
     # Either one of these must be set
-    peak_value: Optional[TIMESERIES_VARIABLE] = Field(
+    peak_value: Optional[TValueUnitPair] = Field(
         default=None,
         description="Peak value of the timeseries.",
-        validate_default=False,
     )
-    cumulative: Optional[TIMESERIES_VARIABLE] = Field(
+    cumulative: Optional[TValueUnitPair] = Field(
         default=None,
         description="Cumulative value of the timeseries.",
-        validate_default=False,
     )
 
     # Optional
@@ -83,15 +73,6 @@ class SyntheticTimeseriesModel(BaseModel):
                     f"SCS timeseries must have scs_file_name, scs_type and cumulative specified. {self.scs_file_name, self.scs_type, self.cumulative}"
                 )
         return self
-
-    @staticmethod
-    def default(ts_var: Type[TIMESERIES_VARIABLE]) -> "SyntheticTimeseriesModel":
-        return SyntheticTimeseriesModel(
-            shape_type=ShapeType.gaussian,
-            duration=us.UnitfulTime(value=2, units=us.UnitTypesTime.hours),
-            peak_time=us.UnitfulTime(value=1, units=us.UnitTypesTime.hours),
-            peak_value=ts_var(value=1, units=ts_var.DEFAULT_UNIT),
-        )
 
     @property
     def start_time(self) -> us.UnitfulTime:
@@ -204,7 +185,7 @@ class ITimeseries(ABC):
         df,
         xmin: pd.Timestamp,
         xmax: pd.Timestamp,
-        timeseries_variable: TIMESERIES_VARIABLE,
+        timeseries_variable: us.ValueUnitPair,
     ) -> go.Figure:
         fig = px.line(data_frame=df)
         fig.update_layout(

@@ -7,7 +7,6 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
@@ -44,19 +43,11 @@ class HistoricalEventModel(EventModel):
     }
     template: Template = Template.Historical
 
-    @classmethod
-    def default(cls) -> "HistoricalEventModel":
-        """Set default values for Synthetic event."""
-        return HistoricalEventModel(
-            name="DefaultHistoricalEvent",
-            time=TimeModel(),
-        )
-
 
 class HistoricalEvent(Event[HistoricalEventModel]):
     _attrs_type = HistoricalEventModel
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | HistoricalEventModel) -> None:
         super().__init__(data)
         self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
 

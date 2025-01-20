@@ -1101,7 +1101,7 @@ class SfincsAdapter(IHazardAdapter):
                 float(
                     us.UnitfulLength(
                         value=float(height),
-                        units=self.site.attrs.gui.default_length_units,
+                        units=self.site.attrs.gui.units.default_length_units,
                     ).convert(us.UnitTypesLength("meters"))
                 )
                 for height in gdf_floodwall["z"]

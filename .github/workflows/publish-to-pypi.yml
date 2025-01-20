@@ -37,12 +37,12 @@ on:
       - v[0-9]+\.[0-9]+\.[0-9]+
       # https://peps.python.org/pep-0440/
 
+
 env:
   PACKAGE_NAME: "flood-adapt"
   PYTHON_VERSION: "3.10"
 
 jobs:
-
   details:
     runs-on: ubuntu-latest
     outputs:
@@ -116,6 +116,7 @@ jobs:
       - name: Install dependencies
         shell: bash -el {0}
         run: |
+          conda install -n publish gdal basemap cftime fiona netCDF4 pygeos pyproj rasterio rtree shapely --channel conda-forge
           conda run -n publish pip install .
 
       - name: Build source and wheel distribution

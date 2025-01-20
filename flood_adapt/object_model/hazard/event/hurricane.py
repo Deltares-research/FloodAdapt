@@ -17,7 +17,6 @@ from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     ForcingType,
 )
-from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
@@ -55,21 +54,12 @@ class HurricaneEventModel(EventModel):
     hurricane_translation: TranslationModel = TranslationModel()
     track_name: str
 
-    @classmethod
-    def default(cls) -> "HurricaneEventModel":
-        """Set default values for HurricaneEvent."""
-        return HurricaneEventModel(
-            name="DefaultHurricaneEvent",
-            time=TimeModel(),
-            track_name="DefaultTrack",
-        )
-
 
 class HurricaneEvent(Event[HurricaneEventModel]):
     _attrs_type = HurricaneEventModel
     track_file: Path
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | HurricaneEventModel) -> None:
         super().__init__(data)
 
         self.site = Site.load_file(db_path(TopLevelDir.static) / "config" / "site.toml")
@@ -158,7 +148,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
     def translate_tc_track(self, tc: TropicalCyclone):
         self.logger.info("Translating the track of the tropical cyclone...")
         # First convert geodataframe to the local coordinate system
-        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.csname)
+        crs = pyproj.CRS.from_string(self.site.attrs.sfincs.config.csname)
         tc.track = tc.track.to_crs(crs)
 
         # Translate the track in the local coordinate system

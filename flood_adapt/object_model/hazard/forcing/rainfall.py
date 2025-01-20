@@ -36,36 +36,20 @@ class RainfallConstant(IRainfall):
         values = [self.intensity.value for _ in range(len(time))]
         return pd.DataFrame(data=values, index=time)
 
-    @classmethod
-    def default(cls) -> "RainfallConstant":
-        return cls(
-            intensity=us.UnitfulIntensity(value=0, units=us.UnitTypesIntensity.mm_hr)
-        )
-
 
 class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
     timeseries: SyntheticTimeseriesModel
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        rainfall = SyntheticTimeseries().load_dict(data=self.timeseries)
+        rainfall = SyntheticTimeseries(data=self.timeseries)
         return rainfall.to_dataframe(time_frame=time_frame)
-
-    @classmethod
-    def default(cls) -> "RainfallSynthetic":
-        return RainfallSynthetic(
-            timeseries=SyntheticTimeseriesModel.default(us.UnitfulIntensity)
-        )
 
 
 class RainfallMeteo(IRainfall):
     source: ForcingSource = ForcingSource.METEO
     precip_units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
     wind_units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
-
-    @classmethod
-    def default(cls) -> "RainfallMeteo":
-        return RainfallMeteo()
 
 
 class RainfallTrack(IRainfall):
@@ -82,10 +66,6 @@ class RainfallTrack(IRainfall):
             output_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
-
-    @classmethod
-    def default(cls) -> "RainfallTrack":
-        return RainfallTrack()
 
 
 class RainfallCSV(IRainfall):
@@ -107,7 +87,3 @@ class RainfallCSV(IRainfall):
             output_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.path, output_dir)
             self.path = output_dir / self.path.name
-
-    @classmethod
-    def default(cls) -> "RainfallCSV":
-        return RainfallCSV(path="path/to/rainfall.csv")
