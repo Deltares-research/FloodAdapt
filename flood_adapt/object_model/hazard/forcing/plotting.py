@@ -1,6 +1,6 @@
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 import plotly.express as px
@@ -49,10 +49,10 @@ def plot_forcing(
     event: Event,
     site: Site,
     forcing_type: ForcingType,
-) -> str:
+) -> tuple[str, Optional[List[Exception]]]:
     """Plot the forcing data for the event."""
     if event.attrs.forcings[forcing_type] is None:
-        return ""
+        return "", None
 
     match forcing_type:
         case ForcingType.RAINFALL:
@@ -72,12 +72,12 @@ def plot_forcing(
 def plot_discharge(
     event: Event,
     site: Site,
-) -> str:
+) -> tuple[str, Optional[List[Exception]]]:
     rivers: List[IDischarge] = event.attrs.forcings.get(ForcingType.DISCHARGE)
     if site.attrs.sfincs.river is None:
         raise ValueError("No rivers defined for this site.")
     elif not rivers:
-        return ""
+        return "", None
     logger.debug("Plotting discharge data")
 
     units = Settings().unit_system.discharge
@@ -111,7 +111,7 @@ def plot_discharge(
         logger.error(
             f"Could not retrieve discharge data for {', '.join([entry[0] for entry in errors])}: {errors}"
         )
-        return ""
+        return "", errors
 
     river_names, river_descriptions = [], []
     for river in site.attrs.sfincs.river:
@@ -151,16 +151,16 @@ def plot_discharge(
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "discharge_timeseries.html"
     fig.write_html(output_loc)
-    return str(output_loc)
+    return str(output_loc), None
 
 
 def plot_waterlevel(
     event: Event,
     site: Site,
-) -> str:
+) -> tuple[str, Optional[List[Exception]]]:
     forcing_list = event.attrs.forcings.get(ForcingType.WATERLEVEL)
     if not forcing_list:
-        return ""
+        return "", None
     elif site.attrs.sfincs.water_level is None:
         raise ValueError("No water levels defined for this site.")
 
@@ -169,7 +169,7 @@ def plot_waterlevel(
         logger.debug(
             f"Plotting not supported for waterlevel data from {waterlevel.source}"
         )
-        return ""
+        return "", None
 
     logger.debug("Plotting water level data")
 
@@ -188,11 +188,11 @@ def plot_waterlevel(
 
     except Exception as e:
         logger.error(f"Error getting water level data: {e}")
-        return ""
+        return "", [e]
 
     if data is not None and data.empty:
         logger.error(f"Could not retrieve waterlevel data: {waterlevel} {data}")
-        return ""
+        return "", None
 
     # Plot actual thing
     units = Settings().unit_system.length
@@ -241,20 +241,20 @@ def plot_waterlevel(
     output_loc = Path(output_dir) / "waterlevel_timeseries.html"
 
     fig.write_html(output_loc)
-    return str(output_loc)
+    return str(output_loc), None
 
 
 def plot_rainfall(
     event: Event,
-) -> str:
+) -> tuple[str, Optional[List[Exception]]]:
     forcing_list = event.attrs.forcings.get(ForcingType.RAINFALL)
     if not forcing_list:
-        return ""
+        return "", None
     elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
         logger.warning(
             f"Plotting not supported for rainfall datafrom sources {', '.join(UNPLOTTABLE_SOURCES)}"
         )
-        return ""
+        return "", None
 
     rainfall = forcing_list[0]
     logger.debug("Plotting rainfall data")
@@ -267,11 +267,11 @@ def plot_rainfall(
             raise ValueError(f"Unknown rainfall type: {rainfall}")
     except Exception as e:
         logger.error(f"Error getting rainfall data: {e}")
-        return ""
+        return "", [e]
 
     if data is None or data.empty:
         logger.error(f"Could not retrieve rainfall data: {rainfall} {data}")
-        return ""
+        return "", None
 
     # Add multiplier
     data *= event.attrs.rainfall_multiplier
@@ -304,21 +304,21 @@ def plot_rainfall(
     output_loc = Path(output_dir) / "rainfall_timeseries.html"
 
     fig.write_html(output_loc)
-    return str(output_loc)
+    return str(output_loc), None
 
 
 def plot_wind(
     event: Event,
-) -> str:
+) -> tuple[str, Optional[List[Exception]]]:
     logger.debug("Plotting wind data")
     forcing_list = event.attrs.forcings.get(ForcingType.WIND)
     if not forcing_list:
-        return ""
+        return "", None
     elif forcing_list[0].source in UNPLOTTABLE_SOURCES:
         logger.warning(
             f"Plotting not supported for wind data from sources {', '.join(UNPLOTTABLE_SOURCES)}"
         )
-        return ""
+        return "", None
 
     wind = forcing_list[0]
     data = None
@@ -329,13 +329,13 @@ def plot_wind(
             raise ValueError(f"Unknown wind type: {wind}")
     except Exception as e:
         logger.error(f"Error getting wind data: {e}")
-        return ""
+        return "", [e]
 
     if data is None or data.empty:
         logger.error(
             f"Could not retrieve wind data: {event.attrs.forcings[ForcingType.WIND]} {data}"
         )
-        return ""
+        return "", None
 
     # Plot actual thing
     # Create figure with secondary y-axis
@@ -392,4 +392,4 @@ def plot_wind(
     output_loc = Path(output_dir) / "wind_timeseries.html"
 
     fig.write_html(output_loc)
-    return str(output_loc)
+    return str(output_loc), None
