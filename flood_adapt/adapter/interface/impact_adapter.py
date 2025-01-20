@@ -31,6 +31,6 @@ class IImpactAdapter(IAdapter):
         pass
 
     @abstractmethod
-    def add_hazard(self, floodmap: FloodMap):
+    def set_hazard(self, floodmap: FloodMap):
         """Implement this to handle setting up of a hazard flood map."""
         pass
