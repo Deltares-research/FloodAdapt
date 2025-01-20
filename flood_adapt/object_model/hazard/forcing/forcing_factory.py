@@ -168,6 +168,7 @@ class ForcingFactory(IForcingFactory):
         cls, template: Optional[Template] = None
     ) -> List[tuple[ForcingType, ForcingSource]]:
         """List all available forcing classes using a tuple of ForcingType and ForcingSource."""
+        # TODO remove this when the backend supports all forcings
         ONLY_BACKEND_FORCINGS = {(ForcingType.WIND, ForcingSource.SYNTHETIC)}
         combinations = set()
         for type, source_map in cls.FORCINGTYPES.items():

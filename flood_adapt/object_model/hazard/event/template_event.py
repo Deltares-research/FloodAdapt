@@ -98,7 +98,7 @@ class EventModel(IEventModel):
         return dct
 
     @classmethod
-    def get_allowed_forcings(cls, as_types: bool = False) -> dict[str, List[str]]:
+    def get_allowed_forcings(cls) -> dict[str, List[str]]:
         return {k.value: [s.value for s in v] for k, v in cls.ALLOWED_FORCINGS.items()}
 
 
