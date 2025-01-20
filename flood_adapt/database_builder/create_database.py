@@ -1796,10 +1796,10 @@ class DatabaseBuilder:
         """
         type = self.config.unit_system
         templates_path = Path(__file__).parent.resolve().joinpath("templates")
-        default_units = read_toml(
-            templates_path.joinpath("default_units", f"{type}.toml")
+        _DEFAULT_UNITs = read_toml(
+            templates_path.joinpath("_DEFAULT_UNITs", f"{type}.toml")
         )
-        return default_units
+        return _DEFAULT_UNITs
 
     def _get_bin_colors(self):
         """

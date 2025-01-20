@@ -39,7 +39,7 @@ def create_events():
         SyntheticEventModel(
             name="extreme12ft",
             time=TimeModel(
-                start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 1)
+                start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)
             ),
             description="extreme 12 foot event",
             forcings={
@@ -93,7 +93,7 @@ def create_events():
         SyntheticEventModel(
             name="extreme12ft_rivershape_windconst",
             time=TimeModel(
-                start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 1)
+                start_time=datetime(2020, 1, 1), end_time=datetime(2020, 1, 2)
             ),
             description="extreme 12 foot event",
             forcings={
@@ -166,7 +166,7 @@ def create_events():
         HurricaneEventModel(
             name="FLORENCE",
             time=TimeModel(
-                start_time=datetime(2019, 8, 30), end_time=datetime(2018, 9, 18)
+                start_time=datetime(2019, 8, 30), end_time=datetime(2019, 9, 1)
             ),
             description="extreme 12 foot event",
             track_name="FLORENCE",

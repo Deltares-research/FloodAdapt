@@ -39,7 +39,10 @@ class RainfallConstant(IRainfall):
 
 class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
-    timeseries: SyntheticTimeseriesModel[us.UnitfulIntensity | us.UnitfulLength]
+    timeseries: (
+        SyntheticTimeseriesModel[us.UnitfulIntensity]
+        | SyntheticTimeseriesModel[us.UnitfulLength]
+    )
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         rainfall = SyntheticTimeseries(data=self.timeseries)

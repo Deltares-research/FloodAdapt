@@ -90,9 +90,9 @@ def setup_offshore_meteo_event():
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelModel(),
-            "WIND": WindMeteo(),
-            "RAINFALL": RainfallMeteo(),
+            "WATERLEVEL": [WaterlevelModel()],
+            "WIND": [WindMeteo()],
+            "RAINFALL": [RainfallMeteo()],
             "DISCHARGE": [
                 DischargeConstant(
                     river=RiverModel(

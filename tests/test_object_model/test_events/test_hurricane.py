@@ -96,7 +96,7 @@ class TestHurricaneEvent:
         path = tmp_path / "test_event.toml"
         event, cyc_file = setup_hurricane_event
         event.save(path)
-        event.attrs.forcings[ForcingType.WIND].path = cyc_file
+        event.attrs.forcings[ForcingType.WIND][0].path = cyc_file
 
         event.save_additional(path.parent)
         assert path.exists()

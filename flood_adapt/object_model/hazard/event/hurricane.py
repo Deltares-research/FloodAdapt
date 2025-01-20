@@ -131,8 +131,9 @@ class HurricaneEvent(Event[HurricaneEventModel]):
             self.logger.info(
                 f"Including rainfall in spiderweb file of hurricane {self.attrs.name}"
             )
-            tc.include_rainfall = (
-                self.attrs.forcings[ForcingType.RAINFALL].source == ForcingSource.TRACK
+            rainfall_forcings = self.attrs.forcings[ForcingType.RAINFALL]
+            tc.include_rainfall = any(
+                rainfall.source == ForcingSource.TRACK for rainfall in rainfall_forcings
             )
 
         if spw_file.exists() and recreate:
