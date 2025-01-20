@@ -33,6 +33,8 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
 
+DATA_DIR = Path(__file__).parent
+
 
 def create_events():
     EXTREME_12FT = SyntheticEvent(
@@ -200,6 +202,7 @@ def create_events():
             },
         )
     )
+    FLORENCE.track_file = DATA_DIR / "cyclones" / "FLORENCE.cyc"
 
     KINGTIDE_NOV2021 = HistoricalEvent(
         HistoricalEventModel(
