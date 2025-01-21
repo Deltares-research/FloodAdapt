@@ -205,7 +205,7 @@ class FiatAdapter(IImpactAdapter):
         )
 
         # Save any changes made to disk as well
-        output_path = scenario.impacts.impacts_path / "fiat"
+        output_path = scenario.impacts.impacts_path / "fiat_model"
         self.write(path_out=output_path)
 
     def run(self, scenario) -> None:
@@ -220,7 +220,7 @@ class FiatAdapter(IImpactAdapter):
             None
         """
         self.preprocess(scenario)
-        self.execute(scenario.impacts.impacts_path / "fiat")
+        self.execute(scenario.impacts.impacts_path / "fiat_model")
         self.postprocess(scenario)
 
     def execute(
