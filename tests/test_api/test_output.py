@@ -18,7 +18,7 @@ class TestAPI_Output:
         assert isinstance(metrics, pd.DataFrame)
 
     def test_impact_footprints(self, scenario):
-        footprints = api_output.get_fiat_footprints(scenario)
+        footprints = api_output.get_building_footprints(scenario)
         assert isinstance(footprints, gpd.GeoDataFrame)
 
     def test_impact_get_aggregation(self, scenario):
