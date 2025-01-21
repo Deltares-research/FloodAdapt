@@ -43,19 +43,23 @@ def test_sub_event():
         "template": Template.Synthetic,
         "mode": Mode.single_event,
         "forcings": {
-            "WIND": WindConstant(
-                speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
-                direction=us.UnitfulDirection(
-                    value=60, units=us.UnitTypesDirection.degrees
-                ),
-            ).model_dump(),
-            "RAINFALL": RainfallConstant(
-                intensity=us.UnitfulIntensity(
-                    value=2, units=us.UnitTypesIntensity.mm_hr
-                )
-            ).model_dump(),
-            "DISCHARGE": {
-                "cooper": DischargeConstant(
+            "WIND": [
+                WindConstant(
+                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                    direction=us.UnitfulDirection(
+                        value=60, units=us.UnitTypesDirection.degrees
+                    ),
+                ).model_dump()
+            ],
+            "RAINFALL": [
+                RainfallConstant(
+                    intensity=us.UnitfulIntensity(
+                        value=2, units=us.UnitTypesIntensity.mm_hr
+                    )
+                ).model_dump()
+            ],
+            "DISCHARGE": [
+                DischargeConstant(
                     river=RiverModel(
                         name="cooper",
                         description="Cooper River",
@@ -69,27 +73,33 @@ def test_sub_event():
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ).model_dump(),
-            },
-            "WATERLEVEL": WaterlevelSynthetic(
-                surge=SurgeModel(
-                    timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
-                        shape_type=ShapeType.triangle,
-                        duration=us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
-                        peak_time=us.UnitfulTime(value=8, units=us.UnitTypesTime.hours),
-                        peak_value=us.UnitfulLength(
+            ],
+            "WATERLEVEL": [
+                WaterlevelSynthetic(
+                    surge=SurgeModel(
+                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                            shape_type=ShapeType.triangle,
+                            duration=us.UnitfulTime(
+                                value=1, units=us.UnitTypesTime.days
+                            ),
+                            peak_time=us.UnitfulTime(
+                                value=8, units=us.UnitTypesTime.hours
+                            ),
+                            peak_value=us.UnitfulLength(
+                                value=1, units=us.UnitTypesLength.meters
+                            ),
+                        )
+                    ),
+                    tide=TideModel(
+                        harmonic_amplitude=us.UnitfulLength(
                             value=1, units=us.UnitTypesLength.meters
                         ),
-                    )
-                ),
-                tide=TideModel(
-                    harmonic_amplitude=us.UnitfulLength(
-                        value=1, units=us.UnitTypesLength.meters
+                        harmonic_phase=us.UnitfulTime(
+                            value=0, units=us.UnitTypesTime.hours
+                        ),
                     ),
-                    harmonic_phase=us.UnitfulTime(
-                        value=0, units=us.UnitTypesTime.hours
-                    ),
-                ),
-            ).model_dump(),
+                ).model_dump()
+            ],
         },
     }
 

@@ -525,7 +525,7 @@ class TestAddForcing:
             # Assert
             msg = f"River {forcing.river.name} is not defined in the sfincs model. Please ensure the river coordinates in the site.toml match the coordinates for rivers in the SFINCS model."
             with pytest.raises(ValueError, match=msg):
-                sfincs_adapter._set_single_river_forcing(discharge=forcing)
+                sfincs_adapter.add_forcing(forcing=forcing)
 
         def test_set_discharge_forcing_multiple_rivers(
             self,
@@ -546,19 +546,15 @@ class TestAddForcing:
                 )
 
                 # Act
-                sfincs_adapter._set_single_river_forcing(discharge=discharge)
+                sfincs_adapter.add_forcing(forcing=discharge)
 
             # Assert
             river_locations = sfincs_adapter.discharge.vector.to_gdf()
             river_discharges = sfincs_adapter.discharge.to_dataframe()["dis"]
 
             for i, river in enumerate(db.site.attrs.sfincs.river):
-                assert (
-                    river_locations.geometry[i].x == river.x_coordinate
-                )  # 1-based indexing for some reason
-                assert (
-                    river_locations.geometry[i].y == river.y_coordinate
-                )  # 1-based indexing for some reason
+                assert river_locations.geometry[i].x == river.x_coordinate
+                assert river_locations.geometry[i].y == river.y_coordinate
                 assert river_discharges[i] == i * 1000
 
         def test_set_discharge_forcing_matching_rivers(

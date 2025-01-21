@@ -44,7 +44,7 @@ class TestRainfallSynthetic:
             end_time=start + duration,
         )
 
-        timeseries = SyntheticTimeseriesModel[us.UnitfulLength](
+        timeseries = SyntheticTimeseriesModel[us.UnitfulIntensity](
             shape_type=ShapeType.block,
             duration=us.UnitfulTime(
                 value=duration.total_seconds(), units=us.UnitTypesTime.seconds
@@ -52,7 +52,7 @@ class TestRainfallSynthetic:
             peak_time=us.UnitfulTime(
                 value=duration.total_seconds() / 2, units=us.UnitTypesTime.seconds
             ),
-            peak_value=us.UnitfulLength(value=2, units=us.UnitTypesLength.meters),
+            peak_value=us.UnitfulIntensity(value=2, units=us.UnitTypesIntensity.mm_hr),
         )
 
         # Act

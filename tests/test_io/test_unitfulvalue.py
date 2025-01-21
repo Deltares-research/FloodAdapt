@@ -334,7 +334,7 @@ class TestUnitfulHeight:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulHeight(value=10, units="invalid_units")
-        assert "UnitfulHeight\nunits\n  Input should be " in str(excinfo.value)
+        assert "Unsupported unit: invalid_units" in str(excinfo.value)
 
 
 class TestUnitfulArea:
@@ -407,7 +407,7 @@ class TestUnitfulArea:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulArea(value=10, units="invalid_units")
-        assert "UnitfulArea\nunits\n  Input should be " in str(excinfo.value)
+        assert "Unsupported unit: invalid_units" in str(excinfo.value)
 
 
 class TestUnitfulVolume:
@@ -440,7 +440,7 @@ class TestUnitfulVolume:
         # Assert
         with pytest.raises(ValueError) as excinfo:
             us.UnitfulVolume(value=10, units="invalid_units")
-        assert "UnitfulVolume\nunits\n  Input should be " in str(excinfo.value)
+        assert "Unsupported unit: invalid_units" in str(excinfo.value)
 
 
 class TestValueUnitPair:
@@ -646,3 +646,22 @@ class TestValueUnitPair:
         assert math.isclose(
             result, expected_value
         ), f"True division with unit conversion failed. Expected: {expected_value}, got: {result}"
+
+
+@pytest.mark.parametrize(
+    "unit_instance",
+    [
+        us.UnitfulLength(value=1, units=us.UnitTypesLength.meters),
+        us.UnitfulIntensity(value=1, units=us.UnitTypesIntensity.mm_hr),
+        us.UnitfulDischarge(value=1, units=us.UnitTypesDischarge.cms),
+        us.UnitfulTime(value=1, units=us.UnitTypesTime.days),
+        us.UnitfulArea(value=1, units=us.UnitTypesArea.m2),
+        us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
+    ],
+)
+def test_model_dump_doesnt_contain_CONVERSION_FACTORS(unit_instance: us.ValueUnitPair):
+    """Test that the conversion factors are not included in the model dump."""
+    dump = unit_instance.model_dump()
+    assert dump == {"value": unit_instance.value, "units": unit_instance.units.value}
+    assert "_CONVERSION_FACTORS" not in dump
+    assert "_DEFAULT_UNIT" not in dump
