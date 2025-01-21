@@ -34,11 +34,13 @@ from flood_adapt.object_model.interface.measures import (
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
 )
+from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
 # TODO deal with all the relative paths for the files used
+# TODO IImpactAdapter and general Adapter class should NOT use the database
 # TODO add docstrings
 # TODO add log messages
 class FiatAdapter(IImpactAdapter):
@@ -114,16 +116,36 @@ class FiatAdapter(IImpactAdapter):
         return False
 
     def has_run(self, scenario: IScenario) -> bool:
-        scenario_output_path = scenario.database.scenarios.output_path.joinpath(
-            scenario.attrs.name
-        )
-        impacts_output_path = scenario_output_path.joinpath("Impacts")
+        # TODO this should include a check for all output files , and then maybe save them as output paths and types
+        """
+        Check if the impact results file for the given scenario exists.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            The scenario for which to check the FIAT results.
+
+        Returns
+        -------
+        bool
+            True if the FIAT results file exists, False otherwise.
+        """
+        impacts_output_path = scenario.impacts.impacts_path
         fiat_results_path = impacts_output_path.joinpath(
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
         return fiat_results_path.exists()
 
     def delete_model(self):
+        """
+        Delete the Delft-FIAT simulation folder.
+
+        This method attempts to delete the directory specified by `self.model_root`.
+
+        Raises
+        ------
+            OSError: If the directory cannot be deleted.
+        """
         self.logger.info("Deleting Delft-FIAT simulation folder...")
         try:
             shutil.rmtree(self.model_root)
@@ -150,7 +172,19 @@ class FiatAdapter(IImpactAdapter):
             self.logger.error(f"Error while checking if FIAT has run: {e}")
             return False
 
-    def preprocess(self, scenario: IScenario):
+    def preprocess(self, scenario: IScenario) -> None:
+        """
+        Preprocess the FIAT-model given a scenario by setting up projections, measures, and hazards, and then saves any changes made to disk.
+
+        Args:
+            scenario (IScenario): The scenario to preprocess, which includes projection,
+                                  strategy, and hazard.
+
+        Returns
+        -------
+            None
+        """
+        self.logger.info("Pre-processing Delft-FIAT model...")
         # Projection
         self.add_projection(scenario.projection)
 
@@ -171,14 +205,22 @@ class FiatAdapter(IImpactAdapter):
         )
 
         # Save any changes made to disk as well
-        output_path = scenario.impacts.fiat_path
+        output_path = scenario.impacts.impacts_path / "fiat"
         self.write(path_out=output_path)
 
-    def run(self, scenario):
+    def run(self, scenario) -> None:
+        """
+        Execute the full process for a given scenario, including preprocessing, executing the simulation, and postprocessing steps.
+
+        Args:
+            scenario: An object containing the scenario data.
+
+        Returns
+        -------
+            None
+        """
         self.preprocess(scenario)
-        self.execute(
-            scenario.impacts.fiat_path
-        )  # TODO which should not use FloodAdapt classes
+        self.execute(scenario.impacts.impacts_path / "fiat")
         self.postprocess(scenario)
 
     def execute(
@@ -187,7 +229,33 @@ class FiatAdapter(IImpactAdapter):
         exe_path: Optional[os.PathLike] = None,
         delete_crashed_runs: Optional[bool] = None,
         strict=True,
-    ):
+    ) -> bool:
+        """
+        Execute the FIAT model.
+
+        Parameters
+        ----------
+        path : Optional[os.PathLike], optional
+            The path to the model directory. If not provided, defaults to `self.model_root`.
+        exe_path : Optional[os.PathLike], optional
+            The path to the FIAT executable. If not provided, defaults to `self.exe_path`.
+        delete_crashed_runs : Optional[bool], optional
+            Whether to delete files from crashed runs. If not provided, defaults to `self.delete_crashed_runs`.
+        strict : bool, optional
+            Whether to raise an error if the FIAT model fails to run. Defaults to True.
+
+        Returns
+        -------
+        bool
+            True if the FIAT model run successfully, False otherwise.
+
+        Raises
+        ------
+        ValueError
+            If `exe_path` is not provided and `self.exe_path` is None.
+        RuntimeError
+            If the FIAT model fails to run and `strict` is True.
+        """
         if path is None:
             path = self.model_root
         if exe_path is None:
@@ -232,7 +300,19 @@ class FiatAdapter(IImpactAdapter):
 
         return process.returncode == 0
 
-    def read_outputs(self):
+    def read_outputs(self) -> None:
+        """
+        Read the output FIAT CSV file specified in the model configuration and stores the data in the `outputs` attribute.
+
+        Attributes
+        ----------
+        outputs : dict
+            A dictionary containing the following keys:
+            - "path" : Path
+                The path to the output directory.
+            - "table" : DataFrame
+                The contents of the output CSV file.
+        """
         # Get output csv
         outputs_path = self.model_root.joinpath(self._model.config["output"]["path"])
         output_csv_path = outputs_path.joinpath(
@@ -243,6 +323,24 @@ class FiatAdapter(IImpactAdapter):
         self.outputs["table"] = pd.read_csv(output_csv_path)
 
     def _get_aggr_ind(self, aggr_label: str):
+        """
+        Retrieve the index of the aggregation configuration that matches the given label.
+
+        Parameters
+        ----------
+        aggr_label : str
+            The label of the aggregation to find.
+
+        Returns
+        -------
+        int
+            The index of the aggregation configuration that matches the given label.
+
+        Raises
+        ------
+        IndexError
+            If no aggregation with the given label is found.
+        """
         ind = [
             i
             for i, aggr in enumerate(self.config.aggregation)
@@ -252,6 +350,35 @@ class FiatAdapter(IImpactAdapter):
         return ind
 
     def postprocess(self, scenario):
+        """
+        Post-process the results of the Delft-FIAT simulation for a given scenario.
+
+        Parameters
+        ----------
+        scenario : Scenario
+            The scenario object containing all relevant data and configurations.
+
+        Raises
+        ------
+        RuntimeError
+            If the Delft-FIAT simulation did not run successfully.
+
+        Post-processing steps include:
+        - Reading the outputs of the Delft-FIAT simulation.
+        - Adding exceedance probabilities for risk mode scenarios.
+        - Saving detailed impacts per object to a CSV file.
+        - Creating infometrics files based on different metric configurations.
+        - Generating infographic files if configured.
+        - Calculating equity-based damages for risk mode scenarios.
+        - Saving aggregated metrics to shapefiles.
+        - Merging points data to building footprints.
+        - Creating a roads spatial file if configured.
+        - Deleting the simulation folder if the site configuration is set to not keep the simulation.
+
+        Logging
+        -------
+        Logs the start and completion of the post-processing steps.
+        """
         if not self.fiat_completed():
             raise RuntimeError("Delft-FIAT did not run successfully!")
 
@@ -262,10 +389,8 @@ class FiatAdapter(IImpactAdapter):
         mode = scenario.event.attrs.mode
 
         # Define scenario output path
-        scenario_output_path = scenario.database.scenarios.output_path.joinpath(
-            scenario.attrs.name
-        )
-        impacts_output_path = scenario_output_path.joinpath("Impacts")
+        scenario_output_path = scenario.impacts.results_path
+        impacts_output_path = scenario.impacts.impacts_path
 
         # Add exceedance probabilities if needed (only for risk)
         if mode == Mode.risk:
@@ -370,7 +495,22 @@ class FiatAdapter(IImpactAdapter):
             self.delete_model()
 
     def add_measure(self, measure: IMeasure):
-        self.logger.info(f"Applying impact measure {measure.attrs.name}")
+        """
+        Add and apply a specific impact measure to the properties of the FIAT model.
+
+        Parameters
+        ----------
+        measure : IMeasure
+            The impact measure to be applied. It can be of type Elevate, FloodProof, or Buyout.
+
+        The method logs the application of the measure and calls the appropriate method based on the measure type:
+        - Elevate: Calls elevate_properties(measure)
+        - FloodProof: Calls floodproof_properties(measure)
+        - Buyout: Calls buyout_properties(measure)
+
+        If the measure type is unsupported, a warning is logged.
+        """
+        self.logger.info(f"Applying impact measure '{measure.attrs.name}'...")
         if isinstance(measure, Elevate):
             self.elevate_properties(measure)
         elif isinstance(measure, FloodProof):
@@ -382,7 +522,25 @@ class FiatAdapter(IImpactAdapter):
                 f"Skipping unsupported measure type {measure.__class__.__name__}"
             )
 
-    def add_projection(self, projection):
+    def add_projection(self, projection: IProjection):
+        """
+        Add the socioeconomic changes part of a projection to the FIAT model.
+
+        Parameters
+        ----------
+        projection : Projection
+            The projection object containing socioeconomic changes to be applied.
+
+        Notes
+        -----
+        - Economic growth is applied to all existing buildings if specified.
+        - New population growth areas are added if specified, taking into account
+        economic growth.
+        - Population growth is applied to existing objects if specified.
+        """
+        self.logger.info(
+            f"Applying socioeconomic changes from projection '{projection.attrs.name}'..."
+        )
         socio_economic_change = projection.get_socio_economic_change()
 
         ids_all_buildings = self.get_all_building_ids()
@@ -436,6 +594,23 @@ class FiatAdapter(IImpactAdapter):
         is_risk: bool = False,
         units: str = us.UnitTypesLength.meters,
     ) -> None:
+        """
+        Set the hazard map and type for the FIAT model.
+
+        Parameters
+        ----------
+        map_fn : str
+            The filename of the hazard map.
+        map_type : FloodMapType
+            The type of the flood map.
+        var : str
+            The variable name in the hazard map.
+        is_risk : bool, optional
+            Flag indicating if the map is a risk output. Defaults to False.
+        units : str, optional
+            The units of the hazard map. Defaults to us.UnitTypesLength.meters.
+        """
+        self.logger.info(f"Setting hazard to the {map_type} map {map_fn}")
         # Add the floodmap data to a data catalog with the unit conversion
         wl_current_units = us.UnitfulLength(value=1.0, units=units)
         conversion_factor = wl_current_units.convert(self._model.exposure.unit)
@@ -457,6 +632,21 @@ class FiatAdapter(IImpactAdapter):
     def apply_economic_growth(
         self, economic_growth: float, ids: Optional[list] = None
     ) -> None:
+        """
+        Apply economic growth to the FIAT-Model by adjusting the maximum potential damage values in the exposure database.
+
+        This method updates the max potential damage values in the exposure database by
+        applying a given economic growth rate. It can optionally filter the updates to
+        specific objects identified by their IDs.
+
+        Parameters
+        ----------
+        economic_growth : float
+            The economic growth rate to apply, expressed as a percentage.
+        ids : Optional[list], default=None
+            A list of object IDs to which the economic growth should be applied. If None, the growth is applied to all buildings.
+        """
+        self.logger.info(f"Applying economic growth of {economic_growth} %.")
         # Get columns that include max damage
         damage_cols = [
             c
@@ -489,6 +679,21 @@ class FiatAdapter(IImpactAdapter):
     def apply_population_growth_existing(
         self, population_growth: float, ids: Optional[list[str]] = None
     ) -> None:
+        """
+        Apply population growth to the FIAT-Model by adjusting the existing max potential damage values for buildings.
+
+        This method updates the max potential damage values in the exposure database by
+        applying a given population growth rate. It can optionally filter the updates to
+        specific objects identified by their IDs.
+
+        Parameters
+        ----------
+        population_growth : float
+            The population growth rate as a percentage.
+        ids : Optional[list[str]]
+            A list of object IDs to filter the updates. If None, the updates are applied to all buildings.
+        """
+        self.logger.info(f"Applying population growth of {population_growth} %.")
         # Get columns that include max damage
         damage_cols = [
             c
@@ -526,6 +731,31 @@ class FiatAdapter(IImpactAdapter):
         area_path: str,
         ground_elevation: Union[None, str, Path] = None,
     ) -> None:
+        """
+        Apply population growth in a new area by adding new objects in the model.
+
+        Parameters
+        ----------
+        population_growth : float
+            The percentage of population growth to apply.
+        ground_floor_height : float
+            The height of the ground floor.
+        elevation_type : str
+            The type of elevation reference to use. Must be either 'floodmap' or 'datum'.
+        area_path : str
+            The path to the area file.
+        ground_elevation : Union[None, str, Path], optional
+            The ground elevation reference. Default is None.
+
+        Raises
+        ------
+        ValueError
+            If `elevation_type` is 'floodmap' and base flood elevation (bfe) map is not provided.
+            If `elevation_type` is not 'floodmap' or 'datum'.
+        """
+        self.logger.info(
+            f"Applying population growth of {population_growth} %, by creating a new development area using the geometries from {area_path} and a ground floor height of {ground_floor_height} {self._model.exposure.unit} above '{elevation_type}'."
+        )
         # Get reference type to align with hydromt
         if elevation_type == "floodmap":
             if not self.config.bfe:
@@ -565,8 +795,50 @@ class FiatAdapter(IImpactAdapter):
         )
 
     # MEASURES
+    @staticmethod
+    def _get_area_name(measure: IMeasure):
+        """
+        Determine the area name based on the selection type of the measure.
 
-    def elevate_properties(self, elevate: Elevate):
+        Parameters
+        ----------
+        measure : IMeasure
+            An instance of IMeasure containing attributes that define the selection type and area.
+
+        Returns
+        -------
+        str
+            The name of the area. It returns the aggregation area name if the selection type is "aggregation_area",
+            the polygon file name if the selection type is "polygon", and "all" for any other selection type.
+        """
+        area = (
+            measure.attrs.aggregation_area_name
+            if measure.attrs.selection_type == "aggregation_area"
+            else measure.attrs.polygon_file
+            if measure.attrs.selection_type == "polygon"
+            else "all"
+        )
+        return area
+
+    def elevate_properties(self, elevate: Elevate) -> None:
+        """
+        Elevate the ground floor height of properties based on the provided Elevate measure.
+
+        Parameters
+        ----------
+        elevate : Elevate
+            The Elevate measure containing the elevation details.
+
+        Raises
+        ------
+        ValueError
+            If the elevation type is 'floodmap' and the base flood elevation (bfe) map is not provided.
+            If the elevation type is not 'floodmap' or 'datum'.
+        """
+        area = self._get_area_name(elevate)
+        self.logger.info(
+            f"Elevating '{elevate.attrs.property_type}' type properties in '{area}' by {elevate.attrs.elevation} relative to '{elevate.attrs.elevation.type}'."
+        )
         # If ids are given use that as an additional filter
         objectids = self.get_object_ids(elevate)
 
@@ -601,7 +873,20 @@ class FiatAdapter(IImpactAdapter):
         else:
             raise ValueError("elevation type can only be one of 'floodmap' or 'datum'")
 
-    def buyout_properties(self, buyout: Buyout):
+    def buyout_properties(self, buyout: Buyout) -> None:
+        """
+        Apply the buyout measure to the properties by setting their maximum potential damage to zero.
+
+        Parameters
+        ----------
+        buyout : Buyout
+            The Buyout measure containing the details of the properties to be bought out.
+
+        """
+        area = self._get_area_name(buyout)
+        self.logger.info(
+            f"Buying-out '{buyout.attrs.property_type}' type properties in '{area}'."
+        )
         # Get columns that include max damage
         damage_cols = [
             c
@@ -630,17 +915,19 @@ class FiatAdapter(IImpactAdapter):
             updated_max_potential_damages=updated_max_pot_damage
         )
 
-    def floodproof_properties(self, floodproof: FloodProof):
-        """Floodproof properties by creating new depth-damage functions and adding them in "Damage Function: {}" column in the FIAT exposure file.
+    def floodproof_properties(self, floodproof: FloodProof) -> None:
+        """
+        Apply floodproofing measures to the properties by truncating the damage function.
 
         Parameters
         ----------
         floodproof : FloodProof
-            this is an "floodproof" impact measure object
-        ids : Optional[list[str]], optional
-            List of FIAT "Object ID" values to apply the population growth on,
-            by default None
+            The FloodProof measure containing the details of the properties to be floodproofed.
         """
+        area = self._get_area_name(floodproof)
+        self.logger.info(
+            f"Flood-proofing '{floodproof.attrs.property_type}' type properties in '{area}' by {floodproof.attrs.elevation}."
+        )
         # If ids are given use that as an additional filter
         objectids = self.get_object_ids(floodproof)
 
@@ -655,6 +942,19 @@ class FiatAdapter(IImpactAdapter):
     # STATIC METHODS
 
     def get_buildings(self) -> gpd.GeoDataFrame:
+        """
+        Retrieve the building geometries from the FIAT model's exposure database.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            A GeoDataFrame containing the geometries of all buildings in the FIAT model.
+
+        Raises
+        ------
+        ValueError
+            If the FIAT model does not have an exposure database initialized.
+        """
         if self._model.exposure is None:
             raise ValueError(
                 "FIAT model does not have exposure, make sure your model has been initialized."
@@ -666,11 +966,19 @@ class FiatAdapter(IImpactAdapter):
         )
 
     def get_property_types(self) -> list:
-        if self._model.exposure is None:
-            raise ValueError(
-                "FIAT model does not have exposure, make sure your model has been initialized."
-            )
+        """
+        Retrieve the list of property types from the FIAT model's exposure database.
 
+        Returns
+        -------
+        list
+            A list of property types available in the FIAT model.
+
+        Raises
+        ------
+        ValueError
+            If no property types are found in the FIAT model.
+        """
         types = self._model.exposure.get_primary_object_type()
         if types is None:
             raise ValueError("No property types found in the FIAT model.")
@@ -685,6 +993,14 @@ class FiatAdapter(IImpactAdapter):
         return types
 
     def get_all_building_ids(self):
+        """
+        Retrieve the IDs of all buildings in the FIAT model.
+
+        Returns
+        -------
+        list
+            A list of IDs for all buildings in the FIAT model.
+        """
         # Get ids of existing buildings
         ids = self._model.exposure.get_object_ids(
             "all", non_building_names=self.config.non_building_names
@@ -692,7 +1008,24 @@ class FiatAdapter(IImpactAdapter):
         return ids
 
     def get_object_ids(self, measure: IMeasure) -> list[Any]:
-        """Get ids of objects that are affected by the measure."""
+        """
+        Retrieve the object IDs for a given impact measure.
+
+        Parameters
+        ----------
+        measure : IMeasure
+            The impact measure for which to retrieve object IDs.
+
+        Returns
+        -------
+        list[Any]
+            A list of object IDs that match the criteria of the given measure.
+
+        Raises
+        ------
+        ValueError
+            If the measure type is not an impact measure.
+        """
         if not MeasureType.is_impact(measure.attrs.type):
             raise ValueError(
                 f"Measure type {measure.attrs.type} is not an impact measure. "
@@ -726,6 +1059,22 @@ class FiatAdapter(IImpactAdapter):
     def add_exceedance_probability(
         self, column: str, threshold: float, period: int
     ) -> pd.DataFrame:
+        """Calculate exceedance probabilities and append them to the results table.
+
+        Parameters
+        ----------
+        column : str
+            The name of the column to calculate exceedance probabilities for.
+        threshold : float
+            The threshold value for exceedance probability calculation.
+        period : int
+            The return period for exceedance probability calculation.
+
+        Returns
+        -------
+        pd.DataFrame
+            The updated results table with exceedance probabilities appended.
+        """
         self.logger.info("Calculating exceedance probabilities...")
         fiat_results_df = ExceedanceProbabilityCalculator(column).append_probability(
             self.outputs["table"], threshold, period
@@ -736,6 +1085,21 @@ class FiatAdapter(IImpactAdapter):
     def create_infometrics(
         self, metric_config_paths: list[os.PathLike], metrics_output_path: os.PathLike
     ) -> None:
+        """
+        Create infometrics files based on the provided metric configuration paths.
+
+        Parameters
+        ----------
+        metric_config_paths : list[os.PathLike]
+            A list of paths to the metric configuration files.
+        metrics_output_path : os.PathLike
+            The path where the metrics output file will be saved.
+
+        Raises
+        ------
+        FileNotFoundError
+            If a mandatory metric configuration file does not exist.
+        """
         # Get the metrics configuration
         self.logger.info("Calculating infometrics...")
 
@@ -770,6 +1134,21 @@ class FiatAdapter(IImpactAdapter):
         metrics_path: os.PathLike,
         mode: Mode = Mode.single_event,
     ):
+        """Create infographic files based on the provided metrics and configuration.
+
+        Parameters
+        ----------
+        name : str
+            The name of the scenario.
+        output_base_path : os.PathLike
+            The base path where the output files will be saved.
+        config_base_path : os.PathLike
+            The base path where the configuration files are located.
+        metrics_path : os.PathLike
+            The path to the metrics file.
+        mode : Mode, optional
+            The mode of the infographic, by default Mode.single_event.
+        """
         self.logger.info("Creating infographics...")
 
         # Check if infographics config file exists
@@ -797,6 +1176,19 @@ class FiatAdapter(IImpactAdapter):
         damage_column_pattern: str = "TotalDamageRP{rp}",
         gamma: float = 1.2,
     ):
+        """Calculate equity-based damages for a given aggregation label.
+
+        Parameters
+        ----------
+        aggr_label : str
+            The label of the aggregation area.
+        metrics_path : os.PathLike
+            The path to the metrics file.
+        damage_column_pattern : str, optional
+            The pattern for the damage column names, by default "TotalDamageRP{rp}".
+        gamma : float, optional
+            The equity weight parameter, by default 1.2
+        """
         # TODO gamma in configuration file?
 
         ind = self._get_aggr_ind(aggr_label)
@@ -859,7 +1251,21 @@ class FiatAdapter(IImpactAdapter):
     def save_aggregation_spatial(
         self, aggr_label: str, metrics_path: os.PathLike, output_path: os.PathLike
     ):
-        self.logger.info("Saving impacts on aggregation areas...")
+        """
+        Save aggregated metrics to a spatial file.
+
+        Parameters
+        ----------
+        aggr_label : str
+            The label of the aggregation area.
+        metrics_path : os.PathLike
+            The path to the metrics file.
+        output_path : os.PathLike
+            The path where the output spatial file will be saved.
+        """
+        self.logger.info(
+            f"Saving impacts for aggregation areas type: '{aggr_label}'..."
+        )
 
         metrics = pd.read_csv(metrics_path)
 
@@ -882,7 +1288,20 @@ class FiatAdapter(IImpactAdapter):
         )
 
     def save_building_footprints(self, output_path: os.PathLike):
-        self.logger.info("Saving impacts on building footprints...")
+        """
+        Aggregate impacts at a building footprint level and then saves to an output file.
+
+        Parameters
+        ----------
+        output_path : os.PathLike
+            The path where the output spatial file will be saved.
+
+        Raises
+        ------
+        ValueError
+            If no building footprints are provided in the configuration.
+        """
+        self.logger.info("Calculating impacts at a building footprint scale...")
 
         # Get footprints file paths from site.toml
         # TODO ensure that if this does not happen we get same file name output from FIAT?
@@ -921,7 +1340,15 @@ class FiatAdapter(IImpactAdapter):
         footprints.write(output_path)
 
     def save_roads(self, output_path: os.PathLike):
-        self.logger.info("Saving road impacts...")
+        """
+        Save the impacts on roads to a spatial file.
+
+        Parameters
+        ----------
+        output_path : os.PathLike
+            The path where the output spatial file will be saved.
+        """
+        self.logger.info("Calculating road impacts...")
         # Read roads spatial file
         roads = gpd.read_file(
             self.outputs["path"].joinpath(self.config.roads_file_name)

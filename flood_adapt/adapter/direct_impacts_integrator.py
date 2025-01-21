@@ -14,7 +14,6 @@ from flood_adapt.object_model.interface.projections import SocioEconomicChange
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
-# TODO move code that is related to fiat to the Fiat Adapter
 class Impacts(DatabaseUser):
     """All information related to the impacts of the scenario.
 
@@ -48,10 +47,6 @@ class Impacts(DatabaseUser):
     @property
     def impacts_path(self) -> Path:
         return self.results_path / "Impacts"
-
-    @property
-    def fiat_path(self) -> Path:
-        return self.impacts_path / "fiat_model"
 
     @property
     def has_run(self) -> bool:

@@ -68,9 +68,8 @@ class Scenario(IScenario, DatabaseUser):
                         f"Hazard for scenario '{self.attrs.name}' has already been run."
                     )
 
-            impacts: Impacts = Impacts(scenario=self)
-            if not impacts.has_run:
-                impacts.run()
+            if not self.impacts.has_run:
+                self.impacts.run()
             else:
                 self.logger.info(
                     f"Impacts for scenario '{self.attrs.name}' has already been run."
