@@ -39,10 +39,6 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.utils import cd, resolve_filepath
 
 
-# TODO deal with all the relative paths for the files used
-# TODO IImpactAdapter and general Adapter class should NOT use the database
-# TODO add docstrings
-# TODO add log messages
 class FiatAdapter(IImpactAdapter):
     """
     ImpactAdapter for Delft-FIAT.
@@ -53,8 +49,11 @@ class FiatAdapter(IImpactAdapter):
     - postprocessing methods for saving impact results
     """
 
+    # TODO deal with all the relative paths for the files used
+    # TODO IImpactAdapter and general Adapter class should NOT use the database
+
     _model: FiatModel  # hydroMT-FIAT model
-    config: Optional[FiatConfigModel] = None  # Site model
+    config: Optional[FiatConfigModel] = None
     exe_path: Optional[os.PathLike] = None
 
     def __init__(
