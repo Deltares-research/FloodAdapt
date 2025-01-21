@@ -1,7 +1,7 @@
 # Event tab
 import os
 from pathlib import Path
-from typing import Any, List, Type, Union
+from typing import Any, List, Optional, Type, Union
 
 import pandas as pd
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -26,6 +26,7 @@ from flood_adapt.object_model.hazard.forcing.plotting import (
 from flood_adapt.object_model.hazard.forcing.tide_gauge import TideGauge
 from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
+    SyntheticTimeseries,
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import SurgeModel, TideModel
@@ -79,6 +80,7 @@ __all__ = [
     "TranslationModel",
     "CSVTimeseries",
     "SyntheticTimeseriesModel",
+    "SyntheticTimeseries",
     "DischargeConstant",
     "RiverModel",
     "SurgeModel",
@@ -299,7 +301,9 @@ def read_csv(csvpath: Union[str, os.PathLike]) -> pd.DataFrame:
     return read_csv(csvpath)
 
 
-def plot_forcing(event: IEvent, forcing_type: ForcingType) -> str:
+def plot_forcing(
+    event: IEvent, forcing_type: ForcingType
+) -> tuple[str, Optional[List[Exception]]]:
     """Plot forcing data for an event.
 
     Parameters

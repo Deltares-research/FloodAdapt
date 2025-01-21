@@ -30,33 +30,35 @@ from flood_adapt.object_model.scenario import Scenario
 
 @pytest.fixture()
 def setup_offshore_scenario(test_db: IDatabase):
-    event_attrs = {
-        "name": "test_historical_offshore_meteo",
-        "time": TimeModel(),
-        "template": Template.Historical,
-        "mode": Mode.single_event,
-        "forcings": {
-            "WATERLEVEL": WaterlevelModel(),
-            "WIND": WindMeteo(),
-            "RAINFALL": RainfallMeteo(),
-            "DISCHARGE": {
-                "cooper": DischargeConstant(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
+    event_attrs = (
+        {
+            "name": "test_historical_offshore_meteo",
+            "time": TimeModel(),
+            "template": Template.Historical,
+            "mode": Mode.single_event,
+            "forcings": {
+                "WATERLEVEL": [WaterlevelModel()],
+                "WIND": [WindMeteo()],
+                "RAINFALL": [RainfallMeteo()],
+                "DISCHARGE": [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
-                    ),
-                    discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
-                    ),
-                )
+                    )
+                ],
             },
         },
-    }
+    )
 
     event = HistoricalEvent.load_dict(event_attrs)
     test_db.events.save(event)

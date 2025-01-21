@@ -1,3 +1,4 @@
+import math
 import os
 import tempfile
 from datetime import timedelta
@@ -231,6 +232,10 @@ class TestSyntheticTimeseries:
     def test_calculate_data_correct_peak_value(
         self, shape_type, duration, peak_time, peak_value, cumulative
     ):
+        time = TimeModel(
+            start_time=REFERENCE_TIME,
+            end_time=REFERENCE_TIME + timedelta(hours=duration),
+        )
         ts = self.get_test_timeseries(
             shape_type=shape_type,
             duration=duration,
@@ -238,16 +243,19 @@ class TestSyntheticTimeseries:
             peak_value=peak_value,
         )
 
-        timestep = TimeModel().time_step
-        data = ts.calculate_data(timestep)
-        result = ts.attrs.duration.to_timedelta() / timestep
+        data = ts.calculate_data(time.time_step)
+        result = math.floor(ts.attrs.duration.to_timedelta() / time.time_step)
         assert (
             result == len(data) - 1
-        ), f"{ts.attrs.duration.to_timedelta()}/{timestep} should eq {result}, but it is: {len(data) - 1}."
+        ), f"{ts.attrs.duration.to_timedelta()}/{time.time_step} should eq {result}, but it is: {len(data) - 1}."
         assert np.amax(data) == ts.attrs.peak_value.value
 
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_calculate_data_scs(self, duration, peak_time, peak_value, cumulative):
+        time = TimeModel(
+            start_time=REFERENCE_TIME,
+            end_time=REFERENCE_TIME + timedelta(hours=duration),
+        )
         ts = self.get_test_timeseries(
             shape_type=ShapeType.scs,
             peak_value=peak_value,
@@ -255,15 +263,14 @@ class TestSyntheticTimeseries:
             duration=duration,
             peak_time=peak_time,
         )
-        timestep = TimeModel().time_step
 
-        data = ts.calculate_data(timestep)
-        cum_rainfall_ts = np.trapz(data, dx=timestep.total_seconds()) / 3600
+        data = ts.calculate_data(time.time_step)
+        cum_rainfall_ts = np.trapz(data, dx=time.time_step.total_seconds()) / 3600
 
         assert abs(cum_rainfall_ts - cumulative) < 0.01
         assert (
-            ts.attrs.duration.to_timedelta() / timestep == len(data) - 1
-        ), f"{ts.attrs.duration.to_timedelta()}/{timestep} should eq {ts.attrs.duration.to_timedelta() / timestep}, but it is: {len(data) - 1}."
+            ts.attrs.duration.to_timedelta() / time.time_step == len(data) - 1
+        ), f"{ts.attrs.duration.to_timedelta()}/{time.time_step} should eq {ts.attrs.duration.to_timedelta() / time.time_step}, but it is: {len(data) - 1}."
 
     def test_load_file(self):
         path = Path(tempfile.gettempdir()) / "test.toml"

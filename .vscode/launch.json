@@ -14,9 +14,9 @@
         },
         {
             "name": "Debug Unit Test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "justMyCode": true,
+            "justMyCode": false,
             "program": "${file}",
             "purpose": ["debug-test"],
             "console": "integratedTerminal",

@@ -187,11 +187,11 @@ class TestWaterlevelModel:
             "template": Template.Historical,
             "mode": Mode.single_event,
             "forcings": {
-                "WATERLEVEL": WaterlevelModel(),
-                "WIND": WindMeteo(),
-                "RAINFALL": RainfallMeteo(),
-                "DISCHARGE": {
-                    "cooper": DischargeConstant(
+                "WATERLEVEL": [WaterlevelModel()],
+                "WIND": [WindMeteo()],
+                "RAINFALL": [RainfallMeteo()],
+                "DISCHARGE": [
+                    DischargeConstant(
                         river=RiverModel(
                             name="cooper",
                             description="Cooper River",
@@ -205,7 +205,7 @@ class TestWaterlevelModel:
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                },
+                ],
             },
         }
 
