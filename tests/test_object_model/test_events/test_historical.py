@@ -47,20 +47,24 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv")),
-            "WIND": WindConstant(
-                speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
-                direction=us.UnitfulDirection(
-                    value=60, units=us.UnitTypesDirection.degrees
-                ),
-            ),
-            "RAINFALL": RainfallConstant(
-                intensity=us.UnitfulIntensity(
-                    value=20, units=us.UnitTypesIntensity.mm_hr
+            "WATERLEVEL": [WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv"))],
+            "WIND": [
+                WindConstant(
+                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
+                    direction=us.UnitfulDirection(
+                        value=60, units=us.UnitTypesDirection.degrees
+                    ),
                 )
-            ),
-            "DISCHARGE": {
-                "cooper": DischargeCSV(
+            ],
+            "RAINFALL": [
+                RainfallConstant(
+                    intensity=us.UnitfulIntensity(
+                        value=20, units=us.UnitTypesIntensity.mm_hr
+                    )
+                )
+            ],
+            "DISCHARGE": [
+                DischargeCSV(
                     river=RiverModel(
                         name="cooper",
                         description="Cooper River",
@@ -72,7 +76,7 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
                     ),
                     path=_tmp_timeseries_csv("discharge.csv"),
                 ),
-            },
+            ],
         },
     }
     return HistoricalEvent.load_dict(event_attrs)
@@ -86,11 +90,11 @@ def setup_offshore_meteo_event():
         "template": Template.Historical,
         "mode": Mode.single_event,
         "forcings": {
-            "WATERLEVEL": WaterlevelModel(),
-            "WIND": WindMeteo(),
-            "RAINFALL": RainfallMeteo(),
-            "DISCHARGE": {
-                "cooper": DischargeConstant(
+            "WATERLEVEL": [WaterlevelModel()],
+            "WIND": [WindMeteo()],
+            "RAINFALL": [RainfallMeteo()],
+            "DISCHARGE": [
+                DischargeConstant(
                     river=RiverModel(
                         name="cooper",
                         description="Cooper River",
@@ -104,7 +108,7 @@ def setup_offshore_meteo_event():
                         value=5000, units=us.UnitTypesDischarge.cfs
                     ),
                 ),
-            },
+            ],
         },
     }
     return HistoricalEvent.load_dict(event_attrs)

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 
 from flood_adapt.object_model.hazard.interface.forcing import (
     Scstype,
@@ -27,22 +27,13 @@ class SyntheticTimeseriesModel(BaseModel, Generic[TValueUnitPair]):
     peak_time: us.UnitfulTime
 
     # Either one of these must be set
-    peak_value: Optional[TValueUnitPair] = Field(
-        default=None,
-        description="Peak value of the timeseries.",
-    )
-    cumulative: Optional[TValueUnitPair] = Field(
-        default=None,
-        description="Cumulative value of the timeseries.",
-    )
+    peak_value: Optional[TValueUnitPair] = None
+    cumulative: Optional[TValueUnitPair] = None
 
     # Optional
     scs_file_name: Optional[str] = None
     scs_type: Optional[Scstype] = None
-    fill_value: float = Field(
-        default=0.0,
-        description="Value used to fill the time range that falls outside of the timeseries in the to_dataframe method.",
-    )
+    fill_value: float = 0.0
 
     @model_validator(mode="after")
     def validate_timeseries_model_start_end_time(self):
