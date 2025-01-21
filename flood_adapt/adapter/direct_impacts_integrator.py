@@ -17,11 +17,12 @@ from flood_adapt.object_model.interface.scenarios import IScenario
 class Impacts(DatabaseUser):
     """All information related to the impacts of the scenario.
 
-    Includes methods to run the impact model or check if it has already been run.
+    Includes methods to run the impact models or check if they has already been run.
     """
 
     logger = FloodAdaptLogging.getLogger(__name__)
     name: str
+    hazard: FloodMap
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
 
@@ -29,14 +30,21 @@ class Impacts(DatabaseUser):
         self.name = scenario.attrs.name
         self.scenario = scenario
         self.site_info = self.database.site
-        self.models: list[IImpactAdapter] = [self.database.static.get_fiat_model()]
-
-        self.set_socio_economic_change(scenario.attrs.projection)
-        self.set_impact_strategy(scenario.attrs.strategy)
+        self.models: list[IImpactAdapter] = [
+            self.database.static.get_fiat_model()
+        ]  # for now only FIAT adapter
 
     @property
     def hazard(self) -> FloodMap:
         return FloodMap(self.name)
+
+    @property
+    def socio_economic_change(self) -> SocioEconomicChange:
+        return self.scenario.projection.get_socio_economic_change()
+
+    @property
+    def impact_strategy(self) -> ImpactStrategy:
+        return self.scenario.strategy.get_impact_strategy()
 
     @property
     def results_path(self) -> Path:
@@ -72,27 +80,3 @@ class Impacts(DatabaseUser):
         for model in self.models:
             checks.append(model.has_run(self.scenario))
         return all(checks)
-
-    def set_socio_economic_change(self, projection: str) -> None:
-        """Set the SocioEconomicChange object of the scenario.
-
-        Parameters
-        ----------
-        projection : str
-            Name of the projection used in the scenario
-        """
-        self.socio_economic_change = self.database.projections.get(
-            projection
-        ).get_socio_economic_change()
-
-    def set_impact_strategy(self, strategy: str) -> None:
-        """Set the ImpactStrategy object of the scenario.
-
-        Parameters
-        ----------
-        strategy : str
-            Name of the strategy used in the scenario
-        """
-        self.impact_strategy = self.database.strategies.get(
-            strategy
-        ).get_impact_strategy()
