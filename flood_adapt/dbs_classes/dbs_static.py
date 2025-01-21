@@ -197,11 +197,7 @@ class DbsStatic(IDbsStatic):
         gpd.GeoDataFrame
             building footprints with all the FIAT columns
         """
-        with FiatAdapter(
-            model_root=str(self._database.static_path / "templates" / "fiat"),
-            database_path=str(self._database.base_path),
-        ) as fm:
-            return fm.get_buildings()
+        return self.get_fiat_model().get_buildings()
 
     @cache_method_wrapper
     def get_property_types(self) -> list:
@@ -212,11 +208,7 @@ class DbsStatic(IDbsStatic):
         list
             _description_
         """
-        with FiatAdapter(
-            model_root=str(self._database.static_path / "templates" / "fiat"),
-            database_path=str(self._database.base_path),
-        ) as fm:
-            return fm.get_property_types()
+        return self.get_fiat_model().get_property_types()
 
     def get_overland_sfincs_model(self) -> SfincsAdapter:
         """Get the template offshore SFINCS model."""
