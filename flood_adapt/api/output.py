@@ -78,7 +78,7 @@ def get_max_water_level(name: str, rp: int = None) -> np.ndarray:
     return Database().get_max_water_level(name, rp)
 
 
-def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
+def get_building_footprints(name: str) -> gpd.GeoDataFrame:
     """
     Return a geodataframe of the impacts at the footprint level.
 
@@ -92,7 +92,7 @@ def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
     gpd.GeoDataFrame
         The impact footprints for the scenario.
     """
-    return Database().get_fiat_footprints(name)
+    return Database().get_building_footprints(name)
 
 
 def get_aggregation(name: str) -> dict[str, gpd.GeoDataFrame]:

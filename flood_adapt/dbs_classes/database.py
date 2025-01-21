@@ -497,7 +497,7 @@ class Database(IDatabase):
             zsmax = open_dataset(file_path)["risk_map"][:, :].to_numpy().T
         return zsmax
 
-    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+    def get_building_footprints(self, scenario_name: str) -> GeoDataFrame:
         """Return a geodataframe of the impacts at the footprint level.
 
         Parameters
