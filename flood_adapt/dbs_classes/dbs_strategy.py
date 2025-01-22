@@ -70,7 +70,7 @@ class DbsStrategy(DbsTemplate[Strategy]):
             if MeasureType.is_impact(measure.attrs.type)
         ]
 
-        adapter = self.database.static.get_fiat_model()
+        adapter = self._database.static.get_fiat_model()
 
         ids = [adapter.get_object_ids(measure) for measure in impact_measures]
 
