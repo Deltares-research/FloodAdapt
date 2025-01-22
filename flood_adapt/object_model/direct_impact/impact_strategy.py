@@ -1,17 +1,20 @@
 from itertools import combinations
 
-from flood_adapt.object_model.direct_impact.measure.impact_measure import ImpactMeasure
+from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
+    get_object_ids,
+)
+from flood_adapt.object_model.interface.measures import IMeasure
 
 
 class ImpactStrategy:
     """Class containing only the impact measures of a strategy."""
 
-    def __init__(self, measures: list[ImpactMeasure], validate=False) -> None:
+    def __init__(self, measures: list[IMeasure], validate=False) -> None:
         """Set measures and validates the combination.
 
         Parameters
         ----------
-        measures : list[ImpactMeasure]
+        measures : list[IMeasure]
         """
         self.measures = measures
         if validate:
@@ -26,7 +29,7 @@ class ImpactStrategy:
             information on which combinations of measures have overlapping properties
         """
         # Get ids of objects affected for each measure
-        ids = [measure.get_object_ids() for measure in self.measures]
+        ids = [get_object_ids(measure) for measure in self.measures]
 
         # Get all possible pairs of measures and check overlapping buildings for each measure
         combs = list(combinations(enumerate(ids), 2))

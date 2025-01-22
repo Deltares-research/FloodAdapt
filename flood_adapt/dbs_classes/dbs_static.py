@@ -3,11 +3,12 @@ from typing import Any, Callable, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
-from geopandas import GeoDataFrame
-from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs.quadtree import QuadtreeGrid
+from cht_cyclones.cyclone_track_database import CycloneTrackDatabase
 
-from flood_adapt.object_model.interface.database import IDatabase
+from flood_adapt.adapter.fiat_adapter import FiatAdapter
+from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
+from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.dbs_classes.interface.static import IDbsStatic
 
 
 def cache_method_wrapper(func: Callable) -> Callable:
@@ -29,27 +30,27 @@ def cache_method_wrapper(func: Callable) -> Callable:
     return wrapper
 
 
-class DbsStatic:
+class DbsStatic(IDbsStatic):
     _cached_data: dict[str, Any] = {}
-    _database: IDatabase = None
+    _database: IDatabase
 
     def __init__(self, database: IDatabase):
         """Initialize any necessary attributes."""
         self._database = database
 
     @cache_method_wrapper
-    def get_aggregation_areas(self) -> dict[str, GeoDataFrame]:
+    def get_aggregation_areas(self) -> dict[str, gpd.GeoDataFrame]:
         """Get a list of the aggregation areas that are provided in the site configuration.
 
         These are expected to much the ones in the FIAT model.
 
         Returns
         -------
-        dict[str, GeoDataFrame]
-            list of geodataframes with the polygons defining the aggregation areas
+        list[gpd.GeoDataFrame]
+            list of gpd.GeoDataFrames with the polygons defining the aggregation areas
         """
         aggregation_areas = {}
-        for aggr_dict in self._database.site.attrs.fiat.aggregation:
+        for aggr_dict in self._database.site.attrs.fiat.config.aggregation:
             aggregation_areas[aggr_dict.name] = gpd.read_file(
                 self._database.static_path / aggr_dict.file,
                 engine="pyogrio",
@@ -65,13 +66,13 @@ class DbsStatic:
         return aggregation_areas
 
     @cache_method_wrapper
-    def get_model_boundary(self) -> GeoDataFrame:
+    def get_model_boundary(self) -> gpd.GeoDataFrame:
         """Get the model boundary from the SFINCS model."""
-        bnd = self._database.static_sfincs_model.get_model_boundary()
+        bnd = self.get_overland_sfincs_model().get_model_boundary()
         return bnd
 
     @cache_method_wrapper
-    def get_model_grid(self) -> QuadtreeGrid:
+    def get_model_grid(self):
         """Get the model grid from the SFINCS model.
 
         Returns
@@ -79,25 +80,25 @@ class DbsStatic:
         QuadtreeGrid
             The model grid
         """
-        grid = self._database.static_sfincs_model.get_model_grid()
+        grid = self.get_overland_sfincs_model().get_model_grid()
         return grid
 
     @cache_method_wrapper
-    def get_obs_points(self) -> GeoDataFrame:
+    def get_obs_points(self) -> gpd.GeoDataFrame:
         """Get the observation points from the flood hazard model."""
         names = []
         descriptions = []
         lat = []
         lon = []
-        if self._database.site.attrs.obs_point is not None:
-            obs_points = self._database.site.attrs.obs_point
+        if self._database.site.attrs.sfincs.obs_point is not None:
+            obs_points = self._database.site.attrs.sfincs.obs_point
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)
                 lat.append(pt.lat)
                 lon.append(pt.lon)
 
-        # create GeoDataFrame from obs_points in site file
+        # create gpd.GeoDataFrame from obs_points in site file
         df = pd.DataFrame({"name": names, "description": descriptions})
         # TODO: make crs flexible and add this as a parameter to site.toml?
         gdf = gpd.GeoDataFrame(
@@ -117,7 +118,7 @@ class DbsStatic:
         Returns
         -------
         gpd.GeoDataFrame
-            GeoDataFrame with the map in crs 4326
+            gpd.GeoDataFrame with the map in crs 4326
 
         Raises
         ------
@@ -142,7 +143,7 @@ class DbsStatic:
             List of scenario names
         """
         input_file = self._database.static_path.joinpath(
-            self._database.site.attrs.slr.scenarios.file
+            self._database.site.attrs.sfincs.slr.scenarios.file
         )
         df = pd.read_csv(input_file)
         names = df.columns[2:].to_list()
@@ -184,7 +185,7 @@ class DbsStatic:
         return df
 
     @cache_method_wrapper
-    def get_buildings(self) -> GeoDataFrame:
+    def get_buildings(self) -> gpd.GeoDataFrame:
         """Get the building footprints from the FIAT model.
 
         This should only be the buildings excluding any other types (e.g., roads)
@@ -192,24 +193,14 @@ class DbsStatic:
 
         Returns
         -------
-        GeoDataFrame
+        gpd.GeoDataFrame
             building footprints with all the FIAT columns
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self._database.static_path / "templates" / "fiat",
-            mode="r",
-        )
-        fm.read()
-        buildings = fm.exposure.select_objects(
-            primary_object_type="ALL",
-            non_building_names=self._database.site.attrs.fiat.non_building_names,
-            return_gdf=True,
-        )
-
-        del fm
-
-        return buildings
+        with FiatAdapter(
+            model_root=str(self._database.static_path / "templates" / "fiat"),
+            database_path=str(self._database.base_path),
+        ) as fm:
+            return fm.get_buildings()
 
     @cache_method_wrapper
     def get_property_types(self) -> list:
@@ -220,19 +211,55 @@ class DbsStatic:
         list
             _description_
         """
-        # use hydromt-fiat to load the fiat model
-        fm = FiatModel(
-            root=self._database.static_path / "templates" / "fiat",
-            mode="r",
+        with FiatAdapter(
+            model_root=str(self._database.static_path / "templates" / "fiat"),
+            database_path=str(self._database.base_path),
+        ) as fm:
+            return fm.get_property_types()
+
+    def get_overland_sfincs_model(self) -> SfincsAdapter:
+        """Get the template offshore SFINCS model."""
+        overland_path = (
+            self._database.static_path
+            / "templates"
+            / self._database.site.attrs.sfincs.config.overland_model
         )
-        fm.read()
-        types = fm.exposure.get_primary_object_type()
-        for name in self._database.site.attrs.fiat.non_building_names:
-            if name in types:
-                types.remove(name)
-        # Add "all" type for using as identifier
-        types.append("all")
+        with SfincsAdapter(model_root=overland_path) as overland_model:
+            return overland_model
 
-        del fm
+    def get_offshore_sfincs_model(self) -> SfincsAdapter:
+        """Get the template overland Sfincs model."""
+        if self._database.site.attrs.sfincs.config.offshore_model is None:
+            raise ValueError("No offshore model defined in the site configuration.")
 
-        return types
+        offshore_path = (
+            self._database.static_path
+            / "templates"
+            / self._database.site.attrs.sfincs.config.offshore_model
+        )
+        with SfincsAdapter(model_root=offshore_path) as offshore_model:
+            return offshore_model
+
+    def get_fiat_model(self) -> FiatAdapter:
+        """Get the path to the FIAT model."""
+        if self._database.site.attrs.fiat is None:
+            raise ValueError("No FIAT model defined in the site configuration.")
+        template_path = self._database.static_path / "templates" / "fiat"
+        with FiatAdapter(
+            model_root=str(template_path),
+            database_path=str(self._database.base_path),
+        ) as fm:
+            return fm
+
+    @cache_method_wrapper
+    def get_cyclone_track_database(self) -> CycloneTrackDatabase:
+        if self._database.site.attrs.sfincs.cyclone_track_database is None:
+            raise ValueError(
+                "No cyclone track database defined in the site configuration."
+            )
+        database_file = str(
+            self._database.static_path
+            / "cyclone_track_database"
+            / self._database.site.attrs.sfincs.cyclone_track_database.file
+        )
+        return CycloneTrackDatabase("ibtracs", file_name=database_file)

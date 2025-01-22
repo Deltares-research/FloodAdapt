@@ -5,7 +5,7 @@ from typing import Union
 import geopandas as gpd
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
-from flood_adapt.dbs_controller import Database
+from flood_adapt.dbs_classes.database import Database
 
 # upon start up of FloodAdapt
 
@@ -85,7 +85,9 @@ def get_svi_map() -> Union[gpd.GeoDataFrame, None]:
         gpd.GeoDataFrames with the SVI map, None if not available
     """
     try:
-        return Database().static.get_static_map(Database().site.attrs.fiat.svi.geom)
+        return Database().static.get_static_map(
+            Database().site.attrs.fiat.config.svi.geom
+        )
     except Exception:
         return None
 
