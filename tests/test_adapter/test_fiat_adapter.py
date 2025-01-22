@@ -31,6 +31,13 @@ class TestFiatAdapter:
         scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
         yield test_db_class, scenario_name, scenario_obj
 
+    @pytest.fixture(scope="class")
+    def run_scenario_return_periods(self, test_db_class):
+        scenario_name = "current_test_set_no_measures"
+        test_db_class.run_scenario(scenario_name)
+        scenario_obj: Scenario = test_db_class.scenarios.get(scenario_name)
+        yield test_db_class, scenario_name, scenario_obj
+
     def test_no_measures(self, run_scenario_no_measures):
         test_db, scenario_name, scenario_obj = run_scenario_no_measures
 
@@ -235,6 +242,6 @@ class TestFiatAdapter:
             )
         )
 
-    def test_return_periods(self, run_scenario_no_measures):
-        test_db, scenario_name, test_scenario = run_scenario_no_measures
+    def test_return_periods(self, run_scenario_return_periods):
+        test_db, scenario_name, test_scenario = run_scenario_return_periods
         assert test_scenario.impacts.has_run

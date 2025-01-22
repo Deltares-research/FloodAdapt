@@ -607,7 +607,7 @@ class FiatAdapter(IImpactAdapter):
 
     def set_hazard(
         self,
-        map_fn: str,
+        map_fn: Union[os.PathLike, list[os.PathLike]],
         map_type: FloodMapType,
         var: str,
         is_risk: bool = False,
