@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from time import sleep
 
 import pytest
 
@@ -149,7 +150,11 @@ def make_db_fixture(scope):
         # Teardown
         dbs.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            try:
+                restore_db_from_snapshot()
+            except Exception:
+                sleep(0.5)
+                restore_db_from_snapshot()
 
     return _db_fixture
 
