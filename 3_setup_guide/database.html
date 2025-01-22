@@ -503,13 +503,13 @@ Including a probabilistic event set in the database configuration file
 In addition to specifying an offshore model, the user can also indicate which 'cyclone basin' is relevant for them. @fig-DB_cyclonesNA shows the hurricane selection window for the example of choosing "North America" as the cyclone basin.--></p>
 <div id="fig-DB_offshore" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_offshore.png" class="lightbox" title="Adding an offshore model activates the ability to select a hurricane event, as well as an ‘ungauged’ historical event. Both of these event types make use of the offshore model. The left window shows the “Add event” popup window for the baseline FloodAdapt configuration, and the right shows with the addition of an offshore model" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/database_offshore.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../_static/images/database_offshore.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Adding an offshore model activates the ability to select a hurricane event, as well as an ‘ungauged’ historical event. Both of these event types make use of the offshore model. The left window shows the “Add event” popup window for the baseline FloodAdapt configuration, and the right shows with the addition of an offshore model"><img src="../_static/images/database_offshore.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Adding an offshore model activates the ability to select a hurricane event, as well as an ‘ungauged’ historical event. Both of these event types make use of the offshore model. The left window shows the “Add event” popup window for the baseline FloodAdapt configuration, and the right shows with the addition of an offshore model</strong></figcaption>
 </figure>
 </div>
 <div id="fig-DB_cyclonesNA" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_cyclones_NA.png" class="lightbox" title="Hurricane selection window when a user has selected “NA” for North America as the ‘cyclone basin’" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/database_cyclones_NA.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../_static/images/database_cyclones_NA.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Hurricane selection window when a user has selected “NA” for North America as the ‘cyclone basin’"><img src="../_static/images/database_cyclones_NA.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Hurricane selection window when a user has selected “NA” for North America as the ‘cyclone basin’</strong></figcaption>
 </figure>
 </div>
@@ -532,7 +532,7 @@ Including an offshore model and cyclone basin in the database configuration file
 <p>FloodAdapt allows users to simulate historical events. In the baseline FloodAdapt configuration, FloodAdapt users need to import their own water level time series for historical events. When a tide gauge (or alternatively a long time series CSV file) is added to the FloodAdapt database, this activates a ‘Download Observed Water Levels’ button in the specification window for a historical event. FloodAdapt users can then easily download water levels for a historical event by selecting a start and end date and clicking that button. <a href="#fig-DB_comp_tideGauge">Figure&nbsp;3</a> shows the baseline FloodAdapt configuration on the left and with the inclusion of a tide gauge on the right. For sites in the U.S. tide gauges can be added automatically based on the site location via the <a href="https://tidesandcurrents.noaa.gov/stations.html">NOAA COOPS</a> website. The NOAA site also includes datum differences at gauge locations, so that users have the option to view water levels relative to a (potentially) more familiar datum (see <a href="#fig-DB_comp_tideGauge">Figure&nbsp;3</a>).</p>
 <div id="fig-DB_comp_tideGauge" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_comp_tideGauge.png" class="lightbox" title="Adding a tide gauge allows a user to activate the ‘Download observed water levels’ button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level (‘zero’) than mean sea level (MSL). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge." data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/database_comp_tideGauge.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../_static/images/database_comp_tideGauge.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Adding a tide gauge allows a user to activate the ‘Download observed water levels’ button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level (‘zero’) than mean sea level (MSL). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge."><img src="../_static/images/database_comp_tideGauge.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Adding a tide gauge allows a user to activate the ‘Download observed water levels’ button. Additionally, it also allows users to specify different references they can view with the water level time series, and to set a different reference level (‘zero’) than mean sea level (MSL). The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of a tide gauge.</strong></figcaption>
 </figure>
 </div>
@@ -555,7 +555,7 @@ Including a tide gauge in the database configuration file
 <p>FloodAdapt automatically generates an infographic and a metrics table which helps FloodAdapt users understand the impacts of a simulated scenario. Social vulnerability is based on a collection of socio-economic attributes that indicate a longer or harder recovery from a flood event. When a social vulnerability index (SVI) layer is included in the FloodAdapt database, FloodAdapt shows additional information in the infographic and metrics table related to how socially vulnerable people are affected in a simulated scenario. Users can also view the SVI layer in both the <a href="../4_user_guide/measures/index.html">Measures</a> and <a href="../4_user_guide/output/index.html">Output</a> tabs, helping to identify where to explore measures and understand the impacts to socially vulnerable people. <a href="#fig-DB_SVI_comp">Figure&nbsp;4</a> highlights the added information in the infographic and metrics table. It shows the baseline configuration on the left, and the configuration with an SVI layer added on the right. With the SVI layer included, users can see in the infographic the proportion of highly-vulnerable residential buildings that were damaged and destroyed. In the metrics table, they can see how many highly vulnerable residential properties were flooded.</p>
 <div id="fig-DB_SVI_comp" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_SVI_comp.png" class="lightbox" title="When an SVI layer and a threshold are included, the infographic will include an additional graphic showing the distribution of residential impacts on high and low socially vulnerable homes " data-gallery="quarto-lightbox-gallery-4"><img src="../_static/images/database_SVI_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_SVI_comp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="When an SVI layer and a threshold are included, the infographic will include an additional graphic showing the distribution of residential impacts on high and low socially vulnerable homes "><img src="../_static/images/database_SVI_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>When an SVI layer and a threshold are included, the infographic will include an additional graphic showing the distribution of residential impacts on high and low socially vulnerable homes </strong></figcaption>
 </figure>
 </div>
@@ -578,7 +578,7 @@ Including an SVI layer in the database configuration file
 <p>FloodAdapt allows users to view modeled water level time series at observation points in the FloodAdapt <a href="../4_user_guide/output/index.html">Output tab</a>. The spatial flood map in the FloodAdapt Output tab is static and represents the maximum flood depth during an event. Having observation points helps users understand how the water levels evolved <em>during</em> an event. To activate this functionality, observation points can be added to the database-builder configuration file.</p>
 <div id="fig-DB_obscomp" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_obsComp.png" class="lightbox" title="Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt Output tab. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points." data-gallery="quarto-lightbox-gallery-5"><img src="../_static/images/database_obsComp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_obsComp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt Output tab. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points."><img src="../_static/images/database_obsComp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Adding observation points activates the functionality to view water level time series output at these points in the FloodAdapt <a href="../4_user_guide/output/index.html">Output tab</a>. The left window shows the baseline FloodAdapt configuration, and the right shows with the addition of observation points.</strong></figcaption>
 </figure>
 </div>
@@ -614,7 +614,7 @@ Including a BFE layer in the database configuration file
 </div>
 <div id="fig-DB_obscomp" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_bfe_comp.png" class="lightbox" title="Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum" data-gallery="quarto-lightbox-gallery-6"><img src="../_static/images/database_bfe_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_bfe_comp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum"><img src="../_static/images/database_bfe_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Adding a base flood elevation (BFE) layer activates the ability to elevate homes relative to BFE in addition to elevating relative to datum</strong></figcaption>
 </figure>
 </div>
@@ -637,7 +637,7 @@ Including SLR scenarios in the database configuration file
 </div>
 <div id="fig-DB_slrComp" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_SLR_comp.png" class="lightbox" title="Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise" data-gallery="quarto-lightbox-gallery-7"><img src="../_static/images/database_SLR_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_SLR_comp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise"><img src="../_static/images/database_SLR_comp.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;7: <strong>Including a sea level rise scenario CSV file allows a user to select one of the SLR scenarios and a future year, and FloodAdapt automatically calculates the sea level rise</strong></figcaption>
 </figure>
 </div>
@@ -663,7 +663,7 @@ What about when sea level rise scenarios change?
 <p><a href="#fig-DB_header">Figure&nbsp;8</a> shows the <strong>mandatory</strong> attributes that are given at the top of the configuration file. These are required for all configurations, including the baseline configuration. These will be described below.</p>
 <div id="fig-DB_header" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_attr_baseline.png" class="lightbox" title="Snippet showing the mandatory attributes of the top of the configuration file" data-gallery="quarto-lightbox-gallery-8"><img src="../_static/images/database_attr_baseline.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_attr_baseline.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Snippet showing the mandatory attributes of the top of the configuration file"><img src="../_static/images/database_attr_baseline.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;8: <strong>Snippet showing the mandatory attributes of the top of the configuration file</strong></figcaption>
 </figure>
 </div>
@@ -678,7 +678,7 @@ What about when sea level rise scenarios change?
 <p><a href="#fig-DB_header_optional">Figure&nbsp;9</a> shows the <strong>optional</strong> attributes that are given at the top of the configuration file. These will be described below.</p>
 <div id="fig-DB_header_optional" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_header_optional.png" class="lightbox" title="Snippet showing the optional attributes of the top of the configuration file" data-gallery="quarto-lightbox-gallery-9"><img src="../_static/images/database_header_optional.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_header_optional.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Snippet showing the optional attributes of the top of the configuration file"><img src="../_static/images/database_header_optional.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;9: <strong>Snippet showing the optional attributes of the top of the configuration file</strong></figcaption>
 </figure>
 </div>
@@ -704,7 +704,7 @@ What about when sea level rise scenarios change?
 <h3 class="anchored" data-anchor-id="gui-attributes">GUI attributes</h3>
 <div id="fig-DB_GUI" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_GUI_snippet.png" class="lightbox" title="Snippet showing the attributes of the GUI" data-gallery="quarto-lightbox-gallery-10"><img src="../_static/images/database_GUI_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_GUI_snippet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Snippet showing the attributes of the GUI"><img src="../_static/images/database_GUI_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;10: <strong>Snippet showing the attributes of the GUI</strong></figcaption>
 </figure>
 </div>
@@ -723,7 +723,7 @@ What about when sea level rise scenarios change?
 <p>The attributes for building footprints are shown in <a href="#fig-DB_BFs">Figure&nbsp;11</a>. A building footprint layer allows users to visualize the building footprint damages in the output maps (instead of only points). Note that if a building footprint file is not included, the database-builder will automatically add Open Street Map building footprints to support the visualization of building damages in the FloodAdapt application.</p>
 <div id="fig-DB_BFs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_attr_BFs.png" class="lightbox" title="Snippet showing the attributes of the baseline configuration" data-gallery="quarto-lightbox-gallery-11"><img src="../_static/images/database_attr_BFs.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_attr_BFs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Snippet showing the attributes of the baseline configuration"><img src="../_static/images/database_attr_BFs.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;11: <strong>Snippet showing the attributes of the baseline configuration</strong></figcaption>
 </figure>
 </div>
@@ -738,7 +738,7 @@ What about when sea level rise scenarios change?
 <p>The attributes needed to include a tide gauge are shown in <a href="#fig-DB_tideGauge">Figure&nbsp;12</a>. The inclusion of a tide gauge allows FloodAdapt users to automatically download water levels for a specified start and end time.</p>
 <div id="fig-DB_tideGauge" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_tideGauge_extended.png" class="lightbox" title="Snippet showing the attributes of the tide gauge configuration" data-gallery="quarto-lightbox-gallery-12"><img src="../_static/images/database_tideGauge_extended.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_tideGauge_extended.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Snippet showing the attributes of the tide gauge configuration"><img src="../_static/images/database_tideGauge_extended.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;12: <strong>Snippet showing the attributes of the tide gauge configuration</strong></figcaption>
 </figure>
 </div>
@@ -755,7 +755,7 @@ What about when sea level rise scenarios change?
 <p>The attributes needed to include an SVI layer are shown in <a href="#fig-DB_SVI">Figure&nbsp;13</a>. The inclusion of an SVI layer allows FloodAdapt users to get additional information in the infographic related to who is being impacted, and to view the layer in the FloodAdapt Measures and Output tabs.</p>
 <div id="fig-DB_SVI" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_SVI.png" class="lightbox" title="Snippet showing the attributes of the SVI layer configuration" data-gallery="quarto-lightbox-gallery-13"><img src="../_static/images/database_SVI.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_SVI.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="Snippet showing the attributes of the SVI layer configuration"><img src="../_static/images/database_SVI.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;13: <strong>Snippet showing the attributes of the SVI layer configuration</strong></figcaption>
 </figure>
 </div>
@@ -771,7 +771,7 @@ What about when sea level rise scenarios change?
 <p>The attributes needed to include a BFE layer are shown in <a href="#fig-DB_BFE">Figure&nbsp;14</a>. The inclusion of a BFE layer allows FloodAdapt users to elevate buildings relative to this layer, in addition to being able to elevate relative to datum.</p>
 <div id="fig-DB_BFE" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_bfe_snippet.png" class="lightbox" title="Snippet showing the attributes of the BFE layer configuration" data-gallery="quarto-lightbox-gallery-14"><img src="../_static/images/database_bfe_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_bfe_snippet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="Snippet showing the attributes of the BFE layer configuration"><img src="../_static/images/database_bfe_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;14: <strong>Snippet showing the attributes of the BFE layer configuration</strong></figcaption>
 </figure>
 </div>
@@ -786,7 +786,7 @@ What about when sea level rise scenarios change?
 <p>The attributes needed to include SLR scenarios are shown in <a href="#fig-DB_slr">Figure&nbsp;15</a>. The inclusion of a SLR scenarios file allows FloodAdapt users to enter a future sea level rise projection by selecting a SLR scenario and a year in the Projections window of FloodAdapt.</p>
 <div id="fig-DB_slr" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_SLR_snippet.png" class="lightbox" title="Snippet showing the attributes of the SLR scenarios configuration" data-gallery="quarto-lightbox-gallery-15"><img src="../_static/images/database_SLR_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_SLR_snippet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="Snippet showing the attributes of the SLR scenarios configuration"><img src="../_static/images/database_SLR_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;15: <strong>Snippet showing the attributes of the SLR scenarios configuration</strong></figcaption>
 </figure>
 </div>
@@ -797,7 +797,7 @@ What about when sea level rise scenarios change?
 </ul>
 <div id="fig-DB_slr_csv" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_slr_csv.png" class="lightbox" title="Snippet showing an example of a SLR scenario CSV file" data-gallery="quarto-lightbox-gallery-16"><img src="../_static/images/database_slr_csv.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_slr_csv.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="Snippet showing an example of a SLR scenario CSV file"><img src="../_static/images/database_slr_csv.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;16: <strong>Snippet showing an example of a SLR scenario CSV file</strong></figcaption>
 </figure>
 </div>
@@ -807,7 +807,7 @@ What about when sea level rise scenarios change?
 <p>The attributes needed to include observation points are shown in <a href="#fig-DB_obs">Figure&nbsp;17</a>. The inclusion of observation points allows FloodAdapt users to visualize a time series of water levels at these points throughout a simulated event (rather than only a maximum flood depth as is shown in the spatial maps).</p>
 <div id="fig-DB_obs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/database_obs_snippet.png" class="lightbox" title="Snippet showing the attributes of the observation points configuration. In this example there are two observation points included. Each one begins with a the double-bracketed “obs_point” header" data-gallery="quarto-lightbox-gallery-17"><img src="../_static/images/database_obs_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/database_obs_snippet.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="Snippet showing the attributes of the observation points configuration. In this example there are two observation points included. Each one begins with a the double-bracketed “obs_point” header"><img src="../_static/images/database_obs_snippet.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;17: <strong>Snippet showing the attributes of the observation points configuration. In this example there are two observation points included. Each one begins with a the double-bracketed “obs_point” header</strong></figcaption>
 </figure>
 </div>
@@ -1197,7 +1197,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","descPosition":"bottom","loop":true,"closeEffect":"zoom"});</script>
 
 
 
