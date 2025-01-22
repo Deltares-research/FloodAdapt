@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import shutil
 import subprocess
@@ -37,6 +38,25 @@ from flood_adapt.object_model.interface.path_builder import (
 from flood_adapt.object_model.interface.projections import IProjection
 from flood_adapt.object_model.interface.scenarios import IScenario
 from flood_adapt.object_model.utils import cd, resolve_filepath
+
+
+class FiatColumns:
+    """Object with mapping of FIAT attributes to columns names."""
+
+    object_id = "Object ID"
+    object_name = "Object Name"
+    primary_object_type = "Primary Object Type"
+    secondary_object_type = "Secondary Object Type"
+    extraction_method = "Extraction Method"
+    ground_floor_height = "Ground Floor Height"
+    ground_elevation = "Ground Elevation"
+    damage_function = "Damage Function: "
+    max_potential_damage = "Max Potential Damage: "
+    aggregation_label = "Aggregation Label: "
+    inundation_depth = "Induation Depth"
+    damage = "Damage: "
+    total_damage = "Total Damage"
+    risk_ead = "Risk (EAD)"
 
 
 class FiatAdapter(IImpactAdapter):
@@ -546,7 +566,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
-        if socio_economic_change.attrs.economic_growth != 0:
+        if math.isclose(socio_economic_change.attrs.economic_growth, 0):
             self.apply_economic_growth(
                 economic_growth=socio_economic_change.attrs.economic_growth,
                 ids=ids_all_buildings,  #
@@ -555,7 +575,7 @@ class FiatAdapter(IImpactAdapter):
         # Then the new population growth area is added if provided
         # In the new areas, the economic growth is taken into account!
         # Order matters since for the pop growth new, we only want the economic growth!
-        if socio_economic_change.attrs.population_growth_new != 0:
+        if math.isclose(socio_economic_change.attrs.population_growth_new, 0):
             # Get path of new development area geometry
             area_path = resolve_filepath(
                 object_dir=ObjectDir.projection,
@@ -579,7 +599,7 @@ class FiatAdapter(IImpactAdapter):
             )
 
         # Then apply population growth to existing objects
-        if socio_economic_change.attrs.population_growth_existing != 0:
+        if math.isclose(socio_economic_change.attrs.population_growth_existing, 0):
             self.apply_population_growth_existing(
                 population_growth=socio_economic_change.attrs.population_growth_existing,
                 ids=ids_all_buildings,
@@ -650,18 +670,18 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if "Max Potential Damage:" in c
+            if FiatColumns.max_potential_damage in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self.config.non_building_names
-        )
+        buildings_rows = ~self._model.exposure.exposure_db[
+            FiatColumns.primary_object_id
+        ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
             buildings_rows = buildings_rows & self._model.exposure.exposure_db[
-                "Object ID"
+                FiatColumns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
@@ -697,18 +717,18 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if "Max Potential Damage:" in c
+            if FiatColumns.max_potential_damage in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self.config.non_building_names
-        )
+        buildings_rows = ~self._model.exposure.exposure_db[
+            FiatColumns.primary_object_id
+        ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
         if ids:
             buildings_rows = buildings_rows & self._model.exposure.exposure_db[
-                "Object ID"
+                FiatColumns.object_id
             ].isin(ids)
 
         # Update columns using economic growth value
@@ -777,7 +797,8 @@ class FiatAdapter(IImpactAdapter):
         ]
         attribute_names = [aggr.field_name for aggr in self.config.aggregation]
         label_names = [
-            f"Aggregation Label: {aggr.name}" for aggr in self.config.aggregation
+            f"{FiatColumns.aggregation_label}{aggr.name}"
+            for aggr in self.config.aggregation
         ]
         # Use hydromt function
         self._model.exposure.setup_new_composite_areas(
@@ -810,13 +831,12 @@ class FiatAdapter(IImpactAdapter):
             The name of the area. It returns the aggregation area name if the selection type is "aggregation_area",
             the polygon file name if the selection type is "polygon", and "all" for any other selection type.
         """
-        area = (
-            measure.attrs.aggregation_area_name
-            if measure.attrs.selection_type == "aggregation_area"
-            else measure.attrs.polygon_file
-            if measure.attrs.selection_type == "polygon"
-            else "all"
-        )
+        if measure.attrs.selection_type == "aggregation_area":
+            area = measure.attrs.aggregation_area_name
+        elif measure.attrs.selection_type == "polygon":
+            area = measure.attrs.polygon_file
+        else:
+            area = "all"
         return area
 
     def elevate_properties(self, elevate: Elevate) -> None:
@@ -890,18 +910,18 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if "Max Potential Damage:" in c
+            if FiatColumns.max_potential_damage in c
         ]
 
         # Get objects that are buildings (using site info)
-        buildings_rows = ~self._model.exposure.exposure_db["Primary Object Type"].isin(
-            self.config.non_building_names
-        )
+        buildings_rows = ~self._model.exposure.exposure_db[
+            FiatColumns.primary_object_id
+        ].isin(self.config.non_building_names)
 
         # Get rows that are affected
         objectids = self.get_object_ids(buyout)
         rows = (
-            self._model.exposure.exposure_db["Object ID"].isin(objectids)
+            self._model.exposure.exposure_db[FiatColumns.object_id].isin(objectids)
             & buildings_rows
         )
 
@@ -1328,7 +1348,9 @@ class FiatAdapter(IImpactAdapter):
 
         fiat_results_df = gpd.GeoDataFrame(
             self.outputs["table"].merge(
-                buildings[["Object ID", "geometry"]], on="Object ID", how="left"
+                buildings[[FiatColumns.object_id, "geometry"]],
+                on=FiatColumns.object_id,
+                how="left",
             )
         )
 
@@ -1356,13 +1378,17 @@ class FiatAdapter(IImpactAdapter):
         aggr_cols = [
             name
             for name in self.outputs["table"].columns
-            if "Aggregation Label:" in name
+            if FiatColumns.aggregation_label in name
         ]
-        inun_cols = [name for name in roads.columns if "Inundation Depth" in name]
+        inun_cols = [
+            name for name in roads.columns if FiatColumns.inundation_depth in name
+        ]
         # Merge data
-        roads = roads[["Object ID", "geometry"] + inun_cols].merge(
-            self.outputs["table"][["Object ID", "Primary Object Type"] + aggr_cols],
-            on="Object ID",
+        roads = roads[[FiatColumns.object_id, "geometry"] + inun_cols].merge(
+            self.outputs["table"][
+                [FiatColumns.object_id, FiatColumns.primary_object_id] + aggr_cols
+            ],
+            on=FiatColumns.object_id,
         )
         # Save as geopackage
         roads.to_file(output_path, driver="GPKG")
