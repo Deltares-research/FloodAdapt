@@ -433,8 +433,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
   <ul class="collapse">
   <li><a href="#flood_adapt.api.output.get_aggregation" id="toc-flood_adapt.api.output.get_aggregation" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_aggregation">get_aggregation</a></li>
+  <li><a href="#flood_adapt.api.output.get_building_footprints" id="toc-flood_adapt.api.output.get_building_footprints" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_building_footprints">get_building_footprints</a></li>
   <li><a href="#flood_adapt.api.output.get_depth_conversion" id="toc-flood_adapt.api.output.get_depth_conversion" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_depth_conversion">get_depth_conversion</a></li>
-  <li><a href="#flood_adapt.api.output.get_fiat_footprints" id="toc-flood_adapt.api.output.get_fiat_footprints" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_fiat_footprints">get_fiat_footprints</a></li>
   <li><a href="#flood_adapt.api.output.get_index_path" id="toc-flood_adapt.api.output.get_index_path" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_index_path">get_index_path</a></li>
   <li><a href="#flood_adapt.api.output.get_infographic" id="toc-flood_adapt.api.output.get_infographic" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_infographic">get_infographic</a></li>
   <li><a href="#flood_adapt.api.output.get_infometrics" id="toc-flood_adapt.api.output.get_infometrics" class="nav-link" data-scroll-target="#flood_adapt.api.output.get_infometrics">get_infometrics</a></li>
@@ -471,12 +471,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Return a dictionary with the aggregated impacts as geodataframes.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.api.output.get_depth_conversion">get_depth_conversion</a></td>
-<td>Return the flood depth conversion that is need in the gui to plot the flood map.</td>
+<td><a href="#flood_adapt.api.output.get_building_footprints">get_building_footprints</a></td>
+<td>Return a geodataframe of the impacts at the footprint level.</td>
 </tr>
 <tr class="odd">
-<td><a href="#flood_adapt.api.output.get_fiat_footprints">get_fiat_footprints</a></td>
-<td>Return a geodataframe of the impacts at the footprint level.</td>
+<td><a href="#flood_adapt.api.output.get_depth_conversion">get_depth_conversion</a></td>
+<td>Return the flood depth conversion that is need in the gui to plot the flood map.</td>
 </tr>
 <tr class="even">
 <td><a href="#flood_adapt.api.output.get_index_path">get_index_path</a></td>
@@ -562,33 +562,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="flood_adapt.api.output.get_depth_conversion" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.output.get_depth_conversion">get_depth_conversion</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>api.output.get_depth_conversion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the flood depth conversion that is need in the gui to plot the flood map.</p>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>float</td>
-<td>The flood depth conversion.</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.api.output.get_fiat_footprints" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.api.output.get_fiat_footprints">get_fiat_footprints</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api.output.get_fiat_footprints(name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.api.output.get_building_footprints" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.api.output.get_building_footprints">get_building_footprints</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>api.output.get_building_footprints(name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a geodataframe of the impacts at the footprint level.</p>
 <section id="parameters-1" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
@@ -611,8 +587,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
 <table class="table">
 <thead>
 <tr class="header">
@@ -626,6 +602,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td></td>
 <td>gpd.GeoDataFrame</td>
 <td>The impact footprints for the scenario.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.api.output.get_depth_conversion" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.api.output.get_depth_conversion">get_depth_conversion</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>api.output.get_depth_conversion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Return the flood depth conversion that is need in the gui to plot the flood map.</p>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>float</td>
+<td>The flood depth conversion.</td>
 </tr>
 </tbody>
 </table>

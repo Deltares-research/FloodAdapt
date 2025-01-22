@@ -437,8 +437,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#flood_adapt.dbs_classes.database.Database.create_benefit_scenarios" id="toc-flood_adapt.dbs_classes.database.Database.create_benefit_scenarios" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.create_benefit_scenarios">create_benefit_scenarios</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_aggregation" id="toc-flood_adapt.dbs_classes.database.Database.get_aggregation" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_aggregation">get_aggregation</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_aggregation_benefits" id="toc-flood_adapt.dbs_classes.database.Database.get_aggregation_benefits" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_aggregation_benefits">get_aggregation_benefits</a></li>
+  <li><a href="#flood_adapt.dbs_classes.database.Database.get_building_footprints" id="toc-flood_adapt.dbs_classes.database.Database.get_building_footprints" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_building_footprints">get_building_footprints</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_depth_conversion" id="toc-flood_adapt.dbs_classes.database.Database.get_depth_conversion" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_depth_conversion">get_depth_conversion</a></li>
-  <li><a href="#flood_adapt.dbs_classes.database.Database.get_fiat_footprints" id="toc-flood_adapt.dbs_classes.database.Database.get_fiat_footprints" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_fiat_footprints">get_fiat_footprints</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_index_path" id="toc-flood_adapt.dbs_classes.database.Database.get_index_path" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_index_path">get_index_path</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_max_water_level" id="toc-flood_adapt.dbs_classes.database.Database.get_max_water_level" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_max_water_level">get_max_water_level</a></li>
   <li><a href="#flood_adapt.dbs_classes.database.Database.get_object_list" id="toc-flood_adapt.dbs_classes.database.Database.get_object_list" class="nav-link" data-scroll-target="#flood_adapt.dbs_classes.database.Database.get_object_list">get_object_list</a></li>
@@ -496,12 +496,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Get a dictionary with the aggregated benefits as geodataframes.</td>
 </tr>
 <tr class="even">
-<td><a href="#flood_adapt.dbs_classes.database.Database.get_depth_conversion">get_depth_conversion</a></td>
-<td>Return the flood depth conversion that is need in the gui to plot the flood map.</td>
+<td><a href="#flood_adapt.dbs_classes.database.Database.get_building_footprints">get_building_footprints</a></td>
+<td>Return a geodataframe of the impacts at the footprint level.</td>
 </tr>
 <tr class="odd">
-<td><a href="#flood_adapt.dbs_classes.database.Database.get_fiat_footprints">get_fiat_footprints</a></td>
-<td>Return a geodataframe of the impacts at the footprint level.</td>
+<td><a href="#flood_adapt.dbs_classes.database.Database.get_depth_conversion">get_depth_conversion</a></td>
+<td>Return the flood depth conversion that is need in the gui to plot the flood map.</td>
 </tr>
 <tr class="even">
 <td><a href="#flood_adapt.dbs_classes.database.Database.get_index_path">get_index_path</a></td>
@@ -707,33 +707,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="flood_adapt.dbs_classes.database.Database.get_depth_conversion" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.database.Database.get_depth_conversion">get_depth_conversion</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.database.Database.get_depth_conversion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Return the flood depth conversion that is need in the gui to plot the flood map.</p>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>float</td>
-<td>conversion factor</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="flood_adapt.dbs_classes.database.Database.get_fiat_footprints" class="level3">
-<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.database.Database.get_fiat_footprints">get_fiat_footprints</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.database.Database.get_fiat_footprints(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="flood_adapt.dbs_classes.database.Database.get_building_footprints" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.database.Database.get_building_footprints">get_building_footprints</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.database.Database.get_building_footprints(scenario_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Return a geodataframe of the impacts at the footprint level.</p>
 <section id="parameters-4" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
@@ -756,8 +732,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-3" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
 <table class="table">
 <thead>
 <tr class="header">
@@ -771,6 +747,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td></td>
 <td>GeoDataFrame</td>
 <td>impacts at footprint level</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="flood_adapt.dbs_classes.database.Database.get_depth_conversion" class="level3">
+<h3 class="anchored" data-anchor-id="flood_adapt.dbs_classes.database.Database.get_depth_conversion">get_depth_conversion</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dbs_classes.database.Database.get_depth_conversion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Return the flood depth conversion that is need in the gui to plot the flood map.</p>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>float</td>
+<td>conversion factor</td>
 </tr>
 </tbody>
 </table>
