@@ -675,7 +675,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_id
+            FiatColumns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
@@ -722,7 +722,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_id
+            FiatColumns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # If ids are given use that as an additional filter
@@ -915,7 +915,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Get objects that are buildings (using site info)
         buildings_rows = ~self._model.exposure.exposure_db[
-            FiatColumns.primary_object_id
+            FiatColumns.primary_object_type
         ].isin(self.config.non_building_names)
 
         # Get rows that are affected
@@ -1386,7 +1386,7 @@ class FiatAdapter(IImpactAdapter):
         # Merge data
         roads = roads[[FiatColumns.object_id, "geometry"] + inun_cols].merge(
             self.outputs["table"][
-                [FiatColumns.object_id, FiatColumns.primary_object_id] + aggr_cols
+                [FiatColumns.object_id, FiatColumns.primary_object_type] + aggr_cols
             ],
             on=FiatColumns.object_id,
         )
