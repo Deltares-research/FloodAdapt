@@ -566,7 +566,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Implement socioeconomic changes if needed
         # First apply economic growth to existing objects
-        if math.isclose(socio_economic_change.attrs.economic_growth, 0):
+        if not math.isclose(socio_economic_change.attrs.economic_growth, 0):
             self.apply_economic_growth(
                 economic_growth=socio_economic_change.attrs.economic_growth,
                 ids=ids_all_buildings,  #
@@ -575,7 +575,7 @@ class FiatAdapter(IImpactAdapter):
         # Then the new population growth area is added if provided
         # In the new areas, the economic growth is taken into account!
         # Order matters since for the pop growth new, we only want the economic growth!
-        if math.isclose(socio_economic_change.attrs.population_growth_new, 0):
+        if not math.isclose(socio_economic_change.attrs.population_growth_new, 0):
             # Get path of new development area geometry
             area_path = resolve_filepath(
                 object_dir=ObjectDir.projection,
@@ -599,7 +599,7 @@ class FiatAdapter(IImpactAdapter):
             )
 
         # Then apply population growth to existing objects
-        if math.isclose(socio_economic_change.attrs.population_growth_existing, 0):
+        if not math.isclose(socio_economic_change.attrs.population_growth_existing, 0):
             self.apply_population_growth_existing(
                 population_growth=socio_economic_change.attrs.population_growth_existing,
                 ids=ids_all_buildings,
