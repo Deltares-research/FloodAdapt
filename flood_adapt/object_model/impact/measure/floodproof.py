@@ -11,6 +11,7 @@ class FloodProof(IMeasure[FloodProofModel]):
     _attrs_type = FloodProofModel
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        """Save the additional files to the database."""
         if self.attrs.polygon_file:
             src_path = resolve_filepath(
                 self.dir_name, self.attrs.name, self.attrs.polygon_file

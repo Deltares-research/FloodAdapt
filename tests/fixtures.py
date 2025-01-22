@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.impact.measure.buyout import Buyout
 from flood_adapt.object_model.interface.measures import (
     BuyoutModel,
     MeasureType,

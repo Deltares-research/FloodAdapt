@@ -1,7 +1,7 @@
-from typing import Any, List
+from typing import Any
 
 from flood_adapt import __version__
-from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
+from flood_adapt.adapter.direct_impacts_integrator import Impacts
 from flood_adapt.adapter.interface.hazard_adapter import IHazardAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
@@ -16,7 +16,7 @@ class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
     def __init__(self, data: dict[str, Any]) -> None:
-        """Create a Direct Impact object."""
+        """Create a Scenario object."""
         super().__init__(data)
         self.site_info = self.database.site
         self.results_path = self.database.scenarios.output_path / self.attrs.name
@@ -40,13 +40,13 @@ class Scenario(IScenario, DatabaseUser):
         return self._strategy
 
     @property
-    def direct_impacts(self) -> DirectImpacts:  # List[IImpactAdapter]
-        return DirectImpacts(
-            scenario=self.attrs,
+    def impacts(self) -> Impacts:
+        return Impacts(
+            scenario=self,
         )
 
     def run(self):
-        """Run direct impact models for the scenario."""
+        """Run hazard and impact models for the scenario."""
         self.results_path.mkdir(parents=True, exist_ok=True)
 
         # Initiate the logger for all the integrator scripts.
@@ -68,20 +68,12 @@ class Scenario(IScenario, DatabaseUser):
                         f"Hazard for scenario '{self.attrs.name}' has already been run."
                     )
 
-            impact_models: List[DirectImpacts] = [  # List[IImpactAdapter]
-                DirectImpacts(
-                    scenario=self.attrs,
-                ),
-            ]
-            for impact_model in impact_models:
-                if not impact_model.has_run:
-                    impact_model.preprocess_models()
-                    impact_model.run_models()
-                    impact_model.postprocess_models()
-                else:
-                    self.logger.info(
-                        f"Direct impacts for scenario '{self.attrs.name}' has already been run."
-                    )
+            if not self.impacts.has_run:
+                self.impacts.run()
+            else:
+                self.logger.info(
+                    f"Impacts for scenario '{self.attrs.name}' has already been run."
+                )
 
             self.logger.info(
                 f"Finished evaluation of {self.attrs.name} for {self.site_info.attrs.name}"
