@@ -69,7 +69,10 @@ class DbsStrategy(DbsTemplate[Strategy]):
             for measure in measure_objects
             if MeasureType.is_impact(measure.attrs.type)
         ]
-        ids = [measure.get_object_ids() for measure in impact_measures]
+
+        adapter = self.database.static.get_fiat_model()
+
+        ids = [adapter.get_object_ids(measure) for measure in impact_measures]
 
         # Get all possible pairs of measures and check overlapping buildings for each measure
         combs = list(combinations(enumerate(ids), 2))

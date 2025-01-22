@@ -1,12 +1,11 @@
 import os
 from pathlib import Path
 
-from flood_adapt.object_model.impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.interface.measures import ElevateModel, IMeasure
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class Elevate(IMeasure[ElevateModel], ImpactMeasure):
+class Elevate(IMeasure[ElevateModel]):
     """Subclass of ImpactMeasure describing the measure of elevating buildings by a specific height."""
 
     _attrs_type = ElevateModel

@@ -1,12 +1,11 @@
 import os
 from pathlib import Path
 
-from flood_adapt.object_model.impact.measure.impact_measure import ImpactMeasure
 from flood_adapt.object_model.interface.measures import FloodProofModel, IMeasure
 from flood_adapt.object_model.utils import resolve_filepath, save_file_to_database
 
 
-class FloodProof(IMeasure[FloodProofModel], ImpactMeasure):
+class FloodProof(IMeasure[FloodProofModel]):
     """Subclass of ImpactMeasure describing the measure of flood-proof buildings."""
 
     _attrs_type = FloodProofModel
