@@ -16,7 +16,6 @@ class TimeModel(BaseModel):
     end_time: datetime = REFERENCE_TIME + timedelta(days=1)
     time_step: Optional[timedelta] = None
 
-
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
     def try_parse_datetime(cls, value: str | datetime) -> datetime:
