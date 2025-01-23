@@ -1,7 +1,7 @@
 from typing import Any
 
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureType,
@@ -33,7 +33,7 @@ class Strategy(IStrategy):
         ]
         return [MeasureFactory.get_measure_object(path) for path in measure_paths]
 
-    def get_impact_strategy(self, validate=False) -> ImpactStrategy:
+    def get_impact_strategy(self) -> ImpactStrategy:
         impact_measures = [
             measure
             for measure in self.get_measures()
@@ -41,7 +41,6 @@ class Strategy(IStrategy):
         ]
         return ImpactStrategy(
             measures=impact_measures,
-            validate=validate,
         )
 
     def get_hazard_strategy(self) -> HazardStrategy:

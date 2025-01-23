@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.measures import IMeasure
 from flood_adapt.object_model.interface.object_model import IObject, IObjectModel
 from flood_adapt.object_model.interface.path_builder import ObjectDir

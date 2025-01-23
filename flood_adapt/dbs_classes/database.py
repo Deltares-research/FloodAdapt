@@ -497,7 +497,7 @@ class Database(IDatabase):
             zsmax = open_dataset(file_path)["risk_map"][:, :].to_numpy().T
         return zsmax
 
-    def get_fiat_footprints(self, scenario_name: str) -> GeoDataFrame:
+    def get_building_footprints(self, scenario_name: str) -> GeoDataFrame:
         """Return a geodataframe of the impacts at the footprint level.
 
         Parameters
@@ -622,7 +622,7 @@ class Database(IDatabase):
         scenario = self._scenarios.get(scenario_name)
 
         # Dont do anything if the hazard model has already been run in itself
-        if scenario.direct_impacts.hazard.has_run:
+        if scenario.impacts.hazard.has_run:
             return
 
         scns_simulated = [
@@ -639,7 +639,7 @@ class Database(IDatabase):
                 path_new = self.scenarios.output_path.joinpath(
                     scenario.attrs.name, "Flooding"
                 )
-                if scn.direct_impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
+                if scn.impacts.hazard.has_run:  # only copy results if the hazard model has actually finished and skip simulation folders
                     shutil.copytree(
                         existing,
                         path_new,

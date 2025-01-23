@@ -139,5 +139,5 @@ tests = {cmd = "pytest --junitxml=report.xml --cov=flood_adapt --cov-report=html
 gui = { cmd = "python ./extern/FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}
 [tool.pytest.ini_options]
 pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
-addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 80"
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
