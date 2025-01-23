@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Generic, Optional, Type, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -190,6 +190,12 @@ class GreenInfrastructureModel(HazardMeasureModel):
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = Field(None, ge=0, le=100)
+
+    @field_validator("height", mode="before", check_fields=False)
+    def height_from_length(value: Any) -> Any:
+        if isinstance(value, us.UnitfulLength):
+            return us.UnitfulHeight(value=value.value, units=value.units)
+        return value
 
     @model_validator(mode="after")
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":
