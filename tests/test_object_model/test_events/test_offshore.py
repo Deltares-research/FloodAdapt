@@ -76,9 +76,6 @@ def setup_offshore_scenario(test_db: IDatabase):
 
 
 class TestOffshoreSfincsHandler:
-    @pytest.mark.skip(
-        "Is broken due to bug inhydromt_sfincs. unskip when merged: https://github.com/Deltares/hydromt_sfincs/pull/226 "
-    )
     def test_process_sfincs_offshore(
         self, setup_offshore_scenario: tuple[IDatabase, Scenario, HistoricalEvent]
     ):

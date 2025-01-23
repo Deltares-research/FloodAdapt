@@ -1,6 +1,6 @@
 import pytest
 
-from flood_adapt.adapter.direct_impacts_integrator import Impacts
+from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy

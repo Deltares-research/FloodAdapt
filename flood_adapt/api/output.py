@@ -142,7 +142,7 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     str
         The HTML strings of the water level timeseries
     """
-    # Get the direct_impacts objects from the scenario
+    # Get the impacts objects from the scenario
     hazard = Database().scenarios.get(name).impacts.hazard
 
     # Check if the scenario has run
@@ -174,7 +174,7 @@ def get_infographic(name: str) -> str:
     str
         The HTML string of the infographic.
     """
-    # Get the direct_impacts objects from the scenario
+    # Get the impacts objects from the scenario
     database = Database()
     impact = database.scenarios.get(name).impacts
 

@@ -77,7 +77,7 @@ attr = "flood_adapt.__version__"
 include = ["flood_adapt", "flood_adapt.*"]
 
 [tool.setuptools.package-data]
-flood_adapt = ["py.typed"]
+flood_adapt = ["py.typed", "database_builder/**"]
 
 [tool.ruff]
 line-length  = 88
