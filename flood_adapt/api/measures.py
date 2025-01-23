@@ -4,14 +4,14 @@ import geopandas as gpd
 import pandas as pd
 
 from flood_adapt.dbs_classes.database import Database
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
+from flood_adapt.object_model.impact.measure.buyout import Buyout
+from flood_adapt.object_model.impact.measure.elevate import Elevate
+from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.measures import (
     IMeasure,

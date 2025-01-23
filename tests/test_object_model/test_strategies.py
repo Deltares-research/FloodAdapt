@@ -2,15 +2,15 @@ from unittest.mock import patch
 
 import pytest
 
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.direct_impact.measure.buyout import Buyout
-from flood_adapt.object_model.direct_impact.measure.elevate import Elevate
-from flood_adapt.object_model.direct_impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.hazard.measure.floodwall import FloodWall
 from flood_adapt.object_model.hazard.measure.green_infrastructure import (
     GreenInfrastructure,
 )
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
+from flood_adapt.object_model.impact.measure.buyout import Buyout
+from flood_adapt.object_model.impact.measure.elevate import Elevate
+from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.measures import (
     MeasureType,
     SelectionType,
@@ -206,7 +206,7 @@ def setup_strategy_with_overlapping_measures(test_db, test_data_dir, test_buyout
     return test_db, Strategy(strategy_model)
 
 
-@patch("flood_adapt.dbs_classes.dbs_strategy.get_object_ids")
+@patch("flood_adapt.adapter.fiat_adapter.FiatAdapter.get_object_ids")
 def test_check_overlapping_measures(
     mock_get_object_ids, setup_strategy_with_overlapping_measures
 ):

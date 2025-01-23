@@ -250,11 +250,6 @@ class SfincsAdapter(IHazardAdapter):
             for sim_path in sim_paths:
                 self.execute(sim_path)
 
-                # postprocess subevents to be able to calculate return periods
-                self.write_floodmap_geotiff(scenario, sim_path=sim_path)
-                self.plot_wl_obs(scenario, sim_path=sim_path)
-                self.write_water_level_map(scenario, sim_path=sim_path)
-
     def postprocess(self, scenario: IScenario):
         if not self.sfincs_completed(scenario):
             raise RuntimeError("SFINCS was not run successfully!")

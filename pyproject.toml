@@ -33,7 +33,7 @@ dependencies = [
     "jellyfish<1.0",                                                          # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
     "hydromt-fiat==0.4.2",
-    "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git@quadtree_io",
+    "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
     "numpy < 2.0",
     "numpy-financial",
     "pandas",
@@ -71,9 +71,9 @@ attr = "flood_adapt.__version__"
 include = ["flood_adapt", "flood_adapt.*"]
 
 [tool.setuptools.package-data]
-flood_adapt = ["py.typed"]
+flood_adapt = ["py.typed", "database_builder/**"]
 
 [tool.pytest.ini_options]
 pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
-addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 80"
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]

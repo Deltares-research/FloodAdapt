@@ -78,7 +78,7 @@ def get_max_water_level(name: str, rp: int = None) -> np.ndarray:
     return Database().get_max_water_level(name, rp)
 
 
-def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
+def get_building_footprints(name: str) -> gpd.GeoDataFrame:
     """
     Return a geodataframe of the impacts at the footprint level.
 
@@ -92,7 +92,7 @@ def get_fiat_footprints(name: str) -> gpd.GeoDataFrame:
     gpd.GeoDataFrame
         The impact footprints for the scenario.
     """
-    return Database().get_fiat_footprints(name)
+    return Database().get_building_footprints(name)
 
 
 def get_aggregation(name: str) -> dict[str, gpd.GeoDataFrame]:
@@ -142,8 +142,8 @@ def get_obs_point_timeseries(name: str) -> gpd.GeoDataFrame:
     str
         The HTML strings of the water level timeseries
     """
-    # Get the direct_impacts objects from the scenario
-    hazard = Database().scenarios.get(name).direct_impacts.hazard
+    # Get the impacts objects from the scenario
+    hazard = Database().scenarios.get(name).impacts.hazard
 
     # Check if the scenario has run
     if not hazard.has_run:
@@ -174,9 +174,9 @@ def get_infographic(name: str) -> str:
     str
         The HTML string of the infographic.
     """
-    # Get the direct_impacts objects from the scenario
+    # Get the impacts objects from the scenario
     database = Database()
-    impact = database.scenarios.get(name).direct_impacts
+    impact = database.scenarios.get(name).impacts
 
     # Check if the scenario has run
     if not impact.has_run_check():

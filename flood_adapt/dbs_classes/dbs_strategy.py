@@ -1,9 +1,6 @@
 from itertools import combinations
 
 from flood_adapt.dbs_classes.dbs_template import DbsTemplate
-from flood_adapt.object_model.direct_impact.measure.measure_helpers import (
-    get_object_ids,
-)
 from flood_adapt.object_model.interface.measures import MeasureType
 from flood_adapt.object_model.strategy import Strategy
 
@@ -72,7 +69,10 @@ class DbsStrategy(DbsTemplate[Strategy]):
             for measure in measure_objects
             if MeasureType.is_impact(measure.attrs.type)
         ]
-        ids = [get_object_ids(measure) for measure in impact_measures]
+
+        adapter = self._database.static.get_fiat_model()
+
+        ids = [adapter.get_object_ids(measure) for measure in impact_measures]
 
         # Get all possible pairs of measures and check overlapping buildings for each measure
         combs = list(combinations(enumerate(ids), 2))

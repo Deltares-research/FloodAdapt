@@ -123,9 +123,7 @@ class Benefit(IBenefit, DatabaseUser):
             ]
             if len(created) > 0:
                 scenarios_calc[scenario]["scenario created"] = created[0].attrs.name
-                scenarios_calc[scenario]["scenario run"] = created[
-                    0
-                ].direct_impacts.has_run
+                scenarios_calc[scenario]["scenario run"] = created[0].impacts.has_run
             else:
                 scenarios_calc[scenario]["scenario created"] = "No"
                 scenarios_calc[scenario]["scenario run"] = False

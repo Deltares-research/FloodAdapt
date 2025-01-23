@@ -113,7 +113,7 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def get_fiat_footprints(self, scenario_name: str) -> gpd.GeoDataFrame:
+    def get_building_footprints(self, scenario_name: str) -> gpd.GeoDataFrame:
         pass
 
     @abstractmethod
