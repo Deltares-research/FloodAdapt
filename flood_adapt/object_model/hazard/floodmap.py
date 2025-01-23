@@ -5,6 +5,7 @@ from pathlib import Path
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.interface.events import Mode
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 
 
@@ -17,7 +18,7 @@ class FloodMapType(str, Enum):
 class FloodMap(DatabaseUser):
     logger = FloodAdaptLogging.getLogger(__name__)
 
-    type: FloodMapType = FloodMapType.WATER_LEVEL
+    type: FloodMapType
 
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]
@@ -25,14 +26,22 @@ class FloodMap(DatabaseUser):
 
     def __init__(self, scenario_name: str) -> None:
         self.name = scenario_name
-        base_dir = self.database.scenarios.output_path / scenario_name / "Flooding"
+        self.type = self.database.site.attrs.fiat.config.floodmap_type
+        self._get_flood_map_paths()
 
+    def _get_flood_map_paths(self):
+        base_dir = self.database.scenarios.output_path / self.name / "Flooding"
+        # TODO check naming of files
         if self.mode == Mode.single_event:
-            self.path = base_dir / "max_water_level_map.nc"
+            if self.type == FloodmapType.water_level:
+                self.path = base_dir / "max_water_level_map.nc"
+            elif self.type == FloodmapType.water_depth:
+                self.path = base_dir / f"FloodMap_{self.name}.tif"
         elif self.mode == Mode.risk:
-            self.path = list(
-                base_dir.glob("RP_*_maps.nc")
-            )  # TODO: check if this is correct
+            if self.type == FloodmapType.water_level:
+                self.path = list(base_dir.glob("RP_*_maps.nc"))
+            elif self.type == FloodmapType.water_depth:
+                self.path = list(base_dir.glob("RP_*_maps.tif"))
 
     @property
     def has_run(self) -> bool:
