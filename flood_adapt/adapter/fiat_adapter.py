@@ -53,7 +53,7 @@ class FiatColumns:
     damage_function = "Damage Function: "
     max_potential_damage = "Max Potential Damage: "
     aggregation_label = "Aggregation Label: "
-    inundation_depth = "Induation Depth"
+    inundation_depth = "Inundation Depth"
     damage = "Damage: "
     total_damage = "Total Damage"
     risk_ead = "Risk (EAD)"
