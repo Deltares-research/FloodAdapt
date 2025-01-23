@@ -52,7 +52,7 @@ quartodoc:
         - name: dbs_classes.dbs_template.DbsTemplate
         - name: dbs_classes.database.Database
         - name: object_model.benefit.Benefit
-        - name: adapter.direct_impacts_integrator.Impacts
+        - name: adapter.impacts_integrator.Impacts
         - name: object_model.scenario.Scenario
         - name: object_model.strategy.Strategy
         - name: misc.log.FloodAdaptLogging

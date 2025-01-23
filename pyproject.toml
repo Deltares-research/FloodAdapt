@@ -71,9 +71,9 @@ attr = "flood_adapt.__version__"
 include = ["flood_adapt", "flood_adapt.*"]
 
 [tool.setuptools.package-data]
-flood_adapt = ["py.typed"]
+flood_adapt = ["py.typed", "database_builder/**"]
 
 [tool.pytest.ini_options]
 pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
-addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 80"
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]

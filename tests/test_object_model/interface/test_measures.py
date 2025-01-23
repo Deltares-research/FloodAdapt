@@ -1,3 +1,5 @@
+from typing import Type
+
 import pytest
 from pydantic import ValidationError
 
@@ -9,6 +11,26 @@ from flood_adapt.object_model.interface.measures import (
     SelectionType,
 )
 from flood_adapt.object_model.io import unit_system as us
+
+
+def assert_validation_error(
+    excinfo: pytest.ExceptionInfo,
+    class_name: str,
+    expected_message: str,
+    expected_type: Type[Exception] = ValidationError,
+):
+    assert (
+        excinfo.value.error_count() == 1
+    ), f"Expected 1 error but got {excinfo.value.error_count()}"
+    assert (
+        excinfo.type == expected_type
+    ), f"Expected exception of type '{expected_type}' but got '{excinfo.type}'"
+    assert class_name in str(
+        excinfo.value
+    ), f"Expected '{class_name}' in '{str(excinfo.value)}'"
+    assert expected_message in str(
+        excinfo.value
+    ), f"Expected '{expected_message}' in '{str(excinfo.value)}'"
 
 
 class TestMeasureModel:
@@ -242,9 +264,10 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert (
-            "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
-            in str(excinfo.value)
+        assert_validation_error(
+            excinfo,
+            "GreenInfrastructureModel",
+            "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set.",
         )
 
     def test_green_infrastructure_model_no_aggregation_area_type(self):
@@ -263,14 +286,12 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert (
-            "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
-            in str(excinfo.value)
+        assert_validation_error(
+            excinfo,
+            "GreenInfrastructureModel",
+            "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
         )
 
-    @pytest.mark.skip(
-        reason="REFACTOR NEEDED. The error message + handling needs some attention"
-    )
     def test_green_infrastructure_model_other_measure_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -288,13 +309,12 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert "GreenInfrastructureModel\n  Value error, Type must be one of " in str(
-            excinfo.value
+        assert_validation_error(
+            excinfo,
+            "GreenInfrastructureModel",
+            "Type must be one of 'water_square', 'greening', or 'total_storage'",
         )
 
-    @pytest.mark.skip(
-        reason="REFACTOR NEEDED. The error message + handling needs some attention"
-    )
     @pytest.mark.parametrize(
         "volume, height, percent_area, error_message",
         [
@@ -374,10 +394,11 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert len(excinfo.value.errors()) == 1
-
-        error = excinfo.value.errors()[0]
-        assert error["msg"] in error_message, error["msg"]
+        assert_validation_error(
+            excinfo,
+            "GreenInfrastructureModel",
+            error_message,
+        )
 
     @pytest.mark.parametrize(
         "volume, height, percent_area, error_message",
