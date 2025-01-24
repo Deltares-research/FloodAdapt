@@ -36,6 +36,7 @@ from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallCSV,
     RainfallMeteo,
+    RainfallNetCDF,
     RainfallSynthetic,
     RainfallTrack,
 )
@@ -52,6 +53,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
+    WindNetCDF,
     WindSynthetic,
     WindTrack,
 )
@@ -334,6 +336,10 @@ class SfincsAdapter(IHazardAdapter):
                 )
 
     ### GETTERS ###
+    def get_model_time(self) -> TimeModel:
+        t0, t1 = self._model.get_model_time()
+        return TimeModel(start_time=t0, end_time=t1)
+
     def get_model_root(self) -> Path:
         return Path(self._model.root)
 
@@ -904,8 +910,7 @@ class SfincsAdapter(IHazardAdapter):
         const_dir : float, optional
             direction of time-invariant wind forcing [deg], by default None
         """
-        t0, t1 = self._model.get_model_time()
-
+        time_frame = self.get_model_time()
         if isinstance(wind, WindConstant):
             # HydroMT function: set wind forcing from constant magnitude and direction
             self._model.setup_wind_forcing(
@@ -914,7 +919,7 @@ class SfincsAdapter(IHazardAdapter):
                 direction=wind.direction.value,
             )
         elif isinstance(wind, WindSynthetic):
-            df = wind.to_dataframe(time_frame=TimeModel(start_time=t0, end_time=t1))
+            df = wind.to_dataframe(time_frame=time_frame)
             df["mag"] *= us.UnitfulVelocity(
                 value=1.0, units=Settings().unit_system.velocity
             ).convert(us.UnitTypesVelocity.mps)
@@ -927,7 +932,7 @@ class SfincsAdapter(IHazardAdapter):
                 timeseries=tmp_path, magnitude=None, direction=None
             )
         elif isinstance(wind, WindMeteo):
-            ds = MeteoHandler().read(TimeModel(start_time=t0, end_time=t1))
+            ds = MeteoHandler().read(time_frame)
             # data already in metric units so no conversion needed
 
             # HydroMT function: set wind forcing from grid
@@ -937,6 +942,14 @@ class SfincsAdapter(IHazardAdapter):
                 raise ValueError("No path to rainfall track file provided.")
             # data already in metric units so no conversion needed
             self._add_forcing_spw(wind.path)
+        elif isinstance(wind, WindNetCDF):
+            ds = wind.read()
+            # time slicing to time_frame not needed, hydromt-sfincs handles it
+            conversion = us.UnitfulVelocity(value=1.0, units=wind.unit).convert(
+                us.UnitTypesVelocity.mps
+            )
+            ds *= conversion
+            self._model.setup_wind_forcing_from_grid(wind=ds)
         else:
             self.logger.warning(
                 f"Unsupported wind forcing type: {wind.__class__.__name__}"
@@ -953,8 +966,7 @@ class SfincsAdapter(IHazardAdapter):
         const_intensity : float, optional
             time-invariant precipitation intensity [mm_hr], by default None
         """
-        t0, t1 = self._model.get_model_time()
-        time_frame = TimeModel(start_time=t0, end_time=t1)
+        time_frame = self.get_model_time()
         if isinstance(rainfall, RainfallConstant):
             self._model.setup_precip_forcing(
                 timeseries=None,
@@ -979,13 +991,22 @@ class SfincsAdapter(IHazardAdapter):
             self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallMeteo):
             ds = MeteoHandler().read(time_frame)
-            # data already in metric units so no conversion needed
+            # MeteoHandler always return metric so no conversion needed
+            ds["precip"] *= self._current_scenario.event.attrs.rainfall_multiplier
             self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         elif isinstance(rainfall, RainfallTrack):
             if rainfall.path is None:
                 raise ValueError("No path to rainfall track file provided.")
             # data already in metric units so no conversion needed
             self._add_forcing_spw(rainfall.path)
+        elif isinstance(rainfall, RainfallNetCDF):
+            ds = rainfall.read()
+            # time slicing to time_frame not needed, hydromt-sfincs handles it
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
+                us.UnitTypesIntensity.mm_hr
+            )
+            ds *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
+            self._model.setup_precip_forcing_from_grid(precip=ds, aggregate=False)
         else:
             self.logger.warning(
                 f"Unsupported rainfall forcing type: {rainfall.__class__.__name__}"
@@ -1010,8 +1031,7 @@ class SfincsAdapter(IHazardAdapter):
             )
 
     def _add_forcing_waterlevels(self, forcing: IWaterlevel):
-        t0, t1 = self._model.get_model_time()
-        time_frame = TimeModel(start_time=t0, end_time=t1)
+        time_frame = self.get_model_time()
         if isinstance(forcing, WaterlevelSynthetic):
             df_ts = forcing.to_dataframe(time_frame=time_frame)
             conversion = us.UnitfulLength(
@@ -1217,8 +1237,8 @@ class SfincsAdapter(IHazardAdapter):
             return
 
         self.logger.info(f"Setting discharge forcing for river: {discharge.river.name}")
-        t0, t1 = self._model.get_model_time()
-        time_frame = TimeModel(start_time=t0, end_time=t1)
+
+        time_frame = self.get_model_time()
         model_rivers = self._read_river_locations()
 
         # Check that the river is defined in the model and that the coordinates match

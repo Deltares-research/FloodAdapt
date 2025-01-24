@@ -7,11 +7,11 @@ from typing import Any, Optional, Union
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import xarray as xr
 from cht_cyclones.tropical_cyclone import TropicalCyclone
 from geopandas import GeoDataFrame
 from plotly.express import line
 from plotly.express.colors import sample_colorscale
-from xarray import open_dataarray, open_dataset
 
 from flood_adapt.dbs_classes.dbs_benefit import DbsBenefit
 from flood_adapt.dbs_classes.dbs_event import DbsEvent
@@ -484,17 +484,16 @@ class Database(IDatabase):
                 "Flooding",
                 "max_water_level_map.nc",
             )
-            map = open_dataarray(map_path)
-
-            zsmax = map.to_numpy()
-
+            with xr.open_dataarray(map_path) as map:
+                zsmax = map.to_numpy()
         else:
             file_path = self.scenarios.output_path.joinpath(
                 scenario_name,
                 "Flooding",
                 f"RP_{return_period:04d}_maps.nc",
             )
-            zsmax = open_dataset(file_path)["risk_map"][:, :].to_numpy().T
+            with xr.open_dataset(file_path) as ds:
+                zsmax = ds["risk_map"][:, :].to_numpy().T
         return zsmax
 
     def get_building_footprints(self, scenario_name: str) -> GeoDataFrame:
