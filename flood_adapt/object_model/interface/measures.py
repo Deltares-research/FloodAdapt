@@ -154,24 +154,28 @@ class ImpactMeasureModel(MeasureModel):
 class ElevateModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
 
+    type: MeasureType = MeasureType.elevate_properties
     elevation: us.UnitfulLengthRefValue
 
 
 class BuyoutModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "buyout" impact measure."""
 
-    ...  # Buyout has only the basic impact measure attributes
+    # Buyout has only the basic impact measure attributes
+    type: MeasureType = MeasureType.buyout_properties
 
 
 class FloodProofModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
 
+    type: MeasureType = MeasureType.floodproof_properties
     elevation: us.UnitfulLength
 
 
 class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
 
+    type: MeasureType = MeasureType.floodwall
     elevation: us.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
@@ -179,12 +183,14 @@ class FloodWallModel(HazardMeasureModel):
 class PumpModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
 
+    type: MeasureType = MeasureType.pump
     discharge: us.UnitfulDischarge
 
 
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
 
+    type: MeasureType = MeasureType.greening
     volume: us.UnitfulVolume
     height: Optional[us.UnitfulHeight] = None
     aggregation_area_type: Optional[str] = None

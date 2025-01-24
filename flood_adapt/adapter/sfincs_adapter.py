@@ -293,7 +293,9 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_measure(self, measure: IMeasure):
         """Get measure data and add it."""
-        self.logger.info(f"Adding {measure.__class__.__name__.capitalize()}")
+        self.logger.info(
+            f"Adding {measure.__class__.__name__.capitalize()} `{measure.attrs.name}`"
+        )
 
         if isinstance(measure, FloodWall):
             self._add_measure_floodwall(measure)
