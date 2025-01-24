@@ -53,17 +53,18 @@ def test_dict(test_data_dir):
 
 @pytest.fixture
 def test_projection(test_data_dir):
-    attrs = ProjectionModel(
-        name="test_projection",
-        description="test description",
-        physical_projection=PhysicalProjectionModel(),
-        socio_economic_change=SocioEconomicChangeModel(
-            new_development_shapefile=str(
-                test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
-            )
-        ),
+    return Projection(
+        ProjectionModel(
+            name="test_projection",
+            description="test description",
+            physical_projection=PhysicalProjectionModel(),
+            socio_economic_change=SocioEconomicChangeModel(
+                new_development_shapefile=str(
+                    test_data_dir / "shapefiles" / "pop_growth_new_20.shp"
+                )
+            ),
+        )
     )
-    return Projection.load_dict(attrs)
 
 
 def test_projection_load_dict(test_dict):

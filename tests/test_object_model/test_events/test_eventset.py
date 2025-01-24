@@ -1,4 +1,4 @@
-from datetime import datetime
+from copy import copy
 from pathlib import Path
 from tempfile import gettempdir
 from unittest.mock import patch
@@ -6,7 +6,11 @@ from unittest.mock import patch
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
+from flood_adapt.object_model.hazard.event.synthetic import (
+    SyntheticEvent,
+    SyntheticEventModel,
+)
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallConstant
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
@@ -15,11 +19,8 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.wind import WindConstant
-from flood_adapt.object_model.hazard.interface.events import (
-    Mode,
-    Template,
-)
 from flood_adapt.object_model.hazard.interface.forcing import (
+    ForcingType,
     ShapeType,
 )
 from flood_adapt.object_model.hazard.interface.models import (
@@ -29,95 +30,97 @@ from flood_adapt.object_model.hazard.interface.timeseries import (
     SyntheticTimeseriesModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
-def test_sub_event():
-    return {
-        "time": TimeModel(
-            start_time=datetime(2020, 1, 1),
-            end_time=datetime(2020, 1, 2),
-        ),
-        "template": Template.Synthetic,
-        "mode": Mode.single_event,
-        "forcings": {
-            "WIND": [
-                WindConstant(
-                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
-                    direction=us.UnitfulDirection(
-                        value=60, units=us.UnitTypesDirection.degrees
-                    ),
-                ).model_dump()
-            ],
-            "RAINFALL": [
-                RainfallConstant(
-                    intensity=us.UnitfulIntensity(
-                        value=2, units=us.UnitTypesIntensity.mm_hr
+def test_sub_event() -> SyntheticEvent:
+    return SyntheticEvent(
+        SyntheticEventModel(
+            name="subevent",
+            time=TimeModel(),
+            forcings={
+                ForcingType.WIND: [
+                    WindConstant(
+                        speed=us.UnitfulVelocity(
+                            value=5, units=us.UnitTypesVelocity.mps
+                        ),
+                        direction=us.UnitfulDirection(
+                            value=60, units=us.UnitTypesDirection.degrees
+                        ),
                     )
-                ).model_dump()
-            ],
-            "DISCHARGE": [
-                DischargeConstant(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallConstant(
+                        intensity=us.UnitfulIntensity(
+                            value=2, units=us.UnitTypesIntensity.mm_hr
+                        )
+                    )
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
-                    ),
-                    discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
-                    ),
-                ).model_dump(),
-            ],
-            "WATERLEVEL": [
-                WaterlevelSynthetic(
-                    surge=SurgeModel(
-                        timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
-                            shape_type=ShapeType.triangle,
-                            duration=us.UnitfulTime(
-                                value=1, units=us.UnitTypesTime.days
-                            ),
-                            peak_time=us.UnitfulTime(
-                                value=8, units=us.UnitTypesTime.hours
-                            ),
-                            peak_value=us.UnitfulLength(
+                    )
+                ],
+                ForcingType.WATERLEVEL: [
+                    WaterlevelSynthetic(
+                        surge=SurgeModel(
+                            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                                shape_type=ShapeType.triangle,
+                                duration=us.UnitfulTime(
+                                    value=1, units=us.UnitTypesTime.days
+                                ),
+                                peak_time=us.UnitfulTime(
+                                    value=8, units=us.UnitTypesTime.hours
+                                ),
+                                peak_value=us.UnitfulLength(
+                                    value=1, units=us.UnitTypesLength.meters
+                                ),
+                            )
+                        ),
+                        tide=TideModel(
+                            harmonic_amplitude=us.UnitfulLength(
                                 value=1, units=us.UnitTypesLength.meters
                             ),
-                        )
-                    ),
-                    tide=TideModel(
-                        harmonic_amplitude=us.UnitfulLength(
-                            value=1, units=us.UnitTypesLength.meters
+                            harmonic_phase=us.UnitfulTime(
+                                value=0, units=us.UnitTypesTime.hours
+                            ),
                         ),
-                        harmonic_phase=us.UnitfulTime(
-                            value=0, units=us.UnitTypesTime.hours
-                        ),
-                    ),
-                ).model_dump()
-            ],
-        },
-    }
+                    )
+                ],
+            },
+        )
+    )
 
 
 @pytest.fixture()
-def test_eventset(test_sub_event) -> EventSet:
+def test_eventset(test_sub_event: SyntheticEvent) -> EventSet:
     sub_events = []
     for i in [1, 39, 78]:
-        test_sub_event["name"] = f"subevent_{i:04d}"
-        sub_events.append(test_sub_event.copy())
+        test_sub_event.attrs.name = f"subevent_{i:04d}"
+        sub_events.append(copy(test_sub_event))
 
-    attrs = {
-        "name": "test_eventset_synthetic",
-        "mode": Mode.risk,
-        "sub_events": sub_events,
-        "frequency": [0.5, 0.2, 0.02],
-    }
-    return EventSet.load_dict(attrs)
+    event_set = EventSet(
+        EventSetModel(
+            name="test_eventset",
+            sub_events=sub_events,
+            frequency=[0.5, 0.2, 0.02],
+        )
+    )
+    return event_set
 
 
 def test_save_reload_eventset(test_eventset: EventSet, tmp_path: Path):
@@ -144,13 +147,13 @@ def setup_eventset_scenario(
 
     test_db.events.save(test_eventset)
 
-    scn = Scenario.load_dict(
-        {
-            "name": "test_eventset",
-            "event": test_eventset.attrs.name,
-            "projection": dummy_projection.attrs.name,
-            "strategy": dummy_strategy.attrs.name,
-        }
+    scn = Scenario(
+        ScenarioModel(
+            name="test_scenario",
+            event=test_eventset.attrs.name,
+            projection=dummy_projection.attrs.name,
+            strategy=dummy_strategy.attrs.name,
+        )
     )
     test_db.scenarios.save(scn)
 
