@@ -7,7 +7,7 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.projections import IProjection
-from flood_adapt.object_model.interface.scenarios import IScenario
+from flood_adapt.object_model.interface.scenarios import IScenario, ScenarioModel
 from flood_adapt.object_model.interface.strategies import IStrategy
 from flood_adapt.object_model.utils import finished_file_exists, write_finished_file
 
@@ -15,7 +15,7 @@ from flood_adapt.object_model.utils import finished_file_exists, write_finished_
 class Scenario(IScenario, DatabaseUser):
     """class holding all information related to a scenario."""
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | ScenarioModel) -> None:
         """Create a Scenario object."""
         super().__init__(data)
         self.site_info = self.database.site
