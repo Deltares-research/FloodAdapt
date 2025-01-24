@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Any, List, Optional, Type, TypeVar
 
-from pydantic import field_serializer, model_validator
+from pydantic import field_serializer, field_validator, model_validator
 
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
@@ -17,7 +17,7 @@ from flood_adapt.object_model.hazard.interface.events import (
 class EventModel(IEventModel):
     @staticmethod
     def _parse_forcing_from_dict(
-        forcing_attrs: dict[str, Any],
+        forcing_attrs: dict[str, Any] | IForcing,
         ftype: Optional[ForcingType] = None,
         fsource: Optional[ForcingSource] = None,
     ) -> IForcing:
@@ -40,18 +40,19 @@ class EventModel(IEventModel):
                 "2. dict with the keys `type` (ForcingType), `source` (ForcingSource) specifying the class, and with valid forcing attributes for that class."
             )
 
-    @model_validator(mode="before")
-    def create_forcings(self):
-        if "forcings" in self:
-            _forcings = {}
-            for ftype, forcings in self["forcings"].items():
-                _forcings[ftype] = [
-                    EventModel._parse_forcing_from_dict(forcing, ftype)
-                    for forcing in forcings
-                ]
-
-            self["forcings"] = _forcings
-        return self
+    @field_validator("forcings", mode="before")
+    @classmethod
+    def create_forcings(
+        cls, value: dict[str, list[dict[str, Any]]]
+    ) -> dict[ForcingType, list[IForcing]]:
+        forcings = {}
+        for ftype, forcing_list in value.items():
+            ftype = ForcingType(ftype)
+            forcings[ftype] = [
+                EventModel._parse_forcing_from_dict(forcing, ftype)
+                for forcing in forcing_list
+            ]
+        return forcings
 
     @model_validator(mode="after")
     def validate_forcings(self):
@@ -88,8 +89,8 @@ class EventModel(IEventModel):
     @field_serializer("forcings")
     @classmethod
     def serialize_forcings(
-        cls, value: dict[ForcingType, list[IForcing]]
-    ) -> dict[str, dict[str, Any]]:
+        cls, value: dict[ForcingType, List[IForcing]]
+    ) -> dict[str, List[dict[str, Any]]]:
         dct = {}
         for ftype, forcing_list in value.items():
             dct[ftype.value] = [

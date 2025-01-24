@@ -386,7 +386,7 @@ class DatabaseBuilder:
             self.make_folder_structure()
 
             # Set environment variables after folder structure is created
-            Settings(database_root=self.root.parent, database_name=self.root.name)
+            Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
 
             self.read_sfincs()
             self.read_fiat()

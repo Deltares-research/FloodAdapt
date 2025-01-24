@@ -113,7 +113,7 @@ class IForcingFactory:
 
     @classmethod
     @abstractmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
+    def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
         ...
 

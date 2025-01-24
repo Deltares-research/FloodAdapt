@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         `settings = Settings.read(toml_path: Path)`
 
     3) Load settings from keyword arguments, overwriting any environment variables:
-        `settings = Settings(database_root="path/to/database", database_name="database_name", system_folder="path/to/system_folder")`
+        `settings = Settings(DATABASE_ROOT="path/to/database", DATABASE_NAME="database_name", SYSTEM_FOLDER="path/to/system_folder")`
 
     Attributes
     ----------
@@ -123,29 +123,27 @@ class Settings(BaseSettings):
         "Darwin": "",
     }
 
-    model_config = SettingsConfigDict(
-        env_ignore_empty=True, validate_default=True
-    )  # empty env uses default
+    model_config = SettingsConfigDict(env_ignore_empty=True, validate_default=True)
 
     database_root: Path = Field(
+        alias="DATABASE_ROOT",  # environment variable DATABASE_ROOT
         default=Path(__file__).parents[3]
         / "Database",  # If you clone FloodAdapt, default is to look for the Database next to the FloodAdapt folder
-        env="DATABASE_ROOT",
         description="The root directory of the database that contains site(s). Usually the directory name is 'Database'. Default is to look for the Database in the same dir as the FloodAdapt cloned repo.",
     )
     database_name: str = Field(
+        alias="DATABASE_NAME",  # environment variable DATABASE_NAME
         default="",
-        env="DATABASE_NAME",
         description="The name of the database site, should be a folder inside the database root. The site must contain an 'input' and 'static' folder.",
     )
     system_folder: Path = Field(
+        alias="SYSTEM_FOLDER",  # environment variable: SYSTEM_FOLDER
         default=Path(__file__).parents[1] / "system",
-        env="SYSTEM_FOLDER",
         description="The path of the system folder containing the kernels that run the calculations. Default is to look for the system folder in `FloodAdapt/flood_adapt/system`",
     )
     delete_crashed_runs: bool = Field(
+        alias="DELETE_CRASHED_RUNS",  # environment variable: DELETE_CRASHED_RUNS
         default=True,
-        env="DELETE_CRASHED_RUNS",
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
