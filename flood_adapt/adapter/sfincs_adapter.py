@@ -135,11 +135,12 @@ class SfincsAdapter(IHazardAdapter):
 
     def close_files(self):
         """Close all open files and clean up file handles."""
-        if hasattr(self.logger, "handlers"):
-            for handler in self.logger.handlers:
-                if isinstance(handler, logging.FileHandler):
-                    handler.close()
-                    self.logger.removeHandler(handler)
+        for logger in [self.logger, self.sfincs_logger]:
+            if hasattr(logger, "handlers"):
+                for handler in logger.handlers:
+                    if isinstance(handler, logging.FileHandler):
+                        handler.close()
+                        logger.removeHandler(handler)
 
     def __enter__(self) -> "SfincsAdapter":
         return self
