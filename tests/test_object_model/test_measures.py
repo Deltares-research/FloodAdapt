@@ -98,19 +98,22 @@ def test_elevate_aggr_area_read_fail(test_db):
 
 
 def test_elevate_aggr_area_save():
-    elevate = Elevate.load_dict(
-        data={
-            "name": "raise_property_aggregation_area",
-            "description": "raise_property_aggregation_area",
-            "type": "elevate_properties",
-            "elevation": {"value": 1, "units": "feet", "type": "floodmap"},
-            "selection_type": "aggregation_area",
-            "aggregation_area_type": "aggr_lvl_2",
-            "aggregation_area_name": "name5",
-            "property_type": "RES",
-        }
+    elevate = Elevate(
+        ElevateModel(
+            name="raise_property_aggregation_area",
+            description="raise_property_aggregation_area",
+            type=MeasureType.elevate_properties,
+            elevation=us.UnitfulLengthRefValue(
+                value=1,
+                units=us.UnitTypesLength.feet,
+                type=us.VerticalReference.floodmap,
+            ),
+            selection_type=SelectionType.aggregation_area,
+            aggregation_area_type="aggr_lvl_2",
+            aggregation_area_name="name5",
+            property_type="RES",
+        )
     )
-
     test_path = Path(gettempdir()) / "to_load.toml"
     test_path.parent.mkdir(exist_ok=True)
 
@@ -227,87 +230,83 @@ def test_green_infra_read(test_db):
 
 @pytest.fixture
 def test_pump(test_db, test_data_dir):
-    data = PumpModel(
-        name="test_pump",
-        description="test_pump",
-        type=MeasureType.pump,
-        discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
-        selection_type=SelectionType.polygon,
-        polygon_file=str(test_data_dir / "polyline.geojson"),
-    )
-    return Pump.load_dict(
-        data=data,
+    return Pump(
+        PumpModel(
+            name="test_pump",
+            description="test_pump",
+            type=MeasureType.pump,
+            discharge=us.UnitfulDischarge(value=100, units=us.UnitTypesDischarge.cfs),
+            selection_type=SelectionType.polygon,
+            polygon_file=str(test_data_dir / "polyline.geojson"),
+        )
     )
 
 
 @pytest.fixture
 def test_elevate(test_db, test_data_dir):
-    data = ElevateModel(
-        name="test_elevate",
-        description="test_elevate",
-        type=MeasureType.elevate_properties,
-        elevation=us.UnitfulLengthRefValue(
-            value=1, units=us.UnitTypesLength.feet, type=us.VerticalReference.floodmap
-        ),
-        selection_type=SelectionType.polygon,
-        property_type="RES",
-        polygon_file=str(test_data_dir / "polygon.geojson"),
-    )
-    return Elevate.load_dict(
-        data=data,
+    return Elevate(
+        ElevateModel(
+            name="test_elevate",
+            description="test_elevate",
+            type=MeasureType.elevate_properties,
+            elevation=us.UnitfulLengthRefValue(
+                value=1,
+                units=us.UnitTypesLength.feet,
+                type=us.VerticalReference.floodmap,
+            ),
+            selection_type=SelectionType.polygon,
+            property_type="RES",
+            polygon_file=str(test_data_dir / "polygon.geojson"),
+        )
     )
 
 
 @pytest.fixture
 def test_buyout(test_db, test_data_dir):
-    data = BuyoutModel(
-        name="test_buyout",
-        description="test_buyout",
-        type=MeasureType.buyout_properties,
-        selection_type=SelectionType.polygon,
-        property_type="RES",
-        polygon_file=str(test_data_dir / "polygon.geojson"),
-    )
-
-    return Buyout.load_dict(
-        data=data,
+    return Buyout(
+        BuyoutModel(
+            name="test_buyout",
+            description="test_buyout",
+            type=MeasureType.buyout_properties,
+            selection_type=SelectionType.polygon,
+            property_type="RES",
+            polygon_file=str(test_data_dir / "polygon.geojson"),
+        )
     )
 
 
 @pytest.fixture
 def test_floodproof(test_db, test_data_dir):
-    data = FloodProofModel(
-        name="test_floodproof",
-        description="test_floodproof",
-        type=MeasureType.floodproof_properties,
-        selection_type=SelectionType.polygon,
-        elevation=us.UnitfulLengthRefValue(
-            value=1, units=us.UnitTypesLength.feet, type=us.VerticalReference.floodmap
-        ),
-        property_type="RES",
-        polygon_file=str(test_data_dir / "polygon.geojson"),
-    )
-
-    return FloodProof.load_dict(
-        data=data,
+    return FloodProof(
+        FloodProofModel(
+            name="test_floodproof",
+            description="test_floodproof",
+            type=MeasureType.floodproof_properties,
+            selection_type=SelectionType.polygon,
+            elevation=us.UnitfulLengthRefValue(
+                value=1,
+                units=us.UnitTypesLength.feet,
+                type=us.VerticalReference.floodmap,
+            ),
+            property_type="RES",
+            polygon_file=str(test_data_dir / "polygon.geojson"),
+        )
     )
 
 
 @pytest.fixture
 def test_green_infra(test_db, test_data_dir):
-    data = GreenInfrastructureModel(
-        name="test_green_infra",
-        description="test_green_infra",
-        type=MeasureType.greening,
-        volume=us.UnitfulVolume(value=100, units=us.UnitTypesVolume.cf),
-        height=us.UnitfulHeight(value=1, units=us.UnitTypesLength.feet),
-        selection_type=SelectionType.polygon,
-        polygon_file=str(test_data_dir / "polygon.geojson"),
-        percent_area=10,
-    )
-
-    return GreenInfrastructure.load_dict(
-        data=data,
+    return GreenInfrastructure(
+        GreenInfrastructureModel(
+            name="test_green_infra",
+            description="test_green_infra",
+            type=MeasureType.greening,
+            volume=us.UnitfulVolume(value=100, units=us.UnitTypesVolume.cf),
+            height=us.UnitfulHeight(value=1, units=us.UnitTypesLength.feet),
+            selection_type=SelectionType.polygon,
+            polygon_file=str(test_data_dir / "polygon.geojson"),
+            percent_area=10,
+        )
     )
 
 

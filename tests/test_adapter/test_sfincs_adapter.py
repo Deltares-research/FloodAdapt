@@ -61,7 +61,12 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
-from flood_adapt.object_model.interface.measures import MeasureType
+from flood_adapt.object_model.interface.measures import (
+    FloodWallModel,
+    GreenInfrastructureModel,
+    PumpModel,
+    SelectionType,
+)
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
@@ -290,6 +295,7 @@ def _unsupported_forcing_source(type: ForcingType):
         spec=(ForcingSource, str), return_value="unsupported_source"
     )
     mock_source.lower = mock.Mock(return_value="unsupported_source")
+    mock_source.capitalize = mock.Mock(return_value="Unsupported_source")
 
     match type:
         case ForcingType.DISCHARGE:
@@ -734,15 +740,16 @@ class TestAddMeasure:
     class TestFloodwall:
         @pytest.fixture()
         def floodwall(self, test_db) -> FloodWall:
-            data = {
-                "name": "test_seawall",
-                "description": "seawall",
-                "type": MeasureType.floodwall.value,
-                "elevation": us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                "selection_type": "polyline",
-                "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
-            }
-            floodwall = FloodWall.load_dict(data)
+            floodwall = FloodWall(
+                FloodWallModel(
+                    name="test_seawall",
+                    description="seawall",
+                    selection_type=SelectionType.polyline,
+                    elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
+                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                )
+            )
+
             test_db.measures.save(floodwall)
             return floodwall
 
@@ -759,17 +766,17 @@ class TestAddMeasure:
     class TestPump:
         @pytest.fixture()
         def pump(self, test_db) -> Pump:
-            data = {
-                "name": "test_pump",
-                "description": "pump",
-                "type": MeasureType.pump,
-                "discharge": us.UnitfulDischarge(
-                    value=100, units=us.UnitTypesDischarge.cfs
-                ),
-                "selection_type": "polyline",
-                "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
-            }
-            pump = Pump.load_dict(data)
+            pump = Pump(
+                PumpModel(
+                    name="test_pump",
+                    description="pump",
+                    discharge=us.UnitfulDischarge(
+                        value=100, units=us.UnitTypesDischarge.cfs
+                    ),
+                    selection_type=SelectionType.polyline,
+                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                )
+            )
             test_db.measures.save(pump)
             return pump
 
@@ -784,17 +791,18 @@ class TestAddMeasure:
     class TestGreenInfrastructure:
         @pytest.fixture()
         def water_square(self, test_db) -> GreenInfrastructure:
-            data = {
-                "name": "test_greeninfra",
-                "description": "greeninfra",
-                "type": MeasureType.water_square,
-                "selection_type": "polygon",
-                "polygon_file": str(TEST_DATA_DIR / "green_infra.geojson"),
-                "volume": {"value": 1, "units": "m3"},
-                "height": {"value": 2, "units": "meters"},
-            }
+            green_infra = GreenInfrastructure(
+                GreenInfrastructureModel(
+                    name="test_greeninfra",
+                    description="greeninfra",
+                    selection_type=SelectionType.polygon,
+                    polygon_file=str(TEST_DATA_DIR / "green_infra.geojson"),
+                    volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
+                    height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
+                    percent_area=0.5,
+                )
+            )
 
-            green_infra = GreenInfrastructure.load_dict(data)
             test_db.measures.save(green_infra)
             return green_infra
 

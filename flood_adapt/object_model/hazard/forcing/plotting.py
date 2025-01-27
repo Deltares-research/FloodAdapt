@@ -42,7 +42,7 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 
 UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
-logger = FloodAdaptLogging.getLogger(__name__)
+logger = FloodAdaptLogging.getLogger("Plotting")
 
 
 def plot_forcing(
@@ -89,7 +89,7 @@ def plot_discharge(
         try:
             if discharge.source in UNPLOTTABLE_SOURCES:
                 logger.debug(
-                    f"Plotting not supported for discharge data from {discharge.source}"
+                    f"Plotting not supported for discharge data from `{discharge.source}`"
                 )
                 continue
             elif isinstance(
@@ -97,7 +97,7 @@ def plot_discharge(
             ):
                 river_data = discharge.to_dataframe(event.attrs.time)
             else:
-                raise ValueError(f"Unknown discharge source: {discharge.source}")
+                raise ValueError(f"Unknown discharge source: `{discharge.source}`")
 
             # add river_data as a column to the dataframe. keep the same index
             if data.empty:
