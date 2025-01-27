@@ -102,8 +102,10 @@ class SfincsAdapter(IHazardAdapter):
             model_root (Path): Root directory of overland sfincs model.
         """
         self.site = self.database.site
-
-        self._model = SfincsModel(root=str(model_root.resolve()), mode="r")
+        self.sfincs_logger = self.setup_sfincs_logger(model_root)
+        self._model = SfincsModel(
+            root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
+        )
         self._model.read()
 
     def read(self, path: Path):
@@ -188,17 +190,16 @@ class SfincsAdapter(IHazardAdapter):
             True if the model ran successfully, False otherwise.
 
         """
-        sfincs_log = path / "sfincs.log"
         with cd(path):
-            with FloodAdaptLogging.to_file(file_path=sfincs_log):
-                self.logger.info(f"Running SFINCS in {path}")
-                process = subprocess.run(
-                    str(Settings().sfincs_path),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                )
-                self.logger.debug(process.stdout)
+            self.logger.info(f"Running SFINCS in {path}")
+            process = subprocess.run(
+                str(Settings().sfincs_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.sfincs_logger.info(process.stdout)
+            self.logger.debug(process.stdout)
 
         if process.returncode != 0:
             if Settings().delete_crashed_runs:
@@ -246,7 +247,7 @@ class SfincsAdapter(IHazardAdapter):
             total = len(sim_paths)
             for current, sim_path in enumerate(sim_paths):
                 self.logger.info(
-                    f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[current].attrs.name}` ({current}/{total})"
+                    f"Running SFINCS for Eventset Scenario `{scenario.attrs.name}`, Event `{scenario.event.events[current].attrs.name}` ({current + 1}/{total})"
                 )
                 self.execute(sim_path)
 
@@ -1167,8 +1168,9 @@ class SfincsAdapter(IHazardAdapter):
 
         # Volume is always already calculated and is converted to m3 for SFINCS
         height = None
-        volume = green_infrastructure.attrs.volume.convert(us.UnitTypesVolume("m3"))
-        volume = green_infrastructure.attrs.volume.convert(us.UnitTypesVolume("m3"))
+        volume = green_infrastructure.attrs.volume.convert(
+            us.UnitTypesVolume(us.UnitTypesVolume.m3)
+        )
 
         # HydroMT function: create storage volume
         self._model.setup_storage_volume(
@@ -1488,3 +1490,16 @@ class SfincsAdapter(IHazardAdapter):
         points = [shapely.Point(coord) for coord in coords]
 
         return gpd.GeoDataFrame({"geometry": points}, crs=self._model.crs)
+
+    def setup_sfincs_logger(self, model_root: Path) -> logging.Logger:
+        """Initialize the logger for the SFINCS model."""
+        # Create a logger for the SFINCS model manually
+        sfincs_logger = logging.getLogger("SfincsModel")
+        for handler in sfincs_logger.handlers[:]:
+            sfincs_logger.removeHandler(handler)
+
+        # Add a file handler
+        file_handler = logging.FileHandler(model_root.resolve() / "sfincs_model.log")
+        file_handler.setLevel(logging.DEBUG)
+        sfincs_logger.addHandler(file_handler)
+        return sfincs_logger
