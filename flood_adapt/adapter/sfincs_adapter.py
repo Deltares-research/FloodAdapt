@@ -203,6 +203,7 @@ class SfincsAdapter(IHazardAdapter):
             self.sfincs_logger.info(process.stdout)
             self.logger.debug(process.stdout)
 
+
         if process.returncode != 0:
             if Settings().delete_crashed_runs:
                 # Remove all files in the simulation folder except for the log files
