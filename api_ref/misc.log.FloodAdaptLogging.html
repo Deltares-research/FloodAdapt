@@ -559,17 +559,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="flood_adapt.misc.log.FloodAdaptLogging.getLogger" class="level3">
 <h3 class="anchored" data-anchor-id="flood_adapt.misc.log.FloodAdaptLogging.getLogger">getLogger</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.getLogger(name<span class="op">=</span><span class="va">None</span>, level<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>misc.log.FloodAdaptLogging.getLogger(name<span class="op">=</span><span class="va">None</span>, level<span class="op">=</span>logging.INFO)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get a logger with the specified name. If no name is provided, return the root logger.</p>
-<p>If the logger does not exist, it is created with the specified level. If no level is provided, the logger inherits the level of the root logger.</p>
+<p>If the logger does not exist, it is created with the specified level.</p>
 <section id="parameters-1" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
 <table class="table">
 <colgroup>
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 77%">
-<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 68%">
+<col style="width: 15%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -588,9 +588,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td>level</td>
-<td>int</td>
-<td>The level of the logger. If not provided, the logger inherits the level of the root logger.</td>
-<td><code>None</code></td>
+<td>(int,)</td>
+<td>The level of the logger. The default is logging.INFO.</td>
+<td><code>logging.INFO</code></td>
 </tr>
 </tbody>
 </table>

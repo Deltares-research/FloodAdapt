@@ -428,7 +428,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Urban green infrastructure integrates natural elements like parks, green roofs, and permeable pavements into city landscapes to absorb, slow down, and manage stormwater runoff, thereby reducing flood risk and enhancing urban resilience. FloodAdapt includes a high-level representation of urban green infrastructure that is intended to help users identify the required capacity of urban green infrastructure solutions and the best placement of these options within the city to achieve community objectives. Currently there are three ‘flavors’ of urban green infrastructure that can be simulated and evaluated with FloodAdapt: <a href="#water-square">water square</a>, <a href="#greening">greening</a>, and <a href="#total-storage">total storage</a>. This section describes how these measures can be specified in FloodAdapt and how they are represented in the modeling.</p>
 <div id="fig-measures_buildingLevel" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_greenInfra.png" class="lightbox" title="Green infrastructure options in FloodAdapt include: water squares, greening, and total storage" data-gallery="quarto-lightbox-gallery-1"><img src="../../_static/images/measures_greenInfra.png" class="img-fluid figure-img"></a></p>
+<p><a href="../../_static/images/measures_greenInfra.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Green infrastructure options in FloodAdapt include: water squares, greening, and total storage"><img src="../../_static/images/measures_greenInfra.png" class="img-fluid figure-img"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Green infrastructure options in FloodAdapt include: water squares, greening, and total storage</strong></figcaption>
 </figure>
 </div>
@@ -475,7 +475,7 @@ How are green infrastructure measures represented in the modeling?
 <p>A water square is a multi-functional urban space designed to temporarily store excess rainwater during heavy rainfall, reducing flooding while providing recreational and aesthetic benefits during dry periods. A schematic of a water square is shown in <a href="#fig-measures_waterSquare_schematic">Figure&nbsp;2</a>.</p>
 <div id="fig-measures_waterSquare_schematic" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_waterSquare_example.png" class="lightbox" title="A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/" data-gallery="quarto-lightbox-gallery-2"><img src="../../_static/images/measures_GI_waterSquare_example.png" class="img-fluid figure-img" style="width:30.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_waterSquare_example.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/"><img src="../../_static/images/measures_GI_waterSquare_example.png" class="img-fluid figure-img" style="width:30.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>A water square schematic, from https://urbangreenbluegrids.com/measures/water-squares/</strong></figcaption>
 </figure>
 </div>
@@ -488,7 +488,7 @@ How are green infrastructure measures represented in the modeling?
 </ul>
 <div id="fig-measures_waterSquare" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_waterSquare.png" class="lightbox" title="Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage" data-gallery="quarto-lightbox-gallery-3"><img src="../../_static/images/measures_GI_waterSquare.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_waterSquare.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage"><img src="../../_static/images/measures_GI_waterSquare.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Implementing a water square in FloodAdapt. This water square would affect two cells in the flood model by increasing their storage</strong></figcaption>
 </figure>
 </div>
@@ -496,13 +496,13 @@ How are green infrastructure measures represented in the modeling?
 <p>The specification window is shown in <a href="#fig-measures_waterSquare_specs">Figure&nbsp;8</a>. In this window, you enter a name for the measure (no spaces or special characters), an optional description, and the depth of the water square. After entering the depth, click Enter. FloodAdapt will then automatically calculate the area of the water square (based on the selected area for the water square) and the total storage volume by multiplying the area with the specified water square depth. Additionally, there is also a “Look-up table” button. This shows suggestions for infiltration depths for different types of green infrastructure measures; see <a href="#fig-measures_lookup">Figure&nbsp;5</a>. For the <strong>water square</strong> measure type, only the entry about water squares would be relevant.</p>
 <div id="fig-measures_waterSquare_specs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_waterSquare_specs.png" class="lightbox" title="Water square specification window" data-gallery="quarto-lightbox-gallery-4"><img src="../../_static/images/measures_GI_waterSquare_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_waterSquare_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Water square specification window"><img src="../../_static/images/measures_GI_waterSquare_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Water square specification window</strong></figcaption>
 </figure>
 </div>
 <div id="fig-measures_lookup" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_lookupTable.png" class="lightbox" title="Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions" data-gallery="quarto-lightbox-gallery-5"><img src="../../_static/images/measures_GI_lookupTable.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_lookupTable.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions"><img src="../../_static/images/measures_GI_lookupTable.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Lookup table with suggestions on infiltration depths for different types of green infrastructure solutions</strong></figcaption>
 </figure>
 </div>
@@ -525,7 +525,7 @@ Where do the suggested infiltration depths come from?
 <p>Greening in FloodAdapt refers to the implementation of a collection of different types of individual measures that may be part of a green infrastructure design. This option allows you to specify an area and the percentage of that area where green infrastructure will be implemented. For example, let’s say the area of interest is a neighborhood, and the measure under consideration is a bioswale. In this case, you could estimate the area of the neighborhood where there are roads (for example, let’s say 10%), and then specify that 10% of the area will have an infiltration depth appropriate for a bioswale (see the lookup table shown in <a href="#fig-measures_lookup">Figure&nbsp;5</a>).</p>
 <div id="fig-measure_building_poly_buyout_specification" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_greening_options.png" class="lightbox" title="Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)" data-gallery="quarto-lightbox-gallery-6"><img src="../../_static/images/measures_GI_greening_options.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_greening_options.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)"><img src="../../_static/images/measures_GI_greening_options.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Examples of different green infrastructure measures (source: https://crctool.org/en/set-measure)</strong></figcaption>
 </figure>
 </div>
@@ -539,14 +539,14 @@ Where do the suggested infiltration depths come from?
 <p>If you selected “Draw Polygon”, you can now begin drawing the polygon for the area where you want to apply green infrastructure. When you have finished drawing your polygon, you can double click to open the specification window. If you select “Aggregation area” or “Import polygon” to define your area, the specification window will open immediately when you click “Add measure”, and you will additionally be asked to specify the aggregation area or to upload your polygon as a spatial file, depending on what you chose.</p>
 <div id="fig-measures_buildingLevel_GUI" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_greening.png" class="lightbox" title="Selecting an aggregation area for applying the green infrastructure option “greening”." data-gallery="quarto-lightbox-gallery-7"><img src="../../_static/images/measures_GI_greening.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_greening.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Selecting an aggregation area for applying the green infrastructure option “greening”."><img src="../../_static/images/measures_GI_greening.png" class="img-fluid figure-img" style="width:70.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;7: <strong>Selecting an aggregation area for applying the green infrastructure option “greening”.</strong></figcaption>
 </figure>
 </div>
 <p>The specification window is shown in <a href="#fig-measures_waterSquare_specs">Figure&nbsp;8</a>. In this window, you enter a name for the measure (no spaces or special characters), an optional description, the percent of the selected area you wish to apply green infrastructure measures, and the infiltration depth of the measures. For this last entry, you can use the Look-up table (see <a href="#fig-measures_lookup">Figure&nbsp;5</a>). This shows suggestions for infiltration depths for different types of green infrastructure measures. After entering the depth, click Enter. FloodAdapt will then automatically calculate the area where the green infrastructure will be applied (based on the selected area and the percent area to green) and the total storage volume by multiplying the green infrastructure area with the specified infiltration depth.</p>
 <div id="fig-measures_waterSquare_specs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_greening_specs.png" class="lightbox" title="Greening specification window" data-gallery="quarto-lightbox-gallery-8"><img src="../../_static/images/measures_GI_greening_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_greening_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Greening specification window"><img src="../../_static/images/measures_GI_greening_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;8: <strong>Greening specification window</strong></figcaption>
 </figure>
 </div>
@@ -565,7 +565,7 @@ Where do the suggested infiltration depths come from?
 <p>The specification window is shown in <a href="#fig-measures_totalStorage_specs">Figure&nbsp;9</a>. In this window, you enter a name for the measure (no spaces or special characters), an optional description, and the total increased storage volume.</p>
 <div id="fig-measures_totalStorage_specs" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../../_static/images/measures_GI_totalStorage_specs.png" class="lightbox" title="Total storage specification window" data-gallery="quarto-lightbox-gallery-9"><img src="../../_static/images/measures_GI_totalStorage_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
+<p><a href="../../_static/images/measures_GI_totalStorage_specs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Total storage specification window"><img src="../../_static/images/measures_GI_totalStorage_specs.png" class="img-fluid figure-img" style="width:40.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;9: <strong>Total storage specification window</strong></figcaption>
 </figure>
 </div>
@@ -946,7 +946,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","loop":true,"descPosition":"bottom","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","loop":true,"closeEffect":"zoom","descPosition":"bottom"});</script>
 
 
 
