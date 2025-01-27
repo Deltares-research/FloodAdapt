@@ -1,4 +1,3 @@
-from copy import copy
 from pathlib import Path
 from tempfile import gettempdir
 from unittest.mock import patch
@@ -108,15 +107,16 @@ def test_sub_event() -> SyntheticEvent:
 
 @pytest.fixture()
 def test_eventset(test_sub_event: SyntheticEvent) -> EventSet:
-    sub_events = []
+    sub_event_models = []
     for i in [1, 39, 78]:
-        test_sub_event.attrs.name = f"subevent_{i:04d}"
-        sub_events.append(copy(test_sub_event))
+        sub_event_models.append(
+            test_sub_event.attrs.model_copy(update={"name": f"subevent_{i:04d}"})
+        )
 
     event_set = EventSet(
         EventSetModel(
             name="test_eventset",
-            sub_events=sub_events,
+            sub_events=sub_event_models,
             frequency=[0.5, 0.2, 0.02],
         )
     )
