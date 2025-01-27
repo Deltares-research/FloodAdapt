@@ -1795,12 +1795,13 @@ class DatabaseBuilder:
         -------
             dict: A dictionary containing the default units.
         """
-        type = self.config.unit_system
-        templates_path = Path(__file__).parent.resolve().joinpath("templates")
-        default_units = read_toml(
-            templates_path.joinpath("default_units", f"{type}.toml")
+        units_path = (
+            Path(__file__).parent.resolve()
+            / "templates"
+            / "default_units"
+            / f"{self.config.unit_system.value}.toml"
         )
-        return default_units
+        return read_toml(units_path)
 
     def _get_bin_colors(self):
         """

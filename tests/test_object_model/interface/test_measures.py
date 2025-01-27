@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from pydantic import ValidationError
 
@@ -9,6 +11,38 @@ from flood_adapt.object_model.interface.measures import (
     SelectionType,
 )
 from flood_adapt.object_model.io import unit_system as us
+
+
+def assert_validation_error(
+    excinfo: pytest.ExceptionInfo,
+    class_name: str,
+    expected_loc: Optional[str] = None,
+    expected_msg: Optional[str] = None,
+    expected_type: Optional[str] = None,
+):
+    assert (
+        excinfo.value.error_count() == 1
+    ), f"Expected 1 error but got {excinfo.value.error_count()}"
+    error = excinfo.value.errors()[0]
+
+    assert class_name in str(
+        excinfo.value
+    ), f"Expected class_name: '{class_name}' in '{str(excinfo.value)}'"
+
+    if expected_loc is not None:
+        assert (
+            error["loc"] == expected_loc
+        ), f"Expected loc: '{expected_loc}' in '{error['loc']}'"
+
+    if expected_type is not None:
+        assert (
+            error["type"] == expected_type
+        ), f"Expected type: '{expected_type}' but got '{error['type']}'"
+
+    if expected_msg is not None:
+        assert (
+            expected_msg in error["msg"]
+        ), f"Expected msg: '{expected_msg}' but got '{error['msg']}'"
 
 
 class TestMeasureModel:
@@ -242,9 +276,10 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert (
-            "If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set."
-            in str(excinfo.value)
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="GreenInfrastructureModel",
+            expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_name` needs to be set.",
         )
 
     def test_green_infrastructure_model_no_aggregation_area_type(self):
@@ -263,14 +298,12 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert (
-            "If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set."
-            in str(excinfo.value)
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="GreenInfrastructureModel",
+            expected_msg="If `selection_type` is 'aggregation_area', then `aggregation_area_type` needs to be set.",
         )
 
-    @pytest.mark.skip(
-        reason="REFACTOR NEEDED. The error message + handling needs some attention"
-    )
     def test_green_infrastructure_model_other_measure_type(self):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -288,63 +321,70 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert "GreenInfrastructureModel\n  Value error, Type must be one of " in str(
-            excinfo.value
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="GreenInfrastructureModel",
+            expected_msg="Type must be one of 'water_square', 'greening', or 'total_storage'",
         )
 
-    @pytest.mark.skip(
-        reason="REFACTOR NEEDED. The error message + handling needs some attention"
-    )
     @pytest.mark.parametrize(
-        "volume, height, percent_area, error_message",
+        "volume, height, percent_area, error_message, error_loc, error_type",
         [
             (
                 None,
                 us.UnitfulHeight(value=1, units=us.UnitTypesLength.meters),
                 100.0,
-                "volume\n  Input should be a valid dictionary or instance of UnitfulVolume",
+                "Input should be a valid dictionary or instance of UnitfulVolume",
+                ("volume",),
+                "model_type",
             ),
             (
                 us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 None,
                 100.0,
                 "Height and percent_area needs to be set for greening type measures",
-            ),
-            (
-                us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
-                us.UnitfulLength(value=0, units=us.UnitTypesLength.meters),
-                None,
-                "height.value\n  Input should be greater than 0",
+                (),
+                "value_error",
             ),
             (
                 us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 us.UnitfulLength(value=-1, units=us.UnitTypesLength.meters),
                 None,
-                "height.value\n  Input should be greater than 0",
+                "Input should be greater than or equal to 0",
+                (
+                    "height",
+                    "value",
+                ),
+                "greater_than_equal",
             ),
             (
                 us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 us.UnitfulHeight(value=1, units=us.UnitTypesLength.meters),
                 None,
                 "Height and percent_area needs to be set for greening type measures",
+                (),
+                "value_error",
             ),
             (
                 us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 us.UnitfulHeight(value=1, units=us.UnitTypesLength.meters),
                 -1,
-                "percent_area\n  Input should be greater than or equal to 0",
+                "Input should be greater than or equal to 0",
+                ("percent_area",),
+                "greater_than_equal",
             ),
             (
                 us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
                 us.UnitfulHeight(value=1, units=us.UnitTypesLength.meters),
                 101,
-                "percent_area\n  Input should be less than or equal to 100",
+                "Input should be less than or equal to 100",
+                ("percent_area",),
+                "less_than_equal",
             ),
         ],
         ids=[
             "volume_none",
             "height_none",
-            "unitfulLength_zero",  # You should still be able to set as a us.Unitfull length. However, during the conversion to height, it should trigger the height validator
             "unitfulLength_negative",  # You should still be able to set as a us.Unitfull length. However, during the conversion to height, it should trigger the height validator
             "percent_area_none",
             "percent_area_negative",
@@ -357,6 +397,8 @@ class TestGreenInfrastructureModel:
         height,
         percent_area,
         error_message,
+        error_loc,
+        error_type,
     ):
         # Arrange
         with pytest.raises(ValueError) as excinfo:
@@ -374,10 +416,13 @@ class TestGreenInfrastructureModel:
             )
 
         # Assert
-        assert len(excinfo.value.errors()) == 1
-
-        error = excinfo.value.errors()[0]
-        assert error["msg"] in error_message, error["msg"]
+        assert_validation_error(
+            excinfo=excinfo,
+            class_name="GreenInfrastructureModel",
+            expected_msg=error_message,
+            expected_loc=error_loc,
+            expected_type=error_type,
+        )
 
     @pytest.mark.parametrize(
         "volume, height, percent_area, error_message",

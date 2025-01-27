@@ -1,10 +1,12 @@
 import filecmp
+import gc
 import logging
 import os
 import shutil
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from time import sleep
 
 import pytest
 
@@ -149,7 +151,16 @@ def make_db_fixture(scope):
         # Teardown
         dbs.shutdown()
         if clean:
-            restore_db_from_snapshot()
+            retries = 5
+            for _ in range(retries):
+                try:
+                    restore_db_from_snapshot()
+                    break
+                except Exception:
+                    sleep(0.5)
+                    gc.collect()
+                    restore_db_from_snapshot()
+                    break
 
     return _db_fixture
 

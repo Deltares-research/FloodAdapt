@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import xarray as xr
 from pydantic import Field
 
+from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
 from flood_adapt.object_model.hazard.forcing.timeseries import (
     CSVTimeseries,
     SyntheticTimeseries,
@@ -39,7 +41,10 @@ class RainfallConstant(IRainfall):
 
 class RainfallSynthetic(IRainfall):
     source: ForcingSource = ForcingSource.SYNTHETIC
-    timeseries: SyntheticTimeseriesModel
+    timeseries: (
+        SyntheticTimeseriesModel[us.UnitfulIntensity]
+        | SyntheticTimeseriesModel[us.UnitfulLength]
+    )
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         rainfall = SyntheticTimeseries(data=self.timeseries)
@@ -60,7 +65,7 @@ class RainfallTrack(IRainfall):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            output_dir = Path(output_dir)
+            output_dir = Path(output_dir).resolve()
             if self.path == output_dir / self.path.name:
                 return
             output_dir.mkdir(parents=True, exist_ok=True)
@@ -81,7 +86,30 @@ class RainfallCSV(IRainfall):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            output_dir = Path(output_dir)
+            output_dir = Path(output_dir).resolve()
+            if self.path == output_dir / self.path.name:
+                return
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.path, output_dir)
+            self.path = output_dir / self.path.name
+
+
+class RainfallNetCDF(IRainfall):
+    source: ForcingSource = ForcingSource.NETCDF
+    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+
+    path: Path
+
+    def read(self) -> xr.Dataset:
+        required_vars = ("precip",)
+        required_coords = ("time", "lat", "lon")
+        with xr.open_dataset(self.path) as ds:
+            validated_ds = validate_netcdf_forcing(ds, required_vars, required_coords)
+        return validated_ds
+
+    def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
+        if self.path:
+            output_dir = Path(output_dir).resolve()
             if self.path == output_dir / self.path.name:
                 return
             output_dir.mkdir(parents=True, exist_ok=True)

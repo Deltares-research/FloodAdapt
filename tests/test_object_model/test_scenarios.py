@@ -1,10 +1,10 @@
 import pytest
 
-from flood_adapt.adapter.direct_impacts_integrator import DirectImpacts
+from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.direct_impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
+from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
 from flood_adapt.object_model.interface.config.site import Site
 from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
@@ -26,18 +26,14 @@ def test_init_valid_input(test_db, test_scenarios: dict[str, Scenario]):
     test_scenario = test_db.scenarios.get("all_projections_extreme12ft_strategy_comb")
 
     assert isinstance(test_scenario.site_info, Site)
-    assert isinstance(test_scenario.direct_impacts, DirectImpacts)
-    assert isinstance(
-        test_scenario.direct_impacts.socio_economic_change, SocioEconomicChange
-    )
-    assert isinstance(test_scenario.direct_impacts.impact_strategy, ImpactStrategy)
-    assert isinstance(test_scenario.direct_impacts.hazard, FloodMap)
+    assert isinstance(test_scenario.impacts, Impacts)
+    assert isinstance(test_scenario.impacts.socio_economic_change, SocioEconomicChange)
+    assert isinstance(test_scenario.impacts.impact_strategy, ImpactStrategy)
+    assert isinstance(test_scenario.impacts.hazard, FloodMap)
 
+    assert isinstance(test_scenario.impacts.hazard.hazard_strategy, HazardStrategy)
     assert isinstance(
-        test_scenario.direct_impacts.hazard.hazard_strategy, HazardStrategy
-    )
-    assert isinstance(
-        test_scenario.direct_impacts.hazard.physical_projection, PhysicalProjection
+        test_scenario.impacts.hazard.physical_projection, PhysicalProjection
     )
 
 
@@ -66,8 +62,8 @@ class Test_scenario_run:
         not_run = test_db.scenarios.get(not_run_name)
         run = test_db.scenarios.get(run_name)
 
-        assert not not_run.direct_impacts.hazard.has_run
-        assert run.direct_impacts.hazard.has_run
+        assert not not_run.impacts.hazard.has_run
+        assert run.impacts.hazard.has_run
 
 
 @pytest.mark.parametrize(
@@ -83,4 +79,4 @@ class Test_scenario_run:
 def test_run_on_all_scn(test_db, scn_name):
     scn = test_db.scenarios.get(scn_name)
     scn.run()
-    assert scn.direct_impacts.hazard.has_run
+    assert scn.impacts.hazard.has_run
