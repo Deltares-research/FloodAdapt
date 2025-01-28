@@ -1775,6 +1775,7 @@ class DatabaseBuilder:
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
                 ["Object ID", "geometry"]
             ]
+            gdf = pd.concat([gdf_buildings, gdf_roads])
         else:
             gdf = gdf[gdf[fieldname].isin(bf_fid)]
             self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
