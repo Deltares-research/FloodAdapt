@@ -51,7 +51,7 @@ def plot_forcing(
     forcing_type: ForcingType,
 ) -> tuple[str, Optional[List[Exception]]]:
     """Plot the forcing data for the event."""
-    if event.attrs.forcings[forcing_type] is None:
+    if event.attrs.forcings.get(forcing_type) is None:
         return "", None
 
     match forcing_type:
@@ -333,7 +333,7 @@ def plot_wind(
 
     if data is None or data.empty:
         logger.error(
-            f"Could not retrieve wind data: {event.attrs.forcings[ForcingType.WIND]} {data}"
+            f"Could not retrieve wind data: {event.attrs.forcings.get(ForcingType.WIND)} {data}"
         )
         return "", None
 

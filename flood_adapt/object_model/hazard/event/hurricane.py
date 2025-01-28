@@ -127,7 +127,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         ):
             tc = self.translate_tc_track(tc=tc)
 
-        if self.attrs.forcings[ForcingType.RAINFALL] is not None:
+        if self.attrs.forcings.get(ForcingType.RAINFALL):
             self.logger.info(
                 f"Including rainfall in spiderweb file of hurricane `{self.attrs.name}`"
             )

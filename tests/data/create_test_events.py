@@ -347,8 +347,8 @@ if __name__ == "__main__":
     from flood_adapt.api.static import read_database
 
     Settings(
-        database_name="charleston_test",
-        database_root=Path(__file__).parents[3] / "Database",
+        DATABASE_NAME="charleston_test",
+        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
     )
     db = read_database(Settings().database_root, Settings().database_name)
 

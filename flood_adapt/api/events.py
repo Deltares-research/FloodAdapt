@@ -17,7 +17,7 @@ from flood_adapt.object_model.hazard.event.event_factory import (
     SyntheticEventModel,
     TranslationModel,
 )
-from flood_adapt.object_model.hazard.event.event_set import EventSet
+from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.forcing.plotting import (
@@ -58,6 +58,7 @@ __all__ = [
     "ForcingType",
     "Mode",
     "EventFactory",
+    "EventSetModel",
     "IEvent",
     "IForcing",
     "IDischarge",
