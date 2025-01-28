@@ -59,7 +59,7 @@ class IForcing(BaseModel, ABC):
 
     type: ForcingType
     source: ForcingSource
-    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
+    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger("Forcing")
 
     @classmethod
     def load_file(cls, path: Path):
@@ -114,7 +114,7 @@ class IForcingFactory:
 
     @classmethod
     @abstractmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
+    def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
         ...
 

@@ -15,7 +15,7 @@ class FloodMapType(str, Enum):
 
 
 class FloodMap(DatabaseUser):
-    logger = FloodAdaptLogging.getLogger(__name__)
+    logger = FloodAdaptLogging.getLogger("FloodMap")
 
     type: FloodMapType = FloodMapType.WATER_LEVEL
 

@@ -20,7 +20,7 @@ class Impacts(DatabaseUser):
     Includes methods to run the impact models or check if they has already been run.
     """
 
-    logger = FloodAdaptLogging.getLogger(__name__)
+    logger = FloodAdaptLogging.getLogger("Impacts")
     name: str
     hazard: FloodMap
     socio_economic_change: SocioEconomicChange

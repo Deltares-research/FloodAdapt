@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.hazard.event.hurricane import (
+    HurricaneEvent,
+    HurricaneEventModel,
+)
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallTrack,
@@ -18,13 +21,12 @@ from flood_adapt.object_model.hazard.forcing.wind import (
 )
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
-    Mode,
-    Template,
 )
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 from tests.fixtures import TEST_DATA_DIR
@@ -32,43 +34,35 @@ from tests.fixtures import TEST_DATA_DIR
 
 @pytest.fixture()
 def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
-    event_attrs = {
-        "name": "hurricane",
-        "time": TimeModel(),
-        "template": Template.Hurricane,
-        "mode": Mode.single_event,
-        "forcings": {
-            "WATERLEVEL": [WaterlevelModel()],
-            "WIND": [WindTrack()],
-            "RAINFALL": [RainfallTrack()],
-            "DISCHARGE": [
-                DischargeConstant(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
+    event = HurricaneEvent(
+        HurricaneEventModel(
+            name="hurricane",
+            time=TimeModel(),
+            track_name="IAN",
+            forcings={
+                ForcingType.WATERLEVEL: [WaterlevelModel()],
+                ForcingType.WIND: [WindTrack()],
+                ForcingType.RAINFALL: [RainfallTrack()],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
-                    ),
-                ),
-            ],
-        },
-        "track_name": "IAN",
-        "hurricane_translation": {
-            "eastwest_translation": us.UnitfulLength(
-                value=0.0, units=us.UnitTypesLength.meters
-            ),
-            "northsouth_translation": us.UnitfulLength(
-                value=0.0, units=us.UnitTypesLength.meters
-            ),
-        },
-    }
-    return HurricaneEvent.load_dict(event_attrs), TEST_DATA_DIR / "IAN.cyc"
+                ],
+            },
+        ),
+    )
+    return event, TEST_DATA_DIR / "IAN.cyc"
 
 
 @pytest.fixture()
@@ -76,13 +70,14 @@ def setup_hurricane_scenario(
     test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
 ) -> tuple[Scenario, HurricaneEvent]:
     event, cyc_file = setup_hurricane_event
-    scenario_attrs = {
-        "name": "test_scenario",
-        "event": event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    scn = Scenario.load_dict(scenario_attrs)
+    scn = Scenario(
+        ScenarioModel(
+            name="test_scenario",
+            event=event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
     test_db.events.save(event)
     shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
     test_db.scenarios.save(scn)
@@ -95,10 +90,10 @@ class TestHurricaneEvent:
     ):
         path = tmp_path / "test_event.toml"
         event, cyc_file = setup_hurricane_event
-        event.save(path)
-        event.attrs.forcings[ForcingType.WIND][0].path = cyc_file
+        event.attrs.forcings.get(ForcingType.WIND)[0].path = cyc_file
 
-        event.save_additional(path.parent)
+        event.save(path)
+
         assert path.exists()
         assert (path.parent / cyc_file.name).exists()
 

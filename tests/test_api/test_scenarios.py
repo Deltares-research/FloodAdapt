@@ -6,6 +6,7 @@ import pytest
 from flood_adapt.api import scenarios as api_scenarios
 from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
 from tests.test_object_model.test_events.test_eventset import (
@@ -36,28 +37,32 @@ __all__ = [
 def setup_nearshore_scenario(test_db, setup_nearshore_event):
     test_db.events.save(setup_nearshore_event)
 
-    test_dict = {
-        "name": "gauged_nearshore",
-        "description": "current_extreme12ft_no_measures",
-        "event": setup_nearshore_event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    return Scenario.load_dict(test_dict)
+    scn = Scenario(
+        ScenarioModel(
+            name="gauged_nearshore",
+            description="current_extreme12ft_no_measures",
+            event=setup_nearshore_event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
+    return scn
 
 
 @pytest.fixture()
 def setup_offshore_meteo_scenario(test_db, setup_offshore_meteo_event):
     test_db.events.save(setup_offshore_meteo_event)
 
-    test_dict = {
-        "name": "offshore_meteo",
-        "description": "current_extreme12ft_no_measures",
-        "event": setup_offshore_meteo_event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    return Scenario.load_dict(test_dict)
+    scn = Scenario(
+        ScenarioModel(
+            name="offshore_meteo",
+            event=setup_offshore_meteo_event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
+
+    return scn
 
 
 @pytest.fixture()
@@ -65,13 +70,14 @@ def setup_hurricane_scenario(
     test_db: IDatabase, setup_hurricane_event: tuple[HurricaneEvent, Path]
 ) -> tuple[Scenario, HurricaneEvent]:
     event, cyc_file = setup_hurricane_event
-    scenario_attrs = {
-        "name": "test_scenario",
-        "event": event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    scn = Scenario.load_dict(scenario_attrs)
+    scn = Scenario(
+        ScenarioModel(
+            name="hurricane",
+            event=event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
     test_db.events.save(event)
     shutil.copy2(cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name)
     test_db.scenarios.save(scn)
@@ -81,14 +87,16 @@ def setup_hurricane_scenario(
 @pytest.fixture()
 def setup_synthetic_scenario(test_db, test_event_all_synthetic):
     test_db.events.save(test_event_all_synthetic)
-    test_dict = {
-        "name": "synthetic",
-        "description": "current_extreme12ft_no_measures",
-        "event": test_event_all_synthetic.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    return Scenario.load_dict(test_dict)
+
+    scn = Scenario(
+        ScenarioModel(
+            name="synthetic",
+            event=test_event_all_synthetic.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
+    return scn
 
 
 @pytest.fixture()
@@ -103,13 +111,13 @@ def setup_eventset_scenario(
 
     test_db.events.save(test_eventset)
 
-    scn = Scenario.load_dict(
-        {
-            "name": "test_eventset",
-            "event": test_eventset.attrs.name,
-            "projection": dummy_projection.attrs.name,
-            "strategy": dummy_strategy.attrs.name,
-        }
+    scn = Scenario(
+        ScenarioModel(
+            name="test_scenario",
+            event=test_eventset.attrs.name,
+            projection=dummy_projection.attrs.name,
+            strategy=dummy_strategy.attrs.name,
+        )
     )
     return test_db, scn, test_eventset
 

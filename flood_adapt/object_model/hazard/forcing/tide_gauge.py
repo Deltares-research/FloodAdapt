@@ -17,7 +17,7 @@ from flood_adapt.object_model.io.csv import read_csv
 
 class TideGauge(ITideGauge):
     _cached_data: ClassVar[dict[str, pd.DataFrame]] = {}
-    logger = FloodAdaptLogging.getLogger(__name__)
+    logger = FloodAdaptLogging.getLogger("TideGauge")
 
     def __init__(self, attrs: TideGaugeModel):
         if isinstance(attrs, TideGaugeModel):
@@ -50,7 +50,7 @@ class TideGauge(ITideGauge):
             Dataframe with time as index and the waterlevel for each observation station as columns.
         """
         self.logger.info(
-            f"Retrieving waterlevels for tide gauge {self.attrs.ID} from {time.start_time} to {time.end_time}"
+            f"Retrieving waterlevels for tide gauge {self.attrs.ID} for {time}"
         )
         if self.attrs.file:
             gauge_data = self._read_imported_waterlevels(

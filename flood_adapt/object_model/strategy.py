@@ -10,7 +10,7 @@ from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     db_path,
 )
-from flood_adapt.object_model.interface.strategies import IStrategy
+from flood_adapt.object_model.interface.strategies import IStrategy, StrategyModel
 from flood_adapt.object_model.measure_factory import (
     MeasureFactory,
 )
@@ -19,7 +19,7 @@ from flood_adapt.object_model.measure_factory import (
 class Strategy(IStrategy):
     """Strategy class that holds all the information for a specific strategy."""
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | StrategyModel) -> None:
         super().__init__(data)
         self.impact_strategy = self.get_impact_strategy()
         self.hazard_strategy = self.get_hazard_strategy()
