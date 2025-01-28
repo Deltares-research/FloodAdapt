@@ -26,7 +26,6 @@ Then run these commands to install FloodAdapt:
 ```bash
 git clone https://github.com/Deltares-research/FloodAdapt.git
 cd FloodAdapt
-git submodule update --init --recursive
 pixi install
 ```
 ## Linux
@@ -34,7 +33,7 @@ Linux is not supported at the moment, but will be supported in the near future.
 
 ## Configure database
 
-FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains the `Settings` class to set and validate environment variables, specific to your system.
+FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/misc/config.py` which contains the `Settings` class to set and validate environment variables, specific to your system.
 
 To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
@@ -66,8 +65,7 @@ To contribute to FloodAdapt, you will need to install additional dependencies. T
 # Install dev environment
 git clone https://github.com/Deltares/FloodAdapt
 cd FloodAdapt
-git submodule update --init --recursive
-pixi install dev
+pixi install -e dev
 
 # Verify everything is installed correctly
 pixi run tests
@@ -96,7 +94,7 @@ Example command to add the package `example_package` as an editable install to t
 pixi -h
 
 # Install a non default pixi environment defined in pyproject.toml
-pixi install [ENV_NAME]
+pixi install -e [ENV_NAME]
 
 # Update environment(s) to the latest allowed by dependency specifications in pyproject.toml
 pixi update
@@ -122,37 +120,3 @@ pixi run -e [ENV_NAME] [TASK]
 We use `quartodoc` to generate our API documentation automatically. If you have the `docs` optional dependency group installed.
 you can do this by running `quartodoc build` from the `docs` directory, and it will create the documentation for you.
 After this is done, if you wish, you can build and view the documentation locally by running `quarto preview` from the `docs` directory
-### Setup Visual Studio Code (optional)
-
-1. Initialize pre-commit to run locally before you commit by running the following command:
-```
-pre-commit install
-```
-
-2. Add the following to your `.vscode/settings.json` file in your workspace
-
-```json
-{
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll": true
-        }
-    },
-    "python.formatting.provider": "black",
-    "autoDocstring.docstringFormat": "numpy"
-}
-```
-
-
-
-## Running the GUI
-
-The GUI uses [mapbox](https://www.mapbox.com/) to allow users with less programming experience to interact with the models and visualize outputs. In order to use mapbox, you need a token.
-
-If you don't already have one, ask for one or go to https://www.mapbox.com/, make a new account and generate a token
-
-- Create this file: `.env` in the root of this project, and put the following line: `MAPBOX_TOKEN=<your_token>`
-- Make sure you have access to the [FloodAdapt-GUI](https://github.com/Deltares-research/FloodAdapt-GUI) repository
-- clone the repository with `git submodule update --init --recursive`
-- run the gui with  `pixi run gui`

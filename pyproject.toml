@@ -29,12 +29,12 @@ dependencies = [
     "cht-meteo",
     "cht-observations",
     "cht-tide",
-    "dask<2024.7.0",                                                          # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
+    "dask<2024.7.0",  # The last version that still supports pandas 1.x, which we need until fiat-toolbox and noaa_cops become compatible with pandas 2.x
     "fiat-toolbox",
     "fiona",
     "geojson",
     "geopandas",
-    "jellyfish<1.0",                                                          # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
+    "jellyfish<1.0",  # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
     "hydromt-fiat==0.4.2",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
@@ -79,37 +79,17 @@ include = ["flood_adapt", "flood_adapt.*"]
 [tool.setuptools.package-data]
 flood_adapt = ["py.typed", "database_builder/**"]
 
-[tool.ruff]
-line-length  = 88
-indent-width = 4
+[tool.pytest.ini_options]
+addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
+testpaths = ["tests"]
 
-[tool.ruff.format]
-docstring-code-format = true
-indent-style          = "space"
 
-[tool.ruff.lint]
-# https://docs.astral.sh/ruff/rules/
-select  = ["D", "E", "F", "NPY", "PD", "C4", "I"]
-ignore  = ["D10", "D417", "PD010", "PD013", "PD901", "E501", "E741", "NPY201"]
-fixable = ["I", "F", "D"]
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
-
-[tool.typos]
-files.extend-exclude = ["*.js", "*.css", "*.svg"]
-files.ignore-hidden  = true
-
-[tool.typos.default.extend-words]
-strat = "strat"
-
-################################################################
-############################# PIXI #############################
-################################################################
+### pixi.toml ###
 [tool.pixi.pypi-dependencies]
-# pixi doesnt support git checkouts to private repos yet.
-# So, any private git dependencies are added as git submodules, which need to be cloned before being able to run floodadapt.
-hydromt_sfincs = {path = "./extern/hydromt_sfincs", editable = true }
 flood_adapt = {path = ".", editable = true }
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
 
 [tool.pixi.feature.py311.dependencies]
 python = "3.11.*"
@@ -118,26 +98,21 @@ python = "3.11.*"
 python = "3.10.*"
 
 [tool.pixi.project]
+name = "flood-adapt"
 channels = ["conda-forge"]
 platforms = ["win-64"]
 
 [tool.pixi.environments]
+py312 = { features = ["py312"], solve-group = "py312" }
 py311 = { features = ["py311"], solve-group = "py311" }
 py310 = { features = ["py310"], solve-group = "py310" }
 
 build = { features = ["build"], solve-group = "py311" }
 dev = { features = ["dev"], solve-group = "py311" }
 docs = { features = ["docs"], solve-group = "py311" }
-gui = {features = ["gui"], solve-group = "py311" }
+all = { features = ["all"], solve-group = "py311" }
 
 [tool.pixi.feature.dev.tasks]
 install-pre-commit = {cmd = "pre-commit install", outputs=[".git/hooks/pre-commit"]}
-pre-commit = {cmd = "pre-commit run --all-files", depends_on=["install-pre-commit"]}
-tests = {cmd = "pytest --junitxml=report.xml --cov=flood_adapt --cov-report=html --tb=short tests"}
-
-[tool.pixi.feature.gui.tasks]
-gui = { cmd = "python ./extern/FloodAdapt-GUI/floodadapt_gui/floodadapt_run.py"}
-[tool.pytest.ini_options]
-pythonpath = "flood_adapt" # so that we can import in the `tests` dir as if you are in the `flood_adapt` dir
-addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
-testpaths = ["tests"]
+pre-commit = {cmd = "pre-commit run --all-files", depends-on=["install-pre-commit"]}
+tests = {cmd = "pytest tests"}
