@@ -58,22 +58,22 @@ class FiatColumns:
     total_damage = "total_damage"
     risk_ead = "ead_damage"
 class FiatOutput:
-    """Object with mapping of FIAT attributes to columns names."""
+    """Object with mapping of FIAT attributes to columns name for FloodAdapt GUI."""
 
-    object_id = "object_id"
-    object_name = "object_name"
-    primary_object_type = "primary_object_type"
-    secondary_object_type = "secondary_object_type"
-    extraction_method = "extract_method"
-    ground_floor_height = "ground_flht"
-    ground_elevation = "ground_elevtn"
-    damage_function = "fn_damage_"
-    max_potential_damage = "max_damage_"
-    aggregation_label = "aggregation_label:_"
-    inundation_depth = "inun_depth"
-    damage = "damage_"
-    total_damage = "total_damage"
-    risk_ead = "ead_damage"
+    object_id = "Object ID"
+    object_name = "Object Name"
+    primary_object_type = "Primary Object Type"
+    secondary_object_type = "Secondary Object Type"
+    extraction_method = "Extraction Method"
+    ground_floor_height = "Ground Floor Height"
+    ground_elevation = "Ground Elevation"
+    damage_function = "Damage Function: "
+    max_potential_damage = "Max Potential Damage: "
+    aggregation_label = "Aggregation Label: "
+    inundation_depth = "Inundation Depth"
+    damage = "Damage: "
+    total_damage = "Total Damage"
+    risk_ead = "Risk (EAD)"
 
 class FiatAdapter(IImpactAdapter):
     """
@@ -425,7 +425,7 @@ class FiatAdapter(IImpactAdapter):
         scenario_output_path = scenario.impacts.results_path
         impacts_output_path = scenario.impacts.impacts_path
 
-        # Add exceedance probabilities if needed (only for risk)
+        # Add exceedance probabilities if needed (only for risk)        
         if mode == Mode.risk:
             # Get config path
             # TODO check where this configs should be read from
@@ -444,6 +444,8 @@ class FiatAdapter(IImpactAdapter):
         fiat_results_path = impacts_output_path.joinpath(
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
+        
+        self.outputs["table"] = self.outputs["table"].map(lambda row: FiatOutput(**row))
         self.outputs["table"].to_csv(fiat_results_path)
 
         # Create the infometrics files
