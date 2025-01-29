@@ -56,8 +56,24 @@ class FiatColumns:
     inundation_depth = "inun_depth"
     damage = "damage_"
     total_damage = "total_damage"
-    risk_ead = "risk_ead"
+    risk_ead = "ead_damage"
+class FiatOutput:
+    """Object with mapping of FIAT attributes to columns names."""
 
+    object_id = "object_id"
+    object_name = "object_name"
+    primary_object_type = "primary_object_type"
+    secondary_object_type = "secondary_object_type"
+    extraction_method = "extract_method"
+    ground_floor_height = "ground_flht"
+    ground_elevation = "ground_elevtn"
+    damage_function = "fn_damage_"
+    max_potential_damage = "max_damage_"
+    aggregation_label = "aggregation_label:_"
+    inundation_depth = "inun_depth"
+    damage = "damage_"
+    total_damage = "total_damage"
+    risk_ead = "ead_damage"
 
 class FiatAdapter(IImpactAdapter):
     """
