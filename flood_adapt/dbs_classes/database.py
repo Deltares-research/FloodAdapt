@@ -26,10 +26,6 @@ from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.interface.events import IEvent
 from flood_adapt.object_model.interface.benefits import IBenefit
 from flood_adapt.object_model.interface.config.site import Site
-from flood_adapt.object_model.interface.path_builder import (
-    TopLevelDir,
-    db_path,
-)
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 from flood_adapt.object_model.utils import finished_file_exists
@@ -41,11 +37,8 @@ class Database(IDatabase):
     Additionally it can manipulate (add, edit, copy and delete) any of the objects in the input.
     """
 
-    _instance = None
-
     database_path: Union[str, os.PathLike]
     database_name: str
-    _init_done: bool = False
 
     base_path: Path
     input_path: Path
@@ -63,58 +56,24 @@ class Database(IDatabase):
 
     _static: DbsStatic
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:  # Singleton pattern
-            cls._instance = super(Database, cls).__new__(cls)
-        return cls._instance
-
-    def __init__(
-        self,
-        database_path: Union[str, os.PathLike, None] = None,
-        database_name: Optional[str] = None,
-    ) -> None:
+    def __init__(self, database_path: Path) -> None:
         """
-        Initialize the DatabaseController object.
+        Initialize the Database object.
 
         Parameters
         ----------
-        database_path : Union[str, os.PathLike]
-            The path to the database root
-        database_name : str
-            The name of the database.
+        database_path : Path
+            The path to the database
         -----
         """
-        if database_path is None or database_name is None:
-            if not self._init_done:
-                raise ValueError(
-                    """Database path and name must be provided for the first initialization.
-                    To do this, run api_static.read_database(database_path, site_name) first."""
-                )
-            else:
-                return  # Skip re-initialization
-
-        if (
-            self._init_done
-            and self.database_path == database_path
-            and self.database_name == database_name
-        ):
-            return  # Skip re-initialization
-
-        # If the database is not initialized, or a new path or name is provided, (re-)initialize
-        re_option = "re-" if self._init_done else ""
         self.logger = FloodAdaptLogging.getLogger("Database")
-        self.logger.info(
-            f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
-        )
-        self.database_path = database_path
-        self.database_name = database_name
+        self.logger.info(f"Initializing database at {database_path}")
 
         # Set the paths
-
-        self.base_path = Path(database_path) / database_name
-        self.input_path = db_path(TopLevelDir.input)
-        self.static_path = db_path(TopLevelDir.static)
-        self.output_path = db_path(TopLevelDir.output)
+        self.base_path = Path(database_path)
+        self.input_path = self.base_path / "input"
+        self.static_path = self.base_path / "static"
+        self.output_path = self.base_path / "output"
 
         self._site = Site.load_file(self.static_path / "config" / "site.toml")
 
@@ -129,31 +88,6 @@ class Database(IDatabase):
 
         # Delete any unfinished/crashed scenario output
         self.cleanup()
-
-        self._init_done = True
-
-    def shutdown(self):
-        """Explicitly shut down the database controller singleton and clear all data stored in its memory."""
-        self.__class__._instance = None
-        self._instance = None
-        self._init_done = False
-        self.database_path = None
-        self.database_name = None
-
-        self.base_path = None
-        self.input_path = None
-        self.static_path = None
-        self.output_path = None
-        self._site = None
-
-        self.logger = None
-        self._static = None
-        self._events = None
-        self._scenarios = None
-        self._strategies = None
-        self._measures = None
-        self._projections = None
-        self._benefits = None
 
     # Property methods
     @property

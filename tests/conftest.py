@@ -11,7 +11,7 @@ from time import sleep
 import pytest
 
 from flood_adapt import __path__
-from flood_adapt.api.static import read_database
+from flood_adapt.flood_adapt import FloodAdapt
 from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from tests.fixtures import *  # noqa
@@ -111,8 +111,8 @@ def make_db_fixture(scope):
 
     Returns
     -------
-    _db_fixture : pytest.fixture
-        The database fixture used for testing
+    _fa_fixture : pytest.fixture
+        The FloodAdapt fixture used for testing
     """
     if scope not in ["function", "class", "module", "package", "session"]:
         raise ValueError(f"Invalid fixture scope: {scope}")
@@ -143,13 +143,12 @@ def make_db_fixture(scope):
                     assert ...
         """
         # Setup
-        dbs = read_database(Settings().database_root, Settings().database_name)
+        fa = FloodAdapt(Settings().database_path)
 
         # Perform tests
-        yield dbs
+        yield fa.database
 
         # Teardown
-        dbs.shutdown()
         if clean:
             retries = 5
             for _ in range(retries):

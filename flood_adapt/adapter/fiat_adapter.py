@@ -22,12 +22,13 @@ from hydromt_fiat.fiat import FiatModel
 from flood_adapt import unit_system as us
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.floodmap import FloodMap, FloodMapType
+from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.interface.events import Mode
 from flood_adapt.object_model.impact.measure.buyout import Buyout
 from flood_adapt.object_model.impact.measure.elevate import Elevate
 from flood_adapt.object_model.impact.measure.floodproof import FloodProof
 from flood_adapt.object_model.interface.config.fiat import FiatConfigModel
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 from flood_adapt.object_model.interface.measures import (
     IMeasure,
     MeasureType,
@@ -209,8 +210,11 @@ class FiatAdapter(IImpactAdapter):
         for measure in scenario.strategy.get_impact_strategy().measures:
             self.add_measure(measure)
 
+        floodmap = FloodMap(
+            scenario_name=scenario.attrs.name, database=scenario.database
+        )
+
         # Hazard
-        floodmap = FloodMap(scenario.attrs.name)
         var = "zsmax" if floodmap.mode == Mode.risk else "risk_maps"
         is_risk = floodmap.mode == Mode.risk
         self.set_hazard(
@@ -225,7 +229,7 @@ class FiatAdapter(IImpactAdapter):
         output_path = scenario.impacts.impacts_path / "fiat_model"
         self.write(path_out=output_path)
 
-    def run(self, scenario) -> None:
+    def run(self, scenario: IScenario) -> None:
         """
         Execute the full process for a given scenario, including preprocessing, executing the simulation, and postprocessing steps.
 
@@ -606,7 +610,7 @@ class FiatAdapter(IImpactAdapter):
     def set_hazard(
         self,
         map_fn: Union[os.PathLike, list[os.PathLike]],
-        map_type: FloodMapType,
+        map_type: FloodmapType,
         var: str,
         is_risk: bool = False,
         units: str = us.UnitTypesLength.meters,

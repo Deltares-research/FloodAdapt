@@ -1,30 +1,23 @@
 import os
-from enum import Enum
 from pathlib import Path
 
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.log import FloodAdaptLogging
-from flood_adapt.object_model.hazard.event.event_set import EventSet
 from flood_adapt.object_model.hazard.interface.events import Mode
-from flood_adapt.object_model.interface.database_user import DatabaseUser
+from flood_adapt.object_model.interface.config.sfincs import FloodmapType
 
 
-class FloodMapType(str, Enum):
-    """Enum class for the type of flood map."""
-
-    WATER_LEVEL = "water_level"  # TODO make caps, but hydromt_fiat expects lowercase
-
-
-class FloodMap(DatabaseUser):
+class FloodMap:
     logger = FloodAdaptLogging.getLogger("FloodMap")
 
-    type: FloodMapType = FloodMapType.WATER_LEVEL
+    type: FloodmapType = FloodmapType.water_level
 
     name: str
     path: Path | os.PathLike | list[Path | os.PathLike]
-    event_set: EventSet
 
-    def __init__(self, scenario_name: str) -> None:
+    def __init__(self, scenario_name: str, database: IDatabase) -> None:
         self.name = scenario_name
+        self.database = database
         base_dir = self.database.scenarios.output_path / scenario_name / "Flooding"
 
         if self.mode == Mode.single_event:
@@ -44,6 +37,8 @@ class FloodMap(DatabaseUser):
                 self.database.site.attrs.fiat.risk.return_periods
             )
             return all(check_files) & check_rps
+        else:
+            return False
 
     @property
     def scenario(self):

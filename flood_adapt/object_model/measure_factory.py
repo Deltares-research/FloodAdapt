@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Any, Union
 
 import tomli
 
@@ -15,6 +15,29 @@ from flood_adapt.object_model.interface.measures import IMeasure, MeasureType
 
 
 class MeasureFactory:
+    @staticmethod
+    def create_measure(attrs: dict[str, Any]) -> IMeasure:
+        type = attrs.get("type")
+        match type:
+            case MeasureType.elevate_properties:
+                return Elevate.load_dict(attrs)
+            case MeasureType.buyout_properties:
+                return Buyout.load_dict(attrs)
+            case MeasureType.floodproof_properties:
+                return FloodProof.load_dict(attrs)
+            case MeasureType.floodwall, MeasureType.thin_dam, MeasureType.levee:
+                return FloodWall.load_dict(attrs)
+            case MeasureType.pump, MeasureType.culvert:
+                return Pump.load_dict(attrs)
+            case (
+                MeasureType.water_square,
+                MeasureType.total_storage,
+                MeasureType.greening,
+            ):
+                return GreenInfrastructure.load_dict(attrs)
+            case _:
+                raise ValueError(f"Invalid measure type: {type}")
+
     @staticmethod
     def get_measure_type(filepath: Union[str, os.PathLike]):
         """Get a measure type from toml file."""

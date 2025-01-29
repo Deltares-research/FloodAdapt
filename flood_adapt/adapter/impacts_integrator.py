@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from flood_adapt.adapter.interface.impact_adapter import IImpactAdapter
+from flood_adapt.dbs_classes.interface.database import IDatabase
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
-from flood_adapt.object_model.interface.database_user import DatabaseUser
 from flood_adapt.object_model.interface.path_builder import (
     ObjectDir,
     TopLevelDir,
@@ -14,7 +14,7 @@ from flood_adapt.object_model.interface.projections import SocioEconomicChange
 from flood_adapt.object_model.interface.scenarios import IScenario
 
 
-class Impacts(DatabaseUser):
+class Impacts:
     """All information related to the impacts of the scenario.
 
     Includes methods to run the impact models or check if they has already been run.
@@ -26,7 +26,8 @@ class Impacts(DatabaseUser):
     socio_economic_change: SocioEconomicChange
     impact_strategy: ImpactStrategy
 
-    def __init__(self, scenario: IScenario):
+    def __init__(self, database: IDatabase, scenario: IScenario):
+        self.database = database
         self.name = scenario.attrs.name
         self.scenario = scenario
         self.site_info = self.database.site
