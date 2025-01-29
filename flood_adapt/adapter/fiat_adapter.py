@@ -43,20 +43,20 @@ from flood_adapt.object_model.utils import cd, resolve_filepath
 class FiatColumns:
     """Object with mapping of FIAT attributes to columns names."""
 
-    object_id = "Object ID"
-    object_name = "Object Name"
-    primary_object_type = "Primary Object Type"
-    secondary_object_type = "Secondary Object Type"
-    extraction_method = "Extraction Method"
-    ground_floor_height = "Ground Floor Height"
-    ground_elevation = "Ground Elevation"
-    damage_function = "Damage Function: "
-    max_potential_damage = "Max Potential Damage: "
-    aggregation_label = "Aggregation Label: "
-    inundation_depth = "Inundation Depth"
-    damage = "Damage: "
-    total_damage = "Total Damage"
-    risk_ead = "Risk (EAD)"
+    object_id = "object_id"
+    object_name = "object_name"
+    primary_object_type = "primary_object_type"
+    secondary_object_type = "secondary_object_type"
+    extraction_method = "extract_method"
+    ground_floor_height = "ground_flht"
+    ground_elevation = "ground_elevtn"
+    damage_function = "fn_damage_"
+    max_potential_damage = "max_damage_"
+    aggregation_label = "aggregation_label:_"
+    inundation_depth = "inun_depth"
+    damage = "damage_"
+    total_damage = "total_damage"
+    risk_ead = "risk_ead"
 
 
 class FiatAdapter(IImpactAdapter):
@@ -803,7 +803,7 @@ class FiatAdapter(IImpactAdapter):
             percent_growth=population_growth,
             geom_file=Path(area_path),
             ground_floor_height=ground_floor_height,
-            damage_types=["Structure", "Content"],
+            damage_types=["structure", "content"],
             vulnerability=self._model.vulnerability,
             ground_elevation=ground_elevation,
             aggregation_area_fn=aggregation_areas,
@@ -952,7 +952,7 @@ class FiatAdapter(IImpactAdapter):
         self._model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.attrs.elevation.value,
-            damage_function_types=["Structure", "Content"],
+            damage_function_types=["structure", "content"],
             vulnerability=self._model.vulnerability,
         )
 
