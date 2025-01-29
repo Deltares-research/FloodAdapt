@@ -1731,61 +1731,65 @@ class DatabaseBuilder:
         clipped_region = self.fiat_model.region.clip(sfincs_extend)
         self.fiat_model.geoms["region"] = clipped_region
 
-        # Clip the building footprints
-        self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-            self.fiat_model.building_footprint["geometry"].within(
-                clipped_region["geometry"].union_all()
-            )
-        ]
-        bf_fid = self.fiat_model.building_footprint["BF_FID"]
-        fieldname = "BF_FID"
-
-        # Clip the exposure geometries
-        # Filter buildings and roads
-        if gdf["Primary Object Type"].str.contains("road").any():
-            gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-            gdf_roads = gdf_roads[
-                gdf_roads["geometry"].within(clipped_region["geometry"].union_all())
-            ]
-            gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
-            # Check if all buildings have BF
-            if gdf_buildings[fieldname].isna().any():
-                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isna()]
-                gdf_building_footprints = gdf_buildings[
-                    ~gdf_buildings[fieldname].isna()
-                ]
-                gdf_building_points_clipped = gdf_building_points[
-                    gdf_building_points["geometry"].within(
-                        clipped_region["geometry"].union_all()
-                    )
-                ]
-                gdf_building_footprints_clipped = gdf_building_footprints[
-                    gdf_building_footprints[fieldname].isin(bf_fid)
-                ]
-                gdf_buildings = pd.concat(
-                    [gdf_building_points_clipped, gdf_building_footprints_clipped]
+        if not gdf["geometry"].within(clipped_region["geometry"].unary_union).all():
+            # Clip the building footprints
+            if clipped_region.crs != self.fiat_model.building_footprint.crs:
+                crs = self.fiat_model.building_footprint.crs
+                clipped_region = clipped_region.to_crs(crs)
+            self.fiat_model.building_footprint = self.fiat_model.building_footprint[
+                self.fiat_model.building_footprint["geometry"].within(
+                    clipped_region["geometry"].union_all()
                 )
+            ]
+            bf_fid = self.fiat_model.building_footprint["BF_FID"]
+            fieldname = "BF_FID"
+
+            # Clip the exposure geometries
+            # Filter buildings and roads
+            if gdf["Primary Object Type"].str.contains("road").any():
+                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                gdf_roads = gdf_roads[
+                    gdf_roads["geometry"].within(clipped_region["geometry"].union_all())
+                ]
+                gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
+                # Check if all buildings have BF
+                if gdf_buildings[fieldname].isna().any():
+                    gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isna()]
+                    gdf_building_footprints = gdf_buildings[
+                        ~gdf_buildings[fieldname].isna()
+                    ]
+                    gdf_building_points_clipped = gdf_building_points[
+                        gdf_building_points["geometry"].within(
+                            clipped_region["geometry"].union_all()
+                        )
+                    ]
+                    gdf_building_footprints_clipped = gdf_building_footprints[
+                        gdf_building_footprints[fieldname].isin(bf_fid)
+                    ]
+                    gdf_buildings = pd.concat(
+                        [gdf_building_points_clipped, gdf_building_footprints_clipped]
+                    )
+                else:
+                    gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+                idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
+                idx_roads = self.fiat_model.exposure.geom_names.index("roads")
+                self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                    ["Object ID", "geometry"]
+                ]
+                self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                    ["Object ID", "geometry"]
+                ]
+                gdf = pd.concat([gdf_buildings, gdf_roads])
             else:
-                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
-            self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                ["Object ID", "geometry"]
-            ]
-            self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                ["Object ID", "geometry"]
-            ]
-            gdf = pd.concat([gdf_buildings, gdf_roads])
-        else:
-            gdf = gdf[gdf[fieldname].isin(bf_fid)]
-            self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+                gdf = gdf[gdf[fieldname].isin(bf_fid)]
+                self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
-        # Save exposure dataframe
-        del gdf["geometry"]
-        self.fiat_model.exposure.exposure_db = gdf
+            # Save exposure dataframe
+            del gdf["geometry"]
+            self.fiat_model.exposure.exposure_db = gdf
 
-        # Write fiat model
-        self.fiat_model.write()
+            # Write fiat model
+            self.fiat_model.write()
 
     def _get_default_units(self):
         """
