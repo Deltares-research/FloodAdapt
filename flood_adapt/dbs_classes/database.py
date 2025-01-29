@@ -102,7 +102,7 @@ class Database(IDatabase):
 
         # If the database is not initialized, or a new path or name is provided, (re-)initialize
         re_option = "re-" if self._init_done else ""
-        self.logger = FloodAdaptLogging.getLogger(__name__)
+        self.logger = FloodAdaptLogging.getLogger("Database")
         self.logger.info(
             f"{re_option}initializing database to {database_name} at {database_path}".capitalize()
         )
@@ -241,23 +241,17 @@ class Database(IDatabase):
         )
         df = pd.read_csv(input_file)
         ncolors = len(df.columns) - 2
-        try:
-            units = df["units"].iloc[0]
-            units = us.UnitTypesLength(units)
-        except ValueError(
-            "Column " "units" " in input/static/slr/slr.csv file missing."
-        ) as e:
-            self.logger.info(e)
+        if "units" not in df.columns:
+            raise ValueError(f"Expected column `units` in {input_file}.")
 
-        try:
-            if "year" in df.columns:
+        units = df["units"].iloc[0]
+        units = us.UnitTypesLength(units)
+
+        if "Year" not in df.columns:
+            if "year" not in df.columns:
+                raise ValueError(f"Expected column `year` in {input_file}.")
+            else:
                 df = df.rename(columns={"year": "Year"})
-            elif "Year" in df.columns:
-                pass
-        except ValueError(
-            "Column " "year" " in input/static/slr/slr.csv file missing."
-        ) as e:
-            self.logger.info(e)
 
         ref_year = self.site.attrs.sfincs.slr.scenarios.relative_to_year
         if ref_year > df["Year"].max() or ref_year < df["Year"].min():

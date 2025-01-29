@@ -366,7 +366,7 @@ class DatabaseBuilder:
             rmtree(root)
         root.mkdir(parents=True)
 
-        self.logger = FloodAdaptLogging.getLogger(__name__)
+        self.logger = FloodAdaptLogging.getLogger("DatabaseBuilder")
 
         self.logger.info(f"Initializing a FloodAdapt database in '{root.as_posix()}'")
         self.root = root
@@ -386,7 +386,7 @@ class DatabaseBuilder:
             self.make_folder_structure()
 
             # Set environment variables after folder structure is created
-            Settings(database_root=self.root.parent, database_name=self.root.name)
+            Settings(DATABASE_ROOT=self.root.parent, DATABASE_NAME=self.root.name)
 
             self.read_sfincs()
             self.read_fiat()
@@ -1775,6 +1775,7 @@ class DatabaseBuilder:
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
                 ["Object ID", "geometry"]
             ]
+            gdf = pd.concat([gdf_buildings, gdf_roads])
         else:
             gdf = gdf[gdf[fieldname].isin(bf_fid)]
             self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]

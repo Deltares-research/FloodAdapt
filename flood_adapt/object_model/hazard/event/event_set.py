@@ -26,12 +26,16 @@ class EventSetModel(IObjectModel):
         """Load the sub events from the dictionary."""
         from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
-        sub_events = [
-            EventFactory.get_eventmodel_from_template(
-                sub_event["template"]
-            ).model_validate(sub_event)
-            for sub_event in self["sub_events"]
-        ]
+        sub_events = []
+        for sub_event in self["sub_events"]:
+            if not isinstance(sub_event, EventModel):
+                if isinstance(sub_event, dict):
+                    sub_event = EventFactory.get_eventmodel_from_template(
+                        sub_event["template"]
+                    ).model_validate(sub_event)
+                else:
+                    raise ValueError("Sub event must be a dictionary or an EventModel.")
+            sub_events.append(sub_event)
 
         names = [sub_event.name for sub_event in sub_events]
         if len(names) != len(set(names)):
@@ -40,19 +44,13 @@ class EventSetModel(IObjectModel):
         self["sub_events"] = sub_events
         return self
 
-    def model_dump(self, **kwargs) -> dict[str, Any]:
-        """Dump the model to a dictionary."""
-        dump = super().model_dump(**kwargs)
-        dump.update(forcings=[sub_event.model_dump() for sub_event in self.sub_events])
-        return dump
-
 
 class EventSet(IObject[EventSetModel], DatabaseUser):
     _attrs_type = EventSetModel
 
     events: List[IEvent]
 
-    def __init__(self, data: dict[str, Any]) -> None:
+    def __init__(self, data: dict[str, Any] | EventSetModel) -> None:
         from flood_adapt.object_model.hazard.event.event_factory import EventFactory
 
         super().__init__(data)

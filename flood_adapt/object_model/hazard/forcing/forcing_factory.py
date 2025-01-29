@@ -141,8 +141,10 @@ class ForcingFactory(IForcingFactory):
         return cls.load_dict(toml_data)
 
     @classmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
+    def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
+        if isinstance(attrs, IForcing):
+            return attrs
         type = attrs.get("type")
         source = attrs.get("source")
         if type is None or source is None:

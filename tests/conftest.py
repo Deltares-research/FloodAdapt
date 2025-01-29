@@ -77,8 +77,8 @@ def restore_db_from_snapshot():
 def session_setup_teardown():
     """Session-wide setup and teardown for creating the initial snapshot."""
     Settings(
-        database_root=src_dir.parents[1] / "Database",
-        database_name="charleston_test",
+        DATABASE_ROOT=src_dir.parents[1] / "Database",
+        DATABASE_NAME="charleston_test",
         # leave system_folder empty to use the envvar or default system folder
     )
 
