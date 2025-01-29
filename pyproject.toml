@@ -67,6 +67,7 @@ all = ["flood-adapt[build,dev,docs]"]
 [project.urls]
 Source = "https://github.com/Deltares-research/FloodAdapt"
 
+### setuptools ###
 [tool.setuptools]
 zip-safe = false
 
@@ -79,12 +80,13 @@ include = ["flood_adapt", "flood_adapt.*"]
 [tool.setuptools.package-data]
 flood_adapt = ["py.typed", "database_builder/**"]
 
+### pytest ###
 [tool.pytest.ini_options]
 addopts = "--junitxml report.xml --cov flood_adapt --cov-report html --cov-fail-under 70"
 testpaths = ["tests"]
 
 
-### pixi.toml ###
+### pixi ###
 [tool.pixi.pypi-dependencies]
 flood_adapt = {path = ".", editable = true }
 
