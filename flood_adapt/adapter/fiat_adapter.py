@@ -54,21 +54,17 @@ class FiatColumns:
     max_potential_damage = "max_damage_"
     aggregation_label = "aggregation_label:"
     inundation_depth = "inun_depth"
-
-class FiatOutput:
-    """Object with mapping of FIAT attributes to columns name for FloodAdapt GUI."""
-
-    object_id = "Object ID"
-    object_name = "Object Name"
-    primary_object_type = "Primary Object Type"
-    secondary_object_type = "Secondary Object Type"
-    extraction_method = "Extraction Method"
-    ground_floor_height = "Ground Floor Height"
-    ground_elevation = "Ground Elevation"
-    damage_function = "Damage Function: "
-    max_potential_damage = "Max Potential Damage: "
-    aggregation_label = "Aggregation Label: "
-    inundation_depth = "Inundation Depth"
+    damage_structure = "damage_structure"
+    damage_content = "damage_content"
+    damage_other = "damage_other"
+    total_damage = "total_damage"
+    risk_ead = "risk_ead"
+    segment_length = "segment_length"
+    fn_damage_structure= "fn_damage_structure"
+    fn_damage_content= "fn_damage_content"
+    fn_damage_other= "fn_damage_other"
+    max_damage_structure= "max_damage_structure"
+    max_damage_content=  "max_damage_content"
 
 class FiatAdapter(IImpactAdapter):
     """
@@ -102,6 +98,28 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
+        self.fiat_output_mapping = {FiatColumns.object_id: "Object ID",
+            FiatColumns.object_name : "Object Name",
+            FiatColumns.primary_object_type : "Primary Object Type",
+            FiatColumns.secondary_object_type : "Secondary Object Type",
+            FiatColumns.extraction_method : "Extraction Method",
+            FiatColumns.ground_floor_height : "Ground Floor Height",
+            FiatColumns.ground_elevation : "Ground Elevation",
+            FiatColumns.damage_function : "Damage Function: ",
+            FiatColumns.max_potential_damage : "Max Potential Damage: ",
+            FiatColumns.aggregation_label : "Aggregation Label: ",
+            FiatColumns.inundation_depth : "Inundation Depth",
+            FiatColumns.damage_structure : "Damage: Structure",
+            FiatColumns.damage_content : "Damage: Content",
+            FiatColumns.damage_other : "Damage: Other",
+            FiatColumns.total_damage : "Total Damage",
+            FiatColumns.risk_ead : "Risk (EAD)",
+            FiatColumns.segment_length : "Segment Length",
+            FiatColumns.fn_damage_structure: "Damage Function: Structure",
+            FiatColumns.fn_damage_content: "Damage Function: Content",
+            FiatColumns.fn_damage_other: "Damage Function: Other",
+            FiatColumns.max_damage_structure: "Max Potential Damage: Structure",
+            FiatColumns.max_damage_content: "Max Potential Damage: Content"}
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
 
@@ -440,7 +458,11 @@ class FiatAdapter(IImpactAdapter):
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
         
-        self.outputs["table"] = self.outputs["table"].map(lambda row: FiatOutput(**row))
+        for aggregation in self.config.aggregation:
+            name = aggregation.name
+            self.fiat_output_mapping[f"aggregation_label:{name}"] = f"Aggregation Label: {name}"
+            
+        self.outputs["table"] = self.outputs["table"].rename(columns = self.fiat_output_mapping)
         self.outputs["table"].to_csv(fiat_results_path)
 
         # Create the infometrics files
