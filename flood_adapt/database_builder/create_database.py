@@ -256,6 +256,8 @@ class ConfigModel(BaseModel):
     building_footprints: Optional[SpatialJoinModel | FootprintsOptions] = (
         FootprintsOptions.OSM
     )
+    fiat_buildings_name: Optional[str] = "buildings"
+    fiat_roads_name: Optional[str] = "roads"
     slr: Optional[SlrModelDef] = SlrModelDef()
     tide_gauge: Optional[TideGaugeConfigModel] = None
     bfe: Optional[SpatialJoinModel] = None
@@ -596,7 +598,7 @@ class DatabaseBuilder:
         self.fiat_model.read()
 
         # Read in geometries of buildings
-        ind = self.fiat_model.exposure.geom_names.index("buildings")
+        ind = self.fiat_model.exposure.geom_names.index(self.config.fiat_buildings_name)
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
 
@@ -635,7 +637,9 @@ class DatabaseBuilder:
                 footprints_found = True
 
             # Then check if geometries are already footprints
-            build_ind = self.fiat_model.exposure.geom_names.index("buildings")
+            build_ind = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_buildings_name
+            )
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
             if isinstance(build_geoms.geometry.iloc[0], Polygon):
                 path0 = Path(self.fiat_model.root).joinpath(
@@ -709,7 +713,8 @@ class DatabaseBuilder:
             )
 
         # Clip hazard and reset buildings
-        self._clip_hazard_extend()
+        if not self.fiat_model.region.empty:
+            self._clip_hazard_extend()
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
 
         # Add base flood elevation information
@@ -890,10 +895,12 @@ class DatabaseBuilder:
 
         # Make sure that FIAT roads are polygons
         self.roads = False
-        if "roads" in self.fiat_model.exposure.geom_names:
+        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
             self.roads = True
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            roads_ind = self.fiat_model.exposure.geom_names.index("roads")
+            roads_ind = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_roads_name
+            )
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
             roads_path = Path(self.fiat_model.root).joinpath(
                 self.fiat_model.config["exposure"]["geom"]["file2"]
@@ -924,6 +931,14 @@ class DatabaseBuilder:
             )
             # TODO check how this naming of output geoms should become more explicit!
 
+        if self.fiat_model.exposure.damage_unit is not None:
+            dmg_unit = self.fiat_model.exposure.damage_unit
+        else:
+            dmg_unit = "$"
+            self.logger.warning(
+                "Delft-FIAT model was missing damage units so '$' was assumed."
+            )
+
         # Store FIAT configuration
         self.site_attrs["fiat"] = {}
         self.site_attrs["fiat"]["config"] = FiatConfigModel(
@@ -932,7 +947,7 @@ class DatabaseBuilder:
             aggregation=aggregation_config,
             floodmap_type="water_level",  # TODO allow for water depth
             non_building_names=["road"],  # TODO check names from exposure
-            damage_unit=self.fiat_model.exposure.damage_unit,
+            damage_unit=dmg_unit,
             building_footprints=footprints_path,
             roads_file_name="spatial2.gpkg" if self.roads else None,
             new_development_file_name="spatial3.gpkg",  # TODO allow for different naming
@@ -1083,6 +1098,9 @@ class DatabaseBuilder:
             self.logger.error(
                 f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
             )
+            raise ValueError(
+                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
+            )
 
         # Check if tiles already exist in the SFINCS model
         if tiles_sfincs.exists():
@@ -1146,8 +1164,12 @@ class DatabaseBuilder:
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
         # TODO this should be in hydromt FIAT
-        if "roads" in self.fiat_model.exposure.geom_names:
-            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
+            roads_path = (
+                Path(self.fiat_model.root)
+                / "exposure"
+                / f"{self.config.fiat_roads_name}.gpkg"
+            )
             roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
             roads["geometry"] = roads.geometry.centroid  # get centroids
 
@@ -1175,7 +1197,11 @@ class DatabaseBuilder:
             ]
             del exposure["elev"]
 
-        buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
+        buildings_path = (
+            Path(self.fiat_model.root)
+            / "exposure"
+            / f"{self.config.fiat_buildings_name}.gpkg"
+        )
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
         x_points = xr.DataArray(points["geometry"].x, dims="points")
         y_points = xr.DataArray(points["geometry"].y, dims="points")
@@ -1239,12 +1265,13 @@ class DatabaseBuilder:
         # Start by defining default values for water levels
         # In case no further information is provided a local datum and msl of 0 will be assumed
         elv_units = self.site_attrs["sfincs"]["config"].floodmap_units
-        zero_level = VerticalReferenceModel(
-            name="MSL", height=UnitfulLength(value=0.0, units=elv_units)
-        )
         water_level_config = WaterLevelReferenceModel(
-            localdatum=zero_level,
-            msl=zero_level,
+            localdatum=VerticalReferenceModel(
+                name="MSL", height=UnitfulLength(value=0.0, units=elv_units)
+            ),
+            msl=VerticalReferenceModel(
+                name="MSL", height=UnitfulLength(value=0.0, units=elv_units)
+            ),
             # other=[]
         )
 
@@ -1277,16 +1304,16 @@ class DatabaseBuilder:
                         units=UnitTypesLength.meters,
                     )
                     water_level_config.msl.height.value = UnitfulLength(
-                        value=station["msl"], units=UnitTypesLength.meters
+                        value=station["msl"], units=station["units"]
                     ).convert(elv_units)
                     water_level_config.localdatum.name = station["datum_name"]
                     water_level_config.localdatum.height.value = UnitfulLength(
-                        value=station["datum"], units=UnitTypesLength.meters
+                        value=station["datum"], units=station["units"]
                     ).convert(elv_units)
 
                     for name in ["MLLW", "MHHW"]:
                         val = UnitfulLength(
-                            value=station[name.lower()], units=UnitTypesLength.meters
+                            value=station[name.lower()], units=station["units"]
                         ).convert(elv_units)
                         wl_info = VerticalReferenceModel(
                             name=name, height=UnitfulLength(value=val, units=elv_units)
@@ -1392,6 +1419,7 @@ class DatabaseBuilder:
         meta["mllw"] = round(datums[names.index("MLLW")]["value"] - ref_value, 3)
         meta["mhhw"] = round(datums[names.index("MHHW")]["value"] - ref_value, 3)
         meta["reference"] = ref
+        meta["units"] = station_metadata["datums"]["units"]
         meta["lon"] = closest_station.geometry.x.item()
         meta["lat"] = closest_station.geometry.y.item()
 
@@ -1684,10 +1712,11 @@ class DatabaseBuilder:
                     if "road" not in query["name"].lower()
                 ]
             # Replace Damage Unit
+            # TODO do this in a better manner
             for i, query in enumerate(attrs["queries"]):
                 if "$" in query["long_name"]:
                     query["long_name"] = query["long_name"].replace(
-                        "$", self.fiat_model.config["exposure"]["damage_unit"]
+                        "$", self.site_attrs["fiat"]["config"].damage_unit
                     )
 
             # replace the SVI threshold if needed
@@ -1810,8 +1839,12 @@ class DatabaseBuilder:
                 )
             else:
                 gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
+            idx_buildings = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_buildings_name
+            )
+            idx_roads = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_roads_name
+            )
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
                 [FiatColumns.object_id, "geometry"]
             ]
