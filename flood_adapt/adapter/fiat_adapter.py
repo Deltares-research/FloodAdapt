@@ -97,6 +97,7 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
+        self.fiat_columns_dict = {k: v for k, v in FiatColumns.__dict__.items() if not k.startswith("__")}
         self.fiat_output_mapping = {FiatColumns.object_id: "Object ID",
             FiatColumns.object_name : "Object Name",
             FiatColumns.primary_object_type : "Primary Object Type",
@@ -1382,8 +1383,8 @@ class FiatAdapter(IImpactAdapter):
             )
         )
 
-        footprints.aggregate(fiat_results_df)
-        footprints.calc_normalized_damages()
+        footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
+        footprints.calc_normalized_damages(self.fiat_columns_dict)
 
         # Save footprint
         footprints.write(output_path)
