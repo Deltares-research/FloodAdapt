@@ -1508,7 +1508,7 @@ class DatabaseBuilder:
                 0.06 * ftd_max,
                 0.2 * ftd_max,
                 0.4 * ftd_max,
-                fd_max,
+                ftd_max,
             ],
             benefits_bins=[0, 0.01, 0.02 * b_max, 0.2 * b_max, b_max],
             svi_bins=[0.05, 0.2, 0.4, 0.6, 0.8]
