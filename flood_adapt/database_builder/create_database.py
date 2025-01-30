@@ -497,8 +497,8 @@ class DatabaseBuilder:
         save_projection(projection)
         # If provided use probabilistic set
         # TODO better check if configuration of event set is correct?
-        if len(self.site_attrs["standard_objects"]["events"]) > 0:
-            event_set = self.site_attrs["standard_objects"]["events"][0]
+        if len(self.site_attrs["standard_objects"].events) > 0:
+            event_set = self.site_attrs["standard_objects"].events[0]
             if event_set:
                 mode = get_event_mode(event_set)
                 if mode != "risk":
@@ -1212,8 +1212,8 @@ class DatabaseBuilder:
             basin = self.config.cyclone_basin
         else:
             basin = "ALL"
-        name = f"IBTrACS.{basin}.v04r00.nc"
-        url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/netcdf/{name}"
+        name = f"IBTrACS.{basin}.v04r01.nc"
+        url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/netcdf/{name}"
         self.logger.info(f"Downloading cyclone track database from {url}")
         fn = self.root.joinpath("static", "cyclone_track_database", name)
         fn.parent.mkdir()
