@@ -523,7 +523,7 @@ class SfincsAdapter(IHazardAdapter):
                 dem=dem,
                 dem_units=us.UnitTypesLength(us.UnitTypesLength.meters),
                 floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
-                floodmap_units=us.UnitTypesLength(us.UnitTypesLength.meters),
+                floodmap_units=self.site.attrs.sfincs.config.floodmap_units,
             )
 
     def write_water_level_map(
@@ -842,7 +842,7 @@ class SfincsAdapter(IHazardAdapter):
                     dem=dem,
                     dem_units=us.UnitTypesLength.meters,
                     floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
-                    floodmap_units=us.UnitTypesLength.meters,
+                    floodmap_units=self.site.attrs.sfincs.config.floodmap_units,
                 )
 
     ######################################
@@ -1479,12 +1479,12 @@ class SfincsAdapter(IHazardAdapter):
             us.UnitTypesLength("meters")
         )
         dem = dem_conversion * self._model.data_catalog.get_rasterdataset(demfile)
-        dem = dem.rio.reproject(self.sf_model.crs)
+        dem = dem.rio.reproject(self._model.crs)
 
         # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.floodmap_units
+        floodmap_units = self.site.attrs.sfincs.config.floodmap_units
         floodmap_conversion = us.UnitfulLength(
-            value=1.0, units=us.UnitTypesLength("meters")
+            value=1.0, units=us.UnitTypesLength.meters
         ).convert(floodmap_units)
 
         hmax = utils.downscale_floodmap(

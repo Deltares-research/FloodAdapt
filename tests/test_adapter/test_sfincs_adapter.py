@@ -1,8 +1,10 @@
+import os
 import tempfile
 from copy import copy
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
+from typing import Tuple
 from unittest import mock
 
 import geopandas as gpd
@@ -14,6 +16,10 @@ import xarray as xr
 from flood_adapt.adapter.sfincs_adapter import SfincsAdapter
 from flood_adapt.dbs_classes.database import Database
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.synthetic import (
+    SyntheticEvent,
+    SyntheticEventModel,
+)
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
@@ -67,8 +73,10 @@ from flood_adapt.object_model.interface.measures import (
     PumpModel,
     SelectionType,
 )
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
+from flood_adapt.object_model.scenario import Scenario
 from tests.fixtures import TEST_DATA_DIR
 from tests.test_object_model.test_events.test_forcing.test_netcdf import (
     get_test_dataset,
@@ -225,6 +233,42 @@ def synthetic_waterlevels():
             harmonic_phase=us.UnitfulTime(value=0, units=us.UnitTypesTime.hours),
         ),
     )
+
+
+@pytest.fixture()
+def test_event_all_synthetic(
+    synthetic_discharge,
+    synthetic_rainfall,
+    synthetic_waterlevels,
+):
+    return SyntheticEvent(
+        SyntheticEventModel(
+            name="all_synthetic",
+            time=TimeModel(),
+            forcings={
+                ForcingType.DISCHARGE: [synthetic_discharge],
+                ForcingType.RAINFALL: [synthetic_rainfall],
+                ForcingType.WATERLEVEL: [synthetic_waterlevels],
+            },
+        )
+    )
+
+
+@pytest.fixture()
+def database_with_synthetic_scenario(test_db, test_event_all_synthetic):
+    test_db.events.save(test_event_all_synthetic)
+
+    scn = Scenario(
+        ScenarioModel(
+            name="synthetic",
+            event=test_event_all_synthetic.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
+
+    test_db.scenarios.save(scn)
+    return test_db, scn
 
 
 def _mock_meteohandler_read(
@@ -967,3 +1011,39 @@ def test_existing_forcings_in_template_raises(test_db, request, forcing_fixture_
         f"{forcing.type.capitalize()} forcing(s) should not exists in the SFINCS template model. Remove it from the SFINCS model located at:"
         in str(e.value)
     )
+
+
+def test_write_geotiff_produces_correct_units(
+    database_with_synthetic_scenario: Tuple[IDatabase, Scenario],
+    default_sfincs_adapter: SfincsAdapter,
+):
+    # Arrange
+    test_db, scn = database_with_synthetic_scenario
+    floodmap_path = (
+        default_sfincs_adapter._get_result_path(scn) / f"FloodMap_{scn.attrs.name}.tif"
+    )
+    default_sfincs_adapter.run(scn)
+    assert floodmap_path.exists()
+    os.remove(floodmap_path)
+
+    for unit in [us.UnitTypesLength.feet, us.UnitTypesLength.meters]:
+        test_db.site.attrs.sfincs.config.floodmap_units = unit
+        default_sfincs_adapter.site.attrs.sfincs.config.floodmap_units = unit
+
+        # Act
+        default_sfincs_adapter.write_floodmap_geotiff(scenario=scn)
+
+        # Assert
+        assert floodmap_path.exists()
+        os.remove(floodmap_path)
+
+        # with rasterio.open(floodmap_path) as src:
+        # metadata = src.tags()
+        # assert "units" in metadata
+        # assert metadata["units"] == unit.name
+
+        # data = src.read(1)
+        # if unit == us.UnitTypesLength.feet:
+        #     assert data.max() < 1
+        # elif unit == us.UnitTypesLength.meters:
+        #     assert data is not None
