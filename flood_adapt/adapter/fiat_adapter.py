@@ -42,7 +42,7 @@ from flood_adapt.object_model.utils import cd, resolve_filepath
 
 class FiatColumns:
     """Object with mapping of FIAT attributes to columns names."""
-
+    
     object_id = "object_id"
     object_name = "object_name"
     primary_object_type = "primary_object_type"
@@ -52,7 +52,6 @@ class FiatColumns:
     ground_elevation = "ground_elevtn"
     damage_function = "fn_damage_"
     max_potential_damage = "max_damage_"
-    aggregation_label = "aggregation_label:"
     inundation_depth = "inun_depth"
     damage_structure = "damage_structure"
     damage_content = "damage_content"
@@ -107,7 +106,6 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.ground_elevation : "Ground Elevation",
             FiatColumns.damage_function : "Damage Function: ",
             FiatColumns.max_potential_damage : "Max Potential Damage: ",
-            FiatColumns.aggregation_label : "Aggregation Label: ",
             FiatColumns.inundation_depth : "Inundation Depth",
             FiatColumns.damage_structure : "Damage: Structure",
             FiatColumns.damage_content : "Damage: Content",
@@ -461,9 +459,8 @@ class FiatAdapter(IImpactAdapter):
         for aggregation in self.config.aggregation:
             name = aggregation.name
             self.fiat_output_mapping[f"aggregation_label:{name}"] = f"Aggregation Label: {name}"
-            
-        self.outputs["table"] = self.outputs["table"].rename(columns = self.fiat_output_mapping)
-        self.outputs["table"].to_csv(fiat_results_path)
+        metrics_exposure = self.outputs["table"].rename(columns = self.fiat_output_mapping)
+        metrics_exposure.to_csv(fiat_results_path)
 
         # Create the infometrics files
         if mode == Mode.risk:
@@ -488,7 +485,7 @@ class FiatAdapter(IImpactAdapter):
         metrics_outputs_path = scenario_output_path.joinpath(
             f"Infometrics_{scenario.attrs.name}.csv"
         )
-        self.create_infometrics(metric_config_paths, metrics_outputs_path)
+        self.create_infometrics(metric_config_paths, metrics_outputs_path, metrics_exposure)
 
         # Get paths of created aggregated infometrics
         aggr_metrics_paths = list(
@@ -1135,7 +1132,7 @@ class FiatAdapter(IImpactAdapter):
         return self.outputs["table"]
 
     def create_infometrics(
-        self, metric_config_paths: list[os.PathLike], metrics_output_path: os.PathLike
+        self, metric_config_paths: list[os.PathLike], metrics_output_path: os.PathLike, metrics_exposure: pd.DataFrame
     ) -> None:
         """
         Create infometrics files based on the provided metric configuration paths.
@@ -1162,13 +1159,13 @@ class FiatAdapter(IImpactAdapter):
                 metrics_writer = MetricsFileWriter(metric_file)
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=self.outputs["table"],
+                    df_results=metrics_exposure,
                     metrics_path=metrics_output_path,
                     write_aggregate=None,
                 )
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=self.outputs["table"],
+                    df_results=metrics_exposure,
                     metrics_path=metrics_output_path,
                     write_aggregate="all",
                 )
@@ -1409,7 +1406,7 @@ class FiatAdapter(IImpactAdapter):
         aggr_cols = [
             name
             for name in self.outputs["table"].columns
-            if FiatColumns.aggregation_label in name
+            if any(f"aggregation_label:{aggregation.name}" in name for aggregation in self.config.aggregation)
         ]
         inun_cols = [
             name for name in roads.columns if FiatColumns.inundation_depth in name
