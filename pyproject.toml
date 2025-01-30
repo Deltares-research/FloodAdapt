@@ -32,7 +32,7 @@ dependencies = [
     "geopandas",
     "jellyfish<1.0",                                                          # This is a dependency of us->hydromt-fiat, FloodAdapt doesnt use it directly. Remove when .whl files are available.
     # jellyfish v1.0 starts requiring rust as a dependency, which is fine if there are built .whl files. BUT THERE ARE NO BUILDS FOR WINDOWS YET.
-    "hydromt-fiat==0.4.2",
+    "hydromt-fiat==0.5.1",
     "hydromt-sfincs@ git+https://github.com/Deltares/hydromt_sfincs.git",
     "numpy < 2.0",
     "numpy-financial",

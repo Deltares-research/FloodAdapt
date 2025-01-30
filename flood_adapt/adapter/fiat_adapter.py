@@ -54,9 +54,7 @@ class FiatColumns:
     max_potential_damage = "max_damage_"
     aggregation_label = "aggregation_label:"
     inundation_depth = "inun_depth"
-    damage = "damage_"
-    total_damage = "total_damage"
-    risk_ead = "ead_damage"
+
 class FiatOutput:
     """Object with mapping of FIAT attributes to columns name for FloodAdapt GUI."""
 
@@ -71,9 +69,6 @@ class FiatOutput:
     max_potential_damage = "Max Potential Damage: "
     aggregation_label = "Aggregation Label: "
     inundation_depth = "Inundation Depth"
-    damage = "Damage: "
-    total_damage = "Total Damage"
-    risk_ead = "Risk (EAD)"
 
 class FiatAdapter(IImpactAdapter):
     """
