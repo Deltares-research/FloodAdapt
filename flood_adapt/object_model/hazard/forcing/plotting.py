@@ -42,7 +42,7 @@ from flood_adapt.object_model.interface.path_builder import (
 )
 
 UNPLOTTABLE_SOURCES = [ForcingSource.TRACK, ForcingSource.METEO, ForcingSource.MODEL]
-logger = FloodAdaptLogging.getLogger(__name__)
+logger = FloodAdaptLogging.getLogger("Plotting")
 
 
 def plot_forcing(
@@ -51,7 +51,7 @@ def plot_forcing(
     forcing_type: ForcingType,
 ) -> tuple[str, Optional[List[Exception]]]:
     """Plot the forcing data for the event."""
-    if event.attrs.forcings[forcing_type] is None:
+    if event.attrs.forcings.get(forcing_type) is None:
         return "", None
 
     match forcing_type:
@@ -89,7 +89,7 @@ def plot_discharge(
         try:
             if discharge.source in UNPLOTTABLE_SOURCES:
                 logger.debug(
-                    f"Plotting not supported for discharge data from {discharge.source}"
+                    f"Plotting not supported for discharge data from `{discharge.source}`"
                 )
                 continue
             elif isinstance(
@@ -97,7 +97,7 @@ def plot_discharge(
             ):
                 river_data = discharge.to_dataframe(event.attrs.time)
             else:
-                raise ValueError(f"Unknown discharge source: {discharge.source}")
+                raise ValueError(f"Unknown discharge source: `{discharge.source}`")
 
             # add river_data as a column to the dataframe. keep the same index
             if data.empty:
@@ -333,7 +333,7 @@ def plot_wind(
 
     if data is None or data.empty:
         logger.error(
-            f"Could not retrieve wind data: {event.attrs.forcings[ForcingType.WIND]} {data}"
+            f"Could not retrieve wind data: {event.attrs.forcings.get(ForcingType.WIND)} {data}"
         )
         return "", None
 

@@ -103,7 +103,7 @@ class WaterlevelCSV(IWaterlevel):
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
-            output_dir = Path(output_dir)
+            output_dir = Path(output_dir).resolve()
             if self.path == output_dir / self.path.name:
                 return
             output_dir.mkdir(parents=True, exist_ok=True)

@@ -5,7 +5,10 @@ import pandas as pd
 import pytest
 
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.historical import (
+    HistoricalEvent,
+    HistoricalEventModel,
+)
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeCSV,
@@ -22,14 +25,12 @@ from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
 )
-from flood_adapt.object_model.hazard.interface.events import (
-    Mode,
-    Template,
-)
+from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 
@@ -41,90 +42,99 @@ def setup_nearshore_event(dummy_1d_timeseries_df: pd.DataFrame):
         dummy_1d_timeseries_df.to_csv(tmp_csv)
         return Path(tmp_csv)
 
-    event_attrs = {
-        "name": "nearshore_gauged",
-        "time": TimeModel(),
-        "template": Template.Historical,
-        "mode": Mode.single_event,
-        "forcings": {
-            "WATERLEVEL": [WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv"))],
-            "WIND": [
-                WindConstant(
-                    speed=us.UnitfulVelocity(value=5, units=us.UnitTypesVelocity.mps),
-                    direction=us.UnitfulDirection(
-                        value=60, units=us.UnitTypesDirection.degrees
-                    ),
-                )
-            ],
-            "RAINFALL": [
-                RainfallConstant(
-                    intensity=us.UnitfulIntensity(
-                        value=20, units=us.UnitTypesIntensity.mm_hr
-                    )
-                )
-            ],
-            "DISCHARGE": [
-                DischargeCSV(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
-                            value=5000, units=us.UnitTypesDischarge.cfs
+    return HistoricalEvent(
+        HistoricalEventModel(
+            name="nearshore_gauged",
+            time=TimeModel(),
+            forcings={
+                ForcingType.WATERLEVEL: [
+                    WaterlevelCSV(path=_tmp_timeseries_csv("waterlevel.csv"))
+                ],
+                ForcingType.WIND: [
+                    WindConstant(
+                        speed=us.UnitfulVelocity(
+                            value=5, units=us.UnitTypesVelocity.mps
                         ),
+                        direction=us.UnitfulDirection(
+                            value=60, units=us.UnitTypesDirection.degrees
+                        ),
+                    )
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallConstant(
+                        intensity=us.UnitfulIntensity(
+                            value=20, units=us.UnitTypesIntensity.mm_hr
+                        )
+                    )
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeCSV(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        path=_tmp_timeseries_csv("discharge.csv"),
                     ),
-                    path=_tmp_timeseries_csv("discharge.csv"),
-                ),
-            ],
-        },
-    }
-    return HistoricalEvent.load_dict(event_attrs)
+                ],
+            },
+        )
+    )
 
 
 @pytest.fixture()
 def setup_offshore_meteo_event():
-    event_attrs = {
-        "name": "test_historical_offshore_meteo",
-        "time": TimeModel(),
-        "template": Template.Historical,
-        "mode": Mode.single_event,
-        "forcings": {
-            "WATERLEVEL": [WaterlevelModel()],
-            "WIND": [WindMeteo()],
-            "RAINFALL": [RainfallMeteo()],
-            "DISCHARGE": [
-                DischargeConstant(
-                    river=RiverModel(
-                        name="cooper",
-                        description="Cooper River",
-                        x_coordinate=595546.3,
-                        y_coordinate=3675590.6,
-                        mean_discharge=us.UnitfulDischarge(
+    return HistoricalEvent(
+        HistoricalEventModel(
+            name="offshore_meteo",
+            time=TimeModel(),
+            forcings={
+                ForcingType.WATERLEVEL: [
+                    WaterlevelModel(),
+                ],
+                ForcingType.WIND: [
+                    WindMeteo(),
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallMeteo(),
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
                             value=5000, units=us.UnitTypesDischarge.cfs
                         ),
                     ),
-                    discharge=us.UnitfulDischarge(
-                        value=5000, units=us.UnitTypesDischarge.cfs
-                    ),
-                ),
-            ],
-        },
-    }
-    return HistoricalEvent.load_dict(event_attrs)
+                ],
+            },
+        )
+    )
 
 
 @pytest.fixture()
 def setup_offshore_scenario(
     setup_offshore_meteo_event: HistoricalEvent, test_db: IDatabase
 ):
-    scenario_attrs = {
-        "name": "test_scenario",
-        "event": setup_offshore_meteo_event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    return Scenario.load_dict(scenario_attrs), setup_offshore_meteo_event
+    return Scenario(
+        ScenarioModel(
+            name="offshore_meteo",
+            event=setup_offshore_meteo_event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
 
 
 class TestHistoricalEvent:

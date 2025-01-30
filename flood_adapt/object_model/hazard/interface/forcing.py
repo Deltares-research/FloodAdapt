@@ -41,7 +41,8 @@ class ForcingSource(str, Enum):
 
     MODEL = "MODEL"  # 'our' hindcast/ sfincs offshore model
     TRACK = "TRACK"  # 'our' hindcast/ sfincs offshore model + (shifted) hurricane
-    CSV = "CSV"  # user imported data
+    CSV = "CSV"  # user provided csv file
+    NETCDF = "NETCDF"  # user provided netcdf file
 
     SYNTHETIC = "SYNTHETIC"  # synthetic data
     CONSTANT = "CONSTANT"  # synthetic data
@@ -58,7 +59,7 @@ class IForcing(BaseModel, ABC):
 
     type: ForcingType
     source: ForcingSource
-    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger(__name__)
+    logger: ClassVar[logging.Logger] = FloodAdaptLogging.getLogger("Forcing")
 
     @classmethod
     def load_file(cls, path: Path):
@@ -113,7 +114,7 @@ class IForcingFactory:
 
     @classmethod
     @abstractmethod
-    def load_dict(cls, attrs: dict[str, Any]) -> IForcing:
+    def load_dict(cls, attrs: dict[str, Any] | IForcing) -> IForcing:
         """Create a forcing object from a dictionary of attributes."""
         ...
 

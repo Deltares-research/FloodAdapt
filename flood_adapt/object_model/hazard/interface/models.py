@@ -60,3 +60,6 @@ class TimeModel(BaseModel):
     @classmethod
     def serialize_time_step(cls, value: timedelta) -> float:
         return value.total_seconds()
+
+    def __str__(self) -> str:
+        return f"{self.start_time} - {self.end_time}"

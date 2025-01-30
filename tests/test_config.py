@@ -51,7 +51,6 @@ class TestSettingsModel:
         expected_system_folder: Optional[Path] = None,
     ):
         expected_ext = Settings.SYSTEM_SUFFIXES[system]
-
         if expected_root is None:
             expected_root = Path(Settings.model_fields["database_root"].default)
 
@@ -98,9 +97,9 @@ class TestSettingsModel:
         yield
 
         Settings(
-            database_root=settings.database_root,
-            database_name=settings.database_name,
-            system_folder=settings.system_folder,
+            DATABASE_ROOT=settings.database_root,
+            DATABASE_NAME=settings.database_name,
+            SYSTEM_FOLDER=settings.system_folder,
         )
 
     @pytest.fixture(autouse=True)
@@ -110,7 +109,9 @@ class TestSettingsModel:
         system_folder = os.environ.get("SYSTEM_FOLDER", None)
 
         with modified_environ(
-            DATABASE_ROOT=root, DATABASE_NAME=name, SYSTEM_FOLDER=system_folder
+            DATABASE_ROOT=root,
+            DATABASE_NAME=name,
+            SYSTEM_FOLDER=system_folder,
         ):
             yield
 
@@ -136,9 +137,9 @@ class TestSettingsModel:
 
         # Act
         settings = Settings(
-            database_root=db_root,
-            database_name=name,
-            system_folder=db_root / "system",
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            SYSTEM_FOLDER=db_root / "system",
         )
 
         # Assert
@@ -189,9 +190,9 @@ class TestSettingsModel:
         ):
             # Act
             settings = Settings(
-                database_root=db_root,
-                database_name=name,
-                system_folder=db_root / "system",
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                SYSTEM_FOLDER=db_root / "system",
             )
 
             # Assert
@@ -217,9 +218,9 @@ class TestSettingsModel:
 
         # Act
         settings = Settings(
-            database_root=db_root,
-            database_name=name,
-            system_folder=new_system_path,
+            DATABASE_ROOT=db_root,
+            DATABASE_NAME=name,
+            SYSTEM_FOLDER=new_system_path,
         )
 
         # Assert
@@ -233,14 +234,14 @@ class TestSettingsModel:
 
     def test_init_from_invalid_db_root_raise_validation_error(self):
         with pytest.raises(ValidationError) as exc_info:
-            Settings(database_name="test", database_root=Path("invalid"))
+            Settings(DATABASE_NAME="test", DATABASE_ROOT=Path("invalid"))
 
         assert "Database root invalid does not exist." in str(exc_info.value)
 
     def test_init_from_invalid_db_name_raise_validation_error(self):
         name = "invalid"
         with pytest.raises(ValidationError) as exc_info:
-            Settings(database_name=name)
+            Settings(DATABASE_NAME=name)
 
         assert f"Database {name} at" in str(exc_info.value)
         assert "does not exist." in str(exc_info.value)
@@ -253,9 +254,9 @@ class TestSettingsModel:
 
         with pytest.raises(ValidationError) as exc_info:
             Settings(
-                database_root=db_root,
-                database_name=name,
-                system_folder=dummy_system_folder,
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                SYSTEM_FOLDER=dummy_system_folder,
             )
 
         assert f"System folder {dummy_system_folder} does not exist." in str(
@@ -277,9 +278,9 @@ class TestSettingsModel:
 
         with pytest.raises(ValidationError) as exc_info:
             Settings(
-                database_root=db_root,
-                database_name=name,
-                system_folder=db_root / "system",
+                DATABASE_ROOT=db_root,
+                DATABASE_NAME=name,
+                SYSTEM_FOLDER=db_root / "system",
             )
 
         assert f"{model.upper()} binary {model_bin} does not exist." in str(
@@ -298,7 +299,7 @@ class TestSettingsModel:
 
         config_path = db_root / "config.toml"
         config_path.write_text(
-            f"database_name = '{name}'\ndatabase_root = '{db_root}'\nsystem_folder = '{db_root / 'system'}'\n"
+            f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\nSYSTEM_FOLDER = '{db_root / 'system'}'\n"
         )
 
         # Act
@@ -324,7 +325,7 @@ class TestSettingsModel:
         ):
             config_path = db_root / "config.toml"
             config_path.write_text(
-                f"database_name = '{name}'\ndatabase_root = '{db_root}'\nsystem_folder = '{db_root / 'system'}'\n"
+                f"DATABASE_NAME = '{name}'\nDATABASE_ROOT = '{db_root}'\nSYSTEM_FOLDER = '{db_root / 'system'}'\n"
             )
 
             # Act
@@ -351,7 +352,7 @@ class TestSettingsModel:
             SYSTEM_FOLDER=str(db_root / "system"),
         ):
             config_path = db_root / "config.toml"
-            config_path.write_text(f"database_name = '{name}'\n")
+            config_path.write_text(f"DATABASE_NAME = '{name}'\n")
 
             # Act
             settings = Settings.read(config_path)
@@ -380,9 +381,9 @@ class TestSettingsModel:
         ):
             from_env1 = Settings()  # Create settings object with envvars
             from_args = Settings(  # Create settings object with new values and check if envvars are updated
-                database_name=name2,
-                database_root=db_root2,
-                system_folder=db_root2 / "system",
+                DATABASE_NAME=name2,
+                DATABASE_ROOT=db_root2,
+                SYSTEM_FOLDER=db_root2 / "system",
             )
 
             from_env2 = Settings()  # Create settings object with updated envvars again

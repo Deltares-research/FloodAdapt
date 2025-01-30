@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Generic, Optional, Type, TypeVar
+from typing import Any, Generic, Optional, Type, TypeVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -154,24 +154,28 @@ class ImpactMeasureModel(MeasureModel):
 class ElevateModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "elevate" impact measure."""
 
+    type: MeasureType = MeasureType.elevate_properties
     elevation: us.UnitfulLengthRefValue
 
 
 class BuyoutModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "buyout" impact measure."""
 
-    ...  # Buyout has only the basic impact measure attributes
+    # Buyout has only the basic impact measure attributes
+    type: MeasureType = MeasureType.buyout_properties
 
 
 class FloodProofModel(ImpactMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodproof" impact measure."""
 
+    type: MeasureType = MeasureType.floodproof_properties
     elevation: us.UnitfulLength
 
 
 class FloodWallModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "floodwall" hazard measure."""
 
+    type: MeasureType = MeasureType.floodwall
     elevation: us.UnitfulLength
     absolute_elevation: Optional[bool] = False
 
@@ -179,17 +183,25 @@ class FloodWallModel(HazardMeasureModel):
 class PumpModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "pump" hazard measure."""
 
+    type: MeasureType = MeasureType.pump
     discharge: us.UnitfulDischarge
 
 
 class GreenInfrastructureModel(HazardMeasureModel):
     """BaseModel describing the expected variables and data types of the "green infrastructure" hazard measure."""
 
+    type: MeasureType = MeasureType.greening
     volume: us.UnitfulVolume
     height: Optional[us.UnitfulHeight] = None
     aggregation_area_type: Optional[str] = None
     aggregation_area_name: Optional[str] = None
     percent_area: Optional[float] = Field(None, ge=0, le=100)
+
+    @field_validator("height", mode="before", check_fields=False)
+    def height_from_length(value: Any) -> Any:
+        if isinstance(value, us.UnitfulLength):
+            return us.UnitfulHeight(value=value.value, units=value.units)
+        return value
 
     @model_validator(mode="after")
     def validate_hazard_type_values(self) -> "GreenInfrastructureModel":

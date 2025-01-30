@@ -112,7 +112,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
             return output_dir.joinpath(spw_file.name)
 
         self.logger.info(
-            f"Creating spiderweb file for hurricane event {self.attrs.name}..."
+            f"Creating spiderweb file for hurricane event `{self.attrs.name}`"
         )
 
         # Initialize the tropical cyclone
@@ -127,9 +127,9 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         ):
             tc = self.translate_tc_track(tc=tc)
 
-        if self.attrs.forcings[ForcingType.RAINFALL] is not None:
+        if self.attrs.forcings.get(ForcingType.RAINFALL):
             self.logger.info(
-                f"Including rainfall in spiderweb file of hurricane {self.attrs.name}"
+                f"Including rainfall in spiderweb file of hurricane `{self.attrs.name}`"
             )
             rainfall_forcings = self.attrs.forcings[ForcingType.RAINFALL]
             tc.include_rainfall = any(
@@ -147,7 +147,7 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         return output_dir.joinpath(spw_file.name)
 
     def translate_tc_track(self, tc: TropicalCyclone):
-        self.logger.info("Translating the track of the tropical cyclone...")
+        self.logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")
         # First convert geodataframe to the local coordinate system
         crs = pyproj.CRS.from_string(self.site.attrs.sfincs.config.csname)
         tc.track = tc.track.to_crs(crs)
