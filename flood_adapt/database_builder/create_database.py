@@ -36,6 +36,7 @@ from flood_adapt.object_model.interface.config.fiat import (
     BFEModel,
     EquityModel,
     FiatConfigModel,
+    FiatModel,
     RiskModel,
     SVIModel,
 )
@@ -52,12 +53,17 @@ from flood_adapt.object_model.interface.config.sfincs import (
     ObsPointModel,
     RiverModel,
     SfincsConfigModel,
+    SfincsModel,
     SlrModel,
     SlrScenariosModel,
     VerticalReferenceModel,
     WaterLevelReferenceModel,
 )
-from flood_adapt.object_model.interface.config.site import Site, StandardObjectModel
+from flood_adapt.object_model.interface.config.site import (
+    Site,
+    SiteModel,
+    StandardObjectModel,
+)
 from flood_adapt.object_model.io.unit_system import (
     UnitfulDischarge,
     UnitfulLength,
@@ -1024,6 +1030,7 @@ class DatabaseBuilder:
         Otherwise, the rivers specified in `self.config.river` are added.
         """
         if "dis" not in self.sfincs.forcing:
+            self.site_attrs["sfincs"]["river"] = None
             self.logger.warning("No rivers found in the SFINCS model.")
             return
         river_locs = self.sfincs.forcing["dis"].vector.to_gdf()
@@ -1260,7 +1267,7 @@ class DatabaseBuilder:
                 )  # This always return values in meters currently
                 if station is not None:
                     # Add tide_gauge information in site toml
-                    self.site_attrs["tide_gauge"] = TideGaugeModel(
+                    self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
                         name=station["name"],
                         description=f"observations from '{self.config.tide_gauge.source}' api",
                         source=self.config.tide_gauge.source,
@@ -1298,7 +1305,7 @@ class DatabaseBuilder:
                 if not file_path.parent.exists():
                     file_path.parent.mkdir()
                 shutil.copyfile(self.config.tide_gauge.file, file_path)
-                self.site_attrs["tide_gauge"] = TideGaugeModel(
+                self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
                     description="observations from file stored in database",
                     source="file",
                     file=str(Path(file_path.relative_to(self.static_path)).as_posix()),
@@ -1699,27 +1706,42 @@ class DatabaseBuilder:
         This method creates a TOML file at the specified location and saves the site configuration
         using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
         """
+        # Define save locations for the config
         site_config_path = self.root.joinpath("static", "config", "site.toml")
         site_config_path.parent.mkdir()
 
-        # Create SFINCS configuration
-        # sfincs = SfincsModel(
-        #     config = SfincsConfigModel(),
-        #     water_level = WaterLevelReferenceModel(),
-        #     cyclone_track_database = CycloneTrackDatabaseModel(),
-        #     slr = SlrModel,
-        #     scs = Optional[SCSModel] = None,  # optional for the US to use SCS rainfall curves
-        #     dem = DemModel,
+        # Create and validate object for config
+        site = SiteModel(
+            name=self.site_attrs["name"],
+            description=self.site_attrs["description"],
+            lat=self.site_attrs["lat"],
+            lon=self.site_attrs["lon"],
+            standard_objects=self.site_attrs["standard_objects"],
+            gui=self.site_attrs["gui"],
+            sfincs=SfincsModel(
+                config=self.site_attrs["sfincs"]["config"],
+                water_level=self.site_attrs["sfincs"]["water_level"],
+                cyclone_track_database=self.site_attrs["sfincs"][
+                    "cyclone_track_database"
+                ],
+                slr=self.site_attrs["sfincs"]["slr"],
+                # scs = SCSModel,  # optional for the US to use SCS rainfall curves
+                dem=self.site_attrs["sfincs"]["dem"],
+                flood_frequency=self.site_attrs["sfincs"]["flood_frequency"],
+                tide_gauge=self.site_attrs["sfincs"]["tide_gauge"],
+                river=self.site_attrs["sfincs"]["river"],
+                obs_point=self.site_attrs["sfincs"]["obs_point"],
+            ),
+            fiat=FiatModel(
+                config=self.site_attrs["fiat"]["config"],
+                risk=self.site_attrs["fiat"]["risk"],
+                benefits=self.site_attrs["fiat"]["benefits"],
+            ),
+        )
 
-        #     flood_frequency = FloodFrequencyModel(
-        #         flooding_threshold=us.UnitfulLength(value=0.0, units=us.UnitTypesLength.meters)
-        #     ),
-        #     tide_gauge = Optional[TideGaugeModel] = None,
-        #     river = Optional[list[RiverModel]] = None,
-        #     obs_point = Optional[list[ObsPointModel]] = None,
-        # )
-        site = Site.load_dict(self.site_attrs)
-        site.save(toml_path=site_config_path)
+        # Save configs
+        site_obj = Site.load_dict(site)
+        site_obj.save(site_config_path)
 
     def _clip_hazard_extend(self):
         """
