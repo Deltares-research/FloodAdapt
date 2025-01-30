@@ -52,7 +52,7 @@ class FiatColumns:
     ground_elevation = "ground_elevtn"
     damage_function = "fn_damage_"
     max_potential_damage = "max_damage_"
-    aggregation_label = "aggregation_label:_"
+    aggregation_label = "aggregation_label:"
     inundation_depth = "inun_depth"
     damage = "damage_"
     total_damage = "total_damage"
