@@ -3,7 +3,10 @@ import pytest
 
 from flood_adapt.adapter.sfincs_offshore import OffshoreSfincsHandler
 from flood_adapt.dbs_classes.interface.database import IDatabase
-from flood_adapt.object_model.hazard.event.historical import HistoricalEvent
+from flood_adapt.object_model.hazard.event.historical import (
+    HistoricalEvent,
+    HistoricalEventModel,
+)
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
 )
@@ -16,31 +19,27 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindMeteo,
 )
-from flood_adapt.object_model.hazard.interface.events import (
-    Mode,
-    Template,
-)
+from flood_adapt.object_model.hazard.interface.forcing import ForcingType
 from flood_adapt.object_model.hazard.interface.models import (
     TimeModel,
 )
 from flood_adapt.object_model.interface.config.sfincs import RiverModel
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.scenario import Scenario
 
 
 @pytest.fixture()
 def setup_offshore_scenario(test_db: IDatabase):
-    event_attrs = (
-        {
-            "name": "test_historical_offshore_meteo",
-            "time": TimeModel(),
-            "template": Template.Historical,
-            "mode": Mode.single_event,
-            "forcings": {
-                "WATERLEVEL": [WaterlevelModel()],
-                "WIND": [WindMeteo()],
-                "RAINFALL": [RainfallMeteo()],
-                "DISCHARGE": [
+    event = HistoricalEvent(
+        HistoricalEventModel(
+            name="test_historical_offshore_meteo",
+            time=TimeModel(),
+            forcings={
+                ForcingType.WATERLEVEL: [WaterlevelModel()],
+                ForcingType.WIND: [WindMeteo()],
+                ForcingType.RAINFALL: [RainfallMeteo()],
+                ForcingType.DISCHARGE: [
                     DischargeConstant(
                         river=RiverModel(
                             name="cooper",
@@ -57,19 +56,18 @@ def setup_offshore_scenario(test_db: IDatabase):
                     )
                 ],
             },
-        },
+        )
     )
-
-    event = HistoricalEvent.load_dict(event_attrs)
     test_db.events.save(event)
 
-    scenario_attrs = {
-        "name": "test_scenario",
-        "event": event.attrs.name,
-        "projection": "current",
-        "strategy": "no_measures",
-    }
-    scn = Scenario.load_dict(scenario_attrs)
+    scn = Scenario(
+        ScenarioModel(
+            name="test_scenario",
+            event=event.attrs.name,
+            projection="current",
+            strategy="no_measures",
+        )
+    )
     test_db.scenarios.save(scn)
 
     return test_db, scn, event

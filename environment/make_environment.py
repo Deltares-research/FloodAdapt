@@ -58,7 +58,7 @@ def check_and_delete_conda_env(env_name: str):
     result = subprocess.run(["conda", "env", "list"], **SUBPROCESS_KWARGS)
 
     if env_name in result.stdout:
-        print(f"Environment {env_name} already exists. Removing it now...")
+        print(f"Environment {env_name} already exists. Removing it now")
         subprocess.run(
             ["conda", "env", "remove", "-n", env_name, "-y"], **SUBPROCESS_KWARGS
         )

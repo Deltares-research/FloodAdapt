@@ -21,6 +21,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
     RainfallMeteo,
+    RainfallNetCDF,
     RainfallSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
@@ -34,6 +35,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
     WindMeteo,
+    WindNetCDF,
     WindSynthetic,
     WindTrack,
 )
@@ -59,10 +61,18 @@ from flood_adapt.object_model.hazard.measure.green_infrastructure import (
 )
 from flood_adapt.object_model.hazard.measure.pump import Pump
 from flood_adapt.object_model.interface.config.sfincs import ObsPointModel, RiverModel
-from flood_adapt.object_model.interface.measures import MeasureType
+from flood_adapt.object_model.interface.measures import (
+    FloodWallModel,
+    GreenInfrastructureModel,
+    PumpModel,
+    SelectionType,
+)
 from flood_adapt.object_model.io import unit_system as us
 from flood_adapt.object_model.projection import Projection
 from tests.fixtures import TEST_DATA_DIR
+from tests.test_object_model.test_events.test_forcing.test_netcdf import (
+    get_test_dataset,
+)
 
 
 @pytest.fixture()
@@ -73,7 +83,11 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
         duration = timedelta(hours=3)
 
         adapter.set_timing(
-            TimeModel(start_time=start_time, end_time=start_time + duration)
+            TimeModel(
+                start_time=start_time,
+                end_time=start_time + duration,
+                time_step=timedelta(hours=1),
+            )
         )
         adapter.logger = mock.Mock()
         adapter.logger.handlers = []
@@ -86,6 +100,7 @@ def default_sfincs_adapter(test_db) -> SfincsAdapter:
 
 @pytest.fixture()
 def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
+    # Mock scenario to get a rainfall multiplier
     dummy_scn = mock.Mock()
     dummy_event = mock.Mock()
     dummy_event.attrs.rainfall_multiplier = 2
@@ -123,6 +138,7 @@ def sfincs_adapter_2_rivers(test_db: IDatabase) -> tuple[IDatabase, SfincsAdapte
         adapter._logger = mock.Mock()
         adapter.logger.handlers = []
         adapter.logger.warning = mock.Mock()
+        adapter.ensure_no_existing_forcings()
 
         return adapter, test_db
 
@@ -279,6 +295,7 @@ def _unsupported_forcing_source(type: ForcingType):
         spec=(ForcingSource, str), return_value="unsupported_source"
     )
     mock_source.lower = mock.Mock(return_value="unsupported_source")
+    mock_source.capitalize = mock.Mock(return_value="Unsupported_source")
 
     match type:
         case ForcingType.DISCHARGE:
@@ -358,6 +375,29 @@ class TestAddForcing:
 
             default_sfincs_adapter.add_forcing(forcing)
 
+            assert default_sfincs_adapter.wind is not None
+
+        def test_add_forcing_wind_from_netcdf(
+            self, test_db: IDatabase, default_sfincs_adapter: SfincsAdapter
+        ):
+            # Arrange
+            path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
+
+            time = TimeModel(time_step=timedelta(hours=1))
+            default_sfincs_adapter.set_timing(time)
+
+            ds = get_test_dataset(
+                time=time,
+                lat=int(test_db.site.attrs.lat),
+                lon=int(test_db.site.attrs.lon),
+            )
+            ds.to_netcdf(path)
+            forcing = WindNetCDF(path=path)
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
             assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_track(
@@ -447,6 +487,30 @@ class TestAddForcing:
             adapter = sfincs_adapter_with_dummy_scn
             assert adapter.rainfall is None
             forcing = RainfallMeteo()
+
+            # Act
+            adapter.add_forcing(forcing)
+
+            # Assert
+            assert adapter.rainfall is not None
+
+        def test_add_forcing_rainfall_from_netcdf(
+            self, test_db: IDatabase, sfincs_adapter_with_dummy_scn: SfincsAdapter
+        ):
+            # Arrange
+            adapter = sfincs_adapter_with_dummy_scn
+            path = Path(tempfile.gettempdir()) / "wind_netcdf.nc"
+
+            time = TimeModel(time_step=timedelta(hours=1))
+            adapter.set_timing(time)
+
+            ds = get_test_dataset(
+                time=time,
+                lat=int(test_db.site.attrs.lat),
+                lon=int(test_db.site.attrs.lon),
+            )
+            ds.to_netcdf(path)
+            forcing = RainfallNetCDF(path=path)
 
             # Act
             adapter.add_forcing(forcing)
@@ -676,15 +740,16 @@ class TestAddMeasure:
     class TestFloodwall:
         @pytest.fixture()
         def floodwall(self, test_db) -> FloodWall:
-            data = {
-                "name": "test_seawall",
-                "description": "seawall",
-                "type": MeasureType.floodwall.value,
-                "elevation": us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
-                "selection_type": "polyline",
-                "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
-            }
-            floodwall = FloodWall.load_dict(data)
+            floodwall = FloodWall(
+                FloodWallModel(
+                    name="test_seawall",
+                    description="seawall",
+                    selection_type=SelectionType.polyline,
+                    elevation=us.UnitfulLength(value=12, units=us.UnitTypesLength.feet),
+                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                )
+            )
+
             test_db.measures.save(floodwall)
             return floodwall
 
@@ -701,17 +766,17 @@ class TestAddMeasure:
     class TestPump:
         @pytest.fixture()
         def pump(self, test_db) -> Pump:
-            data = {
-                "name": "test_pump",
-                "description": "pump",
-                "type": MeasureType.pump,
-                "discharge": us.UnitfulDischarge(
-                    value=100, units=us.UnitTypesDischarge.cfs
-                ),
-                "selection_type": "polyline",
-                "polygon_file": str(TEST_DATA_DIR / "pump.geojson"),
-            }
-            pump = Pump.load_dict(data)
+            pump = Pump(
+                PumpModel(
+                    name="test_pump",
+                    description="pump",
+                    discharge=us.UnitfulDischarge(
+                        value=100, units=us.UnitTypesDischarge.cfs
+                    ),
+                    selection_type=SelectionType.polyline,
+                    polygon_file=str(TEST_DATA_DIR / "pump.geojson"),
+                )
+            )
             test_db.measures.save(pump)
             return pump
 
@@ -726,17 +791,18 @@ class TestAddMeasure:
     class TestGreenInfrastructure:
         @pytest.fixture()
         def water_square(self, test_db) -> GreenInfrastructure:
-            data = {
-                "name": "test_greeninfra",
-                "description": "greeninfra",
-                "type": MeasureType.water_square,
-                "selection_type": "polygon",
-                "polygon_file": str(TEST_DATA_DIR / "green_infra.geojson"),
-                "volume": {"value": 1, "units": "m3"},
-                "height": {"value": 2, "units": "meters"},
-            }
+            green_infra = GreenInfrastructure(
+                GreenInfrastructureModel(
+                    name="test_greeninfra",
+                    description="greeninfra",
+                    selection_type=SelectionType.polygon,
+                    polygon_file=str(TEST_DATA_DIR / "green_infra.geojson"),
+                    volume=us.UnitfulVolume(value=1, units=us.UnitTypesVolume.m3),
+                    height=us.UnitfulHeight(value=2, units=us.UnitTypesLength.meters),
+                    percent_area=0.5,
+                )
+            )
 
-            green_infra = GreenInfrastructure.load_dict(data)
             test_db.measures.save(green_infra)
             return green_infra
 

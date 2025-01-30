@@ -1,7 +1,9 @@
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 from flood_adapt import unit_system as us
+from flood_adapt.object_model.hazard.event.event_set import EventSet, EventSetModel
 from flood_adapt.object_model.hazard.event.historical import (
     HistoricalEvent,
     HistoricalEventModel,
@@ -14,11 +16,15 @@ from flood_adapt.object_model.hazard.event.synthetic import (
     SyntheticEvent,
     SyntheticEventModel,
 )
+from flood_adapt.object_model.hazard.event.template_event import EventModel
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
     DischargeSynthetic,
 )
-from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
+from flood_adapt.object_model.hazard.forcing.rainfall import (
+    RainfallConstant,
+    RainfallMeteo,
+)
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -252,15 +258,102 @@ def create_events():
     return EXTREME_12FT, EXTREME_12FT_RIVERSHAPE_WINDCONST, FLORENCE, KINGTIDE_NOV2021
 
 
+def create_synthetic_event(name: str) -> SyntheticEvent:
+    return SyntheticEvent(
+        SyntheticEventModel(
+            name=name,
+            time=TimeModel(),
+            forcings={
+                ForcingType.WIND: [
+                    WindConstant(
+                        speed=us.UnitfulVelocity(
+                            value=5, units=us.UnitTypesVelocity.mps
+                        ),
+                        direction=us.UnitfulDirection(
+                            value=60, units=us.UnitTypesDirection.degrees
+                        ),
+                    )
+                ],
+                ForcingType.RAINFALL: [
+                    RainfallConstant(
+                        intensity=us.UnitfulIntensity(
+                            value=2, units=us.UnitTypesIntensity.mm_hr
+                        )
+                    )
+                ],
+                ForcingType.DISCHARGE: [
+                    DischargeConstant(
+                        river=RiverModel(
+                            name="cooper",
+                            description="Cooper River",
+                            x_coordinate=595546.3,
+                            y_coordinate=3675590.6,
+                            mean_discharge=us.UnitfulDischarge(
+                                value=5000, units=us.UnitTypesDischarge.cfs
+                            ),
+                        ),
+                        discharge=us.UnitfulDischarge(
+                            value=5000, units=us.UnitTypesDischarge.cfs
+                        ),
+                    )
+                ],
+                ForcingType.WATERLEVEL: [
+                    WaterlevelSynthetic(
+                        surge=SurgeModel(
+                            timeseries=SyntheticTimeseriesModel[us.UnitfulLength](
+                                shape_type=ShapeType.triangle,
+                                duration=us.UnitfulTime(
+                                    value=1, units=us.UnitTypesTime.days
+                                ),
+                                peak_time=us.UnitfulTime(
+                                    value=8, units=us.UnitTypesTime.hours
+                                ),
+                                peak_value=us.UnitfulLength(
+                                    value=1, units=us.UnitTypesLength.meters
+                                ),
+                            )
+                        ),
+                        tide=TideModel(
+                            harmonic_amplitude=us.UnitfulLength(
+                                value=1, units=us.UnitTypesLength.meters
+                            ),
+                            harmonic_phase=us.UnitfulTime(
+                                value=0, units=us.UnitTypesTime.hours
+                            ),
+                        ),
+                    )
+                ],
+            },
+        )
+    )
+
+
+def create_eventset(name: str) -> EventSet:
+    sub_events: List[EventModel] = []
+    for i in [1, 39, 78]:
+        sub_events.append(create_synthetic_event(name=f"subevent_{i:04d}").attrs)
+
+    return EventSet(
+        EventSetModel(
+            name=name,
+            sub_events=sub_events,
+            frequency=[0.5, 0.2, 0.02],
+        )
+    )
+
+
 if __name__ == "__main__":
     from flood_adapt import Settings
     from flood_adapt.api.static import read_database
 
     Settings(
-        database_name="charleston_test",
-        database_root=Path(__file__).parents[3] / "Database",
+        DATABASE_NAME="charleston_test",
+        DATABASE_ROOT=Path(__file__).parents[3] / "Database",
     )
     db = read_database(Settings().database_root, Settings().database_name)
 
     for event in create_events():
         db.events.save(event, overwrite=True)
+
+    event_set = create_eventset("test_set")
+    db.events.save(event_set, overwrite=True)
