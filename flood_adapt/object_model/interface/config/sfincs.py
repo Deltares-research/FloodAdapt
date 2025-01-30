@@ -126,7 +126,7 @@ class SfincsConfigModel(BaseModel):
 
     csname: str
     cstype: Cstype
-    version: Optional[str] = ""
+    version: Optional[str] = None
     offshore_model: Optional[str] = None
     overland_model: str
     floodmap_units: us.UnitTypesLength
