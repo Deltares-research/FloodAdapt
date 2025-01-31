@@ -103,7 +103,7 @@ class SfincsAdapter(IHazardAdapter):
         Args:
             model_root (Path): Root directory of overland sfincs model.
         """
-        self.site = self.database.site
+        self.settings = self.database.site.attrs.sfincs
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
@@ -131,7 +131,7 @@ class SfincsAdapter(IHazardAdapter):
 
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
-            self._model.set_root(root=str(root), mode=write_mode)
+            # self._model.set_root(root=str(root), mode=write_mode)
 
     def close_files(self):
         """Close all open files and clean up file handles."""
@@ -505,25 +505,45 @@ class SfincsAdapter(IHazardAdapter):
     def write_floodmap_geotiff(
         self, scenario: IScenario, sim_path: Optional[Path] = None
     ):
+        """
+        Read simulation results from SFINCS and saves a geotiff with the maximum water levels.
+
+        Produced floodmap is in the units defined in the sfincs config settings.
+
+        Parameters
+        ----------
+        scenario : IScenario
+            Scenario for which to create the floodmap.
+        sim_path : Path, optional
+            Path to the simulation folder, by default None.
+        """
         self.logger.info("Writing flood maps to geotiff")
         results_path = self._get_result_path(scenario)
         sim_path = sim_path or self._get_simulation_paths(scenario)[0]
-        demfile = (
-            self.database.static_path / "dem" / self.site.attrs.sfincs.dem.filename
-        )
+        demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
-        # read SFINCS model
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
+
             dem = model._model.data_catalog.get_rasterdataset(demfile)
 
-            # writing the geotiff to the scenario results folder
-            model.write_geotiff(
-                zsmax=zsmax,
-                dem=dem,
-                dem_units=us.UnitTypesLength(us.UnitTypesLength.meters),
-                floodmap_fn=results_path / f"FloodMap_{scenario.attrs.name}.tif",
-                floodmap_units=self.site.attrs.sfincs.config.floodmap_units,
+            # convert dem from dem units to floodmap units
+            dem_conversion = us.UnitfulLength(
+                value=1.0, units=self.settings.dem.units
+            ).convert(self.settings.config.floodmap_units)
+
+            floodmap_fn = results_path / f"FloodMap_{scenario.attrs.name}.tif"
+
+            # convert zsmax from meters to floodmap units
+            floodmap_conversion = us.UnitfulLength(
+                value=1.0, units=us.UnitTypesLength.meters
+            ).convert(self.settings.config.floodmap_units)
+
+            utils.downscale_floodmap(
+                zsmax=floodmap_conversion * zsmax,
+                dep=dem_conversion * dem,
+                hmin=0.01,
+                floodmap_fn=str(floodmap_fn),
             )
 
     def write_water_level_map(
@@ -537,30 +557,6 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_path) as model:
             zsmax = model._get_zsmax()
             zsmax.to_netcdf(results_path / "max_water_level_map.nc")
-
-    @staticmethod
-    def write_geotiff(
-        zsmax,
-        dem,
-        dem_units: us.UnitTypesLength,
-        floodmap_fn: Path,
-        floodmap_units: us.UnitTypesLength,
-    ):
-        # read DEM and convert units to metric units used by SFINCS
-        dem_conversion = us.UnitfulLength(value=1.0, units=dem_units).convert(
-            us.UnitTypesLength(us.UnitTypesLength.meters)
-        )
-        # determine conversion factor for output floodmap
-        floodmap_conversion = us.UnitfulLength(
-            value=1.0, units=us.UnitTypesLength(floodmap_units)
-        ).convert(us.UnitTypesLength.meters)
-
-        utils.downscale_floodmap(
-            zsmax=floodmap_conversion * zsmax,
-            dep=dem_conversion * dem,
-            hmin=0.01,
-            floodmap_fn=str(floodmap_fn),
-        )
 
     def plot_wl_obs(
         self,
@@ -580,7 +576,9 @@ class SfincsAdapter(IHazardAdapter):
         with SfincsAdapter(model_root=sim_path) as model:
             df, gdf = model._get_zs_points()
 
-        gui_units = us.UnitTypesLength(self.site.attrs.gui.units.default_length_units)
+        gui_units = us.UnitTypesLength(
+            self.database.site.attrs.gui.units.default_length_units
+        )
         conversion_factor = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength("meters")
         ).convert(gui_units)
@@ -589,21 +587,21 @@ class SfincsAdapter(IHazardAdapter):
             # Plot actual thing
             fig = px.line(
                 df[col] * conversion_factor
-                + self.site.attrs.sfincs.water_level.localdatum.height.convert(
+                + self.settings.water_level.localdatum.height.convert(
                     gui_units
                 )  # convert to reference datum for plotting
             )
 
             # plot reference water levels
             fig.add_hline(
-                y=self.site.attrs.sfincs.water_level.msl.height.convert(gui_units),
+                y=self.settings.water_level.msl.height.convert(gui_units),
                 line_dash="dash",
                 line_color="#000000",
-                annotation_text=self.site.attrs.sfincs.water_level.msl.name,
+                annotation_text=self.settings.water_level.msl.name,
                 annotation_position="bottom right",
             )
-            if self.site.attrs.sfincs.water_level.other:
-                for wl_ref in self.site.attrs.sfincs.water_level.other:
+            if self.settings.water_level.other:
+                for wl_ref in self.settings.water_level.other:
                     fig.add_hline(
                         y=wl_ref.height.convert(gui_units),
                         line_dash="dash",
@@ -633,10 +631,10 @@ class SfincsAdapter(IHazardAdapter):
 
             # check if event is historic
             if isinstance(event, HistoricalEvent):
-                if self.site.attrs.sfincs.tide_gauge is None:
+                if self.settings.tide_gauge is None:
                     continue
                 df_gauge = TideGauge(
-                    attrs=self.site.attrs.sfincs.tide_gauge
+                    attrs=self.settings.tide_gauge
                 ).get_waterlevels_in_time_frame(
                     time=TimeModel(
                         start_time=event.attrs.time.start_time,
@@ -648,7 +646,7 @@ class SfincsAdapter(IHazardAdapter):
                 if df_gauge is not None:
                     waterlevel = df_gauge.iloc[
                         :, 0
-                    ] + self.site.attrs.sfincs.water_level.msl.height.convert(gui_units)
+                    ] + self.settings.water_level.msl.height.convert(gui_units)
 
                     # If data is available, add to plot
                     fig.add_trace(
@@ -669,10 +667,10 @@ class SfincsAdapter(IHazardAdapter):
 
     def add_obs_points(self):
         """Add observation points provided in the site toml to SFINCS model."""
-        if self.site.attrs.sfincs.obs_point is not None:
+        if self.settings.obs_point is not None:
             self.logger.info("Adding observation points to the overland flood model")
 
-            obs_points = self.site.attrs.sfincs.obs_point
+            obs_points = self.settings.obs_point
             names = []
             lat = []
             lon = []
@@ -728,7 +726,7 @@ class SfincsAdapter(IHazardAdapter):
 
         phys_proj = scenario.projection.get_physical_projection()
 
-        floodmap_rp = self.site.attrs.fiat.risk.return_periods
+        floodmap_rp = self.database.site.attrs.fiat.risk.return_periods
         frequencies = scenario.event.attrs.frequency
 
         # adjust storm frequency for hurricane events
@@ -828,21 +826,19 @@ class SfincsAdapter(IHazardAdapter):
 
             # write geotiff
             # dem file for high resolution flood depth map
-            demfile = (
-                self.database.static_path / "dem" / self.site.attrs.sfincs.dem.filename
-            )
+            demfile = self.database.static_path / "dem" / self.settings.dem.filename
 
             # writing the geotiff to the scenario results folder
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
 
-                dummymodel.write_geotiff(
+                SfincsAdapter.write_geotiff(
                     zsmax=zsmax,
                     dem=dem,
-                    dem_units=us.UnitTypesLength.meters,
+                    dem_units=self.settings.dem.units,
                     floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
-                    floodmap_units=self.site.attrs.sfincs.config.floodmap_units,
+                    floodmap_units=self.settings.config.floodmap_units,
                 )
 
     ######################################
@@ -1049,13 +1045,13 @@ class SfincsAdapter(IHazardAdapter):
             df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelGauged):
-            if self.site.attrs.sfincs.tide_gauge is None:
+            if self.settings.tide_gauge is None:
                 raise ValueError("No tide gauge defined for this site.")
-            df_ts = TideGauge(
-                self.site.attrs.sfincs.tide_gauge
-            ).get_waterlevels_in_time_frame(time=time_frame)
+            df_ts = TideGauge(self.settings.tide_gauge).get_waterlevels_in_time_frame(
+                time=time_frame,
+            )
             conversion = us.UnitfulLength(
-                value=1.0, units=self.site.attrs.sfincs.tide_gauge.units
+                value=1.0, units=self.settings.tide_gauge.units
             ).convert(us.UnitTypesLength.meters)
             df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
@@ -1123,7 +1119,7 @@ class SfincsAdapter(IHazardAdapter):
                 float(
                     us.UnitfulLength(
                         value=float(height),
-                        units=self.site.attrs.gui.units.default_length_units,
+                        units=self.database.site.attrs.gui.units.default_length_units,
                     ).convert(us.UnitTypesLength("meters"))
                 )
                 for height in gdf_floodwall["z"]
@@ -1155,7 +1151,7 @@ class SfincsAdapter(IHazardAdapter):
         elif green_infrastructure.attrs.selection_type == "aggregation_area":
             # TODO this logic already exists in the Database controller but cannot be used due to cyclic imports
             # Loop through available aggregation area types
-            for aggr_dict in self.site.attrs.fiat.aggregation:
+            for aggr_dict in self.database.site.attrs.fiat.config.aggregation:
                 # check which one is used in measure
                 if (
                     not aggr_dict.name
@@ -1390,7 +1386,7 @@ class SfincsAdapter(IHazardAdapter):
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
-            / self.site.attrs.sfincs.config.overland_model
+            / self.settings.config.overland_model
         )
 
         if isinstance(scenario.event, EventSet):
@@ -1405,12 +1401,12 @@ class SfincsAdapter(IHazardAdapter):
 
     def _get_simulation_path_offshore(self, scenario: IScenario) -> List[Path]:
         # Get the path to the offshore model (will not be used if offshore model is not created)
-        if self.site.attrs.sfincs.offshore_model is None:
+        if self.settings.offshore_model is None:
             raise ValueError("No offshore model found in site.toml.")
         base_path = (
             self._get_result_path(scenario)
             / "simulations"
-            / self.site.attrs.sfincs.config.offshore_model
+            / self.settings.config.offshore_model
         )
         if isinstance(scenario.event, EventSet):
             return [
@@ -1428,7 +1424,7 @@ class SfincsAdapter(IHazardAdapter):
 
         if isinstance(scenario.event, EventSet):
             map_fn = []
-            for rp in self.site.attrs.risk.return_periods:
+            for rp in self.database.site.attrs.fiat.risk.return_periods:
                 map_fn.append(results_path / f"RP_{rp:04d}_maps.nc")
         elif isinstance(scenario.event, IEvent):
             map_fn = [results_path / "max_water_level_map.nc"]
@@ -1457,8 +1453,8 @@ class SfincsAdapter(IHazardAdapter):
         names = []
         descriptions = []
         # get station names from site.toml
-        if self.site.attrs.sfincs.obs_point is not None:
-            obs_points = self.site.attrs.sfincs.obs_point
+        if self.settings.obs_point is not None:
+            obs_points = self.settings.obs_point
             for pt in obs_points:
                 names.append(pt.name)
                 descriptions.append(pt.description)
@@ -1474,7 +1470,7 @@ class SfincsAdapter(IHazardAdapter):
     # @gundula do we keep this func, its not used anywhere?
     def _downscale_hmax(self, zsmax, demfile: Path):
         # read DEM and convert units to metric units used by SFINCS
-        demfile_units = self.site.attrs.sfincs.dem.units
+        demfile_units = self.settings.dem.units
         dem_conversion = us.UnitfulLength(value=1.0, units=demfile_units).convert(
             us.UnitTypesLength("meters")
         )
@@ -1482,7 +1478,7 @@ class SfincsAdapter(IHazardAdapter):
         dem = dem.rio.reproject(self._model.crs)
 
         # determine conversion factor for output floodmap
-        floodmap_units = self.site.attrs.sfincs.config.floodmap_units
+        floodmap_units = self.settings.config.floodmap_units
         floodmap_conversion = us.UnitfulLength(
             value=1.0, units=us.UnitTypesLength.meters
         ).convert(floodmap_units)
@@ -1520,7 +1516,10 @@ class SfincsAdapter(IHazardAdapter):
             sfincs_logger.removeHandler(handler)
 
         # Add a file handler
-        file_handler = logging.FileHandler(model_root.resolve() / "sfincs_model.log")
+        file_handler = logging.FileHandler(
+            filename=model_root.resolve() / "sfincs_model.log",
+            mode="w",
+        )
         file_handler.setLevel(logging.DEBUG)
         sfincs_logger.addHandler(file_handler)
         return sfincs_logger
