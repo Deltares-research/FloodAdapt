@@ -1465,6 +1465,8 @@ class DatabaseBuilder:
                 file=new_file.relative_to(self.static_path).as_posix(),
                 relative_to_year=self.config.slr.scenarios.relative_to_year,
             )
+        else:
+            slr_scenarios = None
         # store config
         self.site_attrs["sfincs"]["slr"] = SlrModel(
             vertical_offset=vertical_offset, scenarios=slr_scenarios
