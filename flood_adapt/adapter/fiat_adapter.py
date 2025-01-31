@@ -50,8 +50,6 @@ class FiatColumns:
     extraction_method = "extract_method"
     ground_floor_height = "ground_flht"
     ground_elevation = "ground_elevtn"
-    damage_function = "fn_damage_"
-    max_potential_damage = "max_damage_"
     inundation_depth = "inun_depth"
     damage_structure = "damage_structure"
     damage_content = "damage_content"
@@ -62,9 +60,9 @@ class FiatColumns:
     fn_damage_structure= "fn_damage_structure"
     fn_damage_content= "fn_damage_content"
     fn_damage_other= "fn_damage_other"
-    max_damage_structure= "max_damage_structure"
-    max_damage_content=  "max_damage_content"
-    max_damage_other=  "max_damage_other"
+    max_pot_damage_structure= "max_damage_structure"
+    max_pot_damage_content=  "max_damage_content"
+    max_pot_damage_other=  "max_damage_other"
 
 class FiatAdapter(IImpactAdapter):
     """
@@ -106,8 +104,6 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.extraction_method : "Extraction Method",
             FiatColumns.ground_floor_height : "Ground Floor Height",
             FiatColumns.ground_elevation : "Ground Elevation",
-            FiatColumns.damage_function : "Damage Function: ",
-            FiatColumns.max_potential_damage : "Max Potential Damage: ",
             FiatColumns.inundation_depth : "Inundation Depth",
             FiatColumns.damage_structure : "Damage: Structure",
             FiatColumns.damage_content : "Damage: Content",
@@ -118,9 +114,9 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.fn_damage_structure: "Damage Function: Structure",
             FiatColumns.fn_damage_content: "Damage Function: Content",
             FiatColumns.fn_damage_other: "Damage Function: Other",
-            FiatColumns.max_damage_structure: "Max Potential Damage: Structure",
-            FiatColumns.max_damage_content: "Max Potential Damage: Content",
-            FiatColumns.max_damage_other: "Max Potential Damage: Other"}
+            FiatColumns.max_pot_damage_structure: "Max Potential Damage: Structure",
+            FiatColumns.max_pot_damage_content: "Max Potential Damage: Content",
+            FiatColumns.max_pot_damage_other: "Max Potential Damage: Other"}
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
 
@@ -1386,7 +1382,7 @@ class FiatAdapter(IImpactAdapter):
         )
         # Add aggregation to fiat_columns
         for aggregation in self.config.aggregation:
-            self.fiat_columns_dict[f"aggregation_label_{aggregation.name}"] = f"Aggregation Label :{aggregation.name}"
+            self.fiat_columns_dict[f"AGGregation_label_{aggregation.name}"] = f"aggregation_label_{aggregation.name}" # NOTE capital GG just for test
         # Get damages
         footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
         footprints.calc_normalized_damages(self.fiat_columns_dict)
