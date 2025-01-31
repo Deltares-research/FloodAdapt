@@ -131,7 +131,6 @@ class SfincsAdapter(IHazardAdapter):
 
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
-            # self._model.set_root(root=str(root), mode=write_mode)
 
     def close_files(self):
         """Close all open files and clean up file handles."""
