@@ -1382,7 +1382,9 @@ class FiatAdapter(IImpactAdapter):
                 how="left",
             )
         )
-
+        # Add aggregation to fiat_columns
+        for aggregation in self.config.aggregation:
+            self.fiat_columns_dict[f"aggregation_label_{aggregation.name}"] = f"Aggregation Label :{aggregation.name}"
         footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
         footprints.calc_normalized_damages(self.fiat_columns_dict)
 
