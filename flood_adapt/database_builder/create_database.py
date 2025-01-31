@@ -1231,6 +1231,7 @@ class DatabaseBuilder:
 
         The downloaded database is stored in the 'static/cyclone_track_database' directory.
         """
+        self.site_attrs["sfincs"]["cyclone_track_database"] = None
         if not self.config.cyclones or not self.config.sfincs_offshore:
             self.logger.warning("No cyclones will be available in the database.")
             return
