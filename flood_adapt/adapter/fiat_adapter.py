@@ -64,6 +64,7 @@ class FiatColumns:
     fn_damage_other= "fn_damage_other"
     max_damage_structure= "max_damage_structure"
     max_damage_content=  "max_damage_content"
+    max_damage_other=  "max_damage_other"
 
 class FiatAdapter(IImpactAdapter):
     """
@@ -118,7 +119,8 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.fn_damage_content: "Damage Function: Content",
             FiatColumns.fn_damage_other: "Damage Function: Other",
             FiatColumns.max_damage_structure: "Max Potential Damage: Structure",
-            FiatColumns.max_damage_content: "Max Potential Damage: Content"}
+            FiatColumns.max_damage_content: "Max Potential Damage: Content",
+            FiatColumns.max_damage_other: "Max Potential Damage: Other"}
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
 
@@ -1385,6 +1387,7 @@ class FiatAdapter(IImpactAdapter):
         # Add aggregation to fiat_columns
         for aggregation in self.config.aggregation:
             self.fiat_columns_dict[f"aggregation_label_{aggregation.name}"] = f"Aggregation Label :{aggregation.name}"
+        # Get damages
         footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
         footprints.calc_normalized_damages(self.fiat_columns_dict)
 
