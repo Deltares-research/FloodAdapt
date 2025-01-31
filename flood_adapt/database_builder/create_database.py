@@ -1485,6 +1485,8 @@ class DatabaseBuilder:
             self.logger.info("Observation points were provided in the config file.")
             # Store config
             self.site_attrs["sfincs"]["obs_point"] = self.config.obs_point
+        else:
+            self.site_attrs["sfincs"]["obs_point"] = None
 
     def add_gui_params(self):
         """
