@@ -1157,7 +1157,7 @@ class FiatAdapter(IImpactAdapter):
         # Check if type of metric configuration is available
         for metric_file in metric_config_paths:
             if metric_file.exists():
-                metrics_writer = MetricsFileWriter(metric_file)
+                metrics_writer = MetricsFileWriter(metric_file, aggregation_label = "Aggregation Label: ")
 
                 metrics_writer.parse_metrics_to_file(
                     df_results=metrics_exposure,
