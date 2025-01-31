@@ -831,13 +831,23 @@ class SfincsAdapter(IHazardAdapter):
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
+                floodmap_fn = result_path / f"FloodMap_{scenario.attrs.name}.tif"
 
-                SfincsAdapter.write_geotiff(
-                    zsmax=zsmax,
-                    dem=dem,
-                    dem_units=self.settings.dem.units,
-                    floodmap_fn=result_path / f"RP_{rp:04d}_maps.tif",
-                    floodmap_units=self.settings.config.floodmap_units,
+                # convert dem from dem units to floodmap units
+                dem_conversion = us.UnitfulLength(
+                    value=1.0, units=self.settings.dem.units
+                ).convert(self.settings.config.floodmap_units)
+
+                # convert zsmax from meters to floodmap units
+                floodmap_conversion = us.UnitfulLength(
+                    value=1.0, units=us.UnitTypesLength.meters
+                ).convert(self.settings.config.floodmap_units)
+
+                utils.downscale_floodmap(
+                    zsmax=floodmap_conversion * zsmax,
+                    dep=dem_conversion * dem,
+                    hmin=0.01,
+                    floodmap_fn=str(floodmap_fn),
                 )
 
     ######################################
@@ -1437,6 +1447,9 @@ class SfincsAdapter(IHazardAdapter):
         self._model.read_results()
         zsmax = self._model.results["zsmax"].max(dim="timemax")
         zsmax.attrs["units"] = "m"
+
+        for name, dataset in self._model.results.items():
+            dataset.close()
         return zsmax
 
     def _get_zs_points(self):
