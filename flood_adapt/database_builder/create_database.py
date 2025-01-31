@@ -1283,6 +1283,7 @@ class DatabaseBuilder:
             self.logger.warning(
                 "Tide gauge information not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
             )
+            self.site_attrs["sfincs"]["tide_gauge"] = None
             self.logger.warning(zero_wl_msg)
         else:
             if self.config.tide_gauge.source != TideGaugeSource.file:
