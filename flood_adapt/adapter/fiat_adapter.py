@@ -211,7 +211,7 @@ class FiatAdapter(IImpactAdapter):
 
         # Hazard
         floodmap = FloodMap(scenario.attrs.name)
-        var = "zsmax" if floodmap.mode == Mode.risk else "risk_maps"
+        var = "risk_maps" if floodmap.mode == Mode.risk else "zsmax"
         is_risk = floodmap.mode == Mode.risk
         self.set_hazard(
             map_fn=floodmap.path,
