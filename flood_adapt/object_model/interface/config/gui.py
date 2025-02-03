@@ -32,18 +32,18 @@ class MapboxLayersModel(BaseModel):
 class VisualizationLayersModel(BaseModel):
     """The configuration of the layers you might want to visualize in the gui."""
 
+    # TODO add check for default_bin_number and default_colors to have the same length
     default_bin_number: int
     default_colors: list[str]
-    layer_names: list[str]
-    layer_long_names: list[str]
-    layer_paths: list[str]
-    field_names: list[str]
+    layer_names: list[str] = Field(default_factory=list)
+    layer_long_names: list[str] = Field(default_factory=list)
+    layer_paths: list[str] = Field(default_factory=list)
+    field_names: list[str] = Field(default_factory=list)
     bins: Optional[list[list[float]]] = Field(default_factory=list)
     colors: Optional[list[list[str]]] = Field(default_factory=list)
 
 
 class GuiUnitModel(BaseModel):
-    tide_harmonic_amplitude: us.UnitfulLength
     default_length_units: us.UnitTypesLength
     default_distance_units: us.UnitTypesLength
     default_area_units: us.UnitTypesArea
@@ -59,6 +59,7 @@ class GuiModel(BaseModel):
     """The accepted input for the variable gui in Site."""
 
     units: GuiUnitModel
+    default_tide_harmonic_amplitude: us.UnitfulLength
     mapbox_layers: MapboxLayersModel
     visualization_layers: VisualizationLayersModel
 
