@@ -172,7 +172,7 @@ def plot_waterlevel(
         return "", None
 
     logger.debug("Plotting water level data")
-
+    units = Settings().unit_system.length
     data = None
     try:
         if isinstance(waterlevel, WaterlevelGauged):
@@ -180,7 +180,7 @@ def plot_waterlevel(
                 raise ValueError("No tide gauge defined for this site.")
             data = TideGauge(
                 site.attrs.sfincs.tide_gauge
-            ).get_waterlevels_in_time_frame(event.attrs.time)
+            ).get_waterlevels_in_time_frame(event.attrs.time, units=units)
         elif isinstance(waterlevel, (WaterlevelCSV, WaterlevelSynthetic)):
             data = waterlevel.to_dataframe(event.attrs.time)
         else:
@@ -195,8 +195,6 @@ def plot_waterlevel(
         return "", None
 
     # Plot actual thing
-    units = Settings().unit_system.length
-
     fig = px.line(data + site.attrs.sfincs.water_level.msl.height.convert(units))
 
     # plot reference water levels
