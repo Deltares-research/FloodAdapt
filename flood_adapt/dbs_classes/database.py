@@ -665,9 +665,8 @@ class Database(IDatabase):
                 self.has_run_hazard(scn)
                 scenario = self.scenarios.get(scn)
                 scenario.run()
-            except RuntimeError as e:
-                if "SFINCS model failed to run." in str(e):
-                    errors.append(str(scn))
+            except RuntimeError:
+                errors.append(scn)
 
         if errors:
             raise RuntimeError(

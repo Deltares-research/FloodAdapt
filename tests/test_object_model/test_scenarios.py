@@ -1,7 +1,11 @@
+import shutil
+from pathlib import Path
+
 import pytest
 
 from flood_adapt.adapter.impacts_integrator import Impacts
 from flood_adapt.dbs_classes.interface.database import IDatabase
+from flood_adapt.object_model.hazard.event.hurricane import HurricaneEvent
 from flood_adapt.object_model.hazard.floodmap import FloodMap
 from flood_adapt.object_model.hazard.hazard_strategy import HazardStrategy
 from flood_adapt.object_model.impact.impact_strategy import ImpactStrategy
@@ -10,7 +14,17 @@ from flood_adapt.object_model.interface.projections import (
     PhysicalProjection,
     SocioEconomicChange,
 )
+from flood_adapt.object_model.interface.scenarios import ScenarioModel
 from flood_adapt.object_model.scenario import Scenario
+from flood_adapt.object_model.utils import finished_file_exists
+from tests.test_object_model.test_events.test_hurricane import setup_hurricane_event
+from tests.test_object_model.test_events.test_synthetic import test_event_all_synthetic
+
+# To stop ruff from deleting these 'unused' imports
+__all__ = [
+    "test_event_all_synthetic",
+    "setup_hurricane_event",
+]
 
 
 @pytest.fixture(autouse=True)
@@ -64,6 +78,40 @@ class Test_scenario_run:
 
         assert not not_run.impacts.hazard.has_run
         assert run.impacts.hazard.has_run
+
+    @pytest.fixture()
+    def setup_hurricane_scenario(
+        self,
+        test_db: IDatabase,
+        setup_hurricane_event: tuple[HurricaneEvent, Path],
+    ) -> tuple[IDatabase, Scenario, HurricaneEvent]:
+        event, cyc_file = setup_hurricane_event
+        scn = Scenario(
+            ScenarioModel(
+                name="hurricane",
+                event=event.attrs.name,
+                projection="current",
+                strategy="no_measures",
+            )
+        )
+        test_db.events.save(event)
+        shutil.copy2(
+            cyc_file, test_db.events.input_path / event.attrs.name / cyc_file.name
+        )
+        test_db.scenarios.save(scn)
+        return test_db, scn, event
+
+    def test_run_hurricane_scenario(
+        self, setup_hurricane_scenario: tuple[IDatabase, Scenario, HurricaneEvent]
+    ):
+        # Arrange
+        test_db, scn, event = setup_hurricane_scenario
+
+        # Act
+        scn.run()
+
+        # Assert
+        assert finished_file_exists(test_db.scenarios.output_path / scn.attrs.name)
 
 
 @pytest.mark.parametrize(
