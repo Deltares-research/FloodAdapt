@@ -831,7 +831,7 @@ class SfincsAdapter(IHazardAdapter):
             with SfincsAdapter(model_root=sim_paths[0]) as dummymodel:
                 dem = dummymodel._model.data_catalog.get_rasterdataset(demfile)
                 zsmax = zs_rp_single.to_array().squeeze().transpose()
-                floodmap_fn = result_path / f"FloodMap_{scenario.attrs.name}.tif"
+                floodmap_fn = fn_rp.with_suffix(".tif")
 
                 # convert dem from dem units to floodmap units
                 dem_conversion = us.UnitfulLength(
@@ -1532,6 +1532,6 @@ class SfincsAdapter(IHazardAdapter):
             filename=model_root.resolve() / "sfincs_model.log",
             mode="w",
         )
-        file_handler.setLevel(logging.DEBUG)
+        sfincs_logger.setLevel(logging.DEBUG)
         sfincs_logger.addHandler(file_handler)
         return sfincs_logger
