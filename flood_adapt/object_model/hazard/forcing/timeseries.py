@@ -230,28 +230,32 @@ class CSVTimeseries(ITimeseries):
         self,
         time_frame: TimeModel,
     ) -> pd.DataFrame:
-        return super()._to_dataframe(
-            time_frame=time_frame,
-            ts_start_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
-            ts_end_time=us.UnitfulTime(
-                value=(time_frame.end_time - time_frame.start_time).total_seconds(),
-                units=us.UnitTypesTime.seconds,
-            ),
+        file_data = read_csv(self.attrs.path)
+
+        # filter by time frame
+        df = file_data.loc[time_frame.start_time : time_frame.end_time]
+        if df.empty:
+            raise ValueError(
+                f"""No data in csv file for the selected time frame.\n\nRequested time frame:\t{time_frame.start_time} to {time_frame.end_time}\nFile time frame:\t\t{file_data.index.min()} to {file_data.index.max()}\nFilepath:\t\t{self.attrs.path}"""
+            )
+
+        # interpolate and fill missing values
+        time_range = pd.date_range(
+            start=df.index.min(), end=df.index.max(), freq=time_frame.time_step
         )
+        interpolated_df = (
+            df.reindex(time_range, method="nearest", limit=1)
+            .interpolate(method="linear")
+            .fillna(0)
+        )
+
+        return interpolated_df
 
     def calculate_data(
         self,
         time_step: timedelta = TimeModel().time_step,
     ) -> np.ndarray:
-        """Interpolate the timeseries data using the timestep provided."""
-        ts = read_csv(self.attrs.path)
-
-        time_range = pd.date_range(
-            start=ts.index.min(), end=ts.index.max(), freq=time_step
-        )
-        interpolated_df = ts.reindex(time_range).interpolate(method="linear")
-
-        return interpolated_df.to_numpy()
+        return read_csv(self.attrs.path).to_numpy()
 
 
 def _extract_unit_class(data: dict[str, Any]) -> Type[us.ValueUnitPair]:

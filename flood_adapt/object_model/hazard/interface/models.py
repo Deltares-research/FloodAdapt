@@ -53,7 +53,11 @@ class TimeModel(BaseModel):
             return self
         num_intervals = 1000
         time_span = (self.end_time - self.start_time).total_seconds()
-        self.time_step = timedelta(seconds=time_span / num_intervals)
+
+        # Round the time step to the second for simplicity
+        self.time_step = timedelta(
+            seconds=int(timedelta(seconds=time_span / num_intervals).total_seconds())
+        )
         return self
 
     @field_serializer("time_step")
