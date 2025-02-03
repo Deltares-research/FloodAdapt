@@ -454,28 +454,12 @@ class FiatAdapter(IImpactAdapter):
             config_path = scenario.database.static_path.joinpath(
                 "templates", "infometrics", "metrics_additional_risk_configs.toml"
             )
+            
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
-            for column in metrics_exposure:
-                if FiatColumns.inundation_depth in column:
-                    new_column = column.split(FiatColumns.inundation_depth + "_")[-1]
-                    new_column = str(self.fiat_output_mapping[FiatColumns.inundation_depth] + new_column)
-                    metrics_exposure = metrics_exposure.rename(columns = {column: new_column})                    
-                elif FiatColumns.damage_default in column:
-                    if FiatColumns.total_damage in column:
-                        damage_rp = column.split(FiatColumns.total_damage + "_")[-1]
-                        rp = f"({damage_rp.split('.0y')[0]}Y)"
-                        new_column = str(self.fiat_output_mapping[FiatColumns.total_damage] + " " + rp)
-                    else:
-                        damage_rp = column.split(FiatColumns.damage_default + "_")[-1]
-                        damage = damage_rp.split("_")[0].capitalize()
-                        rp =  f"({damage_rp.split('_')[1].split('.0y')[0]}Y)"
-                        new_column = str(self.fiat_output_mapping[FiatColumns.damage_default] + damage + " " + rp)
-                    metrics_exposure= metrics_exposure.rename(columns = {column: new_column})
                 
-            self.add_exceedance_probability(
-                metrics_exposure = metrics_exposure,
-                column=self.fiat_output_mapping["inundation_depth"],
+            metrics_exposure = self.add_exceedance_probability(
+                column=FiatColumns.inundation_depth,
                 threshold=config["threshold"],
                 period=config["period"],
             )
@@ -568,6 +552,28 @@ class FiatAdapter(IImpactAdapter):
         if not self.config.save_simulation:
             self.delete_model()
 
+    def map_risk_metrics(self, metrics_exposure: pd.DataFrame):
+        for column in metrics_exposure:
+                if FiatColumns.inundation_depth in column:
+                    inun_rp = column.split(FiatColumns.inundation_depth + "_")[-1]
+                    rp = f"({inun_rp.split('.0y')[0]}Y)"
+                    new_column = str(self.fiat_output_mapping[FiatColumns.inundation_depth] + " " + rp)
+                    metrics_exposure = metrics_exposure.rename(columns = {column: new_column})                    
+                elif FiatColumns.damage_default in column:
+                    if FiatColumns.total_damage in column:
+                        damage_rp = column.split(FiatColumns.total_damage + "_")[-1]
+                        rp = f"({damage_rp.split('.0y')[0]}Y)"
+                        new_column = str(self.fiat_output_mapping[FiatColumns.total_damage] + " " + rp)
+                    else:
+                        damage_rp = column.split(FiatColumns.damage_default + "_")[-1]
+                        damage = damage_rp.split("_")[0].capitalize()
+                        rp =  f"({damage_rp.split('_')[1].split('.0y')[0]}Y)"
+                        new_column = str(self.fiat_output_mapping[FiatColumns.damage_default] + damage + " " + rp)
+                    metrics_exposure= metrics_exposure.rename(columns = {column: new_column})
+                else:
+                    metrics_exposure = metrics_exposure
+        
+        return metrics_exposure
     def add_measure(self, measure: IMeasure):
         """
         Add and apply a specific impact measure to the properties of the FIAT model.
@@ -1131,14 +1137,12 @@ class FiatAdapter(IImpactAdapter):
     # POST-PROCESSING METHODS
 
     def add_exceedance_probability(
-        self, metrics_exposure: pd.DataFrame, column: str, threshold: float, period: int, 
+        self, column: str, threshold: float, period: int, 
     ) -> pd.DataFrame:
         """Calculate exceedance probabilities and append them to the results table.
 
         Parameters
         ----------
-        metric_exposure : pd.DataFrame
-            A DataFrame with the mapped exposure columns for metrics calculation.
         column : str
             The name of the column to calculate exceedance probabilities for.
         threshold : float
@@ -1153,10 +1157,12 @@ class FiatAdapter(IImpactAdapter):
         """
         self.logger.info("Calculating exceedance probabilities")
         fiat_results_df = ExceedanceProbabilityCalculator(column).append_probability(
-            metric_exposure, threshold, period, self.fiat_output_mapping["inundation_depth"]
+            self.outputs["table"], threshold, period
         )
-        self.outputs["table"] = fiat_results_df
-        return self.outputs["table"]
+        fiat_results_df = fiat_results_df.rename(columns = self.fiat_output_mapping)
+        fiat_results_df = self.map_risk_metrics(fiat_results_df)
+
+        return fiat_results_df
 
     def create_infometrics(
         self, metric_config_paths: list[os.PathLike], metrics_output_path: os.PathLike, metrics_exposure: pd.DataFrame
