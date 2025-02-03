@@ -89,9 +89,7 @@ class TestFiatAdapter:
         )
         assert (
             pytest.approx(
-                exposure_scenario.loc[
-                    inds_new_area, "max_damage_structure"
-                ].sum()
+                exposure_scenario.loc[inds_new_area, "max_damage_structure"].sum()
             )
             == (
                 test_scenario.impacts.socio_economic_change.attrs.economic_growth / 100
@@ -147,10 +145,7 @@ class TestFiatAdapter:
         # Check if elevation took place correctly at each object
         for i, row in exposures.iterrows():
             # If the initial elevation is smaller than the required one it should have been elevated to than one
-            if (
-                row["ground_elevtn"] + row["ground_flht_1"]
-                < row["bfe"] + elevate_val
-            ):
+            if row["ground_elevtn"] + row["ground_flht_1"] < row["bfe"] + elevate_val:
                 assert (
                     row["ground_elevtn"] + row["ground_flht_2"]
                     == row["bfe"] + elevate_val
