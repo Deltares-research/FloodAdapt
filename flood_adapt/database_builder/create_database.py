@@ -15,21 +15,55 @@ import tomli
 import tomli_w
 import xarray as xr
 from hydromt_fiat.data_apis.open_street_maps import get_buildings_from_osm
-from hydromt_fiat.fiat import FiatModel
-from hydromt_sfincs import SfincsModel
+from hydromt_fiat.fiat import FiatModel as HydroMtFiatModel
+from hydromt_sfincs import SfincsModel as HydroMtSfincsModel
 from pydantic import BaseModel, Field
 from shapely.geometry import Polygon
 
 from flood_adapt import FloodAdaptLogging, Settings
+from flood_adapt.adapter.fiat_adapter import FiatColumns
 from flood_adapt.api.events import get_event_mode
 from flood_adapt.api.projections import create_projection, save_projection
 from flood_adapt.api.static import read_database
 from flood_adapt.api.strategies import create_strategy, save_strategy
-from flood_adapt.object_model.interface.config.sfincs import (
-    ObsPointModel,
-    SlrModel,
+from flood_adapt.object_model.hazard.interface.tide_gauge import (
+    TideGaugeModel,
+    TideGaugeSource,
 )
-from flood_adapt.object_model.interface.config.site import Site
+from flood_adapt.object_model.interface.config.fiat import (
+    AggregationModel,
+    BenefitsModel,
+    BFEModel,
+    EquityModel,
+    FiatConfigModel,
+    FiatModel,
+    RiskModel,
+    SVIModel,
+)
+from flood_adapt.object_model.interface.config.gui import (
+    GuiModel,
+    GuiUnitModel,
+    MapboxLayersModel,
+    VisualizationLayersModel,
+)
+from flood_adapt.object_model.interface.config.sfincs import (
+    CycloneTrackDatabaseModel,
+    DemModel,
+    FloodFrequencyModel,
+    ObsPointModel,
+    RiverModel,
+    SfincsConfigModel,
+    SfincsModel,
+    SlrModel,
+    SlrScenariosModel,
+    VerticalReferenceModel,
+    WaterLevelReferenceModel,
+)
+from flood_adapt.object_model.interface.config.site import (
+    Site,
+    SiteModel,
+    StandardObjectModel,
+)
 from flood_adapt.object_model.io.unit_system import (
     UnitfulDischarge,
     UnitfulLength,
@@ -100,7 +134,7 @@ class Basins(str, Enum):
     NI = "NI"
 
 
-class GuiModel(BaseModel):
+class GuiConfigModel(BaseModel):
     """
     Represents a GUI model for for FloodAdapt.
 
@@ -118,7 +152,7 @@ class GuiModel(BaseModel):
     max_benefits: float
 
 
-class TideGaugeModel(BaseModel):
+class TideGaugeConfigModel(BaseModel):
     """
     Represents a tide gauge model.
 
@@ -132,7 +166,7 @@ class TideGaugeModel(BaseModel):
         datum_name (Optional[str]): The name of the datum (default: None).
     """
 
-    source: str
+    source: TideGaugeSource
     file: Optional[str] = None
     max_distance: Optional[UnitfulLength] = None
     # TODO add option to add MSL and Datum?
@@ -191,7 +225,7 @@ class ConfigModel(BaseModel):
         The building footprints model.
     slr : Optional[SlrModelDef], default SlrModelDef()
         The sea level rise model.
-    tide_gauge : Optional[TideGaugeModel], default None
+    tide_gauge : Optional[TideGaugeConfigModel], default None
         The tide gauge model.
     bfe : Optional[SpatialJoinModel], default None
         The BFE model.
@@ -218,12 +252,14 @@ class ConfigModel(BaseModel):
     sfincs_offshore: Optional[str] = None
     fiat: str
     unit_system: UnitSystems
-    gui: GuiModel
+    gui: GuiConfigModel
     building_footprints: Optional[SpatialJoinModel | FootprintsOptions] = (
         FootprintsOptions.OSM
     )
+    fiat_buildings_name: Optional[str] = "buildings"
+    fiat_roads_name: Optional[str] = "roads"
     slr: Optional[SlrModelDef] = SlrModelDef()
-    tide_gauge: Optional[TideGaugeModel] = None
+    tide_gauge: Optional[TideGaugeConfigModel] = None
     bfe: Optional[SpatialJoinModel] = None
     svi: Optional[SviModel] = None
     road_width: Optional[float] = 5
@@ -298,7 +334,7 @@ def spatial_join(
     if filter:
         layer_inds = objects_joined["index_right"].dropna().unique()
         layer = layer.iloc[np.sort(layer_inds)].reset_index(drop=True)
-    objects_joined = objects_joined[["Object ID", field_name]]
+    objects_joined = objects_joined[[FiatColumns.object_id, field_name]]
     # rename field if provided
     if rename:
         objects_joined = objects_joined.rename(columns={field_name: rename})
@@ -375,7 +411,7 @@ class DatabaseBuilder:
             "description": self.config.description,
         }
         self.static_path = self.root.joinpath("static")
-        self.site_path = self.static_path.joinpath("site")
+        self.site_path = self.static_path.joinpath("config")
 
     def build(self):
         # Open logger file
@@ -403,7 +439,7 @@ class DatabaseBuilder:
             # TODO add scs rainfall curves
             self.add_general_attrs()
             self.add_infometrics()
-            self.save_site_config()
+            self.save_config()
             self.create_standard_objects()
             self.logger.info("FloodAdapt database creation finished!")
 
@@ -463,8 +499,8 @@ class DatabaseBuilder:
         save_projection(projection)
         # If provided use probabilistic set
         # TODO better check if configuration of event set is correct?
-        if len(self.site_attrs["standard_objects"]["events"]) > 0:
-            event_set = self.site_attrs["standard_objects"]["events"][0]
+        if len(self.site_attrs["standard_objects"].events) > 0:
+            event_set = self.site_attrs["standard_objects"].events[0]
             if event_set:
                 mode = get_event_mode(event_set)
                 if mode != "risk":
@@ -507,7 +543,9 @@ class DatabaseBuilder:
         )
         # Make sure in case of multiple values that the first is kept
         buildings_joined = (
-            buildings_joined.groupby("Object ID").first().sort_values(by=["Object ID"])
+            buildings_joined.groupby(FiatColumns.object_id)
+            .first()
+            .sort_values(by=[FiatColumns.object_id])
         )
         # Create folder
         bf_folder = Path(self.fiat_model.root).joinpath(
@@ -518,17 +556,19 @@ class DatabaseBuilder:
         geo_path = bf_folder.joinpath("building_footprints.gpkg")
         building_footprints.to_file(geo_path)
         # Save to exposure csv
-        exposure_csv = exposure_csv.merge(buildings_joined, on="Object ID", how="left")
+        exposure_csv = exposure_csv.merge(
+            buildings_joined, on=FiatColumns.object_id, how="left"
+        )
         exposure_csv.to_csv(self.exposure_csv_path, index=False)
         # Set model building footprints
         self.fiat_model.building_footprint = building_footprints
         self.fiat_model.exposure.exposure_db = exposure_csv
         # Save site attributes
-        rel_path = Path(geo_path.relative_to(self.static_path)).as_posix()
-        self.site_attrs["fiat"]["building_footprints"] = str(rel_path)
+        buildings_path = Path(geo_path.relative_to(self.static_path)).as_posix()
         self.logger.info(
-            f"Building footprints saved at {self.static_path.joinpath(rel_path).resolve().as_posix()}"
+            f"Building footprints saved at {self.static_path.joinpath(buildings_path).resolve().as_posix()}"
         )
+        return buildings_path
 
     def read_fiat(self):
         """
@@ -554,11 +594,11 @@ class DatabaseBuilder:
         shutil.copytree(path, fiat_path)
 
         # Then read the model with hydromt-FIAT
-        self.fiat_model = FiatModel(root=fiat_path, mode="w+")
+        self.fiat_model = HydroMtFiatModel(root=fiat_path, mode="w+")
         self.fiat_model.read()
 
         # Read in geometries of buildings
-        ind = self.fiat_model.exposure.geom_names.index("buildings")
+        ind = self.fiat_model.exposure.geom_names.index(self.config.fiat_buildings_name)
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
         self.exposure_csv_path = fiat_path.joinpath("exposure", "exposure.csv")
 
@@ -567,27 +607,14 @@ class DatabaseBuilder:
         self.site_attrs["lat"] = center.y
         self.site_attrs["lon"] = center.x
 
-        # Read FIAT attributes for site config
-        self.site_attrs["fiat"] = {}
-        self.site_attrs["fiat"]["exposure_crs"] = self.fiat_model.exposure.crs
-        self.site_attrs["fiat"]["floodmap_type"] = "water_level"  # TODO for now fixed
-        self.site_attrs["fiat"]["non_building_names"] = ["road"]  # TODO for now fixed
-        self.site_attrs["fiat"]["damage_unit"] = self.fiat_model.exposure.damage_unit
-        fiat_units = self.fiat_model.config["vulnerability"]["unit"]
-        if fiat_units == "ft":
-            fiat_units = "feet"
-        self.site_attrs["sfincs"]["floodmap_units"] = fiat_units
-        self.site_attrs["sfincs"]["save_simulation"] = "False"
-
         # TODO make footprints an optional argument and use points as the minimum default spatial description
         # TODO restructure footprint options with less if statements
 
         # First check if the config has a spatial join provided for building footprints
         footprints_found = False
         if not isinstance(self.config.building_footprints, SpatialJoinModel):
-            check_col = (
-                "BF_FID" in self.fiat_model.exposure.exposure_db.columns
-            )  # check if it is spatially joined already
+            # First check if it is spatially joined already
+            check_col = "BF_FID" in self.fiat_model.exposure.exposure_db.columns
             # Check if the file exists
             add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
             if add_attrs:
@@ -604,15 +631,15 @@ class DatabaseBuilder:
                 )
                 raise NotImplementedError
             if check_file and check_col:
-                self.site_attrs["fiat"]["building_footprints"] = str(
-                    Path(footprints_path.relative_to(self.static_path)).as_posix()
-                )
                 self.logger.info(
                     f"Using the building footprints located at {footprints_path}."
                 )
                 footprints_found = True
-            # check if geometries are already footprints
-            build_ind = self.fiat_model.exposure.geom_names.index("buildings")
+
+            # Then check if geometries are already footprints
+            build_ind = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_buildings_name
+            )
             build_geoms = self.fiat_model.exposure.exposure_geoms[build_ind]
             if isinstance(build_geoms.geometry.iloc[0], Polygon):
                 path0 = Path(self.fiat_model.root).joinpath(
@@ -634,17 +661,19 @@ class DatabaseBuilder:
                 # add column for connection
                 if not footprints_found:
                     exposure = self.fiat_model.exposure.exposure_db.set_index(
-                        "Object ID"
+                        FiatColumns.object_id
                     )
-                    build_geoms["BF_FID"] = build_geoms["Object ID"]
-                    build_geoms = build_geoms.set_index("Object ID")
-                    build_geoms["Extraction Method"] = "centroid"
+                    build_geoms["BF_FID"] = build_geoms[FiatColumns.object_id]
+                    build_geoms = build_geoms.set_index(FiatColumns.object_id)
+                    build_geoms[FiatColumns.extraction_method] = "centroid"
                     exposure["BF_FID"] = build_geoms["BF_FID"]
-                    exposure["Extraction Method"] = build_geoms["Extraction Method"]
+                    exposure[FiatColumns.extraction_method] = build_geoms[
+                        FiatColumns.extraction_method
+                    ]
                     exposure.reset_index().to_csv(self.exposure_csv_path, index=False)
                     footprints_found = True
 
-            # Use other method to get Footprint
+            # Else use other method to get Footprint
             if not footprints_found:
                 if self.config.building_footprints == "OSM":
                     self.logger.info(
@@ -660,7 +689,9 @@ class DatabaseBuilder:
                     footprints = get_buildings_from_osm(polygon)
                     footprints["BF_FID"] = np.arange(1, len(footprints) + 1)
                     footprints = footprints[["BF_FID", "geometry"]]
-                    self._join_building_footprints(footprints, "BF_FID")
+                    footprints_path = self._join_building_footprints(
+                        footprints, "BF_FID"
+                    )
                     footprints_found = True
             if not footprints_found:
                 self.logger.error(
@@ -676,13 +707,14 @@ class DatabaseBuilder:
             )
             # Spatially join buildings and map
             # TODO use hydromt method instead
-            self._join_building_footprints(
+            footprints_path = self._join_building_footprints(
                 self.config.building_footprints.file,
                 self.config.building_footprints.field_name,
             )
 
-        # Clip hazard and reset buildings
-        self._clip_hazard_extend()
+        # Clip hazard and reset buildings # TODO use hydromt-FIAT instead
+        if not self.fiat_model.region.empty:
+            self._clip_hazard_extend()
         self.buildings = self.fiat_model.exposure.exposure_geoms[ind].copy()
 
         # Add base flood elevation information
@@ -698,9 +730,9 @@ class DatabaseBuilder:
             )
             # Make sure in case of multiple values that the max is kept
             buildings_joined = (
-                buildings_joined.groupby("Object ID")
+                buildings_joined.groupby(FiatColumns.object_id)
                 .max(self.config.bfe.field_name)
-                .sort_values(by=["Object ID"])
+                .sort_values(by=[FiatColumns.object_id])
                 .reset_index()
             )
             # Create folder
@@ -712,22 +744,20 @@ class DatabaseBuilder:
             # Save csv with building values
             csv_path = bfe_folder.joinpath("bfe.csv")
             buildings_joined.to_csv(csv_path, index=False)
-            # Save site attributes
-            self.site_attrs["fiat"]["bfe"] = {}
-            self.site_attrs["fiat"]["bfe"]["geom"] = str(
-                Path(geo_path.relative_to(self.static_path)).as_posix()
+            # Save attributes
+            bfe_config = BFEModel(
+                geom=str(Path(geo_path.relative_to(self.static_path)).as_posix()),
+                table=str(Path(csv_path.relative_to(self.static_path)).as_posix()),
+                field_name=self.config.bfe.field_name,
             )
-            self.site_attrs["fiat"]["bfe"]["table"] = str(
-                Path(csv_path.relative_to(self.static_path)).as_posix()
-            )
-            self.site_attrs["fiat"]["bfe"]["field_name"] = self.config.bfe.field_name
         else:
             self.logger.warning(
                 "No base flood elevation provided. Elevating building relative to base flood elevation will not be possible in FloodAdapt."
             )
+            bfe_config = None
 
         # Read aggregation areas
-        self.site_attrs["fiat"]["aggregation"] = []
+        aggregation_config = []
 
         # If there are no aggregation areas make a schematic one from the region file
         # TODO make aggregation areas not mandatory
@@ -744,23 +774,22 @@ class DatabaseBuilder:
                     "geoms", "region.geojson"
                 )
                 region.to_file(aggregation_path)
-                aggr = {}
-                aggr["name"] = "region"
-                aggr["file"] = str(
-                    aggregation_path.relative_to(self.static_path).as_posix()
+                aggr = AggregationModel(
+                    name="region",
+                    file=str(aggregation_path.relative_to(self.static_path).as_posix()),
+                    field_name="aggr_id",
                 )
-                aggr["field_name"] = "aggr_id"
-                self.site_attrs["fiat"]["aggregation"].append(aggr)
+                aggregation_config.append(aggr)
 
                 # Add column in FIAT
                 buildings_joined, _ = spatial_join(
                     self.buildings,
                     region,
                     "id",
-                    rename="Aggregation Label: region",
+                    rename=f"{FiatColumns.aggregation_label}region",
                 )
                 exposure_csv = exposure_csv.merge(
-                    buildings_joined, on="Object ID", how="left"
+                    buildings_joined, on=FiatColumns.object_id, how="left"
                 )
                 exposure_csv.to_csv(self.exposure_csv_path, index=False)
                 self.logger.warning(
@@ -771,27 +800,39 @@ class DatabaseBuilder:
                     "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
                 )
         else:
-            for aggr in self.fiat_model.spatial_joins["aggregation_areas"]:
-                # Make sure paths are correct
-                aggr["file"] = str(
-                    self.static_path.joinpath("templates", "fiat", aggr["file"])
-                    .relative_to(self.static_path)
-                    .as_posix()
-                )
-                if aggr["equity"] is not None:
-                    aggr["equity"]["census_data"] = str(
-                        self.static_path.joinpath(
-                            "templates", "fiat", aggr["equity"]["census_data"]
-                        )
+            for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
+                if aggr_0["equity"] is not None:
+                    equity_config = EquityModel(
+                        census_data=str(
+                            self.static_path.joinpath(
+                                "templates", "fiat", aggr_0["equity"]["census_data"]
+                            )
+                            .relative_to(self.static_path)
+                            .as_posix()
+                        ),
+                        percapitaincome_label=aggr_0["equity"]["percapitaincome_label"],
+                        totalpopulation_label=aggr_0["equity"]["totalpopulation_label"],
+                    )
+                else:
+                    equity_config = None
+
+                aggr = AggregationModel(
+                    name=aggr_0["name"],
+                    file=str(
+                        self.static_path.joinpath("templates", "fiat", aggr_0["file"])
                         .relative_to(self.static_path)
                         .as_posix()
-                    )
-                self.site_attrs["fiat"]["aggregation"].append(aggr)
+                    ),
+                    field_name=aggr_0["field_name"],
+                    equity=equity_config,
+                )
+                aggregation_config.append(aggr)
             self.logger.info(
                 f"The aggregation types {[aggr['name'] for aggr in self.fiat_model.spatial_joins['aggregation_areas']]} from the FIAT model are going to be used."
             )
 
         # Read SVI
+        svi_config = None
         if self.config.svi:
             self.config.svi.file = self._check_path(self.config.svi.file)
             exposure_csv = pd.read_csv(self.exposure_csv_path)
@@ -813,53 +854,53 @@ class DatabaseBuilder:
                     f"'SVI' column in the FIAT exposure csv will be filled by {Path(self.config.svi.file).as_posix()}."
                 )
             exposure_csv = exposure_csv.merge(
-                buildings_joined, on="Object ID", how="left"
+                buildings_joined, on=FiatColumns.object_id, how="left"
             )
             exposure_csv.to_csv(self.exposure_csv_path, index=False)
             # Create folder
             svi_folder = self.root.joinpath("static", "templates", "fiat", "svi")
             svi_folder.mkdir()
             # Save the spatial file for future use
-            geo_path = svi_folder.joinpath("svi.gpkg")
-            svi.to_file(geo_path)
-            # Save site attributes
-            self.site_attrs["fiat"]["svi"] = {}
-            self.site_attrs["fiat"]["svi"]["geom"] = str(
-                Path(geo_path.relative_to(self.static_path)).as_posix()
-            )
-            self.site_attrs["fiat"]["svi"]["field_name"] = "SVI"
+            svi_path = svi_folder.joinpath("svi.gpkg")
+            svi.to_file(svi_path)
             self.logger.info(
                 f"An SVI map can be shown in FloodAdapt GUI using '{self.config.svi.field_name}' column from {Path(self.config.svi.file).as_posix()}"
             )
-        else:
-            if "SVI" in self.fiat_model.exposure.exposure_db.columns:
-                self.logger.info("'SVI' column present in the FIAT exposure csv.")
-                add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
-                if "SVI" in [attr["name"] for attr in add_attrs]:
-                    ind = [attr["name"] for attr in add_attrs].index("SVI")
-                    svi = add_attrs[ind]
-                    svi_path = fiat_path.joinpath(svi["file"])
-                    self.site_attrs["fiat"]["svi"] = {}
-                    self.site_attrs["fiat"]["svi"]["geom"] = str(
-                        Path(svi_path.relative_to(self.static_path)).as_posix()
-                    )
-                    self.site_attrs["fiat"]["svi"]["field_name"] = svi["field_name"]
-                    self.logger.info(
-                        f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
-                    )
-                else:
-                    self.logger.warning("No SVI map found!")
-            else:
-                self.logger.warning(
-                    "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
+            # Save site attributes
+            svi_config = SVIModel(
+                geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
+                field_name="SVI",
+            )
+        elif "SVI" in self.fiat_model.exposure.exposure_db.columns:
+            self.logger.info("'SVI' column present in the FIAT exposure csv.")
+            add_attrs = self.fiat_model.spatial_joins["additional_attributes"]
+            if "SVI" in [attr["name"] for attr in add_attrs]:
+                ind = [attr["name"] for attr in add_attrs].index("SVI")
+                svi = add_attrs[ind]
+                svi_path = fiat_path.joinpath(svi["file"])
+                self.logger.info(
+                    f"An SVI map can be shown in FloodAdapt GUI using '{svi['field_name']}' column from {svi['file']}"
                 )
+                # Save site attributes
+                svi_config = SVIModel(
+                    geom=str(Path(svi_path.relative_to(self.static_path)).as_posix()),
+                    field_name=svi["field_name"],
+                )
+            else:
+                self.logger.warning("No SVI map found!")
+        else:
+            self.logger.warning(
+                "'SVI' column not present in the FIAT exposure csv. Vulnerability type infometrics cannot be produced."
+            )
 
         # Make sure that FIAT roads are polygons
         self.roads = False
-        if "roads" in self.fiat_model.exposure.geom_names:
+        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
             self.roads = True
             exposure_csv = pd.read_csv(self.exposure_csv_path)
-            roads_ind = self.fiat_model.exposure.geom_names.index("roads")
+            roads_ind = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_roads_name
+            )
             roads = self.fiat_model.exposure.exposure_geoms[roads_ind]
             roads_path = Path(self.fiat_model.root).joinpath(
                 self.fiat_model.config["exposure"]["geom"]["file2"]
@@ -889,11 +930,30 @@ class DatabaseBuilder:
                 "Road objects are not available in the FIAT model and thus would not be available in FloodAdapt."
             )
             # TODO check how this naming of output geoms should become more explicit!
-        if self.roads:
-            self.site_attrs["fiat"]["roads_file_name"] = "spatial2.gpkg"
-        self.site_attrs["fiat"]["new_development_file_name"] = "spatial3.gpkg"
-        self.site_attrs["fiat"]["save_simulation"] = (
-            "False"  # default is not to save simulations
+
+        if self.fiat_model.exposure.damage_unit is not None:
+            dmg_unit = self.fiat_model.exposure.damage_unit
+        else:
+            dmg_unit = "$"
+            self.logger.warning(
+                "Delft-FIAT model was missing damage units so '$' was assumed."
+            )
+
+        # Store FIAT configuration
+        self.site_attrs["fiat"] = {}
+        self.site_attrs["fiat"]["config"] = FiatConfigModel(
+            exposure_crs=self.fiat_model.exposure.crs,
+            bfe=bfe_config,
+            aggregation=aggregation_config,
+            floodmap_type="water_level",  # TODO allow for water depth
+            non_building_names=["road"],  # TODO check names from exposure
+            damage_unit=dmg_unit,
+            building_footprints=str(footprints_path),
+            roads_file_name="spatial2.gpkg" if self.roads else None,
+            new_development_file_name="spatial3.gpkg",  # TODO allow for different naming
+            save_simulation=False,  # default is not to save simulations
+            svi=svi_config,
+            infographics=True if self.config.infographics else False,
         )
 
     def read_sfincs(self):
@@ -913,20 +973,24 @@ class DatabaseBuilder:
         shutil.copytree(path, sfincs_path)
 
         # Then read the model with hydromt-SFINCS
-        self.sfincs = SfincsModel(root=sfincs_path, mode="r+")
+        self.sfincs = HydroMtSfincsModel(root=sfincs_path, mode="r+")
         self.sfincs.read()
         self.logger.info(
             f"Reading overland SFINCS model from {sfincs_path.as_posix()}."
         )
 
+        # Store SFINCS config
         self.site_attrs["sfincs"] = {}
-        self.site_attrs["sfincs"]["csname"] = self.sfincs.crs.name
-        self.site_attrs["sfincs"]["cstype"] = self.sfincs.crs.type_name.split(" ")[
-            0
-        ].lower()
-        if self.config.sfincs_offshore:
-            self.site_attrs["sfincs"]["offshore_model"] = "offshore"
-        self.site_attrs["sfincs"]["overland_model"] = "overland"
+        self.site_attrs["sfincs"]["config"] = SfincsConfigModel(
+            csname=self.sfincs.crs.name,
+            cstype=self.sfincs.crs.type_name.split(" ")[0].lower(),
+            offshore_model="offshore" if self.config.sfincs_offshore else None,
+            overland_model="overland",
+            floodmap_units="feet"
+            if self.config.unit_system == UnitSystems.imperial
+            else "meters",
+            save_simulation=False,  # for now this defaults to False
+        )
 
     def read_offshore_sfincs(self):
         """
@@ -981,18 +1045,14 @@ class DatabaseBuilder:
         Otherwise, the rivers specified in `self.config.river` are added.
         """
         if "dis" not in self.sfincs.forcing:
+            self.site_attrs["sfincs"]["river"] = None
             self.logger.warning("No rivers found in the SFINCS model.")
             return
         river_locs = self.sfincs.forcing["dis"].vector.to_gdf()
         river_locs.crs = self.sfincs.crs
-        self.site_attrs["river"] = []
+        rivers = []
 
         for i, row in river_locs.iterrows():
-            river = {}
-            river["name"] = f"river_{i}"
-            river["description"] = f"river_{i}"
-            river["x_coordinate"] = row.geometry.x
-            river["y_coordinate"] = row.geometry.y
             mean_dis = UnitfulDischarge(
                 value=self.sfincs.forcing["dis"]
                 .sel(index=i)
@@ -1003,11 +1063,19 @@ class DatabaseBuilder:
             if self.config.unit_system == "imperial":
                 mean_dis.value = mean_dis.convert("cfs")
                 mean_dis.units = "cfs"
-            river["mean_discharge"] = mean_dis
-            self.site_attrs["river"].append(river)
+            river = RiverModel(
+                name=f"river_{i}",
+                description=f"river_{i}",
+                x_coordinate=row.geometry.x,
+                y_coordinate=row.geometry.y,
+                mean_discharge=mean_dis,
+            )
+
+            rivers.append(river)
         self.logger.warning(
             f"{len(river_locs)} river(s) were identified from the SFINCS model and will be available in FloodAdapt for discharge input."
         )
+        self.site_attrs["sfincs"]["river"] = rivers
         # TODO add rivers in the SFINCS model through the config?
 
     def add_dem(self):
@@ -1028,6 +1096,9 @@ class DatabaseBuilder:
             fa_path2 = self.root.joinpath("static", "dem", fn)
         else:
             self.logger.error(
+                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
+            )
+            raise ValueError(
                 f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
             )
 
@@ -1056,10 +1127,9 @@ class DatabaseBuilder:
         shutil.copy(subgrid_sfincs, fa_path2)
 
         # add site configs
-        self.site_attrs["dem"] = {}
-        self.site_attrs["dem"]["filename"] = fn
-        self.site_attrs["dem"]["units"] = (
-            "meters"  # This is always in meters from SFINCS
+        self.site_attrs["sfincs"]["dem"] = DemModel(
+            filename=fn,
+            units="meters",  # This is always in meters from SFINCS
         )
 
     def update_fiat_elevation(self):
@@ -1069,7 +1139,9 @@ class DatabaseBuilder:
         This method reads the DEM file and the exposure CSV file, and updates the ground elevations
         of the FIAT objects (roads and buildings) based on the nearest elevation values from the DEM.
         """
-        dem_file = self.static_path.joinpath("dem", self.site_attrs["dem"]["filename"])
+        dem_file = self.static_path.joinpath(
+            "dem", self.site_attrs["sfincs"]["dem"].filename
+        )
         # TODO resolve issue with double geometries in hydromt-FIAT and use update_ground_elevation method instead
         # self.fiat_model.update_ground_elevation(dem_file)
         self.logger.info(
@@ -1078,7 +1150,7 @@ class DatabaseBuilder:
         SFINCS_units = UnitfulLength(
             value=1.0, units="meters"
         )  # SFINCS is always in meters
-        FIAT_units = self.site_attrs["sfincs"]["floodmap_units"]
+        FIAT_units = self.site_attrs["sfincs"]["config"].floodmap_units
         conversion_factor = SFINCS_units.convert(FIAT_units)
 
         if conversion_factor != 1:
@@ -1091,8 +1163,13 @@ class DatabaseBuilder:
         )
         exposure = pd.read_csv(exposure_csv_path)
         dem = rxr.open_rasterio(dem_file)
-        if "roads" in self.fiat_model.exposure.geom_names:
-            roads_path = Path(self.fiat_model.root) / "exposure" / "roads.gpkg"
+        # TODO this should be in hydromt FIAT
+        if self.config.fiat_roads_name in self.fiat_model.exposure.geom_names:
+            roads_path = (
+                Path(self.fiat_model.root)
+                / "exposure"
+                / f"{self.config.fiat_roads_name}.gpkg"
+            )
             roads = gpd.read_file(roads_path).to_crs(dem.spatial_ref.crs_wkt)
             roads["geometry"] = roads.geometry.centroid  # get centroids
 
@@ -1104,17 +1181,27 @@ class DatabaseBuilder:
             )
 
             exposure.loc[
-                exposure["Primary Object Type"] == "road", "Ground Floor Height"
+                exposure[FiatColumns.primary_object_type] == "road",
+                FiatColumns.ground_floor_height,
             ] = 0
             exposure = exposure.merge(
-                roads[["Object ID", "elev"]], on="Object ID", how="left"
+                roads[[FiatColumns.object_id, "elev"]],
+                on=FiatColumns.object_id,
+                how="left",
             )
             exposure.loc[
-                exposure["Primary Object Type"] == "road", "Ground Elevation"
-            ] = exposure.loc[exposure["Primary Object Type"] == "road", "elev"]
+                exposure[FiatColumns.primary_object_type] == "road",
+                FiatColumns.ground_elevation,
+            ] = exposure.loc[
+                exposure[FiatColumns.primary_object_type] == "road", "elev"
+            ]
             del exposure["elev"]
 
-        buildings_path = Path(self.fiat_model.root) / "exposure" / "buildings.gpkg"
+        buildings_path = (
+            Path(self.fiat_model.root)
+            / "exposure"
+            / f"{self.config.fiat_buildings_name}.gpkg"
+        )
         points = gpd.read_file(buildings_path).to_crs(dem.spatial_ref.crs_wkt)
         x_points = xr.DataArray(points["geometry"].x, dims="points")
         y_points = xr.DataArray(points["geometry"].y, dims="points")
@@ -1123,11 +1210,14 @@ class DatabaseBuilder:
             * conversion_factor
         )
         exposure = exposure.merge(
-            points[["Object ID", "elev"]], on="Object ID", how="left"
+            points[[FiatColumns.object_id, "elev"]],
+            on=FiatColumns.object_id,
+            how="left",
         )
-        exposure.loc[exposure["Primary Object Type"] != "road", "Ground Elevation"] = (
-            exposure.loc[exposure["Primary Object Type"] != "road", "elev"]
-        )
+        exposure.loc[
+            exposure[FiatColumns.primary_object_type] != "road",
+            FiatColumns.ground_elevation,
+        ] = exposure.loc[exposure[FiatColumns.primary_object_type] != "road", "elev"]
         del exposure["elev"]
 
         exposure.to_csv(exposure_csv_path, index=False)
@@ -1141,6 +1231,7 @@ class DatabaseBuilder:
 
         The downloaded database is stored in the 'static/cyclone_track_database' directory.
         """
+        self.site_attrs["sfincs"]["cyclone_track_database"] = None
         if not self.config.cyclones or not self.config.sfincs_offshore:
             self.logger.warning("No cyclones will be available in the database.")
             return
@@ -1148,8 +1239,8 @@ class DatabaseBuilder:
             basin = self.config.cyclone_basin
         else:
             basin = "ALL"
-        name = f"IBTrACS.{basin}.v04r00.nc"
-        url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/netcdf/{name}"
+        name = f"IBTrACS.{basin}.v04r01.nc"
+        url = f"https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/netcdf/{name}"
         self.logger.info(f"Downloading cyclone track database from {url}")
         fn = self.root.joinpath("static", "cyclone_track_database", name)
         fn.parent.mkdir()
@@ -1158,8 +1249,11 @@ class DatabaseBuilder:
         except Exception as e:
             print(e)
             self.logger.error(f"Could not retrieve cyclone track database from {url}")
-        self.site_attrs["cyclone_track_database"] = {}
-        self.site_attrs["cyclone_track_database"]["file"] = name
+
+        # Store config
+        self.site_attrs["sfincs"]["cyclone_track_database"] = CycloneTrackDatabaseModel(
+            file=name
+        )
 
     def add_tide_gauge(self):
         """
@@ -1170,32 +1264,17 @@ class DatabaseBuilder:
         and local datum. The height values are set to 0 by default.
         """
         # Start by defining default values for water levels
-        self.site_attrs["water_level"] = {}
-
-        self.site_attrs["water_level"]["msl"] = {}
-        self.site_attrs["water_level"]["msl"]["name"] = "MSL"
-        self.site_attrs["water_level"]["msl"]["height"] = {}
-        self.site_attrs["water_level"]["msl"]["height"]["value"] = 0.0
-        self.site_attrs["water_level"]["msl"]["height"]["units"] = self.site_attrs[
-            "sfincs"
-        ]["floodmap_units"]
-
-        self.site_attrs["water_level"]["localdatum"] = {}
-        self.site_attrs["water_level"]["localdatum"]["name"] = "MSL"
-        self.site_attrs["water_level"]["localdatum"]["height"] = {}
-        self.site_attrs["water_level"]["localdatum"]["height"]["value"] = 0.0
-        self.site_attrs["water_level"]["localdatum"]["height"]["units"] = (
-            self.site_attrs["sfincs"]["floodmap_units"]
+        # In case no further information is provided a local datum and msl of 0 will be assumed
+        elv_units = self.site_attrs["sfincs"]["config"].floodmap_units
+        water_level_config = WaterLevelReferenceModel(
+            localdatum=VerticalReferenceModel(
+                name="MSL", height=UnitfulLength(value=0.0, units=elv_units)
+            ),
+            msl=VerticalReferenceModel(
+                name="MSL", height=UnitfulLength(value=0.0, units=elv_units)
+            ),
+            # other=[]
         )
-
-        self.site_attrs["water_level"]["reference"] = {}
-        self.site_attrs["water_level"]["reference"]["name"] = "MSL"
-        self.site_attrs["water_level"]["reference"]["height"] = {}
-        self.site_attrs["water_level"]["reference"]["height"]["value"] = 0.0
-        self.site_attrs["water_level"]["reference"]["height"]["units"] = (
-            self.site_attrs["sfincs"]["floodmap_units"]
-        )
-        self.site_attrs["water_level"]["other"] = []
 
         zero_wl_msg = "No water level references were found. It is assumed that MSL is equal to the datum used in the SFINCS overland model. You can provide these values with the tide_gauge.msl and tide_gauge.datum attributes in the site.toml."
 
@@ -1204,47 +1283,44 @@ class DatabaseBuilder:
             self.logger.warning(
                 "Tide gauge information not provided. Historical nearshore gauged events will not be available in FloodAdapt!"
             )
+            self.site_attrs["sfincs"]["tide_gauge"] = None
             self.logger.warning(zero_wl_msg)
         else:
-            if self.config.tide_gauge.source != "file":
+            if self.config.tide_gauge.source != TideGaugeSource.file:
                 if self.config.tide_gauge.ref is not None:
                     ref = self.config.tide_gauge.ref
                 else:
-                    ref = "MLLW"
-                station = self._get_closest_station(ref)
+                    ref = "MLLW"  # If reference is not provided use MLLW
+                station = self._get_closest_station(
+                    ref
+                )  # This always return values in meters currently
                 if station is not None:
                     # Add tide_gauge information in site toml
-                    self.site_attrs["tide_gauge"] = {}
-                    # Mandatory fields
-                    self.site_attrs["tide_gauge"]["source"] = (
-                        self.config.tide_gauge.source
+                    self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                        name=station["name"],
+                        description=f"observations from '{self.config.tide_gauge.source}' api",
+                        source=self.config.tide_gauge.source,
+                        ID=int(station["id"]),
+                        lon=station["lon"],
+                        lat=station["lat"],
+                        units=UnitTypesLength.meters,
                     )
-                    self.site_attrs["tide_gauge"]["ID"] = int(station["id"])
-                    # Extra fields
-                    self.site_attrs["tide_gauge"]["name"] = station["name"]
-                    self.site_attrs["tide_gauge"]["lon"] = station["lon"]
-                    self.site_attrs["tide_gauge"]["lat"] = station["lat"]
-                    self.site_attrs["water_level"]["msl"]["height"]["value"] = station[
-                        "msl"
-                    ]
-                    self.site_attrs["water_level"]["localdatum"]["name"] = station[
-                        "datum_name"
-                    ]
-                    self.site_attrs["water_level"]["localdatum"]["height"]["value"] = (
-                        station["datum"]
-                    )
-                    self.site_attrs["water_level"]["reference"]["name"] = station[
-                        "reference"
-                    ]
+                    water_level_config.msl.height.value = UnitfulLength(
+                        value=station["msl"], units=station["units"]
+                    ).convert(elv_units)
+                    water_level_config.localdatum.name = station["datum_name"]
+                    water_level_config.localdatum.height.value = UnitfulLength(
+                        value=station["datum"], units=station["units"]
+                    ).convert(elv_units)
+
                     for name in ["MLLW", "MHHW"]:
-                        wl_info = {}
-                        wl_info["name"] = name
-                        wl_info["height"] = {}
-                        wl_info["height"]["value"] = station[name.lower()]
-                        wl_info["height"]["units"] = self.site_attrs["sfincs"][
-                            "floodmap_units"
-                        ]
-                        self.site_attrs["water_level"]["other"].append(wl_info)
+                        val = UnitfulLength(
+                            value=station[name.lower()], units=station["units"]
+                        ).convert(elv_units)
+                        wl_info = VerticalReferenceModel(
+                            name=name, height=UnitfulLength(value=val, units=elv_units)
+                        )
+                        water_level_config.other.append(wl_info)
 
                 else:
                     self.logger.warning(zero_wl_msg)
@@ -1252,18 +1328,21 @@ class DatabaseBuilder:
                 self.config.tide_gauge.file = self._check_path(
                     self.config.tide_gauge.file
                 )
-                self.site_attrs["tide_gauge"] = {}
-                self.site_attrs["tide_gauge"]["source"] = "file"
                 file_path = Path(self.static_path).joinpath(
                     "tide_gauges", Path(self.config.tide_gauge.file).name
                 )
                 if not file_path.parent.exists():
                     file_path.parent.mkdir()
                 shutil.copyfile(self.config.tide_gauge.file, file_path)
-                self.site_attrs["tide_gauge"]["file"] = str(
-                    Path(file_path.relative_to(self.static_path)).as_posix()
+                self.site_attrs["sfincs"]["tide_gauge"] = TideGaugeModel(
+                    description="observations from file stored in database",
+                    source="file",
+                    file=str(Path(file_path.relative_to(self.static_path)).as_posix()),
+                    units=UnitTypesLength.meters,
                 )
                 self.logger.warning(zero_wl_msg)
+        # store config
+        self.site_attrs["sfincs"]["water_level"] = water_level_config
 
     def _get_closest_station(self, ref: str = "MLLW"):
         """
@@ -1303,7 +1382,7 @@ class DatabaseBuilder:
             .item(),
             0,
         )
-        units = self.site_attrs["sfincs"]["floodmap_units"]
+        units = self.site_attrs["sfincs"]["config"].floodmap_units
         distance = UnitfulLength(value=distance, units="meters")
         self.logger.info(
             f"The closest tide gauge from {self.config.tide_gauge.source} is located {distance.convert(units)} {units} from the SFINCS domain"
@@ -1342,6 +1421,7 @@ class DatabaseBuilder:
         meta["mllw"] = round(datums[names.index("MLLW")]["value"] - ref_value, 3)
         meta["mhhw"] = round(datums[names.index("MHHW")]["value"] - ref_value, 3)
         meta["reference"] = ref
+        meta["units"] = station_metadata["datums"]["units"]
         meta["lon"] = closest_station.geometry.x.item()
         meta["lat"] = closest_station.geometry.y.item()
 
@@ -1363,35 +1443,36 @@ class DatabaseBuilder:
         The units for the vertical offset are obtained from the `sfincs` attribute in the `site_attrs` dictionary.
         """
         # TODO better default values
-        self.site_attrs["slr"] = {}
-        vertical_offset = self.config.slr.vertical_offset.model_copy()
-        # Make sure units are consistent
-        self.site_attrs["slr"]["vertical_offset"] = {}
-        self.site_attrs["slr"]["vertical_offset"]["value"] = vertical_offset.convert(
-            self.site_attrs["sfincs"]["floodmap_units"]
+
+        # Make sure units are consistent and make config
+        vertical_offset = UnitfulLength(
+            value=self.config.slr.vertical_offset.convert(
+                self.site_attrs["sfincs"]["config"].floodmap_units
+            ),
+            units=self.site_attrs["sfincs"]["config"].floodmap_units,
         )
-        self.site_attrs["slr"]["vertical_offset"]["units"] = self.site_attrs["sfincs"][
-            "floodmap_units"
-        ]
+
         # If slr scenarios are given put them in the correct locations
         if self.config.slr.scenarios:
             self.config.slr.scenarios.file = self._check_path(
                 self.config.slr.scenarios.file
             )
-            self.site_attrs["slr"]["scenarios"] = self.config.slr.scenarios
             slr_path = self.static_path.joinpath("slr")
             slr_path.mkdir()
             new_file = slr_path.joinpath(Path(self.config.slr.scenarios.file).name)
             # copy file
             shutil.copyfile(self.config.slr.scenarios.file, new_file)
-            # add site attributes
-            self.site_attrs["slr"]["scenarios"] = {}
-            self.site_attrs["slr"]["scenarios"]["file"] = new_file.relative_to(
-                self.static_path
-            ).as_posix()
-            self.site_attrs["slr"]["scenarios"]["relative_to_year"] = (
-                self.config.slr.scenarios.relative_to_year
+            # make config
+            slr_scenarios = SlrScenariosModel(
+                file=new_file.relative_to(self.static_path).as_posix(),
+                relative_to_year=self.config.slr.scenarios.relative_to_year,
             )
+        else:
+            slr_scenarios = None
+        # store config
+        self.site_attrs["sfincs"]["slr"] = SlrModel(
+            vertical_offset=vertical_offset, scenarios=slr_scenarios
+        )
 
     def add_obs_points(self):
         """
@@ -1402,9 +1483,10 @@ class DatabaseBuilder:
         """
         if self.config.obs_point is not None:
             self.logger.info("Observation points were provided in the config file.")
-            self.site_attrs["obs_point"] = []
-            for op in self.config.obs_point:
-                self.site_attrs["obs_point"].append(op.model_dump())
+            # Store config
+            self.site_attrs["sfincs"]["obs_point"] = self.config.obs_point
+        else:
+            self.site_attrs["sfincs"]["obs_point"] = None
 
     def add_gui_params(self):
         """
@@ -1414,96 +1496,75 @@ class DatabaseBuilder:
         derives bins from the config max attributes, and adds visualization layers.
         """
         # Read default units from template
-        self.site_attrs["gui"] = self._get_default_units()
+        units = GuiUnitModel(**self._get_default_units())
+
         # Check if the water level attribute include info on MHHW and MSL
-        other = [attr["name"] for attr in self.site_attrs["water_level"]["other"]]
+        other = [attr.name for attr in self.site_attrs["sfincs"]["water_level"].other]
         if "MHHW" in other:
             amplitude = (
-                self.site_attrs["water_level"]["other"][other.index("MHHW")]["height"][
-                    "value"
-                ]
-                - self.site_attrs["water_level"]["msl"]["height"]["value"]
+                self.site_attrs["sfincs"]["water_level"]
+                .other[other.index("MHHW")]
+                .height.value
+                - self.site_attrs["sfincs"]["water_level"].msl.height.value
             )
             self.logger.info(
-                f"The default tidal amplitude in the GUI will be {amplitude} {self.site_attrs['gui']['default_length_units']}, calculated as the difference between MHHW and MSL from the tide gauge data."
+                f"The default tidal amplitude in the GUI will be {amplitude} {units.default_length_units}, calculated as the difference between MHHW and MSL from the tide gauge data."
             )
         else:
             amplitude = 0.0
             self.logger.warning(
                 "The default tidal amplitude in the GUI will be 0.0, since no tide-gauge water levels are available. You can change this in the site.toml with the 'gui.tide_harmonic_amplitude' attribute."
             )
-
-        self.site_attrs["gui"]["tide_harmonic_amplitude"] = {
-            "value": amplitude,  # TODO where should this come from?
-            "units": self.site_attrs["gui"]["default_length_units"],
-        }
-        # Read default colors from template
-        self.site_attrs["gui"]["mapbox_layers"] = self._get_bin_colors()
-        # Derive bins from config max attributes
-        fd_max = self.config.gui.max_flood_depth
-        self.site_attrs["gui"]["mapbox_layers"]["flood_map_depth_min"] = (
-            0  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
+        default_tide_harmonic_amplitude = UnitfulLength(
+            value=np.round(amplitude, 3), units=units.default_length_units
         )
-        self.site_attrs["gui"]["mapbox_layers"]["flood_map_zbmax"] = (
-            -9999  # TODO How to define this?
-        )  # mask areas with elevation lower than this (very negative = show all calculated flood depths)
-        self.site_attrs["gui"]["mapbox_layers"]["flood_map_bins"] = [
-            0.2 * fd_max,
-            0.6 * fd_max,
-            fd_max,
-        ]
-        self.site_attrs["gui"]["damage_decimals"] = 0
-        self.site_attrs["gui"]["footprints_dmg_type"] = "absolute"
-        ad_max = self.config.gui.max_aggr_dmg
-        self.site_attrs["gui"]["mapbox_layers"]["aggregation_dmg_bins"] = [
-            0.00001,
-            0.1 * ad_max,
-            0.25 * ad_max,
-            0.5 * ad_max,
-            ad_max,
-        ]
-        fd_max = self.config.gui.max_footprint_dmg
-        self.site_attrs["gui"]["mapbox_layers"]["footprints_dmg_bins"] = [
-            0.00001,
-            0.06 * fd_max,
-            0.2 * fd_max,
-            0.4 * fd_max,
-            fd_max,
-        ]
-        b_max = self.config.gui.max_benefits
-        self.site_attrs["gui"]["mapbox_layers"]["benefits_bins"] = [
-            0,
-            0.01,
-            0.02 * b_max,
-            0.2 * b_max,
-            b_max,
-        ]
 
-        if "svi" in self.site_attrs["fiat"]:
-            self.site_attrs["gui"]["mapbox_layers"]["svi_bins"] = [
-                0.05,
-                0.2,
-                0.4,
-                0.6,
-                0.8,
-            ]
+        # Read default colors from template
+        fd_max = self.config.gui.max_flood_depth
+        ad_max = self.config.gui.max_aggr_dmg
+        ftd_max = self.config.gui.max_footprint_dmg
+        b_max = self.config.gui.max_benefits
+        mapbox_layers = MapboxLayersModel(
+            flood_map_depth_min=0.0,  # mask areas with flood depth lower than this (zero = all depths shown) # TODO How to define this?
+            flood_map_zbmax=-9999,  # mask areas with elevation lower than this (very negative = show all calculated flood depths) # TODO How to define this?,
+            flood_map_bins=[0.2 * fd_max, 0.6 * fd_max, fd_max],
+            damage_decimals=0,
+            footprints_dmg_type="absolute",
+            aggregation_dmg_bins=[
+                0.00001,
+                0.1 * ad_max,
+                0.25 * ad_max,
+                0.5 * ad_max,
+                ad_max,
+            ],
+            footprints_dmg_bins=[
+                0.00001,
+                0.06 * ftd_max,
+                0.2 * ftd_max,
+                0.4 * ftd_max,
+                ftd_max,
+            ],
+            benefits_bins=[0, 0.01, 0.02 * b_max, 0.2 * b_max, b_max],
+            svi_bins=[0.05, 0.2, 0.4, 0.6, 0.8]
+            if hasattr(self.site_attrs["fiat"]["config"], "svi")
+            else None,
+            **self._get_bin_colors(),
+        )
 
         # Add visualization layers
         # TODO add option to input layer
-        self.site_attrs["gui"]["visualization_layers"] = {}
-        self.site_attrs["gui"]["visualization_layers"]["default_bin_number"] = 4
-        self.site_attrs["gui"]["visualization_layers"]["default_colors"] = [
-            "#FFFFFF",
-            "#FEE9CE",
-            "#E03720",
-            "#860000",
-        ]
-        self.site_attrs["gui"]["visualization_layers"]["layer_names"] = []
-        self.site_attrs["gui"]["visualization_layers"]["layer_long_names"] = []
-        self.site_attrs["gui"]["visualization_layers"]["layer_paths"] = []
-        self.site_attrs["gui"]["visualization_layers"]["field_names"] = []
-        self.site_attrs["gui"]["visualization_layers"]["bins"] = []
-        self.site_attrs["gui"]["visualization_layers"]["colors"] = []
+        visualization_layers = VisualizationLayersModel(
+            default_bin_number=4,
+            default_colors=["#FFFFFF", "#FEE9CE", "#E03720", "#860000"],
+        )
+
+        # Store config
+        self.site_attrs["gui"] = GuiModel(
+            units=units,
+            default_tide_harmonic_amplitude=default_tide_harmonic_amplitude,
+            mapbox_layers=mapbox_layers,
+            visualization_layers=visualization_layers,
+        )
 
     def add_general_attrs(self):
         """
@@ -1512,23 +1573,14 @@ class DatabaseBuilder:
         This method adds various attributes related to risk, standard objects, and benefits
         to the site_attrs dictionary.
         """
-        self.site_attrs["risk"] = {}
-        self.site_attrs["risk"]["return_periods"] = [
-            1,
-            2,
-            5,
-            10,
-            25,
-            50,
-            100,
-        ]  # TODO this could be an input?
-        self.site_attrs["flood_frequency"] = {}
-        self.site_attrs["flood_frequency"]["flooding_threshold"] = {}
-        self.site_attrs["flood_frequency"]["flooding_threshold"]["value"] = (
-            0  # TODO this could be an input?
-        )
-        self.site_attrs["flood_frequency"]["flooding_threshold"]["units"] = (
-            self.site_attrs["sfincs"]["floodmap_units"]
+        self.site_attrs["fiat"]["risk"] = RiskModel(
+            return_periods=[1, 2, 5, 10, 25, 50, 100]
+        )  # TODO this could be an input?
+
+        self.site_attrs["sfincs"]["flood_frequency"] = FloodFrequencyModel(
+            flooding_threshold=UnitfulLength(
+                value=0.0, units=self.site_attrs["sfincs"]["config"].floodmap_units
+            )  # TODO this could be an input?
         )
 
         # Copy prob set if given
@@ -1546,23 +1598,19 @@ class DatabaseBuilder:
             self.logger.warning(
                 "probabilistic event set not provided. Risk scenarios cannot be run."
             )
-        self.site_attrs["standard_objects"] = {}
-        if self.config.probabilistic_set:
-            self.site_attrs["standard_objects"]["events"] = [prob_event_name]
-        else:
-            self.site_attrs["standard_objects"]["events"] = []
-        self.site_attrs["standard_objects"]["projections"] = ["current"]
-        self.site_attrs["standard_objects"]["strategies"] = ["no_measures"]
 
+        self.site_attrs["standard_objects"] = StandardObjectModel(
+            events=[prob_event_name] if self.config.probabilistic_set else [],
+            projections=["current"],
+            strategies=["no_measures"],
+        )
         # TODO how to define the benefit objects?
-        self.site_attrs["benefits"] = {}
-        self.site_attrs["benefits"]["current_year"] = 2023
-        self.site_attrs["benefits"]["current_projection"] = "current"
-        self.site_attrs["benefits"]["baseline_strategy"] = "no_measures"
-        if self.config.probabilistic_set:
-            self.site_attrs["benefits"]["event_set"] = prob_event_name
-        else:
-            self.site_attrs["benefits"]["event_set"] = ""
+        self.site_attrs["fiat"]["benefits"] = BenefitsModel(
+            current_year=2023,
+            current_projection="current",
+            baseline_strategy="no_measures",
+            event_set=prob_event_name if self.config.probabilistic_set else "",
+        )
 
     def add_static_files(self):
         """
@@ -1600,8 +1648,6 @@ class DatabaseBuilder:
 
         # If infographics are going to be created in FA, get template metric configurations
         if self.config.infographics:
-            self.site_attrs["fiat"]["infographics"] = "True"
-
             # Check what type of infographics should be used
             if self.config.unit_system == "imperial":
                 self.metrics_folder_name = "US_NSI"
@@ -1614,7 +1660,7 @@ class DatabaseBuilder:
                     "Default OSM infometrics and infographics will be created."
                 )
 
-            if "svi" in self.site_attrs["fiat"]:
+            if hasattr(self.site_attrs["fiat"]["config"], "svi"):
                 svi_folder_name = "with_SVI"
             else:
                 svi_folder_name = "without_SVI"
@@ -1653,8 +1699,6 @@ class DatabaseBuilder:
             path_0 = templates_path.joinpath("infographics", "images")
             path_1 = self.root.joinpath("static", "templates", "infographics", "images")
             shutil.copytree(path_0, path_1)
-        else:
-            self.site_attrs["fiat"]["infographics"] = "False"
 
         path = self.root.joinpath("static", "templates", "infometrics")
         files = list(path.glob("*metrics_config*.toml"))
@@ -1664,7 +1708,7 @@ class DatabaseBuilder:
             attrs = read_toml(file)
             # add aggration levels
             attrs["aggregateBy"] = [
-                aggr["name"] for aggr in self.site_attrs["fiat"]["aggregation"]
+                aggr.name for aggr in self.site_attrs["fiat"]["config"].aggregation
             ]
             # take out road metrics if needed
             if not self.roads:
@@ -1674,10 +1718,11 @@ class DatabaseBuilder:
                     if "road" not in query["name"].lower()
                 ]
             # Replace Damage Unit
+            # TODO do this in a better manner
             for i, query in enumerate(attrs["queries"]):
                 if "$" in query["long_name"]:
                     query["long_name"] = query["long_name"].replace(
-                        "$", self.fiat_model.config["exposure"]["damage_unit"]
+                        "$", self.site_attrs["fiat"]["config"].damage_unit
                     )
 
             # replace the SVI threshold if needed
@@ -1689,20 +1734,66 @@ class DatabaseBuilder:
             with open(file, "wb") as f:
                 tomli_w.dump(attrs, f)
 
-    def save_site_config(self):
+    def save_config(self):
         """
         Save the site configuration to a TOML file.
 
         This method creates a TOML file at the specified location and saves the site configuration
         using the `Site` class. The site configuration is obtained from the `site_attrs` attribute.
         """
+        # Define save locations for the config
         site_config_path = self.root.joinpath("static", "config", "site.toml")
         site_config_path.parent.mkdir()
 
-        site = Site.load_dict(self.site_attrs)
-        site.save(toml_path=site_config_path)
+        # Create and validate object for config
+        site = SiteModel(
+            name=self.site_attrs["name"],
+            description=self.site_attrs["description"],
+            lat=self.site_attrs["lat"],
+            lon=self.site_attrs["lon"],
+            standard_objects=self.site_attrs["standard_objects"],
+            gui=self.site_attrs["gui"],
+            sfincs=SfincsModel(
+                config=self.site_attrs["sfincs"]["config"],
+                water_level=self.site_attrs["sfincs"]["water_level"],
+                cyclone_track_database=self.site_attrs["sfincs"][
+                    "cyclone_track_database"
+                ],
+                slr=self.site_attrs["sfincs"]["slr"],
+                # scs = SCSModel,  # optional for the US to use SCS rainfall curves
+                dem=self.site_attrs["sfincs"]["dem"],
+                flood_frequency=self.site_attrs["sfincs"]["flood_frequency"],
+                tide_gauge=self.site_attrs["sfincs"]["tide_gauge"],
+                river=self.site_attrs["sfincs"]["river"],
+                obs_point=self.site_attrs["sfincs"]["obs_point"],
+            ),
+            fiat=FiatModel(
+                config=self.site_attrs["fiat"]["config"],
+                risk=self.site_attrs["fiat"]["risk"],
+                benefits=self.site_attrs["fiat"]["benefits"],
+            ),
+        )
 
-    def _clip_hazard_extend(self):
+        # Save configs
+        site_obj = Site.load_dict(site)
+        site_obj.save(site_config_path)
+
+    @staticmethod
+    def _clip_gdf(
+        gdf1: gpd.GeoDataFrame, gdf2: gpd.GeoDataFrame, predicate: str = "within"
+    ):
+        gdf_new = gpd.sjoin(gdf1, gdf2, how="inner", predicate=predicate)
+        gdf_new = gdf_new.drop(
+            columns=[
+                col
+                for col in gdf_new.columns
+                if col.endswith("_right") or (col in gdf2.columns and col != "geometry")
+            ]
+        )
+
+        return gdf_new
+
+    def _clip_hazard_extend(self, clip_footprints=True):
         """
         Clip the exposure data to the bounding box of the hazard data.
 
@@ -1728,61 +1819,55 @@ class DatabaseBuilder:
         sfincs_extend = sfincs_extend.to_crs(crs)
 
         # Clip the fiat region
-        clipped_region = self.fiat_model.region.clip(sfincs_extend)
+        clipped_region = self.fiat_model.region.to_crs(crs).clip(sfincs_extend)
         self.fiat_model.geoms["region"] = clipped_region
-
-        # Clip the building footprints
-        self.fiat_model.building_footprint = self.fiat_model.building_footprint[
-            self.fiat_model.building_footprint["geometry"].within(
-                clipped_region["geometry"].union_all()
-            )
-        ]
-        bf_fid = self.fiat_model.building_footprint["BF_FID"]
-        fieldname = "BF_FID"
 
         # Clip the exposure geometries
         # Filter buildings and roads
-        if gdf["Primary Object Type"].str.contains("road").any():
-            gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-            gdf_roads = gdf_roads[
-                gdf_roads["geometry"].within(clipped_region["geometry"].union_all())
-            ]
-            gdf_buildings = gdf[~gdf["Primary Object Type"].str.contains("road")]
-            # Check if all buildings have BF
-            if gdf_buildings[fieldname].isna().any():
-                gdf_building_points = gdf_buildings[gdf_buildings[fieldname].isna()]
-                gdf_building_footprints = gdf_buildings[
-                    ~gdf_buildings[fieldname].isna()
-                ]
-                gdf_building_points_clipped = gdf_building_points[
-                    gdf_building_points["geometry"].within(
-                        clipped_region["geometry"].union_all()
-                    )
-                ]
-                gdf_building_footprints_clipped = gdf_building_footprints[
-                    gdf_building_footprints[fieldname].isin(bf_fid)
-                ]
-                gdf_buildings = pd.concat(
-                    [gdf_building_points_clipped, gdf_building_footprints_clipped]
-                )
-            else:
-                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-            idx_buildings = self.fiat_model.exposure.geom_names.index("buildings")
-            idx_roads = self.fiat_model.exposure.geom_names.index("roads")
+        road_inds = gdf[FiatColumns.primary_object_type].str.contains("road")
+        # Clip buildings
+        gdf_buildings = gdf[~road_inds]
+        gdf_buildings = self._clip_gdf(
+            gdf_buildings, clipped_region, predicate="within"
+        )
+
+        if road_inds.any():
+            # Clip roads
+            gdf_roads = gdf[road_inds]
+            gdf_roads = self._clip_gdf(gdf_roads, clipped_region, predicate="within")
+
+            idx_buildings = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_buildings_name
+            )
+            idx_roads = self.fiat_model.exposure.geom_names.index(
+                self.config.fiat_roads_name
+            )
             self.fiat_model.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                ["Object ID", "geometry"]
+                [FiatColumns.object_id, "geometry"]
             ]
             self.fiat_model.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                ["Object ID", "geometry"]
+                [FiatColumns.object_id, "geometry"]
             ]
             gdf = pd.concat([gdf_buildings, gdf_roads])
         else:
-            gdf = gdf[gdf[fieldname].isin(bf_fid)]
-            self.fiat_model.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+            gdf = gdf_buildings
+            self.fiat_model.exposure.exposure_geoms[0] = gdf[
+                [FiatColumns.object_id, "geometry"]
+            ]
 
         # Save exposure dataframe
         del gdf["geometry"]
         self.fiat_model.exposure.exposure_db = gdf
+
+        # Clip the building footprints
+        fieldname = "BF_FID"
+        if clip_footprints:
+            # Get buildings after filtering and their footprint id
+            self.fiat_model.building_footprint = self.fiat_model.building_footprint[
+                self.fiat_model.building_footprint[fieldname].isin(
+                    gdf_buildings[fieldname]
+                )
+            ]
 
         # Write fiat model
         self.fiat_model.write()

@@ -135,16 +135,11 @@ def test_save_reload_eventset(test_eventset: EventSet, tmp_path: Path):
 def setup_eventset_scenario(
     test_db: IDatabase,
     test_eventset,
-    # dummy_pump_measure,
-    # dummy_buyout_measure,
     dummy_projection,
     dummy_strategy,
 ):
-    # test_db.measures.save(dummy_pump_measure)
-    # test_db.measures.save(dummy_buyout_measure)
     test_db.projections.save(dummy_projection)
     test_db.strategies.save(dummy_strategy)
-
     test_db.events.save(test_eventset)
 
     scn = Scenario(
@@ -192,5 +187,6 @@ class TestEventSet:
         output_path = Path(test_db.scenarios.output_path) / scn.attrs.name / "Flooding"
 
         for rp in test_db.site.attrs.fiat.risk.return_periods:
-            assert (output_path / f"RP_{rp:04d}_maps.nc").exists()
-            assert (output_path / f"RP_{rp:04d}_maps.tif").exists()
+            floodmap_path = output_path / f"RP_{rp:04d}_maps"
+            assert (floodmap_path.with_suffix(".nc")).exists()
+            assert (floodmap_path.with_suffix(".tif")).exists()

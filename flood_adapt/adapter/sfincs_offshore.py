@@ -143,13 +143,12 @@ class OffshoreSfincsHandler(IOffshoreSfincsHandler, DatabaseUser):
                     "Skip running offshore model as it has already been run."
                 )
                 return
-
-            success = _offshore_model.execute(path=sim_path, strict=False)
-
-            if not success:
+            try:
+                _offshore_model.execute(path=sim_path)
+            except RuntimeError as e:
                 raise RuntimeError(
-                    f"Running offshore SFINCS model failed. See {sim_path} for more information."
-                )
+                    f"Failed to run offshore model for {scenario.attrs.name}"
+                ) from e
 
     def _get_simulation_path(self, scenario: IScenario) -> Path:
         event = scenario.strategy
