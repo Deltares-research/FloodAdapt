@@ -1,3 +1,4 @@
+import enum
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from pathlib import Path
@@ -74,8 +75,12 @@ class SyntheticTimeseriesModel(BaseModel, Generic[TValueUnitPair]):
         return self.peak_time + self.duration / 2
 
 
-class CSVTimeseriesModel(BaseModel):
+T_UNIT = TypeVar("T_UNIT", bound=enum.Enum)
+
+
+class CSVTimeseriesModel(BaseModel, Generic[T_UNIT]):
     path: Path
+    units: T_UNIT
 
     @model_validator(mode="after")
     def validate_csv(self):

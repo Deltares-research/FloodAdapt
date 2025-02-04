@@ -1065,12 +1065,13 @@ class SfincsAdapter(IHazardAdapter):
             df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
-            df_ts = CSVTimeseries.load_file(path=forcing.path).to_dataframe(
-                time_frame=time_frame
+            df_ts = (
+                CSVTimeseries[us.UnitTypesLength]
+                .load_file(path=forcing.path)
+                .to_dataframe(time_frame=time_frame)
             )
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
-
             conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
                 us.UnitTypesLength.meters
             )

@@ -87,8 +87,10 @@ class WaterlevelCSV(IWaterlevel):
     units: us.UnitTypesLength = us.UnitTypesLength.meters
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            time_frame=time_frame
+        return (
+            CSVTimeseries[us.UnitTypesLength]
+            .load_file(path=self.path)
+            .to_dataframe(time_frame=time_frame)
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

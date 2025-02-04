@@ -1,7 +1,8 @@
+import enum
 import os
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Generic, Type, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -217,13 +218,16 @@ class SyntheticTimeseries(ITimeseries):
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
 
-class CSVTimeseries(ITimeseries):
-    attrs: CSVTimeseriesModel
+T_UNIT = TypeVar("T_UNIT", bound=enum.Enum)
+
+
+class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
+    attrs: CSVTimeseriesModel[T_UNIT]
 
     @classmethod
     def load_file(cls, path: str | Path):
         obj = cls()
-        obj.attrs = CSVTimeseriesModel.model_validate({"path": path})
+        obj.attrs = CSVTimeseriesModel[T_UNIT].model_validate({"path": path})
         return obj
 
     def to_dataframe(
