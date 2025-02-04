@@ -67,7 +67,7 @@ class TideGauge(ITideGauge):
 
         gauge_data.columns = [f"waterlevel_{self.attrs.ID}"]
         gauge_data = gauge_data * us.UnitfulLength(
-            value=1.0, units=us.UnitTypesLength.meters
+            value=1.0, units=self.attrs.units
         ).convert(units)
 
         if out_path is not None:
