@@ -63,15 +63,14 @@ class WaterlevelSynthetic(IWaterlevel):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         tide_df = self.tide.to_dataframe(time_frame=time_frame)
-        surge_df = SyntheticTimeseries(data=self.surge.timeseries).to_dataframe(
-            time_frame=time_frame
-        )
+        surge = SyntheticTimeseries(data=self.surge.timeseries)
+        surge_df = surge.to_dataframe(time_frame=time_frame)
 
         # Combine
         tide_df.columns = ["waterlevel"]
         surge_df.columns = ["waterlevel"]
         surge_df = surge_df.reindex(tide_df.index, method="nearest", limit=1).fillna(
-            value=0
+            value=surge.attrs.fill_value
         )
 
         wl_df = tide_df.add(surge_df, axis="index", fill_value=0)
@@ -88,7 +87,7 @@ class WaterlevelCSV(IWaterlevel):
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return (
-            CSVTimeseries[us.UnitTypesLength]
+            CSVTimeseries[self.units]
             .load_file(path=self.path)
             .to_dataframe(time_frame=time_frame)
         )

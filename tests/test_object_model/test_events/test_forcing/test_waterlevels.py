@@ -166,14 +166,15 @@ class TestWaterlevelCSV:
     ):
         path = tmp_path / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-        t0 = dummy_1d_timeseries_df.index[0]
-        t1 = dummy_1d_timeseries_df.index[-1]
+        time = TimeModel(
+            start_time=dummy_1d_timeseries_df.index[0],
+            end_time=dummy_1d_timeseries_df.index[-1],
+        )
+        expected_df = dummy_1d_timeseries_df.loc[time.start_time : time.end_time]
+        expected_df.index.name = "time"
 
         # Act
-        waterlevel_forcing = WaterlevelCSV(path=path)
-        wl_df = waterlevel_forcing.to_dataframe(
-            time_frame=TimeModel(start_time=t0, end_time=t1)
-        )
+        wl_df = WaterlevelCSV(path=path).to_dataframe(time_frame=time)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)

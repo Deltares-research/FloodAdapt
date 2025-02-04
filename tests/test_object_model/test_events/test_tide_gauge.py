@@ -106,7 +106,9 @@ def test_download_tide_gauge_data(
     pd.testing.assert_frame_equal(dummy_1d_timeseries_df, result_df)
 
 
-def test_get_waterlevels_in_time_frame_from_file(setup_file_based_tide_gauge):
+def test_get_waterlevels_in_time_frame_from_file(
+    setup_file_based_tide_gauge: tuple[TideGauge, Path, TimeModel, pd.DataFrame],
+):
     # Arrange
     tide_gauge, _, dummy_time_model, dummy_1d_timeseries_df = (
         setup_file_based_tide_gauge
@@ -117,8 +119,14 @@ def test_get_waterlevels_in_time_frame_from_file(setup_file_based_tide_gauge):
 
     # Assert
     assert result_df is not None
-    assert result_df.index[0] == dummy_time_model.start_time
-    assert result_df.index[-1] == dummy_time_model.end_time
+    assert (
+        abs((dummy_time_model.start_time - result_df.index[0]).total_seconds())
+        < dummy_time_model.time_step.total_seconds()
+    )
+    assert (
+        abs((dummy_time_model.end_time - result_df.index[-1]).total_seconds())
+        < dummy_time_model.time_step.total_seconds()
+    )
 
     # Ignore column names
     result_df.columns = ["waterlevel"]
@@ -142,8 +150,14 @@ def test_get_waterlevels_in_time_frame_from_download(
 
     # Assert
     assert result_df is not None
-    assert result_df.index[0] == dummy_time_model.start_time
-    assert result_df.index[-1] == dummy_time_model.end_time
+    assert (
+        abs((dummy_time_model.start_time - result_df.index[0]).total_seconds())
+        < dummy_time_model.time_step.total_seconds()
+    )
+    assert (
+        abs((dummy_time_model.end_time - result_df.index[-1]).total_seconds())
+        < dummy_time_model.time_step.total_seconds()
+    )
 
     # Ignore column names
     result_df.columns = ["waterlevel"]

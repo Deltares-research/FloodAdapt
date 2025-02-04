@@ -77,11 +77,11 @@ class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
-    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+    units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return (
-            CSVTimeseries[us.UnitfulIntensity]
+            CSVTimeseries[self.units]
             .load_file(path=self.path)
             .to_dataframe(time_frame=time_frame)
         )

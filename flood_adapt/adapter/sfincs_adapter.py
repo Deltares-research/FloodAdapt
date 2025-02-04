@@ -1066,7 +1066,7 @@ class SfincsAdapter(IHazardAdapter):
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
             df_ts = (
-                CSVTimeseries[us.UnitTypesLength]
+                CSVTimeseries[forcing.units]
                 .load_file(path=forcing.path)
                 .to_dataframe(time_frame=time_frame)
             )
@@ -1265,7 +1265,7 @@ class SfincsAdapter(IHazardAdapter):
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
         if isinstance(discharge, DischargeCSV):
             df = discharge.to_dataframe(time_frame)
-            conversion = us.UnitfulDischarge(value=1.0, units=discharge.unit).convert(
+            conversion = us.UnitfulDischarge(value=1.0, units=discharge.units).convert(
                 us.UnitTypesDischarge.cms
             )
         elif isinstance(discharge, DischargeConstant):

@@ -1,4 +1,3 @@
-import enum
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -218,7 +217,7 @@ class SyntheticTimeseries(ITimeseries):
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
 
-T_UNIT = TypeVar("T_UNIT", bound=enum.Enum)
+T_UNIT = TypeVar("T_UNIT", bound=Any)
 
 
 class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
@@ -227,7 +226,9 @@ class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
     @classmethod
     def load_file(cls, path: str | Path):
         obj = cls()
-        obj.attrs = CSVTimeseriesModel[T_UNIT].model_validate({"path": path})
+        obj.attrs = CSVTimeseriesModel[T_UNIT].model_validate(
+            {"path": path, "units": T_UNIT}
+        )
         return obj
 
     def to_dataframe(
@@ -252,7 +253,7 @@ class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
             .interpolate(method="linear")
             .fillna(0)
         )
-
+        interpolated_df.index.name = "time"
         return interpolated_df
 
     def calculate_data(

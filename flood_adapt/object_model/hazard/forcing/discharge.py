@@ -49,11 +49,11 @@ class DischargeCSV(IDischarge):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
-    unit: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
+    units: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
         return (
-            CSVTimeseries[us.UnitTypesDischarge]
+            CSVTimeseries[self.units]
             .load_file(path=self.path)
             .to_dataframe(time_frame=time_frame)
         )
