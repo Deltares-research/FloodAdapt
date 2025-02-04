@@ -55,9 +55,7 @@ class TestForcingFactory:
         )
         assert forcing_type == expected_type
         assert forcing_source == expected_source
-        assert (
-            forcing_class == ForcingFactory.FORCINGTYPES[expected_type][expected_source]
-        )
+        assert forcing_class == expected_class
 
     def test_get_forcing_class_invalid_type(self):
         with pytest.raises(ValueError):
