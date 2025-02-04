@@ -33,6 +33,8 @@ Linux is not supported at the moment, but will be supported in the near future.
 
 ## Configure database
 
+#### TODO add section for the DatabaseBuilder.
+
 FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/misc/config.py` which contains the `Settings` class to set and validate environment variables, specific to your system.
 
 To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
@@ -51,9 +53,9 @@ system_folder = Path("path/to/your/system/folder")
 
 # Validate and set environment variables
 Settings(
-    database_root=root,
-    database_name=name,
-    system_folder=system_folder,
+    DATABASE_ROOT=root,
+    DATABASE_NAME=name,
+    SYSTEM_FOLDER=system_folder,
 )
 ```
 
@@ -65,15 +67,19 @@ To contribute to FloodAdapt, you will need to install additional dependencies. T
 # Install dev environment
 git clone https://github.com/Deltares/FloodAdapt
 cd FloodAdapt
-pixi install -e dev
 
-# Verify everything is installed correctly
+# This will install the required environment and run the tests to verify
 pixi run tests
+```
 
+Alternatively, you can open an interactive shell and have pixi take care of activating and updating your environment.
+```bash
 # `activate` the dev environment
 pixi shell -e dev
 
 # Develop
+pytest tests/test_x/test_y/test_z.py
+python scripts/my_script.py
 ...
 ```
 
@@ -83,9 +89,8 @@ To make developing easier and not have to reinstall packages after every change,
 Pixi supports editable installs, but not in the most intuitive way, as they need to be defined as editable in the project specification.
 
 Example command to add the package `example_package` as an editable install to the default environment:
-- go to the non-pixi sections in `pyproject.toml` and comment out the `example_package`. ([dependencies] or [optional-dependencies])
-- in the pixi section: [tool.pixi.pypi-dependencies]
-- add the line `example_package = {path = "./path/to/example_package", editable = true }`. Note that this path is relative to the root of this project.
+- go to the non-pixi sections in `pyproject.toml` and comment out the `example_package`. (`[dependencies]` or `[optional-dependencies]`)
+- in the pixi section `[tool.pixi.pypi-dependencies]`: add the following line `example_package = {path = "./path/to/example_package", editable = true }`. Note that this path is relative to the root of this project.
 - run `pixi update`
 
 ## Useful pixi commands
