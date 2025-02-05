@@ -1,24 +1,24 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 import xarray as xr
 from pydantic import Field
 
 from flood_adapt.object_model.hazard.forcing.netcdf import validate_netcdf_forcing
-from flood_adapt.object_model.hazard.forcing.timeseries import SyntheticTimeseries
+from flood_adapt.object_model.hazard.forcing.timeseries import (
+    CSVTimeseries,
+    SyntheticTimeseries,
+    SyntheticTimeseriesModel,
+    TimeModel,
+)
 from flood_adapt.object_model.hazard.interface.forcing import (
     ForcingSource,
     IWind,
 )
-from flood_adapt.object_model.hazard.interface.timeseries import (
-    SyntheticTimeseriesModel,
-    TimeModel,
-)
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.io.csv import read_csv
 
 
 class WindConstant(IWind):
@@ -90,9 +90,13 @@ class WindCSV(IWind):
 
     path: Path
 
+    units: dict[str, Any] = {
+        "speed": us.UnitTypesVelocity.mps,
+        "direction": us.UnitTypesDirection.degrees,
+    }
+
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        # TODO: slice data to time_frame like in WaterlevelCSV
-        return read_csv(self.path)
+        return CSVTimeseries[self.units].load_file(self.path).to_dataframe(time_frame)
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
         if self.path:
