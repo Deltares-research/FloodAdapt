@@ -26,7 +26,7 @@ class DischargeConstant(IDischarge):
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
-            freq=TimeModel().time_step,
+            freq=time_frame.time_step,
             name="time",
         )
         data = [self.discharge.value for _ in range(len(time))]

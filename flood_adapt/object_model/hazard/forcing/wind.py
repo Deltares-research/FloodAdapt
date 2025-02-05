@@ -31,7 +31,7 @@ class WindConstant(IWind):
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
-            freq=TimeModel().time_step,
+            freq=time_frame.time_step,
             name="time",
         )
         data = {
@@ -51,7 +51,7 @@ class WindSynthetic(IWind):
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
-            freq=TimeModel().time_step,
+            freq=time_frame.time_step,
             name="time",
         )
         magnitude = SyntheticTimeseries(self.magnitude).to_dataframe(
