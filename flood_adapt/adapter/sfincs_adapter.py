@@ -52,6 +52,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
+    WindCSV,
     WindMeteo,
     WindNetCDF,
     WindSynthetic,
@@ -964,6 +965,23 @@ class SfincsAdapter(IHazardAdapter):
             )
             ds *= conversion
             self._model.setup_wind_forcing_from_grid(wind=ds)
+        elif isinstance(wind, WindCSV):
+            df = wind.to_dataframe(time_frame=time_frame)
+
+            conversion = us.UnitfulVelocity(
+                value=1.0, units=wind.units["speed"]
+            ).convert(us.UnitTypesVelocity.mps)
+            df *= conversion
+
+            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
+            df.to_csv(tmp_path)
+
+            # HydroMT function: set wind forcing from timeseries
+            self._model.setup_wind_forcing(
+                timeseries=tmp_path,
+                magnitude=None,
+                direction=None,
+            )
         else:
             self.logger.warning(
                 f"Unsupported wind forcing type: {wind.__class__.__name__}"

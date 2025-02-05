@@ -39,6 +39,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
+    WindCSV,
     WindMeteo,
     WindNetCDF,
     WindSynthetic,
@@ -460,6 +461,23 @@ class TestAddForcing:
             # Assert
             assert default_sfincs_adapter.wind is None
             assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+
+        def test_add_forcing_waterlevels_csv(
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_wind: WindSynthetic
+        ):
+            # Arrange
+            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
+            t0, t1 = default_sfincs_adapter._model.get_model_time()
+            time_frame = TimeModel(start_time=t0, end_time=t1)
+            synthetic_wind.to_dataframe(time_frame).to_csv(tmp_path)
+
+            forcing = WindCSV(path=tmp_path)
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_unsupported(
             self, default_sfincs_adapter: SfincsAdapter
