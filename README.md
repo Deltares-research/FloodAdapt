@@ -14,66 +14,30 @@ Recent developments of the decision-support system include (1) simplifying and p
 
 FloodAdapt is currently in an intensive development stage. Independent usage of the repository will be challenging prior to end-of-year 2024. FloodAdapt documentation will be expanded on throughout 2024.
 
-## Setting up conda
+# Installation
 
-In order to develop the FloodAdapt-GUI locally, please follow the following steps:
+## Setting up Pixi
+To build the environment, manage dependencies and run tasks, FloodAdapt uses [Pixi](https://pixi.sh/latest/), please download and install it by following the instructions on the pixi website.
 
-- Download and install [mambaforge](https://mamba.readthedocs.io/en/latest/installation.html#fresh-install).
+Before continuing the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
 
-- Depending on your company settings, you might also have to run the following in a Powershell terminal as administrator:
-
+## Windows
+Then run these commands to install FloodAdapt:
 ```bash
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-```
-
-## Installation
-
-Before starting the installation process, make sure you have access to all required private repositories by ensuring you are in the Teams `FloodAdaptUsers` in the [Deltares](https://github.com/orgs/Deltares/teams/floodadaptusers) and [Deltares-research](https://github.com/orgs/Deltares-research/teams/floodadaptusers) organizations.
-
-To run FloodAdapt, GeoPandas needs to be installed. GeoPandas depends for its spatial functionality on a large geospatial, open source stack of libraries (GEOS, GDAL, PROJ). These base C libraries can sometimes be a challenge to install.
-
-Pre built binaries are provided in `environment/geospatial-wheels`, and are installed using `environment/make_environment.py`. They can be manually installed into your environment using: `pip install <wheel_path>`. All other dependencies can be either found on pip (https://pypi.org/) or have pyproj.toml files to use during installation.
-
-## Creating the environment
-
-The environment for running and developing FloodAdapt can be made with the script: `make_environment.py`.
-
-Create a virtual environment named `ENV_NAME` with the core dependencies of FloodAdapt by running the following in a terminal:
-
-```bash
-python make_environment.py -n ENV_NAME
-```
-
-Additional installation options that can be added to the end of the command:
-
-`-n ENV_NAME` or `--name ENV_NAME`
-- The name for the environment to be created. If it already exists, it will be removed and recreated from scratch.
-
-`-p PREFIX` or `--prefix PREFIX`
-- Creates the environment at `prefix/name` instead of the default conda location.
-
-`-d GROUP` or `--dev GROUP`
-- Install optional dependencies of FloodAdapt-GUI and FloodAdapt in addition the core ones. GROUP: dev | build | all
-
-`-e` or `--editable`
-- Do an editable install of the FloodAdapt-GUI and FloodAdapt packages.
-
-## Updating the environment
-To update your current environment, run the following commands:
-```bash
-conda activate ENV_NAME
-
+git clone https://github.com/Deltares-research/FloodAdapt.git
 cd FloodAdapt
-
-python -m pip install -e . --upgrade
+pixi install
 ```
-Note:  Update all packages and their dependencies to the latest available versions allowed by requirements defined in pyproject.toml files. This also performs the update for the backend dependencies, but deactivates the editable installation and installs everything as a package.
+## Linux
+Linux is not supported at the moment, but will be supported in the near future.
 
 ## Configure database
 
-FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/config.py` which contains the Settings class to set and validate environment variables, specific to your system.
+#### TODO add section for the DatabaseBuilder.
 
-To initialize floodadapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
+FloodAdapt uses a database to store, handle and organize input files, output files and static data. This database needs to be configured the first time you want to use FloodAdapt. Which is done via `flood_adapt/misc/config.py` which contains the `Settings` class to set and validate environment variables, specific to your system.
+
+To initialize FloodAdapt and configure the database, add the following lines to the top of your script / initialize function to validate and set the environment variables:
 ```python
 from pathlib import Path
 from flood_adapt.misc.config import Settings
@@ -89,60 +53,75 @@ system_folder = Path("path/to/your/system/folder")
 
 # Validate and set environment variables
 Settings(
-    database_root=root,
-    database_name=name,
-    system_folder=system_folder,
+    DATABASE_ROOT=root,
+    DATABASE_NAME=name,
+    SYSTEM_FOLDER=system_folder,
 )
 ```
 
 ## Developing FloodAdapt
 
-Clone the repository
+To contribute to FloodAdapt, you will need to install additional dependencies. To do so, clone the repository and install the development environment:
 
 ```bash
+# Install dev environment
 git clone https://github.com/Deltares/FloodAdapt
+cd FloodAdapt
+
+# This will install the required environment and run the tests to verify
+pixi run tests
 ```
 
-Create a developer environment `example_name`, with an editable installation FloodAdapt core and the `dev` optional dependency group .
-
+Alternatively, you can open an interactive shell and have pixi take care of activating and updating your environment.
 ```bash
-python make_environment.py -n example_name --editable --dev dev
+# `activate` the dev environment
+pixi shell -e dev
+
+# Develop
+pytest tests/test_x/test_y/test_z.py
+python scripts/my_script.py
+...
 ```
 
-For more guidelines on contributing to FloodAdapt please see `CONTRIBUTING.md`
+### Adding editable installations to your environment
 
-### Optional Dependencies
-Different groups of packages are required for various tasks that are not required to run the application. The optional dependency groups for FloodAdapt are:
-- `dev` - linting, pre-commit hooks & testing
-- `build` - distribution related packages & publishing to pip
-- `docs` - generating documentation & example notebooks
-- `all` - all of the above
+To make developing easier and not have to reinstall packages after every change, editable installs exist.
+Pixi supports editable installs, but not in the most intuitive way, as they need to be defined as editable in the project specification.
 
-An optional dependency group can be installed in addition to installing the core using `pip install .[group_name]`, where '.' can be replaced by a directory path that contains a pyproject.toml file.
+Example command to add the package `example_package` as an editable install to the default environment:
+- go to the non-pixi sections in `pyproject.toml` and comment out the `example_package`. (`[dependencies]` or `[optional-dependencies]`)
+- in the pixi section `[tool.pixi.pypi-dependencies]`: add the following line `example_package = {path = "./path/to/example_package", editable = true }`. Note that this path is relative to the root of this project.
+- run `pixi update`
+
+## Useful pixi commands
+```bash
+# Display all pixi commands and options
+pixi -h
+
+# Install a non default pixi environment defined in pyproject.toml
+pixi install -e [ENV_NAME]
+
+# Update environment(s) to the latest allowed by dependency specifications in pyproject.toml
+pixi update
+
+# List all available tasks
+pixi task list
+
+# Run a task in the default environment for that task
+pixi run [TASK]
+
+# Start a shell in the pixi environment
+pixi shell -e [ENV_NAME]
+
+# Add a package to the dependencies
+pixi add [PACKAGE]
+
+# Run a task in a specific environment
+pixi run -e [ENV_NAME] [TASK]
+```
 
 ### Generating the documentation
 
 We use `quartodoc` to generate our API documentation automatically. If you have the `docs` optional dependency group installed.
 you can do this by running `quartodoc build` from the `docs` directory, and it will create the documentation for you.
 After this is done, if you wish, you can build and view the documentation locally by running `quarto preview` from the `docs` directory
-### Setup Visual Studio Code (optional)
-
-1. Initialize pre-commit to run locally before you commit by running the following command:
-```
-pre-commit install
-```
-
-2. Add the following to your `.vscode/settings.json` file in your workspace
-
-```json
-{
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll": true
-        }
-    },
-    "python.formatting.provider": "black",
-    "autoDocstring.docstringFormat": "numpy"
-}
-```
