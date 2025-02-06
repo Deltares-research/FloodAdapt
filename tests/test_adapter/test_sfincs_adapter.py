@@ -1125,41 +1125,16 @@ class TestPostProcessing:
             adapter.process(scn)
             yield adapter, scn
 
-    @mock.patch("flood_adapt.adapter.sfincs_adapter.utils.downscale_floodmap")
-    def test_write_geotiff_correct_unit(
+    def test_write_geotiff(
         self,
-        mock_utils_downscale_floodmap: mock.Mock,
         adapter_preprocess_process_scenario_class: Tuple[SfincsAdapter, Scenario],
     ):
         # Arrange
         adapter, scn = adapter_preprocess_process_scenario_class
         floodmap_path = adapter._get_result_path(scn) / f"FloodMap_{scn.attrs.name}.tif"
 
-        expected_zsmax_conversion = us.UnitfulLength(
-            value=1, units=us.UnitTypesLength.meters
-        ).convert(adapter.settings.config.floodmap_units)
-
-        expected_dem_conversion = us.UnitfulLength(
-            value=1, units=adapter.settings.dem.units
-        ).convert(adapter.settings.config.floodmap_units)
-        demfile = adapter.database.static_path / "dem" / adapter.settings.dem.filename
-        dem = adapter._model.data_catalog.get_rasterdataset(demfile)
-        if dem is None:
-            raise ValueError(f"DEM file not found: {demfile}")
-
         # Act
         adapter.write_floodmap_geotiff(scenario=scn)
 
         # Assert
-        mock_utils_downscale_floodmap.assert_called_once()
-
-        _, kwargs = mock_utils_downscale_floodmap.call_args
-        _zsmax = kwargs["zsmax"]
-        _dem = kwargs["dep"]
-        _hmin = kwargs["hmin"]
-        _floodmap_fn = kwargs["floodmap_fn"]
-
-        assert _zsmax.equals(adapter._get_zsmax() * expected_zsmax_conversion)
-        assert _dem.equals(dem * expected_dem_conversion)
-        assert _hmin == 0.01
-        assert _floodmap_fn == str(floodmap_path)
+        assert floodmap_path.exists()

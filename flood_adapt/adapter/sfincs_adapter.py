@@ -1466,9 +1466,6 @@ class SfincsAdapter(IHazardAdapter):
         self._model.read_results()
         zsmax = self._model.results["zsmax"].max(dim="timemax")
         zsmax.attrs["units"] = "m"
-
-        for name, dataset in self._model.results.items():
-            dataset.close()
         return zsmax
 
     def _get_zs_points(self):
