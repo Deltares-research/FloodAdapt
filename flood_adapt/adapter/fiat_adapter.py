@@ -466,8 +466,12 @@ class FiatAdapter(IImpactAdapter):
 
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
-            column = column = [key for key, value in self.fiat_output_mapping.items() if value == config["column"]][0]
-            
+            column = column = [
+                key
+                for key, value in self.fiat_output_mapping.items()
+                if value == config["column"]
+            ][0]
+
             self.fiat_output_mapping[column]
             mapped_exposure_df = self.add_exceedance_probability(
                 column=column,
@@ -567,7 +571,7 @@ class FiatAdapter(IImpactAdapter):
 
     def map_risk_metrics(self, mapped_exposure_df: pd.DataFrame):
         """Rename the Delft FIAT output columns per return period.
-        
+
         Parameters
         ----------
         mapped_exposure_df : pd.DataFrame
@@ -580,7 +584,9 @@ class FiatAdapter(IImpactAdapter):
                 new_column = str(
                     self.fiat_output_mapping[FiatColumns.inundation_depth] + " " + rp
                 )
-                mapped_exposure_df = mapped_exposure_df.rename(columns={column: new_column})
+                mapped_exposure_df = mapped_exposure_df.rename(
+                    columns={column: new_column}
+                )
             elif FiatColumns.damage_default in column:
                 if FiatColumns.total_damage in column:
                     damage_rp = column.split(FiatColumns.total_damage + "_")[-1]
@@ -598,7 +604,9 @@ class FiatAdapter(IImpactAdapter):
                         + " "
                         + rp
                     )
-                mapped_exposure_df = mapped_exposure_df.rename(columns={column: new_column})
+                mapped_exposure_df = mapped_exposure_df.rename(
+                    columns={column: new_column}
+                )
             else:
                 mapped_exposure_df = mapped_exposure_df
 
