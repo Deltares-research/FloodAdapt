@@ -769,7 +769,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_pot_damage in c
+            if FiatColumns.max_pot_damage_default in c
         ]
 
         # Get objects that are buildings (using site info)
@@ -816,7 +816,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_pot_damage in c
+            if FiatColumns.max_pot_damage_default in c
         ]
 
         # Get objects that are buildings (using site info)
@@ -1009,7 +1009,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_pot_damage in c
+            if FiatColumns._default in c
         ]
 
         # Get objects that are buildings (using site info)
