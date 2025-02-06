@@ -2,12 +2,13 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from flood_adapt.adapter.fiat_adapter import FiatColumns
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
 )
 from flood_adapt.object_model.scenario import Scenario
-from flood_adapt.adapter.fiat_adapter import FiatColumns
+
 
 class TestFiatAdapter:
     @pytest.fixture(scope="class")
@@ -68,9 +69,9 @@ class TestFiatAdapter:
         assert len(exposure_scenario) > len(exposure_template)
 
         # check if growth has been applied correctly
-        inds1 = exposure_scenario[FiatColumns.object_id].isin(exposure_template[FiatColumns.object_id]) & (
-            exposure_scenario[FiatColumns.primary_object_type] != "road"
-        )
+        inds1 = exposure_scenario[FiatColumns.object_id].isin(
+            exposure_template[FiatColumns.object_id]
+        ) & (exposure_scenario[FiatColumns.primary_object_type] != "road")
         exp1 = exposure_scenario.loc[inds1, FiatColumns.damage_structure]
         inds0 = exposure_template[FiatColumns.primary_object_type] != "road"
         exp0 = exposure_template.loc[inds0, FiatColumns.damage_structure]
@@ -122,14 +123,25 @@ class TestFiatAdapter:
         # Create a dataframe to save the initial object attributes
         exposures = exposure_template.merge(bfes, on=FiatColumns.object_id)[
             [FiatColumns.object_id, "bfe", f"{FiatColumns.ground_floor_height}_"]
-        ].rename(columns={f"{FiatColumns.ground_floor_height}_": f"{FiatColumns.ground_floor_height}_1"})
+        ].rename(
+            columns={
+                f"{FiatColumns.ground_floor_height}_": f"{FiatColumns.ground_floor_height}_1"
+            }
+        )
         # Merge with the adapted fiat model exposure
         exposures = exposures.merge(exposure_scenario, on=FiatColumns.object_id).rename(
-            columns={f"{FiatColumns.ground_floor_height}_": f"{FiatColumns.ground_floor_height}_2"}
+            columns={
+                f"{FiatColumns.ground_floor_height}_": f"{FiatColumns.ground_floor_height}_2"
+            }
         )
         # Filter to only the objects affected by the measure
         exposures = exposures.loc[
-            (exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name)
+            (
+                exposure_scenario.loc[
+                    :, f"{FiatColumns.aggr_label_default}:{aggr_label}"
+                ]
+                == aggr_name
+            )
             & (exposure_scenario.loc[:, FiatColumns.primary_object_type] == build_type),
             :,
         ]
@@ -145,14 +157,22 @@ class TestFiatAdapter:
         # Check if elevation took place correctly at each object
         for i, row in exposures.iterrows():
             # If the initial elevation is smaller than the required one it should have been elevated to than one
-            if row[FiatColumns.ground_elevation] + row[f"{FiatColumns.ground_floor_height}_1"] < row["bfe"] + elevate_val:
+            if (
+                row[FiatColumns.ground_elevation]
+                + row[f"{FiatColumns.ground_floor_height}_1"]
+                < row["bfe"] + elevate_val
+            ):
                 assert (
-                    row[FiatColumns.ground_elevation] + row[f"{FiatColumns.ground_floor_height}_2"]
+                    row[FiatColumns.ground_elevation]
+                    + row[f"{FiatColumns.ground_floor_height}_2"]
                     == row["bfe"] + elevate_val
                 )
             # if not it should have stated the same
             else:
-                assert row[f"{FiatColumns.ground_floor_height}_2"] == row[f"{FiatColumns.ground_floor_height}_1"]
+                assert (
+                    row[f"{FiatColumns.ground_floor_height}_2"]
+                    == row[f"{FiatColumns.ground_floor_height}_1"]
+                )
 
         # check if buildings are bought-out
         aggr_label = test_scenario.impacts.impact_strategy.measures[
@@ -165,7 +185,8 @@ class TestFiatAdapter:
             1
         ].attrs.property_type
         inds = (
-            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name
+            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            == aggr_name
         ) & (exposure_scenario.loc[:, FiatColumns.primary_object_type] == build_type)
 
         assert all(exposure_scenario.loc[inds, FiatColumns.damage_structure] == 0)
@@ -181,10 +202,12 @@ class TestFiatAdapter:
             2
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name
+            exposure_template.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            == aggr_name
         ) & (exposure_template.loc[:, FiatColumns.primary_object_type] == build_type)
         inds2 = (
-            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name
+            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            == aggr_name
         ) & (exposure_scenario.loc[:, FiatColumns.primary_object_type] == build_type)
 
         assert all(
@@ -214,10 +237,12 @@ class TestFiatAdapter:
             0
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name
+            exposure_template.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            == aggr_name
         ) & (exposure_template.loc[:, FiatColumns.primary_object_type] == build_type)
         inds2 = (
-            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"] == aggr_name
+            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            == aggr_name
         ) & (exposure_scenario.loc[:, FiatColumns.primary_object_type] == build_type)
 
         assert all(
