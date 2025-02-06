@@ -45,9 +45,9 @@ class HurricaneEventModel(EventModel):
         ForcingType.WIND: [ForcingSource.TRACK],
         ForcingType.WATERLEVEL: [ForcingSource.MODEL],
         ForcingType.DISCHARGE: [
-            ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
+            ForcingSource.CONSTANT,
         ],
     }
     template: Template = Template.Hurricane
