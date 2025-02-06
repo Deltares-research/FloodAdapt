@@ -448,7 +448,7 @@ class FiatAdapter(IImpactAdapter):
             self.fiat_output_mapping[f"{FiatColumns.aggr_label_default}:{name}"] = (
                 f"Aggregation Label: {name}"
             )
-        metrics_exposure = self.outputs["table"].rename(
+        mapped_exposure_df = self.outputs["table"].rename(
             columns=self.fiat_output_mapping
         )
 
@@ -466,9 +466,11 @@ class FiatAdapter(IImpactAdapter):
 
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
-
-            metrics_exposure = self.add_exceedance_probability(
-                column=FiatColumns.inundation_depth,
+            column = column = [key for key, value in self.fiat_output_mapping.items() if value == config["column"]][0]
+            
+            self.fiat_output_mapping[column]
+            mapped_exposure_df = self.add_exceedance_probability(
+                column=column,
                 threshold=config["threshold"],
                 period=config["period"],
             )
@@ -478,7 +480,7 @@ class FiatAdapter(IImpactAdapter):
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
 
-        metrics_exposure.to_csv(fiat_results_path)
+        mapped_exposure_df.to_csv(fiat_results_path)
 
         # Create the infometrics files
         if mode == Mode.risk:
@@ -504,7 +506,7 @@ class FiatAdapter(IImpactAdapter):
             f"Infometrics_{scenario.attrs.name}.csv"
         )
         self.create_infometrics(
-            metric_config_paths, metrics_outputs_path, metrics_exposure
+            metric_config_paths, metrics_outputs_path, mapped_exposure_df
         )
 
         # Get paths of created aggregated infometrics
@@ -563,15 +565,22 @@ class FiatAdapter(IImpactAdapter):
         if not self.config.save_simulation:
             self.delete_model()
 
-    def map_risk_metrics(self, metrics_exposure: pd.DataFrame):
-        for column in metrics_exposure:
+    def map_risk_metrics(self, mapped_exposure_df: pd.DataFrame):
+        """Rename the Delft FIAT output columns per return period.
+        
+        Parameters
+        ----------
+        mapped_exposure_df : pd.DataFrame
+            The exposure dataframe with the mapped headings for the exposure input (not yet the output).
+        """
+        for column in mapped_exposure_df:
             if FiatColumns.inundation_depth in column:
                 inun_rp = column.split(FiatColumns.inundation_depth + "_")[-1]
                 rp = f"({inun_rp.split('.0y')[0]}Y)"
                 new_column = str(
                     self.fiat_output_mapping[FiatColumns.inundation_depth] + " " + rp
                 )
-                metrics_exposure = metrics_exposure.rename(columns={column: new_column})
+                mapped_exposure_df = mapped_exposure_df.rename(columns={column: new_column})
             elif FiatColumns.damage_default in column:
                 if FiatColumns.total_damage in column:
                     damage_rp = column.split(FiatColumns.total_damage + "_")[-1]
@@ -589,11 +598,11 @@ class FiatAdapter(IImpactAdapter):
                         + " "
                         + rp
                     )
-                metrics_exposure = metrics_exposure.rename(columns={column: new_column})
+                mapped_exposure_df = mapped_exposure_df.rename(columns={column: new_column})
             else:
-                metrics_exposure = metrics_exposure
+                mapped_exposure_df = mapped_exposure_df
 
-        return metrics_exposure
+        return mapped_exposure_df
 
     def add_measure(self, measure: IMeasure):
         """
@@ -1192,7 +1201,7 @@ class FiatAdapter(IImpactAdapter):
         self,
         metric_config_paths: list[os.PathLike],
         metrics_output_path: os.PathLike,
-        metrics_exposure: pd.DataFrame,
+        mapped_exposure_df: pd.DataFrame,
     ) -> None:
         """
         Create infometrics files based on the provided metric configuration paths.
@@ -1203,6 +1212,8 @@ class FiatAdapter(IImpactAdapter):
             A list of paths to the metric configuration files.
         metrics_output_path : os.PathLike
             The path where the metrics output file will be saved.
+        mapped_exposure_df: pd.DataFrame
+            The exposure dataframe with the mapped headings for the exposure input and output).
 
         Raises
         ------
@@ -1217,17 +1228,17 @@ class FiatAdapter(IImpactAdapter):
         for metric_file in metric_config_paths:
             if metric_file.exists():
                 metrics_writer = MetricsFileWriter(
-                    metric_file, aggregation_label="Aggregation Label: "
+                    metric_file, aggregation_prefix="Aggregation Label: "
                 )
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=metrics_exposure,
+                    df_results=mapped_exposure_df,
                     metrics_path=metrics_output_path,
                     write_aggregate=None,
                 )
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=metrics_exposure,
+                    df_results=mapped_exposure_df,
                     metrics_path=metrics_output_path,
                     write_aggregate="all",
                 )
