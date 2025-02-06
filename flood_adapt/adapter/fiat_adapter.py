@@ -1490,7 +1490,7 @@ class FiatAdapter(IImpactAdapter):
             name
             for name in self.outputs["table"].columns
             if any(
-                f"aggregation_label:{aggregation.name}" in name
+                f"{FiatColumns.aggregation_prefix}{aggregation.name}" in name
                 for aggregation in self.config.aggregation
             )
         ]
