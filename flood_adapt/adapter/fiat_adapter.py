@@ -126,7 +126,7 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.max_pot_damage_structure: "Max Potential Damage: Structure",
             FiatColumns.max_pot_damage_content: "Max Potential Damage: Content",
             FiatColumns.max_pot_damage_other: "Max Potential Damage: Other",
-            FiatColumns.aggregation_prefix: "Aggregation level",
+            FiatColumns.aggregation_prefix: "Aggregation Label: ",
         }
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
@@ -444,9 +444,8 @@ class FiatAdapter(IImpactAdapter):
 
         # Map exposure columns
         for aggregation in self.config.aggregation:
-            name = aggregation.name
-            self.fiat_output_mapping[f"{FiatColumns.aggregation_prefix}{name}"] = (
-                f"Aggregation Label: {name}"
+            self.fiat_output_mapping[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = (
+                f"{self.fiat_output_mapping[FiatColumns.aggregation_prefix]}{aggregation.name}"
             )
         mapped_exposure_df = self.outputs["table"].rename(
             columns=self.fiat_output_mapping
@@ -1464,9 +1463,7 @@ class FiatAdapter(IImpactAdapter):
         )
         # Add aggregation to fiat_columns
         for aggregation in self.config.aggregation:
-            self.fiat_columns_dict[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = (
-                f"{self.fiat_columns_dict[{FiatColumns.aggregation_prefix}]}{aggregation.name}"
-            )
+            self.fiat_columns_dict[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = f"{FiatColumns.aggregation_prefix}{aggregation.name}"
         # Get damages
         footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
         footprints.calc_normalized_damages(self.fiat_columns_dict)
