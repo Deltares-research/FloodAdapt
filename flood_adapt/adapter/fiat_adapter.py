@@ -65,7 +65,7 @@ class FiatColumns:
     max_pot_damage_structure = "max_damage_structure"
     max_pot_damage_content = "max_damage_content"
     max_pot_damage_other = "max_damage_other"
-    aggregation_prefix = "aggregation_label"
+    aggregation_prefix = "aggregation_label:"
 
 
 class FiatAdapter(IImpactAdapter):
