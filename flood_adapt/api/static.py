@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Union
 
-from geopandas import GeoDataFrame
+import geopandas as gpd
 from hydromt_sfincs.quadtree import QuadtreeGrid
 
 from flood_adapt.dbs_classes.database import Database
@@ -27,7 +27,7 @@ def read_database(database_path: Union[str, os.PathLike], site_name: str) -> Dat
     return Database(database_path, site_name)
 
 
-def get_aggregation_areas() -> list[GeoDataFrame]:
+def get_aggregation_areas() -> list[gpd.GeoDataFrame]:
     """Get a list of the aggregation areas that are provided in the site configuration.
 
     These are expected to much the ones in the FIAT model.
@@ -40,20 +40,20 @@ def get_aggregation_areas() -> list[GeoDataFrame]:
     return Database().static.get_aggregation_areas()
 
 
-def get_obs_points() -> GeoDataFrame:
+def get_obs_points() -> gpd.GeoDataFrame:
     """Get the observation points specified in the site.toml.
 
     These are also added to the flood hazard model. They are used as marker locations to plot water level time series in the output tab.
 
     Returns
     -------
-    GeoDataFrame
-        GeoDataFrame with observation points from the site.toml.
+    gpd.GeoDataFrame
+        gpd.GeoDataFrame with observation points from the site.toml.
     """
     return Database().static.get_obs_points()
 
 
-def get_model_boundary() -> GeoDataFrame:
+def get_model_boundary() -> gpd.GeoDataFrame:
     """Get the model boundary that is used in SFINCS.
 
     Returns
@@ -76,13 +76,13 @@ def get_model_grid() -> QuadtreeGrid:
 
 
 @staticmethod
-def get_svi_map() -> Union[GeoDataFrame, None]:
+def get_svi_map() -> Union[gpd.GeoDataFrame, None]:
     """Get the SVI map that are used in Fiat.
 
     Returns
     -------
-    GeoDataFrame
-        GeoDataFrames with the SVI map, None if not available
+    gpd.GeoDataFrame
+        gpd.GeoDataFrames with the SVI map, None if not available
     """
     try:
         return Database().static.get_static_map(
@@ -93,7 +93,7 @@ def get_svi_map() -> Union[GeoDataFrame, None]:
 
 
 @staticmethod
-def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
+def get_static_map(path: Union[str, Path]) -> Union[gpd.GeoDataFrame, None]:
     """Get a static map from the database.
 
     Parameters
@@ -103,8 +103,8 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
 
     Returns
     -------
-    gpd.GeoDataFrame
-        GeoDataFrame with the static map
+    gpd.gpd.GeoDataFrame
+        gpd.GeoDataFrame with the static map
     """
     try:
         return Database().static.get_static_map(path)
@@ -112,13 +112,13 @@ def get_static_map(path: Union[str, Path]) -> Union[GeoDataFrame, None]:
         return None
 
 
-def get_buildings() -> GeoDataFrame:
+def get_buildings() -> gpd.GeoDataFrame:
     """Get the buildings exposure that are used in Fiat.
 
     Returns
     -------
-    GeoDataFrame
-        GeoDataFrames with the buildings from FIAT exposure
+    gpd.GeoDataFrame
+        gpd.GeoDataFrames with the buildings from FIAT exposure
     """
     return Database().static.get_buildings()
 

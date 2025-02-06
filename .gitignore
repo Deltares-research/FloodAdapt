@@ -172,6 +172,7 @@ system/
 
 # Pixi
 .pixi
+*.egg-info
 
 # FloodAdapt
 *.spw
