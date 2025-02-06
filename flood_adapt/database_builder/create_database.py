@@ -786,7 +786,7 @@ class DatabaseBuilder:
                     self.buildings,
                     region,
                     "id",
-                    rename=f"{FiatColumns.aggregation_label}region",
+                    rename=f"{FiatColumns.aggregation_prefix}:region",
                 )
                 exposure_csv = exposure_csv.merge(
                     buildings_joined, on=FiatColumns.object_id, how="left"

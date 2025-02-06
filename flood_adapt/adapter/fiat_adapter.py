@@ -65,7 +65,7 @@ class FiatColumns:
     max_pot_damage_structure = "max_damage_structure"
     max_pot_damage_content = "max_damage_content"
     max_pot_damage_other = "max_damage_other"
-    aggr_label_default = "aggregation_label"
+    aggregation_prefix = "aggregation_label"
 
 
 class FiatAdapter(IImpactAdapter):
@@ -126,7 +126,7 @@ class FiatAdapter(IImpactAdapter):
             FiatColumns.max_pot_damage_structure: "Max Potential Damage: Structure",
             FiatColumns.max_pot_damage_content: "Max Potential Damage: Content",
             FiatColumns.max_pot_damage_other: "Max Potential Damage: Other",
-            FiatColumns.aggr_label_default: "Aggregation level:",
+            FiatColumns.aggregation_prefix: "Aggregation level",
         }
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
@@ -445,7 +445,7 @@ class FiatAdapter(IImpactAdapter):
         # Map exposure columns
         for aggregation in self.config.aggregation:
             name = aggregation.name
-            self.fiat_output_mapping[f"{FiatColumns.aggr_label_default}:{name}"] = (
+            self.fiat_output_mapping[f"{FiatColumns.aggregation_prefix}{name}"] = (
                 f"Aggregation Label: {name}"
             )
         mapped_exposure_df = self.outputs["table"].rename(
@@ -896,7 +896,7 @@ class FiatAdapter(IImpactAdapter):
         ]
         attribute_names = [aggr.field_name for aggr in self.config.aggregation]
         label_names = [
-            f"{FiatColumns.aggregation_label}{aggr.name}"
+            f"{FiatColumns.aggregation_prefix}{aggr.name}"
             for aggr in self.config.aggregation
         ]
         # Use hydromt function
@@ -1464,8 +1464,8 @@ class FiatAdapter(IImpactAdapter):
         )
         # Add aggregation to fiat_columns
         for aggregation in self.config.aggregation:
-            self.fiat_columns_dict[f"aggr_label_default:{aggregation.name}"] = (
-                f"{self.fiat_columns_dict['aggr_label_default']}:{aggregation.name}"
+            self.fiat_columns_dict[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = (
+                f"{self.fiat_columns_dict[{FiatColumns.aggregation_prefix}]}{aggregation.name}"
             )
         # Get damages
         footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
