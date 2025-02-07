@@ -99,10 +99,12 @@ def plot_discharge(
             else:
                 raise ValueError(f"Unknown discharge source: `{discharge.source}`")
 
-            # add river_data as a column to the dataframe. keep the same index
+            # Rename columns to avoid conflicts
+            river_data.columns = [discharge.river.name]
             if data.empty:
                 data = river_data
             else:
+                # add river_data as a column to the dataframe. keep the same index
                 data = data.join(river_data, how="outer")
         except Exception as e:
             errors.append((discharge.river.name, e))
