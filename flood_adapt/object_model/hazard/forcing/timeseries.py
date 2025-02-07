@@ -237,16 +237,23 @@ class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
     ) -> pd.DataFrame:
         file_data = read_csv(self.attrs.path)
 
-        # filter by time frame
-        df = file_data.loc[time_frame.start_time : time_frame.end_time]
-        if df.empty:
+        # filter by time
+        if time_frame.start_time < file_data.index.min():
             raise ValueError(
-                f"""No data in csv file for the selected time frame.\n\nRequested time frame:\t{time_frame.start_time} to {time_frame.end_time}\nFile time frame:\t\t{file_data.index.min()} to {file_data.index.max()}\nFilepath:\t\t{self.attrs.path}"""
+                f"""Requested start time is before the start of the csv file.\n\nRequested start time:\t{time_frame.start_time}\nFile start time:\t\t{file_data.index.min()}\nFilepath:\t\t{self.attrs.path}"""
             )
+        if time_frame.end_time > file_data.index.max():
+            raise ValueError(
+                f"""Requested end time is after the end of the csv file.\n\nRequested end time:\t{time_frame.end_time}\nFile end time:\t\t{file_data.index.max()}\nFilepath:\t\t{self.attrs.path}"""
+            )
+
+        df = file_data.loc[time_frame.start_time : time_frame.end_time]
 
         # interpolate and fill missing values
         time_range = pd.date_range(
-            start=df.index.min(), end=df.index.max(), freq=time_frame.time_step
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=time_frame.time_step,
         )
         interpolated_df = (
             df.reindex(time_range, method="nearest", limit=1)

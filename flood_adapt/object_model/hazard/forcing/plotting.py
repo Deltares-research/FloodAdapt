@@ -150,6 +150,8 @@ def plot_discharge(
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "discharge_timeseries.html"
+    if output_loc.exists():
+        output_loc.unlink()
     fig.write_html(output_loc)
     return str(output_loc), None
 
@@ -237,7 +239,8 @@ def plot_waterlevel(
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "waterlevel_timeseries.html"
-
+    if output_loc.exists():
+        output_loc.unlink()
     fig.write_html(output_loc)
     return str(output_loc), None
 
@@ -300,7 +303,8 @@ def plot_rainfall(
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "rainfall_timeseries.html"
-
+    if output_loc.exists():
+        output_loc.unlink()
     fig.write_html(output_loc)
     return str(output_loc), None
 
@@ -388,6 +392,7 @@ def plot_wind(
     if not output_dir.exists():
         output_dir = gettempdir()
     output_loc = Path(output_dir) / "wind_timeseries.html"
-
+    if output_loc.exists():
+        output_loc.unlink()
     fig.write_html(output_loc)
     return str(output_loc), None
