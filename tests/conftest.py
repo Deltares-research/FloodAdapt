@@ -79,6 +79,7 @@ def session_setup_teardown():
     Settings(
         DATABASE_ROOT=src_dir.parents[1] / "Database",
         DATABASE_NAME="charleston_test",
+        DELETE_CRASHED_RUNS=clean,
         # leave system_folder empty to use the envvar or default system folder
     )
 

@@ -4,6 +4,7 @@ from typing import Any, List, Optional, Type, TypeVar
 
 from pydantic import field_serializer, field_validator, model_validator
 
+from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.forcing.forcing_factory import ForcingFactory
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingSource,
@@ -79,10 +80,11 @@ class EventModel(IEventModel):
                     f"Allowed sources are: {allowed_sources}"
                 )
 
-        # Validate forcings
-        for _, concrete_forcings in self.forcings.items():
-            for concrete_forcing in concrete_forcings:
-                validate_concrete_forcing(concrete_forcing)
+        if Settings().validate_allowed_forcings:
+            # Validate forcings
+            for _, concrete_forcings in self.forcings.items():
+                for concrete_forcing in concrete_forcings:
+                    validate_concrete_forcing(concrete_forcing)
 
         return self
 
