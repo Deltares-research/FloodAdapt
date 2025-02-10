@@ -1,8 +1,7 @@
 import math
 import os
-import shutil
 from pathlib import Path
-from typing import Any, ClassVar, List, Optional
+from typing import Any, ClassVar, List
 
 import pyproj
 from cht_cyclones.tropical_cyclone import TropicalCyclone
@@ -78,8 +77,8 @@ class HurricaneEvent(Event[HurricaneEventModel]):
 
     def make_spw_file(
         self,
+        output_dir: Path,
         recreate: bool = False,
-        output_dir: Optional[Path] = None,
     ) -> Path:
         """
         Create a spiderweb file from a given TropicalCyclone track and save it to the event's input directory.
@@ -101,15 +100,13 @@ class HurricaneEvent(Event[HurricaneEventModel]):
         Path
             the path to the created spiderweb file
         """
-        spw_file = self.track_file.parent.joinpath(f"{self.attrs.track_name}.spw")
+        spw_file = output_dir / f"{self.attrs.track_name}.spw"
 
-        output_dir = output_dir or self.track_file.parent
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        if spw_file.exists() and not recreate:
-            if spw_file != output_dir.joinpath(spw_file.name):
-                shutil.copy2(spw_file, output_dir.joinpath(spw_file.name))
-            return output_dir.joinpath(spw_file.name)
+        if spw_file.exists():
+            if recreate:
+                os.remove(spw_file)
+            else:
+                return spw_file
 
         self.logger.info(
             f"Creating spiderweb file for hurricane event `{self.attrs.name}`"
@@ -136,15 +133,10 @@ class HurricaneEvent(Event[HurricaneEventModel]):
                 rainfall.source == ForcingSource.TRACK for rainfall in rainfall_forcings
             )
 
-        if spw_file.exists() and recreate:
-            os.remove(spw_file)
-
         # Create spiderweb file from the track
         tc.to_spiderweb(spw_file)
-        if spw_file != output_dir.joinpath(spw_file.name):
-            shutil.copy2(spw_file, output_dir.joinpath(spw_file.name))
 
-        return output_dir.joinpath(spw_file.name)
+        return spw_file
 
     def translate_tc_track(self, tc: TropicalCyclone):
         self.logger.info(f"Translating the track of the tropical cyclone `{tc.name}`")

@@ -205,15 +205,15 @@ class SfincsAdapter(IHazardAdapter):
             self.logger.debug(process.stdout)
 
         if process.returncode != 0:
-            if Settings().delete_crashed_runs:
-                # Remove all files in the simulation folder except for the log files
-                for subdir, dirs, files in os.walk(path, topdown=False):
-                    for file in files:
-                        if not file.endswith(".log"):
-                            os.remove(os.path.join(subdir, file))
+            # if Settings().delete_crashed_runs:
+            # Remove all files in the simulation folder except for the log files
+            # for subdir, dirs, files in os.walk(path, topdown=False):
+            #     for file in files:
+            #         if not file.endswith(".log"):
+            #             os.remove(os.path.join(subdir, file))
 
-                    if not os.listdir(subdir):
-                        os.rmdir(subdir)
+            #     if not os.listdir(subdir):
+            #         os.rmdir(subdir)
 
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {path}.")
@@ -227,6 +227,7 @@ class SfincsAdapter(IHazardAdapter):
         self.ensure_no_existing_forcings()
         self.preprocess(scenario)
         self.process(scenario)
+
         self.postprocess(scenario)
 
     def preprocess(self, scenario: IScenario):
@@ -1389,21 +1390,28 @@ class SfincsAdapter(IHazardAdapter):
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def _add_forcing_spw(self, spw_path: Path):
+    def _add_forcing_spw(self, input_spw_path: Path):
         """Add spiderweb forcing."""
-        if spw_path is None:
+        if input_spw_path is None:
             raise ValueError("No path to rainfall track file provided.")
 
-        if not spw_path.exists():
-            raise FileNotFoundError(f"SPW file not found: {spw_path}")
-        self.logger.info("Adding spiderweb forcing to the overland flood model")
+        if not input_spw_path.exists():
+            raise FileNotFoundError(f"SPW file not found: {input_spw_path}")
         sim_path = self.get_model_root()
+        self.logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
 
         # prevent SameFileError
-        if spw_path != sim_path / spw_path.name:
-            shutil.copy2(spw_path, sim_path / spw_path.name)
+        output_spw_path = sim_path / input_spw_path.name
+        if input_spw_path == output_spw_path:
+            raise ValueError(
+                "Add a different SPW file than the one already in the model."
+            )
 
-        self._model.set_config("spwfile", spw_path.name)
+        if output_spw_path.exists():
+            os.remove(output_spw_path)
+        shutil.copy2(input_spw_path, output_spw_path)
+
+        self._model.set_config("spwfile", output_spw_path.name)
 
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario: IScenario) -> Path:

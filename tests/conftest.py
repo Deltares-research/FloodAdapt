@@ -26,7 +26,7 @@ src_dir = Path(
 #### DEBUGGING ####
 # To disable resetting the database after tests: set CLEAN = False
 # Only for debugging purposes, should always be set to true when pushing to github
-clean = True
+clean = False
 
 
 def create_snapshot():

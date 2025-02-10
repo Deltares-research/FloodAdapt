@@ -10,14 +10,8 @@ from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
-from flood_adapt.object_model.hazard.forcing.rainfall import (
-    RainfallTrack,
-)
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelModel,
-)
-from flood_adapt.object_model.hazard.forcing.wind import (
-    WindTrack,
 )
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
@@ -41,8 +35,8 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             track_name="IAN",
             forcings={
                 ForcingType.WATERLEVEL: [WaterlevelModel()],
-                ForcingType.WIND: [WindTrack()],
-                ForcingType.RAINFALL: [RainfallTrack()],
+                ForcingType.WIND: [],
+                ForcingType.RAINFALL: [],
                 ForcingType.DISCHARGE: [
                     DischargeConstant(
                         river=RiverModel(
@@ -131,7 +125,8 @@ class TestHurricaneEvent:
     ):
         # Arrange
         hurricane_event, cyc_file = setup_hurricane_event
-        spw_file = test_db.events.input_path / hurricane_event.attrs.name / "IAN.spw"
+        spw_dir = test_db.events.input_path / hurricane_event.attrs.name
+        spw_file = spw_dir / "IAN.spw"
         hurricane_event.attrs.track_name = "IAN"
         test_db.events.save(hurricane_event)
 
@@ -141,7 +136,7 @@ class TestHurricaneEvent:
         )
 
         # Act
-        hurricane_event.make_spw_file()
+        hurricane_event.make_spw_file(output_dir=spw_dir)
 
         # Assert
         assert spw_file.exists()
