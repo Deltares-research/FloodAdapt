@@ -180,11 +180,15 @@ class Settings(BaseSettings):
         self._validate_system_folder()
         self._validate_fiat_path()
         self._validate_sfincs_path()
+        return self
 
+    @model_validator(mode="after")
+    def update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
         environ["SYSTEM_FOLDER"] = str(self.system_folder)
-
+        environ["DELETE_CRASHED_RUNS"] = str(self.delete_crashed_runs)
+        environ["VALIDATE_ALLOWED_FORCINGS"] = str(self.validate_allowed_forcings)
         return self
 
     def _validate_database_path(self):
