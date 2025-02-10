@@ -234,31 +234,43 @@ class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
     def to_dataframe(
         self,
         time_frame: TimeModel,
+        fill_value: float = 0,
     ) -> pd.DataFrame:
+        """
+        Interpolate the timeseries data using the timestep provided.
+
+        Parameters
+        ----------
+        time_frame : TimeModel
+            Time frame for the data.
+        fill_value : float, optional
+            Value to fill missing data with, by default 0.
+
+        Returns
+        -------
+        pd.DataFrame
+            Interpolated timeseries with datetime index.
+        """
         file_data = read_csv(self.attrs.path)
 
-        # filter by time
-        if time_frame.start_time < file_data.index.min():
-            raise ValueError(
-                f"""Requested start time is before the start of the csv file.\n\nRequested start time:\t{time_frame.start_time}\nFile start time:\t\t{file_data.index.min()}\nFilepath:\t\t{self.attrs.path}"""
-            )
-        if time_frame.end_time > file_data.index.max():
-            raise ValueError(
-                f"""Requested end time is after the end of the csv file.\n\nRequested end time:\t{time_frame.end_time}\nFile end time:\t\t{file_data.index.max()}\nFilepath:\t\t{self.attrs.path}"""
-            )
+        # Ensure requested time range is within available data
+        start_time = max(time_frame.start_time, file_data.index.min())
+        end_time = min(time_frame.end_time, file_data.index.max())
 
-        df = file_data.loc[time_frame.start_time : time_frame.end_time]
+        df = file_data.loc[start_time:end_time]
 
-        # interpolate and fill missing values
+        # Generate the complete time range
         time_range = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
             freq=time_frame.time_step,
         )
+
+        # Reindex and fill missing values with specified fill_value
         interpolated_df = (
             df.reindex(time_range, method="nearest", limit=1)
             .interpolate(method="linear")
-            .fillna(0)
+            .fillna(fill_value)
         )
         interpolated_df.index.name = "time"
         return interpolated_df
