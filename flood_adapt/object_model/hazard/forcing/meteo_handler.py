@@ -3,14 +3,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import cht_meteo.cht.meteo as meteo
 import numpy as np
 import pandas as pd
 import xarray as xr
 from cht_meteo.meteo import (
     MeteoGrid,
-    MeteoSource,
 )
-from pyproj import CRS
 
 from flood_adapt.misc.config import Settings
 from flood_adapt.object_model.hazard.interface.meteo_handler import IMeteoHandler
@@ -27,43 +26,33 @@ class MeteoHandler(IMeteoHandler):
         )
 
     def download(self, time: TimeModel):
-        params = ["wind", "barometric_pressure", "precipitation"]
-
-        # Download the actual datasets
-        gfs_source = MeteoSource(
-            "gfs_anl_0p50", "gfs_anl_0p50_04", "hindcast", delay=None
-        )
-
-        # Create subset
-        name = "gfs_anl_0p50_us_southeast"
-        gfs_conus = MeteoGrid(
-            name=name,
-            source=gfs_source,
-            parameters=params,
+        # Create GFS dataset
+        gfs_conus = meteo.dataset(
+            name="gfs_anl_0p50",
+            source="gfs_analysis_0p50",
             path=self.dir,
-            x_range=[self.site.attrs.lon - 10, self.site.attrs.lon + 10],
-            y_range=[self.site.attrs.lat - 10, self.site.attrs.lat + 10],
-            crs=CRS.from_epsg(4326),
+            lon_range=[self.site.attrs.lon - 10, self.site.attrs.lon + 10],
+            lat_range=[self.site.attrs.lat - 10, self.site.attrs.lat + 10],
         )
 
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
         # TODO implement a good solution to this in cht_meteo
         def _shift_grid_to_positive_lon(grid: MeteoGrid):
             """Shift the grid to positive longitudes if the grid crosses the 0 degree longitude."""
-            if np.prod(grid.x_range) < 0:
-                if np.abs(grid.x_range[0]) > np.abs(grid.x_range[1]):
-                    grid.x_range = [
-                        grid.x_range[0] - grid.x_range[1] - 1,
-                        grid.x_range[1] - grid.x_range[1] - 1,
+            if np.prod(grid.lon_range) < 0:
+                if np.abs(grid.lon_range[0]) > np.abs(grid.lon_range[1]):
+                    grid.lon_range = [
+                        grid.lon_range[0] - grid.lon_range[1] - 1,
+                        grid.lon_range[1] - grid.lon_range[1] - 1,
                     ]
                 else:
-                    grid.x_range = [
-                        grid.x_range[0] - grid.x_range[0] + 1,
-                        grid.x_range[1] - grid.x_range[0] + 1,
+                    grid.lon_range = [
+                        grid.lon_range[0] - grid.lon_range[0] + 1,
+                        grid.lon_range[1] - grid.lon_range[0] + 1,
                     ]
-            return grid.x_range
+            return grid.lon_range
 
-        gfs_conus.x_range = _shift_grid_to_positive_lon(gfs_conus)
+        gfs_conus.lon_range = _shift_grid_to_positive_lon(gfs_conus)
 
         # Download and collect data
         t0 = time.start_time
@@ -75,7 +64,7 @@ class MeteoHandler(IMeteoHandler):
 
         time_range = [t0, t1]
 
-        gfs_conus.download(time_range=time_range, parameters=params, path=self.dir)
+        gfs_conus.download(time_range=time_range)
 
     def read(self, time: TimeModel) -> xr.Dataset:
         self.download(time)
