@@ -175,15 +175,15 @@ class Settings(BaseSettings):
         return self.database_root / self.database_name
 
     @model_validator(mode="after")
-    def validate_paths(self):
+    def validate_settings(self):
         self._validate_database_path()
         self._validate_system_folder()
         self._validate_fiat_path()
         self._validate_sfincs_path()
+        self._update_environment_variables()
         return self
 
-    @model_validator(mode="after")
-    def update_environment_variables(self):
+    def _update_environment_variables(self):
         environ["DATABASE_ROOT"] = str(self.database_root)
         environ["DATABASE_NAME"] = self.database_name
         environ["SYSTEM_FOLDER"] = str(self.system_folder)
