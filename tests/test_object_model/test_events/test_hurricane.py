@@ -10,9 +10,11 @@ from flood_adapt.object_model.hazard.event.hurricane import (
     HurricaneEventModel,
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
+from flood_adapt.object_model.hazard.forcing.rainfall import RainfallTrack
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     WaterlevelModel,
 )
+from flood_adapt.object_model.hazard.forcing.wind import WindTrack
 from flood_adapt.object_model.hazard.interface.events import (
     ForcingType,
 )
@@ -35,8 +37,8 @@ def setup_hurricane_event() -> tuple[HurricaneEvent, Path]:
             track_name="IAN",
             forcings={
                 ForcingType.WATERLEVEL: [WaterlevelModel()],
-                ForcingType.WIND: [],
-                ForcingType.RAINFALL: [],
+                ForcingType.WIND: [WindTrack()],
+                ForcingType.RAINFALL: [RainfallTrack()],
                 ForcingType.DISCHARGE: [
                     DischargeConstant(
                         river=RiverModel(

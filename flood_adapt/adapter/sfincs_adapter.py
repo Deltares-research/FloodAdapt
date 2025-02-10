@@ -126,10 +126,11 @@ class SfincsAdapter(IHazardAdapter):
         if not path_out.exists():
             path_out.mkdir(parents=True)
 
-        write_mode = "w+" if overwrite else "w"
-        with cd(path_out):
+        if not root == path_out:
             shutil.copytree(root, path_out, dirs_exist_ok=True)
 
+        write_mode = "w+" if overwrite else "w"
+        with cd(path_out):
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
 
