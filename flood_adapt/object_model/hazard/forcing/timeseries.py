@@ -281,6 +281,21 @@ class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
     ) -> np.ndarray:
         return read_csv(self.attrs.path).to_numpy()
 
+    def read_time_frame(self) -> TimeModel:
+        """
+        Read the time frame from the file.
+
+        Returns
+        -------
+        TimeModel
+            Time frame of the data in the file.
+        """
+        file_data = read_csv(self.attrs.path)
+        return TimeModel(
+            start_time=file_data.index.min(),
+            end_time=file_data.index.max(),
+        )
+
 
 def _extract_unit_class(data: dict[str, Any]) -> Type[us.ValueUnitPair]:
     if "peak_value" in data:
