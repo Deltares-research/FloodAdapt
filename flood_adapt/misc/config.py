@@ -147,6 +147,12 @@ class Settings(BaseSettings):
         description="Whether to delete the output of crashed/corrupted runs. Be careful when setting this to False, as it may lead to a broken database that cannot be read in anymore.",
         exclude=True,
     )
+    validate_allowed_forcings: bool = Field(
+        alias="VALIDATE_ALLOWED_FORCINGS",  # environment variable: VALIDATE_ALLOWED_FORCINGS
+        default=True,
+        description="Whether to validate the forcing types and sources against the allowed forcings in the event model.",
+        exclude=True,
+    )
     unit_system: UnitSystem = Field(
         default=UnitSystem(),
         description="The unit system to use for the calculations. Must be 'imperial' or 'metric'.",
