@@ -206,15 +206,15 @@ class SfincsAdapter(IHazardAdapter):
             self.logger.debug(process.stdout)
 
         if process.returncode != 0:
-            # if Settings().delete_crashed_runs:
-            # Remove all files in the simulation folder except for the log files
-            # for subdir, dirs, files in os.walk(path, topdown=False):
-            #     for file in files:
-            #         if not file.endswith(".log"):
-            #             os.remove(os.path.join(subdir, file))
+            if Settings().delete_crashed_runs:
+                # Remove all files in the simulation folder except for the log files
+                for subdir, dirs, files in os.walk(path, topdown=False):
+                    for file in files:
+                        if not file.endswith(".log"):
+                            os.remove(os.path.join(subdir, file))
 
-            #     if not os.listdir(subdir):
-            #         os.rmdir(subdir)
+                    if not os.listdir(subdir):
+                        os.rmdir(subdir)
 
             if strict:
                 raise RuntimeError(f"SFINCS model failed to run in {path}.")
