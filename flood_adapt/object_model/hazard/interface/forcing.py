@@ -50,6 +50,8 @@ class ForcingSource(str, Enum):
     GAUGED = "GAUGED"  # data downloaded from a gauge
     METEO = "METEO"  # external hindcast data
 
+    NONE = "NONE"  # no forcing data
+
 
 class IForcing(BaseModel, ABC):
     """BaseModel describing the expected variables and data types for forcing parameters of hazard model."""
