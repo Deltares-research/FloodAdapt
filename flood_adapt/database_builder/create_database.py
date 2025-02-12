@@ -784,7 +784,7 @@ class DatabaseBuilder:
                     {
                         "name": aggr_name,
                         "file": aggr_path.relative_to(self.fiat_model.root),
-                        "field_name": aggr_name,
+                        "field_name": f"{FiatColumns.aggregation_label}{aggr_name}",
                         "equity": None,
                     }
                 )
@@ -980,7 +980,9 @@ class DatabaseBuilder:
             floodmap_type="water_level",  # TODO allow for water depth
             non_building_names=["road"],  # TODO check names from exposure
             damage_unit=dmg_unit,
-            building_footprints=str(footprints_path),
+            building_footprints=str(
+                footprints_path.relative_to(self.static_path).as_posix()
+            ),
             roads_file_name="spatial2.gpkg" if self.roads else None,
             new_development_file_name="spatial3.gpkg",  # TODO allow for different naming
             save_simulation=False,  # default is not to save simulations
