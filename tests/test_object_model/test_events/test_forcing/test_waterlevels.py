@@ -8,6 +8,7 @@ from flood_adapt.object_model.hazard.event.historical import (
 )
 from flood_adapt.object_model.hazard.forcing.discharge import DischargeConstant
 from flood_adapt.object_model.hazard.forcing.rainfall import RainfallMeteo
+from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
     TideModel,
@@ -170,17 +171,21 @@ class TestWaterlevelCSV:
             start_time=dummy_1d_timeseries_df.index[0],
             end_time=dummy_1d_timeseries_df.index[-1],
         )
-        expected_df = dummy_1d_timeseries_df.loc[time.start_time : time.end_time]
-        expected_df.index.name = "time"
+
+        expected_df = (
+            CSVTimeseries[us.UnitfulDischarge]()
+            .load_file(path=path)
+            .to_dataframe(time_frame=time)
+        )
 
         # Act
         wl_df = WaterlevelCSV(path=path).to_dataframe(time_frame=time)
 
         # Assert
         assert isinstance(wl_df, pd.DataFrame)
-        assert dummy_1d_timeseries_df.index.equals(wl_df.index)
-        assert dummy_1d_timeseries_df.columns.equals(wl_df.columns)
-        pd.testing.assert_frame_equal(wl_df, dummy_1d_timeseries_df)
+        assert expected_df.index.equals(wl_df.index)
+        assert expected_df.columns.equals(wl_df.columns)
+        pd.testing.assert_frame_equal(wl_df, expected_df)
 
 
 class TestWaterlevelModel:

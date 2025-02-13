@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeCSV,
     DischargeSynthetic,
 )
+from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -92,8 +93,12 @@ class TestDischargeCSV:
             start_time=dummy_1d_timeseries_df.index[1],
             end_time=dummy_1d_timeseries_df.index[-2],
         )
-        expected_df = dummy_1d_timeseries_df.loc[time.start_time : time.end_time]
-        expected_df.index.name = "time"
+
+        expected_df = (
+            CSVTimeseries[us.UnitfulDischarge]()
+            .load_file(path=path)
+            .to_dataframe(time_frame=time)
+        )
 
         # Act
         discharge_df = DischargeCSV(river=river, path=path).to_dataframe(
