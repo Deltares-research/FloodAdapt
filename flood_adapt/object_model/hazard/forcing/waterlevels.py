@@ -45,12 +45,13 @@ class TideModel(BaseModel):
             name="time",
         )
         seconds = np.arange(len(index)) * time_frame.time_step.total_seconds()
+        seconds.round(decimals=0)
 
         amp = self.harmonic_amplitude.value
         omega = 2 * math.pi / (self.harmonic_period.convert(us.UnitTypesTime.seconds))
         phase_seconds = self.harmonic_phase.convert(us.UnitTypesTime.seconds)
 
-        tide = amp * np.cos(omega * (seconds - phase_seconds))  # / 86400
+        tide = amp * np.cos(omega * (seconds - phase_seconds))
         return pd.DataFrame(data=tide, index=index)
 
 
@@ -61,30 +62,18 @@ class WaterlevelSynthetic(IWaterlevel):
     tide: TideModel
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
+        tide_df = self.tide.to_dataframe(time_frame=time_frame)
         surge = SyntheticTimeseries(data=self.surge.timeseries)
-        surge_df = surge.to_dataframe(
-            time_frame=time_frame,
-        )
-        # Calculate Surge time series
-        start_surge = time_frame.start_time + surge.attrs.start_time.to_timedelta()
-        end_surge = start_surge + surge.attrs.duration.to_timedelta()
-
-        surge_ts = surge.calculate_data()
-        time_surge = pd.date_range(
-            start=start_surge,
-            end=end_surge,
-            freq=TimeModel().time_step,
-            name="time",
-        )
-
-        surge_df = pd.DataFrame(surge_ts, index=time_surge)
-        tide_df = self.tide.to_dataframe(time_frame)
-
-        # Reindex the shorter DataFrame to match the longer one
-        surge_df = surge_df.reindex(tide_df.index).fillna(0)
+        surge_df = surge.to_dataframe(time_frame=time_frame)
 
         # Combine
-        wl_df = tide_df.add(surge_df, axis="index")
+        tide_df.columns = ["waterlevel"]
+        surge_df.columns = ["waterlevel"]
+        surge_df = surge_df.reindex(tide_df.index, method="nearest", limit=1).fillna(
+            value=surge.attrs.fill_value
+        )
+
+        wl_df = tide_df.add(surge_df, axis="index", fill_value=0)
         wl_df.columns = ["waterlevel"]
 
         return wl_df
@@ -97,8 +86,10 @@ class WaterlevelCSV(IWaterlevel):
     units: us.UnitTypesLength = us.UnitTypesLength.meters
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            time_frame=time_frame
+        return (
+            CSVTimeseries[self.units]
+            .load_file(path=self.path)
+            .to_dataframe(time_frame=time_frame)
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

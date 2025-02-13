@@ -105,8 +105,8 @@ def dummy_strategy(test_db, dummy_buyout_measure, dummy_pump_measure):
 
 def _n_dim_dummy_timeseries_df(n_dims: int, time_model: TimeModel) -> pd.DataFrame:
     time = pd.date_range(
-        start=time_model.start_time,
-        end=time_model.end_time,
+        start=time_model.start_time - 10 * time_model.time_step,
+        end=time_model.end_time + 10 * time_model.time_step,
         freq=time_model.time_step,
         name="time",
     )

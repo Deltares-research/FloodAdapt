@@ -19,26 +19,26 @@ class HistoricalEventModel(EventModel):
 
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
-            ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.METEO,
             ForcingSource.SYNTHETIC,
+            ForcingSource.CONSTANT,
         ],
         ForcingType.WIND: [
-            ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.METEO,
+            ForcingSource.CONSTANT,
         ],
         ForcingType.WATERLEVEL: [
-            ForcingSource.CSV,
             ForcingSource.MODEL,
-            ForcingSource.GAUGED,
+            ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
+            ForcingSource.GAUGED,
         ],
         ForcingType.DISCHARGE: [
-            ForcingSource.CONSTANT,
             ForcingSource.CSV,
             ForcingSource.SYNTHETIC,
+            ForcingSource.CONSTANT,
         ],
     }
     template: Template = Template.Historical
