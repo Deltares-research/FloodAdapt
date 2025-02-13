@@ -231,19 +231,19 @@ class TestFiatAdapter:
             0
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            exposure_template.loc[:, f"{FiatColumns.aggregation_prefix}{aggr_label}"]
             == aggr_name
         ) & (exposure_template.loc[:, FiatColumns.primary_object_type] == build_type)
         inds2 = (
-            exposure_scenario.loc[:, f"{FiatColumns.aggr_label_default}:{aggr_label}"]
+            exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"]
             == aggr_name
-        ) & (exposure_scenario.loc[:, FiatColumns.primary_object_type] == build_type)
+        ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
 
         assert all(
             elev1 <= elev2
             for elev1, elev2 in zip(
-                exposure_template.loc[inds1, f"{FiatColumns.ground_floor_height}_"],
-                exposure_scenario.loc[inds2, f"{FiatColumns.ground_floor_height}_"],
+                exposure_template.loc[inds1, FiatColumns.ground_floor_height],
+                exposure_scenario.loc[inds2, "Ground Floor Height"],
             )
         )
 
@@ -251,8 +251,8 @@ class TestFiatAdapter:
             height + elev
             >= test_scenario.impacts.impact_strategy.measures[0].attrs.elevation.value
             for height, elev in zip(
-                exposure_scenario.loc[inds2, f"{FiatColumns.ground_floor_height}_"],
-                exposure_scenario.loc[inds2, FiatColumns.ground_elevation],
+                exposure_scenario.loc[inds2, "Ground Floor Height"],
+                exposure_scenario.loc[inds2, "Ground Elevation"],
             )
         )
 
