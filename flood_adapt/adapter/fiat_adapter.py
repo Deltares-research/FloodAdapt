@@ -369,12 +369,20 @@ class FiatAdapter(IImpactAdapter):
         """
         # Get output csv
         outputs_path = self.model_root.joinpath(self._model.config["output"]["path"])
-        output_csv_path = outputs_path.joinpath(
-            self._model.config["output"]["csv"]["name"]
-        )
+        csv_outputs_paths = []
+    
+        for entry in self._model.config["output"]["csv"]:
+            csv_outputs_paths.append(outputs_path.joinpath(self._model.config["output"]["csv"][entry]))
+
+        csv_outputs_df = []
+        for output_csv in csv_outputs_paths:
+            output_csv_df = pd.read_csv(output_csv)
+            csv_outputs_df.append(output_csv_df)
+        output_csv = pd.concat(csv_outputs_df)
+        
         self.outputs = {}
         self.outputs["path"] = outputs_path
-        self.outputs["table"] = pd.read_csv(output_csv_path)
+        self.outputs["table"] = output_csv
 
     def _get_aggr_ind(self, aggr_label: str):
         """
