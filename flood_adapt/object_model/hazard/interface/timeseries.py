@@ -74,8 +74,12 @@ class SyntheticTimeseriesModel(BaseModel, Generic[TValueUnitPair]):
         return self.peak_time + self.duration / 2
 
 
-class CSVTimeseriesModel(BaseModel):
+T_UNIT = TypeVar("T_UNIT")
+
+
+class CSVTimeseriesModel(BaseModel, Generic[T_UNIT]):
     path: Path
+    units: T_UNIT
 
     @model_validator(mode="after")
     def validate_csv(self):
@@ -124,11 +128,14 @@ class ITimeseries(ABC):
             - Filling the missing values with 0.
 
         Args:
-            start_time (Union[datetime, str]): The start datetime of returned timeseries.
-                start_time is the first index of the dataframe
-            end_time (Union[datetime, str]): The end datetime of returned timeseries.
-                end_time is the last index of the dataframe (date time)
-            time_step (timedelta): The time step between data points.
+            time_frame (TimeModel):
+                The time frame for the data.
+            ts_start_time (us.UnitfulTime):
+                The start time of the timeseries data relative to the time_frame start time.
+            ts_end_time (us.UnitfulTime):
+                The end time of the timeseries data relative to the time_frame start time.
+            fill_value (float, optional):
+                The fill value for missing data. Defaults to 0.0.
 
         Returns
         -------
@@ -209,7 +216,7 @@ class ITimeseries(ABC):
         # If the following equation is element-wise True, then allclose returns True.:
         # absolute(a - b) <= (atol + rtol * absolute(b))
         return np.allclose(
-            self.calculate_data(TimeModel().time_step),
-            other.calculate_data(TimeModel().time_step),
+            self.calculate_data(),
+            other.calculate_data(),
             rtol=1e-2,
         )

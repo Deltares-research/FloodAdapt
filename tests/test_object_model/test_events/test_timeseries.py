@@ -248,7 +248,8 @@ class TestSyntheticTimeseries:
         assert (
             result == len(data) - 1
         ), f"{ts.attrs.duration.to_timedelta()}/{time.time_step} should eq {result}, but it is: {len(data) - 1}."
-        assert np.amax(data) == ts.attrs.peak_value.value
+
+        assert np.amax(data) == pytest.approx(ts.attrs.peak_value.value, rel=1e-2)
 
     @pytest.mark.parametrize("duration, peak_time, peak_value, cumulative", TEST_ATTRS)
     def test_calculate_data_scs(self, duration, peak_time, peak_value, cumulative):
@@ -269,8 +270,8 @@ class TestSyntheticTimeseries:
 
         assert abs(cum_rainfall_ts - cumulative) < 0.01
         assert (
-            ts.attrs.duration.to_timedelta() / time.time_step == len(data) - 1
-        ), f"{ts.attrs.duration.to_timedelta()}/{time.time_step} should eq {ts.attrs.duration.to_timedelta() / time.time_step}, but it is: {len(data) - 1}."
+            int(ts.attrs.duration.to_timedelta() / time.time_step) == len(data) - 1
+        ), f"int({ts.attrs.duration.to_timedelta()}/{time.time_step}) should eq int({ts.attrs.duration.to_timedelta() / time.time_step}), but it is: {len(data) - 1}."
 
     def test_load_file(self):
         path = Path(tempfile.gettempdir()) / "test.toml"

@@ -26,7 +26,7 @@ class DischargeConstant(IDischarge):
         time = pd.date_range(
             start=time_frame.start_time,
             end=time_frame.end_time,
-            freq=TimeModel().time_step,
+            freq=time_frame.time_step,
             name="time",
         )
         data = [self.discharge.value for _ in range(len(time))]
@@ -49,11 +49,13 @@ class DischargeCSV(IDischarge):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
-    unit: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
+    units: us.UnitTypesDischarge = us.UnitTypesDischarge.cms
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            time_frame=time_frame
+        return (
+            CSVTimeseries[self.units]
+            .load_file(path=self.path)
+            .to_dataframe(time_frame=time_frame)
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:

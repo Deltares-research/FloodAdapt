@@ -6,13 +6,13 @@ import pandas as pd
 from noaa_coops.station import COOPSAPIError
 
 from flood_adapt.misc.log import FloodAdaptLogging
+from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.interface.models import TimeModel
 from flood_adapt.object_model.hazard.interface.tide_gauge import (
     ITideGauge,
     TideGaugeModel,
 )
 from flood_adapt.object_model.io import unit_system as us
-from flood_adapt.object_model.io.csv import read_csv
 
 
 class TideGauge(ITideGauge):
@@ -90,17 +90,11 @@ class TideGauge(ITideGauge):
             Dataframe with time as index and the waterlevel for each observation station as columns.
             The data is sliced to the time range specified in the time model.
         """
-        df_temp = read_csv(path)
-        time_range = pd.date_range(
-            start=time.start_time,
-            end=time.end_time,
-            freq=time.time_step,
-            name=df_temp.index.name,
+        return (
+            CSVTimeseries[us.UnitfulLength]()
+            .load_file(path)
+            .to_dataframe(time_frame=time)
         )
-
-        df = df_temp.reindex(time_range, method="nearest")
-
-        return df
 
     def _download_tide_gauge_data(self, time: TimeModel) -> pd.DataFrame | None:
         """Download waterlevel data from NOAA station using station_id, start and stop time.

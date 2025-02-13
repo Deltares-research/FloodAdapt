@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Generic, Type, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -217,41 +217,84 @@ class SyntheticTimeseries(ITimeseries):
             tomli_w.dump(self.attrs.model_dump(exclude_none=True), f)
 
 
-class CSVTimeseries(ITimeseries):
-    attrs: CSVTimeseriesModel
+T_UNIT = TypeVar("T_UNIT", bound=Any)
+
+
+class CSVTimeseries(ITimeseries, Generic[T_UNIT]):
+    attrs: CSVTimeseriesModel[T_UNIT]
 
     @classmethod
     def load_file(cls, path: str | Path):
         obj = cls()
-        obj.attrs = CSVTimeseriesModel.model_validate({"path": path})
+        obj.attrs = CSVTimeseriesModel[T_UNIT].model_validate(
+            {"path": path, "units": T_UNIT}
+        )
         return obj
 
     def to_dataframe(
         self,
         time_frame: TimeModel,
+        fill_value: float = 0,
     ) -> pd.DataFrame:
-        return super()._to_dataframe(
-            time_frame=time_frame,
-            ts_start_time=us.UnitfulTime(value=0, units=us.UnitTypesTime.seconds),
-            ts_end_time=us.UnitfulTime(
-                value=(time_frame.end_time - time_frame.start_time).total_seconds(),
-                units=us.UnitTypesTime.seconds,
-            ),
+        """
+        Interpolate the timeseries data using the timestep provided.
+
+        Parameters
+        ----------
+        time_frame : TimeModel
+            Time frame for the data.
+        fill_value : float, optional
+            Value to fill missing data with, by default 0.
+
+        Returns
+        -------
+        pd.DataFrame
+            Interpolated timeseries with datetime index.
+        """
+        file_data = read_csv(self.attrs.path)
+
+        # Ensure requested time range is within available data
+        start_time = max(time_frame.start_time, file_data.index.min())
+        end_time = min(time_frame.end_time, file_data.index.max())
+
+        df = file_data.loc[start_time:end_time]
+
+        # Generate the complete time range
+        time_range = pd.date_range(
+            start=time_frame.start_time,
+            end=time_frame.end_time,
+            freq=time_frame.time_step,
         )
+
+        # Reindex and fill missing values with specified fill_value
+        interpolated_df = (
+            df.reindex(time_range, method="nearest", limit=1)
+            .interpolate(method="linear")
+            .fillna(fill_value)
+        )
+        interpolated_df.index.name = "time"
+        return interpolated_df
 
     def calculate_data(
         self,
         time_step: timedelta = TimeModel().time_step,
     ) -> np.ndarray:
-        """Interpolate the timeseries data using the timestep provided."""
-        ts = read_csv(self.attrs.path)
+        return read_csv(self.attrs.path).to_numpy()
 
-        time_range = pd.date_range(
-            start=ts.index.min(), end=ts.index.max(), freq=time_step
+    def read_time_frame(self) -> TimeModel:
+        """
+        Read the time frame from the file.
+
+        Returns
+        -------
+        TimeModel
+            Time frame of the data in the file.
+        """
+        file_data = read_csv(self.attrs.path)
+        return TimeModel(
+            start_time=file_data.index.min(),
+            end_time=file_data.index.max(),
         )
-        interpolated_df = ts.reindex(time_range).interpolate(method="linear")
-
-        return interpolated_df.to_numpy()
 
 
 def _extract_unit_class(data: dict[str, Any]) -> Type[us.ValueUnitPair]:
