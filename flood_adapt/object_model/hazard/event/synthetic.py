@@ -15,8 +15,8 @@ class SyntheticEventModel(EventModel):
     ALLOWED_FORCINGS: ClassVar[dict[ForcingType, List[ForcingSource]]] = {
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
-            ForcingSource.SYNTHETIC,
             ForcingSource.CSV,
+            ForcingSource.SYNTHETIC,
         ],
         ForcingType.WIND: [
             ForcingSource.CSV,
