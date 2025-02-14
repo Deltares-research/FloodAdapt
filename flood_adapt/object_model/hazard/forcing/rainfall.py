@@ -98,7 +98,7 @@ class RainfallCSV(IRainfall):
 
 class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
-    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+    units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     path: Path
 

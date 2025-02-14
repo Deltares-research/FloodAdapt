@@ -7,7 +7,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from flood_adapt.misc.config import Settings
 from flood_adapt.misc.log import FloodAdaptLogging
 from flood_adapt.object_model.hazard.event.template_event import Event
 from flood_adapt.object_model.hazard.forcing.discharge import (
@@ -56,9 +55,9 @@ def plot_forcing(
 
     match forcing_type:
         case ForcingType.RAINFALL:
-            return plot_rainfall(event)
+            return plot_rainfall(event, site)
         case ForcingType.WIND:
-            return plot_wind(event)
+            return plot_wind(event, site)
         case ForcingType.WATERLEVEL:
             return plot_waterlevel(event, site)
         case ForcingType.DISCHARGE:
@@ -80,7 +79,7 @@ def plot_discharge(
         return "", None
     logger.debug("Plotting discharge data")
 
-    units = Settings().unit_system.discharge
+    units = site.attrs.gui.units.default_discharge_units
 
     data = pd.DataFrame()
     errors = []
@@ -176,7 +175,7 @@ def plot_waterlevel(
         return "", None
 
     logger.debug("Plotting water level data")
-    units = Settings().unit_system.length
+    units = site.attrs.gui.units.default_length_units
     data = None
     try:
         if isinstance(waterlevel, WaterlevelGauged):
@@ -249,6 +248,7 @@ def plot_waterlevel(
 
 def plot_rainfall(
     event: Event,
+    site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
     forcing_list = event.attrs.forcings.get(ForcingType.RAINFALL)
     if not forcing_list:
@@ -294,7 +294,7 @@ def plot_rainfall(
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
         yaxis_title={
-            "text": f"Rainfall intensity [{Settings().unit_system.intensity}]"
+            "text": f"Rainfall intensity [{site.attrs.gui.units.default_intensity_units}]"
         },
         showlegend=False,
         xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
@@ -313,6 +313,7 @@ def plot_rainfall(
 
 def plot_wind(
     event: Event,
+    site: Site,
 ) -> tuple[str, Optional[List[Exception]]]:
     logger.debug("Plotting wind data")
     forcing_list = event.attrs.forcings.get(ForcingType.WIND)
@@ -365,11 +366,11 @@ def plot_wind(
 
     # Set y-axes titles
     fig.update_yaxes(
-        title_text=f"Wind speed [{Settings().unit_system.velocity}]",
+        title_text=f"Wind speed [{site.attrs.gui.units.default_velocity_units}]",
         secondary_y=False,
     )
     fig.update_yaxes(
-        title_text=f"Wind direction {Settings().unit_system.direction}",
+        title_text=f"Wind direction {site.attrs.gui.units.default_direction_units}",
         secondary_y=True,
     )
 
