@@ -114,7 +114,7 @@ class WindMeteo(IWind):
 
 class WindNetCDF(IWind):
     source: ForcingSource = ForcingSource.NETCDF
-    unit: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
+    units: us.UnitTypesVelocity = us.UnitTypesVelocity.mps
 
     path: Path
 

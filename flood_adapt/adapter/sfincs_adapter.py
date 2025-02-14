@@ -105,6 +105,7 @@ class SfincsAdapter(IHazardAdapter):
             model_root (Path): Root directory of overland sfincs model.
         """
         self.settings = self.database.site.attrs.sfincs
+        self.units = self.database.site.attrs.gui.units
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
@@ -938,7 +939,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(wind, WindSynthetic):
             df = wind.to_dataframe(time_frame=time_frame)
             df["mag"] *= us.UnitfulVelocity(
-                value=1.0, units=Settings().unit_system.velocity
+                value=1.0, units=self.units.default_velocity_units
             ).convert(us.UnitTypesVelocity.mps)
 
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
@@ -962,7 +963,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(wind, WindNetCDF):
             ds = wind.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
-            conversion = us.UnitfulVelocity(value=1.0, units=wind.unit).convert(
+            conversion = us.UnitfulVelocity(value=1.0, units=wind.units).convert(
                 us.UnitTypesVelocity.mps
             )
             ds *= conversion
@@ -1008,7 +1009,7 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(rainfall, RainfallCSV):
             df = rainfall.to_dataframe(time_frame=time_frame)
-            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
@@ -1036,7 +1037,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(rainfall, RainfallNetCDF):
             ds = rainfall.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
-            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             ds *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
