@@ -9,6 +9,7 @@ from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeCSV,
     DischargeSynthetic,
 )
+from flood_adapt.object_model.hazard.forcing.timeseries import CSVTimeseries
 from flood_adapt.object_model.hazard.interface.models import REFERENCE_TIME, TimeModel
 from flood_adapt.object_model.hazard.interface.timeseries import (
     ShapeType,
@@ -88,15 +89,22 @@ class TestDischargeCSV:
         # Arrange
         path = Path(tmp_path) / "test.csv"
         dummy_1d_timeseries_df.to_csv(path)
-        t0 = dummy_1d_timeseries_df.index[0]
-        t1 = dummy_1d_timeseries_df.index[-1]
+        time = TimeModel(
+            start_time=dummy_1d_timeseries_df.index[1],
+            end_time=dummy_1d_timeseries_df.index[-2],
+        )
+
+        expected_df = (
+            CSVTimeseries[us.UnitfulDischarge]()
+            .load_file(path=path)
+            .to_dataframe(time_frame=time)
+        )
 
         # Act
-        discharge_forcing = DischargeCSV(river=river, path=path)
-        discharge_df = discharge_forcing.to_dataframe(
-            time_frame=TimeModel(start_time=t0, end_time=t1)
+        discharge_df = DischargeCSV(river=river, path=path).to_dataframe(
+            time_frame=time
         )
 
         # Assert
         assert isinstance(discharge_df, pd.DataFrame)
-        pd.testing.assert_frame_equal(discharge_df, dummy_1d_timeseries_df)
+        pd.testing.assert_frame_equal(discharge_df, expected_df)
