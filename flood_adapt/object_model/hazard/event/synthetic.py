@@ -16,6 +16,7 @@ class SyntheticEventModel(EventModel):
         ForcingType.RAINFALL: [
             ForcingSource.CONSTANT,
             ForcingSource.SYNTHETIC,
+            ForcingSource.CSV,
         ],
         ForcingType.WIND: [
             ForcingSource.CSV,
