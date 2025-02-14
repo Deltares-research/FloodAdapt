@@ -52,6 +52,7 @@ from flood_adapt.object_model.hazard.forcing.waterlevels import (
 )
 from flood_adapt.object_model.hazard.forcing.wind import (
     WindConstant,
+    WindCSV,
     WindMeteo,
     WindNetCDF,
     WindSynthetic,
@@ -104,6 +105,7 @@ class SfincsAdapter(IHazardAdapter):
             model_root (Path): Root directory of overland sfincs model.
         """
         self.settings = self.database.site.attrs.sfincs
+        self.units = self.database.site.attrs.gui.units
         self.sfincs_logger = self.setup_sfincs_logger(model_root)
         self._model = SfincsModel(
             root=str(model_root.resolve()), mode="r", logger=self.sfincs_logger
@@ -125,10 +127,11 @@ class SfincsAdapter(IHazardAdapter):
         if not path_out.exists():
             path_out.mkdir(parents=True)
 
-        write_mode = "w+" if overwrite else "w"
-        with cd(path_out):
+        if not root == path_out:
             shutil.copytree(root, path_out, dirs_exist_ok=True)
 
+        write_mode = "w+" if overwrite else "w"
+        with cd(path_out):
             self._model.set_root(root=str(path_out), mode=write_mode)
             self._model.write()
 
@@ -226,6 +229,7 @@ class SfincsAdapter(IHazardAdapter):
         self.ensure_no_existing_forcings()
         self.preprocess(scenario)
         self.process(scenario)
+
         self.postprocess(scenario)
 
     def preprocess(self, scenario: IScenario):
@@ -935,7 +939,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(wind, WindSynthetic):
             df = wind.to_dataframe(time_frame=time_frame)
             df["mag"] *= us.UnitfulVelocity(
-                value=1.0, units=Settings().unit_system.velocity
+                value=1.0, units=self.units.default_velocity_units
             ).convert(us.UnitTypesVelocity.mps)
 
             tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
@@ -959,11 +963,28 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(wind, WindNetCDF):
             ds = wind.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
-            conversion = us.UnitfulVelocity(value=1.0, units=wind.unit).convert(
+            conversion = us.UnitfulVelocity(value=1.0, units=wind.units).convert(
                 us.UnitTypesVelocity.mps
             )
             ds *= conversion
             self._model.setup_wind_forcing_from_grid(wind=ds)
+        elif isinstance(wind, WindCSV):
+            df = wind.to_dataframe(time_frame=time_frame)
+
+            conversion = us.UnitfulVelocity(
+                value=1.0, units=wind.units["speed"]
+            ).convert(us.UnitTypesVelocity.mps)
+            df *= conversion
+
+            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
+            df.to_csv(tmp_path)
+
+            # HydroMT function: set wind forcing from timeseries
+            self._model.setup_wind_forcing(
+                timeseries=tmp_path,
+                magnitude=None,
+                direction=None,
+            )
         else:
             self.logger.warning(
                 f"Unsupported wind forcing type: {wind.__class__.__name__}"
@@ -988,7 +1009,7 @@ class SfincsAdapter(IHazardAdapter):
             )
         elif isinstance(rainfall, RainfallCSV):
             df = rainfall.to_dataframe(time_frame=time_frame)
-            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
@@ -1016,7 +1037,7 @@ class SfincsAdapter(IHazardAdapter):
         elif isinstance(rainfall, RainfallNetCDF):
             ds = rainfall.read()
             # time slicing to time_frame not needed, hydromt-sfincs handles it
-            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.unit).convert(
+            conversion = us.UnitfulIntensity(value=1.0, units=rainfall.units).convert(
                 us.UnitTypesIntensity.mm_hr
             )
             ds *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
@@ -1065,12 +1086,13 @@ class SfincsAdapter(IHazardAdapter):
             df_ts *= conversion
             self._set_waterlevel_forcing(df_ts)
         elif isinstance(forcing, WaterlevelCSV):
-            df_ts = CSVTimeseries.load_file(path=forcing.path).to_dataframe(
-                time_frame=time_frame
+            df_ts = (
+                CSVTimeseries[forcing.units]
+                .load_file(path=forcing.path)
+                .to_dataframe(time_frame=time_frame)
             )
             if df_ts is None:
                 raise ValueError("Failed to get waterlevel data.")
-
             conversion = us.UnitfulLength(value=1.0, units=forcing.units).convert(
                 us.UnitTypesLength.meters
             )
@@ -1264,7 +1286,7 @@ class SfincsAdapter(IHazardAdapter):
         # Create a geodataframe with the river coordinates, the timeseries data and rename the column to the river index defined in the model
         if isinstance(discharge, DischargeCSV):
             df = discharge.to_dataframe(time_frame)
-            conversion = us.UnitfulDischarge(value=1.0, units=discharge.unit).convert(
+            conversion = us.UnitfulDischarge(value=1.0, units=discharge.units).convert(
                 us.UnitTypesDischarge.cms
             )
         elif isinstance(discharge, DischargeConstant):
@@ -1370,21 +1392,28 @@ class SfincsAdapter(IHazardAdapter):
             name="bzs", df_ts=wl_df, gdf_locs=gdf_locs, merge=False
         )
 
-    def _add_forcing_spw(self, spw_path: Path):
+    def _add_forcing_spw(self, input_spw_path: Path):
         """Add spiderweb forcing."""
-        if spw_path is None:
+        if input_spw_path is None:
             raise ValueError("No path to rainfall track file provided.")
 
-        if not spw_path.exists():
-            raise FileNotFoundError(f"SPW file not found: {spw_path}")
-        self.logger.info("Adding spiderweb forcing to the overland flood model")
+        if not input_spw_path.exists():
+            raise FileNotFoundError(f"SPW file not found: {input_spw_path}")
         sim_path = self.get_model_root()
+        self.logger.info(f"Adding spiderweb forcing to Sfincs model: {sim_path.name}")
 
         # prevent SameFileError
-        if spw_path != sim_path / spw_path.name:
-            shutil.copy2(spw_path, sim_path / spw_path.name)
+        output_spw_path = sim_path / input_spw_path.name
+        if input_spw_path == output_spw_path:
+            raise ValueError(
+                "Add a different SPW file than the one already in the model."
+            )
 
-        self._model.set_config("spwfile", spw_path.name)
+        if output_spw_path.exists():
+            os.remove(output_spw_path)
+        shutil.copy2(input_spw_path, output_spw_path)
+
+        self._model.set_config("spwfile", output_spw_path.name)
 
     ### PRIVATE GETTERS ###
     def _get_result_path(self, scenario: IScenario) -> Path:
@@ -1447,9 +1476,6 @@ class SfincsAdapter(IHazardAdapter):
         self._model.read_results()
         zsmax = self._model.results["zsmax"].max(dim="timemax")
         zsmax.attrs["units"] = "m"
-
-        for name, dataset in self._model.results.items():
-            dataset.close()
         return zsmax
 
     def _get_zs_points(self):

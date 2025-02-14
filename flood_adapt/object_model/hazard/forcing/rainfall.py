@@ -77,11 +77,13 @@ class RainfallCSV(IRainfall):
     source: ForcingSource = ForcingSource.CSV
 
     path: Path
-    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+    units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     def to_dataframe(self, time_frame: TimeModel) -> pd.DataFrame:
-        return CSVTimeseries.load_file(path=self.path).to_dataframe(
-            time_frame=time_frame
+        return (
+            CSVTimeseries[self.units]
+            .load_file(path=self.path)
+            .to_dataframe(time_frame=time_frame)
         )
 
     def save_additional(self, output_dir: Path | str | os.PathLike) -> None:
@@ -96,7 +98,7 @@ class RainfallCSV(IRainfall):
 
 class RainfallNetCDF(IRainfall):
     source: ForcingSource = ForcingSource.NETCDF
-    unit: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
+    units: us.UnitTypesIntensity = us.UnitTypesIntensity.mm_hr
 
     path: Path
 

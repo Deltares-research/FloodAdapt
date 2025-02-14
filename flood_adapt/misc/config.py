@@ -296,6 +296,7 @@ class Settings(BaseSettings):
         with open(toml_path, "wb") as f:
             tomli_w.dump(
                 self.model_dump(
+                    by_alias=True,
                     exclude={"sfincs_path", "fiat_path", "database_path"},
                 ),
                 f,
