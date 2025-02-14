@@ -249,6 +249,7 @@ class ConfigModel(BaseModel):
     fiat: str
     unit_system: UnitSystems
     gui: GuiConfigModel
+    aggregation_areas: Optional[list[SpatialJoinModel]] = None
     building_footprints: Optional[SpatialJoinModel | FootprintsOptions] = (
         FootprintsOptions.OSM
     )
@@ -757,7 +758,38 @@ class DatabaseBuilder:
 
         # If there are no aggregation areas make a schematic one from the region file
         # TODO make aggregation areas not mandatory
-        if not self.fiat_model.spatial_joins["aggregation_areas"]:
+        if self.config.aggregation_areas:
+            exposure_csv = pd.read_csv(self.exposure_csv_path)
+            for aggr in self.config.aggregation_areas:
+                # Add column in FIAT
+                aggr_name = Path(aggr.file).stem
+                buildings_joined, aggr_areas = spatial_join(
+                    self.buildings,
+                    self._check_path(aggr.file),
+                    aggr.field_name,
+                    rename=f"{FiatColumns.aggregation_label}{aggr_name}",
+                )
+                aggr_path = Path(self.fiat_model.root).joinpath(
+                    "exposure", "aggregation_areas", f"{Path(aggr.file).stem}.gpkg"
+                )
+                aggr_areas.to_file(aggr_path)
+                exposure_csv = exposure_csv.merge(
+                    buildings_joined, on=FiatColumns.object_id, how="left"
+                )
+                self.fiat_model.spatial_joins["aggregation_areas"].append(
+                    {
+                        "name": aggr_name,
+                        "file": aggr_path.relative_to(self.fiat_model.root),
+                        "field_name": f"{FiatColumns.aggregation_label}{aggr_name}",
+                        "equity": None,
+                    }
+                )
+            exposure_csv.to_csv(self.exposure_csv_path, index=False)
+
+        if (
+            not self.fiat_model.spatial_joins["aggregation_areas"]
+            and not self.config.aggregation_areas
+        ):
             exposure_csv = pd.read_csv(self.exposure_csv_path)
             region_path = Path(self.fiat_model.root).joinpath("geoms", "region.geojson")
             if region_path.exists():
@@ -944,7 +976,9 @@ class DatabaseBuilder:
             floodmap_type="water_level",  # TODO allow for water depth
             non_building_names=["road"],  # TODO check names from exposure
             damage_unit=dmg_unit,
-            building_footprints=str(footprints_path),
+            building_footprints=str(
+                footprints_path.relative_to(self.static_path).as_posix()
+            ),
             roads_file_name="spatial2.gpkg" if self.roads else None,
             new_development_file_name="spatial3.gpkg",  # TODO allow for different naming
             save_simulation=False,  # default is not to save simulations
