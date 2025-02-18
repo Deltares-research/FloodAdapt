@@ -79,7 +79,7 @@ def plot_discharge(
         return "", None
     logger.debug("Plotting discharge data")
 
-    units = site.attrs.gui.units.default_discharge_units
+    units = site.attrs.gui.units.default_discharge_units.value
 
     data = pd.DataFrame()
     errors = []
@@ -227,7 +227,7 @@ def plot_waterlevel(
         title_font={"size": 10, "color": "black", "family": "Arial"},
         legend=None,
         xaxis_title="Time",
-        yaxis_title=f"Water level [{units}]",
+        yaxis_title=f"Water level [{units.value}]",
         yaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         showlegend=False,
@@ -294,7 +294,7 @@ def plot_rainfall(
         xaxis_title_font={"size": 10, "color": "black", "family": "Arial"},
         xaxis_title={"text": "Time"},
         yaxis_title={
-            "text": f"Rainfall intensity [{site.attrs.gui.units.default_intensity_units}]"
+            "text": f"Rainfall intensity [{site.attrs.gui.units.default_intensity_units.value}]"
         },
         showlegend=False,
         xaxis={"range": [event.attrs.time.start_time, event.attrs.time.end_time]},
@@ -366,11 +366,11 @@ def plot_wind(
 
     # Set y-axes titles
     fig.update_yaxes(
-        title_text=f"Wind speed [{site.attrs.gui.units.default_velocity_units}]",
+        title_text=f"Wind speed [{site.attrs.gui.units.default_velocity_units.value}]",
         secondary_y=False,
     )
     fig.update_yaxes(
-        title_text=f"Wind direction {site.attrs.gui.units.default_direction_units}",
+        title_text=f"Wind direction {site.attrs.gui.units.default_direction_units.value}",
         secondary_y=True,
     )
 
