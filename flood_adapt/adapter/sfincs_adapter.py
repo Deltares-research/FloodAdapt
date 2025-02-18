@@ -405,21 +405,13 @@ class SfincsAdapter(IHazardAdapter):
             return None
         elif len(in_model) == 1:
             return self._model.forcing[in_model[0]]
-        elif len(in_model) == 2:
-            return xr.Dataset(
-                {
-                    "wind10_u": self._model.forcing["wind10_u"],
-                    "wind10_v": self._model.forcing["wind10_v"],
-                }
-            )
         else:
-            raise ValueError("Multiple wind forcings found in the model.")
+            raise ValueError("Multiple rainfall forcings found in the model.")
 
     @rainfall.setter
     def rainfall(self, rainfall: xr.Dataset | xr.DataArray):
         if self.rainfall is None or self.rainfall.size == 0:
             raise ValueError("No rainfall forcing found in the model.")
-
         elif "precip_2d" in self._model.forcing:
             self._model.forcing["precip_2d"] = rainfall
         elif "precip" in self._model.forcing:
@@ -1013,6 +1005,11 @@ class SfincsAdapter(IHazardAdapter):
                 us.UnitTypesIntensity.mm_hr
             )
             df *= self._current_scenario.event.attrs.rainfall_multiplier * conversion
+
+            tmp_path = Path(tempfile.gettempdir()) / "precip.csv"
+            df.to_csv(tmp_path)
+
+            self._model.setup_precip_forcing(timeseries=tmp_path)
         elif isinstance(rainfall, RainfallSynthetic):
             df = rainfall.to_dataframe(time_frame=time_frame)
             conversion = us.UnitfulIntensity(
