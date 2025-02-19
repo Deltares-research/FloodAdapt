@@ -1074,17 +1074,26 @@ class DatabaseBuilder:
         If `self.config.river` is empty, a dummy river is added with default values.
         Otherwise, the rivers specified in `self.config.river` are added.
         """
-        if "dis" not in self.sfincs.forcing:
+        src_file = Path(self.sfincs.root).joinpath("sfincs.src")
+        if not src_file.exists():
             self.site_attrs["sfincs"]["river"] = None
             self.logger.warning("No rivers found in the SFINCS model.")
             return
-        river_locs = self.sfincs.forcing["dis"].vector.to_gdf()
-        river_locs.crs = self.sfincs.crs
+        df = pd.read_csv(src_file, delim_whitespace=True, header=None, names=["x", "y"])
+        river_locs = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(df.x, df.y), crs=self.sfincs.crs
+        )
         rivers = []
 
+        dis_values = "dis" in self.sfincs.forcing
+
         for i, row in river_locs.iterrows():
+            if dis_values:
+                val = self.sfincs.forcing["dis"].sel(index=i).to_numpy().mean()
+            else:
+                val = 0.0
             mean_dis = us.UnitfulDischarge(
-                value=self.sfincs.forcing["dis"].sel(index=i).to_numpy().mean(),
+                value=val,
                 units=us.UnitTypesDischarge.cms,
             )
             if self.config.unit_system == UnitSystems.imperial:
