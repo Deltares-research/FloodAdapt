@@ -1330,6 +1330,13 @@ class SfincsAdapter(IHazardAdapter):
                 df_ts[i + 1] = df_ts[name]
             df_ts.columns = list(range(1, len(gdf_locs) + 1))
 
+        # Add difference between msl and local datum to the water level
+        df_ts += self.settings.water_level.msl.height.convert(
+            us.UnitTypesLength(us.UnitTypesLength.meters)
+        ) - self.settings.water_level.localdatum.height.convert(
+            us.UnitTypesLength(us.UnitTypesLength.meters)
+        )
+
         # HydroMT function: set waterlevel forcing from time series
         self._model.set_forcing_1d(
             name="bzs", df_ts=df_ts, gdf_locs=gdf_locs, merge=False
