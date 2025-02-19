@@ -21,13 +21,16 @@ from flood_adapt.object_model.hazard.event.synthetic import (
 )
 from flood_adapt.object_model.hazard.forcing.discharge import (
     DischargeConstant,
+    DischargeCSV,
     DischargeSynthetic,
 )
 from flood_adapt.object_model.hazard.forcing.rainfall import (
     RainfallConstant,
+    RainfallCSV,
     RainfallMeteo,
     RainfallNetCDF,
     RainfallSynthetic,
+    RainfallTrack,
 )
 from flood_adapt.object_model.hazard.forcing.waterlevels import (
     SurgeModel,
@@ -108,6 +111,7 @@ def sfincs_adapter_with_dummy_scn(default_sfincs_adapter):
     dummy_scn = mock.Mock()
     dummy_event = mock.Mock()
     dummy_event.attrs.rainfall_multiplier = 2
+    dummy_event.attrs.time = TimeModel()
     dummy_scn.event = dummy_event
     default_sfincs_adapter._current_scenario = dummy_scn
 
@@ -371,6 +375,7 @@ class TestAddForcing:
 
     class TestWind:
         def test_add_forcing_wind_constant(self, default_sfincs_adapter: SfincsAdapter):
+            # Arrange
             forcing = WindConstant(
                 speed=us.UnitfulVelocity(value=10, units=us.UnitTypesVelocity.mps),
                 direction=us.UnitfulDirection(
@@ -378,10 +383,10 @@ class TestAddForcing:
                 ),
             )
 
-            assert default_sfincs_adapter.wind is None
-
+            # Act
             default_sfincs_adapter.add_forcing(forcing)
 
+            # Assert
             assert default_sfincs_adapter.wind is not None
             assert (
                 default_sfincs_adapter.wind.to_numpy()
@@ -406,12 +411,13 @@ class TestAddForcing:
         def test_add_forcing_wind_from_meteo(
             self, mock_meteohandler_read, default_sfincs_adapter: SfincsAdapter
         ):
-            assert default_sfincs_adapter.wind is None
-
+            # Arrange
             forcing = WindMeteo()
 
+            # Act
             default_sfincs_adapter.add_forcing(forcing)
 
+            # Assert
             assert default_sfincs_adapter.wind is not None
 
         def test_add_forcing_wind_from_netcdf(
@@ -441,8 +447,6 @@ class TestAddForcing:
             self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
         ):
             from cht_cyclones.tropical_cyclone import TropicalCyclone
-
-            assert default_sfincs_adapter.wind is None
 
             # Arrange
             track_file = TEST_DATA_DIR / "IAN.cyc"
@@ -483,8 +487,6 @@ class TestAddForcing:
             self, default_sfincs_adapter: SfincsAdapter
         ):
             # Arrange
-            assert default_sfincs_adapter.wind is None
-
             wind = _unsupported_forcing_source(ForcingType.WIND)
 
             # Act
@@ -494,12 +496,11 @@ class TestAddForcing:
             assert default_sfincs_adapter.wind is None
 
     class TestRainfall:
-        def test_add_forcing_constant(
+        def test_add_forcing_rainfall_constant(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert adapter.rainfall is None
 
             forcing = RainfallConstant(
                 intensity=us.UnitfulIntensity(
@@ -516,12 +517,29 @@ class TestAddForcing:
                 == [forcing.intensity.convert(us.UnitTypesIntensity.mm_hr)]
             ).all() is not None
 
-        def test_add_forcing_synthetic(
+        def test_add_forcing_rainfall_csv(
+            self,
+            sfincs_adapter_with_dummy_scn: SfincsAdapter,
+            synthetic_rainfall: RainfallSynthetic,
+        ):
+            # Arrange
+            adapter = sfincs_adapter_with_dummy_scn
+            tmp_path = Path(tempfile.gettempdir()) / "wind.csv"
+            time_frame = adapter.get_model_time()
+            synthetic_rainfall.to_dataframe(time_frame).to_csv(tmp_path)
+
+            # Act
+            forcing = RainfallCSV(path=tmp_path)
+            adapter.add_forcing(forcing)
+
+            # Assert
+            assert adapter.rainfall is not None
+
+        def test_add_forcing_rainfall_synthetic(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter, synthetic_rainfall
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert adapter.rainfall is None
 
             # Act
             adapter.add_forcing(synthetic_rainfall)
@@ -529,14 +547,13 @@ class TestAddForcing:
             # Assert
             assert adapter.rainfall is not None
 
-        def test_add_forcing_from_meteo(
+        def test_add_forcing_rainfall_meteo(
             self,
             mock_meteohandler_read,
             sfincs_adapter_with_dummy_scn: SfincsAdapter,
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert adapter.rainfall is None
             forcing = RainfallMeteo()
 
             # Act
@@ -545,7 +562,7 @@ class TestAddForcing:
             # Assert
             assert adapter.rainfall is not None
 
-        def test_add_forcing_rainfall_from_netcdf(
+        def test_add_forcing_rainfall_netcdf(
             self, test_db: IDatabase, sfincs_adapter_with_dummy_scn: SfincsAdapter
         ):
             # Arrange
@@ -569,12 +586,33 @@ class TestAddForcing:
             # Assert
             assert adapter.rainfall is not None
 
-        def test_add_forcing_unsupported(
+        def test_add_forcing_rainfall_track(
+            self, test_db, tmp_path, default_sfincs_adapter: SfincsAdapter
+        ):
+            from cht_cyclones.tropical_cyclone import TropicalCyclone
+
+            # Arrange
+            track_file = TEST_DATA_DIR / "IAN.cyc"
+            spw_file = tmp_path / "IAN.spw"
+            default_sfincs_adapter._sim_path = tmp_path / "sim_path"
+
+            tc = TropicalCyclone()
+            tc.read_track(track_file, fmt="ddb_cyc")
+            tc.to_spiderweb(spw_file)
+
+            forcing = RainfallTrack(path=spw_file)
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            assert default_sfincs_adapter._model.config.get("spwfile") == spw_file.name
+
+        def test_add_forcing_rainfall_unsupported(
             self, sfincs_adapter_with_dummy_scn: SfincsAdapter
         ):
             # Arrange
             adapter = sfincs_adapter_with_dummy_scn
-            assert adapter.rainfall is None
             rainfall = _unsupported_forcing_source(ForcingType.RAINFALL)
 
             # Act
@@ -584,6 +622,40 @@ class TestAddForcing:
             assert adapter.rainfall is None
 
     class TestDischarge:
+        def test_add_forcing_discharge_constant(
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
+        ):
+            # Arrange
+            river = synthetic_discharge.river
+            forcing = DischargeConstant(
+                river=river,
+                discharge=us.UnitfulDischarge(
+                    value=5000, units=us.UnitTypesDischarge.cms
+                ),
+            )
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            assert default_sfincs_adapter.discharge is not None
+
+        def test_add_forcing_discharge_csv(
+            self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
+        ):
+            # Arrange
+            tmp_path = Path(tempfile.gettempdir()) / "discharge.csv"
+            time_frame = default_sfincs_adapter.get_model_time()
+            synthetic_discharge.to_dataframe(time_frame).to_csv(tmp_path)
+
+            forcing = DischargeCSV(path=tmp_path, river=synthetic_discharge.river)
+
+            # Act
+            default_sfincs_adapter.add_forcing(forcing)
+
+            # Assert
+            assert default_sfincs_adapter.discharge is not None
+
         def test_add_forcing_discharge_synthetic(
             self, default_sfincs_adapter: SfincsAdapter, synthetic_discharge
         ):
@@ -702,8 +774,7 @@ class TestAddForcing:
         ):
             # Arrange
             tmp_path = Path(tempfile.gettempdir()) / "waterlevels.csv"
-            t0, t1 = default_sfincs_adapter._model.get_model_time()
-            time_frame = TimeModel(start_time=t0, end_time=t1)
+            time_frame = default_sfincs_adapter.get_model_time()
             synthetic_waterlevels.to_dataframe(time_frame).to_csv(tmp_path)
 
             forcing = WaterlevelCSV(path=tmp_path)
