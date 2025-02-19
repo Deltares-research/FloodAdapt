@@ -31,8 +31,8 @@ class MeteoHandler(IMeteoHandler):
             name="gfs_anl_0p50",
             source="gfs_analysis_0p50",
             path=self.dir,
-            lon_range=[self.site.attrs.lon - 10, self.site.attrs.lon + 10],
-            lat_range=[self.site.attrs.lat - 10, self.site.attrs.lat + 10],
+            lon_range=(self.site.attrs.lon - 10, self.site.attrs.lon + 10),
+            lat_range=(self.site.attrs.lat - 10, self.site.attrs.lat + 10),
         )
 
         # quick fix for sites near the 0 degree longitude -> shift the meteo download area either east or west of the 0 degree longitude
@@ -62,7 +62,7 @@ class MeteoHandler(IMeteoHandler):
         if not isinstance(t1, datetime):
             t1 = datetime.strptime(t1, "%Y%m%d %H%M%S")
 
-        time_range = [t0, t1]
+        time_range = (t0, t1)
 
         gfs_conus.download(time_range=time_range)
 
