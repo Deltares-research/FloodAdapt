@@ -432,7 +432,7 @@ ul.task-list li input[type="checkbox"] {
 <p>In FloodAdapt there is the option to include two SFINCS models - an “offshore” model and an “overland” model. The offshore model is typically a coarser model with an offshore domain adjacent to the area of interest. It is forced by astronomic tide and wind, pressure, and precipitation fields, and calculates nearshore water level time series that serve as boundary conditions for the overland model. The overland model is typically finer resolution and its domain is a hydrological area over land that includes the project area of interest. Only the overland model is strictly necessary in FloodAdapt, but some event types will not be possible without an offshore model, most notably hurricanes.</p>
 <div id="fig-workflow_event_hazard" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_eventScenario_hazard.jpg" class="lightbox" title="Hazard calculation framework for an event scenario" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/Workflow_eventScenario_hazard.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_eventScenario_hazard.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Hazard calculation framework for an event scenario"><img src="../_static/images/Workflow_eventScenario_hazard.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Hazard calculation framework for an event scenario</strong></figcaption>
 </figure>
 </div>
@@ -475,7 +475,7 @@ Vertical datum references in the offshore and overland models
 <p>In the user interface, the user is able to specify impact-related future conditions (economic growth and/or population growth) and impact-reducing adaptation options: buyout, elevate, and floodproof. The user manual describes how a user can specify impact-related projections <a href="../4_user_guide/projections/socioEconomic.html">here</a> and impact-reducting adaptation options <a href="../4_user_guide/measures/buildings.html">here</a>. When a scenario is created containing any of these features it initiates a modification of the baseline Delft-FIAT model.</p>
 <div id="fig-workflow_event_impacts" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/Workflow_eventScenario_impacts.jpg" class="lightbox" title="Impact calculation framework for an event scenario" data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/Workflow_eventScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/Workflow_eventScenario_impacts.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Impact calculation framework for an event scenario"><img src="../_static/images/Workflow_eventScenario_impacts.jpg" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Impact calculation framework for an event scenario</strong></figcaption>
 </figure>
 </div>
@@ -484,7 +484,7 @@ Vertical datum references in the offshore and overland models
 <p>Once the Delft-FIAT model schematization has been updated, FloodAdapt coordinates the running of Delft-FIAT with the simulated flood depth map from the hazard calculation. The calculation method of Delft-FIAT follows a standard approach and is described in the <a href="https://github.com/Deltares/Delft-FIAT" class="external" data-link-external-newwindow="true">Delft-FIAT github documentation</a> and in the <a href="../3_setup_guide/Delft_Fiat/index.html">Delft-FIAT setup documentation</a>. <a href="#fig-DF_overview2">Figure&nbsp;3</a> shows conceptually how Delft-FIAT calculates damages. Note that no indirect damages are calculated with Delft-FIAT, only direct damages to assets in the exposure dataset.</p>
 <div id="fig-DF_overview2" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/DelftFIAT_overview.png" class="lightbox" title="Overview of the calculation method in Delft-FIAT" data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/DelftFIAT_overview.png" class="img-fluid figure-img" style="width:75.0%"></a></p>
+<p><a href="../_static/images/DelftFIAT_overview.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Overview of the calculation method in Delft-FIAT"><img src="../_static/images/DelftFIAT_overview.png" class="img-fluid figure-img" style="width:75.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: Overview of the calculation method in Delft-FIAT</figcaption>
 </figure>
 </div>
@@ -867,7 +867,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","selector":".lightbox","openEffect":"zoom","closeEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","descPosition":"bottom","loop":true,"closeEffect":"zoom","openEffect":"zoom"});</script>
 
 
 

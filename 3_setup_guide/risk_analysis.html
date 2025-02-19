@@ -495,7 +495,7 @@ Event-based approach versus time-series approach
 <p>For coastal systems, corrections for sea level rise are almost always necessary. Due to sea level rise, the exceedance probabilities of sea water levels increase over time, making early observations non-representative of current conditions. A simple correction is to add the amount of observed sea level rise since year Y to all observations from that year. For instance, if sea levels have risen by 0.5 ft since 1990, all water levels observed in 1990 should be increased by 0.5 ft to reflect current conditions. This adjustment requires an understanding of the extent of sea level rise, which is complicated by year-to-year fluctuations that can obscure the long-term trend. To address this, a trend line might be fitted through the data, although this process can be somewhat subjective.</p>
 <div id="fig-trendLine" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_trendLine.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline"><img src="../_static/images/eventSet_trendLine.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_trendLine.png" class="lightbox" title="Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline" data-gallery="quarto-lightbox-gallery-1"><img src="../_static/images/eventSet_trendLine.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;1: <strong>Observed annual mean sea levels, linear trend line from NOAA and fitted LOWESS trendline</strong></figcaption>
 </figure>
 </div>
@@ -518,7 +518,7 @@ Event-based approach versus time-series approach
 <p><a href="#fig-GEVGPD">Figure&nbsp;2</a> shows examples of these distribution functions for daily rainfall. The rainfall is plotted against the corresponding exceedance probability on a semi-logarithmic scale. It shows that the two distribution functions for which the scale parameter is equal to 0 (Gumbel and exponential) are straight lines on this scale. The Weibull distribution is curved “downward”, while the Fréchet distribution is curved “upward”. Similar upward and downward curves can be seen for the GPD (right plot); in both cases the distribution function is called the Pareto distribution. According to the theory, only the GEV and GPD or one of the underlying probability distribution functions (Gumbel, Fréchet, Weibull, exponential and Pareto) should be used to fit the set of selected extremes. In practice, however, other probability distribution functions are used as well. For example, the Log-Pearson Type 3 was adopted by US federal agencies for applications in flood frequency analysis.</p>
 <div id="fig-GEVGPD" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_GEV_GPD.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). "><img src="../_static/images/eventSet_GEV_GPD.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_GEV_GPD.png" class="lightbox" title="Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). " data-gallery="quarto-lightbox-gallery-2"><img src="../_static/images/eventSet_GEV_GPD.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;2: <strong>Examples of the GEV and GPD and underlying distributions. The plots show the probability of exceedance of annual maxima (left) and Peaks Over Threshold (right). </strong></figcaption>
 </figure>
 </div>
@@ -542,7 +542,7 @@ Probability and Frequency
 <p>The next step is to fit the selected distribution function to the set of extremes (AM or POT). This means the parameter values of the distribution function are chosen such that key statistical characteristics of the distribution function correspond as much as possible with those of the set of extremes. There are several methods for deriving the parameter values, such as the maximum likelihood method, the method of moments, probability weighted moments and L-moments. Such methods are available in computational programming languages like Matlab, Python and R. Alternatively, dedicated software for flood frequency analysis can be used such as PeakFQ. In principle, any of these methods will do, but it is worth considering applying several methods to verify which one provides the best fit. There are statistical methods to quantify the goodness-of-fit like the Kolmogorov-Smirnov test, the Chi Square test or Anderson-Darling test. Each of these tests compares key characteristics of the data set with the fitted distribution function; smaller differences imply a better fit. The outcome of such a test could be that a fit is “rejected”. In that case an alternative distribution function and/or fit method should be considered. The fact that there are different tests to choose from indicates there is some subjectivity involved in determining the “best” fit. It is recommended to also visually compare the fitted distribution function with the data, similar to the example of <a href="#fig-fitGPD">Figure&nbsp;3</a>. If the visual fit is not to satisfaction, a different distribution function and/or different fit methods should be considered.</p>
 <div id="fig-fitGPD" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_fittingGPD.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Example fit of the GPD function to Peaks Over Threshold data."><img src="../_static/images/eventSet_fittingGPD.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_fittingGPD.png" class="lightbox" title="Example fit of the GPD function to Peaks Over Threshold data." data-gallery="quarto-lightbox-gallery-3"><img src="../_static/images/eventSet_fittingGPD.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;3: <strong>Example fit of the GPD function to Peaks Over Threshold data.</strong></figcaption>
 </figure>
 </div>
@@ -555,7 +555,7 @@ Probability and Frequency
 <p>To derive the empirical probability distribution, sort the data in descending order. The largest value has an empirical probability of exceedance of 1/(n+1), where n is the total number of recordings. The second largest value has an empirical probability of exceedance of 2/(n+1), the third largest has an empirical probability of exceedance of 3/(n+1), and this continues all the way down to the smallest value with an empirical probability of exceedance of n/(n+1). Note that these are probabilities per time step of the time series. So, in case of a daily rainfall time series, these are exceedance probabilities per day. These can be translated to exceedance frequencies per year by multiplication with 365 (i.e.&nbsp;the number of days per year). Similarly, derived empirical probabilities of tidal peaks should be multiplied with 705 (i.e., the number of tidal periods in a year) to derive exceedance frequencies per year.</p>
 <div id="fig-combiningDists" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_combiningDists.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Example combination of an empirical distribution and an extreme value distribution."><img src="../_static/images/eventSet_combiningDists.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_combiningDists.png" class="lightbox" title="Example combination of an empirical distribution and an extreme value distribution." data-gallery="quarto-lightbox-gallery-4"><img src="../_static/images/eventSet_combiningDists.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;4: <strong>Example combination of an empirical distribution and an extreme value distribution.</strong></figcaption>
 </figure>
 </div>
@@ -568,7 +568,7 @@ Probability and Frequency
 <p>Statistical dependence between two or more variables can be quantified with Pearson’s correlation coefficient, <span class="math inline">\(\rho\)</span>, which can take any value in the range from -1 to 1. A value of 0 indicates two variables are independent, which means the value of one variable provides no information on the likelihood of the value of the other variable. If <span class="math inline">\(\rho\)</span> deviates substantially from 0, the variables are dependent. Positive values of <span class="math inline">\(\rho\)</span> imply that high values of one variable usually coincide with high values of the other variable, and similarly that low values generally coincide as well. Negative values of <span class="math inline">\(\rho\)</span> imply that high values of one variable usually coincide with low values of the other variable and vice versa. <a href="#fig-corr">Figure&nbsp;5</a> shows samples of hypothetical variables <em>x</em> and <em>y</em> for six different values of Pearson’s correlation coefficient.</p>
 <div id="fig-corr" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_correlation.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Samples of hypothetical variables x and y for six different values of correlation coefficient ."><img src="../_static/images/eventSet_correlation.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_correlation.png" class="lightbox" title="Samples of hypothetical variables x and y for six different values of correlation coefficient ." data-gallery="quarto-lightbox-gallery-5"><img src="../_static/images/eventSet_correlation.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;5: <strong>Samples of hypothetical variables <em>x</em> and <em>y</em> for six different values of correlation coefficient .</strong></figcaption>
 </figure>
 </div>
@@ -578,14 +578,14 @@ Probability and Frequency
 <p><a href="#fig-copulas">Figure&nbsp;6</a> shows example realizations of copula variables x and y for four different copulas: the Gumbel-Hougard, Frank, Clayton and Gaussian copula. In each case, the correlation coefficient is equal to 0.8, but there are differences in the overall dependence structure. Application of the Gumbel-Hougard copula results in strong dependence for values of x and y close to 1. In other words, if a sample of the first random variable (x) is relatively large, the accompanying sample of the second variable most likely is relatively large as well. The Clayton copula, on the other hand, generates a stronger dependence structure for low values of x and y. In that respect the Frank copula and the Gaussian copula are more symmetrical, where the latter shows stronger correlation in the extremes (both left and right).</p>
 <div id="fig-copulas" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_copulas.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8."><img src="../_static/images/eventSet_copulas.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_copulas.png" class="lightbox" title="Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8." data-gallery="quarto-lightbox-gallery-6"><img src="../_static/images/eventSet_copulas.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;6: <strong>Illustration of four different copulas. In all cases the correlation coefficient was assumed to be 0.8.</strong></figcaption>
 </figure>
 </div>
 <p>Copula variables are uniformly distributed over the interval between 0 and 1. Hydro-meteorological variables like rainfall, river discharge or water level are typically not uniformly distributed and can take on values outside the interval between 0 and 1. Therefore, in order to use the copula to model dependency between hydro-meteorological variables, a statistical transformation is applied. This transformation is done based on “equal probability of exceedance”. The transformation process is illustrated in <a href="#fig-varTransform">Figure&nbsp;7</a>.</p>
 <div id="fig-varTransform" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_varTransform.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s."><img src="../_static/images/eventSet_varTransform.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_varTransform.png" class="lightbox" title="Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s." data-gallery="quarto-lightbox-gallery-7"><img src="../_static/images/eventSet_varTransform.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;7: <strong>Transformation from copula-variable y to storm surge variable s. F(s) is the cumulative probability distribution function of s.</strong></figcaption>
 </figure>
 </div>
@@ -601,7 +601,7 @@ Probability and Frequency
 <p>Both for Monte Carlo and for numerical integration, more events means better accuracy, but comes at a computational cost. For the Monte Carlo approach, a higher number of samples leads to better accuracy. For the Numerical Integration approach, a finer discretization of the variables leads to better accuracy. In each case, simulations with FloodAdapt can be done to assess the trade-off between number of events and accuracy of the risk and flood probability metrics.</p>
 <div id="fig-NIgrid" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_NIgrid.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Schematic view of selected grids for numerical integration."><img src="../_static/images/eventSet_NIgrid.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
+<p><a href="../_static/images/eventSet_NIgrid.png" class="lightbox" title="Schematic view of selected grids for numerical integration." data-gallery="quarto-lightbox-gallery-8"><img src="../_static/images/eventSet_NIgrid.png" class="img-fluid figure-img" style="width:50.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;8: <strong>Schematic view of selected grids for numerical integration.</strong></figcaption>
 </figure>
 </div>
@@ -611,7 +611,7 @@ Probability and Frequency
 <p>Once you have selected events and calculated their occurrence frquencies, they must be put in the correct format for FloodAdapt. <a href="#fig-eventSet_folderDiagram">Figure&nbsp;9</a> shows the overall structure of the event set folder. The folder contains a sub-folder for each event in the event set and an event-set TOML file that gives the event names (which should align with the folder names) and the occurrence frequencies of the events. Each event folder should contain an event TOML file defining the event, and the time series (for the event duration) of the flood variables. More details about the <a href="#event-folder-contents">event folder contents</a> and the <a href="#eventset-toml-file">event set TOML file</a> are given below.</p>
 <div id="fig-eventSet_folderDiagram" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_folderDiagram.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Overview of the setup process for FloodAdapt"><img src="../_static/images/eventSet_folderDiagram.png" class="img-fluid figure-img" style="width:55.0%"></a></p>
+<p><a href="../_static/images/eventSet_folderDiagram.png" class="lightbox" title="Overview of the setup process for FloodAdapt" data-gallery="quarto-lightbox-gallery-9"><img src="../_static/images/eventSet_folderDiagram.png" class="img-fluid figure-img" style="width:55.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;9: <strong>Overview of the setup process for FloodAdapt</strong></figcaption>
 </figure>
 </div>
@@ -620,7 +620,7 @@ Probability and Frequency
 <p>Each event folder must contain a TOML file, with the name [EVENT_NAME].TOML, where [EVENT_NAME] should be replaced with the name of your event (which is also the name of the event folder). For example, if your event is called myEvent001, then the event folder should be called myEvent100, and the TOML file should be called myEvent001.TOML. In addition, the event folder must contain a time series file (CSV format) for each of the event variables that are varying over the duration of the event. <a href="#fig-eventSet_eventFolderContents">Figure&nbsp;10</a> shows the contents for an event named event_001.</p>
 <div id="fig-eventSet_eventFolderContents" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_eventFolderContents.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Contents of an event folder (example)"><img src="../_static/images/eventSet_eventFolderContents.png" class="img-fluid figure-img" style="width:55.0%"></a></p>
+<p><a href="../_static/images/eventSet_eventFolderContents.png" class="lightbox" title="Contents of an event folder (example)" data-gallery="quarto-lightbox-gallery-10"><img src="../_static/images/eventSet_eventFolderContents.png" class="img-fluid figure-img" style="width:55.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;10: <strong>Contents of an event folder (example)</strong></figcaption>
 </figure>
 </div>
@@ -639,7 +639,7 @@ Probability and Frequency
 </ul>
 <div id="fig-eventSet_eventTOML" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_eventTOML.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Example TOML file for an event named “event_0000”"><img src="../_static/images/eventSet_eventTOML.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
+<p><a href="../_static/images/eventSet_eventTOML.png" class="lightbox" title="Example TOML file for an event named “event_0000”" data-gallery="quarto-lightbox-gallery-11"><img src="../_static/images/eventSet_eventTOML.png" class="img-fluid figure-img" style="width:80.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;11: <strong>Example TOML file for an event named “event_0000”</strong></figcaption>
 </figure>
 </div>
@@ -649,7 +649,7 @@ Probability and Frequency
 <p>The event set folder must contain an event set TOML file. This file will specify the names and occurrence frequencies of all of the events in the set. Every event specified in this TOML file must also have an associated event folder. <a href="#fig-eventSet_probSetToml">Figure&nbsp;12</a> shows an example of a TOML file for a set named “probabilistic_set”.</p>
 <div id="fig-eventSet_probSetToml" class="quarto-figure quarto-figure-left anchored">
 <figure class="figure">
-<p><a href="../_static/images/eventSet_probSetToml.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Example TOML file for an event"><img src="../_static/images/eventSet_probSetToml.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<p><a href="../_static/images/eventSet_probSetToml.png" class="lightbox" title="Example TOML file for an event" data-gallery="quarto-lightbox-gallery-12"><img src="../_static/images/eventSet_probSetToml.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
 <figcaption class="figure-caption">Figure&nbsp;12: <strong>Example TOML file for an event</strong></figcaption>
 </figure>
 </div>
@@ -1040,7 +1040,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","loop":true,"openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","descPosition":"bottom","closeEffect":"zoom","loop":true,"openEffect":"zoom"});</script>
 
 
 
