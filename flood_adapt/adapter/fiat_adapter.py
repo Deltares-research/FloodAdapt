@@ -428,7 +428,7 @@ class FiatAdapter(IImpactAdapter):
         fiat_results_path = impacts_output_path.joinpath(
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
-        self.outputs["table"].to_csv(fiat_results_path)
+        self.outputs["table"].to_csv(fiat_results_path, index=False)
 
         # Create the infometrics files
         if mode == Mode.risk:
