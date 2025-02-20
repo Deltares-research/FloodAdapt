@@ -199,9 +199,10 @@ def plot_waterlevel(
         return "", None
 
     if event.attrs.template == Template.Synthetic:
-        midpoint = data.index[len(data) // 2]
-        data.index = (data.index - midpoint).total_seconds() / 3600  # Convert to hours
-        x_title = "Hours"
+        data.index = (
+            data.index - data.index[0]
+        ).total_seconds() / 3600  # Convert to hours
+        x_title = "Hours from start"
     else:
         x_title = "Time"
 
