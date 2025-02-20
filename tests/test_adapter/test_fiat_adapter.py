@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from flood_adapt.adapter.fiat_adapter import FiatColumns
 from flood_adapt.object_model.interface.path_builder import (
     TopLevelDir,
     db_path,
@@ -68,12 +69,12 @@ class TestFiatAdapter:
         assert len(exposure_scenario) > len(exposure_template)
 
         # check if growth has been applied correctly
-        inds1 = exposure_scenario["Object ID"].isin(exposure_template["Object ID"]) & (
-            exposure_scenario["Primary Object Type"] != "road"
-        )
+        inds1 = exposure_scenario["Object ID"].isin(
+            exposure_template[FiatColumns.object_id]
+        ) & (exposure_scenario["Primary Object Type"] != "road")
         exp1 = exposure_scenario.loc[inds1, "Max Potential Damage: Structure"]
-        inds0 = exposure_template["Primary Object Type"] != "road"
-        exp0 = exposure_template.loc[inds0, "Max Potential Damage: Structure"]
+        inds0 = exposure_template[FiatColumns.primary_object_type] != "road"
+        exp0 = exposure_template.loc[inds0, FiatColumns.max_pot_damage_structure]
         eg = test_scenario.impacts.socio_economic_change.attrs.economic_growth
         pg = (
             test_scenario.impacts.socio_economic_change.attrs.population_growth_existing
@@ -85,13 +86,11 @@ class TestFiatAdapter:
 
         # check if new area max damage is implemented correctly
         inds_new_area = ~exposure_scenario["Object ID"].isin(
-            exposure_template["Object ID"]
+            exposure_template[FiatColumns.object_id]
         )
         assert (
             pytest.approx(
-                exposure_scenario.loc[
-                    inds_new_area, "Max Potential Damage: Structure"
-                ].sum()
+                exposure_scenario.loc[inds_new_area, "Max Potential Damage: Structure"].sum()
             )
             == (
                 test_scenario.impacts.socio_economic_change.attrs.economic_growth / 100
@@ -101,7 +100,7 @@ class TestFiatAdapter:
                 test_scenario.impacts.socio_economic_change.attrs.population_growth_new
                 / 100
             )
-            * exposure_template.loc[:, "Max Potential Damage: Structure"].sum()
+            * exposure_template.loc[:, FiatColumns.max_pot_damage_structure].sum()
         )
 
         # check if buildings are elevated correctly
@@ -122,16 +121,28 @@ class TestFiatAdapter:
         bfes = pd.read_csv(db_path(TopLevelDir.static) / "bfe" / "bfe.csv")
 
         # Create a dataframe to save the initial object attributes
-        exposures = exposure_template.merge(bfes, on="Object ID")[
-            ["Object ID", "bfe", "Ground Floor Height"]
-        ].rename(columns={"Ground Floor Height": "Ground Floor Height 1"})
+        exposures = exposure_template.merge(bfes, on=FiatColumns.object_id)[
+            [FiatColumns.object_id, "bfe", f"{FiatColumns.ground_floor_height}"]
+        ].rename(
+            columns={
+                f"{FiatColumns.ground_floor_height}": "Ground Floor Height 1"
+            }
+        )
         # Merge with the adapted fiat model exposure
-        exposures = exposures.merge(exposure_scenario, on="Object ID").rename(
-            columns={"Ground Floor Height": "Ground Floor Height 2"}
+        exposures = exposures.rename(columns = {FiatColumns.object_id : "Object ID"})
+        exposures = exposures.merge(exposure_scenario, on= "Object ID").rename(
+            columns={
+                "Ground Floor Height": "Ground Floor Height 2", f"{FiatColumns.ground_floor_height} 1": "Ground Floor Height_1"
+            }
         )
         # Filter to only the objects affected by the measure
         exposures = exposures.loc[
-            (exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name)
+            (
+                exposure_scenario.loc[
+                    :, f"Aggregation Label: {aggr_label}"
+                ]
+                == aggr_name
+            )
             & (exposure_scenario.loc[:, "Primary Object Type"] == build_type),
             :,
         ]
@@ -186,15 +197,16 @@ class TestFiatAdapter:
             2
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
-        ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
+            exposure_template.loc[:, f"{FiatColumns.aggregation_prefix}{aggr_label}"]
+            == aggr_name
+        ) & (exposure_template.loc[:, FiatColumns.primary_object_type] == build_type)
         inds2 = (
             exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
         ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
 
         assert all(
             exposure_scenario.loc[inds2, "Damage Function: Structure"]
-            != exposure_template.loc[inds1, "Damage Function: Structure"]
+            != exposure_template.loc[inds1, FiatColumns.fn_damage_structure]
         )
 
     def test_raise_datum(self, run_scenario_raise_datum):
@@ -219,16 +231,18 @@ class TestFiatAdapter:
             0
         ].attrs.property_type
         inds1 = (
-            exposure_template.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
-        ) & (exposure_template.loc[:, "Primary Object Type"] == build_type)
+            exposure_template.loc[:, f"{FiatColumns.aggregation_prefix}{aggr_label}"]
+            == aggr_name
+        ) & (exposure_template.loc[:, FiatColumns.primary_object_type] == build_type)
         inds2 = (
-            exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"] == aggr_name
+            exposure_scenario.loc[:, f"Aggregation Label: {aggr_label}"]
+            == aggr_name
         ) & (exposure_scenario.loc[:, "Primary Object Type"] == build_type)
 
         assert all(
             elev1 <= elev2
             for elev1, elev2 in zip(
-                exposure_template.loc[inds1, "Ground Floor Height"],
+                exposure_template.loc[inds1, FiatColumns.ground_floor_height],
                 exposure_scenario.loc[inds2, "Ground Floor Height"],
             )
         )

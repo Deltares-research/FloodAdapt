@@ -43,20 +43,29 @@ from flood_adapt.object_model.utils import cd, resolve_filepath
 class FiatColumns:
     """Object with mapping of FIAT attributes to columns names."""
 
-    object_id = "Object ID"
-    object_name = "Object Name"
-    primary_object_type = "Primary Object Type"
-    secondary_object_type = "Secondary Object Type"
-    extraction_method = "Extraction Method"
-    ground_floor_height = "Ground Floor Height"
-    ground_elevation = "Ground Elevation"
-    damage_function = "Damage Function: "
-    max_potential_damage = "Max Potential Damage: "
-    aggregation_label = "Aggregation Label: "
-    inundation_depth = "Inundation Depth"
-    damage = "Damage: "
-    total_damage = "Total Damage"
-    risk_ead = "Risk (EAD)"
+    object_id = "object_id"
+    object_name = "object_name"
+    primary_object_type = "primary_object_type"
+    secondary_object_type = "secondary_object_type"
+    extraction_method = "extract_method"
+    ground_floor_height = "ground_flht"
+    ground_elevation = "ground_elevtn"
+    inundation_depth = "inun_depth"
+    damage_structure = "damage_structure"
+    damage_content = "damage_content"
+    damage_other = "damage_other"
+    total_damage = "total_damage"
+    ead_damage = "ead_damage"
+    segment_length = "segment_length"
+    damage_default = "damage"
+    fn_damage_structure = "fn_damage_structure"
+    fn_damage_content = "fn_damage_content"
+    fn_damage_other = "fn_damage_other"
+    max_pot_damage_default = "max_damage_"
+    max_pot_damage_structure = "max_damage_structure"
+    max_pot_damage_content = "max_damage_content"
+    max_pot_damage_other = "max_damage_other"
+    aggregation_prefix = "aggregation_label:"
 
 
 class FiatAdapter(IImpactAdapter):
@@ -91,6 +100,34 @@ class FiatAdapter(IImpactAdapter):
         self.config_base_path = config_base_path
         self.exe_path = exe_path
         self.delete_crashed_runs = delete_crashed_runs
+        self.fiat_columns_dict = {
+            k: v for k, v in FiatColumns.__dict__.items() if not k.startswith("__")
+        }
+        self.fiat_output_mapping = {
+            FiatColumns.object_id: "Object ID",
+            FiatColumns.object_name: "Object Name",
+            FiatColumns.primary_object_type: "Primary Object Type",
+            FiatColumns.secondary_object_type: "Secondary Object Type",
+            FiatColumns.extraction_method: "Extraction Method",
+            FiatColumns.ground_floor_height: "Ground Floor Height",
+            FiatColumns.ground_elevation: "Ground Elevation",
+            FiatColumns.inundation_depth: "Inundation Depth",
+            FiatColumns.damage_default: "Damage: ",
+            FiatColumns.damage_structure: "Damage: Structure",
+            FiatColumns.damage_content: "Damage: Content",
+            FiatColumns.damage_other: "Damage: Other",
+            FiatColumns.total_damage: "Total Damage",
+            FiatColumns.ead_damage: "Risk (EAD)",
+            FiatColumns.segment_length: "Segment Length",
+            FiatColumns.fn_damage_structure: "Damage Function: Structure",
+            FiatColumns.fn_damage_content: "Damage Function: Content",
+            FiatColumns.fn_damage_other: "Damage Function: Other",
+            FiatColumns.max_pot_damage_default: "Max Potential Damage:",
+            FiatColumns.max_pot_damage_structure: "Max Potential Damage: Structure",
+            FiatColumns.max_pot_damage_content: "Max Potential Damage: Content",
+            FiatColumns.max_pot_damage_other: "Max Potential Damage: Other",
+            FiatColumns.aggregation_prefix: "Aggregation Label: ",
+        }
         self._model = FiatModel(root=str(model_root.resolve()), mode="r")
         self._model.read()
 
@@ -332,12 +369,20 @@ class FiatAdapter(IImpactAdapter):
         """
         # Get output csv
         outputs_path = self.model_root.joinpath(self._model.config["output"]["path"])
-        output_csv_path = outputs_path.joinpath(
-            self._model.config["output"]["csv"]["name"]
-        )
+        csv_outputs_paths = []
+    
+        for entry in self._model.config["output"]["csv"]:
+            csv_outputs_paths.append(outputs_path.joinpath(self._model.config["output"]["csv"][entry]))
+
+        csv_outputs_df = []
+        for output_csv in csv_outputs_paths:
+            output_csv_df = pd.read_csv(output_csv)
+            csv_outputs_df.append(output_csv_df)
+        output_csv = pd.concat(csv_outputs_df)
+        
         self.outputs = {}
         self.outputs["path"] = outputs_path
-        self.outputs["table"] = pd.read_csv(output_csv_path)
+        self.outputs["table"] = output_csv
 
     def _get_aggr_ind(self, aggr_label: str):
         """
@@ -405,6 +450,15 @@ class FiatAdapter(IImpactAdapter):
 
         mode = scenario.event.attrs.mode
 
+        # Map exposure columns
+        for aggregation in self.config.aggregation:
+            self.fiat_output_mapping[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = (
+                f"{self.fiat_output_mapping[FiatColumns.aggregation_prefix]}{aggregation.name}"
+            )
+        mapped_exposure_df = self.outputs["table"].rename(
+            columns=self.fiat_output_mapping
+        )
+
         # Define scenario output path
         scenario_output_path = scenario.impacts.results_path
         impacts_output_path = scenario.impacts.impacts_path
@@ -416,10 +470,18 @@ class FiatAdapter(IImpactAdapter):
             config_path = scenario.database.static_path.joinpath(
                 "templates", "infometrics", "metrics_additional_risk_configs.toml"
             )
+
             with open(config_path, mode="rb") as fp:
                 config = tomli.load(fp)["flood_exceedance"]
-            self.add_exceedance_probability(
-                column=config["column"],
+            column = column = [
+                key
+                for key, value in self.fiat_output_mapping.items()
+                if value == config["column"]
+            ][0]
+
+            self.fiat_output_mapping[column]
+            mapped_exposure_df = self.add_exceedance_probability(
+                column=column,
                 threshold=config["threshold"],
                 period=config["period"],
             )
@@ -428,7 +490,8 @@ class FiatAdapter(IImpactAdapter):
         fiat_results_path = impacts_output_path.joinpath(
             f"Impacts_detailed_{scenario.attrs.name}.csv"
         )
-        self.outputs["table"].to_csv(fiat_results_path)
+
+        mapped_exposure_df.to_csv(fiat_results_path)
 
         # Create the infometrics files
         if mode == Mode.risk:
@@ -453,7 +516,9 @@ class FiatAdapter(IImpactAdapter):
         metrics_outputs_path = scenario_output_path.joinpath(
             f"Infometrics_{scenario.attrs.name}.csv"
         )
-        self.create_infometrics(metric_config_paths, metrics_outputs_path)
+        self.create_infometrics(
+            metric_config_paths, metrics_outputs_path, mapped_exposure_df
+        )
 
         # Get paths of created aggregated infometrics
         aggr_metrics_paths = list(
@@ -510,6 +575,49 @@ class FiatAdapter(IImpactAdapter):
         # If site config is set to not keep FIAT simulation, delete folder
         if not self.config.save_simulation:
             self.delete_model()
+
+    def map_risk_metrics(self, mapped_exposure_df: pd.DataFrame):
+        """Rename the Delft FIAT output columns per return period.
+
+        Parameters
+        ----------
+        mapped_exposure_df : pd.DataFrame
+            The exposure dataframe with the mapped headings for the exposure input (not yet the output).
+        """
+        for column in mapped_exposure_df:
+            if FiatColumns.inundation_depth in column:
+                inun_rp = column.split(FiatColumns.inundation_depth + "_")[-1]
+                rp = f"({inun_rp.split('.0y')[0]}Y)"
+                new_column = str(
+                    self.fiat_output_mapping[FiatColumns.inundation_depth] + " " + rp
+                )
+                mapped_exposure_df = mapped_exposure_df.rename(
+                    columns={column: new_column}
+                )
+            elif FiatColumns.damage_default in column:
+                if FiatColumns.total_damage in column:
+                    damage_rp = column.split(FiatColumns.total_damage + "_")[-1]
+                    rp = f"({damage_rp.split('.0y')[0]}Y)"
+                    new_column = str(
+                        self.fiat_output_mapping[FiatColumns.total_damage] + " " + rp
+                    )
+                else:
+                    damage_rp = column.split(FiatColumns.damage_default + "_")[-1]
+                    damage = damage_rp.split("_")[0].capitalize()
+                    rp = f"({damage_rp.split('_')[1].split('.0y')[0]}Y)"
+                    new_column = str(
+                        self.fiat_output_mapping[FiatColumns.damage_default]
+                        + damage
+                        + " "
+                        + rp
+                    )
+                mapped_exposure_df = mapped_exposure_df.rename(
+                    columns={column: new_column}
+                )
+            else:
+                mapped_exposure_df = mapped_exposure_df
+
+        return mapped_exposure_df
 
     def add_measure(self, measure: IMeasure):
         """
@@ -668,7 +776,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if FiatColumns.max_pot_damage_default in c
         ]
 
         # Get objects that are buildings (using site info)
@@ -715,7 +823,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if FiatColumns.max_pot_damage_default in c
         ]
 
         # Get objects that are buildings (using site info)
@@ -795,7 +903,7 @@ class FiatAdapter(IImpactAdapter):
         ]
         attribute_names = [aggr.field_name for aggr in self.config.aggregation]
         label_names = [
-            f"{FiatColumns.aggregation_label}{aggr.name}"
+            f"{FiatColumns.aggregation_prefix}{aggr.name}"
             for aggr in self.config.aggregation
         ]
         # Use hydromt function
@@ -803,7 +911,7 @@ class FiatAdapter(IImpactAdapter):
             percent_growth=population_growth,
             geom_file=Path(area_path),
             ground_floor_height=ground_floor_height,
-            damage_types=["Structure", "Content"],
+            damage_types=["structure", "content"],
             vulnerability=self._model.vulnerability,
             ground_elevation=ground_elevation,
             aggregation_area_fn=aggregation_areas,
@@ -908,7 +1016,7 @@ class FiatAdapter(IImpactAdapter):
         damage_cols = [
             c
             for c in self._model.exposure.exposure_db.columns
-            if FiatColumns.max_potential_damage in c
+            if FiatColumns.max_pot_damage_default in c
         ]
 
         # Get objects that are buildings (using site info)
@@ -952,7 +1060,7 @@ class FiatAdapter(IImpactAdapter):
         self._model.exposure.truncate_damage_function(
             objectids=objectids,
             floodproof_to=floodproof.attrs.elevation.value,
-            damage_function_types=["Structure", "Content"],
+            damage_function_types=["structure", "content"],
             vulnerability=self._model.vulnerability,
         )
 
@@ -1074,7 +1182,10 @@ class FiatAdapter(IImpactAdapter):
     # POST-PROCESSING METHODS
 
     def add_exceedance_probability(
-        self, column: str, threshold: float, period: int
+        self,
+        column: str,
+        threshold: float,
+        period: int,
     ) -> pd.DataFrame:
         """Calculate exceedance probabilities and append them to the results table.
 
@@ -1096,11 +1207,16 @@ class FiatAdapter(IImpactAdapter):
         fiat_results_df = ExceedanceProbabilityCalculator(column).append_probability(
             self.outputs["table"], threshold, period
         )
-        self.outputs["table"] = fiat_results_df
-        return self.outputs["table"]
+        fiat_results_df = fiat_results_df.rename(columns=self.fiat_output_mapping)
+        fiat_results_df = self.map_risk_metrics(fiat_results_df)
+
+        return fiat_results_df
 
     def create_infometrics(
-        self, metric_config_paths: list[os.PathLike], metrics_output_path: os.PathLike
+        self,
+        metric_config_paths: list[os.PathLike],
+        metrics_output_path: os.PathLike,
+        mapped_exposure_df: pd.DataFrame,
     ) -> None:
         """
         Create infometrics files based on the provided metric configuration paths.
@@ -1111,6 +1227,8 @@ class FiatAdapter(IImpactAdapter):
             A list of paths to the metric configuration files.
         metrics_output_path : os.PathLike
             The path where the metrics output file will be saved.
+        mapped_exposure_df: pd.DataFrame
+            The exposure dataframe with the mapped headings for the exposure input and output).
 
         Raises
         ------
@@ -1124,16 +1242,18 @@ class FiatAdapter(IImpactAdapter):
         # Check if type of metric configuration is available
         for metric_file in metric_config_paths:
             if metric_file.exists():
-                metrics_writer = MetricsFileWriter(metric_file)
+                metrics_writer = MetricsFileWriter(
+                    metric_file, aggregation_prefix="Aggregation Label: "
+                )
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=self.outputs["table"],
+                    df_results=mapped_exposure_df,
                     metrics_path=metrics_output_path,
                     write_aggregate=None,
                 )
 
                 metrics_writer.parse_metrics_to_file(
-                    df_results=self.outputs["table"],
+                    df_results=mapped_exposure_df,
                     metrics_path=metrics_output_path,
                     write_aggregate="all",
                 )
@@ -1349,9 +1469,12 @@ class FiatAdapter(IImpactAdapter):
                 how="left",
             )
         )
-
-        footprints.aggregate(fiat_results_df)
-        footprints.calc_normalized_damages()
+        # Add aggregation to fiat_columns
+        for aggregation in self.config.aggregation:
+            self.fiat_columns_dict[f"{FiatColumns.aggregation_prefix}{aggregation.name}"] = f"{FiatColumns.aggregation_prefix}{aggregation.name}"
+        # Get damages
+        footprints.aggregate(fiat_results_df, self.fiat_columns_dict)
+        footprints.calc_normalized_damages(self.fiat_columns_dict)
 
         # Save footprint
         footprints.write(output_path)
@@ -1374,7 +1497,10 @@ class FiatAdapter(IImpactAdapter):
         aggr_cols = [
             name
             for name in self.outputs["table"].columns
-            if FiatColumns.aggregation_label in name
+            if any(
+                f"{FiatColumns.aggregation_prefix}{aggregation.name}" in name
+                for aggregation in self.config.aggregation
+            )
         ]
         inun_cols = [
             name for name in roads.columns if FiatColumns.inundation_depth in name
