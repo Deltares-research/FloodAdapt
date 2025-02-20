@@ -145,7 +145,7 @@ class ValueUnitPair(BaseModel, ABC, Generic[TUnit]):
             value=self.value + other.convert(self.units), units=self.units
         )
 
-    def __eq__(self: TClass, other: TClass):
+    def __eq__(self: TClass, other: TClass) -> bool:
         if not isinstance(other, ValueUnitPair):
             raise TypeError(
                 f"Cannot compare self: {type(self).__name__} to other: {type(other).__name__}"
