@@ -699,10 +699,9 @@ class DatabaseBuilder:
                     )
                     footprints_found = True
             if not footprints_found:
-                self.logger.error(
-                    "No building footprints are available. These are needed in FloodAdapt."
-                )
-                raise ValueError
+                msg = "No building footprints are available. These are needed in FloodAdapt."
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             self.config.building_footprints.file = self._check_path(
                 self.config.building_footprints.file
@@ -832,10 +831,9 @@ class DatabaseBuilder:
                     "No aggregation areas were available in the FIAT model. The region file will be used as a mock aggregation area."
                 )
             else:
-                self.logger.error(
-                    "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
-                )
-                raise ValueError
+                msg = "No aggregation areas were available in the FIAT model and no region geometry file is available. FloodAdapt needs at least one!"
+                self.logger.error(msg)
+                raise ValueError(msg)
         else:
             for aggr_0 in self.fiat_model.spatial_joins["aggregation_areas"]:
                 if aggr_0["equity"] is not None:
@@ -1142,12 +1140,11 @@ class DatabaseBuilder:
         if subgrid_sfincs.exists():
             fa_path2 = self.root.joinpath("static", "dem", fn)
         else:
-            self.logger.error(
+            msg = (
                 f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
             )
-            raise ValueError(
-                f"A subgrid depth geotiff file should be available at {subgrid_sfincs}."
-            )
+            self.logger.error(msg)
+            raise ValueError(msg)
 
         # Check if tiles already exist in the SFINCS model
         if tiles_sfincs.exists():
